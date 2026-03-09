@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arşiv Kontrol v3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+:root{
+  --bg:#f5f0e8;--bg2:#ede7d9;--bg3:#e4dccb;
+  --ink:#1a1410;--ink2:#4a3f30;--ink3:#7a6e5e;
+  --gold:#8b6914;--gold-lt:#c49a2a;--gold-bg:#fdf6e3;
+  --red:#8b1a1a;--red-bg:#fdf0f0;
+  --green:#1a5c2a;--grn-bg:#f0f7f1;
+  --blue:#1a3d6b;--blue-bg:#f0f4f9;
+  --orange:#7a3a0a;--orange-bg:#fdf3ec;
+  --border:#cfc4b0;--bord2:#b8aa96;--white:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,serif;font-size:17px;line-height:1.65;min-height:100vh;}
+.mono{font-family:'JetBrains Mono',monospace;}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ── LOGIN ── */
+#loginScreen{align-items:center;justify-content:center;}
+.login-card{width:100%;max-width:400px;margin:24px;background:var(--white);border:1px solid var(--bord2);border-top:3px solid var(--gold);}
+.login-head{padding:32px 32px 20px;border-bottom:1px solid var(--border);}
+.login-logo{font-size:22px;font-weight:700;margin-bottom:4px;}
+.login-logo span{color:var(--gold);}
+.login-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--ink3);text-transform:uppercase;}
+.login-body{padding:28px 32px 32px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--ink3);text-transform:uppercase;margin-bottom:6px;}
+.field input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:'Crimson Pro',serif;font-size:16px;padding:11px 14px;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--gold);background:var(--white);}
+.btn-login{width:100%;background:var(--ink);color:var(--bg);border:none;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;letter-spacing:.5px;padding:14px;cursor:pointer;transition:background .15s;margin-top:4px;}
+.btn-login:hover{background:var(--gold);}
+.login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+
+/* ── APP SHELL ── */
+#appScreen{flex-direction:column;}
+.topbar{background:var(--ink);color:var(--bg);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;border-bottom:2px solid var(--gold);}
+.topbar-brand{font-size:18px;font-weight:700;}
+.topbar-brand span{color:var(--gold-lt);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.topbar-user{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(245,240,232,.5);margin-right:8px;}
+.topbar-user strong{color:var(--bg);}
+.btn-top{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid rgba(245,240,232,.2);color:rgba(245,240,232,.65);padding:5px 12px;cursor:pointer;transition:all .15s;position:relative;}
+.btn-top:hover{border-color:var(--gold-lt);color:var(--gold-lt);}
+.btn-top.active-tab{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+.badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:white;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+.app-body{flex:1;overflow-y:auto;}
+.tab-content{display:none;max-width:1160px;margin:0 auto;padding:32px 24px;}
+.tab-content.active{display:block;}
+.page-title{font-size:24px;font-weight:700;letter-spacing:-.3px;margin-bottom:2px;}
+.page-sub{font-size:13px;color:var(--ink3);margin-bottom:24px;font-family:'JetBrains Mono',monospace;}
+.divider{height:1px;background:var(--border);margin-bottom:24px;}
+
+/* INNER TABS */
+.itabs{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--bord2);width:fit-content;}
+.itab{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg2);border:none;padding:8px 16px;cursor:pointer;color:var(--ink3);transition:all .15s;}
+.itab.active{background:var(--ink);color:var(--bg);}
+.itab:not(.active):hover{background:var(--bg3);}
+.itab-panel{display:none;}
+.itab-panel.active{display:block;}
+
+/* FORMS */
+textarea{width:100%;min-height:200px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'Crimson Pro',serif;font-size:16px;line-height:1.7;padding:16px 18px;resize:vertical;outline:none;transition:border-color .2s;}
+textarea:focus{border-color:var(--gold);}
+textarea::placeholder{color:var(--ink3);font-style:italic;}
+.file-drop{border:2px dashed var(--bord2);padding:40px 24px;text-align:center;cursor:pointer;background:var(--white);transition:all .2s;}
+.file-drop:hover,.file-drop.over{border-color:var(--gold);background:var(--gold-bg);}
+.file-drop.selected{border-style:solid;border-color:var(--green);background:var(--grn-bg);}
+.file-drop.selected p{color:var(--green);font-weight:600;}
+#fileInput,#batchInput{display:none;}
+.controls{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn-primary{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;background:var(--ink);color:var(--bg);border:none;padding:11px 22px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;}
+.btn-primary:hover{background:var(--gold);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;background:var(--ink);}
+.btn-sec{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;color:var(--ink3);border:1px solid var(--border);padding:10px 16px;cursor:pointer;transition:all .15s;}
+.btn-sec:hover{border-color:var(--ink3);color:var(--ink);}
+.btn-green{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--green);color:white;border:none;padding:7px 13px;cursor:pointer;transition:opacity .15s;}
+.btn-green:hover{opacity:.85;}
+.btn-danger{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;color:var(--red);border:1px solid var(--red);padding:7px 13px;cursor:pointer;}
+.btn-orange{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--orange);color:white;border:none;padding:7px 13px;cursor:pointer;}
+.btn-gold{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--gold);color:white;border:none;padding:7px 13px;cursor:pointer;}
+.status-msg{font-size:14px;color:var(--ink3);font-style:italic;}
+.status-msg.ok{color:var(--green);}
+.status-msg.err{color:var(--red);}
+
+/* SPINNER */
+.spin{width:28px;height:28px;margin:0 auto;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+.btn-spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOADING */
+.loading-box{background:var(--white);border:1px solid var(--border);padding:48px;text-align:center;color:var(--ink3);}
+.loading-box p{margin-top:12px;font-style:italic;}
+
+/* RESULTS */
+.score-row{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:2px;}
+.score-box{background:var(--bg2);padding:14px 16px;}
+.score-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.score-val{font-size:22px;font-weight:700;line-height:1;}
+.sv-gold{color:var(--gold);}
+.sv-red{color:var(--red);}
+.sv-green{color:var(--green);}
+.score-track{height:3px;background:var(--border);margin-top:6px;}
+.score-fill{height:100%;transition:width 1s cubic-bezier(.16,1,.3,1);}
+.sf-high{background:var(--green);}
+.sf-mid{background:var(--gold-lt);}
+.sf-low{background:var(--red);}
+.summary-box{background:var(--gold-bg);border:1px solid #d4b86a;border-left:3px solid var(--gold);padding:12px 16px;margin-bottom:2px;font-size:15px;color:var(--ink2);font-style:italic;}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:2px;}
+.cat-panel{background:var(--white);}
+.cat-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);}
+.cat-name{font-weight:600;font-size:14px;}
+.cat-cnt{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:10px;}
+.cnt-err{background:var(--red-bg);color:var(--red);}
+.cnt-ok{background:var(--grn-bg);color:var(--green);}
+.issue-item{padding:9px 16px;border-bottom:1px solid var(--border);animation:fi .3s ease forwards;opacity:0;}
+.issue-item:last-child{border-bottom:none;}
+@keyframes fi{to{opacity:1}from{opacity:0;transform:translateY(3px)}}
+.issue-row{display:flex;align-items:flex-start;gap:8px;}
+.i-orig{background:var(--red-bg);color:var(--red);border-left:2px solid var(--red);padding:3px 8px;font-size:14px;flex:1;text-decoration:line-through;}
+.i-arr{color:var(--ink3);padding-top:4px;font-size:12px;}
+.i-fix{background:var(--grn-bg);color:var(--green);border-left:2px solid var(--green);padding:3px 8px;font-size:14px;flex:1;font-weight:600;}
+.i-rule{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);margin-top:3px;}
+.empty-cat{padding:16px;text-align:center;color:var(--green);font-size:13px;font-style:italic;}
+.corrected-panel{border:1px solid var(--bord2);border-top:2px solid var(--gold);background:var(--white);margin-bottom:2px;}
+.corrected-head{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.corrected-head h3{font-size:15px;font-weight:600;}
+.btn-copy{font-family:'JetBrains Mono',monospace;font-size:10px;background:transparent;color:var(--ink3);border:1px solid var(--border);padding:4px 11px;cursor:pointer;transition:all .15s;}
+.btn-copy:hover{border-color:var(--gold);color:var(--gold);}
+.corrected-body{padding:20px;font-size:16px;line-height:1.8;color:var(--ink);white-space:pre-wrap;word-break:break-word;max-height:350px;overflow-y:auto;}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse;font-size:14px;}
+.data-table th{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);padding:9px 12px;border-bottom:2px solid var(--bord2);text-align:left;background:var(--bg2);}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:middle;}
+.data-table tr:hover td{background:var(--bg2);}
+.score-pill{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;}
+.sp-high{background:var(--grn-bg);color:var(--green);}
+.sp-mid{background:var(--gold-bg);color:var(--gold);}
+.sp-low{background:var(--red-bg);color:var(--red);}
+.role-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:10px;}
+.rp-admin{background:var(--gold-bg);color:var(--gold);}
+.rp-user{background:var(--bg3);color:var(--ink3);}
+.status-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;}
+.sb-wait{background:var(--orange-bg);color:var(--orange);}
+.sb-ok{background:var(--grn-bg);color:var(--green);}
+.sb-no{background:var(--red-bg);color:var(--red);}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
+.dot-on{background:var(--green);}
+.dot-off{background:var(--red);}
+.empty-state{text-align:center;padding:36px;color:var(--ink3);font-style:italic;font-size:15px;}
+
+/* DASHBOARD */
+.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:20px;}
+.stat-card{background:var(--white);padding:18px 16px;}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
+.stat-val{font-size:28px;font-weight:700;line-height:1;color:var(--ink);}
+.stat-val.gold{color:var(--gold);}
+.stat-val.red{color:var(--red);}
+.stat-val.green{color:var(--green);}
+.stat-val.orange{color:var(--orange);}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.dash-card{background:var(--white);border:1px solid var(--bord2);}
+.dash-card-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);font-weight:600;font-size:14px;}
+.dash-card-body{padding:16px;}
+
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-label{font-size:13px;color:var(--ink2);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.16,1,.3,1);}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);width:32px;text-align:right;flex-shrink:0;}
+
+.chart-wrap{position:relative;height:140px;margin-top:8px;}
+canvas{width:100%!important;}
+
+.alert-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.alert-item:last-child{border-bottom:none;}
+.alert-item.unread{background:var(--red-bg);}
+.alert-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:5px;}
+.alert-dot.read{background:var(--border);}
+.alert-msg{font-size:14px;color:var(--ink2);flex:1;}
+.alert-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,.5);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);width:100%;max-width:460px;margin:24px;max-height:90vh;overflow-y:auto;}
+.modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);}
+.modal-head h3{font-size:17px;font-weight:600;}
+.modal-close{background:none;border:none;font-size:20px;color:var(--ink3);cursor:pointer;}
+.modal-body{padding:18px 22px 22px;}
+.mfield{margin-bottom:15px;}
+.mfield label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.mfield input,.mfield select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:'Crimson Pro',serif;font-size:15px;padding:9px 12px;outline:none;transition:border-color .2s;}
+.mfield input:focus,.mfield select:focus{border-color:var(--gold);background:var(--white);}
+.mfield select{font-family:'JetBrains Mono',monospace;font-size:12px;}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+.form-err{color:var(--red);font-size:13px;min-height:16px;}
+
+/* RULES EDITOR */
+.rules-editor{width:100%;min-height:500px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;padding:16px;resize:vertical;outline:none;}
+.rules-editor:focus{border-color:var(--gold);}
+
+/* BATCH RESULTS */
+.batch-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:14px;}
+.batch-item:last-child{border-bottom:none;}
+.batch-icon{font-size:16px;flex-shrink:0;}
+
+/* PROFILE */
+.profile-card{max-width:440px;background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);}
+.profile-head{padding:22px;border-bottom:1px solid var(--border);background:var(--bg2);}
+.p-avatar{width:48px;height:48px;background:var(--gold);color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-bottom:10px;}
+.p-name{font-size:19px;font-weight:700;margin-bottom:2px;}
+.p-role{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);}
+.profile-body{padding:22px;}
+
+.info-box{background:var(--blue-bg);border:1px solid #a8c0dc;border-left:3px solid var(--blue);padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:18px;}
+.warn-box{background:var(--orange-bg);border:1px solid #d4a87a;border-left:3px solid var(--orange);padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:14px;}
+
+@media(max-width:800px){
+  .score-row,.stat-grid{grid-template-columns:repeat(3,1fr);}
+  .cat-grid,.dash-grid{grid-template-columns:1fr;}
+  .topbar-user{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="loginScreen">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-logo">Arşiv<span>.</span>Kontrol</div>
+      <div class="login-sub mono">Soru &amp; Cevap Ekibi — v3</div>
+    </div>
+    <div class="login-body">
+      <div class="field"><label>Kullanıcı Adı</label><input type="text" id="loginUser" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="field"><label>Şifre</label><input type="password" id="loginPass" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn-login" onclick="doLogin()">Giriş Yap</button>
+      <div class="login-err" id="loginErr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="screen" id="appScreen">
+  <div class="topbar">
+    <div class="topbar-brand">Arşiv<span>.</span>Kontrol</div>
+    <div class="topbar-right">
+      <div class="topbar-user">Merhaba, <strong id="topName">—</strong></div>
+      <button class="btn-top" id="tabBtnAnaliz"   onclick="showTab('analiz')">Denetle</button>
+      <button class="btn-top" id="tabBtnGecmis"   onclick="showTab('gecmis')">Geçmiş</button>
+      <button class="btn-top" id="tabBtnProfil"   onclick="showTab('profil')">Profilim</button>
+      <button class="btn-top admin-only" id="tabBtnDash"    onclick="showTab('dash')" style="display:none">Dashboard</button>
+      <button class="btn-top admin-only" id="tabBtnOnay"    onclick="showTab('onay')" style="display:none">Onaylar<span class="badge" id="onayBadge" style="display:none">0</span></button>
+      <button class="btn-top admin-only" id="tabBtnAlerts"  onclick="showTab('alerts')" style="display:none">Uyarılar<span class="badge" id="alertBadge" style="display:none">0</span></button>
+      <button class="btn-top admin-only" id="tabBtnKullanici" onclick="showTab('kullanici')" style="display:none">Kullanıcılar</button>
+      <button class="btn-top admin-only" id="tabBtnKurallar" onclick="showTab('kurallar')" style="display:none">Kurallar</button>
+      <button class="btn-top" onclick="doLogout()">Çıkış</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+
+    <!-- DENETİM -->
+    <div class="tab-content active" id="tabContent-analiz">
+      <div class="page-title">Metin Denetimi</div>
+      <div class="page-sub mono">Arşiv standartlarına göre otomatik kontrol</div>
+      <div class="divider"></div>
+      <div class="itabs">
+        <button class="itab active" onclick="switchInner('text')">Metin Yapıştır</button>
+        <button class="itab" onclick="switchInner('file')">Dosya Yükle (.docx)</button>
+        <button class="itab admin-only" id="batchTab" onclick="switchInner('batch')" style="display:none">Toplu Yükleme</button>
+      </div>
+      <div class="itab-panel active" id="ipanel-text">
+        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..."></textarea>
+      </div>
+      <div class="itab-panel" id="ipanel-file">
+        <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()" ondragover="fdOver(event)" ondragleave="fdLeave(event)" ondrop="fdDrop(event)">
+          <div style="font-size:32px;margin-bottom:10px">📄</div>
+          <p>Dosyayı buraya sürükleyin veya tıklayın</p>
+          <small class="mono">.docx formatı desteklenmektedir</small>
+        </div>
+        <input type="file" id="fileInput" accept=".docx,.doc" onchange="fdSelect(event)">
+      </div>
+      <div class="itab-panel" id="ipanel-batch">
+        <div class="file-drop" id="batchDrop" onclick="document.getElementById('batchInput').click()">
+          <div style="font-size:32px;margin-bottom:10px">📂</div>
+          <p>Birden fazla dosyayı seçin (maks. 20)</p>
+          <small class="mono">.docx formatı — her dosya sırayla denetlenir</small>
+        </div>
+        <input type="file" id="batchInput" accept=".docx,.doc" multiple onchange="batchSelect(event)">
+        <div id="batchList" style="margin-top:12px"></div>
+      </div>
+      <div class="controls">
+        <button class="btn-primary" id="analyzeBtn" onclick="analyze()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Denetle &amp; Düzelt
+        </button>
+        <button class="btn-sec" onclick="clearAnalyze()">Temizle</button>
+        <span class="status-msg" id="statusMsg"></span>
+      </div>
+      <div id="resultsArea" style="margin-top:20px"></div>
+    </div>
+
+    <!-- GEÇMİŞ -->
+    <div class="tab-content" id="tabContent-gecmis">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+        <div><div class="page-title">Denetim Geçmişi</div><div class="page-sub mono">Son denetimler</div></div>
+        <button class="btn-sec admin-only" id="csvBtn" style="display:none;margin-top:4px" onclick="downloadCSV()">⬇ CSV İndir</button>
+      </div>
+      <div class="divider"></div>
+      <div id="histContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <!-- PROFİL -->
+    <div class="tab-content" id="tabContent-profil">
+      <div class="page-title">Profilim</div>
+      <div class="page-sub mono">Hesap ve şifre</div>
+      <div class="divider"></div>
+      <div class="profile-card">
+        <div class="profile-head">
+          <div class="p-avatar" id="pAvatar">?</div>
+          <div class="p-name" id="pName">—</div>
+          <div class="p-role mono" id="pRole">—</div>
+        </div>
+        <div class="profile-body">
+          <div class="mfield"><label>Mevcut Şifre</label><input type="password" id="oldPass"></div>
+          <div class="mfield"><label>Yeni Şifre</label><input type="password" id="newPass"></div>
+          <div class="mfield"><label>Yeni Şifre (Tekrar)</label><input type="password" id="newPass2"></div>
+          <div class="form-err" id="passErr"></div>
+          <button class="btn-primary" onclick="changePassword()" style="margin-top:8px">Şifreyi Güncelle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="tab-content" id="tabContent-dash">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub mono">Ekip geneli istatistikler</div>
+      <div class="divider"></div>
+      <div id="dashContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <!-- ONAYLAR -->
+    <div class="tab-content" id="tabContent-onay">
+      <div class="page-title">Onay Bekleyenler</div>
+      <div class="page-sub mono">Ekip üyelerinin gönderdiği denetimler</div>
+      <div class="divider"></div>
+      <div id="onayContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <!-- UYARILAR -->
+    <div class="tab-content" id="tabContent-alerts">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div><div class="page-title">Düşük Skor Uyarıları</div><div class="page-sub mono">60 altı skorlu metinler otomatik işaretlenir</div></div>
+        <button class="btn-sec" onclick="readAllAlerts()" style="margin-top:4px">Tümünü Okundu İşaretle</button>
+      </div>
+      <div class="divider"></div>
+      <div id="alertsContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <!-- KULLANICILAR -->
+    <div class="tab-content" id="tabContent-kullanici">
+      <div class="page-title">Kullanıcı Yönetimi</div>
+      <div class="page-sub mono">Ekip üyelerini yönetin</div>
+      <div class="divider"></div>
+      <div class="info-box">Varsayılan: <strong class="mono">admin</strong> / <strong class="mono">admin123</strong> — Şifrenizi hemen değiştirin.</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn-green" onclick="openAddUser()">+ Yeni Kullanıcı</button>
+      </div>
+      <div id="userTableWrap"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <!-- KURALLAR -->
+    <div class="tab-content" id="tabContent-kurallar">
+      <div class="page-title">Kural Yönetimi</div>
+      <div class="page-sub mono">AI'ın kullandığı denetim kurallarını düzenleyin</div>
+      <div class="divider"></div>
+      <div class="warn-box">⚠ Kuralları değiştirdiğinizde tüm sonraki denetimler yeni kurallara göre yapılır. Dikkatli düzenleyin.</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <button class="btn-primary" onclick="saveRules()">Kuralları Kaydet</button>
+        <button class="btn-sec" onclick="resetRules()">Varsayılana Döndür</button>
+        <span class="status-msg" id="ruleStatus"></span>
+      </div>
+      <textarea class="rules-editor" id="rulesEditor" placeholder="Kurallar yükleniyor..."></textarea>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Yeni Kullanıcı</h3><button class="modal-close" onclick="closeModal('addUserModal')">×</button></div>
+    <div class="modal-body">
+      <div class="mfield"><label>Ad Soyad</label><input type="text" id="nuName"></div>
+      <div class="mfield"><label>Kullanıcı Adı</label><input type="text" id="nuUsername"></div>
+      <div class="mfield"><label>Şifre</label><input type="password" id="nuPassword"></div>
+      <div class="mfield"><label>Rol</label><select id="nuRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option></select></div>
+      <div class="form-err" id="nuErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeModal('addUserModal')">İptal</button><button class="btn-primary" onclick="addUser()">Ekle</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Kullanıcıyı Düzenle</h3><button class="modal-close" onclick="closeModal('editUserModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="euId">
+      <div class="mfield"><label>Ad Soyad</label><input type="text" id="euName"></div>
+      <div class="mfield"><label>Yeni Şifre (boş = değişmez)</label><input type="password" id="euPassword"></div>
+      <div class="mfield"><label>Rol</label><select id="euRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option></select></div>
+      <div class="mfield"><label>Durum</label><select id="euActive"><option value="true">Aktif</option><option value="false">Devre Dışı</option></select></div>
+      <div class="form-err" id="euErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeModal('editUserModal')">İptal</button><button class="btn-primary" onclick="saveEditUser()">Kaydet</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head"><h3>Düzeltilmiş Metin</h3><button class="modal-close" onclick="closeModal('detailModal')">×</button></div>
+    <div class="modal-body">
+      <div id="detailBody" style="white-space:pre-wrap;font-size:15px;line-height:1.8;color:var(--ink2);max-height:60vh;overflow-y:auto;background:var(--bg2);padding:16px;"></div>
+      <div class="modal-foot" style="margin-top:12px"><button class="btn-primary" onclick="copyDetail()">Kopyala</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ STATE ══
+let me = null, selectedFile = null, batchFiles = [], activeInner = 'text', correctedText = '';
+
+// ══ INIT ══
+(async () => {
+  const r = await api('GET', '/api/auth/me');
+  if (r.loggedIn) enterApp(r);
+})();
+
+// ══ AUTH ══
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  document.getElementById('loginErr').textContent = '';
+  const r = await api('POST', '/api/auth/login', { username: u, password: p });
+  if (r.error) { document.getElementById('loginErr').textContent = r.error; return; }
+  enterApp(r);
+}
+
+function enterApp(user) {
+  me = user;
+  document.getElementById('topName').textContent = user.name;
+  document.getElementById('loginScreen').classList.remove('active');
+  document.getElementById('appScreen').classList.add('active');
+  if (user.role === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+  }
+  document.getElementById('pAvatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('pName').textContent = user.name;
+  document.getElementById('pRole').textContent = user.role === 'admin' ? 'Yönetici' : 'Ekip Üyesi';
+  showTab('analiz');
+  if (user.role === 'admin') refreshBadges();
+}
+
+async function doLogout() {
+  await api('POST', '/api/auth/logout');
+  me = null;
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ══ TABS ══
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.btn-top').forEach(e => e.classList.remove('active-tab'));
+  document.getElementById(`tabContent-${name}`).classList.add('active');
+  const b = document.getElementById(`tabBtn${name.charAt(0).toUpperCase()+name.slice(1)}`);
+  if (b) b.classList.add('active-tab');
+  if (name === 'gecmis')    loadHistory();
+  if (name === 'dash')      loadDash();
+  if (name === 'onay')      loadOnay();
+  if (name === 'alerts')    loadAlerts();
+  if (name === 'kullanici') loadUsers();
+  if (name === 'kurallar')  loadRules();
+}
+
+function switchInner(tab) {
+  activeInner = tab;
+  document.querySelectorAll('.itab').forEach((b,i) => b.classList.toggle('active', ['text','file','batch'][i]===tab));
+  ['text','file','batch'].forEach(t => {
+    const p = document.getElementById(`ipanel-${t}`);
+    if (p) p.classList.toggle('active', t === tab);
+  });
+}
+
+// ══ FILE ══
+function fdOver(e) { e.preventDefault(); document.getElementById('fileDrop').classList.add('over'); }
+function fdLeave()  { document.getElementById('fileDrop').classList.remove('over'); }
+function fdDrop(e)  { e.preventDefault(); fdLeave(); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); }
+function fdSelect(e){ if (e.target.files[0]) setFile(e.target.files[0]); }
+function setFile(f) {
+  selectedFile = f;
+  const d = document.getElementById('fileDrop');
+  d.className = 'file-drop selected';
+  d.innerHTML = `<div style="font-size:28px;margin-bottom:8px">📎</div><p>${f.name}</p><small class="mono">${(f.size/1024).toFixed(1)} KB</small>`;
+}
+
+function batchSelect(e) {
+  batchFiles = Array.from(e.target.files);
+  const bd = document.getElementById('batchDrop');
+  bd.className = 'file-drop selected';
+  bd.innerHTML = `<div style="font-size:28px;margin-bottom:8px">📂</div><p>${batchFiles.length} dosya seçildi</p><small class="mono">Başlatmak için "Denetle" butonuna basın</small>`;
+}
+
+// ══ ANALYZE ══
+async function analyze() {
+  const btn = document.getElementById('analyzeBtn');
+  const res = document.getElementById('resultsArea');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spin"></span> Denetleniyor...';
+  setStatus('', '');
+  res.innerHTML = `<div class="loading-box"><div class="spin"></div><p>Denetleniyor, lütfen bekleyin...</p></div>`;
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    if (activeInner === 'batch') {
+      await runBatch(res);
+    } else if (activeInner === 'file') {
+      if (!selectedFile) throw new Error('Lütfen dosya seçin.');
+      const fd = new FormData(); fd.append('file', selectedFile);
+      const r = await fetch('/api/analyze-file', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Sunucu hatası');
+      correctedText = data.correctedText || '';
+      renderResults(data, res);
+      setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun`, 'ok');
+    } else {
+      const text = document.getElementById('inputText').value.trim();
+      if (!text) throw new Error('Metin boş.');
+      const data = await api('POST', '/api/analyze', { text });
+      if (data.error) throw new Error(data.error);
+      correctedText = data.correctedText || '';
+      renderResults(data, res);
+      setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun`, 'ok');
+    }
+    if (me?.role === 'admin') refreshBadges();
+  } catch (e) {
+    res.innerHTML = `<div class="loading-box" style="color:var(--red)">⚠ ${e.message}</div>`;
+    setStatus('Başarısız.', 'err');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Tekrar Denetle';
+}
+
+async function runBatch(res) {
+  if (!batchFiles.length) throw new Error('Dosya seçilmedi.');
+  res.innerHTML = `<div class="loading-box"><div class="spin"></div><p>${batchFiles.length} dosya sırayla denetleniyor...</p></div>`;
+  const fd = new FormData();
+  batchFiles.forEach(f => fd.append('files', f));
+  const r = await fetch('/api/analyze-batch', { method: 'POST', body: fd });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || 'Sunucu hatası');
+  const items = (data.results || []).map(item => {
+    const ok = item.success;
+    const sc = item.score || 0;
+    const pc = sc >= 80 ? 'sp-high' : sc >= 60 ? 'sp-mid' : 'sp-low';
+    return `<div class="batch-item">
+      <span class="batch-icon">${ok ? '✅' : '❌'}</span>
+      <span style="flex:1;font-size:14px">${esc(item.filename)}</span>
+      ${ok ? `<span class="score-pill ${pc}">${sc}/100</span><span class="mono" style="font-size:11px;color:var(--ink3);margin-left:8px">${item.totalErrors||0} sorun</span>` : `<span style="color:var(--red);font-size:13px">${esc(item.error||'')}</span>`}
+    </div>`;
+  }).join('');
+  res.innerHTML = `<div style="background:var(--white);border:1px solid var(--bord2)"><div style="padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border);font-weight:600">Toplu Denetim Sonuçları — ${batchFiles.length} dosya</div>${items}</div>`;
+  setStatus(`✓ Tamamlandı — ${batchFiles.length} dosya işlendi.`, 'ok');
+}
+
+function renderResults(d, container) {
+  const cats = d.categories || {};
+  const sc = d.score || 0;
+  const fc = sc >= 80 ? 'sf-high' : sc >= 55 ? 'sf-mid' : 'sf-low';
+  const vc = sc >= 80 ? 'sv-green' : sc >= 55 ? 'sv-gold' : 'sv-red';
+  const catDefs = [
+    { key:'sozluk', label:'Efendimizin Sözlüğü' },
+    { key:'imla', label:'İmla Rehberi' },
+    { key:'noktalama', label:'Noktalama' },
+    { key:'etiket', label:'Etiket Standartları' },
+    { key:'yapi', label:'Metin Yapısı' }
+  ];
+  const scoreBoxes = catDefs.map(c => {
+    const cnt = cats[c.key]?.count || 0;
+    return `<div class="score-box"><div class="score-lbl">${c.label}</div><div class="score-val ${cnt>0?'sv-red':'sv-green'}">${cnt}</div></div>`;
+  }).join('');
+  const catPanels = catDefs.map((c,i) => {
+    const cat = cats[c.key]||{count:0,issues:[]};
+    const iss = (cat.issues||[]);
+    const issHtml = iss.length === 0
+      ? `<div class="empty-cat">✓ Bu kategoride sorun yok</div>`
+      : iss.map((it,j) => `<div class="issue-item" style="animation-delay:${(i*5+j)*.04}s">
+          <div class="issue-row"><div class="i-orig">${esc(it.original)}</div><div class="i-arr">→</div><div class="i-fix">${esc(it.fixed)}</div></div>
+          <div class="i-rule">${esc(it.rule||c.label)}</div></div>`).join('');
+    return `<div class="cat-panel"><div class="cat-head"><span class="cat-name">${c.label}</span><span class="cat-cnt ${cat.count>0?'cnt-err':'cnt-ok'}">${cat.count} sorun</span></div><div>${issHtml}</div></div>`;
+  }).join('');
+  container.innerHTML = `
+    <div class="score-row">
+      <div class="score-box"><div class="score-lbl">Genel Skor</div><div class="score-val ${vc}">${sc}<span style="font-size:13px;font-weight:300">/100</span></div><div class="score-track"><div class="score-fill ${fc}" style="width:${sc}%"></div></div></div>
+      ${scoreBoxes}
+    </div>
+    ${d.summary?`<div class="summary-box">${esc(d.summary)}</div>`:''}
+    <div class="cat-grid">${catPanels}</div>
+    <div class="corrected-panel">
+      <div class="corrected-head"><h3>Düzeltilmiş Metin</h3><button class="btn-copy" onclick="copyFixed()">Kopyala ↗</button></div>
+      <div class="corrected-body">${esc(d.correctedText||'')}</div>
+    </div>`;
+}
+
+function copyFixed() {
+  if (!correctedText) return;
+  navigator.clipboard.writeText(correctedText).then(() => setStatus('✓ Kopyalandı!', 'ok'));
+  setTimeout(() => setStatus('',''), 2500);
+}
+
+function clearAnalyze() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('resultsArea').innerHTML = '';
+  selectedFile = null; batchFiles = []; correctedText = '';
+  const d = document.getElementById('fileDrop');
+  d.className = 'file-drop';
+  d.innerHTML = `<div style="font-size:32px;margin-bottom:10px">📄</div><p>Dosyayı buraya sürükleyin veya tıklayın</p><small class="mono">.docx formatı desteklenmektedir</small>`;
+  document.getElementById('analyzeBtn').innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Denetle & Düzelt';
+  setStatus('', '');
+}
+function setStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg' + (type ? ' '+type : '');
+}
+
+// ══ HISTORY ══
+async function loadHistory() {
+  const hist = await api('GET', '/api/history');
+  const el = document.getElementById('histContent');
+  const isAdmin = me?.role === 'admin';
+  if (!hist?.length) { el.innerHTML = '<div class="empty-state">Henüz denetim yapılmamış.</div>'; return; }
+  el.innerHTML = `<table class="data-table">
+    <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th>${isAdmin?'<th>İşlem</th>':''}</tr></thead>
+    <tbody>${hist.map(h => {
+      const sc=h.score||0, pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
+      const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const stCls = h.status==='onaylandi'?'sb-ok':h.status==='reddedildi'?'sb-no':'sb-wait';
+      const stLabel = h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':'Bekliyor';
+      return `<tr>
+        <td class="mono" style="font-size:11px">${dt}</td>
+        ${isAdmin?`<td>${esc(h.name)}</td>`:''}
+        <td>${esc(h.filename)}</td>
+        <td><span class="score-pill ${pc}">${sc}/100</span></td>
+        <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
+        <td><span class="status-badge ${stCls}">${stLabel}</span></td>
+        ${isAdmin?`<td style="display:flex;gap:6px">
+          ${h.correctedText?`<button class="btn-sec" style="padding:4px 10px;font-size:10px" onclick="showDetail(${JSON.stringify(h.correctedText).replace(/'/g,"\\'")})"">Görüntüle</button>`:''}
+          ${h.status==='bekliyor'||!h.status?`<button class="btn-green" style="padding:4px 10px;font-size:10px" onclick="approveItem('${h.id}')">Onayla</button><button class="btn-danger" style="padding:4px 10px;font-size:10px" onclick="rejectItem('${h.id}')">Reddet</button>`:''}
+        </td>`:''}
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function showDetail(text) {
+  document.getElementById('detailBody').textContent = text;
+  window._detailText = text;
+  document.getElementById('detailModal').classList.add('open');
+}
+function copyDetail() {
+  navigator.clipboard.writeText(window._detailText||'');
+  closeModal('detailModal');
+}
+
+async function approveItem(id) {
+  await api('POST', `/api/history/${id}/approve`);
+  loadHistory(); refreshBadges();
+}
+async function rejectItem(id) {
+  await api('POST', `/api/history/${id}/reject`);
+  loadHistory(); refreshBadges();
+}
+
+// ══ CSV ══
+function downloadCSV() { window.open('/api/history/csv', '_blank'); }
+
+// ══ DASHBOARD ══
+async function loadDash() {
+  const el = document.getElementById('dashContent');
+  const stats = await api('GET', '/api/stats');
+  if (stats.error) { el.innerHTML = '<div class="empty-state">Yüklenemedi.</div>'; return; }
+  const t = stats.totals;
+
+  const catColors = { sozluk:'#8b6914', imla:'#8b1a1a', noktalama:'#1a3d6b', etiket:'#1a5c2a', yapi:'#7a3a0a' };
+  const catLabels = { sozluk:'Sözlük', imla:'İmla', noktalama:'Noktalama', etiket:'Etiket', yapi:'Yapı' };
+  const maxCat = Math.max(...Object.values(stats.catTotals), 1);
+
+  const catBars = Object.entries(stats.catTotals).map(([k,v]) =>
+    `<div class="bar-row">
+      <div class="bar-label">${catLabels[k]||k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxCat*100)}%;background:${catColors[k]||'var(--gold)'}"></div></div>
+      <div class="bar-val">${v}</div>
+    </div>`).join('');
+
+  const maxUser = Math.max(...(stats.perUser||[]).map(u=>u.count), 1);
+  const userBars = (stats.perUser||[]).slice(0,8).map(u =>
+    `<div class="bar-row">
+      <div class="bar-label">${esc(u.name)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(u.count/maxUser*100)}%;background:var(--gold)"></div></div>
+      <div class="bar-val">${u.count}</div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-lbl">Toplam Denetim</div><div class="stat-val">${t.allTime}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Son 30 Gün</div><div class="stat-val gold">${t.last30}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Aktif Kullanıcı</div><div class="stat-val">${t.activeUsers}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Ort. Skor</div><div class="stat-val ${t.avgScore>=80?'green':t.avgScore>=60?'gold':'red'}">${t.avgScore}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Onay Bekleyen</div><div class="stat-val orange">${t.pendingApproval}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Okunmamış Uyarı</div><div class="stat-val red">${t.unreadAlerts}</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="dash-card-head">Hata Kategorileri (Toplam)</div>
+        <div class="dash-card-body">${catBars||'<div class="empty-state">Veri yok</div>'}</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-head">Kullanıcı Başına Denetim Sayısı</div>
+        <div class="dash-card-body">${userBars||'<div class="empty-state">Veri yok</div>'}</div>
+      </div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-head">Son 14 Gün — Günlük Denetim Sayısı</div>
+      <div class="dash-card-body"><div class="chart-wrap"><canvas id="dailyChart"></canvas></div></div>
+    </div>
+    <div class="dash-card" style="margin-top:16px">
+      <div class="dash-card-head">Kullanıcı Performans Tablosu</div>
+      <div class="dash-card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr><th>Kullanıcı</th><th>Denetim</th><th>Ort. Skor</th><th>Ort. Hata</th></tr></thead>
+          <tbody>${(stats.perUser||[]).map(u=>{
+            const pc=u.avgScore>=80?'sp-high':u.avgScore>=60?'sp-mid':'sp-low';
+            return `<tr><td><strong>${esc(u.name)}</strong></td><td class="mono">${u.count}</td><td><span class="score-pill ${pc}">${u.avgScore}/100</span></td><td class="mono">${u.avgErrors}</td></tr>`;
+          }).join('')||'<tr><td colspan="4" class="empty-state">Veri yok</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Mini bar chart using canvas
+  const daily = stats.daily || [];
+  setTimeout(() => drawChart(daily), 50);
+}
+
+function drawChart(daily) {
+  const canvas = document.getElementById('dailyChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth; const H = 120;
+  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const max = Math.max(...daily.map(d=>d.count), 1);
+  const pad = { l:30, r:10, t:10, b:30 };
+  const bw = (W - pad.l - pad.r) / daily.length;
+  ctx.clearRect(0,0,W,H);
+  daily.forEach((d,i) => {
+    const bh = ((d.count/max) * (H-pad.t-pad.b));
+    const x = pad.l + i*bw + bw*.15;
+    const y = H - pad.b - bh;
+    ctx.fillStyle = d.count > 0 ? '#8b6914' : '#cfc4b0';
+    ctx.fillRect(x, y, bw*.7, bh);
+    if (i % 2 === 0) {
+      ctx.fillStyle = '#7a6e5e';
+      ctx.font = `${9*devicePixelRatio/devicePixelRatio}px JetBrains Mono,monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(d.label, pad.l + i*bw + bw/2, H-pad.b+12);
+    }
+    if (d.count > 0) {
+      ctx.fillStyle = '#1a1410';
+      ctx.font = `bold ${9*devicePixelRatio/devicePixelRatio}px JetBrains Mono,monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(d.count, pad.l + i*bw + bw/2, y-3);
+    }
+  });
+}
+
+// ══ ONAY ══
+async function loadOnay() {
+  const hist = await api('GET', '/api/history');
+  const el = document.getElementById('onayContent');
+  const pending = (hist||[]).filter(h => !h.status || h.status === 'bekliyor');
+  if (!pending.length) { el.innerHTML = '<div class="empty-state">✓ Onay bekleyen denetim yok.</div>'; return; }
+  el.innerHTML = `<table class="data-table">
+    <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Dosya</th><th>Skor</th><th>Sorun</th><th>İşlem</th></tr></thead>
+    <tbody>${pending.map(h=>{
+      const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
+      const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      return `<tr>
+        <td class="mono" style="font-size:11px">${dt}</td>
+        <td><strong>${esc(h.name)}</strong></td>
+        <td>${esc(h.filename)}</td>
+        <td><span class="score-pill ${pc}">${sc}/100</span></td>
+        <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
+        <td style="display:flex;gap:6px">
+          ${h.correctedText?`<button class="btn-sec" style="padding:4px 10px;font-size:10px" onclick="showDetail(${JSON.stringify(h.correctedText).replace(/'/g,"\\'")})"">Görüntüle</button>`:''}
+          <button class="btn-green" style="padding:4px 10px;font-size:10px" onclick="approveItem('${h.id}')">✓ Onayla</button>
+          <button class="btn-danger" style="padding:4px 10px;font-size:10px" onclick="rejectItem('${h.id}')">✗ Reddet</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+// ══ ALERTS ══
+async function loadAlerts() {
+  const alerts = await api('GET', '/api/alerts');
+  const el = document.getElementById('alertsContent');
+  if (!alerts?.length) { el.innerHTML = '<div class="empty-state">Uyarı yok.</div>'; return; }
+  el.innerHTML = `<div style="background:var(--white);border:1px solid var(--bord2)">${alerts.map(a => `
+    <div class="alert-item ${a.read?'':'unread'}">
+      <div class="alert-dot ${a.read?'read':''}"></div>
+      <div class="alert-msg">${esc(a.message)}</div>
+      <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+      ${!a.read?`<button class="btn-sec" style="padding:3px 9px;font-size:10px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
+    </div>`).join('')}</div>`;
+}
+
+async function readAlert(id) {
+  await api('POST', `/api/alerts/${id}/read`);
+  loadAlerts(); refreshBadges();
+}
+async function readAllAlerts() {
+  await api('POST', '/api/alerts/read-all');
+  loadAlerts(); refreshBadges();
+}
+
+// ══ BADGES ══
+async function refreshBadges() {
+  const stats = await api('GET', '/api/stats');
+  if (stats.error) return;
+  const ab = document.getElementById('alertBadge');
+  const ob = document.getElementById('onayBadge');
+  const ua = stats.totals.unreadAlerts;
+  const pa = stats.totals.pendingApproval;
+  ab.style.display = ua > 0 ? '' : 'none';
+  ab.textContent = ua > 9 ? '9+' : ua;
+  ob.style.display = pa > 0 ? '' : 'none';
+  ob.textContent = pa > 9 ? '9+' : pa;
+}
+
+// ══ USERS ══
+async function loadUsers() {
+  const users = await api('GET', '/api/users');
+  const el = document.getElementById('userTableWrap');
+  if (!users?.length) { el.innerHTML = '<div class="empty-state">Kullanıcı yok.</div>'; return; }
+  el.innerHTML = `<table class="data-table">
+    <thead><tr><th>Ad Soyad</th><th>Kullanıcı Adı</th><th>Rol</th><th>Durum</th><th>Kayıt</th><th></th></tr></thead>
+    <tbody>${users.map(u=>`<tr>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td class="mono" style="font-size:11px">${esc(u.username)}</td>
+      <td><span class="role-pill ${u.role==='admin'?'rp-admin':'rp-user'}">${u.role==='admin'?'Yönetici':'Ekip Üyesi'}</span></td>
+      <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Devre Dışı'}</td>
+      <td class="mono" style="font-size:10px">${new Date(u.createdAt).toLocaleDateString('tr-TR')}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-sec" style="padding:4px 10px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>
+        ${u.role!=='admin'?`<button class="btn-danger" style="padding:4px 10px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function openAddUser() {
+  ['nuName','nuUsername','nuPassword'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nuRole').value='user';
+  document.getElementById('nuErr').textContent='';
+  document.getElementById('addUserModal').classList.add('open');
+}
+async function addUser() {
+  const name=document.getElementById('nuName').value.trim();
+  const username=document.getElementById('nuUsername').value.trim();
+  const password=document.getElementById('nuPassword').value;
+  const role=document.getElementById('nuRole').value;
+  if (!name||!username||!password){document.getElementById('nuErr').textContent='Tüm alanlar zorunlu.';return;}
+  if (password.length<6){document.getElementById('nuErr').textContent='Şifre en az 6 karakter.';return;}
+  const r=await api('POST','/api/users',{name,username,password,role});
+  if (r.error){document.getElementById('nuErr').textContent=r.error;return;}
+  closeModal('addUserModal');loadUsers();
+}
+
+function openEditUser(id,name,role,active){
+  document.getElementById('euId').value=id;
+  document.getElementById('euName').value=name;
+  document.getElementById('euPassword').value='';
+  document.getElementById('euRole').value=role;
+  document.getElementById('euActive').value=String(active);
+  document.getElementById('euErr').textContent='';
+  document.getElementById('editUserModal').classList.add('open');
+}
+async function saveEditUser(){
+  const id=document.getElementById('euId').value;
+  const name=document.getElementById('euName').value.trim();
+  const password=document.getElementById('euPassword').value;
+  const role=document.getElementById('euRole').value;
+  const active=document.getElementById('euActive').value==='true';
+  if (!name){document.getElementById('euErr').textContent='Ad zorunlu.';return;}
+  const body={name,role,active};if(password)body.password=password;
+  const r=await api('PUT',`/api/users/${id}`,body);
+  if (r.error){document.getElementById('euErr').textContent=r.error;return;}
+  closeModal('editUserModal');loadUsers();
+}
+async function deleteUser(id,name){
+  if(!confirm(`"${name}" silinsin mi?`))return;
+  const r=await api('DELETE',`/api/users/${id}`);
+  if(r.error){alert(r.error);return;}loadUsers();
+}
+
+// ══ RULES ══
+async function loadRules() {
+  const r = await api('GET', '/api/rules');
+  document.getElementById('rulesEditor').value = r.rules || '';
+}
+async function saveRules() {
+  const rules = document.getElementById('rulesEditor').value;
+  const r = await api('PUT', '/api/rules', { rules });
+  const el = document.getElementById('ruleStatus');
+  if (r.error) { el.textContent = '⚠ Kaydedilemedi.'; el.className='status-msg err'; }
+  else { el.textContent = '✓ Kaydedildi!'; el.className='status-msg ok'; }
+  setTimeout(() => { el.textContent=''; el.className='status-msg'; }, 3000);
+}
+async function resetRules() {
+  if (!confirm('Kurallar varsayılana döndürülsün mü?')) return;
+  const r = await api('POST', '/api/rules/reset');
+  if (r.rules) document.getElementById('rulesEditor').value = r.rules;
+  const el = document.getElementById('ruleStatus');
+  el.textContent = '✓ Varsayılana döndürüldü.'; el.className='status-msg ok';
+  setTimeout(() => { el.textContent=''; el.className='status-msg'; }, 3000);
+}
+
+// ══ PROFILE ══
+async function changePassword() {
+  const oldPassword=document.getElementById('oldPass').value;
+  const newPassword=document.getElementById('newPass').value;
+  const newPassword2=document.getElementById('newPass2').value;
+  const el=document.getElementById('passErr');
+  el.textContent=''; el.style.color='';
+  if(!oldPassword||!newPassword){el.textContent='Tüm alanlar zorunlu.';return;}
+  if(newPassword.length<6){el.textContent='Yeni şifre en az 6 karakter.';return;}
+  if(newPassword!==newPassword2){el.textContent='Şifreler eşleşmiyor.';return;}
+  const r=await api('POST','/api/auth/change-password',{oldPassword,newPassword});
+  if(r.error){el.textContent=r.error;return;}
+  el.style.color='var(--green)';el.textContent='✓ Şifre güncellendi.';
+  ['oldPass','newPass','newPass2'].forEach(id=>document.getElementById(id).value='');
+  setTimeout(()=>{el.textContent='';el.style.color='';},3000);
+}
+
+// ══ HELPERS ══
+async function api(method,url,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(url,opts);return r.json();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter')analyze();});
+</script>
+</body>
+</html>
