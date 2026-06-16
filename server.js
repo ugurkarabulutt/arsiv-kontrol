@@ -371,6 +371,7 @@ async function openaiText(text) {
     body: JSON.stringify({
       model: 'gpt-4o',
       max_tokens: 8000,
+      temperature: 0,
       messages: [
         { role: 'system', content: buildSystemPrompt() },
         { role: 'user', content: `Metni denetle:\n\n${text}` }
