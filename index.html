@@ -334,7 +334,7 @@ canvas{width:100%!important;}
         <button class="itab" onclick="switchInner('batch')">Toplu Yükleme</button>
       </div>
       <div class="itab-panel active" id="ipanel-text">
-        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..."></textarea>
+        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" style="overflow:hidden;resize:none;min-height:180px"></textarea>
       </div>
       <div class="itab-panel" id="ipanel-file">
         <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()" ondragover="fdOver(event)" ondragleave="fdLeave()" ondrop="fdDrop(event)">
