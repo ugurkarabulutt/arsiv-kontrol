@@ -10,7 +10,7 @@ const mammoth  = require('mammoth');
 const app    = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const DATA_FILE         = path.join(__dirname, 'data', 'db.json');
 const RULES_FILE        = path.join(__dirname, 'data', 'rules.txt');
@@ -30,25 +30,69 @@ app.use(express.static(__dirname));
 const DEFAULT_RULES = `════════════════════════════════════════
 KURAL 1 — EFENDİMİZİN SÖZLÜĞÜ
 ════════════════════════════════════════
-Allahû Tealâ, Allah'ın, Allah'a, Allah'tan, âyet, âyet-i kerime, Kur'ân,
-hadîs, hadîs-i şerif, sahâbe, Efendimiz'in, Efendimiz (S.A.V), (R.A), (A.S),
-mü'min, nefs, îmân, tilâvet, huşû, daimî, inşaallah, velî, resûl, nebî,
-dîn, tâbî, ni'met, ulûl'elbab, Nefs-i Emmare, Nefs-i Levvame, Nefs-i Mülhime,
-Nefs-i Mutmainne, Nefs-i Radiye, Nefs-i Mardiyye, Nefs-i Tezkiye,
-hidayet, takva, îmân, âlem, azîm, ebedî, ciddî, dergâh, kelâm,
-Sıratı Mustakîm, Tarîki Mustakîm, kıyâmet, mahlûk, manevî, mânâ,
-Rahmân, Rahîm, rızık, salâvât, şefaat, tövbe, Tövbe-i Nasuh,
-Eûzubillâhimineşşeytânirracîm, Bismillâhirrahmânirrahîm
+Aşağıdaki kelimeler MUTLAKA bu şekilde yazılmalıdır.
+Metinde farklı yazılmışsa düzelt:
+
+Allahû Tealâ
+Allah'ın, Allah'a, Allah'tan
+âyet, âyet-i kerime
+Kur'ân
+hadîs, hadîs-i şerif
+sahâbe
+Efendimiz'in (kesme işareti zorunlu)
+Efendimiz (S.A.V)
+mü'min
+nefs (nefis değil)
+îmân
+tilâvet
+huşû
+daimî
+inşaallah
+velî
+resûl (küçük harf, özel isim değilse)
+nebî
+dîn
+tâbî
+ni'met
+ulûl'elbab
+hidayet (hidâyet değil)
+takva
+âlem
+azîm
+ebedî
+ciddî
+dergâh
+kelâm
+Sıratı Mustakîm
+Tarîki Mustakîm
+kıyâmet
+mahlûk
+manevî
+mânâ
+Rahmân, Rahîm
+rızık
+salâvât
+şefaat
+tövbe, Tövbe-i Nasuh
+Eûzubillâhimineşşeytânirracîm
+Bismillâhirrahmânirrahîm
+fırkayı naciye
+gayy yolu
+sebîli gayy
+âdâp
+likâallah
 
 ════════════════════════════════════════
-KURAL 2 — İMLÂ REHBERİ (Yanlış → Doğru)
+KURAL 2 — İMLÂ (Yanlış → Doğru)
 ════════════════════════════════════════
-Allah Teala / Allahu Teala → Allahû Tealâ
+Allah Teala → Allahû Tealâ
+Allahu Teala → Allahû Tealâ
 Resul → resûl
 Veli → velî
 Nebi → nebî
 Din → dîn
 Ayet → âyet
+Ayet-i kerime → âyet-i kerime
 Kuran → Kur'ân
 Mumin → mü'min
 Tabi → tâbî
@@ -63,39 +107,70 @@ Sallallahu aleyhi vesellem → (S.A.V)
 hadis → hadîs
 Radıyallahu anh → (R.A)
 Aleyhisselam → (A.S)
-ulül elbab → ulûl'elbab
+ulül elbab / ululelbab / ulul elbab → ulûl'elbab
 tilavet → tilâvet
 huşu → huşû
 daimi → daimî
 
 ════════════════════════════════════════
-KURAL 3 — NOKTALAMA
+KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
 ════════════════════════════════════════
-- Konuşma çizgisi (---) sonrası mutlaka boşluk: "--- Söz"
-- Tırnak açıldıktan sonra boşluk bırakılmaz
-- Tırnak içinde cümle tamamlandığında noktalama tırnağın içinde
-- Özel isimler ve rakamlara ek kesme işareti: Allah'a, Kur'ân'dan, 2024'te
-- Nokta/virgül/iki nokta sonrası tek boşluk
-- "E, ee, şey" gibi dolgu sesler silinmeli
+- Peygamber Efendimiz, Allah Resûlü, Hz. Muhammed → mutlaka (S.A.V) ekle
+- Sallallahu aleyhi vesellem gibi uzun yazılmışsa → (S.A.V) olarak kısalt
+- Resûlullah'tan sonra (S.A.V) yazılabilir veya yazılmayabilir
+- Tüm nebî isimlerinde mutlaka (A.S) ekle: Musa (A.S), Nuh (A.S), İsa (A.S)
+- Mehdi (A.S) — mutlaka (A.S) ekle
 
 ════════════════════════════════════════
-KURAL 4 — ETİKET STANDARTLARI
+KURAL 4 — NOKTALAMA
+════════════════════════════════════════
+- Özel isimlere ek geldiğinde kesme işareti zorunlu:
+  Allah'a, Kur'ân'dan, Efendimiz'in, Sıratı Mustakîm'e
+- Tırnak işaretleri: Türkçe tırnak kullan " "
+- Tırnak açıldıktan sonra boşluk bırakma
+- Cümle tırnakla bitiyorsa nokta tırnağın içinde olmalı: "...vermiştir."
+- Nokta, virgül, iki nokta sonrası tek boşluk
+- "E, ee, şey, yani" gibi dolgu sesler silinmeli
+- Konuşma çizgisi (—) sonrası boşluk bırak
+
+════════════════════════════════════════
+KURAL 5 — ALLAHÛ TEALÂ'NIN SÖZLERİ VE ZAMİRLER
+════════════════════════════════════════
+- Allahû Tealâ'nın sözleri "....." içinde yazılmalı
+- Allahû Tealâ'ya ait şahıs zamirleri büyük harf ile başlamalı:
+  Ben, Biz, Benim, Kendisine, Zat'ına, O (Allah için)
+- Örnek doğru: "...Benim katımda senin yerin yok."
+- Örnek yanlış: "...benim katımda senin yerin yok."
+
+════════════════════════════════════════
+KURAL 6 — METİN YAPISI VE PARAGRAF DÜZENİ
+════════════════════════════════════════
+- Metin paragraflar halinde olmalı, alt alta satırlar halinde değil
+- Paragraflar arasında mutlaka boş satır bırak
+- "Sevgili kardeşlerim" ifadesi metinde varsa koru, yoksa ekleme
+- "Allah razı olsun" ifadesi metinde varsa son cümlenin devamına yaz (virgül veya noktalı virgülle bağla), asla ayrı satıra alma, yoksa ekleme
+- Âyetlerden ve uzun alıntılardan önce ve sonra boş satır bırak
+- Hocamız'ın ifadesi değiştirilmemeli, sadece imlâ ve noktalama düzeltilmeli
+- "E, ee, slaytı gösterelim, slayta bakalım" gibi dolgu ifadeler silinmeli
+- "Resûl" kelimesi cümle içinde özel isim olarak kullanılıyorsa büyük R ile yazılmalı: "Bu Resûl, devrin imamıdır."
+
+════════════════════════════════════════
+KURAL 7 — SAYILAR
+════════════════════════════════════════
+- Efendimizin öğrettiği Allah'ın dizaynıyla ilgili sayılar rakamla yazılmalı:
+  7 safha, 4 teslim, 28 basamak, 12 ihsan, 7 furkan,
+  7 safha takva, 7 safha hidayet
+- Diğer sayılar yazıyla yazılabilir
+
+════════════════════════════════════════
+KURAL 8 — ETİKETLER
 ════════════════════════════════════════
 - Her etiket kelimesi büyük harfle başlamalı
-- Etiketler virgülle ayrılmalı, "ve" bağlacı kullanılmamalı
+- Etiketler araya virgül konarak yazılmalı: Hidayet, Zikir, Takva
+- "ve" bağlacı kullanılmamalı
 - Etiket bölümünde soru yazılmamalı
 - Etiketlerin sonuna nokta konmamalı
-- Âyet etiketleri: "Yûnus 7" formatında
-
-════════════════════════════════════════
-KURAL 5 — METİN YAPISI
-════════════════════════════════════════
-- Sorular "Muhterem Hocam" veya "Kıymetli Hocam" ile başlamalı
-- Konuşmalar paragraf halinde olmalı (alt alt satır değil)
-- Allahû Tealâ'nın sözleri "....." içinde
-- Allahû Tealâ'ya ait zamirler büyük: Benim, Kendisine, Ben, Biz
-- "Allah razı olsun" son cümlenin devamına yazılmalı
-- Efendimizin öğrettiği sayılar rakamla: 7 safha, 4 teslim, 28 basamak`;
+- Âyet etiketleri: "Yûnus 7" formatında`;
 
 // ── DB helpers ─────────────────────────────────────────────────────────────
 function loadDB() {
@@ -234,7 +309,7 @@ app.get('/api/history/csv', auth, admin, (req, res) => {
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="arsiv-gecmis-${Date.now()}.csv"`);
-  res.send('\uFEFF' + csv); // BOM for Excel Turkish char support
+  res.send('\uFEFF' + csv);
 });
 
 // ── APPROVAL ──────────────────────────────────────────────────────────────
@@ -284,11 +359,9 @@ app.get('/api/stats', auth, admin, (req, res) => {
   const hist = db.history || [];
   const users = db.users.filter(u => u.active);
 
-  // Last 30 days
   const now = Date.now();
   const day30 = hist.filter(h => now - new Date(h.createdAt).getTime() < 30 * 864e5);
 
-  // Per user stats
   const perUser = {};
   hist.forEach(h => {
     if (!perUser[h.userId]) perUser[h.userId] = { name: h.name, count: 0, scoreSum: 0, errors: 0 };
@@ -297,13 +370,11 @@ app.get('/api/stats', auth, admin, (req, res) => {
     perUser[h.userId].errors += h.totalErrors || 0;
   });
 
-  // Category totals
   const catTotals = { sozluk: 0, imla: 0, noktalama: 0, etiket: 0, yapi: 0 };
   hist.forEach(h => {
     if (h.catCounts) Object.keys(catTotals).forEach(k => catTotals[k] += h.catCounts[k] || 0);
   });
 
-  // Daily chart (last 14 days)
   const daily = [];
   for (let i = 13; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
@@ -315,10 +386,7 @@ app.get('/api/stats', auth, admin, (req, res) => {
     daily.push({ label, count: dayItems.length, avgScore: dayItems.length ? Math.round(dayItems.reduce((s,h) => s+(h.score||0),0)/dayItems.length) : 0 });
   }
 
-  // Alerts (unread)
   const unreadAlerts = (db.alerts||[]).filter(a => !a.read).length;
-
-  // Pending approvals
   const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
 
   res.json({
@@ -343,17 +411,19 @@ app.get('/api/stats', auth, admin, (req, res) => {
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
 function buildSystemPrompt() {
   const rules = loadRules();
-return `Sen "Arşiv Soru ve Cevap Ekibi" için özel bir denetim asistanısın. Görevin yalnızca cevap metinlerini denetlemek ve düzeltmektir.
+  return `Sen "Arşiv Kontrol AI" sistemisin. Görevin yalnızca cevap metinlerini verilen kurallara göre denetlemek ve düzeltmektir.
 
 NASIL ÇALIŞACAKSIN:
-1. Önce metni baştan sona kelime kelime oku, tüm imlâ hatalarını tespit et.
-2. Sonra metni tekrar baştan sona oku, noktalama ve yapı hatalarını tespit et.
-3. Tespit ettiğin HER hatayı hem bulgular bölümüne yaz hem de düzeltilmiş metne mutlaka uygula.
+1. Metni baştan sona kelime kelime oku — tüm imlâ hatalarını tespit et.
+2. Metni tekrar baştan sona oku — noktalama ve yapı hatalarını tespit et.
+3. Tespit ettiğin HER hatayı hem bulgular bölümüne yaz HEM DE düzeltilmiş metne mutlaka uygula.
 4. Aynı hata birden fazla yerde geçiyorsa tümünü düzelt, sadece birini değil.
 5. Anlam değişikliği yapma, cümle ekleme veya çıkarma, sadeleştirme yapma.
 6. Yalnızca imlâ, noktalama ve yapı kurallarını uygula.
-
-Aşağıdaki kurallara göre metni eksiksiz kontrol et ve düzelt.
+7. Paragraflar arasında mutlaka boş satır bırak.
+8. "Allah razı olsun" ifadesi varsa son cümlenin devamına yaz, asla ayrı satıra alma.
+9. "Bu Resûl" gibi kullanımlarda Resûl büyük R ile kalmalı — özel isim olarak kullanılıyor.
+10. Tırnak içinde biten cümlelerde nokta tırnağın içinde olmalı: "...vermiştir."
 
 ${rules}
 
@@ -423,7 +493,6 @@ function saveHistory(req, result, filename) {
   db.history.push(entry);
   if (db.history.length > 1000) db.history = db.history.slice(-1000);
 
-  // Low score alert
   if ((result.score || 0) < LOW_SCORE_THRESHOLD) {
     if (!db.alerts) db.alerts = [];
     db.alerts.push({
@@ -460,7 +529,6 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Toplu denetim
 app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.files?.length) return res.status(400).json({ error: 'Dosya bulunamadı.' });
@@ -477,7 +545,7 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   res.json({ results });
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Arşiv Kontrol v3: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`));
