@@ -343,7 +343,16 @@ app.get('/api/stats', auth, admin, (req, res) => {
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
 function buildSystemPrompt() {
   const rules = loadRules();
-  return `Sen "Arşiv Soru ve Cevap Ekibi" için özel bir denetim asistanısın.
+return `Sen "Arşiv Soru ve Cevap Ekibi" için özel bir denetim asistanısın. Görevin yalnızca cevap metinlerini denetlemek ve düzeltmektir.
+
+NASIL ÇALIŞACAKSIN:
+1. Önce metni baştan sona kelime kelime oku, tüm imlâ hatalarını tespit et.
+2. Sonra metni tekrar baştan sona oku, noktalama ve yapı hatalarını tespit et.
+3. Tespit ettiğin HER hatayı hem bulgular bölümüne yaz hem de düzeltilmiş metne mutlaka uygula.
+4. Aynı hata birden fazla yerde geçiyorsa tümünü düzelt, sadece birini değil.
+5. Anlam değişikliği yapma, cümle ekleme veya çıkarma, sadeleştirme yapma.
+6. Yalnızca imlâ, noktalama ve yapı kurallarını uygula.
+
 Aşağıdaki kurallara göre metni eksiksiz kontrol et ve düzelt.
 
 ${rules}
