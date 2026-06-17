@@ -29,10 +29,16 @@ create table if not exists public.history (
   status         text default 'bekliyor',
   approved_by    text,
   approved_at    timestamptz,
+  text_hash      text,                    -- tekrar-gönderim kontrolü (ilk 100 karakter + uzunluk)
   created_at     timestamptz not null default now()
 );
 create index if not exists history_created_at_idx on public.history (created_at desc);
 create index if not exists history_user_id_idx    on public.history (user_id);
+create index if not exists history_text_hash_idx  on public.history (user_id, text_hash);
+
+-- Mevcut bir veritabanına sonradan eklemek için (history zaten varsa):
+alter table public.history add column if not exists text_hash text;
+create index if not exists history_text_hash_idx on public.history (user_id, text_hash);
 
 -- ── alerts ─────────────────────────────────────────────────────────────────
 create table if not exists public.alerts (

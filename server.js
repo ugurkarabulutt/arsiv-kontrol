@@ -224,6 +224,11 @@ async function seed() {
     else console.log('✅ Varsayılan admin oluşturuldu (admin / admin123)');
   }
   await loadRules(); // kural satırı yoksa oluşturur
+
+  // history.text_hash kolonu var mı? (tekrar-gönderim kontrolü için)
+  const { error: thErr } = await supabase.from('history').select('text_hash').limit(1);
+  HAS_TEXT_HASH = !thErr;
+  if (!HAS_TEXT_HASH) console.warn('⚠ history.text_hash kolonu yok — tekrar-gönderim kontrolü devre dışı. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -242,13 +247,21 @@ app.post('/api/auth/login', async (req, res) => {
     req.session.username = user.username;
     req.session.name = user.name;
     req.session.role = user.role;
-    res.json({ success: true, name: user.name, role: user.role, username: user.username });
+    res.json({ success: true, id: user.id, name: user.name, role: user.role, username: user.username });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/auth/logout', (req, res) => { req.session.destroy(); res.json({ success: true }); });
 app.get('/api/auth/me', (req, res) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
-  res.json({ loggedIn: true, name: req.session.name, role: req.session.role, username: req.session.username });
+  res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
+});
+// Varsayılan admin/admin123 hâlâ kullanılıyor mu? (Kullanıcılar sekmesindeki uyarı için)
+app.get('/api/security/default-admin', auth, admin, async (req, res) => {
+  try {
+    const { data } = await supabase.from('users').select('password').eq('username', 'admin').maybeSingle();
+    const usingDefault = data ? bcrypt.compareSync('admin123', data.password) : false;
+    res.json({ usingDefault });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/auth/change-password', auth, async (req, res) => {
   try {
@@ -295,6 +308,8 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
     const { data, error } = await supabase.from('users').update(patch).eq('id', req.params.id).select('id');
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    // Admin kendi adını değiştirdiyse oturumdaki ad da güncellensin (topbar için)
+    if (req.params.id === req.session.userId && name !== undefined) req.session.name = name;
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -484,10 +499,27 @@ NASIL ÇALIŞACAKSIN:
 
 ${rules}
 
+════════════════════════════════════════
+PUANLAMA (ZORUNLU FORMÜL)
+════════════════════════════════════════
+Skor 100'den başlar ve her hata kategorinin ağırlığına göre düşülür:
+- Sözlük hatası: her biri -5
+- İmlâ hatası: her biri -4
+- Noktalama hatası: her biri -3
+- Etiket hatası: her biri -2
+- Yapı hatası: her biri -4
+Skor = max(0, 100 - toplam ceza). Sabit/keyfi puan VERME, formülü uygula.
+
+60 PUAN ALTI KURALI:
+- Eğer hesaplanan skor 60'ın altındaysa düzeltilmiş metin ÜRETME.
+- Bu durumda "correctedText" alanını boş bırak ("") ve "summary" alanına şunu yaz:
+  "${LOW_SCORE_MSG}"
+- Tüm hataları yine de kategoriler altında listele (bulgular gösterilecek).
+
 ÇIKTI FORMATI — SADECE JSON DÖN, BAŞKA HİÇBİR ŞEY YAZMA:
 {
   "score": 78,
-  "correctedText": "Düzeltilmiş tam metin...",
+  "correctedText": "Düzeltilmiş tam metin (skor 60 altındaysa boş)...",
   "categories": {
     "sozluk":    { "count": 3, "issues": [{"original": "...", "fixed": "...", "rule": "..."}] },
     "imla":      { "count": 2, "issues": [{"original": "...", "fixed": "...", "rule": "..."}] },
@@ -515,13 +547,13 @@ async function openaiText(text) {
     })
   });
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API hatası'); }
-  const d = await r.json(); return parseResult(d.choices[0].message.content);
+  const d = await r.json(); return finalizeResult(parseResult(d.choices[0].message.content));
 }
 
-async function openaiFile(buffer) {
+async function extractText(buffer) {
   const { value: text } = await mammoth.extractRawText({ buffer });
   if (!text?.trim()) throw new Error('Dosyadan metin çıkarılamadı.');
-  return openaiText(text);
+  return text;
 }
 
 function parseResult(raw) {
@@ -531,11 +563,53 @@ function parseResult(raw) {
 
 const LOW_SCORE_THRESHOLD = 60;
 
-async function saveHistory(req, result, filename) {
+// Kategori ağırlıkları — skor 100'den başlar, her hata bu kadar puan düşürür.
+const CAT_WEIGHTS = { sozluk: 5, imla: 4, noktalama: 3, etiket: 2, yapi: 4 };
+const LOW_SCORE_MSG = 'Bu metin arşiv standartlarının oldukça altında kalmaktadır. Lütfen metni gözden geçirip tekrar gönderin. Tespit edilen sorunlar aşağıda listelenmiştir.';
+const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar göndermek yerine düzeltilmiş halini kullanabilirsiniz.';
+
+let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
+
+// Metin parmak izi: ilk 100 karakter + uzunluk
+function textHash(text) {
+  const t = (text || '').trim();
+  return `${t.length}|${t.slice(0, 100)}`;
+}
+
+// AI çıktısını yetkili biçimde sonlandır: skoru ağırlıklı formülle yeniden hesapla,
+// 60 altındaysa düzeltilmiş metin üretme.
+function finalizeResult(result) {
+  const cats = result.categories || {};
+  let penalty = 0, total = 0;
+  for (const k of Object.keys(CAT_WEIGHTS)) {
+    const c = cats[k];
+    const count = Number.isFinite(c?.count) ? c.count : (Array.isArray(c?.issues) ? c.issues.length : 0);
+    penalty += count * CAT_WEIGHTS[k];
+    total += count;
+  }
+  result.score = Math.max(0, 100 - penalty);
+  result.totalErrors = total;
+  if (result.score < LOW_SCORE_THRESHOLD) {
+    result.correctedText = '';
+    result.summary = LOW_SCORE_MSG;
+  }
+  return result;
+}
+
+// Bu kullanıcı aynı metni daha önce denetledi mi?
+async function isDuplicate(req, hash) {
+  if (!HAS_TEXT_HASH) return false;
+  const { data, error } = await supabase.from('history')
+    .select('id').eq('user_id', req.session.userId).eq('text_hash', hash).limit(1);
+  if (error) { console.warn('Tekrar kontrolü uyarısı:', error.message); return false; }
+  return !!(data && data.length);
+}
+
+async function saveHistory(req, result, filename, hash) {
   const catCounts = {};
   if (result.categories) Object.keys(result.categories).forEach(k => catCounts[k] = result.categories[k].count || 0);
 
-  const { data, error } = await supabase.from('history').insert({
+  const row = {
     user_id: req.session.userId,
     username: req.session.username, name: req.session.name,
     filename: filename || 'Metin Girişi',
@@ -543,7 +617,10 @@ async function saveHistory(req, result, filename) {
     cat_counts: catCounts, summary: result.summary || '',
     corrected_text: result.correctedText || '',
     status: 'bekliyor'
-  }).select('id').single();
+  };
+  if (HAS_TEXT_HASH && hash) row.text_hash = hash;
+
+  const { data, error } = await supabase.from('history').insert(row).select('id').single();
   if (error) throw new Error(error.message);
   const entryId = data.id;
 
@@ -564,8 +641,10 @@ app.post('/api/analyze', auth, async (req, res) => {
   const { text } = req.body;
   if (!text?.trim()) return res.status(400).json({ error: 'Metin boş.' });
   try {
+    const hash = textHash(text);
+    if (await isDuplicate(req, hash)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
-    const id = await saveHistory(req, result, 'Metin Girişi');
+    const id = await saveHistory(req, result, 'Metin Girişi', hash);
     res.json({ ...result, id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -574,8 +653,11 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
-    const result = await openaiFile(req.file.buffer);
-    const id = await saveHistory(req, result, req.file.originalname);
+    const text = await extractText(req.file.buffer);
+    const hash = textHash(text);
+    if (await isDuplicate(req, hash)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    const result = await openaiText(text);
+    const id = await saveHistory(req, result, req.file.originalname, hash);
     res.json({ ...result, id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -586,8 +668,14 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   const results = [];
   for (const file of req.files) {
     try {
-      const result = await openaiFile(file.buffer);
-      const id = await saveHistory(req, result, file.originalname);
+      const text = await extractText(file.buffer);
+      const hash = textHash(text);
+      if (await isDuplicate(req, hash)) {
+        results.push({ filename: file.originalname, success: false, duplicate: true, error: DUPLICATE_MSG });
+        continue;
+      }
+      const result = await openaiText(text);
+      const id = await saveHistory(req, result, file.originalname, hash);
       results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id });
     } catch (e) {
       results.push({ filename: file.originalname, success: false, error: e.message });

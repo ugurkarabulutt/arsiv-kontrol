@@ -67,7 +67,32 @@ bir kez Supabase SQL Editor'de çalıştır.
 - Veri Supabase'de kalıcıdır; Render instance yeniden başlasa da veri kaybolmaz
   (eski `db.json` dosya tabanlı yaklaşımının aksine).
 
+## Puanlama Mantığı
+
+Skor sunucu tarafında **yetkili** olarak hesaplanır (`finalizeResult`), AI'ın döndürdüğü
+skor kullanılmaz. Formül: `100 - Σ(hata sayısı × ağırlık)`, min 0.
+Ağırlıklar: sözlük −5, imlâ −4, noktalama −3, etiket −2, yapı −4.
+Skor < 60 ise düzeltilmiş metin üretilmez (`correctedText=''`), özet alanına standart
+uyarı mesajı yazılır; hatalar yine listelenir.
+
+## Tekrar-Gönderim Kontrolü
+
+Her denetimde metnin parmak izi (`ilk 100 karakter + uzunluk`) `history.text_hash`'e
+yazılır. Aynı kullanıcı aynı metni tekrar gönderirse denetim yapılmadan uyarı döner.
+`text_hash` kolonu yoksa özellik otomatik devre dışı kalır (`HAS_TEXT_HASH` startup'ta
+tespit edilir).
+
 ## Değişiklik Günlüğü
+
+### 2026-06-18 (2. tur)
+- **Skorlama** sunucu tarafında ağırlıklı formülle yeniden yazıldı (`finalizeResult`),
+  sistem prompt'una formül eklendi.
+- **60 altı skor**: düzeltilmiş metin üretilmiyor, standart uyarı + bulgular gösteriliyor.
+- **Tekrar-gönderim kontrolü** eklendi (`text_hash`, per-user). schema.sql'e ALTER eklendi.
+- **Kullanıcı adı güncellemesi**: admin kendi adını değiştirince session + topbar yenileniyor
+  (`/api/auth/me`'ye `id`, `refreshMe()`).
+- **Varsayılan şifre uyarısı** koşullu hale getirildi (`/api/security/default-admin`).
+- **Gör butonu** ve **şifre teyidi** doğrulandı (önceki turda çözülmüştü).
 
 ### 2026-06-18
 - **CLAUDE.md eklendi** — proje hafızası ve değişiklik günlüğü başlatıldı.
