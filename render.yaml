@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: arsiv-kontrol
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false        # Render panelinden gir (gizli)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true

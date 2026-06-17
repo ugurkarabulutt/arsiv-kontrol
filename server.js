@@ -1,19 +1,28 @@
+require('dotenv').config();
 const express  = require('express');
 const session  = require('express-session');
 const bcrypt   = require('bcryptjs');
 const multer   = require('multer');
-const { v4: uuidv4 } = require('uuid');
 const path     = require('path');
-const fs       = require('fs');
 const mammoth  = require('mammoth');
+const { createClient } = require('@supabase/supabase-js');
 
 const app    = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
-const DATA_FILE         = path.join(__dirname, 'data', 'db.json');
-const RULES_FILE        = path.join(__dirname, 'data', 'rules.txt');
+const SUPABASE_URL      = process.env.SUPABASE_URL;
+const SUPABASE_KEY      = process.env.SUPABASE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('❌ SUPABASE_URL / SUPABASE_KEY tanımlı değil. .env dosyasını doldurun.');
+  process.exit(1);
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
 
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -172,131 +181,172 @@ KURAL 8 — ETİKETLER
 - Etiketlerin sonuna nokta konmamalı
 - Âyet etiketleri: "Yûnus 7" formatında`;
 
-// ── DB helpers ─────────────────────────────────────────────────────────────
-function loadDB() {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    const initial = {
-      users: [{
-        id: uuidv4(), username: 'admin',
-        password: bcrypt.hashSync('admin123', 10),
-        role: 'admin', name: 'Yönetici',
-        createdAt: new Date().toISOString(), active: true
-      }],
-      history: [],
-      alerts: []
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(initial, null, 2));
-    return initial;
-  }
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-}
-function saveDB(db) { fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2)); }
+// ── Row → API mappers (DB snake_case → frontend camelCase) ──────────────────
+const mapUser    = u => ({ id: u.id, username: u.username, name: u.name, role: u.role, active: u.active, createdAt: u.created_at });
+const mapHistory = h => ({
+  id: h.id, userId: h.user_id, username: h.username, name: h.name,
+  filename: h.filename, score: h.score, totalErrors: h.total_errors,
+  catCounts: h.cat_counts || {}, summary: h.summary, correctedText: h.corrected_text,
+  status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at, createdAt: h.created_at
+});
+const mapAlert   = a => ({
+  id: a.id, type: a.type, message: a.message, userId: a.user_id,
+  historyId: a.history_id, score: a.score, read: a.read, createdAt: a.created_at
+});
 
-function loadRules() {
-  if (!fs.existsSync(RULES_FILE)) {
-    fs.mkdirSync(path.dirname(RULES_FILE), { recursive: true });
-    fs.writeFileSync(RULES_FILE, DEFAULT_RULES, 'utf8');
+// ── Rules helpers (settings tablosunda key='rules') ─────────────────────────
+async function loadRules() {
+  const { data, error } = await supabase.from('settings').select('value').eq('key', 'rules').maybeSingle();
+  if (error) {
+    // settings tablosu yoksa/erişilemezse analiz yine de varsayılan kurallarla çalışsın
+    console.warn('Kural okuma uyarısı (varsayılana düşülüyor):', error.message);
+    return DEFAULT_RULES;
   }
-  return fs.readFileSync(RULES_FILE, 'utf8');
+  if (data?.value) return data.value;
+  await supabase.from('settings').upsert({ key: 'rules', value: DEFAULT_RULES });
+  return DEFAULT_RULES;
 }
-function saveRules(text) { fs.writeFileSync(RULES_FILE, text, 'utf8'); }
+async function saveRules(text) {
+  const { error } = await supabase.from('settings').upsert({ key: 'rules', value: text });
+  if (error) throw new Error(error.message);
+}
+
+// ── Startup seed: admin kullanıcısı + varsayılan kurallar ───────────────────
+async function seed() {
+  const { count, error } = await supabase.from('users').select('id', { count: 'exact', head: true });
+  if (error) { console.error('Seed kontrolü başarısız:', error.message); return; }
+  if (!count) {
+    const { error: insErr } = await supabase.from('users').insert({
+      username: 'admin', password: bcrypt.hashSync('admin123', 10),
+      role: 'admin', name: 'Yönetici', active: true
+    });
+    if (insErr) console.error('Admin seed başarısız:', insErr.message);
+    else console.log('✅ Varsayılan admin oluşturuldu (admin / admin123)');
+  }
+  await loadRules(); // kural satırı yoksa oluşturur
+}
 
 // ── Auth middleware ────────────────────────────────────────────────────────
 const auth  = (req, res, next) => req.session?.userId ? next() : res.status(401).json({ error: 'Giriş gerekli.' });
 const admin = (req, res, next) => req.session?.role === 'admin' ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body;
-  const db = loadDB();
-  const user = db.users.find(u => u.username === username && u.active);
-  if (!user || !bcrypt.compareSync(password, user.password))
-    return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
-  req.session.userId = user.id;
-  req.session.username = user.username;
-  req.session.name = user.name;
-  req.session.role = user.role;
-  res.json({ success: true, name: user.name, role: user.role, username: user.username });
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const { data: user } = await supabase.from('users')
+      .select('*').eq('username', username).eq('active', true).maybeSingle();
+    if (!user || !bcrypt.compareSync(password, user.password))
+      return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
+    req.session.userId = user.id;
+    req.session.username = user.username;
+    req.session.name = user.name;
+    req.session.role = user.role;
+    res.json({ success: true, name: user.name, role: user.role, username: user.username });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/auth/logout', (req, res) => { req.session.destroy(); res.json({ success: true }); });
 app.get('/api/auth/me', (req, res) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
   res.json({ loggedIn: true, name: req.session.name, role: req.session.role, username: req.session.username });
 });
-app.post('/api/auth/change-password', auth, (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const db = loadDB();
-  const user = db.users.find(u => u.id === req.session.userId);
-  if (!user || !bcrypt.compareSync(oldPassword, user.password))
-    return res.status(401).json({ error: 'Mevcut şifre hatalı.' });
-  user.password = bcrypt.hashSync(newPassword, 10);
-  saveDB(db);
-  res.json({ success: true });
+app.post('/api/auth/change-password', auth, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const { data: user } = await supabase.from('users').select('*').eq('id', req.session.userId).maybeSingle();
+    if (!user || !bcrypt.compareSync(oldPassword, user.password))
+      return res.status(401).json({ error: 'Mevcut şifre hatalı.' });
+    const { error } = await supabase.from('users')
+      .update({ password: bcrypt.hashSync(newPassword, 10) }).eq('id', user.id);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── USERS ─────────────────────────────────────────────────────────────────
-app.get('/api/users', auth, admin, (req, res) => {
-  const db = loadDB();
-  res.json(db.users.map(u => ({ id: u.id, username: u.username, name: u.name, role: u.role, active: u.active, createdAt: u.createdAt })));
+app.get('/api/users', auth, admin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    res.json((data || []).map(mapUser));
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/users', auth, admin, (req, res) => {
-  const { username, password, name, role } = req.body;
-  if (!username || !password || !name) return res.status(400).json({ error: 'Tüm alanlar zorunludur.' });
-  const db = loadDB();
-  if (db.users.find(u => u.username === username)) return res.status(400).json({ error: 'Kullanıcı adı alınmış.' });
-  db.users.push({ id: uuidv4(), username, name, password: bcrypt.hashSync(password, 10), role: role || 'user', active: true, createdAt: new Date().toISOString() });
-  saveDB(db);
-  res.json({ success: true });
+app.post('/api/users', auth, admin, async (req, res) => {
+  try {
+    const { username, password, name, role } = req.body;
+    if (!username || !password || !name) return res.status(400).json({ error: 'Tüm alanlar zorunludur.' });
+    const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
+    if (existing) return res.status(400).json({ error: 'Kullanıcı adı alınmış.' });
+    const { error } = await supabase.from('users').insert({
+      username, name, password: bcrypt.hashSync(password, 10), role: role || 'user', active: true
+    });
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.put('/api/users/:id', auth, admin, (req, res) => {
-  const db = loadDB();
-  const user = db.users.find(u => u.id === req.params.id);
-  if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
-  const { name, password, role, active } = req.body;
-  if (name !== undefined)   user.name   = name;
-  if (role !== undefined)   user.role   = role;
-  if (active !== undefined) user.active = active;
-  if (password)             user.password = bcrypt.hashSync(password, 10);
-  saveDB(db);
-  res.json({ success: true });
+app.put('/api/users/:id', auth, admin, async (req, res) => {
+  try {
+    const { name, password, role, active } = req.body;
+    const patch = {};
+    if (name !== undefined)   patch.name   = name;
+    if (role !== undefined)   patch.role   = role;
+    if (active !== undefined) patch.active = active;
+    if (password)             patch.password = bcrypt.hashSync(password, 10);
+    const { data, error } = await supabase.from('users').update(patch).eq('id', req.params.id).select('id');
+    if (error) throw new Error(error.message);
+    if (!data?.length) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/users/:id', auth, admin, (req, res) => {
-  const db = loadDB();
-  const idx = db.users.findIndex(u => u.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
-  if (db.users[idx].role === 'admin') return res.status(400).json({ error: 'Yönetici silinemez.' });
-  db.users.splice(idx, 1);
-  saveDB(db);
-  res.json({ success: true });
+app.delete('/api/users/:id', auth, admin, async (req, res) => {
+  try {
+    const { data: user } = await supabase.from('users').select('role').eq('id', req.params.id).maybeSingle();
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    if (user.role === 'admin') return res.status(400).json({ error: 'Yönetici silinemez.' });
+    const { error } = await supabase.from('users').delete().eq('id', req.params.id);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── RULES ─────────────────────────────────────────────────────────────────
-app.get('/api/rules', auth, admin, (req, res) => res.json({ rules: loadRules() }));
-app.put('/api/rules', auth, admin, (req, res) => {
-  const { rules } = req.body;
-  if (!rules) return res.status(400).json({ error: 'Kural metni boş.' });
-  saveRules(rules);
-  res.json({ success: true });
+app.get('/api/rules', auth, admin, async (req, res) => {
+  try { res.json({ rules: await loadRules() }); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/rules/reset', auth, admin, (req, res) => {
-  saveRules(DEFAULT_RULES);
-  res.json({ success: true, rules: DEFAULT_RULES });
+app.put('/api/rules', auth, admin, async (req, res) => {
+  try {
+    const { rules } = req.body;
+    if (!rules) return res.status(400).json({ error: 'Kural metni boş.' });
+    await saveRules(rules);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/api/rules/reset', auth, admin, async (req, res) => {
+  try {
+    await saveRules(DEFAULT_RULES);
+    res.json({ success: true, rules: DEFAULT_RULES });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── HISTORY ───────────────────────────────────────────────────────────────
-app.get('/api/history', auth, (req, res) => {
-  const db = loadDB();
-  const isAdmin = req.session.role === 'admin';
-  let hist = isAdmin ? db.history : db.history.filter(h => h.userId === req.session.userId);
-  res.json(hist.slice().reverse().slice(0, 200));
+app.get('/api/history', auth, async (req, res) => {
+  try {
+    let q = supabase.from('history').select('*').order('created_at', { ascending: false }).limit(200);
+    if (req.session.role !== 'admin') q = q.eq('user_id', req.session.userId);
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    res.json((data || []).map(mapHistory));
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // CSV export
-app.get('/api/history/csv', auth, admin, (req, res) => {
-  const db = loadDB();
+app.get('/api/history/csv', auth, admin, async (req, res) => {
+  try {
+  const { data, error } = await supabase.from('history').select('*').order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
   const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan']];
-  db.history.slice().reverse().forEach(h => {
+  (data || []).map(mapHistory).forEach(h => {
     rows.push([
       new Date(h.createdAt).toLocaleString('tr-TR'),
       h.name || '', h.filename || '',
@@ -310,107 +360,114 @@ app.get('/api/history/csv', auth, admin, (req, res) => {
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="arsiv-gecmis-${Date.now()}.csv"`);
   res.send('\uFEFF' + csv);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── APPROVAL ──────────────────────────────────────────────────────────────
-app.post('/api/history/:id/approve', auth, admin, (req, res) => {
-  const db = loadDB();
-  const item = db.history.find(h => h.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-  item.status = 'onaylandi';
-  item.approvedBy = req.session.name;
-  item.approvedAt = new Date().toISOString();
-  saveDB(db);
-  res.json({ success: true });
-});
-app.post('/api/history/:id/reject', auth, admin, (req, res) => {
-  const db = loadDB();
-  const item = db.history.find(h => h.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-  item.status = 'reddedildi';
-  item.approvedBy = req.session.name;
-  item.approvedAt = new Date().toISOString();
-  saveDB(db);
-  res.json({ success: true });
-});
+async function setApproval(req, res, status) {
+  try {
+    const { data, error } = await supabase.from('history').update({
+      status, approved_by: req.session.name, approved_at: new Date().toISOString()
+    }).eq('id', req.params.id).select('id');
+    if (error) throw new Error(error.message);
+    if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+}
+app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req, res, 'onaylandi'));
+app.post('/api/history/:id/reject',  auth, admin, (req, res) => setApproval(req, res, 'reddedildi'));
 
 // ── ALERTS ────────────────────────────────────────────────────────────────
-app.get('/api/alerts', auth, admin, (req, res) => {
-  const db = loadDB();
-  res.json((db.alerts || []).slice().reverse().slice(0, 50));
+app.get('/api/alerts', auth, admin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(50);
+    if (error) throw new Error(error.message);
+    res.json((data || []).map(mapAlert));
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/alerts/:id/read', auth, admin, (req, res) => {
-  const db = loadDB();
-  const alert = (db.alerts || []).find(a => a.id === req.params.id);
-  if (alert) alert.read = true;
-  saveDB(db);
-  res.json({ success: true });
+app.post('/api/alerts/:id/read', auth, admin, async (req, res) => {
+  try {
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('id', req.params.id);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/alerts/read-all', auth, admin, (req, res) => {
-  const db = loadDB();
-  (db.alerts || []).forEach(a => a.read = true);
-  saveDB(db);
-  res.json({ success: true });
+app.post('/api/alerts/read-all', auth, admin, async (req, res) => {
+  try {
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── DASHBOARD STATS ───────────────────────────────────────────────────────
-app.get('/api/stats', auth, admin, (req, res) => {
-  const db = loadDB();
-  const hist = db.history || [];
-  const users = db.users.filter(u => u.active);
+app.get('/api/stats', auth, admin, async (req, res) => {
+  try {
+    const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }] = await Promise.all([
+      supabase.from('history').select('*'),
+      supabase.from('users').select('active'),
+      supabase.from('alerts').select('read')
+    ]);
+    if (hErr) throw new Error(hErr.message);
+    if (uErr) throw new Error(uErr.message);
+    if (aErr) throw new Error(aErr.message);
 
-  const now = Date.now();
-  const day30 = hist.filter(h => now - new Date(h.createdAt).getTime() < 30 * 864e5);
+    const hist = (histRows || []).map(mapHistory);
+    const users = (userRows || []).filter(u => u.active);
 
-  const perUser = {};
-  hist.forEach(h => {
-    if (!perUser[h.userId]) perUser[h.userId] = { name: h.name, count: 0, scoreSum: 0, errors: 0 };
-    perUser[h.userId].count++;
-    perUser[h.userId].scoreSum += h.score || 0;
-    perUser[h.userId].errors += h.totalErrors || 0;
-  });
+    const now = Date.now();
+    const day30 = hist.filter(h => now - new Date(h.createdAt).getTime() < 30 * 864e5);
 
-  const catTotals = { sozluk: 0, imla: 0, noktalama: 0, etiket: 0, yapi: 0 };
-  hist.forEach(h => {
-    if (h.catCounts) Object.keys(catTotals).forEach(k => catTotals[k] += h.catCounts[k] || 0);
-  });
-
-  const daily = [];
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const label = `${d.getDate()}/${d.getMonth()+1}`;
-    const dayItems = hist.filter(h => {
-      const hd = new Date(h.createdAt);
-      return hd.getDate() === d.getDate() && hd.getMonth() === d.getMonth() && hd.getFullYear() === d.getFullYear();
+    const perUser = {};
+    hist.forEach(h => {
+      if (!perUser[h.userId]) perUser[h.userId] = { name: h.name, count: 0, scoreSum: 0, errors: 0 };
+      perUser[h.userId].count++;
+      perUser[h.userId].scoreSum += h.score || 0;
+      perUser[h.userId].errors += h.totalErrors || 0;
     });
-    daily.push({ label, count: dayItems.length, avgScore: dayItems.length ? Math.round(dayItems.reduce((s,h) => s+(h.score||0),0)/dayItems.length) : 0 });
-  }
 
-  const unreadAlerts = (db.alerts||[]).filter(a => !a.read).length;
-  const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
+    const catTotals = { sozluk: 0, imla: 0, noktalama: 0, etiket: 0, yapi: 0 };
+    hist.forEach(h => {
+      if (h.catCounts) Object.keys(catTotals).forEach(k => catTotals[k] += h.catCounts[k] || 0);
+    });
 
-  res.json({
-    totals: {
-      allTime: hist.length,
-      last30: day30.length,
-      activeUsers: users.length,
-      avgScore: hist.length ? Math.round(hist.reduce((s,h)=>s+(h.score||0),0)/hist.length) : 0,
-      pendingApproval: pending,
-      unreadAlerts
-    },
-    perUser: Object.values(perUser).map(u => ({
-      name: u.name, count: u.count,
-      avgScore: u.count ? Math.round(u.scoreSum / u.count) : 0,
-      avgErrors: u.count ? Math.round(u.errors / u.count) : 0
-    })).sort((a,b) => b.count - a.count),
-    catTotals,
-    daily
-  });
+    const daily = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const label = `${d.getDate()}/${d.getMonth()+1}`;
+      const dayItems = hist.filter(h => {
+        const hd = new Date(h.createdAt);
+        return hd.getDate() === d.getDate() && hd.getMonth() === d.getMonth() && hd.getFullYear() === d.getFullYear();
+      });
+      daily.push({ label, count: dayItems.length, avgScore: dayItems.length ? Math.round(dayItems.reduce((s,h) => s+(h.score||0),0)/dayItems.length) : 0 });
+    }
+
+    const unreadAlerts = (alertRows || []).filter(a => !a.read).length;
+    const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
+
+    res.json({
+      totals: {
+        allTime: hist.length,
+        last30: day30.length,
+        activeUsers: users.length,
+        avgScore: hist.length ? Math.round(hist.reduce((s,h)=>s+(h.score||0),0)/hist.length) : 0,
+        pendingApproval: pending,
+        unreadAlerts
+      },
+      perUser: Object.values(perUser).map(u => ({
+        name: u.name, count: u.count,
+        avgScore: u.count ? Math.round(u.scoreSum / u.count) : 0,
+        avgErrors: u.count ? Math.round(u.errors / u.count) : 0
+      })).sort((a,b) => b.count - a.count),
+      catTotals,
+      daily
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
-function buildSystemPrompt() {
-  const rules = loadRules();
+async function buildSystemPrompt() {
+  const rules = await loadRules();
   return `Sen "Arşiv Kontrol AI" sistemisin. Görevin yalnızca cevap metinlerini verilen kurallara göre denetlemek ve düzeltmektir.
 
 NASIL ÇALIŞACAKSIN:
@@ -452,7 +509,7 @@ async function openaiText(text) {
       max_tokens: 8000,
       temperature: 0,
       messages: [
-        { role: 'system', content: buildSystemPrompt() },
+        { role: 'system', content: await buildSystemPrompt() },
         { role: 'user', content: `Metni denetle:\n\n${text}` }
       ]
     })
@@ -474,38 +531,32 @@ function parseResult(raw) {
 
 const LOW_SCORE_THRESHOLD = 60;
 
-function saveHistory(req, result, filename) {
-  const db = loadDB();
+async function saveHistory(req, result, filename) {
   const catCounts = {};
   if (result.categories) Object.keys(result.categories).forEach(k => catCounts[k] = result.categories[k].count || 0);
 
-  const entry = {
-    id: uuidv4(), userId: req.session.userId,
+  const { data, error } = await supabase.from('history').insert({
+    user_id: req.session.userId,
     username: req.session.username, name: req.session.name,
     filename: filename || 'Metin Girişi',
-    score: result.score || 0, totalErrors: result.totalErrors || 0,
-    catCounts, summary: result.summary || '',
-    correctedText: result.correctedText || '',
-    status: 'bekliyor',
-    createdAt: new Date().toISOString()
-  };
-
-  db.history.push(entry);
-  if (db.history.length > 1000) db.history = db.history.slice(-1000);
+    score: result.score || 0, total_errors: result.totalErrors || 0,
+    cat_counts: catCounts, summary: result.summary || '',
+    corrected_text: result.correctedText || '',
+    status: 'bekliyor'
+  }).select('id').single();
+  if (error) throw new Error(error.message);
+  const entryId = data.id;
 
   if ((result.score || 0) < LOW_SCORE_THRESHOLD) {
-    if (!db.alerts) db.alerts = [];
-    db.alerts.push({
-      id: uuidv4(), type: 'low_score',
+    await supabase.from('alerts').insert({
+      type: 'low_score',
       message: `${req.session.name} tarafından düşük skorlu metin (${result.score}/100): "${filename || 'Metin Girişi'}"`,
-      userId: req.session.userId, historyId: entry.id,
-      score: result.score, read: false,
-      createdAt: new Date().toISOString()
+      user_id: req.session.userId, history_id: entryId,
+      score: result.score, read: false
     });
   }
 
-  saveDB(db);
-  return entry.id;
+  return entryId;
 }
 
 app.post('/api/analyze', auth, async (req, res) => {
@@ -514,7 +565,7 @@ app.post('/api/analyze', auth, async (req, res) => {
   if (!text?.trim()) return res.status(400).json({ error: 'Metin boş.' });
   try {
     const result = await openaiText(text);
-    const id = saveHistory(req, result, 'Metin Girişi');
+    const id = await saveHistory(req, result, 'Metin Girişi');
     res.json({ ...result, id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -524,7 +575,7 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
     const result = await openaiFile(req.file.buffer);
-    const id = saveHistory(req, result, req.file.originalname);
+    const id = await saveHistory(req, result, req.file.originalname);
     res.json({ ...result, id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -536,7 +587,7 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   for (const file of req.files) {
     try {
       const result = await openaiFile(file.buffer);
-      const id = saveHistory(req, result, file.originalname);
+      const id = await saveHistory(req, result, file.originalname);
       results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id });
     } catch (e) {
       results.push({ filename: file.originalname, success: false, error: e.message });
@@ -548,4 +599,6 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`));
+seed()
+  .catch(e => console.error('Seed hatası:', e.message))
+  .finally(() => app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`)));
