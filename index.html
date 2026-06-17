@@ -414,7 +414,8 @@ canvas{width:100%!important;}
     <div class="modal-body">
       <div class="mfield"><label>Ad Soyad</label><input type="text" id="nuName"></div>
       <div class="mfield"><label>Kullanıcı Adı</label><input type="text" id="nuUsername" autocapitalize="none"></div>
-      <div class="mfield"><label>Şifre</label><input type="password" id="nuPassword"></div>
+      <div class="mfield"><label>Şifre</label><input type="password" id="nuPassword" autocomplete="new-password"></div>
+      <div class="mfield"><label>Şifre (Tekrar)</label><input type="password" id="nuPassword2" autocomplete="new-password"></div>
       <div class="mfield"><label>Rol</label><select id="nuRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option></select></div>
       <div class="form-err" id="nuErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeModal('addUserModal')">İptal</button><button class="btn-primary" onclick="addUser()">Ekle</button></div>
@@ -444,7 +445,7 @@ canvas{width:100%!important;}
       <div id="detailBody" style="white-space:pre-wrap;font-size:15px;line-height:1.8;color:var(--ink2);max-height:55vh;overflow-y:auto;background:var(--bg2);padding:14px;"></div>
       <div class="modal-foot" style="margin-top:12px">
         <button class="btn-sec" onclick="closeModal('detailModal')">Kapat</button>
-        <button class="btn-primary" onclick="copyDetail()">Kopyala</button>
+        <button class="btn-primary" id="copyDetailBtn" onclick="copyDetail()">Kopyala</button>
       </div>
     </div>
   </div>
@@ -452,6 +453,7 @@ canvas{width:100%!important;}
 
 <script>
 let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='';
+const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 
 (async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
 
@@ -697,6 +699,7 @@ async function loadHistory(){
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
       const stCls=h.status==='onaylandi'?'sb-ok':h.status==='reddedildi'?'sb-no':'sb-wait';
       const stTxt=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':'Bekliyor';
+      if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<tr>
         <td class="mono" style="font-size:10px;white-space:nowrap">${dt}</td>
         ${isAdmin?`<td style="font-size:12px">${esc(h.name)}</td>`:''}
@@ -705,7 +708,7 @@ async function loadHistory(){
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
         <td><span class="status-badge ${stCls}">${stTxt}</span></td>
         ${isAdmin?`<td><div class="td-actions">
-          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick='showDetail(${JSON.stringify(h.correctedText)})'>Gör</button>`:''}
+          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">✗</button>`:''}
         </div></td>`:''}
       </tr>`;
@@ -751,8 +754,17 @@ function drawScoreChart(data){
   });
 }
 
-function showDetail(text){el('detailBody').textContent=text;window._detailText=text;el('detailModal').classList.add('open');}
-function copyDetail(){navigator.clipboard.writeText(window._detailText||'');closeModal('detailModal');}
+function showDetail(id){const text=_textStore[id]||'';el('detailBody').textContent=text;window._detailText=text;el('detailModal').classList.add('open');}
+function copyDetail(){
+  navigator.clipboard.writeText(window._detailText||'').then(()=>{
+    const btn=el('copyDetailBtn');
+    if(btn){
+      const orig=btn.textContent;
+      btn.textContent='✓ Kopyalandı!';
+      setTimeout(()=>{btn.textContent=orig;},1500);
+    }
+  });
+}
 async function approveItem(id){await api('POST',`/api/history/${id}/approve`);loadHistory();refreshBadges();}
 async function rejectItem(id){await api('POST',`/api/history/${id}/reject`);loadHistory();refreshBadges();}
 function downloadCSV(){window.open('/api/history/csv','_blank');}
@@ -831,13 +843,14 @@ async function loadOnay(){
     <tbody>${pending.map(h=>{
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<tr>
         <td class="mono" style="font-size:10px;white-space:nowrap">${dt}</td>
         <td style="font-size:12px">${esc(h.name)}</td>
         <td style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.filename)}</td>
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td><div class="td-actions">
-          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick='showDetail(${JSON.stringify(h.correctedText)})'>Gör</button>`:''}
+          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
           <button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">✓</button>
           <button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">✗</button>
         </div></td>
@@ -887,14 +900,15 @@ async function loadUsers(){
     </tr>`).join('')}</tbody></table></div>`;
 }
 function openAddUser(){
-  ['nuName','nuUsername','nuPassword'].forEach(id=>el(id).value='');
+  ['nuName','nuUsername','nuPassword','nuPassword2'].forEach(id=>el(id).value='');
   el('nuRole').value='user';el('nuErr').textContent='';
   el('addUserModal').classList.add('open');
 }
 async function addUser(){
-  const name=v('nuName'),username=v('nuUsername'),password=v('nuPassword'),role=el('nuRole').value;
+  const name=v('nuName'),username=v('nuUsername'),password=v('nuPassword'),password2=v('nuPassword2'),role=el('nuRole').value;
   if(!name||!username||!password){el('nuErr').textContent='Tüm alanlar zorunlu.';return;}
   if(password.length<6){el('nuErr').textContent='Şifre en az 6 karakter.';return;}
+  if(password!==password2){el('nuErr').textContent='Şifreler eşleşmiyor.';return;}
   const r=await api('POST','/api/users',{name,username,password,role});
   if(r.error){el('nuErr').textContent=r.error;return;}
   closeModal('addUserModal');loadUsers();
