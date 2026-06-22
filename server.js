@@ -504,6 +504,11 @@ BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - issues listesi boş bırakılamaz: bir kategoride düzeltme yaptıysan o issue mutlaka listede olmalı.
 - count ile issues.length HER ZAMAN eşit olmalı. Düzelttiğin ama issues'a yazmadığın hiçbir
   değişiklik kalmamalı; düzeltilmiş metin ile issues listesi birebir tutarlı olmalı.
+- Metinde aynı hata birden fazla yerde geçiyorsa HER BİRİNİ ayrı issue olarak listele.
+  Örneğin "ayet" kelimesi metinde 5 yerde yanlışsa 5 ayrı issue yaz — sadece 1 örnek yazıp GEÇME.
+- ASLA "ve benzeri", "vb.", "diğer örnekler" gibi özetleme yapma. Her geçiş ayrı bir satırdır.
+- Metni kelime kelime tara; bir hatanın kaç kez geçtiğini say ve o sayıda issue üret.
+  Eksik listeleme skoru haksız yere yükseltir ve KABUL EDİLMEZ.
 
 ${rules}
 
