@@ -1,19 +1,29 @@
 require('dotenv').config();
 const express  = require('express');
-const session  = require('express-session');
+const cookieSession = require('cookie-session');
 const bcrypt   = require('bcryptjs');
 const multer   = require('multer');
 const path     = require('path');
 const mammoth  = require('mammoth');
+const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
+const {
+  LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
+  candidateTextHashes, finalizeResult, textHash
+} = require('./analysis-core');
 
 const app    = express();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // Vercel Function istek gövdesi sınırının altında tut.
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE } });
 
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_KEY      = process.env.SUPABASE_KEY;
+
+if (process.env.VERCEL && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
+}
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error('❌ SUPABASE_URL / SUPABASE_KEY tanımlı değil. .env dosyasını doldurun.');
@@ -27,13 +37,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 8 * 60 * 60 * 1000 }
+app.set('trust proxy', 1);
+app.use(cookieSession({
+  name: 'arsiv_session',
+  keys: [SESSION_SECRET],
+  maxAge: 8 * 60 * 60 * 1000,
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production')
 }));
 app.use(express.static(__dirname));
+
+// Render/UptimeRobot için oturum ve veritabanı gerektirmeyen canlılık kontrolü.
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 // ── Default rules ──────────────────────────────────────────────────────────
 const DEFAULT_RULES = `════════════════════════════════════════
@@ -250,7 +266,7 @@ app.post('/api/auth/login', async (req, res) => {
     res.json({ success: true, id: user.id, name: user.name, role: user.role, username: user.username });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/auth/logout', (req, res) => { req.session.destroy(); res.json({ success: true }); });
+app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
 app.get('/api/auth/me', (req, res) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
   res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
@@ -353,6 +369,39 @@ app.get('/api/history', auth, async (req, res) => {
     if (error) throw new Error(error.message);
     res.json((data || []).map(mapHistory));
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
+  try {
+    let query = supabase.from('history').select('*').eq('id', req.params.id);
+    if (req.session.role !== 'admin') query = query.eq('user_id', req.session.userId);
+    const { data, error } = await query.maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    res.json(mapHistory(data));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/pdf', auth, async (req, res) => {
+  const text = String(req.body?.text || '');
+  if (!text.trim()) return res.status(400).json({ error: 'PDF için metin bulunamadı.' });
+  if (text.length > 1_000_000) return res.status(413).json({ error: 'Metin PDF için çok uzun.' });
+
+  try {
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 56, right: 56, bottom: 56, left: 56 } });
+    const fontPath = require.resolve('@fontsource/noto-serif/files/noto-serif-latin-ext-400-normal.woff');
+    const filename = `duzeltilmis-metin-${new Date().toISOString().slice(0, 10)}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    doc.on('error', err => { if (!res.headersSent) res.status(500).json({ error: err.message }); else res.destroy(err); });
+    doc.pipe(res);
+    doc.font(fontPath).fontSize(16).fillColor('#8b6914').text('Arşiv Kontrol AI — Düzeltilmiş Metin');
+    doc.moveDown(1).fontSize(11).fillColor('#1a1410').text(text, { lineGap: 5, align: 'left' });
+    doc.moveDown(2).fontSize(8).fillColor('#7a6e5e').text(`Arşiv Kontrol AI — ${new Date().toLocaleDateString('tr-TR')}`);
+    doc.end();
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ error: e.message });
+  }
 });
 
 // CSV export
@@ -509,6 +558,10 @@ BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - ASLA "ve benzeri", "vb.", "diğer örnekler" gibi özetleme yapma. Her geçiş ayrı bir satırdır.
 - Metni kelime kelime tara; bir hatanın kaç kez geçtiğini say ve o sayıda issue üret.
   Eksik listeleme skoru haksız yere yükseltir ve KABUL EDİLMEZ.
+- Son JSON'u vermeden önce correctedText ile özgün metni karşılaştır. Yaptığın her değişiklik için
+  tam bir issue bulunduğunu ve listedeki her issue'nun correctedText'e uygulandığını tek tek doğrula.
+- Aynı original/fixed çifti tekrar etse bile her metin konumu ayrı hata instance'ıdır ve ayrı issue'dur.
+- Bir düzeltmeyi yalnızca en uygun TEK kategoriye yaz; aynı metin konumunu iki kategoride tekrar sayma.
 
 ${rules}
 
@@ -529,7 +582,19 @@ Skor = max(0, 100 - toplam ceza). Sabit/keyfi puan VERME, formülü uygula.
   "${LOW_SCORE_MSG}"
 - Tüm hataları yine de kategoriler altında listele (bulgular gösterilecek).
 
-ÇIKTI FORMATI — SADECE JSON DÖN, BAŞKA HİÇBİR ŞEY YAZMA:
+ÇIKTI FORMATI — SADECE JSON DÖN, BAŞKA HİÇBİR ŞEY YAZMA.
+ÖRNEK: Girdi "ayet bize indi. Bu ayet açıktır. O ayet okundu." ise üç ayrı geçiş vardır;
+"ayet → âyet" düzeltmesini bir kez özetlemek YASAKTIR. Beklenen sözlük kategorisi aynen şöyledir:
+"sozluk": {
+  "count": 3,
+  "issues": [
+    {"original":"ayet","fixed":"âyet","rule":"Sözlük standardı (1. geçiş)"},
+    {"original":"ayet","fixed":"âyet","rule":"Sözlük standardı (2. geçiş)"},
+    {"original":"ayet","fixed":"âyet","rule":"Sözlük standardı (3. geçiş)"}
+  ]
+}
+
+Tam yanıt şeması:
 {
   "score": 78,
   "correctedText": "Düzeltilmiş tam metin (skor 60 altındaysa boş)...",
@@ -551,7 +616,7 @@ async function openaiText(text) {
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
     body: JSON.stringify({
       model: 'gpt-4o',
-      max_tokens: 8000,
+      max_tokens: 16000,
       temperature: 0,
       response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
       messages: [
@@ -599,52 +664,17 @@ function parseResult(raw) {
   }
 }
 
-const LOW_SCORE_THRESHOLD = 60;
-
-// Kategori ağırlıkları — skor 100'den başlar, her hata bu kadar puan düşürür.
-const CAT_WEIGHTS = { sozluk: 5, imla: 4, noktalama: 3, etiket: 2, yapi: 4 };
-const LOW_SCORE_MSG = 'Bu metin arşiv standartlarının oldukça altında kalmaktadır. Lütfen metni gözden geçirip tekrar gönderin. Tespit edilen sorunlar aşağıda listelenmiştir.';
 const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar göndermek yerine düzeltilmiş halini kullanabilirsiniz.';
 
 let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
-
-// Metin parmak izi: ilk 100 karakter + uzunluk
-function textHash(text) {
-  const t = (text || '').trim();
-  return `${t.length}|${t.slice(0, 100)}`;
-}
-
-// AI çıktısını yetkili biçimde sonlandır: AI'ın verdiği score TAMAMEN yok sayılır.
-// Skor, her kategorideki ISSUES LISTESININ uzunluğundan hesaplanır
-// (AI'ın "count" alanına güvenilmez; count = issues.length olacak şekilde normalize edilir).
-function finalizeResult(result) {
-  const cats = result.categories || {};
-  let penalty = 0, total = 0;
-  for (const k of Object.keys(CAT_WEIGHTS)) {
-    const c = cats[k] || {};
-    const issues = Array.isArray(c.issues) ? c.issues : [];
-    const count = issues.length;        // tek doğru kaynak: gerçek issue sayısı
-    c.count = count;                    // AI'ın count'unu normalize et
-    c.issues = issues;
-    cats[k] = c;
-    penalty += count * CAT_WEIGHTS[k];
-    total += count;
-  }
-  result.categories = cats;
-  result.score = Math.max(0, 100 - penalty);  // AI'ın score'u kullanılmaz
-  result.totalErrors = total;
-  if (result.score < LOW_SCORE_THRESHOLD) {
-    result.correctedText = '';
-    result.summary = LOW_SCORE_MSG;
-  }
-  return result;
-}
+let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
-async function isDuplicate(req, hash) {
+async function isDuplicate(req, text) {
   if (!HAS_TEXT_HASH) return false;
+  const hashes = candidateTextHashes(text);
   const { data, error } = await supabase.from('history')
-    .select('id').eq('user_id', req.session.userId).eq('text_hash', hash).limit(1);
+    .select('id').eq('user_id', req.session.userId).in('text_hash', hashes).limit(1);
   if (error) { console.warn('Tekrar kontrolü uyarısı:', error.message); return false; }
   return !!(data && data.length);
 }
@@ -685,8 +715,9 @@ app.post('/api/analyze', auth, async (req, res) => {
   const { text } = req.body;
   if (!text?.trim()) return res.status(400).json({ error: 'Metin boş.' });
   try {
+    await startupReady;
     const hash = textHash(text);
-    if (await isDuplicate(req, hash)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, 'Metin Girişi', hash);
     res.json({ ...result, id });
@@ -697,9 +728,10 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
+    await startupReady;
     const text = await extractText(req.file.buffer);
     const hash = textHash(text);
-    if (await isDuplicate(req, hash)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, req.file.originalname, hash);
     res.json({ ...result, id });
@@ -710,11 +742,12 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.files?.length) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   const results = [];
+  await startupReady;
   for (const file of req.files) {
     try {
       const text = await extractText(file.buffer);
       const hash = textHash(text);
-      if (await isDuplicate(req, hash)) {
+      if (await isDuplicate(req, text)) {
         results.push({ filename: file.originalname, success: false, duplicate: true, error: DUPLICATE_MSG });
         continue;
       }
@@ -728,9 +761,21 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   res.json({ results });
 });
 
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Dosya en fazla 4 MB olabilir.' });
+  }
+  if (err) return res.status(500).json({ error: err.message || 'Sunucu hatası.' });
+  next();
+});
+
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-seed()
-  .catch(e => console.error('Seed hatası:', e.message))
-  .finally(() => app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`)));
+startupReady = seed().catch(e => console.error('Seed hatası:', e.message));
+
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`));
+}
+
+module.exports = app;

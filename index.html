@@ -517,13 +517,16 @@ function fdLeave(){el('fileDrop').classList.remove('over');}
 function fdDrop(e){e.preventDefault();fdLeave();if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0]);}
 function fdSelect(e){if(e.target.files[0])setFile(e.target.files[0]);}
 function setFile(f){
+  if(f.size>4*1024*1024){selectedFile=null;setStatus('Dosya en fazla 4 MB olabilir.','err');return;}
   selectedFile=f;
   const d=el('fileDrop');
   d.className='file-drop selected';
   d.innerHTML=`<div style="font-size:26px;margin-bottom:6px">📎</div><p>${esc(f.name)}</p><small class="mono">${(f.size/1024).toFixed(1)} KB</small>`;
 }
 function batchSelect(e){
-  batchFiles=Array.from(e.target.files).slice(0,20);
+  const all=Array.from(e.target.files).slice(0,20);
+  batchFiles=all.filter(f=>f.size<=4*1024*1024);
+  if(batchFiles.length!==all.length)setStatus('4 MB üzerindeki dosyalar listeye alınmadı.','err');
   const d=el('batchDrop');
   d.className='file-drop selected';
   d.innerHTML=`<div style="font-size:26px;margin-bottom:6px">📂</div><p>${batchFiles.length} dosya seçildi</p><small class="mono">Denetle butonuna basın</small>`;
@@ -574,12 +577,24 @@ async function analyze(){
 async function runBatch(res){
   if(!batchFiles.length)throw new Error('Dosya seçilmedi.');
   res.innerHTML=`<div class="loading-box"><div class="spin"></div><p>${batchFiles.length} dosya denetleniyor...</p></div>`;
-  const fd=new FormData();
-  batchFiles.forEach(f=>fd.append('files',f));
-  const r=await fetch('/api/analyze-batch',{method:'POST',body:fd});
-  const data=await r.json();
-  if(!r.ok)throw new Error(data.error||'Sunucu hatası');
-  const rows=(data.results||[]).map(item=>{
+  const results=new Array(batchFiles.length);
+  let next=0;
+  async function worker(){
+    while(next<batchFiles.length){
+      const i=next++,file=batchFiles[i],fd=new FormData();
+      fd.append('file',file);
+      try{
+        const response=await fetch('/api/analyze-file',{method:'POST',body:fd});
+        const data=await response.json();
+        if(!response.ok)throw new Error(data.error||'Sunucu hatası');
+        results[i]=data.duplicate
+          ?{filename:file.name,success:false,duplicate:true,error:data.message}
+          :{filename:file.name,success:true,score:data.score,totalErrors:data.totalErrors,id:data.id};
+      }catch(e){results[i]={filename:file.name,success:false,error:e.message};}
+    }
+  }
+  await Promise.all([worker(),worker()]);
+  const rows=results.map(item=>{
     const ok=item.success,sc=item.score||0;
     const pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
     const icon=ok?'✅':item.duplicate?'⚠️':'❌';
@@ -659,29 +674,21 @@ function copyFixed(){
   });
 }
 
-function downloadPDF(){
+async function downloadPDF(){
   if(!correctedText){setStatus('Düzeltilmiş metin yok.','err');return;}
-  const safe=correctedText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Düzeltilmiş Metin</title>
-<style>
-body{font-family:Georgia,serif;font-size:13pt;line-height:1.8;margin:2.5cm;color:#1a1410;}
-h2{font-size:15pt;color:#8b6914;border-bottom:2px solid #c49a2a;padding-bottom:6px;margin-bottom:24px;}
-pre{white-space:pre-wrap;word-break:break-word;font-family:Georgia,serif;font-size:13pt;line-height:1.8;}
-.footer{margin-top:32px;font-size:9pt;color:#7a6e5e;border-top:1px solid #cfc4b0;padding-top:8px;}
-@media print{body{margin:2cm;}}
-</style></head><body>
-<h2>Arşiv Kontrol AI — Düzeltilmiş Metin</h2>
-<pre>${safe}</pre>
-<div class="footer">Arşiv Kontrol AI — ${new Date().toLocaleDateString('tr-TR')}</div>
-</body></html>`;
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='duzeltilmis-metin-'+new Date().toISOString().slice(0,10)+'.html';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  setStatus('✓ İndirildi!','ok');setTimeout(()=>setStatus('',''),2500);
+  setStatus('PDF hazırlanıyor...','');
+  try{
+    const response=await fetch('/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:correctedText})});
+    if(!response.ok){const data=await response.json();throw new Error(data.error||'PDF oluşturulamadı.');}
+    const blob=await response.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='duzeltilmis-metin-'+new Date().toISOString().slice(0,10)+'.pdf';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    setStatus('✓ PDF indirildi!','ok');setTimeout(()=>setStatus('',''),2500);
+  }catch(e){setStatus(e.message,'err');}
 }
 
 function clearAnalyze(){
@@ -706,7 +713,7 @@ async function loadHistory(){
   if(chartPoints.length>=2){el('scoreChartBox').style.display='';setTimeout(()=>drawScoreChart(chartPoints),80);}
   else{el('scoreChartBox').style.display='none';}
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th>${isAdmin?'<th>İşlem</th>':''}</tr></thead>
+    <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th><th>Metin</th>${isAdmin?'<th>Onay</th>':''}</tr></thead>
     <tbody>${hist.map(h=>{
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -720,8 +727,8 @@ async function loadHistory(){
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
         <td><span class="status-badge ${stCls}">${stTxt}</span></td>
+        <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
-          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">✗</button>`:''}
         </div></td>`:''}
       </tr>`;
@@ -767,7 +774,16 @@ function drawScoreChart(data){
   });
 }
 
-function showDetail(id){const text=_textStore[id]||'';el('detailBody').textContent=text;window._detailText=text;el('detailModal').classList.add('open');}
+async function showDetail(id){
+  el('detailBody').textContent='Yükleniyor...';
+  el('detailModal').classList.add('open');
+  const item=await api('GET',`/api/history/${id}`);
+  if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
+  const text=item.correctedText||'';
+  _textStore[id]=text;
+  el('detailBody').textContent=text||'Bu kayıt için düzeltilmiş metin bulunmuyor.';
+  window._detailText=text;
+}
 function copyDetail(){
   navigator.clipboard.writeText(window._detailText||'').then(()=>{
     const btn=el('copyDetailBtn');

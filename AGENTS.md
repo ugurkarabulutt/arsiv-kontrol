@@ -1,25 +1,19 @@
-# CLAUDE.md — Claude Code Başlangıç Talimatı
+# AGENTS.md — Arşiv Kontrol AI
 
-Bu projede Claude Code ve OpenAI Codex birlikte çalışır. Ortak ve yetkili proje hafızası
-`AGENTS.md`, o anki çalışma/devralma durumu ise `CURRENT_HANDOFF.md` dosyasıdır.
+Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
+bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
-Her oturumun başında sırasıyla:
+## Ortak Çalışma Protokolü
 
-1. `AGENTS.md` dosyasının tamamını oku.
-2. `CURRENT_HANDOFF.md` dosyasını oku.
-3. `git status -sb` çalıştır; Codex'in veya kullanıcının mevcut değişikliklerini koru.
-
-Her değişiklikten sonra `npm run check` çalıştır ve önemli kararı `AGENTS.md` değişiklik
-günlüğüne, güncel çalışma durumunu `CURRENT_HANDOFF.md` dosyasına yaz.
-
-Bir değişiklik yalnızca yereldeyse **deploy edildi** deme. Deploy tamamlandı diyebilmek
-için commit + push yapılmış, Vercel production sonucu ve `/health` endpoint'i doğrulanmış
-olmalıdır. Başka ajanın değişikliklerini açıkça incelemeden geri alma veya üzerine yazma.
-
-Birincil production platformu artık Vercel, alan adı `arsiv.ibrahimlive.ai` olarak
-planlanmıştır. Eski Render maddeleri alternatif/tarihsel bilgidir.
-
-> Aşağıdaki bölüm eski ayrıntılı proje hafızasıdır. Güncel ve yetkili kayıt `AGENTS.md`'dir.
+- Projede **OpenAI Codex ve Claude Code birlikte çalışır**; ikisi de önce bu dosyayı ve
+  `CURRENT_HANDOFF.md` dosyasını okumalıdır.
+- `AGENTS.md` mimari kararlar ve kalıcı hafıza için tek yetkili kaynaktır.
+- `CURRENT_HANDOFF.md` sadece güncel çalışma ağacı, doğrulama ve sonraki adımı tutar.
+- Her ajan işe başlamadan önce `git status -sb` ile diğer ajanın/kullanıcının değişikliklerini
+  kontrol eder; tanımadığı değişiklikleri silmez veya geri almaz.
+- Kod değişikliğinden sonra zorunlu doğrulama `npm run check` komutudur.
+- “Yerelde tamamlandı”, “commit edildi”, “push edildi” ve “deploy edildi” ayrı durumlardır.
+  Render deploy ancak push sonrası Render sonucu ve canlı `/health` doğrulanınca tamamlanmıştır.
 
 ## Proje Özeti
 
@@ -40,6 +34,9 @@ skoru döner.
 - `schema.sql` — Supabase tablo şeması (ilk kurulumda SQL editöründe çalıştırılır).
 - `.env` — yerel ortam değişkenleri (git'e **girmez**).
 - `package.json` — bağımlılıklar ve scriptler.
+- `analysis-core.js` — puanlama ve metin parmak izi gibi test edilebilir saf mantık.
+- `test/` — Node yerleşik test runner testleri.
+- `CURRENT_HANDOFF.md` — ajanlar arası güncel devir durumu.
 
 ## Ortam Değişkenleri
 
@@ -77,7 +74,20 @@ npm run dev      # node --watch server.js
 `.env` dosyasını doldur (yukarıdaki tablo). Supabase tabloları için `schema.sql`'i
 bir kez Supabase SQL Editor'de çalıştır.
 
-## Deploy (Render)
+## Deploy (Vercel — Birincil)
+
+- Vercel projesi: `ugurkarabulutts-projects/arsiv-kontrol`.
+- Production alan adı: `arsiv.ibrahimlive.ai`.
+- Uygulama `server.js` dosyasını Vercel Function olarak export eder; yerelde doğrudan
+  çalıştırıldığında `app.listen` kullanır.
+- Oturumlar serverless uyumlu, HttpOnly ve imzalı `cookie-session` çerezidir.
+- Toplu analiz frontend tarafından en fazla iki eşzamanlı ayrı `/api/analyze-file`
+  isteğine bölünür; tek uzun batch function isteği kullanılmaz.
+- Vercel değişkenleri: `OPENAI_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `SESSION_SECRET`.
+- Production deploy tamamlandı sayılmadan önce `/health`, giriş, tek metin analizi ve PDF
+  canlı alan adında doğrulanır.
+
+## Eski/Alternatif Deploy (Render)
 
 - **Type:** Web Service, **Build:** `npm install`, **Start:** `npm start`.
 - Render ortam değişkenleri: `OPENAI_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `SESSION_SECRET`.
@@ -104,15 +114,32 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-06-22
-- Her hata instance'ını ayrı issue yapan somut prompt örneği ve correctedText/issues
-  birebir tutarlılık kontrolü güçlendirildi.
-- Puanlama ve hash mantığı `analysis-core.js` içine taşındı; `npm test` eklendi.
-- 60 altı standart mesaj birebir düzeltildi; correctedText boş, bulgular korunuyor.
-- Tekrar gönderim SHA-256'ya geçirildi, eski hash biçimiyle uyumluluk korundu.
-- Geçmiş detay API'si ve tüm kullanıcılar için çalışan Gör butonu eklendi.
-- PDFKit + Noto Serif ile gerçek PDF indirme eklendi.
-- `GET /health` eklendi; sağlık kontrolü Supabase seed'ini beklemiyor.
-- UptimeRobot için Render servisinin `/health` adresi 14 dakikalık HTTP(S) monitor olmalı.
+- **Eksiksiz bulgular:** sistem prompt'u her hata geçişini ayrı issue olarak zorunlu kılıyor;
+  üç ayrı `ayet → âyet` geçişini gösteren somut JSON örneği ve correctedText/issues
+  birebir son kontrol talimatı eklendi.
+- **Yetkili puanlama:** saf fonksiyonlar `analysis-core.js` dosyasına taşındı ve issue
+  sayısı/ağırlıklar için otomatik testler eklendi.
+- **60 altı:** mesaj ürün gereksinimindeki metinle birebir eşitlendi; correctedText boş,
+  bulgular korunuyor.
+- **Tekrar gönderim:** çakışmaya açık ilk-100 parmak izi SHA-256 ile değiştirildi;
+  eski parmak izleriyle geriye uyumluluk korundu.
+- **Geçmiş/Gör:** yetkili `GET /api/history/:id` eklendi. Gör butonu tüm kullanıcıların
+  kendi kayıtlarında gösteriliyor ve metni API'den yeniden yüklüyor.
+- **PDF:** HTML indirme kaldırıldı; sunucu PDFKit ve gömülü Noto Serif fontuyla gerçek
+  `application/pdf` üretiyor (`POST /api/pdf`).
+- **Render health:** oturumsuz `GET /health` eklendi ve sunucu Supabase seed tamamlanmadan
+  dinlemeye başlayacak şekilde açılış sırası düzeltildi. UptimeRobot'ta Render servisinin
+  `/health` adresi 14 dakikalık HTTP(S) monitor olarak tanımlanmalı.
+- **Vercel hazırlığı:** Express uygulaması serverless export edecek şekilde düzenlendi,
+  `express-session` yerine imzalı `cookie-session` kullanıldı, dosya sınırı 4 MB yapıldı
+  ve toplu analiz iki eşzamanlı bağımsız dosya isteğine bölündü.
+- **Vercel production:** `arsiv-kontrol` projesi deploy edildi ve
+  `arsiv.ibrahimlive.ai` production aliası başarıyla bağlandı. `/health` ve auth/me
+  endpointleri Vercel üzerinden doğrulandı. SSO protection kapatıldı; domain doğrudan
+  uygulama login'ine açılıyor. `OPENAI_API_KEY` eklendi; geçici kullanıcıyla canlı login
+  ve GPT analizi başarıyla doğrulandı, test verileri temizlendi. Domain kalıcı proje domaini
+  olarak ayarlandı ve yeni production deployment'larını otomatik takip eder.
+- **Test:** `npm test` ile puanlama, düşük skor, yeni/eski hash ve Türkçe PDF üretimi test ediliyor.
 
 ### 2026-06-18 (2. tur)
 - **Skorlama** sunucu tarafında ağırlıklı formülle yeniden yazıldı (`finalizeResult`),
@@ -125,7 +152,7 @@ tespit edilir).
 - **Gör butonu** ve **şifre teyidi** doğrulandı (önceki turda çözülmüştü).
 
 ### 2026-06-18
-- **CLAUDE.md eklendi** — proje hafızası ve değişiklik günlüğü başlatıldı.
+- **AGENTS.md eklendi** — proje hafızası ve değişiklik günlüğü başlatıldı.
 - **Supabase entegrasyonu** — veri katmanı dosya tabanlı `data/db.json` ve
   `data/rules.txt`'ten Supabase (PostgreSQL) `@supabase/supabase-js` istemcisine taşındı.
   Tüm rotalar async hale getirildi. `schema.sql` eklendi. Seed mantığı startup'a taşındı.

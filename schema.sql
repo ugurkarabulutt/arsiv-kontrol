@@ -29,7 +29,7 @@ create table if not exists public.history (
   status         text default 'bekliyor',
   approved_by    text,
   approved_at    timestamptz,
-  text_hash      text,                    -- tekrar-gönderim kontrolü (ilk 100 karakter + uzunluk)
+  text_hash      text,                    -- tekrar-gönderim kontrolü (normalize metnin SHA-256 özeti)
   created_at     timestamptz not null default now()
 );
 create index if not exists history_created_at_idx on public.history (created_at desc);

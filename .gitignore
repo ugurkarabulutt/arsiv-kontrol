@@ -5,3 +5,5 @@ data/
 .DS_Store
 _*.txt
 _*.js
+
+.vercel
