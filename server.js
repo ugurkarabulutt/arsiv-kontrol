@@ -548,6 +548,7 @@ async function openaiText(text) {
       model: 'gpt-4o',
       max_tokens: 8000,
       temperature: 0,
+      response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
       messages: [
         { role: 'system', content: await buildSystemPrompt() },
         { role: 'user', content: `Metni denetle:\n\n${text}` }
@@ -564,9 +565,33 @@ async function extractText(buffer) {
   return text;
 }
 
+// String literalleri içindeki HAM kontrol karakterlerini (satır başı, tab vb.) escape eder.
+// Model JSON string'in içine gerçek \n koyduğunda JSON.parse patlar; bunu önler.
+function sanitizeControlChars(s) {
+  let out = '', inStr = false, esc = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i], code = s.charCodeAt(i);
+    if (esc) { out += ch; esc = false; continue; }
+    if (ch === '\\') { out += ch; esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; out += ch; continue; }
+    if (inStr && code < 0x20) {
+      out += ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : ch === '\t' ? '\\t'
+           : '\\u' + code.toString(16).padStart(4, '0');
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
 function parseResult(raw) {
-  try { return JSON.parse(raw.replace(/```json\n?|\n?```/g, '').trim()); }
-  catch { const m = raw.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw new Error('Yanıt ayrıştırılamadı'); }
+  const cleaned = raw.replace(/```json\n?|\n?```/g, '').trim();
+  const candidate = cleaned.startsWith('{') ? cleaned : (cleaned.match(/\{[\s\S]*\}/)?.[0] || cleaned);
+  try { return JSON.parse(candidate); }
+  catch {
+    try { return JSON.parse(sanitizeControlChars(candidate)); }
+    catch { throw new Error('Yanıt ayrıştırılamadı'); }
+  }
 }
 
 const LOW_SCORE_THRESHOLD = 60;
