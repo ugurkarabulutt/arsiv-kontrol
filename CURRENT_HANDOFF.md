@@ -1,15 +1,18 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-Son güncelleme: 2026-06-22 — OpenAI Codex
+Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Durum
 
-- Dal: `codex/vercel-arsiv-production`
+- Dal: `codex/vercel-arsiv-production` (origin'e push edildi, upstream takipli).
 - Uzak depo: `origin` → `https://github.com/ugurkarabulutt/arsiv-kontrol.git`
+- **Commit:** `4f54438` — `feat: deploy archive control to Vercel` (16 dosya).
+- **Push:** başarılı (`origin/codex/vercel-arsiv-production`).
+- **PR:** [#1](https://github.com/ugurkarabulutt/arsiv-kontrol/pull/1) → `main`, **open** (otomatik merge edilmedi).
+- `.env` ve `.vercel` commit'e dahil DEĞİL (ignore doğrulandı).
 - Vercel projesi: `ugurkarabulutts-projects/arsiv-kontrol` oluşturuldu ve yerel klasöre bağlandı.
 - Production deploy: `https://arsiv-kontrol.vercel.app` hazır.
 - Özel alan adı: `https://arsiv.ibrahimlive.ai` production aliasına başarıyla bağlandı.
-- Git: dosyalar stage edildi; Windows `.git/objects` ACL kilidi commit nesnesi yazımını engelliyor.
 - Kullanıcı veya diğer ajan değişiklikleri izinsiz geri alınmamalı.
 
 ## Bu çalışma ağacındaki değişiklikler
@@ -38,9 +41,9 @@ Son güncelleme: 2026-06-22 — OpenAI Codex
 
 ## Sonraki güvenli adım
 
-1. `npm run check` çalıştır.
+1. PR [#1](https://github.com/ugurkarabulutt/arsiv-kontrol/pull/1) incelenip kullanıcı onayıyla `main`'e merge edilsin (otomatik merge yok).
 2. Geçerli ekip kullanıcısıyla geçmiş Gör ve PDF akışını kullanıcı arayüzünden doğrula.
-3. `.git/objects` ACL kilidi kalkınca commit ve push yap; Vercel GitHub bağlantısını tamamla.
+3. Vercel GitHub bağlantısı tamamlanınca branch-scoped Preview env değişkenleri eklensin.
 
 ## Vercel ortam durumu
 
