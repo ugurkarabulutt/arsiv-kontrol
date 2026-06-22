@@ -497,6 +497,14 @@ NASIL ÇALIŞACAKSIN:
 9. "Bu Resûl" gibi kullanımlarda Resûl büyük R ile kalmalı — özel isim olarak kullanılıyor.
 10. Tırnak içinde biten cümlelerde nokta tırnağın içinde olmalı: "...vermiştir."
 
+BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
+- Her yaptığın düzeltmeyi MUTLAKA ilgili kategorinin issues listesine ekle.
+- Düzeltilmiş metinde değiştirdiğin HER kelime/ifade için bir issue objesi oluştur
+  ({"original": "...", "fixed": "...", "rule": "..."}).
+- issues listesi boş bırakılamaz: bir kategoride düzeltme yaptıysan o issue mutlaka listede olmalı.
+- count ile issues.length HER ZAMAN eşit olmalı. Düzelttiğin ama issues'a yazmadığın hiçbir
+  değişiklik kalmamalı; düzeltilmiş metin ile issues listesi birebir tutarlı olmalı.
+
 ${rules}
 
 ════════════════════════════════════════
@@ -576,18 +584,24 @@ function textHash(text) {
   return `${t.length}|${t.slice(0, 100)}`;
 }
 
-// AI çıktısını yetkili biçimde sonlandır: skoru ağırlıklı formülle yeniden hesapla,
-// 60 altındaysa düzeltilmiş metin üretme.
+// AI çıktısını yetkili biçimde sonlandır: AI'ın verdiği score TAMAMEN yok sayılır.
+// Skor, her kategorideki ISSUES LISTESININ uzunluğundan hesaplanır
+// (AI'ın "count" alanına güvenilmez; count = issues.length olacak şekilde normalize edilir).
 function finalizeResult(result) {
   const cats = result.categories || {};
   let penalty = 0, total = 0;
   for (const k of Object.keys(CAT_WEIGHTS)) {
-    const c = cats[k];
-    const count = Number.isFinite(c?.count) ? c.count : (Array.isArray(c?.issues) ? c.issues.length : 0);
+    const c = cats[k] || {};
+    const issues = Array.isArray(c.issues) ? c.issues : [];
+    const count = issues.length;        // tek doğru kaynak: gerçek issue sayısı
+    c.count = count;                    // AI'ın count'unu normalize et
+    c.issues = issues;
+    cats[k] = c;
     penalty += count * CAT_WEIGHTS[k];
     total += count;
   }
-  result.score = Math.max(0, 100 - penalty);
+  result.categories = cats;
+  result.score = Math.max(0, 100 - penalty);  // AI'ın score'u kullanılmaz
   result.totalErrors = total;
   if (result.score < LOW_SCORE_THRESHOLD) {
     result.correctedText = '';
