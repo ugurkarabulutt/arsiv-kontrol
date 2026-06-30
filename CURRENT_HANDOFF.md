@@ -68,6 +68,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Feedback ölçüm ekranı: admin dashboard toplam geri bildirim, son 7 gün geri bildirim ve
   okunmamış geri bildirim sayılarını gösteriyor. Uyarılar sekmesinde ekip geri bildirimleri
   tek satır metin yerine ayrıştırılmış alanlar halinde okunuyor.
+- Geçmiş filtreleme: Denetim Geçmişi ekranında dosya/kullanıcı araması, Bekleyen/Onaylanan/
+  Reddedilen/Düşük skor filtresi ve kaç kaydın görüntülendiğini gösteren sayaç var. Sunucu
+  veya veritabanı değişikliği yok; mevcut liste üzerinde çalışıyor.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -91,6 +94,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex yedinci tur). 13/13 test geçti; dashboard
   feedback metrikleri ve ayrıştırılmış geri bildirim kartları frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex sekizinci tur). 13/13 test geçti; geçmiş
+  arama/durum/düşük skor filtreleri frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

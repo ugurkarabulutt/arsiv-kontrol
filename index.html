@@ -394,6 +394,18 @@ canvas{width:100%!important;}
         <button class="btn-sec admin-only" id="csvBtn" style="display:none" onclick="downloadCSV()">⬇ CSV İndir</button>
       </div>
       <div class="divider"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <input id="histSearch" type="search" placeholder="Dosya veya kullanıcı ara..." oninput="setHistoryFilter()" style="min-width:220px;flex:1;max-width:340px">
+        <select id="histStatusFilter" onchange="setHistoryFilter()" style="max-width:180px">
+          <option value="all">Tüm kayıtlar</option>
+          <option value="bekliyor">Bekleyen</option>
+          <option value="onaylandi">Onaylanan</option>
+          <option value="reddedildi">Reddedilen</option>
+          <option value="low">Düşük skor</option>
+        </select>
+        <button class="btn-sec" style="padding:8px 12px" onclick="clearHistoryFilters()">Sıfırla</button>
+        <span class="mono" id="histFilterSummary" style="font-size:11px;color:var(--ink3)"></span>
+      </div>
       <div class="score-chart-box" id="scoreChartBox" style="display:none">
         <div class="score-chart-head">📈 Son Denetimlerim — Skor Değişimi</div>
         <div class="score-chart-body"><div class="chart-wrap"><canvas id="scoreChart"></canvas></div></div>
@@ -523,7 +535,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all';
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[];
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 
 (async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
@@ -864,16 +876,46 @@ async function sendIssueFeedback(historyId,category,index,reason){
 
 async function loadHistory(){
   const hist=await api('GET','/api/history');
-  const container=el('histContent');
   const isAdmin=hasAdminRole(me?.role);
   if(isAdmin)el('csvBtn').style.display='';
-  if(!hist?.length){container.innerHTML='<div class="empty-state">Henüz denetim yapılmamış.</div>';el('scoreChartBox').style.display='none';return;}
-  const chartPoints=hist.filter(h=>h.score).slice(0,20).reverse();
+  historyRows=Array.isArray(hist)?hist:[];
+  renderHistory();
+}
+
+function setHistoryFilter(){
+  historyFilter=el('histStatusFilter')?.value||'all';
+  historySearch=(el('histSearch')?.value||'').trim().toLocaleLowerCase('tr-TR');
+  renderHistory();
+}
+
+function clearHistoryFilters(){
+  if(el('histSearch'))el('histSearch').value='';
+  if(el('histStatusFilter'))el('histStatusFilter').value='all';
+  historyFilter='all';historySearch='';
+  renderHistory();
+}
+
+function renderHistory(){
+  const container=el('histContent');
+  const isAdmin=hasAdminRole(me?.role);
+  if(!historyRows.length){container.innerHTML='<div class="empty-state">Henüz denetim yapılmamış.</div>';el('scoreChartBox').style.display='none';return;}
+  const filtered=historyRows.filter(h=>{
+    const status=h.status||'bekliyor';
+    if(historyFilter==='low' && (h.score||0)>=60)return false;
+    if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
+    if(!historySearch)return true;
+    const haystack=[h.filename,h.name,h.username,h.summary,h.score,h.totalErrors,status].join(' ').toLocaleLowerCase('tr-TR');
+    return haystack.includes(historySearch);
+  });
+  const summary=el('histFilterSummary');
+  if(summary)summary.textContent=filtered.length===historyRows.length?`${historyRows.length} kayıt`:`${filtered.length}/${historyRows.length} kayıt`;
+  if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtreye uyan denetim yok.</div>';el('scoreChartBox').style.display='none';return;}
+  const chartPoints=filtered.filter(h=>h.score).slice(0,20).reverse();
   if(chartPoints.length>=2){el('scoreChartBox').style.display='';setTimeout(()=>drawScoreChart(chartPoints),80);}
   else{el('scoreChartBox').style.display='none';}
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
     <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th><th>Metin</th>${isAdmin?'<th>Onay</th>':''}</tr></thead>
-    <tbody>${hist.map(h=>{
+    <tbody>${filtered.map(h=>{
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
       const stCls=h.status==='onaylandi'?'sb-ok':h.status==='reddedildi'?'sb-no':'sb-wait';
