@@ -18,6 +18,9 @@ hale getirmek.
 - Skor artık AI cevabına bırakılmıyor; sunucu tarafında yetkili formülle hesaplanıyor.
 - 60 altı sonuçlarda düzeltilmiş metin verilmemesi kuralı korunuyor.
 - Metin alanı ve API tarafında boş, çok kısa ve çok uzun metinler durduruluyor.
+- Canlı testlerden gelen örnekler için kalite regresyon havuzu eklendi.
+- Otomatik test sayısı 19'a çıktı; yanlış pozitif, apostrof farkı, kelime içi yakalama ve
+  korumalı ifade senaryoları her deploy öncesi kontrol ediliyor.
 
 ## Ekip Geri Bildirim Döngüsü
 
@@ -52,7 +55,7 @@ hale getirmek.
 ## Doğrulama
 
 - Zorunlu kontrol: `npm.cmd run check`
-- Son durumda 13/13 otomatik test başarılı.
+- Son durumda 19/19 otomatik test başarılı.
 - Frontend/PWA parse kontrolü başarılı.
 - Production `/health` kontrolü deploy sonrası doğrulanıyor.
 

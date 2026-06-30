@@ -78,7 +78,7 @@ function restoreRejectedChange(text, issue) {
   if (!text || !issue?.original || !issue?.fixed) return text;
   const original = String(issue.original);
   const fixed = String(issue.fixed);
-  if (!fixed.trim() || equivalentIssue(original, fixed)) return text;
+  if (!fixed.trim()) return text;
 
   return String(text).split(fixed).join(original);
 }

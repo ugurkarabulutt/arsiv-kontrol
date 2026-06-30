@@ -93,6 +93,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   "Bildirimler" sekmesinde sadece kendilerine ait duyuru/çözüm yanıtlarını görür. Adminler
   Uyarılar ekranındaki feedback için "Çözüm bildir" kullanabilir ve Kullanıcı Yönetimi'nden
   tek kullanıcıya bildirim gönderebilir.
+- Kalite regresyon havuzu: `test/fixtures/quality-regression-cases.json` canlı hata
+  örneklerinden türeyen kalıcı test datasını tutuyor. `test/quality-regression-cases.test.js`
+  bu fixture'ı okuyup `finalizeResult` güvenlik katmanının yanlış pozitifleri skor dışı
+  bırakmasını ve güvenli geri almaları doğruluyor.
 - Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
   gösteriliyor. Boş, çok kısa ve çok uzun metinler frontend'de durduruluyor; aynı kontroller
   `/api/analyze`, `/api/analyze-file` ve batch dosya analizinde sunucu tarafında da uygulanıyor.
@@ -136,6 +140,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - `npm.cmd run check`: başarılı (2026-07-01 Codex bildirim turu). 13/13 test geçti; kişisel
   bildirimler, feedback çözüm yanıtı ve kullanıcıya özel duyuru akışları frontend parse
   kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-07-01 Codex regresyon turu). 19/19 test geçti; kalite
+  regresyon havuzu fixture'ları otomatik test kapsamına alındı.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

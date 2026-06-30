@@ -237,6 +237,11 @@ tespit edilir).
   Kullanıcı feedback notu bırakabilir; admin feedback için çözüm yanıtı gönderince ilgili
   kullanıcıya kişisel `feedback_resolution` bildirimi düşer. Admin ayrıca kullanıcı yönetiminden
   tek kullanıcıya özel `announcement` bildirimi gönderebilir. Ek tablo/migration gerektirmez.
+- **Kalite regresyon havuzu:** Ekipten gelen canlı hata örnekleri kalıcı test datasına
+  çevrilebilsin diye `test/fixtures/quality-regression-cases.json` ve
+  `test/quality-regression-cases.test.js` eklendi. `npm.cmd run check` artık bu örneklerde
+  yanlış pozitif, eşdeğer apostrof farkı, kelime içi yakalama ve korumalı ifade regresyonlarını
+  yakalar.
 - **Metin denetim sağlamlığı:** Metin girişi normalize edilir, çok kısa/boş/çok uzun metinler
   hem frontend hem API tarafında denetime gönderilmeden durdurulur. Denetim sırasında çift
   tıklama ile ikinci analiz başlatılması engellenir.

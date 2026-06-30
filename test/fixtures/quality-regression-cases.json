@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Metinde olmayan bulgu skora girmez",
+    "sourceText": "Allah razi olsun. Bu metin temizdir.",
+    "modelResult": {
+      "correctedText": "Allah razi olsun. Bu metin temizdir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "olmayan kelime", "fixed": "olmayan kelime duzeltme", "rule": "Kaynakta yok" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah razi olsun. Bu metin temizdir." }
+  },
+  {
+    "name": "Ayni gorunen apostrof farki hata sayilmaz",
+    "sourceText": "Allah'in izniyle bu is tamamlanir.",
+    "modelResult": {
+      "correctedText": "Allah\u2019in izniyle bu is tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Allah'in", "fixed": "Allah\u2019in", "rule": "Apostrof tipi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah'in izniyle bu is tamamlanir." }
+  },
+  {
+    "name": "Muminun kelime ici parca yakalama reddedilir",
+    "sourceText": "Muminun Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "Mu'min Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Mumin", "fixed": "Mu'min", "rule": "Kelime ici yanlis yakalama" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0 }
+  },
+  {
+    "name": "Tabii ki korumali ifade degistirilmez",
+    "sourceText": "Tabi\u00ee ki bu cevap korunmalidir.",
+    "modelResult": {
+      "correctedText": "T\u00e2b\u00ee ki bu cevap korunmalidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Tabi\u00ee ki", "fixed": "T\u00e2b\u00ee ki", "rule": "Korumali ifade" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Tabi\u00ee ki bu cevap korunmalidir." }
+  },
+  {
+    "name": "Derecat korumali ifade degistirilmez",
+    "sourceText": "Derecat kelimesi bu metinde bilerek kullanildi.",
+    "modelResult": {
+      "correctedText": "Derece kelimesi bu metinde bilerek kullanildi.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Derecat", "fixed": "Derece", "rule": "Korumali ifade" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Derecat kelimesi bu metinde bilerek kullanildi." }
+  },
+  {
+    "name": "Gercek kaynak bulgusu skorlanir",
+    "sourceText": "Bu metinde ayet kelimesi geciyor.",
+    "modelResult": {
+      "correctedText": "Bu metinde \u00e2yet kelimesi geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "ayet", "fixed": "\u00e2yet", "rule": "Sozluk" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "Bu metinde \u00e2yet kelimesi geciyor." }
+  }
+]
