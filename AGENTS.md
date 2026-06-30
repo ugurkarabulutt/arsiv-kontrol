@@ -223,6 +223,9 @@ tespit edilir).
   panoya kopyalanır.
 - **Karanlık mod:** Uygulamaya açık/koyu tema anahtarı eklendi. Tercih `localStorage` içinde
   saklanır, mobil menüde de değiştirilebilir ve koyu tema siyah/beyaz ağırlıklı çalışır.
+- **Tema switch düzeltmesi:** Koyu temada üst barın görünmez hale gelmesine neden olan genel
+  renk değişkeni kullanımı ayrıldı. Üst bar artık kendi tema renklerini kullanır; yazılı
+  `Karanlık/Aydınlık` butonu yerine ikonlu modern switch vardır.
 - **Metin denetim sağlamlığı:** Metin girişi normalize edilir, çok kısa/boş/çok uzun metinler
   hem frontend hem API tarafında denetime gönderilmeden durdurulur. Denetim sırasında çift
   tıklama ile ikinci analiz başlatılması engellenir.

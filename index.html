@@ -48,6 +48,8 @@ try{
   --blue:#1a3d6b;--blue-bg:#f0f4f9;
   --orange:#7a3a0a;--orange-bg:#fdf3ec;
   --border:#cfc4b0;--bord2:#b8aa96;--white:#fff;
+  --topbar-bg:#1a1410;--topbar-fg:#f5f0e8;--topbar-muted:rgba(245,240,232,.62);
+  --topbar-line:#8b6914;--topbar-soft:rgba(245,240,232,.16);
   --topbar-h:52px;
   color-scheme:light;
 }
@@ -60,6 +62,8 @@ try{
   --blue:#ffffff;--blue-bg:#151515;
   --orange:#ffffff;--orange-bg:#151515;
   --border:#303030;--bord2:#4a4a4a;--white:#0b0b0b;
+  --topbar-bg:#070707;--topbar-fg:#ffffff;--topbar-muted:rgba(255,255,255,.72);
+  --topbar-line:#333333;--topbar-soft:rgba(255,255,255,.18);
   color-scheme:dark;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -83,34 +87,39 @@ body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,ser
 .btn-login:hover{background:var(--gold);}
 .login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
 #appScreen{flex-direction:column;}
-.topbar{background:var(--ink);color:var(--bg);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:var(--topbar-h);flex-shrink:0;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:50;}
+.topbar{background:var(--topbar-bg);color:var(--topbar-fg);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:var(--topbar-h);flex-shrink:0;border-bottom:2px solid var(--topbar-line);position:sticky;top:0;z-index:50;}
 .topbar-brand{font-size:18px;font-weight:700;cursor:pointer;}
-.topbar-brand span{color:var(--gold-lt);}
-.topbar-brand .ai-tag{color:var(--gold-lt);font-size:11px;font-weight:300;font-family:'JetBrains Mono',monospace;}
+.topbar-brand span{color:var(--topbar-fg);}
+.topbar-brand .ai-tag{color:var(--topbar-muted);font-size:11px;font-weight:300;font-family:'JetBrains Mono',monospace;}
 .topbar-right{display:flex;align-items:center;gap:6px;}
-.topbar-user{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(245,240,232,.5);margin-right:6px;}
-.topbar-user strong{color:var(--bg);}
+.topbar-user{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--topbar-muted);margin-right:6px;}
+.topbar-user strong{color:var(--topbar-fg);}
 .desktop-nav{display:flex;align-items:center;gap:5px;}
-.btn-top{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid rgba(245,240,232,.2);color:rgba(245,240,232,.65);padding:5px 10px;cursor:pointer;transition:all .15s;position:relative;white-space:nowrap;}
-.btn-top:hover{border-color:var(--gold-lt);color:var(--gold-lt);}
-.btn-top.active-tab{background:var(--gold);border-color:var(--gold);color:var(--ink);}
-.theme-toggle{font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(255,255,255,.08);color:var(--bg);border:1px solid rgba(245,240,232,.28);padding:5px 9px;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.theme-toggle:hover{border-color:var(--gold-lt);color:var(--gold-lt);}
-:root[data-theme="dark"] .theme-toggle{background:#fff;color:#000;border-color:#fff;}
+.btn-top{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid var(--topbar-soft);color:var(--topbar-muted);padding:5px 10px;cursor:pointer;transition:all .15s;position:relative;white-space:nowrap;}
+.btn-top:hover{border-color:var(--topbar-fg);color:var(--topbar-fg);}
+.btn-top.active-tab{background:var(--topbar-fg);border-color:var(--topbar-fg);color:var(--topbar-bg);}
+.theme-toggle{width:48px;height:26px;border-radius:999px;border:1px solid var(--topbar-soft);background:rgba(255,255,255,.08);cursor:pointer;position:relative;display:inline-flex;align-items:center;justify-content:space-between;padding:0 6px;transition:all .18s;flex-shrink:0;}
+.theme-toggle:hover{border-color:var(--topbar-fg);background:rgba(255,255,255,.13);}
+.theme-toggle .theme-glyph{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1;color:var(--topbar-muted);position:relative;z-index:1;}
+.theme-toggle .theme-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--topbar-fg);box-shadow:0 2px 8px rgba(0,0,0,.28);transition:transform .18s;}
+:root[data-theme="dark"] .theme-toggle .theme-thumb{transform:translateX(22px);}
 .badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:white;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;background:transparent;border:none;}
-.hamburger span{display:block;width:22px;height:2px;background:var(--bg);border-radius:2px;transition:all .25s;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--topbar-fg);border-radius:2px;transition:all .25s;}
 .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
 .hamburger.open span:nth-child(2){opacity:0;}
 .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
-.mobile-menu{display:none;position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;background:var(--ink);z-index:49;overflow-y:auto;}
+.mobile-menu{display:none;position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;background:var(--topbar-bg);z-index:49;overflow-y:auto;}
 .mobile-menu.open{display:block;}
 .mobile-menu-inner{padding:12px 16px 32px;}
 .mobile-user{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(245,240,232,.4);padding:10px 4px 14px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:6px;}
-.mobile-user strong{color:var(--bg);}
+.mobile-user strong{color:var(--topbar-fg);}
 .btn-mobile{display:flex;align-items:center;justify-content:space-between;width:100%;font-family:'JetBrains Mono',monospace;font-size:13px;background:transparent;border:none;color:rgba(245,240,232,.75);padding:14px 4px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;}
 .btn-mobile.active-tab{color:var(--gold-lt);}
-.btn-mobile.theme-mobile{font-size:12px;color:var(--bg);}
+.btn-mobile.theme-mobile{font-size:12px;color:var(--topbar-fg);}
+.theme-mobile .theme-mini-switch{width:42px;height:22px;border-radius:999px;border:1px solid var(--topbar-soft);position:relative;background:rgba(255,255,255,.08);}
+.theme-mobile .theme-mini-switch::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--topbar-fg);transition:transform .18s;}
+:root[data-theme="dark"] .theme-mobile .theme-mini-switch::after{transform:translateX(20px);}
 .badge-m{background:var(--red);color:white;font-size:9px;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 4px;}
 .app-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tab-content{display:none;max-width:1160px;margin:0 auto;padding:24px 16px;}
@@ -372,7 +381,11 @@ canvas{width:100%!important;}
         <button class="btn-top admin-only" id="tabBtnKurallar" onclick="showTab('kurallar')" style="display:none">Kurallar</button>
         <button class="btn-top" onclick="doLogout()">Çıkış</button>
       </div>
-      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir">Karanlık</button>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir" aria-label="Tema değiştir">
+        <span class="theme-glyph">☼</span>
+        <span class="theme-glyph">●</span>
+        <span class="theme-thumb"></span>
+      </button>
       <button class="hamburger" id="hamburger" onclick="toggleMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -390,7 +403,7 @@ canvas{width:100%!important;}
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Uyarılar <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
-      <button class="btn-mobile theme-mobile" id="themeToggleMobile" onclick="toggleTheme()">Tema: Karanlık</button>
+      <button class="btn-mobile theme-mobile" id="themeToggleMobile" onclick="toggleTheme()"><span>Tema</span><span class="theme-mini-switch"></span></button>
       <button class="btn-mobile" onclick="doLogout()" style="color:#e08080;margin-top:8px">Çıkış Yap</button>
     </div>
   </div>
@@ -601,8 +614,14 @@ function applyTheme(theme){
   if(meta)meta.setAttribute('content',isDark?'#050505':'#f5f0e8');
   const desktopToggle=document.getElementById('themeToggle');
   const mobileToggle=document.getElementById('themeToggleMobile');
-  if(desktopToggle)desktopToggle.textContent=isDark?'Aydınlık':'Karanlık';
-  if(mobileToggle)mobileToggle.textContent=isDark?'Tema: Aydınlık':'Tema: Karanlık';
+  if(desktopToggle){
+    desktopToggle.setAttribute('aria-pressed',String(isDark));
+    desktopToggle.setAttribute('title',isDark?'Açık temaya geç':'Koyu temaya geç');
+  }
+  if(mobileToggle){
+    mobileToggle.setAttribute('aria-pressed',String(isDark));
+    mobileToggle.setAttribute('title',isDark?'Açık temaya geç':'Koyu temaya geç');
+  }
 }
 function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');}
 function cleanInputText(text){return String(text||'').normalize('NFC').replace(/\r\n?/g,'\n').trim();}

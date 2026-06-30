@@ -78,6 +78,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   kategori kırılımı, özet, analiz sürümü ve ilk bulguları tek metin halinde panoya alıyor.
 - Karanlık mod: topbar ve mobil menüde tema değiştirme düğmesi var. Tercih tarayıcıda
   saklanıyor; koyu tema siyah/beyaz ağırlıklı, yüksek kontrastlı çalışıyor.
+- Tema switch düzeltmesi: koyu temada topbar artık beyaza dönmez; üst bar için ayrı
+  `--topbar-*` renkleri kullanılıyor. Üstte yazılı `Karanlık/Aydınlık` yerine ikonlu switch,
+  mobil menüde ise "Tema" satırı ve mini switch var.
 - Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
   gösteriliyor. Boş, çok kısa ve çok uzun metinler frontend'de durduruluyor; aynı kontroller
   `/api/analyze`, `/api/analyze-file` ve batch dosya analizinde sunucu tarafında da uygulanıyor.
@@ -112,6 +115,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   raporu kopyalama aksiyonu frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex on birinci tur). 13/13 test geçti; karanlık
   tema, metin sağlık göstergesi ve sunucu tarafı metin uzunluk kontrolleri doğrulandı.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex on ikinci tur). 13/13 test geçti; topbar
+  tema renk ayrımı ve ikonlu tema switch frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
