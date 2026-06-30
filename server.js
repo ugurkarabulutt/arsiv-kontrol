@@ -24,6 +24,7 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_KEY      = process.env.SUPABASE_KEY;
+const PROMPT_VERSION    = '2026-06-30.4';
 
 if (process.env.VERCEL && !process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
@@ -215,7 +216,9 @@ const mapHistory = h => ({
   id: h.id, userId: h.user_id, username: h.username, name: h.name,
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
   catCounts: h.cat_counts || {}, summary: h.summary, correctedText: h.corrected_text,
-  status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at, createdAt: h.created_at
+  status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
+  promptVersion: h.prompt_version, rulesHash: h.rules_hash,
+  createdAt: h.created_at
 });
 const mapAlert   = a => ({
   id: a.id, type: a.type, message: a.message, userId: a.user_id,
@@ -272,6 +275,10 @@ async function seed() {
   const { error: thErr } = await supabase.from('history').select('text_hash').limit(1);
   HAS_TEXT_HASH = !thErr;
   if (!HAS_TEXT_HASH) console.warn('⚠ history.text_hash kolonu yok — tekrar-gönderim kontrolü devre dışı. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
+
+  const { error: metaErr } = await supabase.from('history').select('prompt_version,rules_hash').limit(1);
+  HAS_ANALYSIS_META = !metaErr;
+  if (!HAS_ANALYSIS_META) console.warn('⚠ history.prompt_version/rules_hash kolonları yok — analiz sürüm bilgisi kayıt geçmişine yazılmayacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -525,7 +532,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
   try {
   const { data, error } = await supabase.from('history').select('*').order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan']];
+  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan', 'Prompt Sürümü', 'Kural Hash']];
   (data || []).map(mapHistory).forEach(h => {
     rows.push([
       new Date(h.createdAt).toLocaleString('tr-TR'),
@@ -533,7 +540,8 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
       h.score || 0, h.totalErrors || 0,
       h.catCounts?.sozluk || 0, h.catCounts?.imla || 0,
       h.catCounts?.noktalama || 0, h.catCounts?.etiket || 0, h.catCounts?.yapi || 0,
-      h.status || 'bekliyor', h.approvedBy || ''
+      h.status || 'bekliyor', h.approvedBy || '',
+      h.promptVersion || '', h.rulesHash || ''
     ]);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -646,8 +654,8 @@ app.get('/api/stats', auth, admin, async (req, res) => {
 });
 
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
-async function buildSystemPrompt() {
-  const rules = await loadRules();
+async function buildSystemPrompt(rulesText) {
+  const rules = rulesText ?? await loadRules();
   return `Sen "Arşiv Kontrol AI" sistemisin. Görevin yalnızca cevap metinlerini verilen kurallara göre denetlemek ve düzeltmektir.
 
 NASIL ÇALIŞACAKSIN:
@@ -744,6 +752,7 @@ Tam yanıt şeması:
 }
 
 async function openaiText(text) {
+  const rules = await loadRules();
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
@@ -753,13 +762,16 @@ async function openaiText(text) {
       temperature: 0,
       response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
       messages: [
-        { role: 'system', content: await buildSystemPrompt() },
+        { role: 'system', content: await buildSystemPrompt(rules) },
         { role: 'user', content: `Metni denetle:\n\n${text}` }
       ]
     })
   });
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API hatası'); }
-  const d = await r.json(); return finalizeResult(parseResult(d.choices[0].message.content), text);
+  const d = await r.json();
+  const result = finalizeResult(parseResult(d.choices[0].message.content), text);
+  result.analysisMeta = { promptVersion: PROMPT_VERSION, rulesHash: textHash(rules).slice(0, 12) };
+  return result;
 }
 
 async function extractText(buffer) {
@@ -800,6 +812,7 @@ function parseResult(raw) {
 const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar göndermek yerine düzeltilmiş halini kullanabilirsiniz.';
 
 let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
+let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
@@ -815,6 +828,7 @@ async function isDuplicate(req, text) {
 async function saveHistory(req, result, filename, hash) {
   const catCounts = {};
   if (result.categories) Object.keys(result.categories).forEach(k => catCounts[k] = result.categories[k].count || 0);
+  const analysisMeta = result.analysisMeta || {};
 
   const row = {
     user_id: req.session.userId,
@@ -826,6 +840,10 @@ async function saveHistory(req, result, filename, hash) {
     status: 'bekliyor'
   };
   if (HAS_TEXT_HASH && hash) row.text_hash = hash;
+  if (HAS_ANALYSIS_META) {
+    row.prompt_version = analysisMeta.promptVersion || PROMPT_VERSION;
+    row.rules_hash = analysisMeta.rulesHash || null;
+  }
 
   const { data, error } = await supabase.from('history').insert(row).select('id').single();
   if (error) throw new Error(error.message);

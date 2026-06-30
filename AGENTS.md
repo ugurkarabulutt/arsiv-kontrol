@@ -115,6 +115,12 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-06-30
+- **Analiz izlenebilirliği:** analiz sonuçlarına `promptVersion` ve `rulesHash` meta bilgisi
+  eklendi; sonuç ekranında küçük chip olarak gösterilir. `schema.sql` yeni kurulumlar için
+  `history.prompt_version` ve `history.rules_hash` kolonlarını içerir. Canlı veritabanında
+  kolonlar yoksa uygulama kırılmaz, sadece geçmiş kaydına sürüm yazmaz.
+- **Geri bildirim merkezi:** Uyarılar sekmesi "Uyarılar ve Geri Bildirimler" olarak
+  genişletildi. Adminler Tümü / Geri Bildirim / Düşük Skor filtreleriyle kayıtları ayırabilir.
 - **Yan yana karşılaştırma UX'i:** anlık analiz sonucunda orijinal metin ve düzeltilmiş
   metin iki sütunlu karşılaştırma panelinde gösteriliyor. Kısa/orta metinlerde kelime
   düzeyinde kırmızı/yeşil fark vurgusu yapılır; çok uzun metinlerde performans için renkli

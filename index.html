@@ -158,6 +158,8 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .feedback-panel{background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:12px 14px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
 .feedback-panel p{font-size:13px;color:var(--ink2);}
 .feedback-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.analysis-meta{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px;}
+.meta-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);background:var(--bg2);border:1px solid var(--border);padding:4px 7px;}
 .empty-cat{padding:16px;text-align:center;color:var(--green);font-size:13px;font-style:italic;}
 .corrected-panel{border:1px solid var(--bord2);border-top:2px solid var(--gold);background:var(--white);margin-bottom:2px;}
 .corrected-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
@@ -231,6 +233,10 @@ canvas{width:100%!important;}
 .alert-dot.read{background:var(--border);}
 .alert-msg{font-size:14px;color:var(--ink2);flex:1;}
 .alert-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
+.alert-type{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.7px;padding:2px 6px;border:1px solid var(--border);color:var(--ink3);background:var(--bg2);align-self:flex-start;}
+.alert-type.feedback{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.alert-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.alert-filter.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,.6);z-index:100;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
@@ -418,10 +424,15 @@ canvas{width:100%!important;}
 
     <div class="tab-content" id="tabContent-alerts">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div><div class="page-title">Düşük Skor Uyarıları</div><div class="page-sub">60 altı skorlar otomatik işaretlenir</div></div>
+        <div><div class="page-title">Uyarılar ve Geri Bildirimler</div><div class="page-sub">Düşük skorlar ve ekipten gelen sonuç bildirimleri</div></div>
         <button class="btn-sec" onclick="readAllAlerts()">Tümünü Okundu</button>
       </div>
       <div class="divider"></div>
+      <div class="alert-filters">
+        <button class="btn-mini alert-filter active" id="alertFilter-all" onclick="setAlertFilter('all')">Tümü</button>
+        <button class="btn-mini alert-filter" id="alertFilter-feedback" onclick="setAlertFilter('feedback')">Geri Bildirim</button>
+        <button class="btn-mini alert-filter" id="alertFilter-low_score" onclick="setAlertFilter('low_score')">Düşük Skor</button>
+      </div>
       <div id="alertsContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
@@ -499,7 +510,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='';
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all';
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 
 (async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
@@ -676,6 +687,9 @@ function renderResults(d,container){
   const sc=d.score||0;
   const fc=sc>=80?'sf-high':sc>=55?'sf-mid':'sf-low';
   const vc=sc>=80?'sv-green':sc>=55?'sv-gold':'sv-red';
+  const meta=d.analysisMeta||{};
+  const promptVersion=d.promptVersion||meta.promptVersion;
+  const rulesHash=d.rulesHash||meta.rulesHash;
   const catDefs=[{key:'sozluk',label:'Sözlük'},{key:'imla',label:'İmla'},{key:'noktalama',label:'Noktalama'},{key:'etiket',label:'Etiket'},{key:'yapi',label:'Yapı'}];
   const scoreBoxes=catDefs.map(c=>{
     const cnt=cats[c.key]?.count||0;
@@ -700,6 +714,7 @@ function renderResults(d,container){
         <div class="score-track"><div class="score-fill ${fc}" style="width:${sc}%"></div></div>
       </div>${scoreBoxes}
     </div>
+    ${(promptVersion||rulesHash)?`<div class="analysis-meta">${promptVersion?`<span class="meta-chip">Prompt ${esc(promptVersion)}</span>`:''}${rulesHash?`<span class="meta-chip">Kural ${esc(rulesHash)}</span>`:''}</div>`:''}
     ${d.summary?`<div class="summary-box ${sc<60?'summary-warn':''}">${esc(d.summary)}</div>`:''}
     ${d.id?`<div class="feedback-panel"><p>Bu sonuçta sorun varsa ekibe doğrudan bildir.</p><div class="feedback-actions">
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','missing_issue')">Eksik hata</button>
@@ -1021,10 +1036,14 @@ async function loadOnay(){
 async function loadAlerts(){
   const alerts=await api('GET','/api/alerts');
   const container=el('alertsContent');
+  ['all','feedback','low_score'].forEach(t=>{const b=el(`alertFilter-${t}`);if(b)b.classList.toggle('active',alertFilter===t);});
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Uyarı yok.</div>';return;}
-  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${alerts.map(a=>`
+  const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.type===alertFilter);
+  if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtrede kayıt yok.</div>';return;}
+  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
     <div class="alert-item ${a.read?'':'unread'}">
       <div class="alert-dot ${a.read?'read':''}"></div>
+      <div class="alert-type ${a.type==='feedback'?'feedback':''}">${a.type==='feedback'?'Geri Bildirim':'Uyarı'}</div>
       <div class="alert-msg">${esc(a.message)}</div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
@@ -1032,6 +1051,7 @@ async function loadAlerts(){
       </div>
     </div>`).join('')}</div>`;
 }
+function setAlertFilter(type){alertFilter=type;loadAlerts();}
 async function readAlert(id){await api('POST',`/api/alerts/${id}/read`);loadAlerts();refreshBadges();}
 async function readAllAlerts(){await api('POST','/api/alerts/read-all');loadAlerts();refreshBadges();}
 

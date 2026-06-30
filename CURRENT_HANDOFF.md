@@ -56,6 +56,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   Çok uzun metinlerde performans için renkli diff kapatılıp metinler yan yana gösterilir.
   Dosya analizinde server response'u `originalText` döndürür; geçmiş kayıtlar için orijinal
   metnin kalıcı saklanması sonraki faza bırakıldı.
+- Analiz izlenebilirliği: sonuç response'u `analysisMeta.promptVersion` ve `rulesHash`
+  döndürür; sonuç ekranında chip olarak gösterilir. `schema.sql` `history.prompt_version`
+  ve `history.rules_hash` kolonlarını içerir. Canlı DB'de kolonlar yoksa uygulama kırılmaz,
+  sadece geçmişe sürüm meta yazmaz.
+- Geri bildirim merkezi: Uyarılar sekmesi "Uyarılar ve Geri Bildirimler" oldu; Tümü /
+  Geri Bildirim / Düşük Skor filtreleri eklendi.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -73,6 +79,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   bildirim endpoint'i ve sonuç ekranı butonları frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex dördüncü tur). 13/13 test geçti; yan
   yana karşılaştırma ve diff UI frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex beşinci tur). 13/13 test geçti; analiz
+  sürüm chip'i ve uyarı/geri bildirim filtreleri frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
