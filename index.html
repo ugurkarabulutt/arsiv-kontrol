@@ -152,6 +152,12 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .i-arr{color:var(--ink3);padding-top:4px;font-size:12px;}
 .i-fix{background:var(--grn-bg);color:var(--green);border-left:2px solid var(--green);padding:3px 8px;font-size:14px;flex:1;min-width:80px;font-weight:600;}
 .i-rule{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);margin-top:3px;}
+.issue-actions{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;}
+.btn-mini{font-family:'JetBrains Mono',monospace;font-size:10px;background:transparent;color:var(--ink3);border:1px solid var(--border);padding:4px 7px;cursor:pointer;}
+.btn-mini:hover{border-color:var(--gold);color:var(--gold);}
+.feedback-panel{background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:12px 14px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.feedback-panel p{font-size:13px;color:var(--ink2);}
+.feedback-actions{display:flex;gap:6px;flex-wrap:wrap;}
 .empty-cat{padding:16px;text-align:center;color:var(--green);font-size:13px;font-style:italic;}
 .corrected-panel{border:1px solid var(--bord2);border-top:2px solid var(--gold);background:var(--white);margin-bottom:2px;}
 .corrected-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
@@ -482,7 +488,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='';
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null;
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 
 (async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
@@ -586,6 +592,7 @@ async function analyze(){
       if(data.duplicate){showDuplicate(res,data.message);}
       else{
         correctedText=data.correctedText||'';
+        currentHistoryId=data.id||null;
         renderResults(data,res);
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
       }
@@ -597,6 +604,7 @@ async function analyze(){
       if(data.duplicate){showDuplicate(res,data.message);}
       else{
         correctedText=data.correctedText||'';
+        currentHistoryId=data.id||null;
         renderResults(data,res);
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
       }
@@ -650,6 +658,7 @@ function showDuplicate(container,msg){
   setStatus('Bu metin daha önce denetlenmiş.','err');
 }
 function renderResults(d,container){
+  currentResult=d;
   const cats=d.categories||{};
   const sc=d.score||0;
   const fc=sc>=80?'sf-high':sc>=55?'sf-mid':'sf-low';
@@ -665,7 +674,9 @@ function renderResults(d,container){
     const issHtml=iss.length===0?`<div class="empty-cat">✓ Sorun yok</div>`
       :iss.map((it,j)=>`<div class="issue-item" style="animation-delay:${(ci*5+j)*.04}s">
           <div class="issue-row"><div class="i-orig">${esc(it.original)}</div><div class="i-arr">→</div><div class="i-fix">${esc(it.fixed)}</div></div>
-          <div class="i-rule">${esc(it.rule||c.label)}</div></div>`).join('');
+          <div class="i-rule">${esc(it.rule||c.label)}</div>
+          ${d.id?`<div class="issue-actions"><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'nonexistent')">Metinde yok</button><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'wrong_fix')">Yanlış düzeltme</button></div>`:''}
+        </div>`).join('');
     return `<div class="cat-panel"><div class="cat-head"><span class="cat-name">${c.label}</span><span class="cat-cnt ${cat.count>0?'cnt-err':'cnt-ok'}">${cat.count} sorun</span></div>${issHtml}</div>`;
   }).join('');
   container.innerHTML=`
@@ -677,6 +688,12 @@ function renderResults(d,container){
       </div>${scoreBoxes}
     </div>
     ${d.summary?`<div class="summary-box ${sc<60?'summary-warn':''}">${esc(d.summary)}</div>`:''}
+    ${d.id?`<div class="feedback-panel"><p>Bu sonuçta sorun varsa ekibe doğrudan bildir.</p><div class="feedback-actions">
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','missing_issue')">Eksik hata</button>
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','layout_broken')">Düzen bozuldu</button>
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','score_wrong')">Skor yanlış</button>
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','other')">Diğer</button>
+    </div></div>`:''}
     <div class="cat-grid">${catPanels}</div>
     ${d.correctedText?`<div class="corrected-panel">
       <div class="corrected-head">
@@ -730,7 +747,7 @@ async function downloadPDF(){
 function clearAnalyze(){
   el('inputText').value='';
   el('resultsArea').innerHTML='';
-  selectedFile=null;batchFiles=[];correctedText='';
+  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;
   const d=el('fileDrop');
   d.className='file-drop';
   d.innerHTML='<div style="font-size:30px;margin-bottom:8px">📄</div><p>Dosyayı buraya sürükleyin veya tıklayın</p><small class="mono" style="color:var(--ink3)">.docx formatı desteklenir</small>';
@@ -738,6 +755,32 @@ function clearAnalyze(){
   setStatus('','');
 }
 function setStatus(msg,type){const e=el('statusMsg');e.textContent=msg;e.className='status-msg'+(type?' '+type:'');}
+
+async function sendResultFeedback(historyId,reason){
+  const labels={missing_issue:'Eksik hata',layout_broken:'Düzen bozuldu',score_wrong:'Skor yanlış',other:'Diğer'};
+  const note=prompt(`${labels[reason]||'Geri bildirim'} için kısa not ekleyin:`);
+  if(note===null)return;
+  const r=await api('POST',`/api/history/${historyId}/feedback`,{reason,note});
+  if(r.error){setStatus(r.error,'err');return;}
+  setStatus('✓ Geri bildirim gönderildi.','ok');
+  setTimeout(()=>setStatus('',''),2500);
+}
+
+async function sendIssueFeedback(historyId,category,index,reason){
+  const issue=currentResult?.categories?.[category]?.issues?.[index];
+  if(!issue){setStatus('Bulgu bulunamadı.','err');return;}
+  const note=prompt('Bu bulgu neden yanlış? Kısa not ekleyebilirsiniz:');
+  if(note===null)return;
+  const r=await api('POST',`/api/history/${historyId}/feedback`,{
+    reason,note,category,
+    original:issue.original||'',
+    fixed:issue.fixed||'',
+    rule:issue.rule||''
+  });
+  if(r.error){setStatus(r.error,'err');return;}
+  setStatus('✓ Bulgu geri bildirimi gönderildi.','ok');
+  setTimeout(()=>setStatus('',''),2500);
+}
 
 async function loadHistory(){
   const hist=await api('GET','/api/history');

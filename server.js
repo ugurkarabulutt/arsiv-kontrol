@@ -221,6 +221,14 @@ const mapAlert   = a => ({
   id: a.id, type: a.type, message: a.message, userId: a.user_id,
   historyId: a.history_id, score: a.score, read: a.read, createdAt: a.created_at
 });
+const FEEDBACK_REASONS = Object.freeze({
+  nonexistent: 'Metinde olmayan hata',
+  wrong_fix: 'Yanlış düzeltme',
+  missing_issue: 'Eksik hata',
+  layout_broken: 'Düzen bozuldu',
+  score_wrong: 'Skor yanlış',
+  other: 'Diğer'
+});
 
 // ── Rules helpers (settings tablosunda key='rules') ─────────────────────────
 async function loadRules() {
@@ -448,6 +456,45 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     res.json(mapHistory(data));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/feedback', auth, async (req, res) => {
+  try {
+    const { reason, note, category, original, fixed, rule } = req.body || {};
+    const reasonLabel = FEEDBACK_REASONS[reason] || FEEDBACK_REASONS.other;
+    const cleanNote = String(note || '').trim().slice(0, 1000);
+    const cleanCategory = String(category || '').trim().slice(0, 40);
+    const cleanOriginal = String(original || '').trim().slice(0, 220);
+    const cleanFixed = String(fixed || '').trim().slice(0, 220);
+    const cleanRule = String(rule || '').trim().slice(0, 220);
+
+    let query = supabase.from('history').select('id,user_id,filename,score').eq('id', req.params.id);
+    if (!isAdminRole(req.session.role)) query = query.eq('user_id', req.session.userId);
+    const { data: history, error: historyError } = await query.maybeSingle();
+    if (historyError) throw new Error(historyError.message);
+    if (!history) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+
+    const parts = [
+      `Geri bildirim: ${reasonLabel}`,
+      `Kayıt: ${history.filename || 'Metin Girişi'}`,
+      `Gönderen: ${req.session.name || req.session.username}`
+    ];
+    if (cleanCategory) parts.push(`Kategori: ${cleanCategory}`);
+    if (cleanOriginal || cleanFixed) parts.push(`Bulgu: "${cleanOriginal || '—'}" → "${cleanFixed || '—'}"`);
+    if (cleanRule) parts.push(`Kural: ${cleanRule}`);
+    if (cleanNote) parts.push(`Not: ${cleanNote}`);
+
+    const { error } = await supabase.from('alerts').insert({
+      type: 'feedback',
+      message: parts.join(' | '),
+      user_id: req.session.userId,
+      history_id: history.id,
+      score: history.score,
+      read: false
+    });
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

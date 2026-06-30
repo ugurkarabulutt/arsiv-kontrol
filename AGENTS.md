@@ -115,6 +115,11 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-06-30
+- **Ekip geri bildirim döngüsü:** sonuç ekranına genel geri bildirim ve bulgu bazlı
+  "Metinde yok / Yanlış düzeltme" butonları eklendi. Kullanıcılar artık canlı analiz
+  sonucundaki yanlış pozitif, eksik hata, düzen bozulması ve skor sorunlarını doğrudan
+  uygulama içinden bildirebilir. Backend bu kayıtları mevcut `alerts` tablosunda
+  `type='feedback'` olarak saklar; yeni Supabase migration gerektirmez.
 - **Doğruyu yanlış sayma kök düzeltmesi:** varsayılan kural setindeki bağlamsız ve çelişkili
   talimatlar yumuşatıldı. Sözlük dönüşümleri artık yalnızca bağımsız/tam kelime ve doğru
   bağlamda uygulanacak şekilde yazıldı; sure adları, özel isimler, slayt/tablo etiketleri
