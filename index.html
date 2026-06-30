@@ -1012,6 +1012,18 @@ async function loadDash(){
   const maxUser=Math.max(...(stats.perUser||[]).map(u=>u.count),1);
   const userBars=(stats.perUser||[]).slice(0,8).map(u=>
     `<div class="bar-row"><div class="bar-label">${esc(u.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(u.count/maxUser*100)}%;background:var(--gold)"></div></div><div class="bar-val">${u.count}</div></div>`).join('');
+  const riskRows=(stats.riskItems||[]).map(h=>{
+    const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
+    const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const st=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':'Bekliyor';
+    return `<tr>
+      <td><strong>${esc(h.name||'—')}</strong><div class="mono" style="font-size:10px;color:var(--ink3)">${dt}</div></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename||'Metin Girişi')}">${esc(h.filename||'Metin Girişi')}</td>
+      <td><span class="score-pill ${pc}">${sc}</span></td>
+      <td class="mono">${h.totalErrors||0}</td>
+      <td>${st}</td>
+    </tr>`;
+  }).join('');
   container.innerHTML=`
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-lbl">Toplam</div><div class="stat-val">${t.allTime}</div></div>
@@ -1032,6 +1044,18 @@ async function loadDash(){
       <div class="dash-card-head">Son 14 Gün</div>
       <div class="dash-card-body"><div class="chart-wrap"><canvas id="dailyChart"></canvas></div></div>
     </div>
+    <div class="dash-card" style="margin-bottom:12px">
+      <div class="dash-card-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>Riskli Son Denetimler</span>
+        <button class="btn-sec" style="padding:4px 8px;font-size:10px" onclick="showLowScoreHistory()">Düşükleri Aç</button>
+      </div>
+      <div class="dash-card-body" style="padding:0">
+        <div class="table-wrap"><table class="data-table" style="min-width:420px">
+          <thead><tr><th>Kullanıcı</th><th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th></tr></thead>
+          <tbody>${riskRows||'<tr><td colspan="5" class="empty-state">Riskli kayıt yok</td></tr>'}</tbody>
+        </table></div>
+      </div>
+    </div>
     <div class="dash-card">
       <div class="dash-card-head">Performans Tablosu</div>
       <div class="dash-card-body" style="padding:0">
@@ -1045,6 +1069,15 @@ async function loadDash(){
       </div>
     </div>`;
   setTimeout(()=>drawDailyChart(stats.daily||[]),80);
+}
+
+function showLowScoreHistory(){
+  showTab('gecmis');
+  setTimeout(()=>{
+    if(el('histStatusFilter'))el('histStatusFilter').value='low';
+    if(el('histSearch'))el('histSearch').value='';
+    setHistoryFilter();
+  },0);
 }
 
 function drawDailyChart(daily){

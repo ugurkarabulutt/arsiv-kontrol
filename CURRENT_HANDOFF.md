@@ -71,6 +71,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Geçmiş filtreleme: Denetim Geçmişi ekranında dosya/kullanıcı araması, Bekleyen/Onaylanan/
   Reddedilen/Düşük skor filtresi ve kaç kaydın görüntülendiğini gösteren sayaç var. Sunucu
   veya veritabanı değişikliği yok; mevcut liste üzerinde çalışıyor.
+- Riskli kayıt görünümü: admin dashboard skor 60 altı veya hata sayısı 5 ve üzeri son
+  denetimleri "Riskli Son Denetimler" panelinde gösteriyor; panelden düşük skor geçmiş
+  filtresine hızlı geçiş var.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -96,6 +99,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   feedback metrikleri ve ayrıştırılmış geri bildirim kartları frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex sekizinci tur). 13/13 test geçti; geçmiş
   arama/durum/düşük skor filtreleri frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex dokuzuncu tur). 13/13 test geçti; riskli
+  denetimler dashboard paneli ve düşük skor geçmiş geçişi frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

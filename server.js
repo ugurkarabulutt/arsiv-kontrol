@@ -637,6 +637,19 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const unreadAlerts = alerts.filter(a => !a.read).length;
     const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
     const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
+    const riskItems = hist
+      .filter(h => (h.score || 0) < 60 || (h.totalErrors || 0) >= 5)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 8)
+      .map(h => ({
+        id: h.id,
+        name: h.name,
+        filename: h.filename,
+        score: h.score || 0,
+        totalErrors: h.totalErrors || 0,
+        status: h.status || 'bekliyor',
+        createdAt: h.createdAt
+      }));
 
     res.json({
       totals: {
@@ -657,7 +670,8 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         avgErrors: u.count ? Math.round(u.errors / u.count) : 0
       })).sort((a,b) => b.count - a.count),
       catTotals,
-      daily
+      daily,
+      riskItems
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
