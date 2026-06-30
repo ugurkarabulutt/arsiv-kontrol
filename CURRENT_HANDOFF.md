@@ -62,6 +62,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   sadece geçmişe sürüm meta yazmaz.
 - Geri bildirim merkezi: Uyarılar sekmesi "Uyarılar ve Geri Bildirimler" oldu; Tümü /
   Geri Bildirim / Düşük Skor filtreleri eklendi.
+- İş panosu: Onay Bekleyenler sekmesi "İş Panosu" oldu. Denetimler Bekleyen / Onaylanan /
+  Reddedilen sütunlarında kartlarla gösterilir; kartlardan Gör / Onayla / Reddet işlemleri
+  yapılabilir.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -81,6 +84,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   yana karşılaştırma ve diff UI frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex beşinci tur). 13/13 test geçti; analiz
   sürüm chip'i ve uyarı/geri bildirim filtreleri frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex altıncı tur). 13/13 test geçti; iş panosu
+  frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

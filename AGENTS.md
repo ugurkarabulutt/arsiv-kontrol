@@ -115,6 +115,10 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-06-30
+- **İş panosu:** Onay Bekleyenler sekmesi "İş Panosu"na dönüştürüldü. Denetimler
+  Bekleyen / Onaylanan / Reddedilen sütunlarında kartlarla gösterilir; kartlardan metin
+  görülebilir, onaylanabilir veya reddedilebilir. Bu, ekip operasyon akışının ilk görünür
+  sürümüdür.
 - **Analiz izlenebilirliği:** analiz sonuçlarına `promptVersion` ve `rulesHash` meta bilgisi
   eklendi; sonuç ekranında küçük chip olarak gösterilir. `schema.sql` yeni kurulumlar için
   `history.prompt_version` ve `history.rules_hash` kolonlarını içerir. Canlı veritabanında
