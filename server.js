@@ -59,8 +59,9 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 const DEFAULT_RULES = `════════════════════════════════════════
 KURAL 1 — EFENDİMİZİN SÖZLÜĞÜ
 ════════════════════════════════════════
-Aşağıdaki kelimeler MUTLAKA bu şekilde yazılmalıdır.
-Metinde farklı yazılmışsa düzelt:
+Aşağıdaki yazımlar arşiv standardıdır; yalnızca kelime gerçekten aynı anlamda ve bağımsız
+kelime olarak kullanılmışsa düzelt. Sure adı, özel isim, alıntı başlığı, tablo/slayt etiketi,
+kelime içi parça veya farklı anlamlı kullanım ise dokunma:
 
 Allahû Tealâ
 Allah'ın, Allah'a, Allah'tan
@@ -69,7 +70,7 @@ Kur'ân
 hadîs, hadîs-i şerif
 sahâbe
 Efendimiz'in (kesme işareti zorunlu)
-Efendimiz (S.A.V)
+Peygamber Efendimiz (S.A.V) — yalnızca Peygamber Efendimiz açıkça kastediliyorsa
 mü'min
 nefs (nefis değil)
 îmân
@@ -80,8 +81,8 @@ inşaallah
 velî
 resûl (küçük harf, özel isim değilse)
 nebî
-dîn
-tâbî
+dîn (din kelimesi bağımsız kavramsa; dinlenmek/dinlemek köklerine dokunma)
+tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
 ni'met
 ulûl'elbab
 hidayet (hidâyet değil)
@@ -114,18 +115,21 @@ likâallah
 ════════════════════════════════════════
 KURAL 2 — İMLÂ (Yanlış → Doğru)
 ════════════════════════════════════════
+Bu dönüşümleri yalnızca tam kelime/ifade eşleşmesinde uygula. Kelime içi parça eşleşmesi yasaktır.
+Sure adları ve özel adlar korunur.
+
 Allah Teala → Allahû Tealâ
 Allahu Teala → Allahû Tealâ
 Resul → resûl
 Veli → velî
 Nebi → nebî
-Din → dîn
-Ayet → âyet
+Din → dîn (yalnızca bağımsız din kavramıysa; dinlenmek/dinlemek türevleri hariç)
+Ayet → âyet (sure/kitap adı veya özel başlık içinde değilse)
 Ayet-i kerime → âyet-i kerime
 Kuran → Kur'ân
-Mumin → mü'min
-Tabi → tâbî
-Iman → îmân
+Mumin → mü'min (Muminun/Mu'minûn/Mü'minûn Suresi içinde değilse)
+Tabi → tâbî (Tabiî ki/Tabii ki ifadesi değilse)
+Iman → îmân (özel isim veya başlık içinde değilse)
 Nefis → nefs
 hidâyet → hidayet
 Efendimizin → Efendimiz'in
@@ -147,6 +151,8 @@ KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
 - Peygamber Efendimiz, Allah Resûlü, Hz. Muhammed → mutlaka (S.A.V) ekle
 - Sallallahu aleyhi vesellem gibi uzun yazılmışsa → (S.A.V) olarak kısalt
 - Resûlullah'tan sonra (S.A.V) yazılabilir veya yazılmayabilir
+- Muhterem Efendimiz, Hocamız, Efendimiz ifadesi Peygamber Efendimiz'i açıkça kastetmiyorsa
+  (S.A.V) ekleme.
 - Tüm nebî isimlerinde mutlaka (A.S) ekle: Musa (A.S), Nuh (A.S), İsa (A.S)
 - Mehdi (A.S) — mutlaka (A.S) ekle
 
@@ -155,7 +161,7 @@ KURAL 4 — NOKTALAMA
 ════════════════════════════════════════
 - Özel isimlere ek geldiğinde kesme işareti zorunlu:
   Allah'a, Kur'ân'dan, Efendimiz'in, Sıratı Mustakîm'e
-- Tırnak işaretleri: Türkçe tırnak kullan " "
+- Tırnak işaretlerini keyfi değiştirme; kaynakta tek/çift tırnak dengesi doğruysa koru.
 - Tırnak açıldıktan sonra boşluk bırakma
 - Cümle tırnakla bitiyorsa nokta tırnağın içinde olmalı: "...vermiştir."
 - Nokta, virgül, iki nokta sonrası tek boşluk
@@ -174,10 +180,12 @@ KURAL 5 — ALLAHÛ TEALÂ'NIN SÖZLERİ VE ZAMİRLER
 ════════════════════════════════════════
 KURAL 6 — METİN YAPISI VE PARAGRAF DÜZENİ
 ════════════════════════════════════════
-- Metin paragraflar halinde olmalı, alt alta satırlar halinde değil
-- Paragraflar arasında mutlaka boş satır bırak
+- Düz anlatı metni paragraflar halinde olmalı; ancak slayt, hadîs dökümü, tablo, numaralı liste
+  ve kısa satır düzeni varsa mevcut yapıyı koru.
+- Paragraflar arasında boş satır bırak; tablo/slayt satır düzenini bu nedenle bozma.
 - "Sevgili kardeşlerim" ifadesi metinde varsa koru, yoksa ekleme
-- "Allah razı olsun" ifadesi metinde varsa son cümlenin devamına yaz (virgül veya noktalı virgülle bağla), asla ayrı satıra alma, yoksa ekleme
+- "Allah razı olsun." kaynakta ayrı cümleyse ayrı cümle olarak koru; önceki cümleyle virgül veya
+  noktalı virgülle birleştirme. Yoksa ekleme.
 - Âyetlerden ve uzun alıntılardan önce ve sonra boş satır bırak
 - Hocamız'ın ifadesi değiştirilmemeli, sadece imlâ ve noktalama düzeltilmeli
 - "E, ee, slaytı gösterelim, slayta bakalım" gibi dolgu ifadeler silinmeli
@@ -603,7 +611,7 @@ NASIL ÇALIŞACAKSIN:
 5. Anlam değişikliği yapma, cümle ekleme veya çıkarma, sadeleştirme yapma.
 6. Yalnızca imlâ, noktalama ve yapı kurallarını uygula.
 7. Paragraflar arasında mutlaka boş satır bırak.
-8. "Allah razı olsun" ifadesi varsa son cümlenin devamına yaz, asla ayrı satıra alma.
+8. "Allah razı olsun." ifadesi kaynakta ayrı cümleyse ayrı cümle olarak koru; önceki cümleyle birleştirme.
 9. "Bu Resûl" gibi kullanımlarda Resûl büyük R ile kalmalı — özel isim olarak kullanılıyor.
 10. Tırnak içinde biten cümlelerde nokta tırnağın içinde olmalı: "...vermiştir."
 11. Bağımsız iki cümleyi noktalama bahanesiyle birleştirme. Özellikle "Allah'ın izniyle. Allah razı olsun."

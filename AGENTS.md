@@ -115,6 +115,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-06-30
+- **Doğruyu yanlış sayma kök düzeltmesi:** varsayılan kural setindeki bağlamsız ve çelişkili
+  talimatlar yumuşatıldı. Sözlük dönüşümleri artık yalnızca bağımsız/tam kelime ve doğru
+  bağlamda uygulanacak şekilde yazıldı; sure adları, özel isimler, slayt/tablo etiketleri
+  ve kelime içi parça eşleşmeleri açıkça korundu. `Allah razı olsun.` kuralındaki önceki
+  "son cümleye bağla" çelişkisi kaldırıldı; kaynakta ayrı cümleyse ayrı kalır.
+- **Korumalı dönüşüm filtresi:** backend `Mu'minûn/Muminun Suresi`, `Tabiî ki`, `derecat`,
+  `dinlenmeye`, `Muhterem Efendimiz`, `Zumer` gibi canlı testlerde yanlış pozitif üreten
+  ifadeleri korumalı kabul eder. Yasak dönüşümler hem issue listesinden hem de
+  `correctedText` içinden geri alınır; böylece skor temizlense bile düzeltilmiş metinde
+  yanlış dönüşüm kalmaz.
+- **Test:** `npm.cmd run check` başarılı; test sayısı 13'e çıktı. Yeni testler korumalı
+  ifadelerin skordan çıkarılmasını ve düzeltilmiş metinden geri alınmasını doğruluyor.
 - **Canlı sonuç hata analizi:** ekip tarafından canlı sitede test edilen 16 `.docx` hata
   raporu incelendi. Ortak sorunlar: metinde olmayan kelimelerin hata listesinde görünmesi,
   aynı görünen `original/fixed` çiftlerinin skorlanması, kelime içinden parça yakalama

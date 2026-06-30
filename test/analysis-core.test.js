@@ -5,6 +5,7 @@ const {
   LOW_SCORE_MSG,
   candidateTextHashes,
   finalizeResult,
+  isProtectedChange,
   legacyTextHash,
   sourceContainsIssue,
   textHash
@@ -91,4 +92,37 @@ test('kaynak metinde olmayan veya ayni gorunen bulgulari skor disi birakir', () 
 test('kelime ici parca eslesmesini kaynak bulgusu saymaz', () => {
   assert.equal(sourceContainsIssue('Muminun Suresi', 'Mumin'), false);
   assert.equal(sourceContainsIssue('Mumin kelimesi hatali yazildi', 'Mumin'), true);
+});
+
+test('korumali ve yasak donusumleri hem skordan hem duzeltilmis metinden cikarir', () => {
+  const source = "Tabiî ki derecat artar. Dinlenmeye geçti. Muhterem Efendimiz anlattı. Allah'ın izniyle. Allah razı olsun.";
+  const result = finalizeResult({
+    correctedText: "Tâbî ki derece artar. Dînlenmeye geçti. Efendimiz (S.A.V) anlattı. Allah'ın izniyle, Allah razı olsun.",
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'Tabiî ki', fixed: 'Tâbî ki', rule: 'yanlis baglam' },
+          { original: 'derecat', fixed: 'derece', rule: 'yanlis baglam' },
+          { original: 'Dinlenmeye', fixed: 'Dînlenmeye', rule: 'yanlis kok' },
+          { original: 'Muhterem Efendimiz', fixed: 'Efendimiz (S.A.V)', rule: 'yanlis unvan' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: "Allah'ın izniyle. Allah razı olsun.", fixed: "Allah'ın izniyle, Allah razı olsun.", rule: 'yanlis birlestirme' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('korumali ifadeleri degistiren issue gecersiz sayilir', () => {
+  assert.equal(isProtectedChange('Mu\'minûn', 'Mü\'minûn'), true);
+  assert.equal(isProtectedChange('Muminun Suresi', "mü'min Suresi"), true);
+  assert.equal(isProtectedChange('Tabiî ki', 'tâbî ki'), true);
+  assert.equal(isProtectedChange('Resul', 'resûl'), false);
 });

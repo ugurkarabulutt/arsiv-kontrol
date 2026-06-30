@@ -43,6 +43,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   bulunmayan issue'ları, kullanıcıya aynı görünen original/fixed çiftlerini ve kelime içi
   parça eşleşmelerini skor dışı bırakıyor. `server.js` OpenAI sonucunu kaynak metinle
   birlikte finalize ediyor.
+- Kök yanlış-pozitif düzeltmesi: varsayılan kural setindeki bağlamsız dönüşümler ve
+  `Allah razı olsun.` çelişkisi temizlendi. `Mu'minûn/Muminun Suresi`, `Tabiî ki`,
+  `derecat`, `dinlenmeye`, `Muhterem Efendimiz`, `Zumer` gibi korumalı ifadeleri değiştiren
+  yasak dönüşümler hem issue listesinden hem de `correctedText` içinden geri alınıyor.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -53,6 +57,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - `npm.cmd run check`: başarılı (2026-06-30 Codex). 11/11 test geçti; yeni testler
   metinde olmayan/aynı görünen issue'ların skor dışı bırakılmasını ve `Muminun`
   içinden `Mumin` eşleştirilmemesini güvenceye alıyor.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex ikinci tur). 13/13 test geçti; yeni
+  testler korumalı/yasak dönüşümlerin skordan ve düzeltilmiş metinden geri alınmasını
+  doğruluyor.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
