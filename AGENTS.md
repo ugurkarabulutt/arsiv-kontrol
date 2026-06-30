@@ -218,6 +218,14 @@ tespit edilir).
 - **Riskli kayıtlar:** Admin dashboard'a skor 60 altı veya hata sayısı yüksek son denetimleri
   gösteren "Riskli Son Denetimler" paneli eklendi. Panelden Denetim Geçmişi düşük skor
   filtresine hızlı geçiş yapılabilir.
+- **Rapor paylaşımı:** Analiz sonucu ekranına "Raporu kopyala" aksiyonu eklendi. Skor,
+  toplam sorun, kategori sayıları, özet, analiz sürümü ve ilk bulgular tek metin olarak
+  panoya kopyalanır.
+- **Karanlık mod:** Uygulamaya açık/koyu tema anahtarı eklendi. Tercih `localStorage` içinde
+  saklanır, mobil menüde de değiştirilebilir ve koyu tema siyah/beyaz ağırlıklı çalışır.
+- **Metin denetim sağlamlığı:** Metin girişi normalize edilir, çok kısa/boş/çok uzun metinler
+  hem frontend hem API tarafında denetime gönderilmeden durdurulur. Denetim sırasında çift
+  tıklama ile ikinci analiz başlatılması engellenir.
 
 ### 2026-06-18 (2. tur)
 - **Skorlama** sunucu tarafında ağırlıklı formülle yeniden yazıldı (`finalizeResult`),

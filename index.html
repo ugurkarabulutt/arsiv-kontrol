@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#315fd9">
+<meta name="theme-color" id="themeColorMeta" content="#f5f0e8">
 <meta name="application-name" content="Arşiv AI">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -29,6 +29,14 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
 <title>Arşiv Kontrol AI</title>
+<script>
+try{
+  const savedTheme=localStorage.getItem('arsiv-theme');
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme=savedTheme||'light';
+  if(!savedTheme&&prefersDark)document.documentElement.dataset.theme='dark';
+}catch(_){}
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
 :root{
@@ -41,6 +49,18 @@
   --orange:#7a3a0a;--orange-bg:#fdf3ec;
   --border:#cfc4b0;--bord2:#b8aa96;--white:#fff;
   --topbar-h:52px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#050505;--bg2:#101010;--bg3:#1c1c1c;
+  --ink:#f7f7f7;--ink2:#d7d7d7;--ink3:#a8a8a8;
+  --gold:#f5f5f5;--gold-lt:#ffffff;--gold-bg:#181818;
+  --red:#ffffff;--red-bg:#151515;
+  --green:#ffffff;--grn-bg:#151515;
+  --blue:#ffffff;--blue-bg:#151515;
+  --orange:#ffffff;--orange-bg:#151515;
+  --border:#303030;--bord2:#4a4a4a;--white:#0b0b0b;
+  color-scheme:dark;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,serif;font-size:17px;line-height:1.65;min-height:100vh;}
@@ -74,6 +94,9 @@ body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,ser
 .btn-top{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid rgba(245,240,232,.2);color:rgba(245,240,232,.65);padding:5px 10px;cursor:pointer;transition:all .15s;position:relative;white-space:nowrap;}
 .btn-top:hover{border-color:var(--gold-lt);color:var(--gold-lt);}
 .btn-top.active-tab{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+.theme-toggle{font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(255,255,255,.08);color:var(--bg);border:1px solid rgba(245,240,232,.28);padding:5px 9px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.theme-toggle:hover{border-color:var(--gold-lt);color:var(--gold-lt);}
+:root[data-theme="dark"] .theme-toggle{background:#fff;color:#000;border-color:#fff;}
 .badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:white;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;background:transparent;border:none;}
 .hamburger span{display:block;width:22px;height:2px;background:var(--bg);border-radius:2px;transition:all .25s;}
@@ -87,6 +110,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,ser
 .mobile-user strong{color:var(--bg);}
 .btn-mobile{display:flex;align-items:center;justify-content:space-between;width:100%;font-family:'JetBrains Mono',monospace;font-size:13px;background:transparent;border:none;color:rgba(245,240,232,.75);padding:14px 4px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;}
 .btn-mobile.active-tab{color:var(--gold-lt);}
+.btn-mobile.theme-mobile{font-size:12px;color:var(--bg);}
 .badge-m{background:var(--red);color:white;font-size:9px;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 4px;}
 .app-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tab-content{display:none;max-width:1160px;margin:0 auto;padding:24px 16px;}
@@ -118,6 +142,9 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .status-msg{font-size:14px;color:var(--ink3);font-style:italic;}
 .status-msg.ok{color:var(--green);}
 .status-msg.err{color:var(--red);}
+.text-health{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.text-health.warn{color:var(--orange);}
+.text-health.err{color:var(--red);}
 .spin{width:28px;height:28px;margin:0 auto;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
 .btn-spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -274,6 +301,25 @@ canvas{width:100%!important;}
 .profile-body{padding:20px;}
 .info-box{background:var(--blue-bg);border:1px solid #a8c0dc;border-left:3px solid var(--blue);padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:16px;}
 .warn-box{background:var(--orange-bg);border:1px solid #d4a87a;border-left:3px solid var(--orange);padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:12px;}
+:root[data-theme="dark"] .summary-box,
+:root[data-theme="dark"] .info-box,
+:root[data-theme="dark"] .warn-box{border-color:var(--bord2);}
+:root[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.78);}
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .btn-login{background:#fff;color:#000;}
+:root[data-theme="dark"] .btn-primary:hover,
+:root[data-theme="dark"] .btn-login:hover{background:#dcdcdc;color:#000;}
+:root[data-theme="dark"] .btn-sec,
+:root[data-theme="dark"] .btn-mini,
+:root[data-theme="dark"] .btn-copy{color:var(--ink2);border-color:var(--bord2);}
+:root[data-theme="dark"] .btn-sec:hover,
+:root[data-theme="dark"] .btn-mini:hover,
+:root[data-theme="dark"] .btn-copy:hover{color:#fff;border-color:#fff;}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea{background:#0b0b0b;color:#fff;border-color:var(--bord2);}
+:root[data-theme="dark"] .diff-del,
+:root[data-theme="dark"] .diff-ins{text-decoration-thickness:2px;}
 @media(max-width:700px){
   .topbar-user{display:none;}
   .desktop-nav{display:none !important;}
@@ -326,6 +372,7 @@ canvas{width:100%!important;}
         <button class="btn-top admin-only" id="tabBtnKurallar" onclick="showTab('kurallar')" style="display:none">Kurallar</button>
         <button class="btn-top" onclick="doLogout()">Çıkış</button>
       </div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir">Karanlık</button>
       <button class="hamburger" id="hamburger" onclick="toggleMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -343,6 +390,7 @@ canvas{width:100%!important;}
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Uyarılar <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
+      <button class="btn-mobile theme-mobile" id="themeToggleMobile" onclick="toggleTheme()">Tema: Karanlık</button>
       <button class="btn-mobile" onclick="doLogout()" style="color:#e08080;margin-top:8px">Çıkış Yap</button>
     </div>
   </div>
@@ -358,7 +406,11 @@ canvas{width:100%!important;}
         <button class="itab" onclick="switchInner('batch')">Toplu Yükleme</button>
       </div>
       <div class="itab-panel active" id="ipanel-text">
-        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" style="overflow:hidden;resize:none;min-height:180px"></textarea>
+        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="handleTextInput()" style="overflow:hidden;resize:none;min-height:180px"></textarea>
+        <div class="text-health" id="textHealth">
+          <span id="textCount">0 karakter</span>
+          <span id="textHint">Denetlenecek metni yapıştırın.</span>
+        </div>
       </div>
       <div class="itab-panel" id="ipanel-file">
         <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()" ondragover="fdOver(event)" ondragleave="fdLeave()" ondrop="fdDrop(event)">
@@ -535,8 +587,42 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[];
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false;
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
+const MIN_TEXT_CHARS=10;
+const MAX_TEXT_CHARS=120000;
+
+function applyTheme(theme){
+  const next=theme==='dark'?'dark':'light';
+  document.documentElement.dataset.theme=next;
+  try{localStorage.setItem('arsiv-theme',next);}catch(_){}
+  const isDark=next==='dark';
+  const meta=document.getElementById('themeColorMeta');
+  if(meta)meta.setAttribute('content',isDark?'#050505':'#f5f0e8');
+  const desktopToggle=document.getElementById('themeToggle');
+  const mobileToggle=document.getElementById('themeToggleMobile');
+  if(desktopToggle)desktopToggle.textContent=isDark?'Aydınlık':'Karanlık';
+  if(mobileToggle)mobileToggle.textContent=isDark?'Tema: Aydınlık':'Tema: Karanlık';
+}
+function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');}
+function cleanInputText(text){return String(text||'').normalize('NFC').replace(/\r\n?/g,'\n').trim();}
+function handleTextInput(){
+  const input=el('inputText');
+  if(!input)return;
+  input.style.height='auto';input.style.height=input.scrollHeight+'px';
+  const cleaned=cleanInputText(input.value);
+  const count=cleaned.length;
+  const box=el('textHealth');
+  if(el('textCount'))el('textCount').textContent=`${count.toLocaleString('tr-TR')} karakter`;
+  let hint='Denetime hazır.';
+  let cls='';
+  if(count===0){hint='Denetlenecek metni yapıştırın.';}
+  else if(count<MIN_TEXT_CHARS){hint='Metin çok kısa; doğru denetim için birkaç cümle girin.';cls='warn';}
+  else if(count>MAX_TEXT_CHARS){hint='Metin çok uzun; bölerek denetlemek daha güvenli.';cls='err';}
+  if(el('textHint'))el('textHint').textContent=hint;
+  if(box)box.className=`text-health${cls?' '+cls:''}`;
+}
+applyTheme(document.documentElement.dataset.theme||'light');
 
 (async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
 
@@ -623,6 +709,14 @@ function batchSelect(e){
 
 async function analyze(){
   const btn=el('analyzeBtn'),res=el('resultsArea');
+  if(isAnalyzing)return;
+  if(activeInner==='text'){
+    const cleaned=cleanInputText(v('inputText'));
+    if(!cleaned)return showInputError(res,'Lütfen metin girin.');
+    if(cleaned.length<MIN_TEXT_CHARS)return showInputError(res,'Metin çok kısa. Sağlıklı denetim için birkaç cümle girin.');
+    if(cleaned.length>MAX_TEXT_CHARS)return showInputError(res,'Metin çok uzun. Lütfen metni bölerek denetleyin.');
+  }
+  isAnalyzing=true;
   btn.disabled=true;
   btn.innerHTML='<span class="btn-spin"></span> Denetleniyor...';
   setStatus('','');
@@ -645,7 +739,7 @@ async function analyze(){
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
       }
     }else{
-      const text=v('inputText');
+      const text=cleanInputText(v('inputText'));
       if(!text)throw new Error('Lütfen metin girin.');
       const data=await api('POST','/api/analyze',{text});
       if(data.error)throw new Error(data.error);
@@ -663,8 +757,14 @@ async function analyze(){
     res.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(e.message)}</div>`;
     setStatus('Denetim başarısız.','err');
   }
+  isAnalyzing=false;
   btn.disabled=false;
   btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Denetle &amp; Düzelt';
+}
+
+function showInputError(container,message){
+  if(container)container.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(message)}</div>`;
+  setStatus(message,'err');
 }
 
 async function runBatch(res){
@@ -746,6 +846,7 @@ function renderResults(d,container){
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','layout_broken')">Düzen bozuldu</button>
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','score_wrong')">Skor yanlış</button>
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','other')">Diğer</button>
+      <button class="btn-mini" id="copyReportBtn" onclick="copyAnalysisReport()">Raporu kopyala</button>
     </div></div>`:''}
     <div class="cat-grid">${catPanels}</div>
     ${d.correctedText&&currentOriginalText?renderComparePanel(currentOriginalText,d.correctedText):''}
@@ -759,6 +860,39 @@ function renderResults(d,container){
       </div>
       <div class="corrected-body">${esc(d.correctedText)}</div>
     </div>`:''}`;
+}
+
+function copyAnalysisReport(){
+  const d=currentResult;
+  if(!d){setStatus('Kopyalanacak sonuç yok.','err');return;}
+  const cats=d.categories||{};
+  const meta=d.analysisMeta||{};
+  const lines=[
+    'Arşiv AI Denetim Özeti',
+    `Skor: ${d.score||0}/100`,
+    `Toplam sorun: ${d.totalErrors||0}`,
+    `Durum: ${(d.score||0)<60?'Düşük skor - düzeltilmiş metin verilmedi':'Düzeltilmiş metin üretildi'}`,
+    ''
+  ];
+  const catLabels={sozluk:'Sözlük',imla:'İmla',noktalama:'Noktalama',etiket:'Etiket',yapi:'Yapı'};
+  Object.keys(catLabels).forEach(k=>lines.push(`${catLabels[k]}: ${cats[k]?.count||0}`));
+  if(d.summary)lines.push('',`Özet: ${d.summary}`);
+  if(meta.promptVersion||meta.rulesHash)lines.push('',`Prompt: ${meta.promptVersion||'-'}`,`Kural: ${meta.rulesHash||'-'}`);
+  const issueLines=[];
+  Object.keys(catLabels).forEach(k=>{
+    (cats[k]?.issues||[]).slice(0,4).forEach(it=>issueLines.push(`- ${catLabels[k]}: ${it.original||''} -> ${it.fixed||''} (${it.rule||''})`));
+  });
+  if(issueLines.length)lines.push('', 'İlk bulgular:', ...issueLines.slice(0,12));
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const btn=el('copyReportBtn');
+    if(btn){
+      const orig=btn.textContent;
+      btn.textContent='✓ Kopyalandı';
+      setTimeout(()=>{btn.textContent=orig;},1600);
+    }
+    setStatus('✓ Rapor panoya kopyalandı.','ok');
+    setTimeout(()=>setStatus('',''),2200);
+  }).catch(()=>setStatus('Rapor kopyalanamadı.','err'));
 }
 
 function copyFixed(){

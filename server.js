@@ -9,7 +9,7 @@ const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
 const {
   LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
-  candidateTextHashes, finalizeResult, textHash
+  candidateTextHashes, finalizeResult, normalizeText, textHash
 } = require('./analysis-core');
 const {
   ROLES, effectiveRole, isAdminRole, isAssignableRole,
@@ -25,6 +25,8 @@ const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_KEY      = process.env.SUPABASE_KEY;
 const PROMPT_VERSION    = '2026-06-30.4';
+const MIN_ANALYSIS_TEXT_CHARS = 10;
+const MAX_ANALYSIS_TEXT_CHARS = 120000;
 
 if (process.env.VERCEL && !process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
@@ -284,6 +286,26 @@ async function seed() {
 // ── Auth middleware ────────────────────────────────────────────────────────
 function normalizeSessionRole(req) {
   if (req.session?.userId) req.session.role = effectiveRole(req.session.username, req.session.role);
+}
+
+function prepareAnalysisText(text) {
+  const cleaned = normalizeText(text);
+  if (!cleaned) {
+    const err = new Error('Metin boş.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (cleaned.length < MIN_ANALYSIS_TEXT_CHARS) {
+    const err = new Error('Metin çok kısa. Sağlıklı denetim için birkaç cümle girin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (cleaned.length > MAX_ANALYSIS_TEXT_CHARS) {
+    const err = new Error('Metin çok uzun. Lütfen metni bölerek denetleyin.');
+    err.statusCode = 413;
+    throw err;
+  }
+  return cleaned;
 }
 const auth = async (req, res, next) => {
   try {
@@ -886,16 +908,15 @@ async function saveHistory(req, result, filename, hash) {
 
 app.post('/api/analyze', auth, async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
-  const { text } = req.body;
-  if (!text?.trim()) return res.status(400).json({ error: 'Metin boş.' });
   try {
     await startupReady;
+    const text = prepareAnalysisText(req.body?.text);
     const hash = textHash(text);
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, 'Metin Girişi', hash);
     res.json({ ...result, id, originalText: text });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
@@ -903,13 +924,13 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
     await startupReady;
-    const text = await extractText(req.file.buffer);
+    const text = prepareAnalysisText(await extractText(req.file.buffer));
     const hash = textHash(text);
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, req.file.originalname, hash);
     res.json({ ...result, id, originalText: text });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res) => {
@@ -919,7 +940,7 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   await startupReady;
   for (const file of req.files) {
     try {
-      const text = await extractText(file.buffer);
+      const text = prepareAnalysisText(await extractText(file.buffer));
       const hash = textHash(text);
       if (await isDuplicate(req, text)) {
         results.push({ filename: file.originalname, success: false, duplicate: true, error: DUPLICATE_MSG });

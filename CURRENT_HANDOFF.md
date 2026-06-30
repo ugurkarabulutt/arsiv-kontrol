@@ -74,6 +74,13 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Riskli kayıt görünümü: admin dashboard skor 60 altı veya hata sayısı 5 ve üzeri son
   denetimleri "Riskli Son Denetimler" panelinde gösteriyor; panelden düşük skor geçmiş
   filtresine hızlı geçiş var.
+- Rapor paylaşımı: analiz sonucu ekranındaki "Raporu kopyala" butonu skor, toplam sorun,
+  kategori kırılımı, özet, analiz sürümü ve ilk bulguları tek metin halinde panoya alıyor.
+- Karanlık mod: topbar ve mobil menüde tema değiştirme düğmesi var. Tercih tarayıcıda
+  saklanıyor; koyu tema siyah/beyaz ağırlıklı, yüksek kontrastlı çalışıyor.
+- Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
+  gösteriliyor. Boş, çok kısa ve çok uzun metinler frontend'de durduruluyor; aynı kontroller
+  `/api/analyze`, `/api/analyze-file` ve batch dosya analizinde sunucu tarafında da uygulanıyor.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -101,6 +108,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   arama/durum/düşük skor filtreleri frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex dokuzuncu tur). 13/13 test geçti; riskli
   denetimler dashboard paneli ve düşük skor geçmiş geçişi frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex onuncu tur). 13/13 test geçti; analiz
+  raporu kopyalama aksiyonu frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex on birinci tur). 13/13 test geçti; karanlık
+  tema, metin sağlık göstergesi ve sunucu tarafı metin uzunluk kontrolleri doğrulandı.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
