@@ -54,16 +54,16 @@ try{
   color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --bg:#050505;--bg2:#101010;--bg3:#1c1c1c;
-  --ink:#f7f7f7;--ink2:#d7d7d7;--ink3:#a8a8a8;
-  --gold:#e8d27a;--gold-lt:#f3e4a4;--gold-bg:#1c1a10;
-  --red:#ff7a7a;--red-bg:#211111;
-  --green:#7fdc92;--grn-bg:#102016;
-  --blue:#9bbdff;--blue-bg:#111827;
-  --orange:#f0ad68;--orange-bg:#21170e;
-  --border:#303030;--bord2:#4a4a4a;--white:#0b0b0b;
-  --topbar-bg:#070707;--topbar-fg:#ffffff;--topbar-muted:rgba(255,255,255,.72);
-  --topbar-line:#333333;--topbar-soft:rgba(255,255,255,.18);
+  --bg:#171717;--bg2:#222222;--bg3:#2d2d2d;
+  --ink:#f3f3f3;--ink2:#d4d4d4;--ink3:#a9a9a9;
+  --gold:#e2ca72;--gold-lt:#efdfa0;--gold-bg:#2b2719;
+  --red:#ff8a8a;--red-bg:#311d1d;
+  --green:#8bd89a;--grn-bg:#1b2f21;
+  --blue:#9fbfff;--blue-bg:#1d2638;
+  --orange:#eeb070;--orange-bg:#302419;
+  --border:#3b3b3b;--bord2:#555555;--white:#1d1d1d;
+  --topbar-bg:#151515;--topbar-fg:#f5f5f5;--topbar-muted:rgba(255,255,255,.74);
+  --topbar-line:#3f3f3f;--topbar-soft:rgba(255,255,255,.2);
   color-scheme:dark;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -613,7 +613,7 @@ function applyTheme(theme){
   try{localStorage.setItem('arsiv-theme',next);}catch(_){}
   const isDark=next==='dark';
   const meta=document.getElementById('themeColorMeta');
-  if(meta)meta.setAttribute('content',isDark?'#050505':'#f5f0e8');
+  if(meta)meta.setAttribute('content',isDark?'#171717':'#f5f0e8');
   const desktopToggle=document.getElementById('themeToggle');
   const mobileToggle=document.getElementById('themeToggleMobile');
   if(desktopToggle){

@@ -84,6 +84,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Koyu tema kontrast düzeltmesi: skor rozetleri, bildirim sayıları ve Onayla/Reddet gibi
   aksiyonlar koyu temada beyaz blok haline gelmesin diye `green/red/gold/orange/blue`
   semantik renkleri koyu tema için ayrıştırıldı.
+- Koyu tema yumuşatma: saf siyah arka plan yerine koyu gri palet kullanılıyor; kartlar,
+  inputlar ve topbar birbirinden daha okunur ayrılıyor.
 - Ekip paylaşım özeti: `docs/EKIP_DEBUG_GELISTIRME_OZETI_2026-06-30.md` canlı debug ve
   geliştirme özetini içerir.
 - Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
@@ -124,6 +126,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   tema renk ayrımı ve ikonlu tema switch frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex on üçüncü tur). 13/13 test geçti; koyu
   tema semantik renkleri, Onayla/Reddet ve skor rozeti kontrast düzeltmeleri doğrulandı.
+- `npm.cmd run check`: başarılı (2026-07-01 Codex). 13/13 test geçti; koyu tema siyah
+  yoğunluğu azaltıldı ve tema meta rengi güncellendi.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
