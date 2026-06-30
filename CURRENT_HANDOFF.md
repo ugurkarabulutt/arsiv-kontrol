@@ -65,6 +65,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - İş panosu: Onay Bekleyenler sekmesi "İş Panosu" oldu. Denetimler Bekleyen / Onaylanan /
   Reddedilen sütunlarında kartlarla gösterilir; kartlardan Gör / Onayla / Reddet işlemleri
   yapılabilir.
+- Feedback ölçüm ekranı: admin dashboard toplam geri bildirim, son 7 gün geri bildirim ve
+  okunmamış geri bildirim sayılarını gösteriyor. Uyarılar sekmesinde ekip geri bildirimleri
+  tek satır metin yerine ayrıştırılmış alanlar halinde okunuyor.
 - Prompt'a canlı hata raporlarından çıkan istisnalar eklendi: "Allah razı olsun" cümlesi
   birleştirilmez; apostrof tipi tek başına hata değildir; tırnaklar korunur; sure adlarında
   kelime içi parça yakalanmaz; `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz`
@@ -86,6 +89,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   sürüm chip'i ve uyarı/geri bildirim filtreleri frontend parse kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex altıncı tur). 13/13 test geçti; iş panosu
   frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex yedinci tur). 13/13 test geçti; dashboard
+  feedback metrikleri ve ayrıştırılmış geri bildirim kartları frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

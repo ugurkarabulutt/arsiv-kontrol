@@ -209,6 +209,9 @@ tespit edilir).
   etiketlerine yazıldı; minimal service worker eklendi. Favicon ayrı tasarlanacak.
 - **Link paylaşımı:** WhatsApp, Telegram, Facebook ve X için Open Graph/Twitter Card
   başlık-açıklamaları ve logolu 1200x630 sosyal paylaşım görseli eklendi.
+- **Feedback ölçümleri:** Admin dashboard'a toplam geri bildirim, son 7 gün geri bildirim
+  ve okunmamış geri bildirim kartları eklendi. Uyarılar sekmesindeki ekip geri bildirimleri
+  artık `Durum / Not / Bulgu / Dosya` alanları ayrıştırılarak daha okunur gösteriliyor.
 
 ### 2026-06-18 (2. tur)
 - **Skorlama** sunucu tarafında ağırlıklı formülle yeniden yazıldı (`finalizeResult`),

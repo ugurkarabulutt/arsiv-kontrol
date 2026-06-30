@@ -594,7 +594,7 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }] = await Promise.all([
       supabase.from('history').select('*'),
       supabase.from('users').select('active'),
-      supabase.from('alerts').select('read')
+      supabase.from('alerts').select('type,read,created_at')
     ]);
     if (hErr) throw new Error(hErr.message);
     if (uErr) throw new Error(uErr.message);
@@ -630,7 +630,12 @@ app.get('/api/stats', auth, admin, async (req, res) => {
       daily.push({ label, count: dayItems.length, avgScore: dayItems.length ? Math.round(dayItems.reduce((s,h) => s+(h.score||0),0)/dayItems.length) : 0 });
     }
 
-    const unreadAlerts = (alertRows || []).filter(a => !a.read).length;
+    const alerts = alertRows || [];
+    const feedbackAlerts = alerts.filter(a => a.type === 'feedback');
+    const lowScoreAlerts = alerts.filter(a => a.type === 'low_score');
+    const feedback7 = feedbackAlerts.filter(a => now - new Date(a.created_at).getTime() < 7 * 864e5).length;
+    const unreadAlerts = alerts.filter(a => !a.read).length;
+    const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
     const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
 
     res.json({
@@ -640,7 +645,11 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         activeUsers: users.length,
         avgScore: hist.length ? Math.round(hist.reduce((s,h)=>s+(h.score||0),0)/hist.length) : 0,
         pendingApproval: pending,
-        unreadAlerts
+        unreadAlerts,
+        feedback: feedbackAlerts.length,
+        feedback7,
+        unreadFeedback,
+        lowScoreAlerts: lowScoreAlerts.length
       },
       perUser: Object.values(perUser).map(u => ({
         name: u.name, count: u.count,

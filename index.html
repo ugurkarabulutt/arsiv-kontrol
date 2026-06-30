@@ -978,6 +978,9 @@ async function loadDash(){
       <div class="stat-card"><div class="stat-lbl">Ort. Skor</div><div class="stat-val ${t.avgScore>=80?'green':t.avgScore>=60?'gold':'red'}">${t.avgScore}</div></div>
       <div class="stat-card"><div class="stat-lbl">Onay Bekleyen</div><div class="stat-val orange">${t.pendingApproval}</div></div>
       <div class="stat-card"><div class="stat-lbl">Uyarı</div><div class="stat-val red">${t.unreadAlerts}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Geri Bildirim</div><div class="stat-val gold">${t.feedback||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">7 Gün Feedback</div><div class="stat-val orange">${t.feedback7||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Okunmamış Feedback</div><div class="stat-val red">${t.unreadFeedback||0}</div></div>
     </div>
     <div class="dash-grid">
       <div class="dash-card"><div class="dash-card-head">Hata Kategorileri</div><div class="dash-card-body">${catBars||'<div class="empty-state">Veri yok</div>'}</div></div>
@@ -1059,11 +1062,20 @@ async function loadAlerts(){
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Uyarı yok.</div>';return;}
   const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.type===alertFilter);
   if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtrede kayıt yok.</div>';return;}
+  function alertBody(a){
+    if(a.type!=='feedback')return `<div class="alert-msg">${esc(a.message)}</div>`;
+    const parts=String(a.message||'').split(' | ');
+    return `<div class="alert-msg">${parts.map(p=>{
+      const idx=p.indexOf(':');
+      if(idx<0)return `<div>${esc(p)}</div>`;
+      return `<div><strong>${esc(p.slice(0,idx))}:</strong> ${esc(p.slice(idx+1).trim())}</div>`;
+    }).join('')}</div>`;
+  }
   container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
     <div class="alert-item ${a.read?'':'unread'}">
       <div class="alert-dot ${a.read?'read':''}"></div>
       <div class="alert-type ${a.type==='feedback'?'feedback':''}">${a.type==='feedback'?'Geri Bildirim':'Uyarı'}</div>
-      <div class="alert-msg">${esc(a.message)}</div>
+      ${alertBody(a)}
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
         ${!a.read?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
