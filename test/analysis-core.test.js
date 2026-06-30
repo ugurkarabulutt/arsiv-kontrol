@@ -6,6 +6,7 @@ const {
   candidateTextHashes,
   finalizeResult,
   legacyTextHash,
+  sourceContainsIssue,
   textHash
 } = require('../analysis-core');
 
@@ -64,4 +65,30 @@ test('Türkçe karakterleri gömülü fontla gerçek PDF olarak üretir', async 
   const pdf = Buffer.concat(chunks);
   assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
   assert.ok(pdf.length > 1000);
+});
+
+test('kaynak metinde olmayan veya ayni gorunen bulgulari skor disi birakir', () => {
+  const result = finalizeResult({
+    correctedText: "Allah'a dua edildi. Muminun Suresi okundu.",
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'Allah’a', fixed: "Allah'a", rule: 'apostrof tipi' },
+          { original: 'Mumin', fixed: "mü'min", rule: 'kelime ici yanlis eslesme' },
+          { original: 'olmayan', fixed: 'olan', rule: 'metinde yok' },
+          { original: 'Teala', fixed: 'Allahû Tealâ', rule: 'gercek bulgu' }
+        ]
+      }
+    }
+  }, "Allah’a dua edildi. Teala zikredildi. Muminun Suresi okundu.");
+
+  assert.equal(result.categories.sozluk.count, 1);
+  assert.deepEqual(result.categories.sozluk.issues.map(i => i.original), ['Teala']);
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 95);
+});
+
+test('kelime ici parca eslesmesini kaynak bulgusu saymaz', () => {
+  assert.equal(sourceContainsIssue('Muminun Suresi', 'Mumin'), false);
+  assert.equal(sourceContainsIssue('Mumin kelimesi hatali yazildi', 'Mumin'), true);
 });

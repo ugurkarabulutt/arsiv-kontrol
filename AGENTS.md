@@ -23,7 +23,8 @@ ile metni analiz eder, hataları kategorilere ayırır, düzeltilmiş metni ve b
 skoru döner.
 
 - **Stack:** Node.js + Express (backend), tek sayfalık `index.html` (frontend), Supabase (PostgreSQL) veri katmanı.
-- **Kimlik doğrulama:** `express-session` + `bcryptjs`. Roller: `admin`, `user`.
+- **Kimlik doğrulama:** `cookie-session` + `bcryptjs`. Roller: `super_admin`, `admin`, `user`.
+  Ayrılmış `admin` kullanıcı adı her zaman tek süper admin hesabıdır.
 - **AI:** OpenAI Chat Completions, `gpt-4o`, `temperature: 0`, JSON çıktı.
 - **Dosya:** `.docx` yükleme `mammoth` ile düz metne çevrilir.
 
@@ -113,7 +114,37 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-06-30
+- **Canlı sonuç hata analizi:** ekip tarafından canlı sitede test edilen 16 `.docx` hata
+  raporu incelendi. Ortak sorunlar: metinde olmayan kelimelerin hata listesinde görünmesi,
+  aynı görünen `original/fixed` çiftlerinin skorlanması, kelime içinden parça yakalama
+  (`Muminun` içinden `Mumin`), apostrof/tırnak tipi farklarının gerçek hata sayılması,
+  `Tabiî ki`, `derecat`, `dinlenmeye`, `Muhterem Efendimiz` gibi bağlamların yanlış
+  yorumlanması ve slayt/hadîs/tablo düzeninin bozulması.
+- **AI sonuç doğrulaması:** `finalizeResult(result, sourceText)` kaynak metinde bulunmayan
+  veya kullanıcıya aynı görünen issue'ları skor dışı bırakacak şekilde güçlendirildi.
+  OpenAI çıktısı artık kaynak metinle birlikte finalize edilir; modelin metinde olmayan
+  bulguları doğrudan skoru düşüremez.
+- **Prompt istisnaları:** bağımsız "Allah razı olsun." cümlesinin birleştirilmemesi,
+  apostrof tipi farkının hata sayılmaması, tırnakların korunması, sure adlarında kelime
+  içi parça yakalanmaması ve slayt/tablo düzeninin korunması sisteme açık kural olarak
+  eklendi.
+- **Test:** `npm.cmd run check` başarılı; test sayısı 11'e çıktı. Yeni testler metinde
+  olmayan/aynı görünen issue filtrelemeyi ve `Muminun` içinden `Mumin` eşleşmemesini
+  doğruluyor.
+
 ### 2026-06-22
+- **Süper admin rolü:** `admin` kullanıcı adı girişte ve seed sırasında zorunlu olarak
+  `super_admin` rolüne yükseltiliyor; başka hesaplarda saklanmış `super_admin` değeri
+  otomatik olarak `admin` rolüne indiriliyor.
+- **Kullanıcı yetkileri:** kullanıcı ekleme ve silme API'leri yalnızca süper admine açıldı.
+  Normal yöneticiler kullanıcı listesini görebilir ve süper admin dışındaki hesapları
+  düzenleyebilir; kullanıcı ekleyemez, silemez veya süper admin hesabını değiştiremez.
+- **Yetki testleri:** rol hiyerarşisi ve yalnızca `admin` kullanıcı adına süper admin
+  verilmesi `authorization.js` ve otomatik testlerle güvenceye alındı.
+- **Serverless başlangıç güvenliği:** kimlik doğrulama akışı Supabase seed/rol migrasyonunun
+  tamamlanmasını bekliyor; böylece Vercel fonksiyonunun erken askıya alınması rol
+  yükseltmesini yarım bırakamıyor.
 - **Eksiksiz bulgular:** sistem prompt'u her hata geçişini ayrı issue olarak zorunlu kılıyor;
   üç ayrı `ayet → âyet` geçişini gösteren somut JSON örneği ve correctedText/issues
   birebir son kontrol talimatı eklendi.
@@ -140,6 +171,11 @@ tespit edilir).
   ve GPT analizi başarıyla doğrulandı, test verileri temizlendi. Domain kalıcı proje domaini
   olarak ayarlandı ve yeni production deployment'larını otomatik takip eder.
 - **Test:** `npm test` ile puanlama, düşük skor, yeni/eski hash ve Türkçe PDF üretimi test ediliyor.
+- **PWA/ana ekran:** Kullanıcının verdiği logo değiştirilmeden 192, 512, maskable 512 ve
+  Apple 180 ikonlarına dönüştürüldü. Uygulama adı `Arşiv AI` olarak manifest ve Apple meta
+  etiketlerine yazıldı; minimal service worker eklendi. Favicon ayrı tasarlanacak.
+- **Link paylaşımı:** WhatsApp, Telegram, Facebook ve X için Open Graph/Twitter Card
+  başlık-açıklamaları ve logolu 1200x630 sosyal paylaşım görseli eklendi.
 
 ### 2026-06-18 (2. tur)
 - **Skorlama** sunucu tarafında ağırlıklı formülle yeniden yazıldı (`finalizeResult`),

@@ -3,6 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#315fd9">
+<meta name="application-name" content="Arşiv AI">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Arşiv AI">
+<meta name="description" content="İslami tasavvuf içerikli soru-cevap metinlerini arşiv standartlarına göre denetleyen ve düzelten yapay zekâ destekli kalite kontrol sistemi.">
+<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Arşiv AI">
+<meta property="og:title" content="Arşiv AI | Metin Denetim ve Düzeltme">
+<meta property="og:description" content="İslami tasavvuf içerikli soru-cevap metinlerini arşiv standartlarına göre denetleyen ve düzelten yapay zekâ destekli kalite kontrol sistemi.">
+<meta property="og:url" content="https://arsiv.ibrahimlive.ai/">
+<meta property="og:image" content="https://arsiv.ibrahimlive.ai/icons/social-preview.png">
+<meta property="og:image:secure_url" content="https://arsiv.ibrahimlive.ai/icons/social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Arşiv AI — Metin Denetim ve Düzeltme">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Arşiv AI | Metin Denetim ve Düzeltme">
+<meta name="twitter:description" content="Arşiv standartlarına göre yapay zekâ destekli yazım, imlâ ve kalite kontrol sistemi.">
+<meta name="twitter:image" content="https://arsiv.ibrahimlive.ai/icons/social-preview.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
 <title>Arşiv Kontrol AI</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
@@ -148,6 +173,7 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .sp-mid{background:var(--gold-bg);color:var(--gold);}
 .sp-low{background:var(--red-bg);color:var(--red);}
 .role-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:10px;}
+.rp-super{background:var(--blue-bg);color:var(--blue);}
 .rp-admin{background:var(--gold-bg);color:var(--gold);}
 .rp-user{background:var(--bg3);color:var(--ink3);}
 .status-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap;}
@@ -388,7 +414,7 @@ canvas{width:100%!important;}
       <div class="divider"></div>
       <div class="info-box" id="defaultPassWarn" style="display:none">Varsayılan: <strong class="mono">admin / admin123</strong> — Şifrenizi hemen değiştirin.</div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-        <button class="btn-green" onclick="openAddUser()">+ Yeni Kullanıcı</button>
+        <button class="btn-green super-admin-only" style="display:none" onclick="openAddUser()">+ Yeni Kullanıcı</button>
       </div>
       <div id="userTableWrap"><div class="empty-state">Yükleniyor...</div></div>
     </div>
@@ -431,7 +457,7 @@ canvas{width:100%!important;}
       <input type="hidden" id="euId">
       <div class="mfield"><label>Ad Soyad</label><input type="text" id="euName"></div>
       <div class="mfield"><label>Yeni Şifre (boş = değişmez)</label><input type="password" id="euPassword"></div>
-      <div class="mfield"><label>Rol</label><select id="euRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option></select></div>
+      <div class="mfield"><label>Rol</label><select id="euRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option><option value="super_admin">Süper Yönetici</option></select></div>
       <div class="mfield"><label>Durum</label><select id="euActive"><option value="true">Aktif</option><option value="false">Devre Dışı</option></select></div>
       <div class="form-err" id="euErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeModal('editUserModal')">İptal</button><button class="btn-primary" onclick="saveEditUser()">Kaydet</button></div>
@@ -453,6 +479,9 @@ canvas{width:100%!important;}
 </div>
 
 <script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
+}
 let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='';
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 
@@ -471,13 +500,20 @@ function enterApp(user){
   el('mTopName').textContent=user.name;
   el('loginScreen').classList.remove('active');
   el('appScreen').classList.add('active');
-  if(user.role==='admin')document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
+  document.querySelectorAll('.admin-only,.super-admin-only').forEach(e=>e.style.display='none');
+  if(hasAdminRole(user.role))document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
+  if(hasSuperAdminRole(user.role))document.querySelectorAll('.super-admin-only').forEach(e=>e.style.display='');
   el('pAvatar').textContent=user.name.charAt(0).toUpperCase();
   el('pName').textContent=user.name;
-  el('pRole').textContent=user.role==='admin'?'Yönetici':'Ekip Üyesi';
+  el('pRole').textContent=roleLabel(user.role);
   showTab('analiz');
-  if(user.role==='admin')refreshBadges();
+  if(hasAdminRole(user.role))refreshBadges();
 }
+function hasAdminRole(role){return role==='admin'||role==='super_admin';}
+function hasSuperAdminRole(role){return role==='super_admin';}
+function roleLabel(role){return role==='super_admin'?'Süper Yönetici':role==='admin'?'Yönetici':'Ekip Üyesi';}
+function rolePill(role){return role==='super_admin'?'rp-super':role==='admin'?'rp-admin':'rp-user';}
+function roleShortLabel(role){return role==='super_admin'?'Süper Admin':role==='admin'?'Admin':'Üye';}
 async function doLogout(){
   await api('POST','/api/auth/logout');
   me=null;
@@ -565,7 +601,7 @@ async function analyze(){
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
       }
     }
-    if(me?.role==='admin')refreshBadges();
+    if(hasAdminRole(me?.role))refreshBadges();
   }catch(e){
     res.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(e.message)}</div>`;
     setStatus('Denetim başarısız.','err');
@@ -706,7 +742,7 @@ function setStatus(msg,type){const e=el('statusMsg');e.textContent=msg;e.classNa
 async function loadHistory(){
   const hist=await api('GET','/api/history');
   const container=el('histContent');
-  const isAdmin=me?.role==='admin';
+  const isAdmin=hasAdminRole(me?.role);
   if(isAdmin)el('csvBtn').style.display='';
   if(!hist?.length){container.innerHTML='<div class="empty-state">Henüz denetim yapılmamış.</div>';el('scoreChartBox').style.display='none';return;}
   const chartPoints=hist.filter(h=>h.score).slice(0,20).reverse();
@@ -921,18 +957,23 @@ async function loadUsers(){
   if(!users?.length){container.innerHTML='<div class="empty-state">Kullanıcı yok.</div>';return;}
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
     <thead><tr><th>Ad</th><th>Kullanıcı Adı</th><th>Rol</th><th>Durum</th><th></th></tr></thead>
-    <tbody>${users.map(u=>`<tr>
+    <tbody>${users.map(u=>{
+      const targetIsSuper=u.role==='super_admin'||String(u.username).toLowerCase()==='admin';
+      const canEdit=hasSuperAdminRole(me?.role)||!targetIsSuper;
+      const canDelete=hasSuperAdminRole(me?.role)&&!targetIsSuper&&u.id!==me?.id;
+      return `<tr>
       <td><strong>${esc(u.name)}</strong></td>
       <td class="mono" style="font-size:10px">${esc(u.username)}</td>
-      <td><span class="role-pill ${u.role==='admin'?'rp-admin':'rp-user'}">${u.role==='admin'?'Admin':'Üye'}</span></td>
+      <td><span class="role-pill ${rolePill(u.role)}">${roleShortLabel(u.role)}</span></td>
       <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Pasif'}</td>
       <td><div class="td-actions">
-        <button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>
-        ${u.role!=='admin'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
+        ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>`:''}
+        ${canDelete?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
       </div></td>
-    </tr>`).join('')}</tbody></table></div>`;
+    </tr>`;}).join('')}</tbody></table></div>`;
 }
 function openAddUser(){
+  if(!hasSuperAdminRole(me?.role)){alert('Yeni kullanıcı eklemek için süper admin yetkisi gerekir.');return;}
   ['nuName','nuUsername','nuPassword','nuPassword2'].forEach(id=>el(id).value='');
   el('nuRole').value='user';el('nuErr').textContent='';
   el('addUserModal').classList.add('open');
@@ -949,6 +990,7 @@ async function addUser(){
 function openEditUser(id,name,role,active){
   el('euId').value=id;el('euName').value=name;el('euPassword').value='';
   el('euRole').value=role;el('euActive').value=String(active);el('euErr').textContent='';
+  const locked=role==='super_admin';el('euRole').disabled=locked;el('euActive').disabled=locked;
   el('editUserModal').classList.add('open');
 }
 async function saveEditUser(){
@@ -969,8 +1011,10 @@ async function refreshMe(){
   el('mTopName').textContent=r.name;
   el('pName').textContent=r.name;
   el('pAvatar').textContent=(r.name||'?').charAt(0).toUpperCase();
+  el('pRole').textContent=roleLabel(r.role);
 }
 async function deleteUser(id,name){
+  if(!hasSuperAdminRole(me?.role)){alert('Kullanıcı silmek için süper admin yetkisi gerekir.');return;}
   if(!confirm(`"${name}" silinsin mi?`))return;
   const r=await api('DELETE',`/api/users/${id}`);
   if(r.error){alert(r.error);return;}loadUsers();

@@ -14,6 +14,10 @@ create table if not exists public.users (
   created_at timestamptz not null default now()
 );
 
+-- Yalnızca "admin" kullanıcı adı süper admin olabilir.
+update public.users set role = 'admin' where role = 'super_admin' and username <> 'admin';
+update public.users set role = 'super_admin' where username = 'admin';
+
 -- ── history ────────────────────────────────────────────────────────────────
 create table if not exists public.history (
   id             uuid primary key default gen_random_uuid(),

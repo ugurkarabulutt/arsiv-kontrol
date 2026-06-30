@@ -11,6 +11,10 @@ const {
   LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
   candidateTextHashes, finalizeResult, textHash
 } = require('./analysis-core');
+const {
+  ROLES, effectiveRole, isAdminRole, isAssignableRole,
+  isReservedSuperAdminUsername, isSuperAdminRole
+} = require('./authorization');
 
 const app    = express();
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // Vercel Function istek gövdesi sınırının altında tut.
@@ -234,11 +238,18 @@ async function seed() {
   if (!count) {
     const { error: insErr } = await supabase.from('users').insert({
       username: 'admin', password: bcrypt.hashSync('admin123', 10),
-      role: 'admin', name: 'Yönetici', active: true
+      role: ROLES.SUPER_ADMIN, name: 'Yönetici', active: true
     });
     if (insErr) console.error('Admin seed başarısız:', insErr.message);
     else console.log('✅ Varsayılan admin oluşturuldu (admin / admin123)');
   }
+  // Yalnızca "admin" kullanıcı adı süper admin olabilir.
+  const { error: demoteErr } = await supabase.from('users')
+    .update({ role: ROLES.ADMIN }).eq('role', ROLES.SUPER_ADMIN).neq('username', 'admin');
+  if (demoteErr) console.warn('Geçersiz süper admin rolleri düzeltilemedi:', demoteErr.message);
+  const { error: promoteErr } = await supabase.from('users')
+    .update({ role: ROLES.SUPER_ADMIN }).eq('username', 'admin');
+  if (promoteErr) console.warn('Admin süper admin rolüne yükseltilemedi:', promoteErr.message);
   await loadRules(); // kural satırı yoksa oluşturur
 
   // history.text_hash kolonu var mı? (tekrar-gönderim kontrolü için)
@@ -248,28 +259,55 @@ async function seed() {
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
-const auth  = (req, res, next) => req.session?.userId ? next() : res.status(401).json({ error: 'Giriş gerekli.' });
-const admin = (req, res, next) => req.session?.role === 'admin' ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
+function normalizeSessionRole(req) {
+  if (req.session?.userId) req.session.role = effectiveRole(req.session.username, req.session.role);
+}
+const auth = async (req, res, next) => {
+  try {
+    if (!req.session?.userId) return res.status(401).json({ error: 'Giriş gerekli.' });
+    await startupReady;
+    normalizeSessionRole(req);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+const admin = (req, res, next) => isAdminRole(req.session?.role)
+  ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
+const superAdmin = (req, res, next) => isSuperAdminRole(req.session?.role)
+  ? next() : res.status(403).json({ error: 'Süper admin yetkisi gerekli.' });
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
   try {
+    await startupReady;
     const { username, password } = req.body;
     const { data: user } = await supabase.from('users')
       .select('*').eq('username', username).eq('active', true).maybeSingle();
     if (!user || !bcrypt.compareSync(password, user.password))
       return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
+    const role = effectiveRole(user.username, user.role);
+    if (role !== user.role) {
+      const { error: roleError } = await supabase.from('users').update({ role }).eq('id', user.id);
+      if (roleError) throw new Error(roleError.message);
+    }
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.name = user.name;
-    req.session.role = user.role;
-    res.json({ success: true, id: user.id, name: user.name, role: user.role, username: user.username });
+    req.session.role = role;
+    res.json({ success: true, id: user.id, name: user.name, role, username: user.username });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
-app.get('/api/auth/me', (req, res) => {
+app.get('/api/auth/me', async (req, res, next) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
-  res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
+  try {
+    await startupReady;
+    normalizeSessionRole(req);
+    res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
+  } catch (error) {
+    next(error);
+  }
 });
 // Varsayılan admin/admin123 hâlâ kullanılıyor mu? (Kullanıcılar sekmesindeki uyarı için)
 app.get('/api/security/default-admin', auth, admin, async (req, res) => {
@@ -300,14 +338,18 @@ app.get('/api/users', auth, admin, async (req, res) => {
     res.json((data || []).map(mapUser));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/users', auth, admin, async (req, res) => {
+app.post('/api/users', auth, admin, superAdmin, async (req, res) => {
   try {
     const { username, password, name, role } = req.body;
     if (!username || !password || !name) return res.status(400).json({ error: 'Tüm alanlar zorunludur.' });
-    const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
+    const cleanUsername = String(username).trim();
+    const cleanRole = role || ROLES.USER;
+    if (isReservedSuperAdminUsername(cleanUsername)) return res.status(400).json({ error: 'admin kullanıcı adı ayrılmıştır.' });
+    if (!isAssignableRole(cleanRole)) return res.status(400).json({ error: 'Geçersiz kullanıcı rolü.' });
+    const { data: existing } = await supabase.from('users').select('id').eq('username', cleanUsername).maybeSingle();
     if (existing) return res.status(400).json({ error: 'Kullanıcı adı alınmış.' });
     const { error } = await supabase.from('users').insert({
-      username, name, password: bcrypt.hashSync(password, 10), role: role || 'user', active: true
+      username: cleanUsername, name, password: bcrypt.hashSync(password, 10), role: cleanRole, active: true
     });
     if (error) throw new Error(error.message);
     res.json({ success: true });
@@ -316,6 +358,23 @@ app.post('/api/users', auth, admin, async (req, res) => {
 app.put('/api/users/:id', auth, admin, async (req, res) => {
   try {
     const { name, password, role, active } = req.body;
+    const { data: target, error: targetError } = await supabase.from('users')
+      .select('id,username,role').eq('id', req.params.id).maybeSingle();
+    if (targetError) throw new Error(targetError.message);
+    if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    const targetIsSuperAdmin = isReservedSuperAdminUsername(target.username) || target.role === ROLES.SUPER_ADMIN;
+    if (targetIsSuperAdmin && !isSuperAdminRole(req.session.role)) {
+      return res.status(403).json({ error: 'Süper admin hesabını yalnızca süper admin düzenleyebilir.' });
+    }
+    if (targetIsSuperAdmin && role !== undefined && role !== ROLES.SUPER_ADMIN) {
+      return res.status(400).json({ error: 'Süper admin rolü değiştirilemez.' });
+    }
+    if (targetIsSuperAdmin && active === false) {
+      return res.status(400).json({ error: 'Süper admin hesabı devre dışı bırakılamaz.' });
+    }
+    if (!targetIsSuperAdmin && role !== undefined && !isAssignableRole(role)) {
+      return res.status(400).json({ error: 'Geçersiz kullanıcı rolü.' });
+    }
     const patch = {};
     if (name !== undefined)   patch.name   = name;
     if (role !== undefined)   patch.role   = role;
@@ -329,11 +388,13 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/users/:id', auth, admin, async (req, res) => {
+app.delete('/api/users/:id', auth, admin, superAdmin, async (req, res) => {
   try {
-    const { data: user } = await supabase.from('users').select('role').eq('id', req.params.id).maybeSingle();
+    const { data: user } = await supabase.from('users').select('username,role').eq('id', req.params.id).maybeSingle();
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
-    if (user.role === 'admin') return res.status(400).json({ error: 'Yönetici silinemez.' });
+    if (req.params.id === req.session.userId || isReservedSuperAdminUsername(user.username) || user.role === ROLES.SUPER_ADMIN) {
+      return res.status(400).json({ error: 'Süper admin silinemez.' });
+    }
     const { error } = await supabase.from('users').delete().eq('id', req.params.id);
     if (error) throw new Error(error.message);
     res.json({ success: true });
@@ -364,7 +425,7 @@ app.post('/api/rules/reset', auth, admin, async (req, res) => {
 app.get('/api/history', auth, async (req, res) => {
   try {
     let q = supabase.from('history').select('*').order('created_at', { ascending: false }).limit(200);
-    if (req.session.role !== 'admin') q = q.eq('user_id', req.session.userId);
+    if (!isAdminRole(req.session.role)) q = q.eq('user_id', req.session.userId);
     const { data, error } = await q;
     if (error) throw new Error(error.message);
     res.json((data || []).map(mapHistory));
@@ -374,7 +435,7 @@ app.get('/api/history', auth, async (req, res) => {
 app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
   try {
     let query = supabase.from('history').select('*').eq('id', req.params.id);
-    if (req.session.role !== 'admin') query = query.eq('user_id', req.session.userId);
+    if (!isAdminRole(req.session.role)) query = query.eq('user_id', req.session.userId);
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
@@ -545,11 +606,28 @@ NASIL ÇALIŞACAKSIN:
 8. "Allah razı olsun" ifadesi varsa son cümlenin devamına yaz, asla ayrı satıra alma.
 9. "Bu Resûl" gibi kullanımlarda Resûl büyük R ile kalmalı — özel isim olarak kullanılıyor.
 10. Tırnak içinde biten cümlelerde nokta tırnağın içinde olmalı: "...vermiştir."
+11. Bağımsız iki cümleyi noktalama bahanesiyle birleştirme. Özellikle "Allah'ın izniyle. Allah razı olsun."
+   iki ayrı cümle olarak kalmalıdır; virgülle tek cümle yapma.
+12. Apostrof/kesme işareti türünü tek başına hata sayma. Allah'a, Allah’a, Allah’ın, Allah'ın gibi
+   düz veya tipografik kesme işaretleri eşdeğer kabul edilir; sadece karakter tipini değiştirmek için issue yazma.
+13. Çift tırnak ve tek tırnak arasında keyfi dönüşüm yapma. Tırnak işaretlerini silme; kaynakta kapanış tırnağı varsa
+   düzeltilmiş metinde de korunmalıdır.
+14. Kelime içinden parça yakalayıp düzeltme yapma. "Muminun/Mu'minûn Suresi" içindeki "Mumin/Mu'min" parçasını
+   "mü'min" kelimesi sanma.
+15. "Tabiî ki" ifadesi "tâbî" değildir; bu ifadeyi tâbî olarak düzeltme. "derecat" kelimesini otomatik olarak
+   "derece" yapma. "dinlenmeye" kelimesini "dînlenmeye" yapma.
+16. "Muhterem Efendimiz" bağlamında geçen Efendimiz'e "(S.A.V)" ekleme; bunu yalnızca açıkça Peygamber Efendimiz
+   kastedildiğinde ve kaynak kural gerektiriyorsa uygula.
+17. Slayt, hadîs dökümü, tablo benzeri satır düzenlerini koru. Satır sırası, başlıklar, numaralar ve tırnak dengesi
+   düzeltilmiş metinde bozulmamalıdır.
 
 BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - Her yaptığın düzeltmeyi MUTLAKA ilgili kategorinin issues listesine ekle.
 - Düzeltilmiş metinde değiştirdiğin HER kelime/ifade için bir issue objesi oluştur
   ({"original": "...", "fixed": "...", "rule": "..."}).
+- Kaynak metinde birebir bulunmayan original değeriyle issue yazma. Bir kelimenin sadece daha uzun bir kelimenin
+  içinde geçmesi yeterli değildir.
+- original ve fixed kullanıcıya aynı görünüyorsa veya sadece düz/tipografik apostrof farkı varsa issue yazma.
 - issues listesi boş bırakılamaz: bir kategoride düzeltme yaptıysan o issue mutlaka listede olmalı.
 - count ile issues.length HER ZAMAN eşit olmalı. Düzelttiğin ama issues'a yazmadığın hiçbir
   değişiklik kalmamalı; düzeltilmiş metin ile issues listesi birebir tutarlı olmalı.
@@ -626,7 +704,7 @@ async function openaiText(text) {
     })
   });
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API hatası'); }
-  const d = await r.json(); return finalizeResult(parseResult(d.choices[0].message.content));
+  const d = await r.json(); return finalizeResult(parseResult(d.choices[0].message.content), text);
 }
 
 async function extractText(buffer) {
