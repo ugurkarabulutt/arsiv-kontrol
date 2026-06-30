@@ -226,6 +226,11 @@ tespit edilir).
 - **Tema switch düzeltmesi:** Koyu temada üst barın görünmez hale gelmesine neden olan genel
   renk değişkeni kullanımı ayrıldı. Üst bar artık kendi tema renklerini kullanır; yazılı
   `Karanlık/Aydınlık` butonu yerine ikonlu modern switch vardır.
+- **Koyu tema kontrast düzeltmesi:** Koyu temada `green/red/gold` gibi semantik renklerin
+  beyaza dönmesi skor rozetleri ve Onayla/Reddet butonlarında renk patlaması yapıyordu.
+  Semantik renkler koyu tema için düşük parlaklıklı ama ayırt edilebilir tonlara çekildi.
+- **Ekip özeti:** `docs/EKIP_DEBUG_GELISTIRME_OZETI_2026-06-30.md` dosyası eklendi; canlı
+  debug, AI sağlamlığı, feedback döngüsü, UX ve tema geliştirmeleri ekip sunumu için özetlendi.
 - **Metin denetim sağlamlığı:** Metin girişi normalize edilir, çok kısa/boş/çok uzun metinler
   hem frontend hem API tarafında denetime gönderilmeden durdurulur. Denetim sırasında çift
   tıklama ile ikinci analiz başlatılması engellenir.

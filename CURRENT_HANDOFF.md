@@ -81,6 +81,11 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Tema switch düzeltmesi: koyu temada topbar artık beyaza dönmez; üst bar için ayrı
   `--topbar-*` renkleri kullanılıyor. Üstte yazılı `Karanlık/Aydınlık` yerine ikonlu switch,
   mobil menüde ise "Tema" satırı ve mini switch var.
+- Koyu tema kontrast düzeltmesi: skor rozetleri, bildirim sayıları ve Onayla/Reddet gibi
+  aksiyonlar koyu temada beyaz blok haline gelmesin diye `green/red/gold/orange/blue`
+  semantik renkleri koyu tema için ayrıştırıldı.
+- Ekip paylaşım özeti: `docs/EKIP_DEBUG_GELISTIRME_OZETI_2026-06-30.md` canlı debug ve
+  geliştirme özetini içerir.
 - Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
   gösteriliyor. Boş, çok kısa ve çok uzun metinler frontend'de durduruluyor; aynı kontroller
   `/api/analyze`, `/api/analyze-file` ve batch dosya analizinde sunucu tarafında da uygulanıyor.
@@ -117,6 +122,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   tema, metin sağlık göstergesi ve sunucu tarafı metin uzunluk kontrolleri doğrulandı.
 - `npm.cmd run check`: başarılı (2026-06-30 Codex on ikinci tur). 13/13 test geçti; topbar
   tema renk ayrımı ve ikonlu tema switch frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-06-30 Codex on üçüncü tur). 13/13 test geçti; koyu
+  tema semantik renkleri, Onayla/Reddet ve skor rozeti kontrast düzeltmeleri doğrulandı.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
