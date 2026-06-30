@@ -226,6 +226,7 @@ const mapAlert   = a => ({
   id: a.id, type: a.type, message: a.message, userId: a.user_id,
   historyId: a.history_id, score: a.score, read: a.read, createdAt: a.created_at
 });
+const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const FEEDBACK_REASONS = Object.freeze({
   nonexistent: 'Metinde olmayan hata',
   wrong_fix: 'Yanlış düzeltme',
@@ -433,6 +434,33 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+app.post('/api/users/:id/notify', auth, admin, async (req, res) => {
+  try {
+    const cleanTitle = String(req.body?.title || 'Duyuru').trim().slice(0, 120);
+    const cleanMessage = String(req.body?.message || '').trim().slice(0, 1200);
+    if (!cleanMessage) return res.status(400).json({ error: 'Bildirim mesajı gerekli.' });
+
+    const { data: target, error: targetError } = await supabase.from('users')
+      .select('id,name,active').eq('id', req.params.id).maybeSingle();
+    if (targetError) throw new Error(targetError.message);
+    if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    if (!target.active) return res.status(400).json({ error: 'Pasif kullanıcıya bildirim gönderilemez.' });
+
+    const message = [
+      `Başlık: ${cleanTitle}`,
+      `Mesaj: ${cleanMessage}`,
+      `Gönderen: ${req.session.name || req.session.username}`
+    ].join(' | ');
+    const { error } = await supabase.from('alerts').insert({
+      type: 'announcement',
+      message,
+      user_id: target.id,
+      read: false
+    });
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 app.delete('/api/users/:id', auth, admin, superAdmin, async (req, res) => {
   try {
     const { data: user } = await supabase.from('users').select('username,role').eq('id', req.params.id).maybeSingle();
@@ -597,14 +625,86 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
 });
 app.post('/api/alerts/:id/read', auth, admin, async (req, res) => {
   try {
-    const { error } = await supabase.from('alerts').update({ read: true }).eq('id', req.params.id);
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('id', req.params.id).in('type', ['feedback', 'low_score']);
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/alerts/read-all', auth, admin, async (req, res) => {
   try {
-    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false);
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false).in('type', ['feedback', 'low_score']);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
+  try {
+    const cleanNote = String(req.body?.note || '').trim().slice(0, 1200);
+    if (!cleanNote) return res.status(400).json({ error: 'Çözüm notu gerekli.' });
+
+    const { data: alert, error: alertError } = await supabase.from('alerts')
+      .select('*').eq('id', req.params.id).eq('type', 'feedback').maybeSingle();
+    if (alertError) throw new Error(alertError.message);
+    if (!alert) return res.status(404).json({ error: 'Geri bildirim bulunamadı.' });
+    if (!alert.user_id) return res.status(400).json({ error: 'Bu geri bildirim kullanıcıya bağlı değil.' });
+
+    const message = [
+      'Geri bildiriminiz incelendi',
+      `Çözüm: ${cleanNote}`,
+      `Yanıtlayan: ${req.session.name || req.session.username}`,
+      alert.message ? `İlgili kayıt: ${String(alert.message).split(' | ')[1] || 'Denetim sonucu'}` : ''
+    ].filter(Boolean).join(' | ');
+
+    const { error: insertError } = await supabase.from('alerts').insert({
+      type: 'feedback_resolution',
+      message,
+      user_id: alert.user_id,
+      history_id: alert.history_id,
+      score: alert.score,
+      read: false
+    });
+    if (insertError) throw new Error(insertError.message);
+
+    const { error: updateError } = await supabase.from('alerts').update({ read: true }).eq('id', alert.id);
+    if (updateError) throw new Error(updateError.message);
+
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/my-notifications', auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('alerts')
+      .select('*')
+      .eq('user_id', req.session.userId)
+      .in('type', USER_NOTICE_TYPES)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+    res.json((data || []).map(mapAlert));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/my-notifications/:id/read', auth, async (req, res) => {
+  try {
+    const { error } = await supabase.from('alerts')
+      .update({ read: true })
+      .eq('id', req.params.id)
+      .eq('user_id', req.session.userId)
+      .in('type', USER_NOTICE_TYPES);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/my-notifications/read-all', auth, async (req, res) => {
+  try {
+    const { error } = await supabase.from('alerts')
+      .update({ read: true })
+      .eq('read', false)
+      .eq('user_id', req.session.userId)
+      .in('type', USER_NOTICE_TYPES);
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -656,7 +756,8 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const feedbackAlerts = alerts.filter(a => a.type === 'feedback');
     const lowScoreAlerts = alerts.filter(a => a.type === 'low_score');
     const feedback7 = feedbackAlerts.filter(a => now - new Date(a.created_at).getTime() < 7 * 864e5).length;
-    const unreadAlerts = alerts.filter(a => !a.read).length;
+    const adminAlertTypes = ['feedback', 'low_score'];
+    const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
     const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
     const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
     const riskItems = hist

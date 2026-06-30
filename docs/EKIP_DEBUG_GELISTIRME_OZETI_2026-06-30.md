@@ -26,6 +26,10 @@ hale getirmek.
 - Adminler geri bildirimleri Uyarılar ekranında görebiliyor.
 - Dashboard'a toplam geri bildirim, son 7 gün feedback ve okunmamış feedback kartları eklendi.
 - Geri bildirim kartları okunabilir alanlara ayrıldı.
+- Adminler gelen geri bildirimlere çözüm yanıtı yazabiliyor.
+- Çözüm yanıtı ilgili kullanıcıya kişisel bildirim olarak düşüyor.
+- Kullanıcılar kendilerine özel duyuru ve çözüm yanıtlarını `Bildirimler` sekmesinde görüyor.
+- Adminler Kullanıcı Yönetimi ekranından tek kullanıcıya özel duyuru gönderebiliyor.
 
 ## UX ve Operasyon
 

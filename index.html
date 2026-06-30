@@ -375,6 +375,7 @@ canvas{width:100%!important;}
       <div class="desktop-nav">
         <button class="btn-top" id="tabBtnAnaliz" onclick="showTab('analiz')">Denetle</button>
         <button class="btn-top" id="tabBtnGecmis" onclick="showTab('gecmis')">Geçmiş</button>
+        <button class="btn-top" id="tabBtnBildirim" onclick="showTab('bildirim')">Bildirimler<span class="badge" id="noticeBadge" style="display:none">0</span></button>
         <button class="btn-top" id="tabBtnProfil" onclick="showTab('profil')">Profilim</button>
         <button class="btn-top admin-only" id="tabBtnDash" onclick="showTab('dash')" style="display:none">Dashboard</button>
         <button class="btn-top admin-only" id="tabBtnOnay" onclick="showTab('onay')" style="display:none">Onaylar<span class="badge" id="onayBadge" style="display:none">0</span></button>
@@ -399,6 +400,7 @@ canvas{width:100%!important;}
       <div class="mobile-user">Merhaba, <strong id="mTopName">—</strong></div>
       <button class="btn-mobile" onclick="mNav('analiz')">Denetle</button>
       <button class="btn-mobile" onclick="mNav('gecmis')">Geçmiş</button>
+      <button class="btn-mobile" onclick="mNav('bildirim')">Bildirimler <span class="badge-m" id="mNoticeBadge" style="display:none">0</span></button>
       <button class="btn-mobile" onclick="mNav('profil')">Profilim</button>
       <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
       <button class="btn-mobile admin-only" id="mBtnOnay" onclick="mNav('onay')" style="display:none">Onaylar <span class="badge-m" id="mOnayBadge" style="display:none">0</span></button>
@@ -514,6 +516,15 @@ canvas{width:100%!important;}
       <div id="onayContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
+    <div class="tab-content" id="tabContent-bildirim">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div><div class="page-title">Bildirimler</div><div class="page-sub">Size özel duyuru ve çözüm yanıtları</div></div>
+        <button class="btn-sec" onclick="readAllNotices()">Tümünü Okundu</button>
+      </div>
+      <div class="divider"></div>
+      <div id="noticeContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
     <div class="tab-content" id="tabContent-alerts">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
         <div><div class="page-title">Uyarılar ve Geri Bildirimler</div><div class="page-sub">Düşük skorlar ve ekipten gelen sonuç bildirimleri</div></div>
@@ -581,6 +592,20 @@ canvas{width:100%!important;}
       <div class="mfield"><label>Durum</label><select id="euActive"><option value="true">Aktif</option><option value="false">Devre Dışı</option></select></div>
       <div class="form-err" id="euErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeModal('editUserModal')">İptal</button><button class="btn-primary" onclick="saveEditUser()">Kaydet</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notifyUserModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Kullanıcıya Bildirim</h3><button class="modal-close" onclick="closeModal('notifyUserModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="notifyUserId">
+      <div class="mfield"><label>Kullanıcı</label><input type="text" id="notifyUserName" disabled></div>
+      <div class="mfield"><label>Başlık</label><input type="text" id="notifyTitle" value="Bilgilendirme"></div>
+      <div class="mfield"><label>Mesaj</label><textarea id="notifyMessage" style="min-height:120px;resize:vertical"></textarea></div>
+      <div class="form-err" id="notifyErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeModal('notifyUserModal')">İptal</button><button class="btn-primary" onclick="sendUserNotification()">Gönder</button></div>
     </div>
   </div>
 </div>
@@ -668,6 +693,7 @@ function enterApp(user){
   el('pRole').textContent=roleLabel(user.role);
   showTab('analiz');
   if(hasAdminRole(user.role))refreshBadges();
+  refreshNoticeBadge();
 }
 function hasAdminRole(role){return role==='admin'||role==='super_admin';}
 function hasSuperAdminRole(role){return role==='super_admin';}
@@ -697,6 +723,7 @@ function showTab(name){
   if(name==='dash')loadDash();
   if(name==='onay')loadOnay();
   if(name==='alerts')loadAlerts();
+  if(name==='bildirim')loadMyNotifications();
   if(name==='kullanici')loadUsers();
   if(name==='kurallar')loadRules();
   window.scrollTo(0,0);
@@ -1301,20 +1328,68 @@ async function loadAlerts(){
       return `<div><strong>${esc(p.slice(0,idx))}:</strong> ${esc(p.slice(idx+1).trim())}</div>`;
     }).join('')}</div>`;
   }
+  const alertLabel=a=>a.type==='feedback'?'Geri Bildirim':a.type==='feedback_resolution'?'Çözüm':a.type==='announcement'?'Duyuru':a.type==='low_score'?'Düşük Skor':'Uyarı';
   container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
-    <div class="alert-item ${a.read?'':'unread'}">
-      <div class="alert-dot ${a.read?'read':''}"></div>
-      <div class="alert-type ${a.type==='feedback'?'feedback':''}">${a.type==='feedback'?'Geri Bildirim':'Uyarı'}</div>
+    <div class="alert-item ${!a.read&&['feedback','low_score'].includes(a.type)?'unread':''}">
+      <div class="alert-dot ${a.read||!['feedback','low_score'].includes(a.type)?'read':''}"></div>
+      <div class="alert-type ${['feedback','feedback_resolution'].includes(a.type)?'feedback':''}">${alertLabel(a)}</div>
       ${alertBody(a)}
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
-        ${!a.read?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
+        ${a.type==='feedback'?`<button class="btn-green" style="padding:3px 8px;font-size:9px" onclick="respondFeedback('${a.id}')">Çözüm bildir</button>`:''}
+        ${!a.read&&['feedback','low_score'].includes(a.type)?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
       </div>
     </div>`).join('')}</div>`;
 }
 function setAlertFilter(type){alertFilter=type;loadAlerts();}
 async function readAlert(id){await api('POST',`/api/alerts/${id}/read`);loadAlerts();refreshBadges();}
 async function readAllAlerts(){await api('POST','/api/alerts/read-all');loadAlerts();refreshBadges();}
+async function respondFeedback(id){
+  const note=prompt('Bu kullanıcıya çözümü nasıl bildirelim?');
+  if(note===null)return;
+  const clean=note.trim();
+  if(!clean){setStatus('Çözüm notu boş olamaz.','err');return;}
+  const r=await api('POST',`/api/alerts/${id}/respond`,{note:clean});
+  if(r.error){setStatus(r.error,'err');return;}
+  setStatus('✓ Kullanıcıya çözüm bildirimi gönderildi.','ok');
+  loadAlerts();refreshBadges();
+  setTimeout(()=>setStatus('',''),2200);
+}
+
+function messageFields(message){
+  return String(message||'').split(' | ').map(p=>{
+    const idx=p.indexOf(':');
+    if(idx<0)return `<div>${esc(p)}</div>`;
+    return `<div><strong>${esc(p.slice(0,idx))}:</strong> ${esc(p.slice(idx+1).trim())}</div>`;
+  }).join('');
+}
+
+async function loadMyNotifications(){
+  const notices=await api('GET','/api/my-notifications');
+  const container=el('noticeContent');
+  if(notices.error){container.innerHTML=`<div class="empty-state">${esc(notices.error)}</div>`;return;}
+  if(!notices?.length){container.innerHTML='<div class="empty-state">Size özel bildirim yok.</div>';return;}
+  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${notices.map(n=>`
+    <div class="alert-item ${n.read?'':'unread'}">
+      <div class="alert-dot ${n.read?'read':''}"></div>
+      <div class="alert-type ${n.type==='feedback_resolution'?'feedback':''}">${n.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
+      <div class="alert-msg">${messageFields(n.message)}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <div class="alert-time">${new Date(n.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+        ${!n.read?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readNotice('${n.id}')">Okundu</button>`:''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+async function readNotice(id){await api('POST',`/api/my-notifications/${id}/read`);loadMyNotifications();refreshNoticeBadge();}
+async function readAllNotices(){await api('POST','/api/my-notifications/read-all');loadMyNotifications();refreshNoticeBadge();}
+
+async function refreshNoticeBadge(){
+  if(!me)return;
+  const notices=await api('GET','/api/my-notifications');
+  if(notices.error)return;
+  const unread=(notices||[]).filter(n=>!n.read).length;
+  ['noticeBadge','mNoticeBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=unread>0?'':'none';e.textContent=unread>9?'9+':unread;}});
+}
 
 async function refreshBadges(){
   const stats=await api('GET','/api/stats');if(stats.error)return;
@@ -1337,12 +1412,14 @@ async function loadUsers(){
       const targetIsSuper=u.role==='super_admin'||String(u.username).toLowerCase()==='admin';
       const canEdit=hasSuperAdminRole(me?.role)||!targetIsSuper;
       const canDelete=hasSuperAdminRole(me?.role)&&!targetIsSuper&&u.id!==me?.id;
+      const safeNameArg=JSON.stringify(u.name||'').replace(/"/g,'&quot;');
       return `<tr>
       <td><strong>${esc(u.name)}</strong></td>
       <td class="mono" style="font-size:10px">${esc(u.username)}</td>
       <td><span class="role-pill ${rolePill(u.role)}">${roleShortLabel(u.role)}</span></td>
       <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Pasif'}</td>
       <td><div class="td-actions">
+        ${hasAdminRole(me?.role)?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openNotifyUser('${u.id}',${safeNameArg})">Bildirim</button>`:''}
         ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>`:''}
         ${canDelete?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
       </div></td>
@@ -1362,6 +1439,23 @@ async function addUser(){
   const r=await api('POST','/api/users',{name,username,password,role});
   if(r.error){el('nuErr').textContent=r.error;return;}
   closeModal('addUserModal');loadUsers();
+}
+function openNotifyUser(id,name){
+  el('notifyUserId').value=id;
+  el('notifyUserName').value=name;
+  el('notifyTitle').value='Bilgilendirme';
+  el('notifyMessage').value='';
+  el('notifyErr').textContent='';
+  el('notifyUserModal').classList.add('open');
+}
+async function sendUserNotification(){
+  const id=v('notifyUserId'),title=v('notifyTitle'),message=v('notifyMessage');
+  if(!message){el('notifyErr').textContent='Mesaj zorunlu.';return;}
+  const r=await api('POST',`/api/users/${id}/notify`,{title,message});
+  if(r.error){el('notifyErr').textContent=r.error;return;}
+  closeModal('notifyUserModal');
+  setStatus('✓ Kullanıcıya bildirim gönderildi.','ok');
+  setTimeout(()=>setStatus('',''),2200);
 }
 function openEditUser(id,name,role,active){
   el('euId').value=id;el('euName').value=name;el('euPassword').value='';
