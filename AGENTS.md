@@ -115,6 +115,12 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-06-30
+- **Yan yana karşılaştırma UX'i:** anlık analiz sonucunda orijinal metin ve düzeltilmiş
+  metin iki sütunlu karşılaştırma panelinde gösteriliyor. Kısa/orta metinlerde kelime
+  düzeyinde kırmızı/yeşil fark vurgusu yapılır; çok uzun metinlerde performans için renkli
+  diff kapatılıp metinler yan yana gösterilir. Dosya analizinde sunucu çıkarılan orijinal
+  metni response'a ekler; geçmiş kayıtlar için orijinal metni kalıcı saklama sonraki faza
+  bırakıldı.
 - **Ekip geri bildirim döngüsü:** sonuç ekranına genel geri bildirim ve bulgu bazlı
   "Metinde yok / Yanlış düzeltme" butonları eklendi. Kullanıcılar artık canlı analiz
   sonucundaki yanlış pozitif, eksik hata, düzen bozulması ve skor sorunlarını doğrudan

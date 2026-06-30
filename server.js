@@ -853,7 +853,7 @@ app.post('/api/analyze', auth, async (req, res) => {
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, 'Metin Girişi', hash);
-    res.json({ ...result, id });
+    res.json({ ...result, id, originalText: text });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -867,7 +867,7 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, req.file.originalname, hash);
-    res.json({ ...result, id });
+    res.json({ ...result, id, originalText: text });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
