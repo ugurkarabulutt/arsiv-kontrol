@@ -1,19 +1,36 @@
 require('dotenv').config();
 const express  = require('express');
-const session  = require('express-session');
+const cookieSession = require('cookie-session');
 const bcrypt   = require('bcryptjs');
 const multer   = require('multer');
 const path     = require('path');
 const mammoth  = require('mammoth');
+const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
+const {
+  LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
+  candidateTextHashes, finalizeResult, normalizeText, textHash
+} = require('./analysis-core');
+const {
+  ROLES, effectiveRole, isAdminRole, isAssignableRole,
+  isReservedSuperAdminUsername, isSuperAdminRole
+} = require('./authorization');
 
 const app    = express();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // Vercel Function istek gövdesi sınırının altında tut.
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE } });
 
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_KEY      = process.env.SUPABASE_KEY;
+const PROMPT_VERSION    = '2026-06-30.4';
+const MIN_ANALYSIS_TEXT_CHARS = 10;
+const MAX_ANALYSIS_TEXT_CHARS = 120000;
+
+if (process.env.VERCEL && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
+}
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error('❌ SUPABASE_URL / SUPABASE_KEY tanımlı değil. .env dosyasını doldurun.');
@@ -27,20 +44,142 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 8 * 60 * 60 * 1000 }
+app.set('trust proxy', 1);
+app.use(cookieSession({
+  name: 'arsiv_session',
+  keys: [SESSION_SECRET],
+  maxAge: 8 * 60 * 60 * 1000,
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production')
 }));
 app.use(express.static(__dirname));
+
+// Render/UptimeRobot için oturum ve veritabanı gerektirmeyen canlılık kontrolü.
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
+const SURE_STANDARD_LIST = `001. FÂTİHA
+002. BAKARA
+003. ÂLİ İMRÂN
+004. NİSÂ
+005. MÂİDE
+006. EN'ÂM
+007. A'RÂF
+008. ENFÂL
+009. TEVBE
+010. YÛNUS
+011. HÛD
+012. YÛSUF
+013. RA'D
+014. İBRÂHÎM
+015. HİCR
+016. NAHL
+017. İSRÂ
+018. KEHF
+019. MERYEM
+020. TÂHÂ
+021. ENBİYÂ
+022. HACC
+023. MU'MİNÛN
+024. NÛR
+025. FURKÂN
+026. ŞUARÂ
+027. NEML
+028. KASAS
+029. ANKEBÛT
+030. RÛM
+031. LOKMÂN
+032. SECDE
+033. AHZÂB
+034. SEBE
+035. FÂTIR
+036. YÂSÎN
+037. SÂFFÂT
+038. SÂD
+039. ZUMER
+040. MU'MİN
+041. FUSSİLET
+042. ŞÛRÂ
+043. ZUHRÛF
+044. DUHÂN
+045. CÂSİYE
+046. AHKÂF
+047. MUHAMMED
+048. FETİH
+049. HUCURÂT
+050. KAF
+051. ZÂRİYÂT
+052. TÛR
+053. NECM
+054. KAMER
+055. RAHMÂN
+056. VÂKIA
+057. HADÎD
+058. MUCÂDELE
+059. HAŞR
+060. MUMTEHİNE
+061. SAFF
+062. CUMA
+063. MUNÂFİKÛN
+064. TEGÂBUN
+065. TALÂK
+066. TAHRÎM
+067. MULK
+068. KALEM
+069. HÂKKA
+070. MEÂRİC
+071. NÛH
+072. CİNN
+073. MUZZEMMİL
+074. MUDDESSİR
+075. KIYÂME
+076. İNSÂN
+077. MURSELÂT
+078. NEBE
+079. NÂZİÂT
+080. ABESE
+081. TEKVÎR
+082. İNFİTÂR
+083. MUTAFFİFÎN
+084. İNŞİKAK
+085. BURÛC
+086. TÂRIK
+087. A'LÂ
+088. GÂŞİYE
+089. FECR
+090. BELED
+091. ŞEMS
+092. LEYL
+093. DUHÂ
+094. İNŞİRÂH(ŞERH)
+095. TÎN
+096. ALAK
+097. KADR(KADİR)
+098. BEYYİNE
+099. ZİLZÂL
+100. ÂDİYÂT
+101. KÂRİA
+102. TEKÂSUR
+103. ASR
+104. HUMEZE
+105. FÎL
+106. KUREYŞ
+107. MÂÛN
+108. KEVSER
+109. KÂFİRÛN
+110. NASR
+111. TEBBET(MESED)
+112. İHLÂS
+113. FELAK
+114. NÂS`;
 
 // ── Default rules ──────────────────────────────────────────────────────────
 const DEFAULT_RULES = `════════════════════════════════════════
 KURAL 1 — EFENDİMİZİN SÖZLÜĞÜ
 ════════════════════════════════════════
-Aşağıdaki kelimeler MUTLAKA bu şekilde yazılmalıdır.
-Metinde farklı yazılmışsa düzelt:
+Aşağıdaki yazımlar arşiv standardıdır; yalnızca kelime gerçekten aynı anlamda ve bağımsız
+kelime olarak kullanılmışsa düzelt. Sure adı, özel isim, alıntı başlığı, tablo/slayt etiketi,
+kelime içi parça veya farklı anlamlı kullanım ise dokunma:
 
 Allahû Tealâ
 Allah'ın, Allah'a, Allah'tan
@@ -49,7 +188,7 @@ Kur'ân
 hadîs, hadîs-i şerif
 sahâbe
 Efendimiz'in (kesme işareti zorunlu)
-Efendimiz (S.A.V)
+Peygamber Efendimiz (S.A.V) — yalnızca Peygamber Efendimiz açıkça kastediliyorsa
 mü'min
 nefs (nefis değil)
 îmân
@@ -60,8 +199,8 @@ inşaallah
 velî
 resûl (küçük harf, özel isim değilse)
 nebî
-dîn
-tâbî
+din (dîn değil; Efendimizin sözlüğünde bu kelime bundan sonra şapkasız yazılır)
+tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
 ni'met
 ulûl'elbab
 hidayet (hidâyet değil)
@@ -94,18 +233,30 @@ likâallah
 ════════════════════════════════════════
 KURAL 2 — İMLÂ (Yanlış → Doğru)
 ════════════════════════════════════════
+Bu dönüşümleri yalnızca tam kelime/ifade eşleşmesinde uygula. Kelime içi parça eşleşmesi yasaktır.
+Sure adları ve özel adlar korunur.
+
+SURE ADLARI STANDARDI:
+- Sure adları aşağıdaki listeye göre yazılır; baştaki sıra numaraları imlâ kontrolüne dahil değildir.
+- Sure adı başlıkta, metin içinde veya "Suresi" ifadesinden önce geçerse harf/şapka/apostrof standardı bu listedir.
+- Sure adının içindeki parçayı ayrı sözlük kelimesi sanma; örneğin MU'MİNÛN içindeki MU'MİN parçasını değiştirme.
+- Liste dışında kalan sure adı varyantlarını yalnızca tam sure adı olarak yakaladıysan bu listedeki biçime düzelt.
+
+${SURE_STANDARD_LIST}
+
 Allah Teala → Allahû Tealâ
 Allahu Teala → Allahû Tealâ
 Resul → resûl
 Veli → velî
 Nebi → nebî
-Din → dîn
-Ayet → âyet
+dîn → din
+her şey → herşey
+Ayet → âyet (sure/kitap adı veya özel başlık içinde değilse)
 Ayet-i kerime → âyet-i kerime
 Kuran → Kur'ân
-Mumin → mü'min
-Tabi → tâbî
-Iman → îmân
+Mumin → mü'min (Muminun/Mu'minûn/Mü'minûn Suresi içinde değilse)
+Tabi → tâbî (Tabiî ki/Tabii ki ifadesi değilse)
+Iman → îmân (özel isim veya başlık içinde değilse)
 Nefis → nefs
 hidâyet → hidayet
 Efendimizin → Efendimiz'in
@@ -127,6 +278,8 @@ KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
 - Peygamber Efendimiz, Allah Resûlü, Hz. Muhammed → mutlaka (S.A.V) ekle
 - Sallallahu aleyhi vesellem gibi uzun yazılmışsa → (S.A.V) olarak kısalt
 - Resûlullah'tan sonra (S.A.V) yazılabilir veya yazılmayabilir
+- Muhterem Efendimiz, Hocamız, Efendimiz ifadesi Peygamber Efendimiz'i açıkça kastetmiyorsa
+  (S.A.V) ekleme.
 - Tüm nebî isimlerinde mutlaka (A.S) ekle: Musa (A.S), Nuh (A.S), İsa (A.S)
 - Mehdi (A.S) — mutlaka (A.S) ekle
 
@@ -135,7 +288,7 @@ KURAL 4 — NOKTALAMA
 ════════════════════════════════════════
 - Özel isimlere ek geldiğinde kesme işareti zorunlu:
   Allah'a, Kur'ân'dan, Efendimiz'in, Sıratı Mustakîm'e
-- Tırnak işaretleri: Türkçe tırnak kullan " "
+- Tırnak işaretlerini keyfi değiştirme; kaynakta tek/çift tırnak dengesi doğruysa koru.
 - Tırnak açıldıktan sonra boşluk bırakma
 - Cümle tırnakla bitiyorsa nokta tırnağın içinde olmalı: "...vermiştir."
 - Nokta, virgül, iki nokta sonrası tek boşluk
@@ -154,10 +307,12 @@ KURAL 5 — ALLAHÛ TEALÂ'NIN SÖZLERİ VE ZAMİRLER
 ════════════════════════════════════════
 KURAL 6 — METİN YAPISI VE PARAGRAF DÜZENİ
 ════════════════════════════════════════
-- Metin paragraflar halinde olmalı, alt alta satırlar halinde değil
-- Paragraflar arasında mutlaka boş satır bırak
+- Düz anlatı metni paragraflar halinde olmalı; ancak slayt, hadîs dökümü, tablo, numaralı liste
+  ve kısa satır düzeni varsa mevcut yapıyı koru.
+- Paragraflar arasında boş satır bırak; tablo/slayt satır düzenini bu nedenle bozma.
 - "Sevgili kardeşlerim" ifadesi metinde varsa koru, yoksa ekleme
-- "Allah razı olsun" ifadesi metinde varsa son cümlenin devamına yaz (virgül veya noktalı virgülle bağla), asla ayrı satıra alma, yoksa ekleme
+- "Allah razı olsun." kaynakta ayrı cümleyse ayrı cümle olarak koru; önceki cümleyle virgül veya
+  noktalı virgülle birleştirme. Yoksa ekleme.
 - Âyetlerden ve uzun alıntılardan önce ve sonra boş satır bırak
 - Hocamız'ın ifadesi değiştirilmemeli, sadece imlâ ve noktalama düzeltilmeli
 - "E, ee, slaytı gösterelim, slayta bakalım" gibi dolgu ifadeler silinmeli
@@ -186,12 +341,23 @@ const mapUser    = u => ({ id: u.id, username: u.username, name: u.name, role: u
 const mapHistory = h => ({
   id: h.id, userId: h.user_id, username: h.username, name: h.name,
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
-  catCounts: h.cat_counts || {}, summary: h.summary, correctedText: h.corrected_text,
-  status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at, createdAt: h.created_at
+  catCounts: h.cat_counts || {}, summary: h.summary, originalText: h.original_text, correctedText: h.corrected_text,
+  status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
+  promptVersion: h.prompt_version, rulesHash: h.rules_hash,
+  createdAt: h.created_at
 });
 const mapAlert   = a => ({
   id: a.id, type: a.type, message: a.message, userId: a.user_id,
   historyId: a.history_id, score: a.score, read: a.read, createdAt: a.created_at
+});
+const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
+const FEEDBACK_REASONS = Object.freeze({
+  nonexistent: 'Metinde olmayan hata',
+  wrong_fix: 'Yanlış düzeltme',
+  missing_issue: 'Eksik hata',
+  layout_broken: 'Düzen bozuldu',
+  score_wrong: 'Skor yanlış',
+  other: 'Diğer'
 });
 
 // ── Rules helpers (settings tablosunda key='rules') ─────────────────────────
@@ -218,42 +384,104 @@ async function seed() {
   if (!count) {
     const { error: insErr } = await supabase.from('users').insert({
       username: 'admin', password: bcrypt.hashSync('admin123', 10),
-      role: 'admin', name: 'Yönetici', active: true
+      role: ROLES.SUPER_ADMIN, name: 'Yönetici', active: true
     });
     if (insErr) console.error('Admin seed başarısız:', insErr.message);
     else console.log('✅ Varsayılan admin oluşturuldu (admin / admin123)');
   }
+  // Yalnızca "admin" kullanıcı adı süper admin olabilir.
+  const { error: demoteErr } = await supabase.from('users')
+    .update({ role: ROLES.ADMIN }).eq('role', ROLES.SUPER_ADMIN).neq('username', 'admin');
+  if (demoteErr) console.warn('Geçersiz süper admin rolleri düzeltilemedi:', demoteErr.message);
+  const { error: promoteErr } = await supabase.from('users')
+    .update({ role: ROLES.SUPER_ADMIN }).eq('username', 'admin');
+  if (promoteErr) console.warn('Admin süper admin rolüne yükseltilemedi:', promoteErr.message);
   await loadRules(); // kural satırı yoksa oluşturur
 
   // history.text_hash kolonu var mı? (tekrar-gönderim kontrolü için)
   const { error: thErr } = await supabase.from('history').select('text_hash').limit(1);
   HAS_TEXT_HASH = !thErr;
   if (!HAS_TEXT_HASH) console.warn('⚠ history.text_hash kolonu yok — tekrar-gönderim kontrolü devre dışı. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
+
+  const { error: metaErr } = await supabase.from('history').select('prompt_version,rules_hash').limit(1);
+  HAS_ANALYSIS_META = !metaErr;
+  if (!HAS_ANALYSIS_META) console.warn('⚠ history.prompt_version/rules_hash kolonları yok — analiz sürüm bilgisi kayıt geçmişine yazılmayacak.');
+
+  const { error: originalTextErr } = await supabase.from('history').select('original_text').limit(1);
+  HAS_ORIGINAL_TEXT = !originalTextErr;
+  if (!HAS_ORIGINAL_TEXT) console.warn('⚠ history.original_text kolonu yok — geçmişte orijinal metin saklanmayacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
-const auth  = (req, res, next) => req.session?.userId ? next() : res.status(401).json({ error: 'Giriş gerekli.' });
-const admin = (req, res, next) => req.session?.role === 'admin' ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
+function normalizeSessionRole(req) {
+  if (req.session?.userId) req.session.role = effectiveRole(req.session.username, req.session.role);
+}
+
+function prepareAnalysisText(text) {
+  const cleaned = normalizeText(text);
+  if (!cleaned) {
+    const err = new Error('Metin boş.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (cleaned.length < MIN_ANALYSIS_TEXT_CHARS) {
+    const err = new Error('Metin çok kısa. Sağlıklı denetim için birkaç cümle girin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (cleaned.length > MAX_ANALYSIS_TEXT_CHARS) {
+    const err = new Error('Metin çok uzun. Lütfen metni bölerek denetleyin.');
+    err.statusCode = 413;
+    throw err;
+  }
+  return cleaned;
+}
+const auth = async (req, res, next) => {
+  try {
+    if (!req.session?.userId) return res.status(401).json({ error: 'Giriş gerekli.' });
+    await startupReady;
+    normalizeSessionRole(req);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+const admin = (req, res, next) => isAdminRole(req.session?.role)
+  ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
+const superAdmin = (req, res, next) => isSuperAdminRole(req.session?.role)
+  ? next() : res.status(403).json({ error: 'Süper admin yetkisi gerekli.' });
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
   try {
+    await startupReady;
     const { username, password } = req.body;
     const { data: user } = await supabase.from('users')
       .select('*').eq('username', username).eq('active', true).maybeSingle();
     if (!user || !bcrypt.compareSync(password, user.password))
       return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
+    const role = effectiveRole(user.username, user.role);
+    if (role !== user.role) {
+      const { error: roleError } = await supabase.from('users').update({ role }).eq('id', user.id);
+      if (roleError) throw new Error(roleError.message);
+    }
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.name = user.name;
-    req.session.role = user.role;
-    res.json({ success: true, id: user.id, name: user.name, role: user.role, username: user.username });
+    req.session.role = role;
+    res.json({ success: true, id: user.id, name: user.name, role, username: user.username });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/auth/logout', (req, res) => { req.session.destroy(); res.json({ success: true }); });
-app.get('/api/auth/me', (req, res) => {
+app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
+app.get('/api/auth/me', async (req, res, next) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
-  res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
+  try {
+    await startupReady;
+    normalizeSessionRole(req);
+    res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
+  } catch (error) {
+    next(error);
+  }
 });
 // Varsayılan admin/admin123 hâlâ kullanılıyor mu? (Kullanıcılar sekmesindeki uyarı için)
 app.get('/api/security/default-admin', auth, admin, async (req, res) => {
@@ -284,14 +512,18 @@ app.get('/api/users', auth, admin, async (req, res) => {
     res.json((data || []).map(mapUser));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/users', auth, admin, async (req, res) => {
+app.post('/api/users', auth, admin, superAdmin, async (req, res) => {
   try {
     const { username, password, name, role } = req.body;
     if (!username || !password || !name) return res.status(400).json({ error: 'Tüm alanlar zorunludur.' });
-    const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
+    const cleanUsername = String(username).trim();
+    const cleanRole = role || ROLES.USER;
+    if (isReservedSuperAdminUsername(cleanUsername)) return res.status(400).json({ error: 'admin kullanıcı adı ayrılmıştır.' });
+    if (!isAssignableRole(cleanRole)) return res.status(400).json({ error: 'Geçersiz kullanıcı rolü.' });
+    const { data: existing } = await supabase.from('users').select('id').eq('username', cleanUsername).maybeSingle();
     if (existing) return res.status(400).json({ error: 'Kullanıcı adı alınmış.' });
     const { error } = await supabase.from('users').insert({
-      username, name, password: bcrypt.hashSync(password, 10), role: role || 'user', active: true
+      username: cleanUsername, name, password: bcrypt.hashSync(password, 10), role: cleanRole, active: true
     });
     if (error) throw new Error(error.message);
     res.json({ success: true });
@@ -300,6 +532,23 @@ app.post('/api/users', auth, admin, async (req, res) => {
 app.put('/api/users/:id', auth, admin, async (req, res) => {
   try {
     const { name, password, role, active } = req.body;
+    const { data: target, error: targetError } = await supabase.from('users')
+      .select('id,username,role').eq('id', req.params.id).maybeSingle();
+    if (targetError) throw new Error(targetError.message);
+    if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    const targetIsSuperAdmin = isReservedSuperAdminUsername(target.username) || target.role === ROLES.SUPER_ADMIN;
+    if (targetIsSuperAdmin && !isSuperAdminRole(req.session.role)) {
+      return res.status(403).json({ error: 'Süper admin hesabını yalnızca süper admin düzenleyebilir.' });
+    }
+    if (targetIsSuperAdmin && role !== undefined && role !== ROLES.SUPER_ADMIN) {
+      return res.status(400).json({ error: 'Süper admin rolü değiştirilemez.' });
+    }
+    if (targetIsSuperAdmin && active === false) {
+      return res.status(400).json({ error: 'Süper admin hesabı devre dışı bırakılamaz.' });
+    }
+    if (!targetIsSuperAdmin && role !== undefined && !isAssignableRole(role)) {
+      return res.status(400).json({ error: 'Geçersiz kullanıcı rolü.' });
+    }
     const patch = {};
     if (name !== undefined)   patch.name   = name;
     if (role !== undefined)   patch.role   = role;
@@ -313,11 +562,40 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/users/:id', auth, admin, async (req, res) => {
+app.post('/api/users/:id/notify', auth, admin, async (req, res) => {
   try {
-    const { data: user } = await supabase.from('users').select('role').eq('id', req.params.id).maybeSingle();
+    const cleanTitle = String(req.body?.title || 'Duyuru').trim().slice(0, 120);
+    const cleanMessage = String(req.body?.message || '').trim().slice(0, 1200);
+    if (!cleanMessage) return res.status(400).json({ error: 'Bildirim mesajı gerekli.' });
+
+    const { data: target, error: targetError } = await supabase.from('users')
+      .select('id,name,active').eq('id', req.params.id).maybeSingle();
+    if (targetError) throw new Error(targetError.message);
+    if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    if (!target.active) return res.status(400).json({ error: 'Pasif kullanıcıya bildirim gönderilemez.' });
+
+    const message = [
+      `Başlık: ${cleanTitle}`,
+      `Mesaj: ${cleanMessage}`,
+      `Gönderen: ${req.session.name || req.session.username}`
+    ].join(' | ');
+    const { error } = await supabase.from('alerts').insert({
+      type: 'announcement',
+      message,
+      user_id: target.id,
+      read: false
+    });
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+app.delete('/api/users/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const { data: user } = await supabase.from('users').select('username,role').eq('id', req.params.id).maybeSingle();
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
-    if (user.role === 'admin') return res.status(400).json({ error: 'Yönetici silinemez.' });
+    if (req.params.id === req.session.userId || isReservedSuperAdminUsername(user.username) || user.role === ROLES.SUPER_ADMIN) {
+      return res.status(400).json({ error: 'Süper admin silinemez.' });
+    }
     const { error } = await supabase.from('users').delete().eq('id', req.params.id);
     if (error) throw new Error(error.message);
     res.json({ success: true });
@@ -348,11 +626,83 @@ app.post('/api/rules/reset', auth, admin, async (req, res) => {
 app.get('/api/history', auth, async (req, res) => {
   try {
     let q = supabase.from('history').select('*').order('created_at', { ascending: false }).limit(200);
-    if (req.session.role !== 'admin') q = q.eq('user_id', req.session.userId);
+    if (!isAdminRole(req.session.role)) q = q.eq('user_id', req.session.userId);
     const { data, error } = await q;
     if (error) throw new Error(error.message);
     res.json((data || []).map(mapHistory));
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
+  try {
+    let query = supabase.from('history').select('*').eq('id', req.params.id);
+    if (!isAdminRole(req.session.role)) query = query.eq('user_id', req.session.userId);
+    const { data, error } = await query.maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    res.json(mapHistory(data));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/feedback', auth, async (req, res) => {
+  try {
+    const { reason, note, category, original, fixed, rule } = req.body || {};
+    const reasonLabel = FEEDBACK_REASONS[reason] || FEEDBACK_REASONS.other;
+    const cleanNote = String(note || '').trim().slice(0, 1000);
+    const cleanCategory = String(category || '').trim().slice(0, 40);
+    const cleanOriginal = String(original || '').trim().slice(0, 220);
+    const cleanFixed = String(fixed || '').trim().slice(0, 220);
+    const cleanRule = String(rule || '').trim().slice(0, 220);
+
+    let query = supabase.from('history').select('id,user_id,filename,score').eq('id', req.params.id);
+    if (!isAdminRole(req.session.role)) query = query.eq('user_id', req.session.userId);
+    const { data: history, error: historyError } = await query.maybeSingle();
+    if (historyError) throw new Error(historyError.message);
+    if (!history) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+
+    const parts = [
+      `Geri bildirim: ${reasonLabel}`,
+      `Kayıt: ${history.filename || 'Metin Girişi'}`,
+      `Gönderen: ${req.session.name || req.session.username}`
+    ];
+    if (cleanCategory) parts.push(`Kategori: ${cleanCategory}`);
+    if (cleanOriginal || cleanFixed) parts.push(`Bulgu: "${cleanOriginal || '—'}" → "${cleanFixed || '—'}"`);
+    if (cleanRule) parts.push(`Kural: ${cleanRule}`);
+    if (cleanNote) parts.push(`Not: ${cleanNote}`);
+
+    const { error } = await supabase.from('alerts').insert({
+      type: 'feedback',
+      message: parts.join(' | '),
+      user_id: req.session.userId,
+      history_id: history.id,
+      score: history.score,
+      read: false
+    });
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/pdf', auth, async (req, res) => {
+  const text = String(req.body?.text || '');
+  if (!text.trim()) return res.status(400).json({ error: 'PDF için metin bulunamadı.' });
+  if (text.length > 1_000_000) return res.status(413).json({ error: 'Metin PDF için çok uzun.' });
+
+  try {
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 56, right: 56, bottom: 56, left: 56 } });
+    const fontPath = require.resolve('@fontsource/noto-serif/files/noto-serif-latin-ext-400-normal.woff');
+    const filename = `duzeltilmis-metin-${new Date().toISOString().slice(0, 10)}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    doc.on('error', err => { if (!res.headersSent) res.status(500).json({ error: err.message }); else res.destroy(err); });
+    doc.pipe(res);
+    doc.font(fontPath).fontSize(16).fillColor('#8b6914').text('Arşiv Kontrol AI — Düzeltilmiş Metin');
+    doc.moveDown(1).fontSize(11).fillColor('#1a1410').text(text, { lineGap: 5, align: 'left' });
+    doc.moveDown(2).fontSize(8).fillColor('#7a6e5e').text(`Arşiv Kontrol AI — ${new Date().toLocaleDateString('tr-TR')}`);
+    doc.end();
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ error: e.message });
+  }
 });
 
 // CSV export
@@ -360,7 +710,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
   try {
   const { data, error } = await supabase.from('history').select('*').order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan']];
+  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan', 'Prompt Sürümü', 'Kural Hash']];
   (data || []).map(mapHistory).forEach(h => {
     rows.push([
       new Date(h.createdAt).toLocaleString('tr-TR'),
@@ -368,7 +718,8 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
       h.score || 0, h.totalErrors || 0,
       h.catCounts?.sozluk || 0, h.catCounts?.imla || 0,
       h.catCounts?.noktalama || 0, h.catCounts?.etiket || 0, h.catCounts?.yapi || 0,
-      h.status || 'bekliyor', h.approvedBy || ''
+      h.status || 'bekliyor', h.approvedBy || '',
+      h.promptVersion || '', h.rulesHash || ''
     ]);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -402,14 +753,86 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
 });
 app.post('/api/alerts/:id/read', auth, admin, async (req, res) => {
   try {
-    const { error } = await supabase.from('alerts').update({ read: true }).eq('id', req.params.id);
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('id', req.params.id).in('type', ['feedback', 'low_score']);
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/alerts/read-all', auth, admin, async (req, res) => {
   try {
-    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false);
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false).in('type', ['feedback', 'low_score']);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
+  try {
+    const cleanNote = String(req.body?.note || '').trim().slice(0, 1200);
+    if (!cleanNote) return res.status(400).json({ error: 'Çözüm notu gerekli.' });
+
+    const { data: alert, error: alertError } = await supabase.from('alerts')
+      .select('*').eq('id', req.params.id).eq('type', 'feedback').maybeSingle();
+    if (alertError) throw new Error(alertError.message);
+    if (!alert) return res.status(404).json({ error: 'Geri bildirim bulunamadı.' });
+    if (!alert.user_id) return res.status(400).json({ error: 'Bu geri bildirim kullanıcıya bağlı değil.' });
+
+    const message = [
+      'Geri bildiriminiz incelendi',
+      `Çözüm: ${cleanNote}`,
+      `Yanıtlayan: ${req.session.name || req.session.username}`,
+      alert.message ? `İlgili kayıt: ${String(alert.message).split(' | ')[1] || 'Denetim sonucu'}` : ''
+    ].filter(Boolean).join(' | ');
+
+    const { error: insertError } = await supabase.from('alerts').insert({
+      type: 'feedback_resolution',
+      message,
+      user_id: alert.user_id,
+      history_id: alert.history_id,
+      score: alert.score,
+      read: false
+    });
+    if (insertError) throw new Error(insertError.message);
+
+    const { error: updateError } = await supabase.from('alerts').update({ read: true }).eq('id', alert.id);
+    if (updateError) throw new Error(updateError.message);
+
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/my-notifications', auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('alerts')
+      .select('*')
+      .eq('user_id', req.session.userId)
+      .in('type', USER_NOTICE_TYPES)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+    res.json((data || []).map(mapAlert));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/my-notifications/:id/read', auth, async (req, res) => {
+  try {
+    const { error } = await supabase.from('alerts')
+      .update({ read: true })
+      .eq('id', req.params.id)
+      .eq('user_id', req.session.userId)
+      .in('type', USER_NOTICE_TYPES);
+    if (error) throw new Error(error.message);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/my-notifications/read-all', auth, async (req, res) => {
+  try {
+    const { error } = await supabase.from('alerts')
+      .update({ read: true })
+      .eq('read', false)
+      .eq('user_id', req.session.userId)
+      .in('type', USER_NOTICE_TYPES);
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -421,7 +844,7 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }] = await Promise.all([
       supabase.from('history').select('*'),
       supabase.from('users').select('active'),
-      supabase.from('alerts').select('read')
+      supabase.from('alerts').select('type,read,created_at')
     ]);
     if (hErr) throw new Error(hErr.message);
     if (uErr) throw new Error(uErr.message);
@@ -457,8 +880,29 @@ app.get('/api/stats', auth, admin, async (req, res) => {
       daily.push({ label, count: dayItems.length, avgScore: dayItems.length ? Math.round(dayItems.reduce((s,h) => s+(h.score||0),0)/dayItems.length) : 0 });
     }
 
-    const unreadAlerts = (alertRows || []).filter(a => !a.read).length;
+    const alerts = alertRows || [];
+    const feedbackAlerts = alerts.filter(a => a.type === 'feedback');
+    const lowScoreAlerts = alerts.filter(a => a.type === 'low_score');
+    const resolutionAlerts = alerts.filter(a => a.type === 'feedback_resolution');
+    const announcementAlerts = alerts.filter(a => a.type === 'announcement');
+    const feedback7 = feedbackAlerts.filter(a => now - new Date(a.created_at).getTime() < 7 * 864e5).length;
+    const adminAlertTypes = ['feedback', 'low_score'];
+    const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
+    const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
     const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
+    const riskItems = hist
+      .filter(h => (h.score || 0) < 60 || (h.totalErrors || 0) >= 5)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 8)
+      .map(h => ({
+        id: h.id,
+        name: h.name,
+        filename: h.filename,
+        score: h.score || 0,
+        totalErrors: h.totalErrors || 0,
+        status: h.status || 'bekliyor',
+        createdAt: h.createdAt
+      }));
 
     res.json({
       totals: {
@@ -467,7 +911,13 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         activeUsers: users.length,
         avgScore: hist.length ? Math.round(hist.reduce((s,h)=>s+(h.score||0),0)/hist.length) : 0,
         pendingApproval: pending,
-        unreadAlerts
+        unreadAlerts,
+        feedback: feedbackAlerts.length,
+        feedback7,
+        unreadFeedback,
+        lowScoreAlerts: lowScoreAlerts.length,
+        feedbackResolved: resolutionAlerts.length,
+        announcements: announcementAlerts.length
       },
       perUser: Object.values(perUser).map(u => ({
         name: u.name, count: u.count,
@@ -475,15 +925,30 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         avgErrors: u.count ? Math.round(u.errors / u.count) : 0
       })).sort((a,b) => b.count - a.count),
       catTotals,
-      daily
+      daily,
+      riskItems
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
-async function buildSystemPrompt() {
-  const rules = await loadRules();
+async function buildSystemPrompt(rulesText) {
+  const rules = rulesText ?? await loadRules();
   return `Sen "Arşiv Kontrol AI" sistemisin. Görevin yalnızca cevap metinlerini verilen kurallara göre denetlemek ve düzeltmektir.
+
+GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
+- "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
+- "herşey" doğru yazımdır; "herşey" kelimesini "her şey" olarak ayırma. Metinde "her şey" varsa "herşey" olarak düzelt.
+- Bu iki karar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
+
+SURE ADLARI ÜST ÖNCELİKLİ STANDARDI:
+- Sure adlarında aşağıdaki liste esastır; baştaki sıra numaralarını imlâ konusu yapma.
+- Sure adlarını bu listedeki büyük harf, şapka ve apostrof biçimine göre düzelt.
+- Sure adı içinden parça yakalayıp ayrı kelime düzeltmesi yapma.
+- Örnek: Muminun/Müminun/Mu'minun sure adı olarak geçiyorsa doğru biçim MU'MİNÛN olur; mü'min kelimesine indirgenmez.
+- Örnek: Zümer/Zumer sure adı olarak geçiyorsa doğru biçim ZUMER olur.
+
+${SURE_STANDARD_LIST}
 
 NASIL ÇALIŞACAKSIN:
 1. Metni baştan sona kelime kelime oku — tüm imlâ hatalarını tespit et.
@@ -493,14 +958,31 @@ NASIL ÇALIŞACAKSIN:
 5. Anlam değişikliği yapma, cümle ekleme veya çıkarma, sadeleştirme yapma.
 6. Yalnızca imlâ, noktalama ve yapı kurallarını uygula.
 7. Paragraflar arasında mutlaka boş satır bırak.
-8. "Allah razı olsun" ifadesi varsa son cümlenin devamına yaz, asla ayrı satıra alma.
+8. "Allah razı olsun." ifadesi kaynakta ayrı cümleyse ayrı cümle olarak koru; önceki cümleyle birleştirme.
 9. "Bu Resûl" gibi kullanımlarda Resûl büyük R ile kalmalı — özel isim olarak kullanılıyor.
 10. Tırnak içinde biten cümlelerde nokta tırnağın içinde olmalı: "...vermiştir."
+11. Bağımsız iki cümleyi noktalama bahanesiyle birleştirme. Özellikle "Allah'ın izniyle. Allah razı olsun."
+   iki ayrı cümle olarak kalmalıdır; virgülle tek cümle yapma.
+12. Apostrof/kesme işareti türünü tek başına hata sayma. Allah'a, Allah’a, Allah’ın, Allah'ın gibi
+   düz veya tipografik kesme işaretleri eşdeğer kabul edilir; sadece karakter tipini değiştirmek için issue yazma.
+13. Çift tırnak ve tek tırnak arasında keyfi dönüşüm yapma. Tırnak işaretlerini silme; kaynakta kapanış tırnağı varsa
+   düzeltilmiş metinde de korunmalıdır.
+14. Kelime içinden parça yakalayıp düzeltme yapma. "Muminun/Mu'minûn Suresi" içindeki "Mumin/Mu'min" parçasını
+   "mü'min" kelimesi sanma.
+15. "Tabiî ki" ifadesi "tâbî" değildir; bu ifadeyi tâbî olarak düzeltme. "derecat" kelimesini otomatik olarak
+   "derece" yapma. "dinlenmeye" kelimesini "dînlenmeye" yapma.
+16. "Muhterem Efendimiz" bağlamında geçen Efendimiz'e "(S.A.V)" ekleme; bunu yalnızca açıkça Peygamber Efendimiz
+   kastedildiğinde ve kaynak kural gerektiriyorsa uygula.
+17. Slayt, hadîs dökümü, tablo benzeri satır düzenlerini koru. Satır sırası, başlıklar, numaralar ve tırnak dengesi
+   düzeltilmiş metinde bozulmamalıdır.
 
 BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - Her yaptığın düzeltmeyi MUTLAKA ilgili kategorinin issues listesine ekle.
 - Düzeltilmiş metinde değiştirdiğin HER kelime/ifade için bir issue objesi oluştur
   ({"original": "...", "fixed": "...", "rule": "..."}).
+- Kaynak metinde birebir bulunmayan original değeriyle issue yazma. Bir kelimenin sadece daha uzun bir kelimenin
+  içinde geçmesi yeterli değildir.
+- original ve fixed kullanıcıya aynı görünüyorsa veya sadece düz/tipografik apostrof farkı varsa issue yazma.
 - issues listesi boş bırakılamaz: bir kategoride düzeltme yaptıysan o issue mutlaka listede olmalı.
 - count ile issues.length HER ZAMAN eşit olmalı. Düzelttiğin ama issues'a yazmadığın hiçbir
   değişiklik kalmamalı; düzeltilmiş metin ile issues listesi birebir tutarlı olmalı.
@@ -509,6 +991,10 @@ BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - ASLA "ve benzeri", "vb.", "diğer örnekler" gibi özetleme yapma. Her geçiş ayrı bir satırdır.
 - Metni kelime kelime tara; bir hatanın kaç kez geçtiğini say ve o sayıda issue üret.
   Eksik listeleme skoru haksız yere yükseltir ve KABUL EDİLMEZ.
+- Son JSON'u vermeden önce correctedText ile özgün metni karşılaştır. Yaptığın her değişiklik için
+  tam bir issue bulunduğunu ve listedeki her issue'nun correctedText'e uygulandığını tek tek doğrula.
+- Aynı original/fixed çifti tekrar etse bile her metin konumu ayrı hata instance'ıdır ve ayrı issue'dur.
+- Bir düzeltmeyi yalnızca en uygun TEK kategoriye yaz; aynı metin konumunu iki kategoride tekrar sayma.
 
 ${rules}
 
@@ -529,7 +1015,19 @@ Skor = max(0, 100 - toplam ceza). Sabit/keyfi puan VERME, formülü uygula.
   "${LOW_SCORE_MSG}"
 - Tüm hataları yine de kategoriler altında listele (bulgular gösterilecek).
 
-ÇIKTI FORMATI — SADECE JSON DÖN, BAŞKA HİÇBİR ŞEY YAZMA:
+ÇIKTI FORMATI — SADECE JSON DÖN, BAŞKA HİÇBİR ŞEY YAZMA.
+ÖRNEK: Girdi "ayet bize indi. Bu ayet açıktır. O ayet okundu." ise üç ayrı geçiş vardır;
+"ayet → âyet" düzeltmesini bir kez özetlemek YASAKTIR. Beklenen sözlük kategorisi aynen şöyledir:
+"sozluk": {
+  "count": 3,
+  "issues": [
+    {"original":"ayet","fixed":"âyet","rule":"Sözlük standardı (1. geçiş)"},
+    {"original":"ayet","fixed":"âyet","rule":"Sözlük standardı (2. geçiş)"},
+    {"original":"ayet","fixed":"âyet","rule":"Sözlük standardı (3. geçiş)"}
+  ]
+}
+
+Tam yanıt şeması:
 {
   "score": 78,
   "correctedText": "Düzeltilmiş tam metin (skor 60 altındaysa boş)...",
@@ -546,22 +1044,26 @@ Skor = max(0, 100 - toplam ceza). Sabit/keyfi puan VERME, formülü uygula.
 }
 
 async function openaiText(text) {
+  const rules = await loadRules();
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
     body: JSON.stringify({
       model: 'gpt-4o',
-      max_tokens: 8000,
+      max_tokens: 16000,
       temperature: 0,
       response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
       messages: [
-        { role: 'system', content: await buildSystemPrompt() },
+        { role: 'system', content: await buildSystemPrompt(rules) },
         { role: 'user', content: `Metni denetle:\n\n${text}` }
       ]
     })
   });
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API hatası'); }
-  const d = await r.json(); return finalizeResult(parseResult(d.choices[0].message.content));
+  const d = await r.json();
+  const result = finalizeResult(parseResult(d.choices[0].message.content), text);
+  result.analysisMeta = { promptVersion: PROMPT_VERSION, rulesHash: textHash(rules).slice(0, 12) };
+  return result;
 }
 
 async function extractText(buffer) {
@@ -599,59 +1101,27 @@ function parseResult(raw) {
   }
 }
 
-const LOW_SCORE_THRESHOLD = 60;
-
-// Kategori ağırlıkları — skor 100'den başlar, her hata bu kadar puan düşürür.
-const CAT_WEIGHTS = { sozluk: 5, imla: 4, noktalama: 3, etiket: 2, yapi: 4 };
-const LOW_SCORE_MSG = 'Bu metin arşiv standartlarının oldukça altında kalmaktadır. Lütfen metni gözden geçirip tekrar gönderin. Tespit edilen sorunlar aşağıda listelenmiştir.';
 const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar göndermek yerine düzeltilmiş halini kullanabilirsiniz.';
 
 let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
-
-// Metin parmak izi: ilk 100 karakter + uzunluk
-function textHash(text) {
-  const t = (text || '').trim();
-  return `${t.length}|${t.slice(0, 100)}`;
-}
-
-// AI çıktısını yetkili biçimde sonlandır: AI'ın verdiği score TAMAMEN yok sayılır.
-// Skor, her kategorideki ISSUES LISTESININ uzunluğundan hesaplanır
-// (AI'ın "count" alanına güvenilmez; count = issues.length olacak şekilde normalize edilir).
-function finalizeResult(result) {
-  const cats = result.categories || {};
-  let penalty = 0, total = 0;
-  for (const k of Object.keys(CAT_WEIGHTS)) {
-    const c = cats[k] || {};
-    const issues = Array.isArray(c.issues) ? c.issues : [];
-    const count = issues.length;        // tek doğru kaynak: gerçek issue sayısı
-    c.count = count;                    // AI'ın count'unu normalize et
-    c.issues = issues;
-    cats[k] = c;
-    penalty += count * CAT_WEIGHTS[k];
-    total += count;
-  }
-  result.categories = cats;
-  result.score = Math.max(0, 100 - penalty);  // AI'ın score'u kullanılmaz
-  result.totalErrors = total;
-  if (result.score < LOW_SCORE_THRESHOLD) {
-    result.correctedText = '';
-    result.summary = LOW_SCORE_MSG;
-  }
-  return result;
-}
+let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
+let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
+let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
-async function isDuplicate(req, hash) {
+async function isDuplicate(req, text) {
   if (!HAS_TEXT_HASH) return false;
+  const hashes = candidateTextHashes(text);
   const { data, error } = await supabase.from('history')
-    .select('id').eq('user_id', req.session.userId).eq('text_hash', hash).limit(1);
+    .select('id').eq('user_id', req.session.userId).in('text_hash', hashes).limit(1);
   if (error) { console.warn('Tekrar kontrolü uyarısı:', error.message); return false; }
   return !!(data && data.length);
 }
 
-async function saveHistory(req, result, filename, hash) {
+async function saveHistory(req, result, filename, hash, sourceText = '') {
   const catCounts = {};
   if (result.categories) Object.keys(result.categories).forEach(k => catCounts[k] = result.categories[k].count || 0);
+  const analysisMeta = result.analysisMeta || {};
 
   const row = {
     user_id: req.session.userId,
@@ -662,7 +1132,12 @@ async function saveHistory(req, result, filename, hash) {
     corrected_text: result.correctedText || '',
     status: 'bekliyor'
   };
+  if (HAS_ORIGINAL_TEXT) row.original_text = sourceText;
   if (HAS_TEXT_HASH && hash) row.text_hash = hash;
+  if (HAS_ANALYSIS_META) {
+    row.prompt_version = analysisMeta.promptVersion || PROMPT_VERSION;
+    row.rules_hash = analysisMeta.rulesHash || null;
+  }
 
   const { data, error } = await supabase.from('history').insert(row).select('id').single();
   if (error) throw new Error(error.message);
@@ -682,44 +1157,46 @@ async function saveHistory(req, result, filename, hash) {
 
 app.post('/api/analyze', auth, async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
-  const { text } = req.body;
-  if (!text?.trim()) return res.status(400).json({ error: 'Metin boş.' });
   try {
+    await startupReady;
+    const text = prepareAnalysisText(req.body?.text);
     const hash = textHash(text);
-    if (await isDuplicate(req, hash)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
-    const id = await saveHistory(req, result, 'Metin Girişi', hash);
-    res.json({ ...result, id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const id = await saveHistory(req, result, 'Metin Girişi', hash, text);
+    res.json({ ...result, id, originalText: text });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
-    const text = await extractText(req.file.buffer);
+    await startupReady;
+    const text = prepareAnalysisText(await extractText(req.file.buffer));
     const hash = textHash(text);
-    if (await isDuplicate(req, hash)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
-    const id = await saveHistory(req, result, req.file.originalname, hash);
-    res.json({ ...result, id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const id = await saveHistory(req, result, req.file.originalname, hash, text);
+    res.json({ ...result, id, originalText: text });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.files?.length) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   const results = [];
+  await startupReady;
   for (const file of req.files) {
     try {
-      const text = await extractText(file.buffer);
+      const text = prepareAnalysisText(await extractText(file.buffer));
       const hash = textHash(text);
-      if (await isDuplicate(req, hash)) {
+      if (await isDuplicate(req, text)) {
         results.push({ filename: file.originalname, success: false, duplicate: true, error: DUPLICATE_MSG });
         continue;
       }
       const result = await openaiText(text);
-      const id = await saveHistory(req, result, file.originalname, hash);
+      const id = await saveHistory(req, result, file.originalname, hash, text);
       results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id });
     } catch (e) {
       results.push({ filename: file.originalname, success: false, error: e.message });
@@ -728,9 +1205,21 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
   res.json({ results });
 });
 
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Dosya en fazla 4 MB olabilir.' });
+  }
+  if (err) return res.status(500).json({ error: err.message || 'Sunucu hatası.' });
+  next();
+});
+
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-seed()
-  .catch(e => console.error('Seed hatası:', e.message))
-  .finally(() => app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`)));
+startupReady = seed().catch(e => console.error('Seed hatası:', e.message));
+
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`));
+}
+
+module.exports = app;

@@ -1,0 +1,212 @@
+[
+  {
+    "name": "Metinde olmayan bulgu skora girmez",
+    "sourceText": "Allah razi olsun. Bu metin temizdir.",
+    "modelResult": {
+      "correctedText": "Allah razi olsun. Bu metin temizdir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "olmayan kelime", "fixed": "olmayan kelime duzeltme", "rule": "Kaynakta yok" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah razi olsun. Bu metin temizdir." }
+  },
+  {
+    "name": "Ayni gorunen apostrof farki hata sayilmaz",
+    "sourceText": "Allah'in izniyle bu is tamamlanir.",
+    "modelResult": {
+      "correctedText": "Allah\u2019in izniyle bu is tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Allah'in", "fixed": "Allah\u2019in", "rule": "Apostrof tipi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah'in izniyle bu is tamamlanir." }
+  },
+  {
+    "name": "Muminun kelime ici parca yakalama reddedilir",
+    "sourceText": "Muminun Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "Mu'min Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Mumin", "fixed": "Mu'min", "rule": "Kelime ici yanlis yakalama" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0 }
+  },
+  {
+    "name": "Tabii ki korumali ifade degistirilmez",
+    "sourceText": "Tabi\u00ee ki bu cevap korunmalidir.",
+    "modelResult": {
+      "correctedText": "T\u00e2b\u00ee ki bu cevap korunmalidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Tabi\u00ee ki", "fixed": "T\u00e2b\u00ee ki", "rule": "Korumali ifade" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Tabi\u00ee ki bu cevap korunmalidir." }
+  },
+  {
+    "name": "Derecat korumali ifade degistirilmez",
+    "sourceText": "Derecat kelimesi bu metinde bilerek kullanildi.",
+    "modelResult": {
+      "correctedText": "Derece kelimesi bu metinde bilerek kullanildi.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Derecat", "fixed": "Derece", "rule": "Korumali ifade" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Derecat kelimesi bu metinde bilerek kullanildi." }
+  },
+  {
+    "name": "Gercek kaynak bulgusu skorlanir",
+    "sourceText": "Bu metinde ayet kelimesi geciyor.",
+    "modelResult": {
+      "correctedText": "Bu metinde \u00e2yet kelimesi geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "ayet", "fixed": "\u00e2yet", "rule": "Sozluk" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "Bu metinde \u00e2yet kelimesi geciyor." }
+  },
+  {
+    "name": "Din kelimesi artik din olarak korunur",
+    "sourceText": "Din bu cevapta temel kavramdir.",
+    "modelResult": {
+      "correctedText": "D\u00een bu cevapta temel kavramdir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Din", "fixed": "D\u00een", "rule": "Eski sozluk yonu" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Din bu cevapta temel kavramdir." }
+  },
+  {
+    "name": "Herşey artik birlesik olarak korunur",
+    "sourceText": "Her\u015fey Allah'in izniyle tamamlanir.",
+    "modelResult": {
+      "correctedText": "Her \u015fey Allah'in izniyle tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Her\u015fey", "fixed": "Her \u015fey", "rule": "Eski imla yonu" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
+  },
+  {
+    "name": "Din yeni sozluk yonunde duzeltilir",
+    "sourceText": "D\u00een bu cevapta temel kavramdir.",
+    "modelResult": {
+      "correctedText": "Din bu cevapta temel kavramdir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "D\u00een", "fixed": "Din", "rule": "Yeni sozluk karari" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "Din bu cevapta temel kavramdir." }
+  },
+  {
+    "name": "Her sey yeni sozluk yonunde birlesir",
+    "sourceText": "Her \u015fey Allah'in izniyle tamamlanir.",
+    "modelResult": {
+      "correctedText": "Her\u015fey Allah'in izniyle tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Her \u015fey", "fixed": "Her\u015fey", "rule": "Yeni imla karari" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 96, "totalErrors": 1, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
+  },
+  {
+    "name": "Muminun sure adi yeni listeye gore duzeltilir",
+    "sourceText": "Muminun Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Muminun", "fixed": "MU'M\u0130N\u00dbN", "rule": "Sure adi standardi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Muminun sure adini mumin kelimesine indirgeme reddedilir",
+    "sourceText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "m\u00fc'min Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "MU'M\u0130N\u00dbN", "fixed": "m\u00fc'min", "rule": "Yanlis parca yakalama" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Zumer sure adi yeni listeye gore sapkasiz korunur",
+    "sourceText": "Zumer Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "ZUMER Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Zumer", "fixed": "ZUMER", "rule": "Sure adi standardi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Zumer sure adini Zumer yerine Zumer umlautlu yapma reddedilir",
+    "sourceText": "ZUMER Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "Z\u00fcmer Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "ZUMER", "fixed": "Z\u00fcmer", "rule": "Yanlis sure yazimi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
+  }
+]

@@ -1,7 +1,25 @@
-# CLAUDE.md — Arşiv Kontrol AI
+# CLAUDE.md — Claude Code Başlangıç Talimatı
 
-Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Claude Code her oturumda
-bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
+Bu projede Claude Code ve OpenAI Codex birlikte çalışır. Ortak ve yetkili proje hafızası
+`AGENTS.md`, o anki çalışma/devralma durumu ise `CURRENT_HANDOFF.md` dosyasıdır.
+
+Her oturumun başında sırasıyla:
+
+1. `AGENTS.md` dosyasının tamamını oku.
+2. `CURRENT_HANDOFF.md` dosyasını oku.
+3. `git status -sb` çalıştır; Codex'in veya kullanıcının mevcut değişikliklerini koru.
+
+Her değişiklikten sonra `npm run check` çalıştır ve önemli kararı `AGENTS.md` değişiklik
+günlüğüne, güncel çalışma durumunu `CURRENT_HANDOFF.md` dosyasına yaz.
+
+Bir değişiklik yalnızca yereldeyse **deploy edildi** deme. Deploy tamamlandı diyebilmek
+için commit + push yapılmış, Vercel production sonucu ve `/health` endpoint'i doğrulanmış
+olmalıdır. Başka ajanın değişikliklerini açıkça incelemeden geri alma veya üzerine yazma.
+
+Birincil production platformu artık Vercel, alan adı `arsiv.ibrahimlive.ai` olarak
+planlanmıştır. Eski Render maddeleri alternatif/tarihsel bilgidir.
+
+> Aşağıdaki bölüm eski ayrıntılı proje hafızasıdır. Güncel ve yetkili kayıt `AGENTS.md`'dir.
 
 ## Proje Özeti
 
@@ -77,12 +95,24 @@ uyarı mesajı yazılır; hatalar yine listelenir.
 
 ## Tekrar-Gönderim Kontrolü
 
-Her denetimde metnin parmak izi (`ilk 100 karakter + uzunluk`) `history.text_hash`'e
+Her denetimde normalize edilmiş metnin SHA-256 parmak izi `history.text_hash`'e
 yazılır. Aynı kullanıcı aynı metni tekrar gönderirse denetim yapılmadan uyarı döner.
+Eski `ilk 100 karakter + uzunluk` parmak izleri geriye dönük olarak tanınır.
 `text_hash` kolonu yoksa özellik otomatik devre dışı kalır (`HAS_TEXT_HASH` startup'ta
 tespit edilir).
 
 ## Değişiklik Günlüğü
+
+### 2026-06-22
+- Her hata instance'ını ayrı issue yapan somut prompt örneği ve correctedText/issues
+  birebir tutarlılık kontrolü güçlendirildi.
+- Puanlama ve hash mantığı `analysis-core.js` içine taşındı; `npm test` eklendi.
+- 60 altı standart mesaj birebir düzeltildi; correctedText boş, bulgular korunuyor.
+- Tekrar gönderim SHA-256'ya geçirildi, eski hash biçimiyle uyumluluk korundu.
+- Geçmiş detay API'si ve tüm kullanıcılar için çalışan Gör butonu eklendi.
+- PDFKit + Noto Serif ile gerçek PDF indirme eklendi.
+- `GET /health` eklendi; sağlık kontrolü Supabase seed'ini beklemiyor.
+- UptimeRobot için Render servisinin `/health` adresi 14 dakikalık HTTP(S) monitor olmalı.
 
 ### 2026-06-18 (2. tur)
 - **Skorlama** sunucu tarafında ağırlıklı formülle yeniden yazıldı (`finalizeResult`),

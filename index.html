@@ -3,7 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" id="themeColorMeta" content="#f5f0e8">
+<meta name="application-name" content="Arşiv AI">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Arşiv AI">
+<meta name="description" content="İslami tasavvuf içerikli soru-cevap metinlerini arşiv standartlarına göre denetleyen ve düzelten yapay zekâ destekli kalite kontrol sistemi.">
+<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Arşiv AI">
+<meta property="og:title" content="Arşiv AI | Metin Denetim ve Düzeltme">
+<meta property="og:description" content="İslami tasavvuf içerikli soru-cevap metinlerini arşiv standartlarına göre denetleyen ve düzelten yapay zekâ destekli kalite kontrol sistemi.">
+<meta property="og:url" content="https://arsiv.ibrahimlive.ai/">
+<meta property="og:image" content="https://arsiv.ibrahimlive.ai/icons/social-preview.png">
+<meta property="og:image:secure_url" content="https://arsiv.ibrahimlive.ai/icons/social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Arşiv AI — Metin Denetim ve Düzeltme">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Arşiv AI | Metin Denetim ve Düzeltme">
+<meta name="twitter:description" content="Arşiv standartlarına göre yapay zekâ destekli yazım, imlâ ve kalite kontrol sistemi.">
+<meta name="twitter:image" content="https://arsiv.ibrahimlive.ai/icons/social-preview.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
 <title>Arşiv Kontrol AI</title>
+<script>
+try{
+  const savedTheme=localStorage.getItem('arsiv-theme');
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme=savedTheme||'light';
+  if(!savedTheme&&prefersDark)document.documentElement.dataset.theme='dark';
+}catch(_){}
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
 :root{
@@ -15,7 +48,23 @@
   --blue:#1a3d6b;--blue-bg:#f0f4f9;
   --orange:#7a3a0a;--orange-bg:#fdf3ec;
   --border:#cfc4b0;--bord2:#b8aa96;--white:#fff;
+  --topbar-bg:#1a1410;--topbar-fg:#f5f0e8;--topbar-muted:rgba(245,240,232,.62);
+  --topbar-line:#8b6914;--topbar-soft:rgba(245,240,232,.16);
   --topbar-h:52px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#171717;--bg2:#222222;--bg3:#2d2d2d;
+  --ink:#f3f3f3;--ink2:#d4d4d4;--ink3:#a9a9a9;
+  --gold:#e2ca72;--gold-lt:#efdfa0;--gold-bg:#2b2719;
+  --red:#ff8a8a;--red-bg:#311d1d;
+  --green:#8bd89a;--grn-bg:#1b2f21;
+  --blue:#9fbfff;--blue-bg:#1d2638;
+  --orange:#eeb070;--orange-bg:#302419;
+  --border:#3b3b3b;--bord2:#555555;--white:#1d1d1d;
+  --topbar-bg:#151515;--topbar-fg:#f5f5f5;--topbar-muted:rgba(255,255,255,.74);
+  --topbar-line:#3f3f3f;--topbar-soft:rgba(255,255,255,.2);
+  color-scheme:dark;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,serif;font-size:17px;line-height:1.65;min-height:100vh;}
@@ -38,30 +87,39 @@ body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,ser
 .btn-login:hover{background:var(--gold);}
 .login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
 #appScreen{flex-direction:column;}
-.topbar{background:var(--ink);color:var(--bg);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:var(--topbar-h);flex-shrink:0;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:50;}
+.topbar{background:var(--topbar-bg);color:var(--topbar-fg);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:var(--topbar-h);flex-shrink:0;border-bottom:2px solid var(--topbar-line);position:sticky;top:0;z-index:50;}
 .topbar-brand{font-size:18px;font-weight:700;cursor:pointer;}
-.topbar-brand span{color:var(--gold-lt);}
-.topbar-brand .ai-tag{color:var(--gold-lt);font-size:11px;font-weight:300;font-family:'JetBrains Mono',monospace;}
+.topbar-brand span{color:var(--topbar-fg);}
+.topbar-brand .ai-tag{color:var(--topbar-muted);font-size:11px;font-weight:300;font-family:'JetBrains Mono',monospace;}
 .topbar-right{display:flex;align-items:center;gap:6px;}
-.topbar-user{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(245,240,232,.5);margin-right:6px;}
-.topbar-user strong{color:var(--bg);}
+.topbar-user{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--topbar-muted);margin-right:6px;}
+.topbar-user strong{color:var(--topbar-fg);}
 .desktop-nav{display:flex;align-items:center;gap:5px;}
-.btn-top{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid rgba(245,240,232,.2);color:rgba(245,240,232,.65);padding:5px 10px;cursor:pointer;transition:all .15s;position:relative;white-space:nowrap;}
-.btn-top:hover{border-color:var(--gold-lt);color:var(--gold-lt);}
-.btn-top.active-tab{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+.btn-top{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid var(--topbar-soft);color:var(--topbar-muted);padding:5px 10px;cursor:pointer;transition:all .15s;position:relative;white-space:nowrap;}
+.btn-top:hover{border-color:var(--topbar-fg);color:var(--topbar-fg);}
+.btn-top.active-tab{background:var(--topbar-fg);border-color:var(--topbar-fg);color:var(--topbar-bg);}
+.theme-toggle{width:48px;height:26px;border-radius:999px;border:1px solid var(--topbar-soft);background:rgba(255,255,255,.08);cursor:pointer;position:relative;display:inline-flex;align-items:center;justify-content:space-between;padding:0 6px;transition:all .18s;flex-shrink:0;}
+.theme-toggle:hover{border-color:var(--topbar-fg);background:rgba(255,255,255,.13);}
+.theme-toggle .theme-glyph{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1;color:var(--topbar-muted);position:relative;z-index:1;}
+.theme-toggle .theme-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--topbar-fg);box-shadow:0 2px 8px rgba(0,0,0,.28);transition:transform .18s;}
+:root[data-theme="dark"] .theme-toggle .theme-thumb{transform:translateX(22px);}
 .badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:white;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;background:transparent;border:none;}
-.hamburger span{display:block;width:22px;height:2px;background:var(--bg);border-radius:2px;transition:all .25s;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--topbar-fg);border-radius:2px;transition:all .25s;}
 .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
 .hamburger.open span:nth-child(2){opacity:0;}
 .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
-.mobile-menu{display:none;position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;background:var(--ink);z-index:49;overflow-y:auto;}
+.mobile-menu{display:none;position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;background:var(--topbar-bg);z-index:49;overflow-y:auto;}
 .mobile-menu.open{display:block;}
 .mobile-menu-inner{padding:12px 16px 32px;}
 .mobile-user{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(245,240,232,.4);padding:10px 4px 14px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:6px;}
-.mobile-user strong{color:var(--bg);}
+.mobile-user strong{color:var(--topbar-fg);}
 .btn-mobile{display:flex;align-items:center;justify-content:space-between;width:100%;font-family:'JetBrains Mono',monospace;font-size:13px;background:transparent;border:none;color:rgba(245,240,232,.75);padding:14px 4px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;}
 .btn-mobile.active-tab{color:var(--gold-lt);}
+.btn-mobile.theme-mobile{font-size:12px;color:var(--topbar-fg);}
+.theme-mobile .theme-mini-switch{width:42px;height:22px;border-radius:999px;border:1px solid var(--topbar-soft);position:relative;background:rgba(255,255,255,.08);}
+.theme-mobile .theme-mini-switch::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--topbar-fg);transition:transform .18s;}
+:root[data-theme="dark"] .theme-mobile .theme-mini-switch::after{transform:translateX(20px);}
 .badge-m{background:var(--red);color:white;font-size:9px;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 4px;}
 .app-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tab-content{display:none;max-width:1160px;margin:0 auto;padding:24px 16px;}
@@ -93,6 +151,9 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .status-msg{font-size:14px;color:var(--ink3);font-style:italic;}
 .status-msg.ok{color:var(--green);}
 .status-msg.err{color:var(--red);}
+.text-health{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.text-health.warn{color:var(--orange);}
+.text-health.err{color:var(--red);}
 .spin{width:28px;height:28px;margin:0 auto;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
 .btn-spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -127,6 +188,14 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .i-arr{color:var(--ink3);padding-top:4px;font-size:12px;}
 .i-fix{background:var(--grn-bg);color:var(--green);border-left:2px solid var(--green);padding:3px 8px;font-size:14px;flex:1;min-width:80px;font-weight:600;}
 .i-rule{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);margin-top:3px;}
+.issue-actions{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;}
+.btn-mini{font-family:'JetBrains Mono',monospace;font-size:10px;background:transparent;color:var(--ink3);border:1px solid var(--border);padding:4px 7px;cursor:pointer;}
+.btn-mini:hover{border-color:var(--gold);color:var(--gold);}
+.feedback-panel{background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:12px 14px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.feedback-panel p{font-size:13px;color:var(--ink2);}
+.feedback-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.analysis-meta{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px;}
+.meta-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);background:var(--bg2);border:1px solid var(--border);padding:4px 7px;}
 .empty-cat{padding:16px;text-align:center;color:var(--green);font-size:13px;font-style:italic;}
 .corrected-panel{border:1px solid var(--bord2);border-top:2px solid var(--gold);background:var(--white);margin-bottom:2px;}
 .corrected-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
@@ -136,6 +205,17 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .btn-copy:hover{border-color:var(--gold);color:var(--gold);}
 .btn-pdf{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--gold);color:white;border:none;padding:5px 12px;cursor:pointer;}
 .corrected-body{padding:18px;font-size:16px;line-height:1.8;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
+.compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
+.compare-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
+.compare-head h3{font-size:15px;font-weight:600;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+.compare-col{background:var(--white);min-width:0;}
+.compare-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg2);}
+.compare-text{padding:14px;font-size:14px;line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto;}
+.diff-del{background:var(--red-bg);color:var(--red);text-decoration:line-through;text-decoration-thickness:1px;}
+.diff-ins{background:var(--grn-bg);color:var(--green);font-weight:600;}
+.diff-note{font-size:11px;color:var(--ink3);}
+@media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
@@ -148,6 +228,7 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .sp-mid{background:var(--gold-bg);color:var(--gold);}
 .sp-low{background:var(--red-bg);color:var(--red);}
 .role-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:10px;}
+.rp-super{background:var(--blue-bg);color:var(--blue);}
 .rp-admin{background:var(--gold-bg);color:var(--gold);}
 .rp-user{background:var(--bg3);color:var(--ink3);}
 .status-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap;}
@@ -171,6 +252,19 @@ textarea::placeholder{color:var(--ink3);font-style:italic;}
 .dash-card{background:var(--white);border:1px solid var(--bord2);}
 .dash-card-head{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);font-weight:600;font-size:13px;}
 .dash-card-body{padding:14px;}
+.workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;}
+.workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.workflow-title{font-weight:600;font-size:13px;}
+.workflow-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.workflow-list{padding:8px;display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}
+.work-card{border:1px solid var(--border);background:var(--bg);padding:10px;}
+.work-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.work-name{font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.work-file{font-size:12px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px;}
+.work-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-bottom:8px;}
+.work-actions{display:flex;gap:4px;flex-wrap:wrap;}
+@media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -188,6 +282,24 @@ canvas{width:100%!important;}
 .alert-dot.read{background:var(--border);}
 .alert-msg{font-size:14px;color:var(--ink2);flex:1;}
 .alert-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
+.alert-type{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.7px;padding:2px 6px;border:1px solid var(--border);color:var(--ink3);background:var(--bg2);align-self:flex-start;}
+.alert-type.feedback{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.alert-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.alert-filter.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.notice-list{display:flex;flex-direction:column;gap:12px;}
+.notice-card{position:relative;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:16px 18px 14px;margin:0;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
+.notice-card.unread{background:linear-gradient(90deg,var(--red-bg),var(--white) 42%);}
+.notice-kicker{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.notice-status-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;}
+.notice-status-dot.read{background:var(--border);}
+.notice-type{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold-dk,#8b6914);border:1px solid var(--gold);background:var(--gold-bg);padding:3px 7px;}
+.notice-title{font-size:18px;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:10px;}
+.notice-body{font-size:16px;line-height:1.75;color:var(--ink2);}
+.notice-body p{margin:0 0 10px;}
+.notice-body p:last-child{margin-bottom:0;}
+.notice-footer{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.notice-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:76px;}
+.notice-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,.6);z-index:100;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
@@ -212,6 +324,27 @@ canvas{width:100%!important;}
 .profile-body{padding:20px;}
 .info-box{background:var(--blue-bg);border:1px solid #a8c0dc;border-left:3px solid var(--blue);padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:16px;}
 .warn-box{background:var(--orange-bg);border:1px solid #d4a87a;border-left:3px solid var(--orange);padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:12px;}
+:root[data-theme="dark"] .summary-box,
+:root[data-theme="dark"] .info-box,
+:root[data-theme="dark"] .warn-box{border-color:var(--bord2);}
+:root[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.78);}
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .btn-login{background:#fff;color:#000;}
+:root[data-theme="dark"] .btn-primary:hover,
+:root[data-theme="dark"] .btn-login:hover{background:#dcdcdc;color:#000;}
+:root[data-theme="dark"] .btn-green{background:var(--green);color:#041008;}
+:root[data-theme="dark"] .btn-danger{color:var(--red);border-color:var(--red);}
+:root[data-theme="dark"] .btn-sec,
+:root[data-theme="dark"] .btn-mini,
+:root[data-theme="dark"] .btn-copy{color:var(--ink2);border-color:var(--bord2);}
+:root[data-theme="dark"] .btn-sec:hover,
+:root[data-theme="dark"] .btn-mini:hover,
+:root[data-theme="dark"] .btn-copy:hover{color:#fff;border-color:#fff;}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea{background:#0b0b0b;color:#fff;border-color:var(--bord2);}
+:root[data-theme="dark"] .diff-del,
+:root[data-theme="dark"] .diff-ins{text-decoration-thickness:2px;}
 @media(max-width:700px){
   .topbar-user{display:none;}
   .desktop-nav{display:none !important;}
@@ -222,6 +355,10 @@ canvas{width:100%!important;}
   .dash-grid{grid-template-columns:1fr;}
   .stat-grid{grid-template-columns:repeat(2,1fr);}
   .page-title{font-size:20px;}
+  .notice-card{grid-template-columns:1fr;padding:15px 14px;gap:10px;}
+  .notice-actions{align-items:flex-start;flex-direction:row;justify-content:space-between;width:100%;border-top:1px solid var(--border);padding-top:10px;}
+  .notice-title{font-size:17px;}
+  .notice-body{font-size:15.5px;line-height:1.72;}
 }
 @media(max-width:420px){
   .score-row{grid-template-columns:repeat(2,1fr);}
@@ -256,6 +393,7 @@ canvas{width:100%!important;}
       <div class="desktop-nav">
         <button class="btn-top" id="tabBtnAnaliz" onclick="showTab('analiz')">Denetle</button>
         <button class="btn-top" id="tabBtnGecmis" onclick="showTab('gecmis')">Geçmiş</button>
+        <button class="btn-top" id="tabBtnBildirim" onclick="showTab('bildirim')">Bildirimler<span class="badge" id="noticeBadge" style="display:none">0</span></button>
         <button class="btn-top" id="tabBtnProfil" onclick="showTab('profil')">Profilim</button>
         <button class="btn-top admin-only" id="tabBtnDash" onclick="showTab('dash')" style="display:none">Dashboard</button>
         <button class="btn-top admin-only" id="tabBtnOnay" onclick="showTab('onay')" style="display:none">Onaylar<span class="badge" id="onayBadge" style="display:none">0</span></button>
@@ -264,6 +402,11 @@ canvas{width:100%!important;}
         <button class="btn-top admin-only" id="tabBtnKurallar" onclick="showTab('kurallar')" style="display:none">Kurallar</button>
         <button class="btn-top" onclick="doLogout()">Çıkış</button>
       </div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir" aria-label="Tema değiştir">
+        <span class="theme-glyph">☼</span>
+        <span class="theme-glyph">●</span>
+        <span class="theme-thumb"></span>
+      </button>
       <button class="hamburger" id="hamburger" onclick="toggleMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -275,12 +418,14 @@ canvas{width:100%!important;}
       <div class="mobile-user">Merhaba, <strong id="mTopName">—</strong></div>
       <button class="btn-mobile" onclick="mNav('analiz')">Denetle</button>
       <button class="btn-mobile" onclick="mNav('gecmis')">Geçmiş</button>
+      <button class="btn-mobile" onclick="mNav('bildirim')">Bildirimler <span class="badge-m" id="mNoticeBadge" style="display:none">0</span></button>
       <button class="btn-mobile" onclick="mNav('profil')">Profilim</button>
       <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
       <button class="btn-mobile admin-only" id="mBtnOnay" onclick="mNav('onay')" style="display:none">Onaylar <span class="badge-m" id="mOnayBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Uyarılar <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
+      <button class="btn-mobile theme-mobile" id="themeToggleMobile" onclick="toggleTheme()"><span>Tema</span><span class="theme-mini-switch"></span></button>
       <button class="btn-mobile" onclick="doLogout()" style="color:#e08080;margin-top:8px">Çıkış Yap</button>
     </div>
   </div>
@@ -296,7 +441,11 @@ canvas{width:100%!important;}
         <button class="itab" onclick="switchInner('batch')">Toplu Yükleme</button>
       </div>
       <div class="itab-panel active" id="ipanel-text">
-        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" style="overflow:hidden;resize:none;min-height:180px"></textarea>
+        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="handleTextInput()" style="overflow:hidden;resize:none;min-height:180px"></textarea>
+        <div class="text-health" id="textHealth">
+          <span id="textCount">0 karakter</span>
+          <span id="textHint">Denetlenecek metni yapıştırın.</span>
+        </div>
       </div>
       <div class="itab-panel" id="ipanel-file">
         <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()" ondragover="fdOver(event)" ondragleave="fdLeave()" ondrop="fdDrop(event)">
@@ -332,6 +481,18 @@ canvas{width:100%!important;}
         <button class="btn-sec admin-only" id="csvBtn" style="display:none" onclick="downloadCSV()">⬇ CSV İndir</button>
       </div>
       <div class="divider"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <input id="histSearch" type="search" placeholder="Dosya veya kullanıcı ara..." oninput="setHistoryFilter()" style="min-width:220px;flex:1;max-width:340px">
+        <select id="histStatusFilter" onchange="setHistoryFilter()" style="max-width:180px">
+          <option value="all">Tüm kayıtlar</option>
+          <option value="bekliyor">Bekleyen</option>
+          <option value="onaylandi">Onaylanan</option>
+          <option value="reddedildi">Reddedilen</option>
+          <option value="low">Düşük skor</option>
+        </select>
+        <button class="btn-sec" style="padding:8px 12px" onclick="clearHistoryFilters()">Sıfırla</button>
+        <span class="mono" id="histFilterSummary" style="font-size:11px;color:var(--ink3)"></span>
+      </div>
       <div class="score-chart-box" id="scoreChartBox" style="display:none">
         <div class="score-chart-head">📈 Son Denetimlerim — Skor Değişimi</div>
         <div class="score-chart-body"><div class="chart-wrap"><canvas id="scoreChart"></canvas></div></div>
@@ -367,18 +528,34 @@ canvas{width:100%!important;}
     </div>
 
     <div class="tab-content" id="tabContent-onay">
-      <div class="page-title">Onay Bekleyenler</div>
-      <div class="page-sub">Ekip denetimleri</div>
+      <div class="page-title">İş Panosu</div>
+      <div class="page-sub">Bekleyen, onaylanan ve reddedilen denetimler</div>
       <div class="divider"></div>
       <div id="onayContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
+    <div class="tab-content" id="tabContent-bildirim">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div><div class="page-title">Bildirimler</div><div class="page-sub">Size özel duyuru ve çözüm yanıtları</div></div>
+        <button class="btn-sec" onclick="readAllNotices()">Tümünü Okundu</button>
+      </div>
+      <div class="divider"></div>
+      <div id="noticeContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
     <div class="tab-content" id="tabContent-alerts">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div><div class="page-title">Düşük Skor Uyarıları</div><div class="page-sub">60 altı skorlar otomatik işaretlenir</div></div>
+        <div><div class="page-title">Uyarılar ve Geri Bildirimler</div><div class="page-sub">Düşük skorlar ve ekipten gelen sonuç bildirimleri</div></div>
         <button class="btn-sec" onclick="readAllAlerts()">Tümünü Okundu</button>
       </div>
       <div class="divider"></div>
+      <div class="alert-filters">
+        <button class="btn-mini alert-filter active" id="alertFilter-all" onclick="setAlertFilter('all')">Tümü</button>
+        <button class="btn-mini alert-filter" id="alertFilter-feedback" onclick="setAlertFilter('feedback')">Geri Bildirim</button>
+        <button class="btn-mini alert-filter" id="alertFilter-feedback_resolution" onclick="setAlertFilter('feedback_resolution')">Çözüm</button>
+        <button class="btn-mini alert-filter" id="alertFilter-announcement" onclick="setAlertFilter('announcement')">Duyuru</button>
+        <button class="btn-mini alert-filter" id="alertFilter-low_score" onclick="setAlertFilter('low_score')">Düşük Skor</button>
+      </div>
       <div id="alertsContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
@@ -388,7 +565,7 @@ canvas{width:100%!important;}
       <div class="divider"></div>
       <div class="info-box" id="defaultPassWarn" style="display:none">Varsayılan: <strong class="mono">admin / admin123</strong> — Şifrenizi hemen değiştirin.</div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-        <button class="btn-green" onclick="openAddUser()">+ Yeni Kullanıcı</button>
+        <button class="btn-green super-admin-only" style="display:none" onclick="openAddUser()">+ Yeni Kullanıcı</button>
       </div>
       <div id="userTableWrap"><div class="empty-state">Yükleniyor...</div></div>
     </div>
@@ -431,10 +608,24 @@ canvas{width:100%!important;}
       <input type="hidden" id="euId">
       <div class="mfield"><label>Ad Soyad</label><input type="text" id="euName"></div>
       <div class="mfield"><label>Yeni Şifre (boş = değişmez)</label><input type="password" id="euPassword"></div>
-      <div class="mfield"><label>Rol</label><select id="euRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option></select></div>
+      <div class="mfield"><label>Rol</label><select id="euRole"><option value="user">Ekip Üyesi</option><option value="admin">Yönetici</option><option value="super_admin">Süper Yönetici</option></select></div>
       <div class="mfield"><label>Durum</label><select id="euActive"><option value="true">Aktif</option><option value="false">Devre Dışı</option></select></div>
       <div class="form-err" id="euErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeModal('editUserModal')">İptal</button><button class="btn-primary" onclick="saveEditUser()">Kaydet</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notifyUserModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Kullanıcıya Bildirim</h3><button class="modal-close" onclick="closeModal('notifyUserModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="notifyUserId">
+      <div class="mfield"><label>Kullanıcı</label><input type="text" id="notifyUserName" disabled></div>
+      <div class="mfield"><label>Başlık</label><input type="text" id="notifyTitle" value="Bilgilendirme"></div>
+      <div class="mfield"><label>Mesaj</label><textarea id="notifyMessage" style="min-height:120px;resize:vertical"></textarea></div>
+      <div class="form-err" id="notifyErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeModal('notifyUserModal')">İptal</button><button class="btn-primary" onclick="sendUserNotification()">Gönder</button></div>
     </div>
   </div>
 </div>
@@ -453,8 +644,51 @@ canvas{width:100%!important;}
 </div>
 
 <script>
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='';
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
+}
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false;
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
+const MIN_TEXT_CHARS=10;
+const MAX_TEXT_CHARS=120000;
+
+function applyTheme(theme){
+  const next=theme==='dark'?'dark':'light';
+  document.documentElement.dataset.theme=next;
+  try{localStorage.setItem('arsiv-theme',next);}catch(_){}
+  const isDark=next==='dark';
+  const meta=document.getElementById('themeColorMeta');
+  if(meta)meta.setAttribute('content',isDark?'#171717':'#f5f0e8');
+  const desktopToggle=document.getElementById('themeToggle');
+  const mobileToggle=document.getElementById('themeToggleMobile');
+  if(desktopToggle){
+    desktopToggle.setAttribute('aria-pressed',String(isDark));
+    desktopToggle.setAttribute('title',isDark?'Açık temaya geç':'Koyu temaya geç');
+  }
+  if(mobileToggle){
+    mobileToggle.setAttribute('aria-pressed',String(isDark));
+    mobileToggle.setAttribute('title',isDark?'Açık temaya geç':'Koyu temaya geç');
+  }
+}
+function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');}
+function cleanInputText(text){return String(text||'').normalize('NFC').replace(/\r\n?/g,'\n').trim();}
+function handleTextInput(){
+  const input=el('inputText');
+  if(!input)return;
+  input.style.height='auto';input.style.height=input.scrollHeight+'px';
+  const cleaned=cleanInputText(input.value);
+  const count=cleaned.length;
+  const box=el('textHealth');
+  if(el('textCount'))el('textCount').textContent=`${count.toLocaleString('tr-TR')} karakter`;
+  let hint='Denetime hazır.';
+  let cls='';
+  if(count===0){hint='Denetlenecek metni yapıştırın.';}
+  else if(count<MIN_TEXT_CHARS){hint='Metin çok kısa; doğru denetim için birkaç cümle girin.';cls='warn';}
+  else if(count>MAX_TEXT_CHARS){hint='Metin çok uzun; bölerek denetlemek daha güvenli.';cls='err';}
+  if(el('textHint'))el('textHint').textContent=hint;
+  if(box)box.className=`text-health${cls?' '+cls:''}`;
+}
+applyTheme(document.documentElement.dataset.theme||'light');
 
 (async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
 
@@ -471,13 +705,21 @@ function enterApp(user){
   el('mTopName').textContent=user.name;
   el('loginScreen').classList.remove('active');
   el('appScreen').classList.add('active');
-  if(user.role==='admin')document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
+  document.querySelectorAll('.admin-only,.super-admin-only').forEach(e=>e.style.display='none');
+  if(hasAdminRole(user.role))document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
+  if(hasSuperAdminRole(user.role))document.querySelectorAll('.super-admin-only').forEach(e=>e.style.display='');
   el('pAvatar').textContent=user.name.charAt(0).toUpperCase();
   el('pName').textContent=user.name;
-  el('pRole').textContent=user.role==='admin'?'Yönetici':'Ekip Üyesi';
+  el('pRole').textContent=roleLabel(user.role);
   showTab('analiz');
-  if(user.role==='admin')refreshBadges();
+  if(hasAdminRole(user.role))refreshBadges();
+  refreshNoticeBadge();
 }
+function hasAdminRole(role){return role==='admin'||role==='super_admin';}
+function hasSuperAdminRole(role){return role==='super_admin';}
+function roleLabel(role){return role==='super_admin'?'Süper Yönetici':role==='admin'?'Yönetici':'Ekip Üyesi';}
+function rolePill(role){return role==='super_admin'?'rp-super':role==='admin'?'rp-admin':'rp-user';}
+function roleShortLabel(role){return role==='super_admin'?'Süper Admin':role==='admin'?'Admin':'Üye';}
 async function doLogout(){
   await api('POST','/api/auth/logout');
   me=null;
@@ -501,6 +743,7 @@ function showTab(name){
   if(name==='dash')loadDash();
   if(name==='onay')loadOnay();
   if(name==='alerts')loadAlerts();
+  if(name==='bildirim')loadMyNotifications();
   if(name==='kullanici')loadUsers();
   if(name==='kurallar')loadRules();
   window.scrollTo(0,0);
@@ -517,13 +760,16 @@ function fdLeave(){el('fileDrop').classList.remove('over');}
 function fdDrop(e){e.preventDefault();fdLeave();if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0]);}
 function fdSelect(e){if(e.target.files[0])setFile(e.target.files[0]);}
 function setFile(f){
+  if(f.size>4*1024*1024){selectedFile=null;setStatus('Dosya en fazla 4 MB olabilir.','err');return;}
   selectedFile=f;
   const d=el('fileDrop');
   d.className='file-drop selected';
   d.innerHTML=`<div style="font-size:26px;margin-bottom:6px">📎</div><p>${esc(f.name)}</p><small class="mono">${(f.size/1024).toFixed(1)} KB</small>`;
 }
 function batchSelect(e){
-  batchFiles=Array.from(e.target.files).slice(0,20);
+  const all=Array.from(e.target.files).slice(0,20);
+  batchFiles=all.filter(f=>f.size<=4*1024*1024);
+  if(batchFiles.length!==all.length)setStatus('4 MB üzerindeki dosyalar listeye alınmadı.','err');
   const d=el('batchDrop');
   d.className='file-drop selected';
   d.innerHTML=`<div style="font-size:26px;margin-bottom:6px">📂</div><p>${batchFiles.length} dosya seçildi</p><small class="mono">Denetle butonuna basın</small>`;
@@ -531,6 +777,14 @@ function batchSelect(e){
 
 async function analyze(){
   const btn=el('analyzeBtn'),res=el('resultsArea');
+  if(isAnalyzing)return;
+  if(activeInner==='text'){
+    const cleaned=cleanInputText(v('inputText'));
+    if(!cleaned)return showInputError(res,'Lütfen metin girin.');
+    if(cleaned.length<MIN_TEXT_CHARS)return showInputError(res,'Metin çok kısa. Sağlıklı denetim için birkaç cümle girin.');
+    if(cleaned.length>MAX_TEXT_CHARS)return showInputError(res,'Metin çok uzun. Lütfen metni bölerek denetleyin.');
+  }
+  isAnalyzing=true;
   btn.disabled=true;
   btn.innerHTML='<span class="btn-spin"></span> Denetleniyor...';
   setStatus('','');
@@ -547,39 +801,61 @@ async function analyze(){
       if(data.duplicate){showDuplicate(res,data.message);}
       else{
         correctedText=data.correctedText||'';
+        currentOriginalText=data.originalText||'';
+        currentHistoryId=data.id||null;
         renderResults(data,res);
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
       }
     }else{
-      const text=v('inputText');
+      const text=cleanInputText(v('inputText'));
       if(!text)throw new Error('Lütfen metin girin.');
       const data=await api('POST','/api/analyze',{text});
       if(data.error)throw new Error(data.error);
       if(data.duplicate){showDuplicate(res,data.message);}
       else{
         correctedText=data.correctedText||'';
+        currentOriginalText=data.originalText||text;
+        currentHistoryId=data.id||null;
         renderResults(data,res);
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
       }
     }
-    if(me?.role==='admin')refreshBadges();
+    if(hasAdminRole(me?.role))refreshBadges();
   }catch(e){
     res.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(e.message)}</div>`;
     setStatus('Denetim başarısız.','err');
   }
+  isAnalyzing=false;
   btn.disabled=false;
   btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Denetle &amp; Düzelt';
+}
+
+function showInputError(container,message){
+  if(container)container.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(message)}</div>`;
+  setStatus(message,'err');
 }
 
 async function runBatch(res){
   if(!batchFiles.length)throw new Error('Dosya seçilmedi.');
   res.innerHTML=`<div class="loading-box"><div class="spin"></div><p>${batchFiles.length} dosya denetleniyor...</p></div>`;
-  const fd=new FormData();
-  batchFiles.forEach(f=>fd.append('files',f));
-  const r=await fetch('/api/analyze-batch',{method:'POST',body:fd});
-  const data=await r.json();
-  if(!r.ok)throw new Error(data.error||'Sunucu hatası');
-  const rows=(data.results||[]).map(item=>{
+  const results=new Array(batchFiles.length);
+  let next=0;
+  async function worker(){
+    while(next<batchFiles.length){
+      const i=next++,file=batchFiles[i],fd=new FormData();
+      fd.append('file',file);
+      try{
+        const response=await fetch('/api/analyze-file',{method:'POST',body:fd});
+        const data=await response.json();
+        if(!response.ok)throw new Error(data.error||'Sunucu hatası');
+        results[i]=data.duplicate
+          ?{filename:file.name,success:false,duplicate:true,error:data.message}
+          :{filename:file.name,success:true,score:data.score,totalErrors:data.totalErrors,id:data.id};
+      }catch(e){results[i]={filename:file.name,success:false,error:e.message};}
+    }
+  }
+  await Promise.all([worker(),worker()]);
+  const rows=results.map(item=>{
     const ok=item.success,sc=item.score||0;
     const pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
     const icon=ok?'✅':item.duplicate?'⚠️':'❌';
@@ -599,10 +875,14 @@ function showDuplicate(container,msg){
   setStatus('Bu metin daha önce denetlenmiş.','err');
 }
 function renderResults(d,container){
+  currentResult=d;
   const cats=d.categories||{};
   const sc=d.score||0;
   const fc=sc>=80?'sf-high':sc>=55?'sf-mid':'sf-low';
   const vc=sc>=80?'sv-green':sc>=55?'sv-gold':'sv-red';
+  const meta=d.analysisMeta||{};
+  const promptVersion=d.promptVersion||meta.promptVersion;
+  const rulesHash=d.rulesHash||meta.rulesHash;
   const catDefs=[{key:'sozluk',label:'Sözlük'},{key:'imla',label:'İmla'},{key:'noktalama',label:'Noktalama'},{key:'etiket',label:'Etiket'},{key:'yapi',label:'Yapı'}];
   const scoreBoxes=catDefs.map(c=>{
     const cnt=cats[c.key]?.count||0;
@@ -614,7 +894,9 @@ function renderResults(d,container){
     const issHtml=iss.length===0?`<div class="empty-cat">✓ Sorun yok</div>`
       :iss.map((it,j)=>`<div class="issue-item" style="animation-delay:${(ci*5+j)*.04}s">
           <div class="issue-row"><div class="i-orig">${esc(it.original)}</div><div class="i-arr">→</div><div class="i-fix">${esc(it.fixed)}</div></div>
-          <div class="i-rule">${esc(it.rule||c.label)}</div></div>`).join('');
+          <div class="i-rule">${esc(it.rule||c.label)}</div>
+          ${d.id?`<div class="issue-actions"><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'nonexistent')">Metinde yok</button><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'wrong_fix')">Yanlış düzeltme</button></div>`:''}
+        </div>`).join('');
     return `<div class="cat-panel"><div class="cat-head"><span class="cat-name">${c.label}</span><span class="cat-cnt ${cat.count>0?'cnt-err':'cnt-ok'}">${cat.count} sorun</span></div>${issHtml}</div>`;
   }).join('');
   container.innerHTML=`
@@ -625,8 +907,17 @@ function renderResults(d,container){
         <div class="score-track"><div class="score-fill ${fc}" style="width:${sc}%"></div></div>
       </div>${scoreBoxes}
     </div>
+    ${(promptVersion||rulesHash)?`<div class="analysis-meta">${promptVersion?`<span class="meta-chip">Prompt ${esc(promptVersion)}</span>`:''}${rulesHash?`<span class="meta-chip">Kural ${esc(rulesHash)}</span>`:''}</div>`:''}
     ${d.summary?`<div class="summary-box ${sc<60?'summary-warn':''}">${esc(d.summary)}</div>`:''}
+    ${d.id?`<div class="feedback-panel"><p>Bu sonuçta sorun varsa ekibe doğrudan bildir.</p><div class="feedback-actions">
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','missing_issue')">Eksik hata</button>
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','layout_broken')">Düzen bozuldu</button>
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','score_wrong')">Skor yanlış</button>
+      <button class="btn-mini" onclick="sendResultFeedback('${d.id}','other')">Diğer</button>
+      <button class="btn-mini" id="copyReportBtn" onclick="copyAnalysisReport()">Raporu kopyala</button>
+    </div></div>`:''}
     <div class="cat-grid">${catPanels}</div>
+    ${d.correctedText&&currentOriginalText?renderComparePanel(currentOriginalText,d.correctedText):''}
     ${d.correctedText?`<div class="corrected-panel">
       <div class="corrected-head">
         <h3>Düzeltilmiş Metin</h3>
@@ -637,6 +928,39 @@ function renderResults(d,container){
       </div>
       <div class="corrected-body">${esc(d.correctedText)}</div>
     </div>`:''}`;
+}
+
+function copyAnalysisReport(){
+  const d=currentResult;
+  if(!d){setStatus('Kopyalanacak sonuç yok.','err');return;}
+  const cats=d.categories||{};
+  const meta=d.analysisMeta||{};
+  const lines=[
+    'Arşiv AI Denetim Özeti',
+    `Skor: ${d.score||0}/100`,
+    `Toplam sorun: ${d.totalErrors||0}`,
+    `Durum: ${(d.score||0)<60?'Düşük skor - düzeltilmiş metin verilmedi':'Düzeltilmiş metin üretildi'}`,
+    ''
+  ];
+  const catLabels={sozluk:'Sözlük',imla:'İmla',noktalama:'Noktalama',etiket:'Etiket',yapi:'Yapı'};
+  Object.keys(catLabels).forEach(k=>lines.push(`${catLabels[k]}: ${cats[k]?.count||0}`));
+  if(d.summary)lines.push('',`Özet: ${d.summary}`);
+  if(meta.promptVersion||meta.rulesHash)lines.push('',`Prompt: ${meta.promptVersion||'-'}`,`Kural: ${meta.rulesHash||'-'}`);
+  const issueLines=[];
+  Object.keys(catLabels).forEach(k=>{
+    (cats[k]?.issues||[]).slice(0,4).forEach(it=>issueLines.push(`- ${catLabels[k]}: ${it.original||''} -> ${it.fixed||''} (${it.rule||''})`));
+  });
+  if(issueLines.length)lines.push('', 'İlk bulgular:', ...issueLines.slice(0,12));
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const btn=el('copyReportBtn');
+    if(btn){
+      const orig=btn.textContent;
+      btn.textContent='✓ Kopyalandı';
+      setTimeout(()=>{btn.textContent=orig;},1600);
+    }
+    setStatus('✓ Rapor panoya kopyalandı.','ok');
+    setTimeout(()=>setStatus('',''),2200);
+  }).catch(()=>setStatus('Rapor kopyalanamadı.','err'));
 }
 
 function copyFixed(){
@@ -659,35 +983,27 @@ function copyFixed(){
   });
 }
 
-function downloadPDF(){
+async function downloadPDF(){
   if(!correctedText){setStatus('Düzeltilmiş metin yok.','err');return;}
-  const safe=correctedText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Düzeltilmiş Metin</title>
-<style>
-body{font-family:Georgia,serif;font-size:13pt;line-height:1.8;margin:2.5cm;color:#1a1410;}
-h2{font-size:15pt;color:#8b6914;border-bottom:2px solid #c49a2a;padding-bottom:6px;margin-bottom:24px;}
-pre{white-space:pre-wrap;word-break:break-word;font-family:Georgia,serif;font-size:13pt;line-height:1.8;}
-.footer{margin-top:32px;font-size:9pt;color:#7a6e5e;border-top:1px solid #cfc4b0;padding-top:8px;}
-@media print{body{margin:2cm;}}
-</style></head><body>
-<h2>Arşiv Kontrol AI — Düzeltilmiş Metin</h2>
-<pre>${safe}</pre>
-<div class="footer">Arşiv Kontrol AI — ${new Date().toLocaleDateString('tr-TR')}</div>
-</body></html>`;
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='duzeltilmis-metin-'+new Date().toISOString().slice(0,10)+'.html';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  setStatus('✓ İndirildi!','ok');setTimeout(()=>setStatus('',''),2500);
+  setStatus('PDF hazırlanıyor...','');
+  try{
+    const response=await fetch('/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:correctedText})});
+    if(!response.ok){const data=await response.json();throw new Error(data.error||'PDF oluşturulamadı.');}
+    const blob=await response.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='duzeltilmis-metin-'+new Date().toISOString().slice(0,10)+'.pdf';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    setStatus('✓ PDF indirildi!','ok');setTimeout(()=>setStatus('',''),2500);
+  }catch(e){setStatus(e.message,'err');}
 }
 
 function clearAnalyze(){
   el('inputText').value='';
   el('resultsArea').innerHTML='';
-  selectedFile=null;batchFiles=[];correctedText='';
+  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';
   const d=el('fileDrop');
   d.className='file-drop';
   d.innerHTML='<div style="font-size:30px;margin-bottom:8px">📄</div><p>Dosyayı buraya sürükleyin veya tıklayın</p><small class="mono" style="color:var(--ink3)">.docx formatı desteklenir</small>';
@@ -696,18 +1012,112 @@ function clearAnalyze(){
 }
 function setStatus(msg,type){const e=el('statusMsg');e.textContent=msg;e.className='status-msg'+(type?' '+type:'');}
 
+function diffTokens(a,b){
+  const A=String(a||'').match(/\S+|\s+/g)||[];
+  const B=String(b||'').match(/\S+|\s+/g)||[];
+  if(A.length>1400||B.length>1400)return null;
+  const dp=Array(A.length+1);
+  for(let i=0;i<=A.length;i++)dp[i]=new Uint16Array(B.length+1);
+  for(let i=A.length-1;i>=0;i--){
+    for(let j=B.length-1;j>=0;j--){
+      dp[i][j]=A[i]===B[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+    }
+  }
+  let i=0,j=0,left='',right='';
+  while(i<A.length||j<B.length){
+    if(i<A.length&&j<B.length&&A[i]===B[j]){
+      left+=esc(A[i]);right+=esc(B[j]);i++;j++;
+    }else if(j>=B.length||(i<A.length&&dp[i+1][j]>=dp[i][j+1])){
+      left+=`<span class="diff-del">${esc(A[i])}</span>`;i++;
+    }else{
+      right+=`<span class="diff-ins">${esc(B[j])}</span>`;j++;
+    }
+  }
+  return {left,right};
+}
+
+function renderComparePanel(original,corrected){
+  const diff=diffTokens(original,corrected);
+  const left=diff?diff.left:esc(original);
+  const right=diff?diff.right:esc(corrected);
+  const note=diff?'Kırmızı çıkarılan, yeşil eklenen/değişen kısımları gösterir.':'Metin uzun olduğu için renkli fark kapatıldı; metinler yan yana gösteriliyor.';
+  return `<div class="compare-panel">
+    <div class="compare-head"><h3>Karşılaştırma</h3><span class="diff-note">${note}</span></div>
+    <div class="compare-grid">
+      <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text">${left}</div></div>
+      <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text">${right}</div></div>
+    </div>
+  </div>`;
+}
+
+async function sendResultFeedback(historyId,reason){
+  const labels={missing_issue:'Eksik hata',layout_broken:'Düzen bozuldu',score_wrong:'Skor yanlış',other:'Diğer'};
+  const note=prompt(`${labels[reason]||'Geri bildirim'} için kısa not ekleyin:`);
+  if(note===null)return;
+  const r=await api('POST',`/api/history/${historyId}/feedback`,{reason,note});
+  if(r.error){setStatus(r.error,'err');return;}
+  setStatus('✓ Geri bildirim gönderildi.','ok');
+  setTimeout(()=>setStatus('',''),2500);
+}
+
+async function sendIssueFeedback(historyId,category,index,reason){
+  const issue=currentResult?.categories?.[category]?.issues?.[index];
+  if(!issue){setStatus('Bulgu bulunamadı.','err');return;}
+  const note=prompt('Bu bulgu neden yanlış? Kısa not ekleyebilirsiniz:');
+  if(note===null)return;
+  const r=await api('POST',`/api/history/${historyId}/feedback`,{
+    reason,note,category,
+    original:issue.original||'',
+    fixed:issue.fixed||'',
+    rule:issue.rule||''
+  });
+  if(r.error){setStatus(r.error,'err');return;}
+  setStatus('✓ Bulgu geri bildirimi gönderildi.','ok');
+  setTimeout(()=>setStatus('',''),2500);
+}
+
 async function loadHistory(){
   const hist=await api('GET','/api/history');
-  const container=el('histContent');
-  const isAdmin=me?.role==='admin';
+  const isAdmin=hasAdminRole(me?.role);
   if(isAdmin)el('csvBtn').style.display='';
-  if(!hist?.length){container.innerHTML='<div class="empty-state">Henüz denetim yapılmamış.</div>';el('scoreChartBox').style.display='none';return;}
-  const chartPoints=hist.filter(h=>h.score).slice(0,20).reverse();
+  historyRows=Array.isArray(hist)?hist:[];
+  renderHistory();
+}
+
+function setHistoryFilter(){
+  historyFilter=el('histStatusFilter')?.value||'all';
+  historySearch=(el('histSearch')?.value||'').trim().toLocaleLowerCase('tr-TR');
+  renderHistory();
+}
+
+function clearHistoryFilters(){
+  if(el('histSearch'))el('histSearch').value='';
+  if(el('histStatusFilter'))el('histStatusFilter').value='all';
+  historyFilter='all';historySearch='';
+  renderHistory();
+}
+
+function renderHistory(){
+  const container=el('histContent');
+  const isAdmin=hasAdminRole(me?.role);
+  if(!historyRows.length){container.innerHTML='<div class="empty-state">Henüz denetim yapılmamış.</div>';el('scoreChartBox').style.display='none';return;}
+  const filtered=historyRows.filter(h=>{
+    const status=h.status||'bekliyor';
+    if(historyFilter==='low' && (h.score||0)>=60)return false;
+    if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
+    if(!historySearch)return true;
+    const haystack=[h.filename,h.name,h.username,h.summary,h.score,h.totalErrors,status].join(' ').toLocaleLowerCase('tr-TR');
+    return haystack.includes(historySearch);
+  });
+  const summary=el('histFilterSummary');
+  if(summary)summary.textContent=filtered.length===historyRows.length?`${historyRows.length} kayıt`:`${filtered.length}/${historyRows.length} kayıt`;
+  if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtreye uyan denetim yok.</div>';el('scoreChartBox').style.display='none';return;}
+  const chartPoints=filtered.filter(h=>h.score).slice(0,20).reverse();
   if(chartPoints.length>=2){el('scoreChartBox').style.display='';setTimeout(()=>drawScoreChart(chartPoints),80);}
   else{el('scoreChartBox').style.display='none';}
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th>${isAdmin?'<th>İşlem</th>':''}</tr></thead>
-    <tbody>${hist.map(h=>{
+    <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th><th>Metin</th>${isAdmin?'<th>Onay</th>':''}</tr></thead>
+    <tbody>${filtered.map(h=>{
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
       const stCls=h.status==='onaylandi'?'sb-ok':h.status==='reddedildi'?'sb-no':'sb-wait';
@@ -720,8 +1130,8 @@ async function loadHistory(){
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
         <td><span class="status-badge ${stCls}">${stTxt}</span></td>
+        <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
-          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">✗</button>`:''}
         </div></td>`:''}
       </tr>`;
@@ -767,7 +1177,23 @@ function drawScoreChart(data){
   });
 }
 
-function showDetail(id){const text=_textStore[id]||'';el('detailBody').textContent=text;window._detailText=text;el('detailModal').classList.add('open');}
+async function showDetail(id){
+  el('detailBody').textContent='Yükleniyor...';
+  el('detailModal').classList.add('open');
+  const item=await api('GET',`/api/history/${id}`);
+  if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
+  const text=item.correctedText||'';
+  _textStore[id]=text;
+  if(item.originalText&&text){
+    el('detailBody').innerHTML=`<div class="compare-grid" style="max-height:none">
+      <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
+      <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
+    </div>`;
+  }else{
+    el('detailBody').textContent=text||'Bu kayıt için düzeltilmiş metin bulunmuyor.';
+  }
+  window._detailText=text;
+}
 function copyDetail(){
   navigator.clipboard.writeText(window._detailText||'').then(()=>{
     const btn=el('copyDetailBtn');
@@ -795,6 +1221,18 @@ async function loadDash(){
   const maxUser=Math.max(...(stats.perUser||[]).map(u=>u.count),1);
   const userBars=(stats.perUser||[]).slice(0,8).map(u=>
     `<div class="bar-row"><div class="bar-label">${esc(u.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(u.count/maxUser*100)}%;background:var(--gold)"></div></div><div class="bar-val">${u.count}</div></div>`).join('');
+  const riskRows=(stats.riskItems||[]).map(h=>{
+    const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
+    const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const st=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':'Bekliyor';
+    return `<tr>
+      <td><strong>${esc(h.name||'—')}</strong><div class="mono" style="font-size:10px;color:var(--ink3)">${dt}</div></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename||'Metin Girişi')}">${esc(h.filename||'Metin Girişi')}</td>
+      <td><span class="score-pill ${pc}">${sc}</span></td>
+      <td class="mono">${h.totalErrors||0}</td>
+      <td>${st}</td>
+    </tr>`;
+  }).join('');
   container.innerHTML=`
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-lbl">Toplam</div><div class="stat-val">${t.allTime}</div></div>
@@ -803,6 +1241,11 @@ async function loadDash(){
       <div class="stat-card"><div class="stat-lbl">Ort. Skor</div><div class="stat-val ${t.avgScore>=80?'green':t.avgScore>=60?'gold':'red'}">${t.avgScore}</div></div>
       <div class="stat-card"><div class="stat-lbl">Onay Bekleyen</div><div class="stat-val orange">${t.pendingApproval}</div></div>
       <div class="stat-card"><div class="stat-lbl">Uyarı</div><div class="stat-val red">${t.unreadAlerts}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Geri Bildirim</div><div class="stat-val gold">${t.feedback||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">7 Gün Feedback</div><div class="stat-val orange">${t.feedback7||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Okunmamış Feedback</div><div class="stat-val red">${t.unreadFeedback||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Çözüm Bildirimi</div><div class="stat-val green">${t.feedbackResolved||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Duyuru</div><div class="stat-val">${t.announcements||0}</div></div>
     </div>
     <div class="dash-grid">
       <div class="dash-card"><div class="dash-card-head">Hata Kategorileri</div><div class="dash-card-body">${catBars||'<div class="empty-state">Veri yok</div>'}</div></div>
@@ -811,6 +1254,18 @@ async function loadDash(){
     <div class="dash-card" style="margin-bottom:12px">
       <div class="dash-card-head">Son 14 Gün</div>
       <div class="dash-card-body"><div class="chart-wrap"><canvas id="dailyChart"></canvas></div></div>
+    </div>
+    <div class="dash-card" style="margin-bottom:12px">
+      <div class="dash-card-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>Riskli Son Denetimler</span>
+        <button class="btn-sec" style="padding:4px 8px;font-size:10px" onclick="showLowScoreHistory()">Düşükleri Aç</button>
+      </div>
+      <div class="dash-card-body" style="padding:0">
+        <div class="table-wrap"><table class="data-table" style="min-width:420px">
+          <thead><tr><th>Kullanıcı</th><th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th></tr></thead>
+          <tbody>${riskRows||'<tr><td colspan="5" class="empty-state">Riskli kayıt yok</td></tr>'}</tbody>
+        </table></div>
+      </div>
     </div>
     <div class="dash-card">
       <div class="dash-card-head">Performans Tablosu</div>
@@ -825,6 +1280,15 @@ async function loadDash(){
       </div>
     </div>`;
   setTimeout(()=>drawDailyChart(stats.daily||[]),80);
+}
+
+function showLowScoreHistory(){
+  showTab('gecmis');
+  setTimeout(()=>{
+    if(el('histStatusFilter'))el('histStatusFilter').value='low';
+    if(el('histSearch'))el('histSearch').value='';
+    setHistoryFilter();
+  },0);
 }
 
 function drawDailyChart(daily){
@@ -849,44 +1313,153 @@ function drawDailyChart(daily){
 async function loadOnay(){
   const hist=await api('GET','/api/history');
   const container=el('onayContent');
-  const pending=(hist||[]).filter(h=>!h.status||h.status==='bekliyor');
-  if(!pending.length){container.innerHTML='<div class="empty-state">✓ Onay bekleyen denetim yok.</div>';return;}
-  container.innerHTML=`<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Dosya</th><th>Skor</th><th>İşlem</th></tr></thead>
-    <tbody>${pending.map(h=>{
+  const groups=[
+    {key:'bekliyor',title:'Bekleyen',items:(hist||[]).filter(h=>!h.status||h.status==='bekliyor')},
+    {key:'onaylandi',title:'Onaylanan',items:(hist||[]).filter(h=>h.status==='onaylandi')},
+    {key:'reddedildi',title:'Reddedilen',items:(hist||[]).filter(h=>h.status==='reddedildi')}
+  ];
+  if(!(hist||[]).length){container.innerHTML='<div class="empty-state">Henüz denetim yok.</div>';return;}
+  function card(h){
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       if(h.correctedText)_textStore[h.id]=h.correctedText;
-      return `<tr>
-        <td class="mono" style="font-size:10px;white-space:nowrap">${dt}</td>
-        <td style="font-size:12px">${esc(h.name)}</td>
-        <td style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.filename)}</td>
-        <td><span class="score-pill ${pc}">${sc}</span></td>
-        <td><div class="td-actions">
+      return `<div class="work-card">
+        <div class="work-top"><div class="work-name">${esc(h.name||'—')}</div><span class="score-pill ${pc}">${sc}</span></div>
+        <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
+        <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
+        <div class="work-actions">
           ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
-          <button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">✓</button>
-          <button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">✗</button>
-        </div></td>
-      </tr>`;
-    }).join('')}</tbody></table></div>`;
+          ${h.status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">Onayla</button>`:''}
+          ${h.status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">Reddet</button>`:''}
+        </div>
+      </div>`;
+  }
+  container.innerHTML=`<div class="workflow-board">${groups.map(g=>`
+    <div class="workflow-col">
+      <div class="workflow-head"><div class="workflow-title">${g.title}</div><div class="workflow-count">${g.items.length}</div></div>
+      <div class="workflow-list">${g.items.length?g.items.slice(0,80).map(card).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Kayıt yok.</div>`}</div>
+    </div>`).join('')}</div>`;
 }
 
 async function loadAlerts(){
   const alerts=await api('GET','/api/alerts');
   const container=el('alertsContent');
+  ['all','feedback','feedback_resolution','announcement','low_score'].forEach(t=>{const b=el(`alertFilter-${t}`);if(b)b.classList.toggle('active',alertFilter===t);});
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Uyarı yok.</div>';return;}
-  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${alerts.map(a=>`
-    <div class="alert-item ${a.read?'':'unread'}">
-      <div class="alert-dot ${a.read?'read':''}"></div>
-      <div class="alert-msg">${esc(a.message)}</div>
+  const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.type===alertFilter);
+  if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtrede kayıt yok.</div>';return;}
+  function alertBody(a){
+    if(a.type!=='feedback')return `<div class="alert-msg">${esc(a.message)}</div>`;
+    const parts=String(a.message||'').split(' | ');
+    return `<div class="alert-msg">${parts.map(p=>{
+      const idx=p.indexOf(':');
+      if(idx<0)return `<div>${esc(p)}</div>`;
+      return `<div><strong>${esc(p.slice(0,idx))}:</strong> ${esc(p.slice(idx+1).trim())}</div>`;
+    }).join('')}</div>`;
+  }
+  const alertLabel=a=>a.type==='feedback'?'Geri Bildirim':a.type==='feedback_resolution'?'Çözüm':a.type==='announcement'?'Duyuru':a.type==='low_score'?'Düşük Skor':'Uyarı';
+  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
+    <div class="alert-item ${!a.read&&['feedback','low_score'].includes(a.type)?'unread':''}">
+      <div class="alert-dot ${a.read||!['feedback','low_score'].includes(a.type)?'read':''}"></div>
+      <div class="alert-type ${['feedback','feedback_resolution'].includes(a.type)?'feedback':''}">${alertLabel(a)}</div>
+      ${alertBody(a)}
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
-        ${!a.read?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
+        ${a.type==='feedback'?`<button class="btn-green" style="padding:3px 8px;font-size:9px" onclick="respondFeedback('${a.id}')">Çözüm bildir</button>`:''}
+        ${!a.read&&['feedback','low_score'].includes(a.type)?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
       </div>
     </div>`).join('')}</div>`;
 }
+function setAlertFilter(type){alertFilter=type;loadAlerts();}
 async function readAlert(id){await api('POST',`/api/alerts/${id}/read`);loadAlerts();refreshBadges();}
 async function readAllAlerts(){await api('POST','/api/alerts/read-all');loadAlerts();refreshBadges();}
+async function respondFeedback(id){
+  const note=prompt('Bu kullanıcıya çözümü nasıl bildirelim?');
+  if(note===null)return;
+  const clean=note.trim();
+  if(!clean){setStatus('Çözüm notu boş olamaz.','err');return;}
+  const r=await api('POST',`/api/alerts/${id}/respond`,{note:clean});
+  if(r.error){setStatus(r.error,'err');return;}
+  setStatus('✓ Kullanıcıya çözüm bildirimi gönderildi.','ok');
+  loadAlerts();refreshBadges();
+  setTimeout(()=>setStatus('',''),2200);
+}
+
+function messageFields(message){
+  return String(message||'').split(' | ').map(p=>{
+    const idx=p.indexOf(':');
+    if(idx<0)return `<div>${esc(p)}</div>`;
+    return `<div><strong>${esc(p.slice(0,idx))}:</strong> ${esc(p.slice(idx+1).trim())}</div>`;
+  }).join('');
+}
+
+function parseStructuredMessage(message){
+  const fields={title:'Duyuru',body:String(message||''),sender:''};
+  String(message||'').split(' | ').forEach(part=>{
+    const idx=part.indexOf(':');
+    if(idx<0)return;
+    const key=part.slice(0,idx).trim().toLowerCase();
+    const val=part.slice(idx+1).trim();
+    if(key==='başlık'||key==='baslik')fields.title=val||fields.title;
+    else if(key==='mesaj')fields.body=val||fields.body;
+    else if(key==='gönderen'||key==='gonderen')fields.sender=val;
+  });
+  return fields;
+}
+
+function noticeBodyHtml(body){
+  return String(body||'')
+    .split(/\n{2,}/)
+    .map(p=>p.trim())
+    .filter(Boolean)
+    .map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`)
+    .join('');
+}
+
+function noticeTypeLabel(type){
+  return type==='feedback_resolution'?'Çözüm':'Duyuru';
+}
+
+function renderNotice(n){
+  const msg=parseStructuredMessage(n.message);
+  const date=new Date(n.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  return `
+    <div class="notice-card ${n.read?'':'unread'}">
+      <div>
+        <div class="notice-kicker">
+          <span class="notice-status-dot ${n.read?'read':''}"></span>
+          <span class="notice-type">${noticeTypeLabel(n.type)}</span>
+        </div>
+        <div class="notice-title">${esc(msg.title)}</div>
+        <div class="notice-body">${noticeBodyHtml(msg.body)}</div>
+        <div class="notice-footer">
+          <span>${msg.sender?`Gönderen: ${esc(msg.sender)}`:'Sistem bildirimi'}</span>
+        </div>
+      </div>
+      <div class="notice-actions">
+        <div class="notice-date">${date}</div>
+        ${!n.read?`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="readNotice('${n.id}')">Okundu</button>`:''}
+      </div>
+    </div>`;
+}
+
+async function loadMyNotifications(){
+  const notices=await api('GET','/api/my-notifications');
+  const container=el('noticeContent');
+  if(notices.error){container.innerHTML=`<div class="empty-state">${esc(notices.error)}</div>`;return;}
+  if(!notices?.length){container.innerHTML='<div class="empty-state">Size özel bildirim yok.</div>';return;}
+  container.innerHTML=`<div class="notice-list">${notices.map(renderNotice).join('')}</div>`;
+}
+async function readNotice(id){await api('POST',`/api/my-notifications/${id}/read`);loadMyNotifications();refreshNoticeBadge();}
+async function readAllNotices(){await api('POST','/api/my-notifications/read-all');loadMyNotifications();refreshNoticeBadge();}
+
+async function refreshNoticeBadge(){
+  if(!me)return;
+  const notices=await api('GET','/api/my-notifications');
+  if(notices.error)return;
+  const unread=(notices||[]).filter(n=>!n.read).length;
+  ['noticeBadge','mNoticeBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=unread>0?'':'none';e.textContent=unread>9?'9+':unread;}});
+}
 
 async function refreshBadges(){
   const stats=await api('GET','/api/stats');if(stats.error)return;
@@ -905,18 +1478,25 @@ async function loadUsers(){
   if(!users?.length){container.innerHTML='<div class="empty-state">Kullanıcı yok.</div>';return;}
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
     <thead><tr><th>Ad</th><th>Kullanıcı Adı</th><th>Rol</th><th>Durum</th><th></th></tr></thead>
-    <tbody>${users.map(u=>`<tr>
+    <tbody>${users.map(u=>{
+      const targetIsSuper=u.role==='super_admin'||String(u.username).toLowerCase()==='admin';
+      const canEdit=hasSuperAdminRole(me?.role)||!targetIsSuper;
+      const canDelete=hasSuperAdminRole(me?.role)&&!targetIsSuper&&u.id!==me?.id;
+      const safeNameArg=JSON.stringify(u.name||'').replace(/"/g,'&quot;');
+      return `<tr>
       <td><strong>${esc(u.name)}</strong></td>
       <td class="mono" style="font-size:10px">${esc(u.username)}</td>
-      <td><span class="role-pill ${u.role==='admin'?'rp-admin':'rp-user'}">${u.role==='admin'?'Admin':'Üye'}</span></td>
+      <td><span class="role-pill ${rolePill(u.role)}">${roleShortLabel(u.role)}</span></td>
       <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Pasif'}</td>
       <td><div class="td-actions">
-        <button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>
-        ${u.role!=='admin'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
+        ${hasAdminRole(me?.role)?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openNotifyUser('${u.id}',${safeNameArg})">Bildirim</button>`:''}
+        ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>`:''}
+        ${canDelete?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
       </div></td>
-    </tr>`).join('')}</tbody></table></div>`;
+    </tr>`;}).join('')}</tbody></table></div>`;
 }
 function openAddUser(){
+  if(!hasSuperAdminRole(me?.role)){alert('Yeni kullanıcı eklemek için süper admin yetkisi gerekir.');return;}
   ['nuName','nuUsername','nuPassword','nuPassword2'].forEach(id=>el(id).value='');
   el('nuRole').value='user';el('nuErr').textContent='';
   el('addUserModal').classList.add('open');
@@ -930,9 +1510,27 @@ async function addUser(){
   if(r.error){el('nuErr').textContent=r.error;return;}
   closeModal('addUserModal');loadUsers();
 }
+function openNotifyUser(id,name){
+  el('notifyUserId').value=id;
+  el('notifyUserName').value=name;
+  el('notifyTitle').value='Bilgilendirme';
+  el('notifyMessage').value='';
+  el('notifyErr').textContent='';
+  el('notifyUserModal').classList.add('open');
+}
+async function sendUserNotification(){
+  const id=v('notifyUserId'),title=v('notifyTitle'),message=v('notifyMessage');
+  if(!message){el('notifyErr').textContent='Mesaj zorunlu.';return;}
+  const r=await api('POST',`/api/users/${id}/notify`,{title,message});
+  if(r.error){el('notifyErr').textContent=r.error;return;}
+  closeModal('notifyUserModal');
+  setStatus('✓ Kullanıcıya bildirim gönderildi.','ok');
+  setTimeout(()=>setStatus('',''),2200);
+}
 function openEditUser(id,name,role,active){
   el('euId').value=id;el('euName').value=name;el('euPassword').value='';
   el('euRole').value=role;el('euActive').value=String(active);el('euErr').textContent='';
+  const locked=role==='super_admin';el('euRole').disabled=locked;el('euActive').disabled=locked;
   el('editUserModal').classList.add('open');
 }
 async function saveEditUser(){
@@ -953,8 +1551,10 @@ async function refreshMe(){
   el('mTopName').textContent=r.name;
   el('pName').textContent=r.name;
   el('pAvatar').textContent=(r.name||'?').charAt(0).toUpperCase();
+  el('pRole').textContent=roleLabel(r.role);
 }
 async function deleteUser(id,name){
+  if(!hasSuperAdminRole(me?.role)){alert('Kullanıcı silmek için süper admin yetkisi gerekir.');return;}
   if(!confirm(`"${name}" silinsin mi?`))return;
   const r=await api('DELETE',`/api/users/${id}`);
   if(r.error){alert(r.error);return;}loadUsers();
