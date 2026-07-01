@@ -1409,6 +1409,7 @@ function parseStructuredMessage(message){
 
 function noticeBodyHtml(body){
   return String(body||'')
+    .replace(/\n\s*Arşiv Kontrol AI\s*$/u,'')
     .split(/\n{2,}/)
     .map(p=>p.trim())
     .filter(Boolean)

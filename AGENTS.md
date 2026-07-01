@@ -115,6 +115,9 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-01
+- **Bildirim imza tekrarı:** Bildirim gövdesinin sonundaki tek başına `Arşiv Kontrol AI`
+  imza satırı kaldırıldı; gönderen adı zaten kart footer'ında gösterildiği için tekrar
+  yazılmaz. Mevcut toplu duyuru kayıtları canlı DB'de imzasız gövdeyle güncellendi.
 - **Bildirim gönderen adı:** Kullanıcı bildirimlerinde gönderen adı her zaman `Arşiv Kontrol AI`
   olarak gösterilir. Yeni duyuru ve feedback çözüm bildirimleri backend'de bu adla üretilir;
   bildirim kartı da eski kayıtlarda farklı gönderen olsa bile kullanıcıya `Arşiv Kontrol AI`
