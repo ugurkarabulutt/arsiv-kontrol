@@ -148,5 +148,65 @@
       }
     },
     "expected": { "score": 96, "totalErrors": 1, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
+  },
+  {
+    "name": "Muminun sure adi yeni listeye gore duzeltilir",
+    "sourceText": "Muminun Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Muminun", "fixed": "MU'M\u0130N\u00dbN", "rule": "Sure adi standardi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Muminun sure adini mumin kelimesine indirgeme reddedilir",
+    "sourceText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "m\u00fc'min Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "MU'M\u0130N\u00dbN", "fixed": "m\u00fc'min", "rule": "Yanlis parca yakalama" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Zumer sure adi yeni listeye gore sapkasiz korunur",
+    "sourceText": "Zumer Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "ZUMER Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Zumer", "fixed": "ZUMER", "rule": "Sure adi standardi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Zumer sure adini Zumer yerine Zumer umlautlu yapma reddedilir",
+    "sourceText": "ZUMER Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "Z\u00fcmer Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "ZUMER", "fixed": "Z\u00fcmer", "rule": "Yanlis sure yazimi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
   }
 ]

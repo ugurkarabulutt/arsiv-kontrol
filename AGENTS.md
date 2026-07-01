@@ -115,6 +115,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-01
+- **Sure adları standardı:** 114 sure adı kullanıcı tarafından verilen listeye göre üst
+  öncelikli imlâ standardı yapıldı. Baştaki sıra numaraları imlâ kontrolünde dikkate alınmaz.
+  Sure adları listedeki büyük harf, şapka ve apostrof biçimine göre düzeltilir; sure adının
+  içinden parça yakalanıp ayrı sözlük kelimesi gibi değiştirilmez. Örnek: `Muminun/Müminun`
+  sure adı olarak geçiyorsa `MU'MİNÛN`, `Zumer/Zümer` sure adı olarak geçiyorsa `ZUMER`
+  standardı kullanılır.
+- **Sure testi:** `Muminun → MU'MİNÛN`, `MU'MİNÛN → mü'min` yanlış indirgemesinin reddi,
+  `Zumer → ZUMER` ve `ZUMER → Zümer` yanlış dönüşümünün reddi kalite regresyon havuzuna eklendi.
+  `npm.cmd run check` başarılı; test sayısı 27'ye çıktı.
 - **Sözlük kararı — din:** Efendimizin sözlüğünde `dîn` yazımı yerine artık `din` doğru
   kabul edilir. Sistem `din` kelimesini `dîn`e çevirmemeli; metinde `dîn` varsa `din`
   olarak düzeltmelidir. Bu karar prompt'a üst öncelikli kural olarak eklendi ve backend

@@ -5,17 +5,16 @@ const CAT_WEIGHTS = { sozluk: 5, imla: 4, noktalama: 3, etiket: 2, yapi: 4 };
 const LOW_SCORE_MSG = 'Bu metin arşiv standartlarının altında kalmaktadır. Lütfen metni gözden geçirip tekrar gönderin.';
 const WORD_EDGE = /[\p{L}\p{N}_]/u;
 const PROTECTED_PATTERNS = [
-  /\b(?:muminun|mu'?min[uû]n)\s+suresi\b/iu,
-  /\bmu'?min[uû]n\b/iu,
   /\bderecat\b/iu,
   /\btabiî\s+ki\b/iu,
   /\bdinlenmeye\b/iu,
-  /\bmuhterem\s+efendimiz\b/iu,
-  /\bzumer\b/iu
+  /\bmuhterem\s+efendimiz\b/iu
 ];
 const FORBIDDEN_TRANSFORMS = [
   { from: /\bdin\b/iu, to: /\bdîn\b/iu },
   { from: /\bherşey\b/iu, to: /\bher\s+şey\b/iu },
+  { from: /(?<![\p{L}\p{N}_])(?:muminun|m[uü]'?m[iİı]n[uû]n)(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])m[üu]'?m[iİı]n(?![\p{L}\p{N}_])/iu },
+  { from: /\bzumer\b/iu, to: /\bzümer\b/iu },
   { from: /\btabiî\s+ki\b/iu, to: /\btâbî\s+ki\b/iu },
   { from: /\bderecat\b/iu, to: /\bderece\b/iu },
   { from: /\bdinlenmeye\b/iu, to: /\bdînlenmeye\b/iu },

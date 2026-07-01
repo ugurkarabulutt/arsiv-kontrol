@@ -58,6 +58,121 @@ app.use(express.static(__dirname));
 // Render/UptimeRobot için oturum ve veritabanı gerektirmeyen canlılık kontrolü.
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
+const SURE_STANDARD_LIST = `001. FÂTİHA
+002. BAKARA
+003. ÂLİ İMRÂN
+004. NİSÂ
+005. MÂİDE
+006. EN'ÂM
+007. A'RÂF
+008. ENFÂL
+009. TEVBE
+010. YÛNUS
+011. HÛD
+012. YÛSUF
+013. RA'D
+014. İBRÂHÎM
+015. HİCR
+016. NAHL
+017. İSRÂ
+018. KEHF
+019. MERYEM
+020. TÂHÂ
+021. ENBİYÂ
+022. HACC
+023. MU'MİNÛN
+024. NÛR
+025. FURKÂN
+026. ŞUARÂ
+027. NEML
+028. KASAS
+029. ANKEBÛT
+030. RÛM
+031. LOKMÂN
+032. SECDE
+033. AHZÂB
+034. SEBE
+035. FÂTIR
+036. YÂSÎN
+037. SÂFFÂT
+038. SÂD
+039. ZUMER
+040. MU'MİN
+041. FUSSİLET
+042. ŞÛRÂ
+043. ZUHRÛF
+044. DUHÂN
+045. CÂSİYE
+046. AHKÂF
+047. MUHAMMED
+048. FETİH
+049. HUCURÂT
+050. KAF
+051. ZÂRİYÂT
+052. TÛR
+053. NECM
+054. KAMER
+055. RAHMÂN
+056. VÂKIA
+057. HADÎD
+058. MUCÂDELE
+059. HAŞR
+060. MUMTEHİNE
+061. SAFF
+062. CUMA
+063. MUNÂFİKÛN
+064. TEGÂBUN
+065. TALÂK
+066. TAHRÎM
+067. MULK
+068. KALEM
+069. HÂKKA
+070. MEÂRİC
+071. NÛH
+072. CİNN
+073. MUZZEMMİL
+074. MUDDESSİR
+075. KIYÂME
+076. İNSÂN
+077. MURSELÂT
+078. NEBE
+079. NÂZİÂT
+080. ABESE
+081. TEKVÎR
+082. İNFİTÂR
+083. MUTAFFİFÎN
+084. İNŞİKAK
+085. BURÛC
+086. TÂRIK
+087. A'LÂ
+088. GÂŞİYE
+089. FECR
+090. BELED
+091. ŞEMS
+092. LEYL
+093. DUHÂ
+094. İNŞİRÂH(ŞERH)
+095. TÎN
+096. ALAK
+097. KADR(KADİR)
+098. BEYYİNE
+099. ZİLZÂL
+100. ÂDİYÂT
+101. KÂRİA
+102. TEKÂSUR
+103. ASR
+104. HUMEZE
+105. FÎL
+106. KUREYŞ
+107. MÂÛN
+108. KEVSER
+109. KÂFİRÛN
+110. NASR
+111. TEBBET(MESED)
+112. İHLÂS
+113. FELAK
+114. NÂS`;
+
 // ── Default rules ──────────────────────────────────────────────────────────
 const DEFAULT_RULES = `════════════════════════════════════════
 KURAL 1 — EFENDİMİZİN SÖZLÜĞÜ
@@ -120,6 +235,14 @@ KURAL 2 — İMLÂ (Yanlış → Doğru)
 ════════════════════════════════════════
 Bu dönüşümleri yalnızca tam kelime/ifade eşleşmesinde uygula. Kelime içi parça eşleşmesi yasaktır.
 Sure adları ve özel adlar korunur.
+
+SURE ADLARI STANDARDI:
+- Sure adları aşağıdaki listeye göre yazılır; baştaki sıra numaraları imlâ kontrolüne dahil değildir.
+- Sure adı başlıkta, metin içinde veya "Suresi" ifadesinden önce geçerse harf/şapka/apostrof standardı bu listedir.
+- Sure adının içindeki parçayı ayrı sözlük kelimesi sanma; örneğin MU'MİNÛN içindeki MU'MİN parçasını değiştirme.
+- Liste dışında kalan sure adı varyantlarını yalnızca tam sure adı olarak yakaladıysan bu listedeki biçime düzelt.
+
+${SURE_STANDARD_LIST}
 
 Allah Teala → Allahû Tealâ
 Allahu Teala → Allahû Tealâ
@@ -817,6 +940,15 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
 - "herşey" doğru yazımdır; "herşey" kelimesini "her şey" olarak ayırma. Metinde "her şey" varsa "herşey" olarak düzelt.
 - Bu iki karar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
+
+SURE ADLARI ÜST ÖNCELİKLİ STANDARDI:
+- Sure adlarında aşağıdaki liste esastır; baştaki sıra numaralarını imlâ konusu yapma.
+- Sure adlarını bu listedeki büyük harf, şapka ve apostrof biçimine göre düzelt.
+- Sure adı içinden parça yakalayıp ayrı kelime düzeltmesi yapma.
+- Örnek: Muminun/Müminun/Mu'minun sure adı olarak geçiyorsa doğru biçim MU'MİNÛN olur; mü'min kelimesine indirgenmez.
+- Örnek: Zümer/Zumer sure adı olarak geçiyorsa doğru biçim ZUMER olur.
+
+${SURE_STANDARD_LIST}
 
 NASIL ÇALIŞACAKSIN:
 1. Metni baştan sona kelime kelime oku — tüm imlâ hatalarını tespit et.

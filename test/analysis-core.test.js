@@ -121,8 +121,9 @@ test('korumali ve yasak donusumleri hem skordan hem duzeltilmis metinden cikarir
 });
 
 test('korumali ifadeleri degistiren issue gecersiz sayilir', () => {
-  assert.equal(isProtectedChange('Mu\'minûn', 'Mü\'minûn'), true);
+  assert.equal(isProtectedChange('Muminun', 'MU\'MİNÛN'), false);
   assert.equal(isProtectedChange('Muminun Suresi', "mü'min Suresi"), true);
+  assert.equal(isProtectedChange('Zumer', 'Zümer'), true);
   assert.equal(isProtectedChange('Tabiî ki', 'tâbî ki'), true);
   assert.equal(isProtectedChange('Resul', 'resûl'), false);
 });

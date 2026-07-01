@@ -23,6 +23,13 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-01/02 Codex sure standardı turu: Kullanıcının verdiği 114 sure adı listesi
+  `SURE_STANDARD_LIST` olarak `server.js` içine eklendi. `buildSystemPrompt` listeyi üst
+  öncelikli standart olarak verir; baştaki sıra numaraları imlâ kontrolüne dahil değildir.
+  `analysis-core.js` filtreleri daraltıldı: `Muminun → MU'MİNÛN` gibi tam sure adı düzeltmesi
+  geçerli kabul edilir, fakat `MU'MİNÛN/Muminun → mü'min` gibi kelime içi/parça indirgemesi
+  reddedilir. `ZUMER` standardı korunur, `Zümer` dönüşümü reddedilir. Kalite regresyon
+  fixture'ına 4 sure vakası eklendi.
 - 2026-07-01 Codex sözlük kararı turu: `dîn` yerine `din`, `her şey` yerine `herşey`
   üst öncelikli standart olarak eklendi. `buildSystemPrompt` bu iki kararı mevcut DB kural
   metni tersini söylese bile öncelikli uygular. `analysis-core.js` eski yöne dönüşleri
@@ -160,6 +167,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-07-01 Codex sözlük kararı turu). 23/23 test geçti;
   `din/dîn` ve `herşey/her şey` yeni standartları hem koruma hem düzeltme yönünde doğrulandı.
+- `npm.cmd run check`: başarılı (2026-07-02 Codex sure standardı turu). 27/27 test geçti;
+  114 sure adı listesi prompt'a üst öncelikli standart olarak eklendi, `Muminun/MU'MİNÛN`
+  ve `Zumer/ZUMER` regresyonları doğrulandı.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
