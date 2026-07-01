@@ -29,6 +29,7 @@ create table if not exists public.history (
   total_errors   integer default 0,
   cat_counts     jsonb   default '{}'::jsonb,
   summary        text,
+  original_text  text,
   corrected_text text,
   status         text default 'bekliyor',
   approved_by    text,
@@ -44,6 +45,7 @@ create index if not exists history_text_hash_idx  on public.history (user_id, te
 
 -- Mevcut bir veritabanına sonradan eklemek için (history zaten varsa):
 alter table public.history add column if not exists text_hash text;
+alter table public.history add column if not exists original_text text;
 alter table public.history add column if not exists prompt_version text;
 alter table public.history add column if not exists rules_hash text;
 create index if not exists history_text_hash_idx on public.history (user_id, text_hash);

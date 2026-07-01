@@ -1166,7 +1166,14 @@ async function showDetail(id){
   if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
   const text=item.correctedText||'';
   _textStore[id]=text;
-  el('detailBody').textContent=text||'Bu kayıt için düzeltilmiş metin bulunmuyor.';
+  if(item.originalText&&text){
+    el('detailBody').innerHTML=`<div class="compare-grid" style="max-height:none">
+      <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
+      <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
+    </div>`;
+  }else{
+    el('detailBody').textContent=text||'Bu kayıt için düzeltilmiş metin bulunmuyor.';
+  }
   window._detailText=text;
 }
 function copyDetail(){

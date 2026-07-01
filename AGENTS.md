@@ -244,6 +244,9 @@ tespit edilir).
   yakalar.
 - **Feedback çözüm metrikleri:** Dashboard'a çözüm bildirimi ve duyuru sayıları eklendi.
   Uyarılar ekranında `Çözüm` ve `Duyuru` filtreleriyle admin logları ayrıştırılabilir.
+- **Orijinal metin saklama:** `history.original_text` opsiyonel kolonu eklendi. Kolon canlı
+  DB'de varsa yeni analizlerde kaynak metin geçmişe yazılır; yoksa uygulama kırılmaz. Geçmiş
+  detayda orijinal metin varsa düzeltilmiş metinle yan yana gösterilir.
 - **Metin denetim sağlamlığı:** Metin girişi normalize edilir, çok kısa/boş/çok uzun metinler
   hem frontend hem API tarafında denetime gönderilmeden durdurulur. Denetim sırasında çift
   tıklama ile ikinci analiz başlatılması engellenir.

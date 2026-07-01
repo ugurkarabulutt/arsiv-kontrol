@@ -100,6 +100,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Feedback çözüm görünürlüğü: dashboard çözüm bildirimi ve duyuru sayılarını gösteriyor.
   Uyarılar ekranında `Çözüm` ve `Duyuru` filtreleri var; admin feedback, çözüm ve duyuru
   loglarını ayrı ayrı inceleyebilir.
+- Orijinal metin saklama: `schema.sql` `history.original_text` kolonunu içerir. Sunucu startup'ta
+  kolonu algılar; varsa yeni analizlerde kaynak metni geçmişe yazar, yoksa özellik pasif kalır.
+  Geçmiş detay modalı orijinal metin varsa orijinal/düzeltilmiş karşılaştırmasını gösterir.
 - Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
   gösteriliyor. Boş, çok kısa ve çok uzun metinler frontend'de durduruluyor; aynı kontroller
   `/api/analyze`, `/api/analyze-file` ve batch dosya analizinde sunucu tarafında da uygulanıyor.
@@ -147,6 +150,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   regresyon havuzu fixture'ları otomatik test kapsamına alındı.
 - `npm.cmd run check`: başarılı (2026-07-01 Codex feedback metrik turu). 19/19 test geçti;
   dashboard çözüm/duyuru metrikleri ve Uyarılar filtreleri frontend parse kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-07-01 Codex orijinal metin turu). 19/19 test geçti;
+  opsiyonel `history.original_text` saklama ve geçmiş karşılaştırma modalı frontend parse
+  kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

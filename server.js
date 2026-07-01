@@ -217,7 +217,7 @@ const mapUser    = u => ({ id: u.id, username: u.username, name: u.name, role: u
 const mapHistory = h => ({
   id: h.id, userId: h.user_id, username: h.username, name: h.name,
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
-  catCounts: h.cat_counts || {}, summary: h.summary, correctedText: h.corrected_text,
+  catCounts: h.cat_counts || {}, summary: h.summary, originalText: h.original_text, correctedText: h.corrected_text,
   status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
   promptVersion: h.prompt_version, rulesHash: h.rules_hash,
   createdAt: h.created_at
@@ -282,6 +282,10 @@ async function seed() {
   const { error: metaErr } = await supabase.from('history').select('prompt_version,rules_hash').limit(1);
   HAS_ANALYSIS_META = !metaErr;
   if (!HAS_ANALYSIS_META) console.warn('⚠ history.prompt_version/rules_hash kolonları yok — analiz sürüm bilgisi kayıt geçmişine yazılmayacak.');
+
+  const { error: originalTextErr } = await supabase.from('history').select('original_text').limit(1);
+  HAS_ORIGINAL_TEXT = !originalTextErr;
+  if (!HAS_ORIGINAL_TEXT) console.warn('⚠ history.original_text kolonu yok — geçmişte orijinal metin saklanmayacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -963,6 +967,7 @@ const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar gön
 
 let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
 let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
+let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
@@ -975,7 +980,7 @@ async function isDuplicate(req, text) {
   return !!(data && data.length);
 }
 
-async function saveHistory(req, result, filename, hash) {
+async function saveHistory(req, result, filename, hash, sourceText = '') {
   const catCounts = {};
   if (result.categories) Object.keys(result.categories).forEach(k => catCounts[k] = result.categories[k].count || 0);
   const analysisMeta = result.analysisMeta || {};
@@ -989,6 +994,7 @@ async function saveHistory(req, result, filename, hash) {
     corrected_text: result.correctedText || '',
     status: 'bekliyor'
   };
+  if (HAS_ORIGINAL_TEXT) row.original_text = sourceText;
   if (HAS_TEXT_HASH && hash) row.text_hash = hash;
   if (HAS_ANALYSIS_META) {
     row.prompt_version = analysisMeta.promptVersion || PROMPT_VERSION;
@@ -1019,7 +1025,7 @@ app.post('/api/analyze', auth, async (req, res) => {
     const hash = textHash(text);
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
-    const id = await saveHistory(req, result, 'Metin Girişi', hash);
+    const id = await saveHistory(req, result, 'Metin Girişi', hash, text);
     res.json({ ...result, id, originalText: text });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -1033,7 +1039,7 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
     const hash = textHash(text);
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
-    const id = await saveHistory(req, result, req.file.originalname, hash);
+    const id = await saveHistory(req, result, req.file.originalname, hash, text);
     res.json({ ...result, id, originalText: text });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -1052,7 +1058,7 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
         continue;
       }
       const result = await openaiText(text);
-      const id = await saveHistory(req, result, file.originalname, hash);
+      const id = await saveHistory(req, result, file.originalname, hash, text);
       results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id });
     } catch (e) {
       results.push({ filename: file.originalname, success: false, error: e.message });
