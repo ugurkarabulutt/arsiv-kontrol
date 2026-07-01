@@ -40,6 +40,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
+const SYSTEM_SENDER_NAME = 'Arşiv Kontrol AI';
 
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -577,7 +578,7 @@ app.post('/api/users/:id/notify', auth, admin, async (req, res) => {
     const message = [
       `Başlık: ${cleanTitle}`,
       `Mesaj: ${cleanMessage}`,
-      `Gönderen: ${req.session.name || req.session.username}`
+      `Gönderen: ${SYSTEM_SENDER_NAME}`
     ].join(' | ');
     const { error } = await supabase.from('alerts').insert({
       type: 'announcement',
@@ -780,7 +781,7 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
     const message = [
       'Geri bildiriminiz incelendi',
       `Çözüm: ${cleanNote}`,
-      `Yanıtlayan: ${req.session.name || req.session.username}`,
+      `Yanıtlayan: ${SYSTEM_SENDER_NAME}`,
       alert.message ? `İlgili kayıt: ${String(alert.message).split(' | ')[1] || 'Denetim sonucu'}` : ''
     ].filter(Boolean).join(' | ');
 

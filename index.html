@@ -1423,6 +1423,7 @@ function noticeTypeLabel(type){
 function renderNotice(n){
   const msg=parseStructuredMessage(n.message);
   const date=new Date(n.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const senderName='Arşiv Kontrol AI';
   return `
     <div class="notice-card ${n.read?'':'unread'}">
       <div>
@@ -1433,7 +1434,7 @@ function renderNotice(n){
         <div class="notice-title">${esc(msg.title)}</div>
         <div class="notice-body">${noticeBodyHtml(msg.body)}</div>
         <div class="notice-footer">
-          <span>${msg.sender?`Gönderen: ${esc(msg.sender)}`:'Sistem bildirimi'}</span>
+          <span>Gönderen: ${esc(senderName)}</span>
         </div>
       </div>
       <div class="notice-actions">
