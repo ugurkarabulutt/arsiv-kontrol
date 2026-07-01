@@ -84,7 +84,7 @@ inşaallah
 velî
 resûl (küçük harf, özel isim değilse)
 nebî
-dîn (din kelimesi bağımsız kavramsa; dinlenmek/dinlemek köklerine dokunma)
+din (dîn değil; Efendimizin sözlüğünde bu kelime bundan sonra şapkasız yazılır)
 tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
 ni'met
 ulûl'elbab
@@ -126,7 +126,8 @@ Allahu Teala → Allahû Tealâ
 Resul → resûl
 Veli → velî
 Nebi → nebî
-Din → dîn (yalnızca bağımsız din kavramıysa; dinlenmek/dinlemek türevleri hariç)
+dîn → din
+her şey → herşey
 Ayet → âyet (sure/kitap adı veya özel başlık içinde değilse)
 Ayet-i kerime → âyet-i kerime
 Kuran → Kur'ân
@@ -811,6 +812,11 @@ app.get('/api/stats', auth, admin, async (req, res) => {
 async function buildSystemPrompt(rulesText) {
   const rules = rulesText ?? await loadRules();
   return `Sen "Arşiv Kontrol AI" sistemisin. Görevin yalnızca cevap metinlerini verilen kurallara göre denetlemek ve düzeltmektir.
+
+GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
+- "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
+- "herşey" doğru yazımdır; "herşey" kelimesini "her şey" olarak ayırma. Metinde "her şey" varsa "herşey" olarak düzelt.
+- Bu iki karar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
 
 NASIL ÇALIŞACAKSIN:
 1. Metni baştan sona kelime kelime oku — tüm imlâ hatalarını tespit et.

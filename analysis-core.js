@@ -14,6 +14,8 @@ const PROTECTED_PATTERNS = [
   /\bzumer\b/iu
 ];
 const FORBIDDEN_TRANSFORMS = [
+  { from: /\bdin\b/iu, to: /\bdîn\b/iu },
+  { from: /\bherşey\b/iu, to: /\bher\s+şey\b/iu },
   { from: /\btabiî\s+ki\b/iu, to: /\btâbî\s+ki\b/iu },
   { from: /\bderecat\b/iu, to: /\bderece\b/iu },
   { from: /\bdinlenmeye\b/iu, to: /\bdînlenmeye\b/iu },

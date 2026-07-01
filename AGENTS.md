@@ -114,6 +114,18 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-01
+- **Sözlük kararı — din:** Efendimizin sözlüğünde `dîn` yazımı yerine artık `din` doğru
+  kabul edilir. Sistem `din` kelimesini `dîn`e çevirmemeli; metinde `dîn` varsa `din`
+  olarak düzeltmelidir. Bu karar prompt'a üst öncelikli kural olarak eklendi ve backend
+  güvenlik katmanında `din → dîn` dönüşümü yasaklandı.
+- **Sözlük kararı — herşey:** `her şey` yerine artık birleşik `herşey` doğru kabul edilir.
+  Sistem `herşey` yazımını ayırmamalı; metinde `her şey` varsa `herşey` olarak düzeltmelidir.
+  Bu karar prompt'a üst öncelikli kural olarak eklendi ve backend güvenlik katmanında
+  `herşey → her şey` dönüşümü yasaklandı.
+- **Test:** `npm.cmd run check` başarılı; kalite regresyon havuzuna bu iki karar için hem
+  yanlış yönü engelleyen hem de yeni doğru yönü skorlayan 4 test eklendi. Test sayısı 23'e çıktı.
+
 ### 2026-06-30
 - **İş panosu:** Onay Bekleyenler sekmesi "İş Panosu"na dönüştürüldü. Denetimler
   Bekleyen / Onaylanan / Reddedilen sütunlarında kartlarla gösterilir; kartlardan metin

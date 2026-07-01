@@ -88,5 +88,65 @@
       }
     },
     "expected": { "score": 95, "totalErrors": 1, "correctedText": "Bu metinde \u00e2yet kelimesi geciyor." }
+  },
+  {
+    "name": "Din kelimesi artik din olarak korunur",
+    "sourceText": "Din bu cevapta temel kavramdir.",
+    "modelResult": {
+      "correctedText": "D\u00een bu cevapta temel kavramdir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Din", "fixed": "D\u00een", "rule": "Eski sozluk yonu" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Din bu cevapta temel kavramdir." }
+  },
+  {
+    "name": "Herşey artik birlesik olarak korunur",
+    "sourceText": "Her\u015fey Allah'in izniyle tamamlanir.",
+    "modelResult": {
+      "correctedText": "Her \u015fey Allah'in izniyle tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Her\u015fey", "fixed": "Her \u015fey", "rule": "Eski imla yonu" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
+  },
+  {
+    "name": "Din yeni sozluk yonunde duzeltilir",
+    "sourceText": "D\u00een bu cevapta temel kavramdir.",
+    "modelResult": {
+      "correctedText": "Din bu cevapta temel kavramdir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "D\u00een", "fixed": "Din", "rule": "Yeni sozluk karari" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "Din bu cevapta temel kavramdir." }
+  },
+  {
+    "name": "Her sey yeni sozluk yonunde birlesir",
+    "sourceText": "Her \u015fey Allah'in izniyle tamamlanir.",
+    "modelResult": {
+      "correctedText": "Her\u015fey Allah'in izniyle tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Her \u015fey", "fixed": "Her\u015fey", "rule": "Yeni imla karari" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 96, "totalErrors": 1, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
   }
 ]

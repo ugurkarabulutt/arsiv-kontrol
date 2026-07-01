@@ -23,6 +23,11 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-01 Codex sözlük kararı turu: `dîn` yerine `din`, `her şey` yerine `herşey`
+  üst öncelikli standart olarak eklendi. `buildSystemPrompt` bu iki kararı mevcut DB kural
+  metni tersini söylese bile öncelikli uygular. `analysis-core.js` eski yöne dönüşleri
+  (`din → dîn`, `herşey → her şey`) yasak dönüşüm sayar ve skor/düzeltilmiş metinden geri alır.
+  Kalite regresyon fixture'ına 4 vaka eklendi.
 - Her hata instance'ını ayrı issue yapan güçlendirilmiş AI promptu.
 - Issue sayısına dayalı yetkili puanlama ve 60-altı kesin davranışı.
 - SHA-256 tekrar gönderim kontrolü ve eski hash desteği.
@@ -153,6 +158,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - `npm.cmd run check`: başarılı (2026-07-01 Codex orijinal metin turu). 19/19 test geçti;
   opsiyonel `history.original_text` saklama ve geçmiş karşılaştırma modalı frontend parse
   kontrolünden geçti.
+- `npm.cmd run check`: başarılı (2026-07-01 Codex sözlük kararı turu). 23/23 test geçti;
+  `din/dîn` ve `herşey/her şey` yeni standartları hem koruma hem düzeltme yönünde doğrulandı.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
