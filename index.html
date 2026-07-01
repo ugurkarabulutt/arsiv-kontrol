@@ -286,6 +286,20 @@ canvas{width:100%!important;}
 .alert-type.feedback{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
 .alert-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
 .alert-filter.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.notice-list{display:flex;flex-direction:column;gap:12px;}
+.notice-card{position:relative;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:16px 18px 14px;margin:0;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
+.notice-card.unread{background:linear-gradient(90deg,var(--red-bg),var(--white) 42%);}
+.notice-kicker{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.notice-status-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;}
+.notice-status-dot.read{background:var(--border);}
+.notice-type{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold-dk,#8b6914);border:1px solid var(--gold);background:var(--gold-bg);padding:3px 7px;}
+.notice-title{font-size:18px;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:10px;}
+.notice-body{font-size:16px;line-height:1.75;color:var(--ink2);}
+.notice-body p{margin:0 0 10px;}
+.notice-body p:last-child{margin-bottom:0;}
+.notice-footer{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.notice-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:76px;}
+.notice-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,.6);z-index:100;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
@@ -341,6 +355,10 @@ canvas{width:100%!important;}
   .dash-grid{grid-template-columns:1fr;}
   .stat-grid{grid-template-columns:repeat(2,1fr);}
   .page-title{font-size:20px;}
+  .notice-card{grid-template-columns:1fr;padding:15px 14px;gap:10px;}
+  .notice-actions{align-items:flex-start;flex-direction:row;justify-content:space-between;width:100%;border-top:1px solid var(--border);padding-top:10px;}
+  .notice-title{font-size:17px;}
+  .notice-body{font-size:15.5px;line-height:1.72;}
 }
 @media(max-width:420px){
   .score-row{grid-template-columns:repeat(2,1fr);}
@@ -1375,21 +1393,62 @@ function messageFields(message){
   }).join('');
 }
 
+function parseStructuredMessage(message){
+  const fields={title:'Duyuru',body:String(message||''),sender:''};
+  String(message||'').split(' | ').forEach(part=>{
+    const idx=part.indexOf(':');
+    if(idx<0)return;
+    const key=part.slice(0,idx).trim().toLowerCase();
+    const val=part.slice(idx+1).trim();
+    if(key==='başlık'||key==='baslik')fields.title=val||fields.title;
+    else if(key==='mesaj')fields.body=val||fields.body;
+    else if(key==='gönderen'||key==='gonderen')fields.sender=val;
+  });
+  return fields;
+}
+
+function noticeBodyHtml(body){
+  return String(body||'')
+    .split(/\n{2,}/)
+    .map(p=>p.trim())
+    .filter(Boolean)
+    .map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`)
+    .join('');
+}
+
+function noticeTypeLabel(type){
+  return type==='feedback_resolution'?'Çözüm':'Duyuru';
+}
+
+function renderNotice(n){
+  const msg=parseStructuredMessage(n.message);
+  const date=new Date(n.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  return `
+    <div class="notice-card ${n.read?'':'unread'}">
+      <div>
+        <div class="notice-kicker">
+          <span class="notice-status-dot ${n.read?'read':''}"></span>
+          <span class="notice-type">${noticeTypeLabel(n.type)}</span>
+        </div>
+        <div class="notice-title">${esc(msg.title)}</div>
+        <div class="notice-body">${noticeBodyHtml(msg.body)}</div>
+        <div class="notice-footer">
+          <span>${msg.sender?`Gönderen: ${esc(msg.sender)}`:'Sistem bildirimi'}</span>
+        </div>
+      </div>
+      <div class="notice-actions">
+        <div class="notice-date">${date}</div>
+        ${!n.read?`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="readNotice('${n.id}')">Okundu</button>`:''}
+      </div>
+    </div>`;
+}
+
 async function loadMyNotifications(){
   const notices=await api('GET','/api/my-notifications');
   const container=el('noticeContent');
   if(notices.error){container.innerHTML=`<div class="empty-state">${esc(notices.error)}</div>`;return;}
   if(!notices?.length){container.innerHTML='<div class="empty-state">Size özel bildirim yok.</div>';return;}
-  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${notices.map(n=>`
-    <div class="alert-item ${n.read?'':'unread'}">
-      <div class="alert-dot ${n.read?'read':''}"></div>
-      <div class="alert-type ${n.type==='feedback_resolution'?'feedback':''}">${n.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
-      <div class="alert-msg">${messageFields(n.message)}</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-        <div class="alert-time">${new Date(n.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
-        ${!n.read?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readNotice('${n.id}')">Okundu</button>`:''}
-      </div>
-    </div>`).join('')}</div>`;
+  container.innerHTML=`<div class="notice-list">${notices.map(renderNotice).join('')}</div>`;
 }
 async function readNotice(id){await api('POST',`/api/my-notifications/${id}/read`);loadMyNotifications();refreshNoticeBadge();}
 async function readAllNotices(){await api('POST','/api/my-notifications/read-all');loadMyNotifications();refreshNoticeBadge();}

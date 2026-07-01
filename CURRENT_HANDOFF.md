@@ -23,6 +23,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-02 Codex bildirim UX turu: Kullanıcı "Bildirimler" ekranındaki `announcement` ve
+  `feedback_resolution` mesajları artık ham `Başlık / Mesaj / Gönderen` satırları yerine
+  parse edilmiş `.notice-card` bileşeniyle gösterilir. Duyuru tipi, başlık, paragraf gövdesi,
+  gönderen, tarih ve okundu aksiyonu ayrıldı; mobil kırılımda kart tek sütuna düşer.
 - 2026-07-01/02 Codex sure standardı turu: Kullanıcının verdiği 114 sure adı listesi
   `SURE_STANDARD_LIST` olarak `server.js` içine eklendi. `buildSystemPrompt` listeyi üst
   öncelikli standart olarak verir; baştaki sıra numaraları imlâ kontrolüne dahil değildir.
@@ -170,6 +174,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - `npm.cmd run check`: başarılı (2026-07-02 Codex sure standardı turu). 27/27 test geçti;
   114 sure adı listesi prompt'a üst öncelikli standart olarak eklendi, `Muminun/MU'MİNÛN`
   ve `Zumer/ZUMER` regresyonları doğrulandı.
+- `npm.cmd run check`: başarılı (2026-07-02 Codex bildirim UX turu). 27/27 test geçti;
+  bildirim kartı parse/render değişikliği frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

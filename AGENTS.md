@@ -115,6 +115,10 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-01
+- **Bildirim UX iyileştirmesi:** Kullanıcı "Bildirimler" ekranındaki duyuru kartları ham
+  `Başlık / Mesaj / Gönderen` log metni yerine ayrıştırılmış modern kart olarak gösterilir.
+  Başlık, paragraf gövdesi, gönderen, tarih ve okundu aksiyonu ayrı alanlara bölündü; mobil
+  görünümde kart tek sütuna düşer ve daha okunaklı satır aralığı kullanır.
 - **Sure adları standardı:** 114 sure adı kullanıcı tarafından verilen listeye göre üst
   öncelikli imlâ standardı yapıldı. Baştaki sıra numaraları imlâ kontrolünde dikkate alınmaz.
   Sure adları listedeki büyük harf, şapka ve apostrof biçimine göre düzeltilir; sure adının
