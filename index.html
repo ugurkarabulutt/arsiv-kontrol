@@ -534,6 +534,8 @@ canvas{width:100%!important;}
       <div class="alert-filters">
         <button class="btn-mini alert-filter active" id="alertFilter-all" onclick="setAlertFilter('all')">Tümü</button>
         <button class="btn-mini alert-filter" id="alertFilter-feedback" onclick="setAlertFilter('feedback')">Geri Bildirim</button>
+        <button class="btn-mini alert-filter" id="alertFilter-feedback_resolution" onclick="setAlertFilter('feedback_resolution')">Çözüm</button>
+        <button class="btn-mini alert-filter" id="alertFilter-announcement" onclick="setAlertFilter('announcement')">Duyuru</button>
         <button class="btn-mini alert-filter" id="alertFilter-low_score" onclick="setAlertFilter('low_score')">Düşük Skor</button>
       </div>
       <div id="alertsContent"><div class="empty-state">Yükleniyor...</div></div>
@@ -1217,6 +1219,8 @@ async function loadDash(){
       <div class="stat-card"><div class="stat-lbl">Geri Bildirim</div><div class="stat-val gold">${t.feedback||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">7 Gün Feedback</div><div class="stat-val orange">${t.feedback7||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">Okunmamış Feedback</div><div class="stat-val red">${t.unreadFeedback||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Çözüm Bildirimi</div><div class="stat-val green">${t.feedbackResolved||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Duyuru</div><div class="stat-val">${t.announcements||0}</div></div>
     </div>
     <div class="dash-grid">
       <div class="dash-card"><div class="dash-card-head">Hata Kategorileri</div><div class="dash-card-body">${catBars||'<div class="empty-state">Veri yok</div>'}</div></div>
@@ -1315,7 +1319,7 @@ async function loadOnay(){
 async function loadAlerts(){
   const alerts=await api('GET','/api/alerts');
   const container=el('alertsContent');
-  ['all','feedback','low_score'].forEach(t=>{const b=el(`alertFilter-${t}`);if(b)b.classList.toggle('active',alertFilter===t);});
+  ['all','feedback','feedback_resolution','announcement','low_score'].forEach(t=>{const b=el(`alertFilter-${t}`);if(b)b.classList.toggle('active',alertFilter===t);});
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Uyarı yok.</div>';return;}
   const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.type===alertFilter);
   if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtrede kayıt yok.</div>';return;}

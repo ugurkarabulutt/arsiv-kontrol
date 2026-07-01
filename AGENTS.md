@@ -242,6 +242,8 @@ tespit edilir).
   `test/quality-regression-cases.test.js` eklendi. `npm.cmd run check` artık bu örneklerde
   yanlış pozitif, eşdeğer apostrof farkı, kelime içi yakalama ve korumalı ifade regresyonlarını
   yakalar.
+- **Feedback çözüm metrikleri:** Dashboard'a çözüm bildirimi ve duyuru sayıları eklendi.
+  Uyarılar ekranında `Çözüm` ve `Duyuru` filtreleriyle admin logları ayrıştırılabilir.
 - **Metin denetim sağlamlığı:** Metin girişi normalize edilir, çok kısa/boş/çok uzun metinler
   hem frontend hem API tarafında denetime gönderilmeden durdurulur. Denetim sırasında çift
   tıklama ile ikinci analiz başlatılması engellenir.

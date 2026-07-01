@@ -755,6 +755,8 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const alerts = alertRows || [];
     const feedbackAlerts = alerts.filter(a => a.type === 'feedback');
     const lowScoreAlerts = alerts.filter(a => a.type === 'low_score');
+    const resolutionAlerts = alerts.filter(a => a.type === 'feedback_resolution');
+    const announcementAlerts = alerts.filter(a => a.type === 'announcement');
     const feedback7 = feedbackAlerts.filter(a => now - new Date(a.created_at).getTime() < 7 * 864e5).length;
     const adminAlertTypes = ['feedback', 'low_score'];
     const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
@@ -785,7 +787,9 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         feedback: feedbackAlerts.length,
         feedback7,
         unreadFeedback,
-        lowScoreAlerts: lowScoreAlerts.length
+        lowScoreAlerts: lowScoreAlerts.length,
+        feedbackResolved: resolutionAlerts.length,
+        announcements: announcementAlerts.length
       },
       perUser: Object.values(perUser).map(u => ({
         name: u.name, count: u.count,

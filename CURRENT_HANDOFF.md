@@ -97,6 +97,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   örneklerinden türeyen kalıcı test datasını tutuyor. `test/quality-regression-cases.test.js`
   bu fixture'ı okuyup `finalizeResult` güvenlik katmanının yanlış pozitifleri skor dışı
   bırakmasını ve güvenli geri almaları doğruluyor.
+- Feedback çözüm görünürlüğü: dashboard çözüm bildirimi ve duyuru sayılarını gösteriyor.
+  Uyarılar ekranında `Çözüm` ve `Duyuru` filtreleri var; admin feedback, çözüm ve duyuru
+  loglarını ayrı ayrı inceleyebilir.
 - Metin denetim sağlamlığı: manuel metin alanında karakter sayısı ve hazır/uyarı durumu
   gösteriliyor. Boş, çok kısa ve çok uzun metinler frontend'de durduruluyor; aynı kontroller
   `/api/analyze`, `/api/analyze-file` ve batch dosya analizinde sunucu tarafında da uygulanıyor.
@@ -142,6 +145,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   kontrolünden geçti.
 - `npm.cmd run check`: başarılı (2026-07-01 Codex regresyon turu). 19/19 test geçti; kalite
   regresyon havuzu fixture'ları otomatik test kapsamına alındı.
+- `npm.cmd run check`: başarılı (2026-07-01 Codex feedback metrik turu). 19/19 test geçti;
+  dashboard çözüm/duyuru metrikleri ve Uyarılar filtreleri frontend parse kontrolünden geçti.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.
