@@ -49,6 +49,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   düzeltildi; sonuç belleği önce sıfırlanır ve yardımcı tek tıkla `Hazır` durumuna döner.
   Yardımcı metinleri `AI hazır`/`Rapor için hazır` diline çekildi, canlı durum noktası daha
   belirgin menekşe AI vurgu rengine alındı.
+- 2026-07-03 Codex mobil menü sadeleştirme turu: Tema değiştirme zaten topbar switchinde olduğu
+  için mobil menü içindeki ikinci `Tema` satırı kaldırıldı. Ayarlar sayfasındaki tema kontrolü
+  korunur; menü tekrarı kaldırılmıştır.
 - 2026-07-03 Codex premium UX/ayarlar turu: Genel font `Noto Sans` oldu; açık/koyu tema,
   buton hover/active durumları, tıklamada parlak geçiş efekti, sol menü katman hissi ve bölüm
   ayraçları iyileştirildi. `Ayarlar` ekranı eklendi; kullanıcı küçük/orta/büyük yazı boyutu
