@@ -1569,19 +1569,38 @@ function fallbackHelperResponse(task, text, result, question) {
   const len = String(text || '').trim().length;
   const totalErrors = Number(result?.totalErrors || 0);
   const score = Number(result?.score || 0);
+  const cats = result?.categories || {};
   const suggestions = [];
   if (len && len < MIN_ANALYSIS_TEXT_CHARS) suggestions.push('Metin çok kısa; daha sağlıklı kontrol için birkaç cümlelik bağlam ekleyin.');
   if (len > 18000) suggestions.push('Metin uzun görünüyor; parça parça denetlemek daha güvenilir sonuç verir.');
   if (String(text || '').includes('\t')) suggestions.push('Tablo veya sütun düzeni olabilir; denetim sonrası düzen karşılaştırmasını mutlaka kontrol edin.');
+  if (/^\s*\d{1,3}\./m.test(String(text || ''))) suggestions.push('Numaralı satırlar var; sıra numaralarının metin standardıyla karışmadığını kontrol edin.');
+  if (String(text || '').split('\n').filter(Boolean).length > 18) suggestions.push('Çok satırlı bir yapı var; paragraf, slayt veya tablo düzeni denetim sonrası karşılaştırılmalı.');
   if (result && totalErrors === 0) suggestions.push('Sonuç temiz görünüyor; yine de düzeltilmiş metin kaynak metinle aynı mı kontrol edin.');
   if (result && totalErrors > 0) suggestions.push(`Sistem ${totalErrors} bulgu göstermiş. Önce anlamı etkileyen düzeltmeleri ve şüpheli kelime dönüşümlerini kontrol edin.`);
   if (result && score < 60) suggestions.push('Skor düşük olduğu için düzeltilmiş metin verilmemiş olabilir; metni bölerek yeniden denemek faydalı olabilir.');
+  const heavyCat = Object.entries(cats).map(([key, value]) => ({ key, count: Number(value?.count || 0) })).sort((a, b) => b.count - a.count)[0];
+  if (heavyCat?.count > 0) suggestions.push(`En yoğun alan ${heavyCat.key}; önce bu kategorideki bulguları inceleyin.`);
   if (!suggestions.length) suggestions.push('Metin denetime hazır görünüyor. Denetim sonrası şüpheli bulguları geri bildirimle işaretleyebilirsiniz.');
+  const taskTitles = {
+    feedback: 'Geri Bildirim Taslağı',
+    explain: 'Sonuç Yorumu',
+    suspect: 'Şüpheli Bulgu Kontrolü',
+    copycheck: 'Kopyalama Kontrolü',
+    prepare: 'Denetim Hazırlığı',
+    ask: 'Denetim Yardımcısı'
+  };
   return {
-    title: task === 'feedback' ? 'Geri Bildirim Taslağı' : task === 'explain' ? 'Sonuç Yorumu' : 'Denetim Yardımcısı',
+    title: taskTitles[task] || 'Denetim Yardımcısı',
     summary: question ? `Sorunuz için mevcut veriye göre kısa değerlendirme hazırlandı: ${question}` : suggestions[0],
     steps: ['Metin yapısı kontrol edildi.', 'Mevcut denetim sonucu değerlendirildi.', 'Kullanıcı için uygulanabilir öneriler çıkarıldı.'],
     suggestions,
+    checks: [
+      len ? `${len.toLocaleString('tr-TR')} karakterlik metin okundu.` : 'Metin girişi yok.',
+      result ? `Son skor ${score}/100 ve ${totalErrors} bulgu üzerinden yorumlandı.` : 'Henüz denetim sonucu yok.',
+      'Kural veya metin üzerinde otomatik değişiklik yapılmadı.'
+    ],
+    nextActions: ['Şüpheli bulgu varsa geri bildirim taslağını kullanın.', 'Düzeltilmiş metni kopyalamadan önce karşılaştırma bölümünü kontrol edin.'],
     feedbackDraft: task === 'feedback' ? 'Bu bulgunun neden hatalı olduğunu düşündüğünüzü, doğru kabul edilmesi gereken yazımı ve sistemin önerdiği yanlış dönüşümü tek cümlede belirtin.' : '',
     riskLevel: result && score < 60 ? 'high' : totalErrors > 0 ? 'medium' : 'low'
   };
@@ -1589,7 +1608,7 @@ function fallbackHelperResponse(task, text, result, question) {
 
 app.post('/api/ai/helper', auth, async (req, res) => {
   try {
-    const task = ['prepare', 'explain', 'feedback', 'ask'].includes(req.body?.task) ? req.body.task : 'ask';
+    const task = ['prepare', 'explain', 'feedback', 'ask', 'suspect', 'copycheck'].includes(req.body?.task) ? req.body.task : 'ask';
     const text = String(req.body?.text || '').slice(0, 12000);
     const question = String(req.body?.question || '').trim().slice(0, 900);
     const result = req.body?.result && typeof req.body.result === 'object' ? req.body.result : null;
@@ -1605,7 +1624,7 @@ app.post('/api/ai/helper', auth, async (req, res) => {
         max_tokens: 1100,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Görevin kullanıcıya ikinci göz olmak, metni denetime hazırlamak, sonucu sade anlatmak ve kaliteli geri bildirim taslağı oluşturmaktır. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular ve geri bildirim netliği konusunda yardımcı ol. JSON döndür: title, summary, steps(array), suggestions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
+          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Görevin kullanıcıya ikinci göz olmak, metni denetime hazırlamak, sonucu sade anlatmak, şüpheli bulguları yakalamak, kopyalama/karşılaştırma kontrolü yaptırmak ve kaliteli geri bildirim taslağı oluşturmaktır. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
           { role: 'user', content: JSON.stringify({ task, question, text, result }).slice(0, 24000) }
         ]
       })

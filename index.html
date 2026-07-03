@@ -608,6 +608,8 @@ canvas{width:100%!important;}
           <div class="assistant-actions">
             <button class="btn-mini" onclick="runHelper('prepare')">Metni Hazırla</button>
             <button class="btn-mini" onclick="runHelper('explain')">Sonucu Açıkla</button>
+            <button class="btn-mini" onclick="runHelper('suspect')">Şüpheli Bulgular</button>
+            <button class="btn-mini" onclick="runHelper('copycheck')">Kopyalama Kontrolü</button>
             <button class="btn-mini" onclick="runHelper('feedback')">Geri Bildirim Taslağı</button>
           </div>
           <div class="assistant-output" id="helperOutput">Metni yapıştırınca ya da denetim sonucu oluşunca ikinci göz olarak yardımcı olur.</div>
@@ -942,7 +944,20 @@ function handleTextInput(){
   else if(count>MAX_TEXT_CHARS){hint='Metin çok uzun; bölerek denetlemek daha güvenli.';cls='err';}
   if(el('textHint'))el('textHint').textContent=hint;
   if(box)box.className=`text-health${cls?' '+cls:''}`;
-  persistWorkDraft();
+  updateHelperNudge(count, cleaned);
+  if(!isRestoringDraft)persistWorkDraft();
+}
+function updateHelperNudge(count,text){
+  const live=el('helperLiveText');
+  const out=el('helperOutput');
+  if(!live||!out||currentResult)return;
+  if(count===0){live.textContent='Hazır';out.textContent='Metni yapıştırınca ya da denetim sonucu oluşunca ikinci göz olarak yardımcı olur.';return;}
+  if(count<MIN_TEXT_CHARS){live.textContent='Bağlam bekliyor';out.textContent='Metin kısa görünüyor. Birkaç cümle daha eklerseniz Denetim Yardımcısı daha sağlıklı hazırlık kontrolü yapabilir.';return;}
+  if(count>MAX_TEXT_CHARS){live.textContent='Bölme önerisi var';out.textContent='Metin sistem sınırını aşıyor. Yardımcıdan metni nasıl bölmeniz gerektiği konusunda öneri alabilirsiniz.';return;}
+  if(count>18000){live.textContent='Uzun metin algılandı';out.textContent='Uzun metinlerde düzen ve kopyalama riski artar. Metni Hazırla ile parça/paragraf kontrolü alabilirsiniz.';return;}
+  if(/\t| {3,}/.test(text)){live.textContent='Düzen izi var';out.textContent='Metinde tablo veya hizalama izi görünüyor. Denetimden önce düzen risklerini kontrol ettirebilirsiniz.';return;}
+  live.textContent='Hazırlık yapabilir';
+  out.textContent='Metin denetime hazır görünüyor. İsterseniz yardımcı önce yapı ve kopyalama risklerini kontrol edebilir.';
 }
 function persistWorkDraft(){
   try{
@@ -1187,17 +1202,59 @@ function setAssistantProcess(targetId,steps,activeIndex=0){
 async function animateAssistantProcess(targetId,steps){
   for(let i=0;i<steps.length;i++){
     setAssistantProcess(targetId,steps,i);
-    await new Promise(resolve=>setTimeout(resolve,420));
+    await new Promise(resolve=>setTimeout(resolve,360+Math.floor(Math.random()*220)));
   }
   setAssistantProcess(targetId,steps,steps.length);
+}
+function pickOne(list){return list[Math.floor(Math.random()*list.length)];}
+function buildLiveSteps(context='helper',task='ask',text='',result=null,question=''){
+  const len=cleanInputText(text).length;
+  const score=Number(result?.score||0);
+  const errors=Number(result?.totalErrors||0);
+  const hasResult=Boolean(result);
+  const longText=len>12000;
+  const hasLayout=/\t| {3,}|\n.{0,80}\n.{0,80}\n/.test(String(text||''));
+  const opening=[
+    longText?'Uzun metin parçalara ayrılarak okunuyor':'Metnin bağlamı okunuyor',
+    hasResult?'Son denetim sonucu belleğe alınıyor':'Denetim öncesi yapı taranıyor',
+    question?'Sorudaki niyet ayrıştırılıyor':'İşlem amacı netleştiriliyor'
+  ];
+  const middleByTask={
+    prepare:[hasLayout?'Satır, tablo ve kopyalama izleri kontrol ediliyor':'Paragraf ve soru-cevap akışı inceleniyor','Denetime engel olabilecek riskler seçiliyor'],
+    explain:[`Skor ${score}/100 üzerinden yorumlanıyor`,`${errors} bulgu önem sırasına alınıyor`,'Kullanıcının önce bakacağı noktalar ayrılıyor'],
+    feedback:['Hatalı olabilecek bulgunun bağlamı toparlanıyor','Ekip için net teknik ifade hazırlanıyor','Yanlış pozitif ihtimali ayrıştırılıyor'],
+    suspect:['Anlamı değiştirebilecek dönüşümler aranıyor','Sure, sözlük ve noktalama bulguları ayrılıyor','Şüpheli görünen noktalar önceliklendiriliyor'],
+    copycheck:['Kopyalanacak metin ve kaynak karşılaştırılıyor','Sonuç kaybı veya düzen bozulması riski kontrol ediliyor','Kopyalama/PDF için güvenli adımlar hazırlanıyor'],
+    ask:['Metin, sonuç ve sorunuz birlikte değerlendiriliyor','Kural sınırları korunarak yanıt hazırlanıyor','Uygulanabilir öneriler seçiliyor']
+  };
+  const closing=[
+    'Kısa ve uygulanabilir yanıt hazırlanıyor',
+    'Gereksiz teknik ayrıntılar ayıklanıyor',
+    'Son kontrol yapılıyor'
+  ];
+  const steps=[pickOne(opening),...(middleByTask[task]||middleByTask.ask),pickOne(closing)];
+  if(context==='admin'){
+    const adminOpen=['Operasyon verisi okunuyor','Geri bildirim akışı taranıyor','Ekip aktivitesi değerlendiriliyor'];
+    const adminMid=task==='report'
+      ?['Dönem metrikleri gruplanıyor','Riskler ve katkı sinyalleri ayrılıyor','Yönetim özeti oluşturuluyor']
+      :['Soru operasyon verisine bağlanıyor','Skor, feedback ve çözüm kayıtları birlikte okunuyor','Öneriler etki sırasına alınıyor'];
+    return [pickOne(adminOpen),...adminMid,pickOne(closing)];
+  }
+  return steps.slice(0,5);
 }
 function renderAssistantAnswer(answer){
   const a=answer||{};
   const suggestions=Array.isArray(a.suggestions)?a.suggestions:[];
   const steps=Array.isArray(a.steps)?a.steps:[];
+  const checks=Array.isArray(a.checks)?a.checks:[];
+  const nextActions=Array.isArray(a.nextActions)?a.nextActions:[];
+  const risk=a.riskLevel==='high'?'Yüksek dikkat':a.riskLevel==='medium'?'Kontrol gerekli':'Düşük risk';
   return `<strong>${esc(a.title||'Denetim Yardımcısı')}</strong><br>${esc(a.summary||'Kısa değerlendirme hazır.')}
+    <div style="margin-top:8px"><span class="status-chip ${a.riskLevel==='low'?'resolved':''}">${risk}</span></div>
     ${steps.length?`<ul class="assistant-list">${steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}
+    ${checks.length?`<div style="margin-top:8px"><strong>Kontrol edilenler</strong><ul class="assistant-list">${checks.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
     ${suggestions.length?`<div style="margin-top:8px"><strong>Öneriler</strong><ul class="assistant-list">${suggestions.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
+    ${nextActions.length?`<div style="margin-top:8px"><strong>Sonraki adım</strong><ul class="assistant-list">${nextActions.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
     ${a.feedbackDraft?`<div style="margin-top:8px"><strong>Geri bildirim taslağı</strong><br>${esc(a.feedbackDraft)}</div>`:''}`;
 }
 async function runHelper(task){
@@ -1208,13 +1265,7 @@ async function runHelper(task){
   if(!text&&!currentResult&&!question){out.textContent='Önce metin girin, denetim yapın veya yardımcıya soru yazın.';return;}
   if(live)live.textContent='Çalışıyor';
   out.innerHTML='<div id="helperProcess" class="assistant-steps"></div>';
-  const steps=task==='prepare'
-    ?['Metin uzunluğu ve yapı okunuyor','Kopyalama/düzen riskleri kontrol ediliyor','Denetime hazırlık önerileri çıkarılıyor']
-    :task==='feedback'
-      ?['Sorun bağlamı toparlanıyor','Geri bildirim netleştiriliyor','Ekip için temiz taslak hazırlanıyor']
-      :task==='explain'
-        ?['Sonuç skoru okunuyor','Bulgular önem sırasına alınıyor','Kullanıcı için kısa açıklama hazırlanıyor']
-        :['Sorunuz anlaşılıyor','Mevcut metin ve sonuç birlikte değerlendiriliyor','Yanıt hazırlanıyor'];
+  const steps=buildLiveSteps('helper',task,text,currentResult,question);
   const animation=animateAssistantProcess('helperProcess',steps);
   try{
     const r=await api('POST','/api/ai/helper',{task,text,result:currentResult,question});
@@ -1744,7 +1795,7 @@ async function loadAiReports(){
 async function generateAiReport(period){
   const st=el('aiStatus'); if(st){st.textContent='Canlı rapor hazırlanıyor...';st.className='status-msg';}
   el('aiAnswer').textContent='Operasyon verisi okunuyor ve rapor hazırlanıyor.';
-  const animation=animateAssistantProcess('adminAiProcess',['Dönem verisi toplanıyor','Geri bildirim ve skorlar değerlendiriliyor','Yönetim özeti hazırlanıyor']);
+  const animation=animateAssistantProcess('adminAiProcess',buildLiveSteps('admin','report','','',period));
   const r=await api('POST','/api/ai/reports/generate',{period});
   await animation;
   if(r.error){if(st){st.textContent=r.error;st.className='status-msg err';}return;}
@@ -1760,7 +1811,7 @@ async function askAiAssistant(){
   if(!q){if(st){st.textContent='Soru yazın.';st.className='status-msg err';}return;}
   if(st){st.textContent='Canlı değerlendirme hazırlanıyor...';st.className='status-msg';}
   el('aiAnswer').textContent='Sorunuz değerlendiriliyor.';
-  const animation=animateAssistantProcess('adminAiProcess',['Sorunuz ayrıştırılıyor','Operasyon metrikleri okunuyor','Risk ve öneriler çıkarılıyor','Yanıt sadeleştiriliyor']);
+  const animation=animateAssistantProcess('adminAiProcess',buildLiveSteps('admin','ask','',null,q));
   const r=await api('POST','/api/ai/insight',{question:q,period:v('aiPeriod')});
   await animation;
   if(r.error){el('aiAnswer').textContent=r.error;if(st){st.textContent='';}return;}

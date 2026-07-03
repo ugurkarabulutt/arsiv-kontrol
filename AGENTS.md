@@ -125,6 +125,11 @@ tespit edilir).
   "metin okunuyor / bulgular değerlendiriliyor / öneriler çıkarılıyor" gibi süreç adımları,
   canlı nokta animasyonu ve tamamlandı durumları gösterilir. Admin AI rapor ve soru ekranı da
   aynı süreç panelini kullanır; kullanıcıya `4o mini çalışıyor` gibi teknik ifade gösterilmez.
+- **Denetim Yardımcısı gelişmiş görevleri:** Yardımcıya `Şüpheli Bulgular` ve `Kopyalama
+  Kontrolü` görevleri eklendi. Backend yanıtları artık `checks` ve `nextActions` alanlarını da
+  destekler. Frontend canlı süreç adımları sabit metinlerden çıkarıldı; görev tipi, metin
+  uzunluğu, düzen izleri, skor, hata sayısı ve soru bağlamına göre farklı adımlar seçer.
+  Böylece kullanıcı/admin tarafında aynı cümlelerin sürekli dönmesi engellenir.
 - **Premium UX ve okunurluk turu:** Uygulama fontu `Noto Sans` olarak değiştirildi; yaşça büyük
   kullanıcılar için daha okunur ve yüksek kontrastlı metin yapısı hedeflendi. Açık/koyu tema
   paletleri daha premium, daha az parlak ve daha katmanlı hale getirildi. Sol menü beyaz düz
