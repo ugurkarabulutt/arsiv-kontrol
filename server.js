@@ -796,11 +796,42 @@ app.post('/api/history/:id/reject',  auth, admin, (req, res) => setApproval(req,
 // ── ALERTS ────────────────────────────────────────────────────────────────
 app.get('/api/alerts', auth, admin, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(50);
+    const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);
     if (error) throw new Error(error.message);
     res.json((data || []).map(mapAlert));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+app.get('/api/notification-log', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const { data: notices, error } = await supabase.from('alerts')
+      .select('*')
+      .in('type', USER_NOTICE_TYPES)
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    const userIds = [...new Set((notices || []).map(n => n.user_id).filter(Boolean))];
+    const usersById = new Map();
+    if (userIds.length) {
+      const { data: users, error: usersError } = await supabase.from('users')
+        .select('id,name,username')
+        .in('id', userIds);
+      if (usersError) throw new Error(usersError.message);
+      (users || []).forEach(u => usersById.set(u.id, u));
+    }
+
+    res.json((notices || []).map(n => {
+      const user = usersById.get(n.user_id);
+      return {
+        ...mapAlert(n),
+        recipientName: user?.name || user?.username || 'Bilinmeyen kullanıcı',
+        recipientUsername: user?.username || ''
+      };
+    }));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/alerts/:id/read', auth, admin, async (req, res) => {
   try {
     const { error } = await supabase.from('alerts').update({ read: true }).eq('id', req.params.id).in('type', ['feedback', 'low_score']);
@@ -810,7 +841,7 @@ app.post('/api/alerts/:id/read', auth, admin, async (req, res) => {
 });
 app.post('/api/alerts/read-all', auth, admin, async (req, res) => {
   try {
-    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false).in('type', ['feedback', 'low_score']);
+    const { error } = await supabase.from('alerts').update({ read: true }).eq('read', false).in('type', ['low_score']);
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -879,7 +910,7 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
     if (!cleanNote) return res.status(400).json({ error: 'Çözüm notu gerekli.' });
 
     const { data: rows, error: rowsError } = await supabase.from('alerts')
-      .select('*, users:user_id(id,name,username)')
+      .select('*')
       .in('id', ids)
       .eq('type', 'feedback');
     if (rowsError) throw new Error(rowsError.message);
@@ -898,11 +929,22 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
       byUser.get(key).push(alert);
     });
 
+    const userIds = [...byUser.keys()];
+    const usersById = new Map();
+    if (userIds.length) {
+      const { data: users, error: usersError } = await supabase.from('users')
+        .select('id,name,username')
+        .in('id', userIds);
+      if (usersError) throw new Error(usersError.message);
+      (users || []).forEach(u => usersById.set(u.id, u));
+    }
+
     const groupId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const notices = [];
     for (const [userId, items] of byUser.entries()) {
       const first = items[0];
-      const userName = first.users?.name || first.users?.username || 'kardeşimiz';
+      const user = usersById.get(userId);
+      const userName = user?.name || user?.username || 'kardeşimiz';
       notices.push({
         type: 'feedback_resolution',
         message: buildFeedbackResolutionMessage(userName, items, cleanNote),

@@ -115,6 +115,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Operasyon paneli UX dönüşümü:** Masaüstünde üst navigasyon yerine sol menülü panel
+  düzenine geçildi. Denetim, Operasyon ve Yönetim başlıkları altında ilgili ekranlar
+  gruplanır; mobil hamburger menü korunur. Bu düzen ileride e-tablo, IbrahimLive.com ve
+  IbrahimLive.ai entegrasyonları için üst barın taşmasını engeller.
+- **Geri Bildirim Merkezi:** Feedback kayıtları Uyarılar ekranından ayrıldı ve ayrı
+  "Geri Bildirim Merkezi" ekranına taşındı. Uyarılar ekranı düşük skor/duyuru gibi sistem
+  olaylarına daraltıldı. Geri Bildirim Merkezi seçili kayıtları çözüm bildirimiyle kapatır
+  ve "Codex Paketi" aksiyonuyla açık feedbacklerden kod çözüm turuna aktarılacak çalışma
+  metnini panoya kopyalar.
+- **Süper admin mesaj kayıtları:** Süper admine özel `GET /api/notification-log` eklendi.
+  "Mesaj Kayıtları" ekranı kullanıcılara gönderilen `announcement` ve `feedback_resolution`
+  bildirimlerini alıcı adı, kullanıcı adı, tarih ve tam mesaj metniyle gösterir. Normal admin
+  bu ekranı göremez.
+- **Toplu çözüm endpoint düzeltmesi:** Canlı Supabase ilişki cache'ine bağlı embed sorgusu
+  kaldırıldı; `/api/alerts/resolve-bulk` artık kullanıcı adlarını ayrı sorguyla alır. Bu,
+  panelden toplu çözüm bildirimi gönderimini canlı DB'de güvenilir hale getirir.
+- **Test:** `npm.cmd run check` başarılı; 39/39 test geçti ve frontend parse kontrolü tamamlandı.
 - **Sorun/çözüm kayıt defteri:** `issue_resolution_log` tablosu eklendi. Tekil veya toplu
   feedback çözümü yapıldığında çözüm turu kısa başlık, özet, çözülen feedback sayısı,
   etkilenen kullanıcı sayısı, çözen kişi ve tarih ile kayıt altına alınır. Admin dashboard'da

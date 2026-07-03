@@ -121,6 +121,12 @@ body{background:var(--bg);color:var(--ink);font-family:'Crimson Pro',Georgia,ser
 .theme-mobile .theme-mini-switch::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--topbar-fg);transition:transform .18s;}
 :root[data-theme="dark"] .theme-mobile .theme-mini-switch::after{transform:translateX(20px);}
 .badge-m{background:var(--red);color:white;font-size:9px;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 4px;}
+.side-nav{display:none;}
+.side-section-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.9px;text-transform:uppercase;color:var(--ink3);padding:14px 14px 6px;}
+.side-link{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent;border:0;border-left:3px solid transparent;color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:12px;text-align:left;padding:10px 14px 10px 11px;cursor:pointer;}
+.side-link:hover{background:var(--bg2);color:var(--ink);}
+.side-link.active-tab{background:var(--gold-bg);border-left-color:var(--gold);color:var(--ink);font-weight:600;}
+.side-link .badge{position:static;width:auto;min-width:17px;height:17px;padding:0 5px;}
 .app-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tab-content{display:none;max-width:1160px;margin:0 auto;padding:24px 16px;}
 .tab-content.active{display:block;}
@@ -364,6 +370,8 @@ canvas{width:100%!important;}
 @media(max-width:700px){
   .topbar-user{display:none;}
   .desktop-nav{display:none !important;}
+  .side-nav{display:none !important;}
+  .app-body{margin-left:0 !important;}
   .hamburger{display:flex;}
   .tab-content{padding:16px 12px;}
   .score-row{grid-template-columns:repeat(3,1fr);}
@@ -379,6 +387,12 @@ canvas{width:100%!important;}
 @media(max-width:420px){
   .score-row{grid-template-columns:repeat(2,1fr);}
   .btn-primary{font-size:11px;padding:11px 14px;}
+}
+@media(min-width:701px){
+  .desktop-nav{display:none !important;}
+  .side-nav{display:block;position:fixed;top:var(--topbar-h);left:0;bottom:0;width:236px;background:var(--white);border-right:1px solid var(--bord2);overflow-y:auto;z-index:20;padding:12px 0 24px;}
+  .app-body{margin-left:236px;}
+  .tab-content{max-width:1180px;padding:28px 24px;}
 }
 </style>
 </head>
@@ -438,13 +452,34 @@ canvas{width:100%!important;}
       <button class="btn-mobile" onclick="mNav('profil')">Profilim</button>
       <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
       <button class="btn-mobile admin-only" id="mBtnOnay" onclick="mNav('onay')" style="display:none">Onaylar <span class="badge-m" id="mOnayBadge" style="display:none">0</span></button>
-      <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Uyarılar <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
+      <button class="btn-mobile admin-only" onclick="mNav('feedback')" style="display:none">Geri Bildirim Merkezi</button>
+      <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Sistem Uyarıları <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
+      <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
       <button class="btn-mobile theme-mobile" id="themeToggleMobile" onclick="toggleTheme()"><span>Tema</span><span class="theme-mini-switch"></span></button>
       <button class="btn-mobile" onclick="doLogout()" style="color:#e08080;margin-top:8px">Çıkış Yap</button>
     </div>
   </div>
+
+  <aside class="side-nav">
+    <div class="side-section-label">Denetim</div>
+    <button class="side-link" data-tab="analiz" onclick="showTab('analiz')"><span>Metin Denetimi</span></button>
+    <button class="side-link" data-tab="gecmis" onclick="showTab('gecmis')"><span>Denetim Geçmişi</span></button>
+    <button class="side-link" data-tab="bildirim" onclick="showTab('bildirim')"><span>Bildirimlerim</span><span class="badge" id="sideNoticeBadge" style="display:none">0</span></button>
+
+    <div class="side-section-label admin-only" style="display:none">Operasyon</div>
+    <button class="side-link admin-only" data-tab="dash" onclick="showTab('dash')" style="display:none"><span>Dashboard</span></button>
+    <button class="side-link admin-only" data-tab="onay" onclick="showTab('onay')" style="display:none"><span>İş Panosu</span><span class="badge" id="sideOnayBadge" style="display:none">0</span></button>
+    <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
+    <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyarıları</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
+
+    <div class="side-section-label admin-only" style="display:none">Yönetim</div>
+    <button class="side-link admin-only" data-tab="kullanici" onclick="showTab('kullanici')" style="display:none"><span>Kullanıcılar</span></button>
+    <button class="side-link admin-only" data-tab="kurallar" onclick="showTab('kurallar')" style="display:none"><span>Kurallar</span></button>
+    <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kayıtları</span></button>
+    <button class="side-link" data-tab="profil" onclick="showTab('profil')"><span>Profilim</span></button>
+  </aside>
 
   <div class="app-body">
     <div class="tab-content active" id="tabContent-analiz">
@@ -561,18 +596,31 @@ canvas{width:100%!important;}
 
     <div class="tab-content" id="tabContent-alerts">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div><div class="page-title">Uyarılar ve Geri Bildirimler</div><div class="page-sub">Düşük skorlar ve ekipten gelen sonuç bildirimleri</div></div>
+        <div><div class="page-title">Sistem Uyarıları</div><div class="page-sub">Düşük skorlar ve teknik operasyon uyarıları</div></div>
         <button class="btn-sec" onclick="readAllAlerts()">Tümünü Okundu</button>
       </div>
       <div class="divider"></div>
       <div class="alert-filters">
-        <button class="btn-mini alert-filter active" id="alertFilter-all" onclick="setAlertFilter('all')">Tümü</button>
-        <button class="btn-mini alert-filter" id="alertFilter-feedback" onclick="setAlertFilter('feedback')">Geri Bildirim</button>
-        <button class="btn-mini alert-filter" id="alertFilter-feedback_resolution" onclick="setAlertFilter('feedback_resolution')">Çözüm</button>
+        <button class="btn-mini alert-filter active" id="alertFilter-low_score" onclick="setAlertFilter('low_score')">Düşük Skor</button>
         <button class="btn-mini alert-filter" id="alertFilter-announcement" onclick="setAlertFilter('announcement')">Duyuru</button>
-        <button class="btn-mini alert-filter" id="alertFilter-low_score" onclick="setAlertFilter('low_score')">Düşük Skor</button>
       </div>
       <div id="alertsContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <div class="tab-content" id="tabContent-feedback">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div><div class="page-title">Geri Bildirim Merkezi</div><div class="page-sub">Ekipten gelen hata bildirimleri, çözüm kuyruğu ve Codex çalışma paketi</div></div>
+        <button class="btn-sec" onclick="copyFeedbackWorkPackage()">Sorunları Çöz İçin Paketi Kopyala</button>
+      </div>
+      <div class="divider"></div>
+      <div id="feedbackContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <div class="tab-content" id="tabContent-msglog">
+      <div class="page-title">Mesaj Kayıtları</div>
+      <div class="page-sub">Süper admin görünümü: kullanıcılara gönderilen duyuru ve çözüm bildirimleri</div>
+      <div class="divider"></div>
+      <div id="msgLogContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
     <div class="tab-content" id="tabContent-kullanici">
@@ -752,14 +800,17 @@ function mNav(tab){closeMobileMenu();showTab(tab);}
 
 function showTab(name){
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.btn-top,.btn-mobile').forEach(e=>e.classList.remove('active-tab'));
+  document.querySelectorAll('.btn-top,.btn-mobile,.side-link').forEach(e=>e.classList.remove('active-tab'));
   el(`tabContent-${name}`).classList.add('active');
   const cap=name.charAt(0).toUpperCase()+name.slice(1);
   const b=el(`tabBtn${cap}`);if(b)b.classList.add('active-tab');
+  document.querySelectorAll(`.side-link[data-tab="${name}"]`).forEach(e=>e.classList.add('active-tab'));
   if(name==='gecmis')loadHistory();
   if(name==='dash')loadDash();
   if(name==='onay')loadOnay();
-  if(name==='alerts')loadAlerts();
+  if(name==='feedback')loadFeedbackCenter();
+  if(name==='alerts'){alertFilter='low_score';loadAlerts();}
+  if(name==='msglog')loadMessageLog();
   if(name==='bildirim')loadMyNotifications();
   if(name==='kullanici')loadUsers();
   if(name==='kurallar')loadRules();
@@ -1406,10 +1457,23 @@ async function loadOnay(){
 async function loadAlerts(){
   const alerts=await api('GET','/api/alerts');
   const container=el('alertsContent');
-  ['all','feedback','feedback_resolution','announcement','low_score'].forEach(t=>{const b=el(`alertFilter-${t}`);if(b)b.classList.toggle('active',alertFilter===t);});
+  ['announcement','low_score'].forEach(t=>{const b=el(`alertFilter-${t}`);if(b)b.classList.toggle('active',alertFilter===t);});
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Uyarı yok.</div>';return;}
-  const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.type===alertFilter);
+  const filtered=alerts.filter(a=>a.type===alertFilter);
   if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtrede kayıt yok.</div>';return;}
+  renderAlertItems(container, filtered, false);
+}
+
+async function loadFeedbackCenter(){
+  const alerts=await api('GET','/api/alerts');
+  const container=el('feedbackContent');
+  if(!alerts?.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
+  const filtered=alerts.filter(a=>a.type==='feedback');
+  if(!filtered.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
+  renderAlertItems(container, filtered, true);
+}
+
+function renderAlertItems(container, filtered, showFeedbackToolbar){
   const visibleFeedbackIds=new Set(filtered.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved').map(a=>a.id));
   selectedFeedbackIds=new Set([...selectedFeedbackIds].filter(id=>visibleFeedbackIds.has(id)));
   function alertBody(a){
@@ -1427,10 +1491,11 @@ async function loadAlerts(){
     <div class="alert-filters" style="margin-bottom:0">
       <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(true)">Görünenleri Seç</button>
       <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(false)">Seçimi Temizle</button>
+      <button class="btn-mini" onclick="copyFeedbackWorkPackage()">Codex Paketi</button>
     </div>
     <button class="btn-green" style="padding:5px 10px;font-size:10px" onclick="resolveSelectedFeedback()">Seçilenleri Çözüldü Bildir (${selectedFeedbackIds.size})</button>
   </div>`;
-  container.innerHTML=`${filtered.some(a=>a.type==='feedback')?toolbar:''}<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
+  container.innerHTML=`${showFeedbackToolbar&&filtered.some(a=>a.type==='feedback')?toolbar:''}<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
     <div class="alert-item ${!a.read&&['feedback','low_score'].includes(a.type)?'unread':''}">
       ${a.type==='feedback'?`<input class="alert-select" type="checkbox" data-id="${a.id}" ${a.feedbackStatus==='resolved'?'disabled':''} ${selectedFeedbackIds.has(a.id)?'checked':''} onchange="toggleFeedbackSelection('${a.id}',this.checked)">`:''}
       <div class="alert-dot ${a.read||!['feedback','low_score'].includes(a.type)?'read':''}"></div>
@@ -1480,6 +1545,38 @@ async function resolveSelectedFeedback(){
   setStatus(`✓ ${r.feedbackCount} geri bildirim çözüldü, ${r.userCount} kullanıcıya kişisel teşekkür bildirimi gönderildi.`,'ok');
   loadAlerts();loadDash();refreshBadges();
   setTimeout(()=>setStatus('',''),3000);
+}
+async function copyFeedbackWorkPackage(){
+  const alerts=await api('GET','/api/alerts');
+  if(alerts.error){setStatus(alerts.error,'err');return;}
+  const items=(alerts||[]).filter(a=>a.type==='feedback' && (!selectedFeedbackIds.size || selectedFeedbackIds.has(a.id)) && a.feedbackStatus!=='resolved').slice(0,30);
+  if(!items.length){setStatus('Çözüm paketi için açık geri bildirim bulunamadı.','err');return;}
+  const body=[
+    'Arşiv Kontrol AI geri bildirim çözüm paketi',
+    '',
+    'Amaç: Aşağıdaki canlı kullanıcı geri bildirimlerini doğrula, gerçek hataları kod/test ile düzelt, doğru kabul edilenleri ayrı raporla.',
+    '',
+    ...items.map((a,i)=>`${i+1}. ID: ${a.id}\n${String(a.message||'').split(' | ').join('\n')}\nDurum: ${a.feedbackStatus||'open'}\n`)
+  ].join('\n');
+  await navigator.clipboard.writeText(body);
+  setStatus(`✓ ${items.length} geri bildirimlik Codex çözüm paketi panoya kopyalandı.`,'ok');
+  setTimeout(()=>setStatus('',''),3000);
+}
+
+async function loadMessageLog(){
+  const rows=await api('GET','/api/notification-log');
+  const container=el('msgLogContent');
+  if(rows.error){container.innerHTML=`<div class="empty-state">${esc(rows.error)}</div>`;return;}
+  if(!rows.length){container.innerHTML='<div class="empty-state">Mesaj kaydı yok.</div>';return;}
+  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${rows.map(r=>`
+    <div class="alert-item">
+      <div class="alert-type ${r.type==='feedback_resolution'?'feedback':''}">${r.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
+      <div class="alert-msg">
+        <div><strong>Alıcı:</strong> ${esc(r.recipientName||'—')} ${r.recipientUsername?`<span class="mono" style="font-size:10px;color:var(--ink3)">(${esc(r.recipientUsername)})</span>`:''}</div>
+        <div style="margin-top:6px;white-space:pre-line">${esc(r.message||'')}</div>
+      </div>
+      <div class="alert-time">${new Date(r.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+    </div>`).join('')}</div>`;
 }
 
 function messageFields(message){
@@ -1572,14 +1669,15 @@ async function refreshNoticeBadge(){
   const notices=await api('GET','/api/my-notifications');
   if(notices.error)return;
   const unread=(notices||[]).filter(n=>!n.read).length;
-  ['noticeBadge','mNoticeBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=unread>0?'':'none';e.textContent=unread>9?'9+':unread;}});
+  ['noticeBadge','mNoticeBadge','sideNoticeBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=unread>0?'':'none';e.textContent=unread>9?'9+':unread;}});
 }
 
 async function refreshBadges(){
   const stats=await api('GET','/api/stats');if(stats.error)return;
-  const ua=stats.totals.unreadAlerts,pa=stats.totals.pendingApproval;
-  ['alertBadge','mAlertBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=ua>0?'':'none';e.textContent=ua>9?'9+':ua;}});
-  ['onayBadge','mOnayBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=pa>0?'':'none';e.textContent=pa>9?'9+':pa;}});
+  const ua=stats.totals.unreadAlerts,pa=stats.totals.pendingApproval,fo=stats.totals.feedbackOpen||0;
+  ['alertBadge','mAlertBadge','sideAlertBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=ua>0?'':'none';e.textContent=ua>9?'9+':ua;}});
+  ['onayBadge','mOnayBadge','sideOnayBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=pa>0?'':'none';e.textContent=pa>9?'9+':pa;}});
+  ['sideFeedbackBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=fo>0?'':'none';e.textContent=fo>9?'9+':fo;}});
 }
 
 async function loadUsers(){
