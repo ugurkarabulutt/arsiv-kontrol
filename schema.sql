@@ -98,6 +98,7 @@ create table if not exists public.ai_reports (
 );
 create index if not exists ai_reports_created_at_idx on public.ai_reports (created_at desc);
 create index if not exists ai_reports_period_idx on public.ai_reports (period, created_at desc);
+create unique index if not exists ai_reports_period_range_idx on public.ai_reports (period, period_start, period_end);
 
 -- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
 alter table public.alerts add column if not exists feedback_status text default 'open';

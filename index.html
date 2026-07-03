@@ -659,8 +659,8 @@ canvas{width:100%!important;}
 
     <div class="tab-content" id="tabContent-feedback">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div><div class="page-title">Geri Bildirim Merkezi</div><div class="page-sub">Ekipten gelen hata bildirimleri, çözüm kuyruğu ve Codex çalışma paketi</div></div>
-        <button class="btn-sec" onclick="copyFeedbackWorkPackage()">Sorunları Çöz İçin Paketi Kopyala</button>
+        <div><div class="page-title">Geri Bildirim Merkezi</div><div class="page-sub">Ekipten gelen hata bildirimleri, çözüm kuyruğu ve PDF çalışma paketi</div></div>
+        <button class="btn-sec" onclick="downloadFeedbackWorkPackage()">Sorunları Çöz PDF İndir</button>
       </div>
       <div class="divider"></div>
       <div id="feedbackContent"><div class="empty-state">Yükleniyor...</div></div>
@@ -1592,7 +1592,7 @@ function renderAlertItems(container, filtered, showFeedbackToolbar){
     <div class="alert-filters" style="margin-bottom:0">
       <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(true)">Görünenleri Seç</button>
       <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(false)">Seçimi Temizle</button>
-      <button class="btn-mini" onclick="copyFeedbackWorkPackage()">Codex Paketi</button>
+      <button class="btn-mini" onclick="downloadFeedbackWorkPackage()">PDF Paket</button>
     </div>
     <button class="btn-green" style="padding:5px 10px;font-size:10px" onclick="resolveSelectedFeedback()">Seçilenleri Çözüldü Bildir (${selectedFeedbackIds.size})</button>
   </div>`;
@@ -1647,21 +1647,29 @@ async function resolveSelectedFeedback(){
   loadAlerts();loadDash();refreshBadges();
   setTimeout(()=>setStatus('',''),3000);
 }
-async function copyFeedbackWorkPackage(){
+async function downloadFeedbackWorkPackage(){
   const alerts=await api('GET','/api/alerts');
   if(alerts.error){setStatus(alerts.error,'err');return;}
   const items=(alerts||[]).filter(a=>a.type==='feedback' && (!selectedFeedbackIds.size || selectedFeedbackIds.has(a.id)) && a.feedbackStatus!=='resolved').slice(0,30);
-  if(!items.length){setStatus('Çözüm paketi için açık geri bildirim bulunamadı.','err');return;}
-  const body=[
-    'Arşiv Kontrol AI geri bildirim çözüm paketi',
-    '',
-    'Amaç: Aşağıdaki canlı kullanıcı geri bildirimlerini doğrula, gerçek hataları kod/test ile düzelt, doğru kabul edilenleri ayrı raporla.',
-    '',
-    ...items.map((a,i)=>`${i+1}. ID: ${a.id}\n${String(a.message||'').split(' | ').join('\n')}\nDurum: ${a.feedbackStatus||'open'}\n`)
-  ].join('\n');
-  await navigator.clipboard.writeText(body);
-  setStatus(`✓ ${items.length} geri bildirimlik Codex çözüm paketi panoya kopyalandı.`,'ok');
-  setTimeout(()=>setStatus('',''),3000);
+  if(!items.length){setStatus('PDF paketi için açık geri bildirim bulunamadı.','err');return;}
+  setStatus('Geri bildirim PDF paketi hazırlanıyor...','');
+  try{
+    const response=await fetch('/api/feedback/work-package.pdf',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ids:items.map(a=>a.id)})
+    });
+    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||'PDF paketi oluşturulamadı.');}
+    const blob=await response.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='geri-bildirim-cozum-paketi-'+new Date().toISOString().slice(0,10)+'.pdf';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    setStatus(`✓ ${items.length} geri bildirimlik PDF paket indirildi.`,'ok');
+    setTimeout(()=>setStatus('',''),3000);
+  }catch(e){setStatus(e.message,'err');}
 }
 
 async function loadMessageLog(){

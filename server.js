@@ -760,6 +760,78 @@ app.post('/api/pdf', auth, async (req, res) => {
   }
 });
 
+app.post('/api/feedback/work-package.pdf', auth, admin, async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(String).filter(Boolean).slice(0, 100) : [];
+    let query = supabase.from('alerts')
+      .select('*')
+      .eq('type', 'feedback')
+      .order('created_at', { ascending: false })
+      .limit(80);
+    if (ids.length) query = query.in('id', ids);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const items = (rows || []).filter(a => a.feedback_status !== 'resolved').slice(0, 50);
+    if (!items.length) return res.status(400).json({ error: 'PDF paketi için açık geri bildirim bulunamadı.' });
+
+    const userIds = [...new Set(items.map(a => a.user_id).filter(Boolean))];
+    const usersById = new Map();
+    if (userIds.length) {
+      const { data: users, error: usersError } = await supabase.from('users')
+        .select('id,name,username')
+        .in('id', userIds);
+      if (usersError) throw new Error(usersError.message);
+      (users || []).forEach(u => usersById.set(u.id, u));
+    }
+
+    const fontPath = require.resolve('@fontsource/noto-serif/files/noto-serif-latin-ext-400-normal.woff');
+    const filename = `geri-bildirim-cozum-paketi-${new Date().toISOString().slice(0, 10)}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 48, right: 48, bottom: 54, left: 48 } });
+    doc.on('error', err => { if (!res.headersSent) res.status(500).json({ error: err.message }); else res.destroy(err); });
+    doc.pipe(res);
+
+    doc.font(fontPath).fillColor('#1a1410').fontSize(18).text('Arşiv Kontrol AI - Geri Bildirim Çözüm Paketi');
+    doc.moveDown(0.4).fontSize(9).fillColor('#6f6558')
+      .text(`Hazırlayan: ${req.session.name || req.session.username || 'Admin'}   Tarih: ${new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}`);
+    doc.moveDown(0.7).fontSize(10).fillColor('#1a1410')
+      .text('Amaç: Aşağıdaki canlı kullanıcı geri bildirimlerini doğrulamak, gerçek hataları düzeltmek ve sonuçları kullanıcıya geri bildirmek.', { lineGap: 3 });
+    doc.moveDown(0.5).fontSize(10).text(`Toplam açık geri bildirim: ${items.length}`);
+    doc.moveDown(0.8);
+
+    items.forEach((item, index) => {
+      if (doc.y > 700) doc.addPage();
+      const user = usersById.get(item.user_id);
+      const who = user?.name || user?.username || 'Bilinmeyen kullanıcı';
+      const fields = String(item.message || '').split(' | ').map(part => {
+        const idx = part.indexOf(':');
+        return idx > 0 ? [part.slice(0, idx).trim(), part.slice(idx + 1).trim()] : ['Not', part.trim()];
+      }).filter(([, value]) => value);
+
+      doc.roundedRect(44, doc.y, 507, 1, 0).fill('#d8c7a6');
+      doc.moveDown(0.7).fillColor('#1a1410').fontSize(12).text(`${index + 1}. Geri Bildirim`, { continued: true });
+      doc.fontSize(9).fillColor('#6f6558').text(`   ID: ${item.id}`);
+      doc.moveDown(0.25).fillColor('#1a1410').fontSize(9)
+        .text(`Kullanıcı: ${who}${user?.username ? ` (${user.username})` : ''}`, { lineGap: 2 })
+        .text(`Tarih: ${new Date(item.created_at).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}`, { lineGap: 2 })
+        .text(`Skor: ${item.score ?? '-'}   Durum: ${item.feedback_status || 'open'}`, { lineGap: 2 });
+      fields.forEach(([label, value]) => {
+        doc.moveDown(0.15).fillColor('#1a1410').fontSize(9).text(`${label}:`, { continued: true });
+        doc.fillColor('#352a20').text(` ${value}`, { lineGap: 3 });
+      });
+      doc.moveDown(0.7);
+    });
+
+    doc.moveDown(1).fontSize(8).fillColor('#7a6e5e').text('Bu dosya çözüm çalışması için hazırlanmıştır; kullanıcıya gönderilecek bildirim ayrıca panelden onaylanmalıdır.');
+    doc.end();
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ error: e.message });
+  }
+});
+
 // CSV export
 app.get('/api/history/csv', auth, admin, async (req, res) => {
   try {
@@ -1192,24 +1264,56 @@ app.get('/api/stats', auth, admin, async (req, res) => {
 });
 
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
+function istanbulDateParts(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Istanbul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(now).reduce((acc, part) => {
+    if (part.type !== 'literal') acc[part.type] = Number(part.value);
+    return acc;
+  }, {});
+  const weekday = new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)).getUTCDay();
+  return { year: parts.year, month: parts.month, day: parts.day, weekday };
+}
+
+function istanbulMidnightUtc(year, month, day) {
+  return new Date(Date.UTC(year, month - 1, day, 21, 0, 0, 0));
+}
+
+function shiftDateParts({ year, month, day }, days) {
+  const d = new Date(Date.UTC(year, month - 1, day + days, 12));
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() };
+}
+
 function periodRange(period = 'daily', now = new Date()) {
-  const end = new Date(now);
-  const start = new Date(now);
-  if (period === 'weekly') start.setDate(start.getDate() - 7);
-  else if (period === 'monthly') start.setMonth(start.getMonth() - 1);
-  else if (period === 'yearly') start.setFullYear(start.getFullYear() - 1);
-  else start.setDate(start.getDate() - 1);
-  return { start, end };
+  const today = istanbulDateParts(now);
+  const todayStart = istanbulMidnightUtc(today.year, today.month, today.day);
+  if (period === 'weekly') {
+    const startParts = shiftDateParts(today, -7);
+    return { start: istanbulMidnightUtc(startParts.year, startParts.month, startParts.day), end: todayStart };
+  }
+  if (period === 'monthly') {
+    const end = istanbulMidnightUtc(today.year, today.month, 1);
+    const prevMonth = today.month === 1 ? { year: today.year - 1, month: 12 } : { year: today.year, month: today.month - 1 };
+    return { start: istanbulMidnightUtc(prevMonth.year, prevMonth.month, 1), end };
+  }
+  if (period === 'yearly') {
+    return { start: istanbulMidnightUtc(today.year - 1, 1, 1), end: istanbulMidnightUtc(today.year, 1, 1) };
+  }
+  const yesterday = shiftDateParts(today, -1);
+  return { start: istanbulMidnightUtc(yesterday.year, yesterday.month, yesterday.day), end: todayStart };
 }
 
 async function collectOperationalSnapshot(period = 'daily') {
   const { start, end } = periodRange(period);
   const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }, logResult] = await Promise.all([
-    supabase.from('history').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+    supabase.from('history').select('*').gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
     supabase.from('users').select('id,name,username,active,role'),
-    supabase.from('alerts').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+    supabase.from('alerts').select('*').gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
     HAS_ISSUE_RESOLUTION_LOG
-      ? supabase.from('issue_resolution_log').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false }).limit(30)
+      ? supabase.from('issue_resolution_log').select('*').gte('created_at', start.toISOString()).lt('created_at', end.toISOString()).order('created_at', { ascending: false }).limit(30)
       : Promise.resolve({ data: [], error: null })
   ]);
   if (hErr) throw new Error(hErr.message);
@@ -1326,6 +1430,15 @@ async function generateAiReportContent(snapshot) {
 async function createAiReport(period, createdBy = 'Sistem') {
   if (!HAS_AI_REPORTS) throw new Error('ai_reports tablosu yok. schema.sql içindeki ai_reports SQL bölümünü Supabase SQL Editor’de çalıştırın.');
   const snapshot = await collectOperationalSnapshot(period);
+  const { data: existing, error: existingError } = await supabase.from('ai_reports')
+    .select('*')
+    .eq('period', period)
+    .eq('period_start', snapshot.periodStart)
+    .eq('period_end', snapshot.periodEnd)
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+  if (existing) return { ...existing, already_exists: true };
+
   const content = await generateAiReportContent(snapshot);
   const { data, error } = await supabase.from('ai_reports').insert({
     period,
@@ -1339,6 +1452,58 @@ async function createAiReport(period, createdBy = 'Sistem') {
   }).select('*').single();
   if (error) throw new Error(error.message);
   return data;
+}
+
+function dueReportPeriods(now = new Date()) {
+  const today = istanbulDateParts(now);
+  const periods = ['daily'];
+  if (today.weekday === 1) periods.push('weekly');
+  if (today.day === 1) periods.push('monthly');
+  if (today.month === 1 && today.day === 1) periods.push('yearly');
+  return periods;
+}
+
+function reportPeriodLabel(period) {
+  return period === 'weekly' ? 'Haftalık'
+    : period === 'monthly' ? 'Aylık'
+    : period === 'yearly' ? 'Yıllık'
+    : 'Günlük';
+}
+
+async function notifyAdminsAboutReports(reports) {
+  const created = reports.filter(r => !r.already_exists);
+  if (!created.length) return 0;
+  const { data: users, error } = await supabase.from('users')
+    .select('id,role,active')
+    .eq('active', true)
+    .in('role', ['admin', 'super_admin']);
+  if (error) throw new Error(error.message);
+  const recipients = users || [];
+  if (!recipients.length) return 0;
+  const labels = created.map(r => reportPeriodLabel(r.period)).join(', ');
+  const message = [
+    `Başlık: AI Operasyon Raporu Hazır`,
+    `Mesaj: İstanbul saatiyle 00:00 rapor akışı tamamlandı. Hazırlanan raporlar: ${labels}. Raporları admin panelindeki AI Asistan ve Raporlar ekranından inceleyebilirsiniz.`,
+    `Gönderen: ${SYSTEM_SENDER_NAME}`
+  ].join(' | ');
+  const rows = recipients.map(u => ({
+    type: 'announcement',
+    message,
+    user_id: u.id,
+    read: false
+  }));
+  const { error: insertError } = await supabase.from('alerts').insert(rows);
+  if (insertError) throw new Error(insertError.message);
+  return rows.length;
+}
+
+async function createDueAiReports(createdBy = 'Sistem Cron', now = new Date()) {
+  const reports = [];
+  for (const period of dueReportPeriods(now)) {
+    reports.push(await createAiReport(period, createdBy));
+  }
+  const notifiedUsers = await notifyAdminsAboutReports(reports);
+  return { reports, notifiedUsers };
 }
 
 const mapAiReport = row => ({
@@ -1406,8 +1571,12 @@ app.get('/api/cron/daily-report', async (req, res) => {
     const isVercelCron = req.headers['x-vercel-cron'] === '1';
     const provided = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.query.secret;
     if (cronSecret && provided !== cronSecret && !isVercelCron) return res.status(401).json({ error: 'Yetkisiz.' });
-    const report = await createAiReport('daily', 'Sistem Cron');
-    res.json({ success: true, reportId: report.id });
+    const result = await createDueAiReports('Sistem Cron');
+    res.json({
+      success: true,
+      reports: result.reports.map(r => ({ id: r.id, period: r.period, alreadyExists: Boolean(r.already_exists) })),
+      notifiedUsers: result.notifiedUsers
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

@@ -126,6 +126,12 @@ tespit edilir).
 - **Otomatik günlük rapor:** Vercel cron `/api/cron/daily-report` yolunu her gün UTC 21:00'de
   çağıracak şekilde ayarlandı; bu İstanbul saatiyle 00:00'a denk gelir. Endpoint `CRON_SECRET`
   varsa Bearer/query secret veya Vercel cron header ile korunur.
+- **AI rapor takvimi ve tekrar güvenliği:** Cron endpoint'i artık İstanbul 00:00'da biten
+  takvim dönemlerine göre rapor üretir. Her gece günlük rapor, pazartesi 00:00'da ek olarak
+  haftalık rapor, ayın 1'i 00:00'da ek olarak aylık rapor, 1 Ocak 00:00'da ek olarak yıllık
+  rapor hazırlanır. Aynı gece birden fazla sınır denk gelirse ilgili raporlar birlikte
+  üretilir ve admin/süper adminlere tek duyuru düşer. `ai_reports_period_range_idx` aynı
+  dönem aralığının ikinci kez yazılmasını engeller.
 - **Test:** `npm.cmd run check` başarılı; 39/39 test geçti. `vercel.json` JSON parse kontrolü
   başarılı.
 - **Operasyon paneli UX dönüşümü:** Masaüstünde üst navigasyon yerine sol menülü panel
@@ -137,6 +143,11 @@ tespit edilir).
   olaylarına daraltıldı. Geri Bildirim Merkezi seçili kayıtları çözüm bildirimiyle kapatır
   ve "Codex Paketi" aksiyonuyla açık feedbacklerden kod çözüm turuna aktarılacak çalışma
   metnini panoya kopyalar.
+- **Geri bildirim PDF çözüm paketi:** Eski panoya kopyalanan Codex paketi yerine adminler
+  seçili veya açık feedbackleri tek PDF olarak indirebilir. PDF; kullanıcı, tarih, skor,
+  durum ve ayrıştırılmış geri bildirim alanlarını içerir. Bu akış, uygulamanın doğrudan kod
+  değiştiren ajan çalıştırması yerine ekibin dosyayı kullanıcıya/Codex'e kontrollü iletmesi
+  için tasarlandı.
 - **Süper admin mesaj kayıtları:** Süper admine özel `GET /api/notification-log` eklendi.
   "Mesaj Kayıtları" ekranı kullanıcılara gönderilen `announcement` ve `feedback_resolution`
   bildirimlerini alıcı adı, kullanıcı adı, tarih ve tam mesaj metniyle gösterir. Normal admin
