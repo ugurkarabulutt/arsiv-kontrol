@@ -2041,6 +2041,21 @@ function messageFields(message){
 function parseStructuredMessage(message){
   const fields={title:'Duyuru',body:String(message||''),sender:''};
   const raw=String(message||'');
+  const compact=raw.replace(/\r/g,'').trim();
+  const titleMatch=compact.match(/(?:^|\n|\|\s*)Ba[şs]l[ıi]k:\s*([\s\S]*?)(?=\s*(?:\n|\|\s*)Mesaj:|$)/i);
+  const bodyMatch=compact.match(/(?:^|\n|\|\s*)Mesaj:\s*([\s\S]*?)(?=\s*(?:\n|\|\s*)G[öo]nderen:|$)/i);
+  const senderMatch=compact.match(/(?:^|\n|\|\s*)G[öo]nderen:\s*([\s\S]*?)$/i);
+  if(titleMatch||bodyMatch||senderMatch){
+    if(titleMatch)fields.title=titleMatch[1].trim()||fields.title;
+    if(bodyMatch)fields.body=bodyMatch[1].trim()||fields.body;
+    if(senderMatch)fields.sender=senderMatch[1].trim();
+    fields.title=fields.title.replace(/\s*\|\s*Mesaj:.*$/i,'').trim()||'Duyuru';
+    fields.body=fields.body
+      .replace(/^Mesaj:\s*/i,'')
+      .replace(/\s*\|\s*G[öo]nderen:\s*.*$/i,'')
+      .trim();
+    return fields;
+  }
   if(raw.includes('\n')){
     const bodyLines=[];
     raw.split(/\n/).forEach(line=>{
@@ -2068,8 +2083,16 @@ function parseStructuredMessage(message){
 }
 
 function noticeBodyHtml(body){
-  return String(body||'')
+  let text=String(body||'')
     .replace(/\n\s*Arşiv Kontrol AI\s*$/u,'')
+    .replace(/^Mesaj:\s*/i,'')
+    .replace(/\s*\|\s*G[öo]nderen:\s*Arşiv Kontrol AI\s*$/iu,'')
+    .replace(/\n\s*G[öo]nderen:\s*Arşiv Kontrol AI\s*$/iu,'')
+    .trim();
+  if(!text.includes('\n')&&/^Sevgili kardeşlerimiz,\s+/i.test(text)){
+    text=text.replace(/^Sevgili kardeşlerimiz,\s+/i,'Sevgili kardeşlerimiz,\n\n');
+  }
+  return text
     .split(/\n{2,}/)
     .map(p=>p.trim())
     .filter(Boolean)
