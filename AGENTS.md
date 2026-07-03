@@ -133,9 +133,10 @@ tespit edilir).
   Böylece kullanıcı/admin tarafında aynı cümlelerin sürekli dönmesi engellenir.
 - **Kullanıcı feedback rehberi:** Bulgu bazlı `Metinde yok` veya `Yanlış düzeltme` butonlarına
   basıldığında Denetim Yardımcısı ilgili bulgunun neyi değiştirdiğini, hangi durumda bu geri
-  bildirimin doğru kullanılacağını ve kısa notun nasıl yazılacağını gösterir. Prompt kutusu artık
-  boş başlamaz; kullanıcıya düzenleyebileceği bağlamlı bir not taslağı sunulur. Bu, yanlış veya
-  eksik feedback kayıtlarını azaltmak için eklendi.
+  bildirimin doğru kullanılacağını ve kısa notun nasıl yazılacağını gösterir. Tarayıcı `prompt`
+  penceresi yerine uygulama içinde modern, geniş ve otomatik yükseklikli bir geri bildirim modalı
+  açılır; kullanıcıya düzenleyebileceği bağlamlı bir not taslağı sunulur. Bu, yanlış veya eksik
+  feedback kayıtlarını azaltmak için eklendi.
 - **Tek AI raporu ve feedback kapısı:** Kullanıcı tarafındaki çoklu yardımcı butonları kaldırıldı;
   tek ana aksiyon `AI Raporu Oluştur` oldu. Bu rapor metni, denetim sonucunu, şüpheli bulguları,
   kopyalama güvenliğini ve ekibe bildirim gerekip gerekmediğini birlikte değerlendirir. Sonuçta

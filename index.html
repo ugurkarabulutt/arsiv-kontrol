@@ -370,6 +370,14 @@ canvas{width:100%!important;}
 .report-section ul{margin:4px 0 0 18px;}
 @media(max-width:900px){.ai-panel-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
+@media(max-width:640px){
+  .modal-overlay{align-items:flex-end;padding:10px;}
+  .feedback-modal{max-width:none;border-radius:26px 26px 18px 18px;max-height:88vh;}
+  .feedback-modal .modal-head{padding:20px 58px 8px;}
+  .feedback-modal .modal-head h3{font-size:19px;}
+  .feedback-modal .modal-body{padding:16px 18px 20px;}
+  .feedback-textarea{font-size:16px;min-height:210px;border-radius:18px;}
+}
 .notice-list{display:flex;flex-direction:column;gap:12px;}
 .notice-card{position:relative;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:16px 18px 14px;margin:0;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
 .notice-card.unread{background:linear-gradient(90deg,var(--red-bg),var(--white) 42%);}
@@ -398,6 +406,19 @@ canvas{width:100%!important;}
 .mfield select{font-family:'JetBrains Mono',monospace;font-size:12px;}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 .form-err{color:var(--red);font-size:13px;min-height:16px;}
+.feedback-modal{max-width:620px;border-radius:22px;border:1px solid var(--bord2);border-top:1px solid var(--bord2);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden;}
+.feedback-modal .modal-head{position:relative;padding:22px 24px 12px;border-bottom:0;justify-content:center;background:var(--white);}
+.feedback-modal .modal-head h3{font-size:20px;font-weight:800;text-align:center;}
+.feedback-modal .modal-close{position:absolute;right:18px;top:14px;width:42px;height:42px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);font-size:30px;display:flex;align-items:center;justify-content:center;}
+.feedback-modal .modal-body{padding:18px 28px 28px;}
+.feedback-label{font-size:17px;font-weight:800;margin-bottom:10px;color:var(--ink);}
+.feedback-context{font-size:13px;line-height:1.55;color:var(--ink3);background:var(--surface2);border:1px solid var(--border);padding:10px 12px;margin-bottom:12px;}
+.feedback-textarea{width:100%;min-height:190px;max-height:48vh;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:16px;line-height:1.65;padding:16px 18px;border-radius:16px;resize:none;outline:none;}
+.feedback-textarea:focus{border-color:var(--ai);box-shadow:0 0 0 3px rgba(var(--ai-rgb),.18);}
+.feedback-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);text-align:right;margin-top:6px;}
+.feedback-help{font-size:12px;line-height:1.55;color:var(--ink3);margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.feedback-modal .modal-foot{margin-top:18px;justify-content:stretch;}
+.feedback-modal .modal-foot button{flex:1;border-radius:999px;padding:13px 16px;font-size:15px;}
 .rules-editor{width:100%;min-height:400px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;padding:14px;resize:vertical;outline:none;border-radius:0;}
 .rules-editor:focus{border-color:var(--gold);}
 .profile-card{max-width:440px;background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);}
@@ -427,6 +448,9 @@ canvas{width:100%!important;}
 :root[data-theme="dark"] .info-box,
 :root[data-theme="dark"] .warn-box{border-color:var(--bord2);}
 :root[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.78);}
+:root[data-theme="dark"] .feedback-modal,
+:root[data-theme="dark"] .feedback-modal .modal-head{background:#1b1b1d;}
+:root[data-theme="dark"] .feedback-textarea{background:#313133;border-color:#3e3e41;}
 :root[data-theme="dark"] .btn-primary,
 :root[data-theme="dark"] .btn-login{background:linear-gradient(135deg,#f7f1e6,#cdbd9c);color:#111;}
 :root[data-theme="dark"] .btn-primary:hover,
@@ -877,11 +901,26 @@ canvas{width:100%!important;}
   </div>
 </div>
 
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal feedback-modal">
+    <div class="modal-head"><h3 id="feedbackModalTitle">Geri bildirim gönder</h3><button class="modal-close" onclick="closeFeedbackModal()">×</button></div>
+    <div class="modal-body">
+      <div class="feedback-label" id="feedbackModalLabel">Ne oldu?</div>
+      <div class="feedback-context" id="feedbackModalContext" style="display:none"></div>
+      <textarea class="feedback-textarea" id="feedbackModalText" maxlength="2000" placeholder="Bize karşılaştığınız sorundan bahsedin" oninput="resizeFeedbackTextarea()"></textarea>
+      <div class="feedback-count" id="feedbackModalCount">0 / 2000</div>
+      <div class="feedback-help">Bu not admin tarafındaki çözüm paketine düşer. Doğru kabul edilmesi gereken yazımı ve kısa sebebini yazmanız yeterlidir.</div>
+      <div class="form-err" id="feedbackModalErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeFeedbackModal()">Vazgeç</button><button class="btn-primary" onclick="submitFeedbackModal()">Gönder</button></div>
+    </div>
+  </div>
+</div>
+
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set();
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null;
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
@@ -1490,12 +1529,13 @@ function renderComparePanel(original,corrected){
 
 async function sendResultFeedback(historyId,reason){
   const labels={missing_issue:'Eksik hata',layout_broken:'Düzen bozuldu',score_wrong:'Skor yanlış',other:'Diğer'};
-  const note=prompt(`${labels[reason]||'Geri bildirim'} için kısa not ekleyin:`);
-  if(note===null)return;
-  const r=await api('POST',`/api/history/${historyId}/feedback`,{reason,note});
-  if(r.error){setStatus(r.error,'err');return;}
-  setStatus('✓ Geri bildirim gönderildi.','ok');
-  setTimeout(()=>setStatus('',''),2500);
+  openFeedbackModal({
+    title:'Sonucu ekibe bildir',
+    label:labels[reason]||'Geri bildirim',
+    context:'Bu not, denetim sonucunda gördüğünüz genel problemi ekibe iletmek için kullanılacak.',
+    defaultNote:'',
+    payload:{historyId,reason}
+  });
 }
 
 async function sendIssueFeedback(historyId,category,index,reason){
@@ -1505,16 +1545,58 @@ async function sendIssueFeedback(historyId,category,index,reason){
   const defaultNote=reason==='nonexistent'
     ? `Metinde "${issue.original||''}" ifadesini bu bağlamda bulamadım. Lütfen kontrol edin.`
     : `"${issue.original||''}" → "${issue.fixed||''}" dönüşümünün bu bağlamda yanlış olduğunu düşünüyorum. Doğru kabul edilmesi gereken yazım: `;
-  const note=prompt('Bu bulgu neden yanlış? Yardımcı taslağı düzenleyebilirsiniz:', defaultNote);
-  if(note===null)return;
-  const r=await api('POST',`/api/history/${historyId}/feedback`,{
-    reason,note,category,
-    original:issue.original||'',
-    fixed:issue.fixed||'',
-    rule:issue.rule||''
+  openFeedbackModal({
+    title:'Bu bulgu neden yanlış?',
+    label:'Yardımcı taslağı düzenleyebilirsiniz',
+    context:`${issue.original||'-'} → ${issue.fixed||'-'} · ${issue.rule||'Belirtilmemiş'}`,
+    defaultNote,
+    payload:{
+      historyId,reason,category,
+      original:issue.original||'',
+      fixed:issue.fixed||'',
+      rule:issue.rule||''
+    }
   });
-  if(r.error){setStatus(r.error,'err');return;}
-  setStatus('✓ Bulgu geri bildirimi gönderildi.','ok');
+}
+
+function openFeedbackModal({title,label,context,defaultNote,payload}){
+  pendingFeedbackPayload=payload||null;
+  el('feedbackModalTitle').textContent=title||'Geri bildirim gönder';
+  el('feedbackModalLabel').textContent=label||'Ne oldu?';
+  const ctx=el('feedbackModalContext');
+  if(context){ctx.style.display='';ctx.textContent=context;}else{ctx.style.display='none';ctx.textContent='';}
+  const txt=el('feedbackModalText');
+  txt.value=defaultNote||'';
+  el('feedbackModalErr').textContent='';
+  openModal('feedbackModal');
+  resizeFeedbackTextarea();
+  setTimeout(()=>txt.focus(),80);
+}
+function closeFeedbackModal(){
+  pendingFeedbackPayload=null;
+  closeModal('feedbackModal');
+}
+function resizeFeedbackTextarea(){
+  const txt=el('feedbackModalText');
+  if(!txt)return;
+  txt.style.height='auto';
+  txt.style.height=Math.min(Math.max(txt.scrollHeight,190),Math.round(window.innerHeight*.48))+'px';
+  const count=el('feedbackModalCount');
+  if(count)count.textContent=`${txt.value.length.toLocaleString('tr-TR')} / 2000`;
+}
+async function submitFeedbackModal(){
+  const payload=pendingFeedbackPayload;
+  const note=el('feedbackModalText').value.trim();
+  if(!payload){closeFeedbackModal();return;}
+  if(!note){el('feedbackModalErr').textContent='Lütfen kısa bir not yazın.';return;}
+  el('feedbackModalErr').textContent='';
+  const historyId=payload.historyId;
+  const body={...payload,note};
+  delete body.historyId;
+  const r=await api('POST',`/api/history/${historyId}/feedback`,body);
+  if(r.error){el('feedbackModalErr').textContent=r.error;return;}
+  closeFeedbackModal();
+  setStatus('✓ Geri bildirim gönderildi.','ok');
   setTimeout(()=>setStatus('',''),2500);
 }
 
@@ -2289,6 +2371,7 @@ async function api(method,url,body){
 }
 const el=id=>document.getElementById(id);
 const v=id=>el(id).value.trim();
+function openModal(id){el(id).classList.add('open');}
 function closeModal(id){el(id).classList.remove('open');}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
