@@ -37,6 +37,11 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   yardımcı paneli proaktif kısa yönlendirme gösterir. Bulgu bazlı geri bildirim butonlarında
   kullanıcıya önce bulgunun neyi değiştirdiği ve hangi durumda geri bildirim verilmesi gerektiği
   açıklanır; not kutusu bağlamlı taslakla açılır.
+- 2026-07-03 Codex tek AI raporu/feedback kapısı turu: Kullanıcı tarafındaki çoklu Denetim
+  Yardımcısı butonları kaldırıldı ve tek `AI Raporu Oluştur` aksiyonuna indirildi. Rapor sonucunda
+  `low` risk varsa ekibe bildirim kapalı kalır; yalnızca `medium/high` riskte genel feedback alanı
+  ve bulgu bazlı feedback butonları görünür. Böylece kullanıcı neye basacağını düşünmez ve admin
+  tarafına pozitif/risksiz sonuçlardan gereksiz geri bildirim düşmez.
 - 2026-07-03 Codex premium UX/ayarlar turu: Genel font `Noto Sans` oldu; açık/koyu tema,
   buton hover/active durumları, tıklamada parlak geçiş efekti, sol menü katman hissi ve bölüm
   ayraçları iyileştirildi. `Ayarlar` ekranı eklendi; kullanıcı küçük/orta/büyük yazı boyutu

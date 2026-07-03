@@ -1583,6 +1583,7 @@ function fallbackHelperResponse(task, text, result, question) {
   if (heavyCat?.count > 0) suggestions.push(`En yoğun alan ${heavyCat.key}; önce bu kategorideki bulguları inceleyin.`);
   if (!suggestions.length) suggestions.push('Metin denetime hazır görünüyor. Denetim sonrası şüpheli bulguları geri bildirimle işaretleyebilirsiniz.');
   const taskTitles = {
+    report: 'AI Denetim Raporu',
     feedback: 'Geri Bildirim Taslağı',
     explain: 'Sonuç Yorumu',
     suspect: 'Şüpheli Bulgu Kontrolü',
@@ -1590,9 +1591,13 @@ function fallbackHelperResponse(task, text, result, question) {
     prepare: 'Denetim Hazırlığı',
     ask: 'Denetim Yardımcısı'
   };
+  const riskLevel = result && score < 60 ? 'high' : totalErrors > 0 ? 'medium' : 'low';
+  const shouldDraft = ['report', 'feedback'].includes(task) && riskLevel !== 'low';
   return {
     title: taskTitles[task] || 'Denetim Yardımcısı',
-    summary: question ? `Sorunuz için mevcut veriye göre kısa değerlendirme hazırlandı: ${question}` : suggestions[0],
+    summary: task === 'report'
+      ? (riskLevel === 'low' ? 'AI raporu sonucu düşük riskli gördü; ekibe bildirim gerekmiyor.' : 'AI raporu bazı noktaların kontrol edilmesini öneriyor; gerekirse ekibe bildirim gönderilebilir.')
+      : question ? `Sorunuz için mevcut veriye göre kısa değerlendirme hazırlandı: ${question}` : suggestions[0],
     steps: ['Metin yapısı kontrol edildi.', 'Mevcut denetim sonucu değerlendirildi.', 'Kullanıcı için uygulanabilir öneriler çıkarıldı.'],
     suggestions,
     checks: [
@@ -1600,15 +1605,17 @@ function fallbackHelperResponse(task, text, result, question) {
       result ? `Son skor ${score}/100 ve ${totalErrors} bulgu üzerinden yorumlandı.` : 'Henüz denetim sonucu yok.',
       'Kural veya metin üzerinde otomatik değişiklik yapılmadı.'
     ],
-    nextActions: ['Şüpheli bulgu varsa geri bildirim taslağını kullanın.', 'Düzeltilmiş metni kopyalamadan önce karşılaştırma bölümünü kontrol edin.'],
-    feedbackDraft: task === 'feedback' ? 'Bu bulgunun neden hatalı olduğunu düşündüğünüzü, doğru kabul edilmesi gereken yazımı ve sistemin önerdiği yanlış dönüşümü tek cümlede belirtin.' : '',
-    riskLevel: result && score < 60 ? 'high' : totalErrors > 0 ? 'medium' : 'low'
+    nextActions: riskLevel === 'low'
+      ? ['Düzeltilmiş metni kopyalamadan önce son kez karşılaştırma bölümünü gözden geçirin.']
+      : ['Şüpheli bulgu varsa açılan geri bildirim alanını kullanın.', 'Düzeltilmiş metni kopyalamadan önce karşılaştırma bölümünü kontrol edin.'],
+    feedbackDraft: shouldDraft ? 'Bu sonuçta kontrol edilmesi gereken nokta: ... Doğru olması gerektiğini düşündüğüm yazım/bağlam: ...' : '',
+    riskLevel
   };
 }
 
 app.post('/api/ai/helper', auth, async (req, res) => {
   try {
-    const task = ['prepare', 'explain', 'feedback', 'suspect', 'copycheck'].includes(req.body?.task) ? req.body.task : 'prepare';
+    const task = ['report', 'prepare', 'explain', 'feedback', 'suspect', 'copycheck'].includes(req.body?.task) ? req.body.task : 'report';
     const text = String(req.body?.text || '').slice(0, 12000);
     const question = '';
     const result = req.body?.result && typeof req.body.result === 'object' ? req.body.result : null;
@@ -1624,7 +1631,7 @@ app.post('/api/ai/helper', auth, async (req, res) => {
         max_tokens: 1100,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Görevin kullanıcıya ikinci göz olmak, metni denetime hazırlamak, sonucu sade anlatmak, şüpheli bulguları yakalamak, kopyalama/karşılaştırma kontrolü yaptırmak ve kaliteli geri bildirim taslağı oluşturmaktır. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
+          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Kullanıcı tarafında tek ana görevin AI Denetim Raporu üretmektir: sonucu sade açıkla, şüpheli bulguları yakala, kopyalama/karşılaştırma güvenliğini kontrol et ve ekibe bildirim gerekip gerekmediğini risk seviyesine göre belirt. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Pozitif/düşük riskli sonuçlarda ekibe bildirim önermemelisin; yalnızca riskli veya kontrol gerektiren sonuçlarda feedbackDraft üret. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
           { role: 'user', content: JSON.stringify({ task, question, text, result }).slice(0, 24000) }
         ]
       })

@@ -136,6 +136,12 @@ tespit edilir).
   bildirimin doğru kullanılacağını ve kısa notun nasıl yazılacağını gösterir. Prompt kutusu artık
   boş başlamaz; kullanıcıya düzenleyebileceği bağlamlı bir not taslağı sunulur. Bu, yanlış veya
   eksik feedback kayıtlarını azaltmak için eklendi.
+- **Tek AI raporu ve feedback kapısı:** Kullanıcı tarafındaki çoklu yardımcı butonları kaldırıldı;
+  tek ana aksiyon `AI Raporu Oluştur` oldu. Bu rapor metni, denetim sonucunu, şüpheli bulguları,
+  kopyalama güvenliğini ve ekibe bildirim gerekip gerekmediğini birlikte değerlendirir. Rapor
+  `low` risk dönerse genel ve bulgu bazlı feedback butonları kapalı kalır; yalnızca `medium/high`
+  riskte ekibe bildirim alanı açılır. Amaç pozitif/sağlıklı sonuçların admin feedback kuyruğunu
+  şişirmesini engellemektir.
 - **Premium UX ve okunurluk turu:** Uygulama fontu `Noto Sans` olarak değiştirildi; yaşça büyük
   kullanıcılar için daha okunur ve yüksek kontrastlı metin yapısı hedeflendi. Açık/koyu tema
   paletleri daha premium, daha az parlak ve daha katmanlı hale getirildi. Sol menü beyaz düz

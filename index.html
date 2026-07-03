@@ -342,6 +342,7 @@ canvas{width:100%!important;}
 @keyframes pulseLive{70%{box-shadow:0 0 0 8px rgba(202,164,74,0)}100%{box-shadow:0 0 0 0 rgba(202,164,74,0)}}
 .assistant-body{padding:14px;}
 .assistant-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.assistant-actions .btn-primary{padding:10px 14px;}
 .assistant-question{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .assistant-question input{flex:1;min-width:220px;background:var(--white);border:1px solid var(--border);color:var(--ink);padding:10px 12px;border-radius:7px;outline:none;}
 .assistant-question input:focus{border-color:var(--gold);box-shadow:var(--focus);}
@@ -356,6 +357,9 @@ canvas{width:100%!important;}
 .assistant-step.done::before{background:var(--green);}
 .assistant-list{margin:8px 0 0 18px;}
 .assistant-list li{margin-bottom:5px;}
+.feedback-gate{background:var(--surface2);border:1px solid var(--border);padding:10px 12px;color:var(--ink2);font-size:13px;line-height:1.55;}
+.feedback-gate.open{border-color:var(--gold);background:var(--gold-bg);}
+.feedback-gate.safe{border-color:var(--green);background:var(--grn-bg);}
 .report-card{border-bottom:1px solid var(--border);padding:12px 0;}
 .report-card:last-child{border-bottom:none;}
 .report-title{font-weight:700;font-size:15px;margin-bottom:4px;color:var(--ink);}
@@ -606,13 +610,9 @@ canvas{width:100%!important;}
         </div>
         <div class="assistant-body">
           <div class="assistant-actions">
-            <button class="btn-mini" onclick="runHelper('prepare')">Metni Hazırla</button>
-            <button class="btn-mini" onclick="runHelper('explain')">Sonucu Açıkla</button>
-            <button class="btn-mini" onclick="runHelper('suspect')">Şüpheli Bulgular</button>
-            <button class="btn-mini" onclick="runHelper('copycheck')">Kopyalama Kontrolü</button>
-            <button class="btn-mini" onclick="runHelper('feedback')">Geri Bildirim Taslağı</button>
+            <button class="btn-primary" onclick="runHelper('report')">AI Raporu Oluştur</button>
           </div>
-          <div class="assistant-output" id="helperOutput">Metni yapıştırınca ya da denetim sonucu oluşunca; neden işaretlendiğini, neyin kontrol edilmesi gerektiğini ve geri bildirimin nasıl yazılacağını sade şekilde açıklar.</div>
+          <div class="assistant-output" id="helperOutput">AI raporu; denetim sonucunu, şüpheli noktaları, kopyalama güvenliğini ve ekibe bildirim gerekip gerekmediğini tek yerde açıklar.</div>
         </div>
       </div>
       <div id="resultsArea" style="margin-top:18px"></div>
@@ -879,7 +879,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set();
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set();
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
@@ -950,7 +950,7 @@ function updateHelperNudge(count,text){
   if(count===0){live.textContent='Hazır';out.textContent='Metni yapıştırınca ya da denetim sonucu oluşunca ikinci göz olarak yardımcı olur.';return;}
   if(count<MIN_TEXT_CHARS){live.textContent='Bağlam bekliyor';out.textContent='Metin kısa görünüyor. Birkaç cümle daha eklerseniz Denetim Yardımcısı daha sağlıklı hazırlık kontrolü yapabilir.';return;}
   if(count>MAX_TEXT_CHARS){live.textContent='Bölme önerisi var';out.textContent='Metin sistem sınırını aşıyor. Yardımcıdan metni nasıl bölmeniz gerektiği konusunda öneri alabilirsiniz.';return;}
-  if(count>18000){live.textContent='Uzun metin algılandı';out.textContent='Uzun metinlerde düzen ve kopyalama riski artar. Metni Hazırla ile parça/paragraf kontrolü alabilirsiniz.';return;}
+  if(count>18000){live.textContent='Uzun metin algılandı';out.textContent='Uzun metinlerde düzen ve kopyalama riski artar. AI Raporu ile parça/paragraf kontrolü alabilirsiniz.';return;}
   if(/\t| {3,}/.test(text)){live.textContent='Düzen izi var';out.textContent='Metinde tablo veya hizalama izi görünüyor. Denetimden önce düzen risklerini kontrol ettirebilirsiniz.';return;}
   live.textContent='Hazırlık yapabilir';
   out.textContent='Metin denetime hazır görünüyor. İsterseniz yardımcı önce yapı ve kopyalama risklerini kontrol edebilir.';
@@ -1217,6 +1217,7 @@ function buildLiveSteps(context='helper',task='prepare',text='',result=null,ques
   ];
   const middleByTask={
     prepare:[hasLayout?'Satır, tablo ve kopyalama izleri kontrol ediliyor':'Paragraf ve soru-cevap akışı inceleniyor','Denetime engel olabilecek riskler seçiliyor'],
+    report:['Denetim sonucu tek rapora dönüştürülüyor','Risk seviyesi ve şüpheli bulgular birlikte değerlendiriliyor','Ekibe bildirim gerekip gerekmediği belirleniyor'],
     explain:[`Skor ${score}/100 üzerinden yorumlanıyor`,`${errors} bulgu önem sırasına alınıyor`,'Kullanıcının önce bakacağı noktalar ayrılıyor'],
     feedback:['Hatalı olabilecek bulgunun bağlamı toparlanıyor','Ekip için net teknik ifade hazırlanıyor','Yanlış pozitif ihtimali ayrıştırılıyor'],
     suspect:['Anlamı değiştirebilecek dönüşümler aranıyor','Sure, sözlük ve noktalama bulguları ayrılıyor','Şüpheli görünen noktalar önceliklendiriliyor'],
@@ -1267,6 +1268,7 @@ async function runHelper(task){
     const r=await api('POST','/api/ai/helper',{task,text,result:currentResult,question});
     await animation;
     if(r.error)throw new Error(r.error);
+    if(task==='report')applyAiReportGate(r.answer);
     out.innerHTML=renderAssistantAnswer(r.answer);
     if(live)live.textContent='Yanıt hazır';
   }catch(e){
@@ -1274,12 +1276,37 @@ async function runHelper(task){
     if(live)live.textContent='Tekrar deneyin';
   }
 }
+
+function normalizeRisk(answer){
+  const risk=String(answer?.riskLevel||'').toLowerCase();
+  return ['low','medium','high'].includes(risk)?risk:'medium';
+}
+function applyAiReportGate(answer){
+  currentAiReport=answer||null;
+  const risk=normalizeRisk(answer);
+  const gate=el('feedbackGate');
+  const actions=el('resultFeedbackActions');
+  document.querySelectorAll('.issue-feedback-action').forEach(x=>x.style.display=risk==='low'?'none':'');
+  if(!gate||!actions)return;
+  if(risk==='low'){
+    gate.className='feedback-gate safe';
+    gate.innerHTML='AI raporu bu sonucu düşük riskli gördü. Ekibe bildirim açılmadı; gereksiz kayıt oluşmaması için sadece riskli veya şüpheli sonuçlar bildirilebilir.';
+    actions.style.display='none';
+    return;
+  }
+  gate.className='feedback-gate open';
+  gate.innerHTML=risk==='high'
+    ? 'AI raporu bu sonucu riskli gördü. Ekibe bildirim gönderebilirsiniz; kısa notunuz çözüm paketine eklenecek.'
+    : 'AI raporu bazı noktaların kontrol edilmesini önerdi. Gerekirse bu sonucu ekibe bildirebilirsiniz.';
+  actions.style.display='';
+}
 function renderResults(d,container){
   currentResult=d;
+  currentAiReport=null;
   const live=el('helperLiveText');
   if(live)live.textContent='Sonuç için hazır';
   const helperOut=el('helperOutput');
-  if(helperOut)helperOut.innerHTML='Denetim sonucu oluştu. İsterseniz <strong>Sonucu Açıkla</strong> ile ikinci göz yorumu alabilir veya <strong>Geri Bildirim Taslağı</strong> oluşturabilirsiniz.';
+  if(helperOut)helperOut.innerHTML='Denetim sonucu oluştu. <strong>AI Raporu Oluştur</strong> ile sonucu tek raporda kontrol edip ekibe bildirim gerekip gerekmediğini görebilirsiniz.';
   const cats=d.categories||{};
   const sc=d.score||0;
   const fc=sc>=80?'sf-high':sc>=55?'sf-mid':'sf-low';
@@ -1299,7 +1326,7 @@ function renderResults(d,container){
       :iss.map((it,j)=>`<div class="issue-item" style="animation-delay:${(ci*5+j)*.04}s">
           <div class="issue-row"><div class="i-orig">${esc(it.original)}</div><div class="i-arr">→</div><div class="i-fix">${esc(it.fixed)}</div></div>
           <div class="i-rule">${esc(it.rule||c.label)}</div>
-          ${d.id?`<div class="issue-actions"><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'nonexistent')">Metinde yok</button><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'wrong_fix')">Yanlış düzeltme</button></div>`:''}
+          ${d.id?`<div class="issue-actions issue-feedback-action" style="display:none"><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'nonexistent')">Bu bulgu hatalı</button><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'wrong_fix')">Bu düzeltme yanlış</button></div>`:''}
         </div>`).join('');
     return `<div class="cat-panel"><div class="cat-head"><span class="cat-name">${c.label}</span><span class="cat-cnt ${cat.count>0?'cnt-err':'cnt-ok'}">${cat.count} sorun</span></div>${issHtml}</div>`;
   }).join('');
@@ -1313,7 +1340,7 @@ function renderResults(d,container){
     </div>
     ${(promptVersion||rulesHash)?`<div class="analysis-meta">${promptVersion?`<span class="meta-chip">Prompt ${esc(promptVersion)}</span>`:''}${rulesHash?`<span class="meta-chip">Kural ${esc(rulesHash)}</span>`:''}</div>`:''}
     ${d.summary?`<div class="summary-box ${sc<60?'summary-warn':''}">${esc(d.summary)}</div>`:''}
-    ${d.id?`<div class="feedback-panel"><p>Bu sonuçta sorun varsa ekibe doğrudan bildir.</p><div class="feedback-actions">
+    ${d.id?`<div class="feedback-panel"><div id="feedbackGate" class="feedback-gate">Ekibe bildirim göndermek için önce AI raporu oluşturun. Rapor risk görürse bildirim alanı açılır.</div><div class="feedback-actions" id="resultFeedbackActions" style="display:none">
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','missing_issue')">Eksik hata</button>
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','layout_broken')">Düzen bozuldu</button>
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','score_wrong')">Skor yanlış</button>
@@ -1408,7 +1435,7 @@ function clearAnalyze(){
   el('inputText').value='';
   handleTextInput();
   el('resultsArea').innerHTML='';
-  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';
+  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';currentAiReport=null;
   clearWorkDraft();
   const d=el('fileDrop');
   d.className='file-drop';
