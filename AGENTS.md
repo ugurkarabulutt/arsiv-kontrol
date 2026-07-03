@@ -117,8 +117,9 @@ tespit edilir).
 ### 2026-07-03
 - **Denetim Yardımcısı AI:** Kullanıcı tarafındaki Metin Denetimi ekranına güvenli "Denetim
   Yardımcısı" eklendi. Yardımcı; metni denetime hazırlama, sonucu sade açıklama, şüpheli
-  noktaları ikinci göz olarak yorumlama, geri bildirim taslağı oluşturma ve serbest soru yanıtlama
-  görevlerini yapar. Metni kendi başına düzeltmez, kural değiştirmez, dini/içerik yorumu yapmaz,
+  noktaları ikinci göz olarak yorumlama ve geri bildirim taslağı oluşturma görevlerini yapar.
+  Kullanıcı ekranında serbest soru alanı yoktur; yardım chat gibi değil, görev bazlı denetim
+  rehberi gibi çalışır. Metni kendi başına düzeltmez, kural değiştirmez, dini/içerik yorumu yapmaz,
   kullanıcı adına onay/red vermez. Backend `POST /api/ai/helper` endpoint'i `gpt-4o-mini` ile
   JSON yanıt üretir; API anahtarı yoksa güvenli fallback önerileri döner.
 - **Canlı AI hissi:** Kullanıcı ve admin AI ekranlarında model adı gösterilmez. İşlem sırasında
@@ -128,8 +129,13 @@ tespit edilir).
 - **Denetim Yardımcısı gelişmiş görevleri:** Yardımcıya `Şüpheli Bulgular` ve `Kopyalama
   Kontrolü` görevleri eklendi. Backend yanıtları artık `checks` ve `nextActions` alanlarını da
   destekler. Frontend canlı süreç adımları sabit metinlerden çıkarıldı; görev tipi, metin
-  uzunluğu, düzen izleri, skor, hata sayısı ve soru bağlamına göre farklı adımlar seçer.
+  uzunluğu, düzen izleri, skor ve hata sayısına göre farklı adımlar seçer.
   Böylece kullanıcı/admin tarafında aynı cümlelerin sürekli dönmesi engellenir.
+- **Kullanıcı feedback rehberi:** Bulgu bazlı `Metinde yok` veya `Yanlış düzeltme` butonlarına
+  basıldığında Denetim Yardımcısı ilgili bulgunun neyi değiştirdiğini, hangi durumda bu geri
+  bildirimin doğru kullanılacağını ve kısa notun nasıl yazılacağını gösterir. Prompt kutusu artık
+  boş başlamaz; kullanıcıya düzenleyebileceği bağlamlı bir not taslağı sunulur. Bu, yanlış veya
+  eksik feedback kayıtlarını azaltmak için eklendi.
 - **Premium UX ve okunurluk turu:** Uygulama fontu `Noto Sans` olarak değiştirildi; yaşça büyük
   kullanıcılar için daha okunur ve yüksek kontrastlı metin yapısı hedeflendi. Açık/koyu tema
   paletleri daha premium, daha az parlak ve daha katmanlı hale getirildi. Sol menü beyaz düz

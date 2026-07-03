@@ -1608,11 +1608,11 @@ function fallbackHelperResponse(task, text, result, question) {
 
 app.post('/api/ai/helper', auth, async (req, res) => {
   try {
-    const task = ['prepare', 'explain', 'feedback', 'ask', 'suspect', 'copycheck'].includes(req.body?.task) ? req.body.task : 'ask';
+    const task = ['prepare', 'explain', 'feedback', 'suspect', 'copycheck'].includes(req.body?.task) ? req.body.task : 'prepare';
     const text = String(req.body?.text || '').slice(0, 12000);
-    const question = String(req.body?.question || '').trim().slice(0, 900);
+    const question = '';
     const result = req.body?.result && typeof req.body.result === 'object' ? req.body.result : null;
-    if (!text.trim() && !result && !question) return res.status(400).json({ error: 'Yardımcı için metin, sonuç veya soru gerekli.' });
+    if (!text.trim() && !result) return res.status(400).json({ error: 'Yardımcı için metin veya denetim sonucu gerekli.' });
     if (!OPENAI_API_KEY) return res.json({ answer: fallbackHelperResponse(task, text, result, question), model: 'assistant' });
 
     const r = await fetch('https://api.openai.com/v1/chat/completions', {

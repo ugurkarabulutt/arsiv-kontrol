@@ -25,7 +25,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 - 2026-07-03 Codex Denetim Yardımcısı AI turu: Metin Denetimi ekranına kullanıcı tarafında
   güvenli Denetim Yardımcısı eklendi. `POST /api/ai/helper` metni hazırlama, sonucu açıklama,
-  geri bildirim taslağı üretme ve serbest soru yanıtlama görevlerini yapar; kural/kod/onay
+  geri bildirim taslağı üretme görevlerini yapar; kullanıcı tarafında serbest soru alanı yoktur
+  ve yardım chat yerine görev bazlı denetim rehberi olarak konumlanır. Kural/kod/onay
   yetkisi yoktur. Kullanıcı ve admin AI ekranlarında model adı gösterilmez; işlem sırasında
   canlı süreç adımları, pulse noktası ve "yanıt hazırlanıyor" akışı gösterilir. Admin rapor ve
   soru ekranı da aynı canlı süreç hissini kullanır.
@@ -33,7 +34,9 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   `Kopyalama Kontrolü` görevleri eklendi. `POST /api/ai/helper` artık `checks` ve `nextActions`
   dönebilir. Frontend canlı süreç adımları artık sabit değil; metin uzunluğu, düzen riski,
   skor, hata sayısı, görev tipi ve admin/kullanıcı bağlamına göre farklılaşır. Metin yazıldıkça
-  yardımcı paneli proaktif kısa yönlendirme gösterir.
+  yardımcı paneli proaktif kısa yönlendirme gösterir. Bulgu bazlı geri bildirim butonlarında
+  kullanıcıya önce bulgunun neyi değiştirdiği ve hangi durumda geri bildirim verilmesi gerektiği
+  açıklanır; not kutusu bağlamlı taslakla açılır.
 - 2026-07-03 Codex premium UX/ayarlar turu: Genel font `Noto Sans` oldu; açık/koyu tema,
   buton hover/active durumları, tıklamada parlak geçiş efekti, sol menü katman hissi ve bölüm
   ayraçları iyileştirildi. `Ayarlar` ekranı eklendi; kullanıcı küçük/orta/büyük yazı boyutu

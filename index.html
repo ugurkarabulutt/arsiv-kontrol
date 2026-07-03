@@ -612,11 +612,7 @@ canvas{width:100%!important;}
             <button class="btn-mini" onclick="runHelper('copycheck')">Kopyalama Kontrolü</button>
             <button class="btn-mini" onclick="runHelper('feedback')">Geri Bildirim Taslağı</button>
           </div>
-          <div class="assistant-output" id="helperOutput">Metni yapıştırınca ya da denetim sonucu oluşunca ikinci göz olarak yardımcı olur.</div>
-          <div class="assistant-question">
-            <input id="helperQuestion" placeholder="Yardımcıya sorun: Bu metinde dikkat etmem gereken ne var?">
-            <button class="btn-sec" onclick="runHelper('ask')">Sor</button>
-          </div>
+          <div class="assistant-output" id="helperOutput">Metni yapıştırınca ya da denetim sonucu oluşunca; neden işaretlendiğini, neyin kontrol edilmesi gerektiğini ve geri bildirimin nasıl yazılacağını sade şekilde açıklar.</div>
         </div>
       </div>
       <div id="resultsArea" style="margin-top:18px"></div>
@@ -1207,7 +1203,7 @@ async function animateAssistantProcess(targetId,steps){
   setAssistantProcess(targetId,steps,steps.length);
 }
 function pickOne(list){return list[Math.floor(Math.random()*list.length)];}
-function buildLiveSteps(context='helper',task='ask',text='',result=null,question=''){
+function buildLiveSteps(context='helper',task='prepare',text='',result=null,question=''){
   const len=cleanInputText(text).length;
   const score=Number(result?.score||0);
   const errors=Number(result?.totalErrors||0);
@@ -1217,7 +1213,7 @@ function buildLiveSteps(context='helper',task='ask',text='',result=null,question
   const opening=[
     longText?'Uzun metin parçalara ayrılarak okunuyor':'Metnin bağlamı okunuyor',
     hasResult?'Son denetim sonucu belleğe alınıyor':'Denetim öncesi yapı taranıyor',
-    question?'Sorudaki niyet ayrıştırılıyor':'İşlem amacı netleştiriliyor'
+    task==='feedback'?'Geri bildirim niyeti ayrıştırılıyor':'İşlem amacı netleştiriliyor'
   ];
   const middleByTask={
     prepare:[hasLayout?'Satır, tablo ve kopyalama izleri kontrol ediliyor':'Paragraf ve soru-cevap akışı inceleniyor','Denetime engel olabilecek riskler seçiliyor'],
@@ -1225,7 +1221,7 @@ function buildLiveSteps(context='helper',task='ask',text='',result=null,question
     feedback:['Hatalı olabilecek bulgunun bağlamı toparlanıyor','Ekip için net teknik ifade hazırlanıyor','Yanlış pozitif ihtimali ayrıştırılıyor'],
     suspect:['Anlamı değiştirebilecek dönüşümler aranıyor','Sure, sözlük ve noktalama bulguları ayrılıyor','Şüpheli görünen noktalar önceliklendiriliyor'],
     copycheck:['Kopyalanacak metin ve kaynak karşılaştırılıyor','Sonuç kaybı veya düzen bozulması riski kontrol ediliyor','Kopyalama/PDF için güvenli adımlar hazırlanıyor'],
-    ask:['Metin, sonuç ve sorunuz birlikte değerlendiriliyor','Kural sınırları korunarak yanıt hazırlanıyor','Uygulanabilir öneriler seçiliyor']
+    ask:['Metin ve sonuç birlikte değerlendiriliyor','Kural sınırları korunarak yanıt hazırlanıyor','Uygulanabilir öneriler seçiliyor']
   };
   const closing=[
     'Kısa ve uygulanabilir yanıt hazırlanıyor',
@@ -1260,9 +1256,9 @@ function renderAssistantAnswer(answer){
 async function runHelper(task){
   const out=el('helperOutput');
   const live=el('helperLiveText');
-  const question=v('helperQuestion');
+  const question='';
   const text=cleanInputText(el('inputText')?.value||'');
-  if(!text&&!currentResult&&!question){out.textContent='Önce metin girin, denetim yapın veya yardımcıya soru yazın.';return;}
+  if(!text&&!currentResult){out.textContent='Önce metin girin veya denetim sonucu oluşturun. Yardımcı bu iki bağlama göre açıklama yapar.';return;}
   if(live)live.textContent='Çalışıyor';
   out.innerHTML='<div id="helperProcess" class="assistant-steps"></div>';
   const steps=buildLiveSteps('helper',task,text,currentResult,question);
@@ -1473,7 +1469,11 @@ async function sendResultFeedback(historyId,reason){
 async function sendIssueFeedback(historyId,category,index,reason){
   const issue=currentResult?.categories?.[category]?.issues?.[index];
   if(!issue){setStatus('Bulgu bulunamadı.','err');return;}
-  const note=prompt('Bu bulgu neden yanlış? Kısa not ekleyebilirsiniz:');
+  explainIssueBeforeFeedback(issue, reason);
+  const defaultNote=reason==='nonexistent'
+    ? `Metinde "${issue.original||''}" ifadesini bu bağlamda bulamadım. Lütfen kontrol edin.`
+    : `"${issue.original||''}" → "${issue.fixed||''}" dönüşümünün bu bağlamda yanlış olduğunu düşünüyorum. Doğru kabul edilmesi gereken yazım: `;
+  const note=prompt('Bu bulgu neden yanlış? Yardımcı taslağı düzenleyebilirsiniz:', defaultNote);
   if(note===null)return;
   const r=await api('POST',`/api/history/${historyId}/feedback`,{
     reason,note,category,
@@ -1484,6 +1484,24 @@ async function sendIssueFeedback(historyId,category,index,reason){
   if(r.error){setStatus(r.error,'err');return;}
   setStatus('✓ Bulgu geri bildirimi gönderildi.','ok');
   setTimeout(()=>setStatus('',''),2500);
+}
+
+function explainIssueBeforeFeedback(issue, reason){
+  const out=el('helperOutput');
+  const live=el('helperLiveText');
+  if(!out)return;
+  if(live)live.textContent='Bulgu inceleniyor';
+  const title=reason==='nonexistent'?'Metinde Yok Geri Bildirimi':'Yanlış Düzeltme Geri Bildirimi';
+  const intent=reason==='nonexistent'
+    ? 'Bu seçenek, sistemin gösterdiği ifadenin kaynak metinde gerçekten bulunmadığını düşünüyorsanız kullanılmalı.'
+    : 'Bu seçenek, ifade metinde var ama sistemin önerdiği dönüşüm bağlama göre yanlışsa kullanılmalı.';
+  out.innerHTML=`<strong>${title}</strong><br>${esc(intent)}
+    <ul class="assistant-list">
+      <li>İşaretlenen ifade: <strong>${esc(issue.original||'-')}</strong></li>
+      <li>Sistemin önerisi: <strong>${esc(issue.fixed||'-')}</strong></li>
+      <li>Kural/Bağlam: ${esc(issue.rule||'Belirtilmemiş')}</li>
+    </ul>
+    <div style="margin-top:8px"><strong>Net geri bildirim için</strong><br>Doğru kabul edilmesi gereken yazımı ve nedenini tek cümlede yazmanız yeterli. Bu bilgi admin tarafında çözüm paketine eklenir.</div>`;
 }
 
 async function loadHistory(){
