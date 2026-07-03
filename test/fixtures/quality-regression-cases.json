@@ -180,7 +180,7 @@
     "expected": { "score": 100, "totalErrors": 0, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
   },
   {
-    "name": "Zumer sure adi yeni listeye gore sapkasiz korunur",
+    "name": "Zumer sure adi sadece buyuk harfe cevrildigi icin hata sayilmaz",
     "sourceText": "Zumer Suresi bu bolumde geciyor.",
     "modelResult": {
       "correctedText": "ZUMER Suresi bu bolumde geciyor.",
@@ -192,7 +192,7 @@
         }
       }
     },
-    "expected": { "score": 95, "totalErrors": 1, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Zumer Suresi bu bolumde geciyor." }
   },
   {
     "name": "Zumer sure adini Zumer yerine Zumer umlautlu yapma reddedilir",
@@ -208,5 +208,65 @@
       }
     },
     "expected": { "score": 100, "totalErrors": 0, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Sure adinda sadece buyuk harf donusumu hata sayilmaz",
+    "sourceText": "Muzzemmil Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MUZZEMM\u0130L Suresi bu bolumde geciyor.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Muzzemmil", "fixed": "MUZZEMM\u0130L", "rule": "Sure adi case" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Muzzemmil Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Fatiha sapkali ama kucuk yazildi diye hata sayilmaz",
+    "sourceText": "F\u00e2tiha Suresi okunuyor.",
+    "modelResult": {
+      "correctedText": "F\u00c2T\u0130HA Suresi okunuyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "F\u00e2tiha", "fixed": "F\u00c2T\u0130HA", "rule": "Sure adi case" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "F\u00e2tiha Suresi okunuyor." }
+  },
+  {
+    "name": "Mulk sadece buyuk harfe cevrildigi icin hata sayilmaz",
+    "sourceText": "Mulk Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MULK Suresi bu bolumde geciyor.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Mulk", "fixed": "MULK", "rule": "Sure adi case" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Mulk Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Rum sure adinda sapka gerekiyorsa imla olarak skorlanir",
+    "sourceText": "Rum Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "R\u00fbm Suresi bu bolumde geciyor.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Rum", "fixed": "R\u00fbm", "rule": "Sure adi imla" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 96, "totalErrors": 1, "correctedText": "R\u00fbm Suresi bu bolumde geciyor." }
   }
 ]

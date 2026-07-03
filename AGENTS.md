@@ -115,6 +115,13 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Sure adlarında büyük/küçük harf kararı:** Sure isimlerinde büyük/küçük harf farkı artık
+  tek başına hata sayılmaz. Sistem `Fâtiha → FÂTİHA`, `Mulk → MULK`, `Muzzemmil → MUZZEMMİL`,
+  `Zumer → ZUMER` gibi sadece case dönüşümlerini skorlamaz ve düzeltilmiş metinden geri alır.
+  Asıl kontrol şapka, apostrof ve harf dizilimi gibi imlâ farklarıdır; `Rum → Rûm` gibi şapka
+  gerektiren gerçek imlâ farkları hâlâ skorlanır.
+- **Test:** Sure adı case-only regresyonları kalite havuzuna eklendi; `npm.cmd run check`
+  başarılı, test sayısı 31'e çıktı.
 - **Temizle reset bug düzeltmesi:** Metin denetimi ekranında `Temizle` butonu yalnızca
   textarea değerini boşaltıyor, karakter sayacı ve otomatik büyüyen alan yüksekliği eski
   metinden kalıyordu. `clearAnalyze()` artık `handleTextInput()` çağırır; boş metinde sayaç

@@ -23,6 +23,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-03 Codex sure case turu: Sure adlarında büyük/küçük harf farkı tek başına hata
+  sayılmayacak şekilde prompt ve backend filtreleri güncellendi. `analysis-core.js`
+  `SURA_NAMES`/`isSuraCaseOnlyChange` ile `Fâtiha → FÂTİHA`, `Mulk → MULK`,
+  `Muzzemmil → MUZZEMMİL`, `Zumer → ZUMER` gibi case-only dönüşümleri skor dışı bırakır
+  ve correctedText'ten geri alır. Şapka/apostrof/harf dizilimi farkları hâlâ gerçek imlâ
+  farkıdır; örn. `Rum → Rûm` skorlanır.
 - 2026-07-03 Codex temizle reset bug turu: Metin denetimi ekranında `Temizle` butonu artık
   `handleTextInput()` çağırır. Bu sayede metin boşalınca karakter sayacı `0 karakter` olur,
   yardımcı metin ilk hale döner ve otomatik büyüyen textarea yüksekliği 180px başlangıç
@@ -195,6 +201,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   canlı DB'de 36 toplu duyuru kaydının mesaj gövdesinde son imza satırı olmadığı doğrulandı.
 - `npm.cmd run check`: başarılı (2026-07-03 Codex temizle reset bug turu). 27/27 test geçti;
   `clearAnalyze()` sayaç ve textarea yüksekliğini resetleyecek şekilde güncellendi.
+- `npm.cmd run check`: başarılı (2026-07-03 Codex sure case turu). 31/31 test geçti;
+  sure adlarında sadece büyük/küçük harf dönüşümleri skor dışı bırakılıyor.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

@@ -10,6 +10,24 @@ const PROTECTED_PATTERNS = [
   /\bdinlenmeye\b/iu,
   /\bmuhterem\s+efendimiz\b/iu
 ];
+const SURA_NAMES = [
+  'FÂTİHA', 'BAKARA', 'ÂLİ İMRÂN', 'NİSÂ', 'MÂİDE', "EN'ÂM", "A'RÂF", 'ENFÂL',
+  'TEVBE', 'YÛNUS', 'HÛD', 'YÛSUF', "RA'D", 'İBRÂHÎM', 'HİCR', 'NAHL', 'İSRÂ',
+  'KEHF', 'MERYEM', 'TÂHÂ', 'ENBİYÂ', 'HACC', "MU'MİNÛN", 'NÛR', 'FURKÂN',
+  'ŞUARÂ', 'NEML', 'KASAS', 'ANKEBÛT', 'RÛM', 'LOKMÂN', 'SECDE', 'AHZÂB',
+  'SEBE', 'FÂTIR', 'YÂSÎN', 'SÂFFÂT', 'SÂD', 'ZUMER', "MU'MİN", 'FUSSİLET',
+  'ŞÛRÂ', 'ZUHRÛF', 'DUHÂN', 'CÂSİYE', 'AHKÂF', 'MUHAMMED', 'FETİH', 'HUCURÂT',
+  'KAF', 'ZÂRİYÂT', 'TÛR', 'NECM', 'KAMER', 'RAHMÂN', 'VÂKIA', 'HADÎD',
+  'MUCÂDELE', 'HAŞR', 'MUMTEHİNE', 'SAFF', 'CUMA', 'MUNÂFİKÛN', 'TEGÂBUN',
+  'TALÂK', 'TAHRÎM', 'MULK', 'KALEM', 'HÂKKA', 'MEÂRİC', 'NÛH', 'CİNN',
+  'MUZZEMMİL', 'MUDDESSİR', 'KIYÂME', 'İNSÂN', 'MURSELÂT', 'NEBE', 'NÂZİÂT',
+  'ABESE', 'TEKVÎR', 'İNFİTÂR', 'MUTAFFİFÎN', 'İNŞİKAK', 'BURÛC', 'TÂRIK',
+  "A'LÂ", 'GÂŞİYE', 'FECR', 'BELED', 'ŞEMS', 'LEYL', 'DUHÂ', 'İNŞİRÂH',
+  'ŞERH', 'TÎN', 'ALAK', 'KADR', 'KADİR', 'BEYYİNE', 'ZİLZÂL', 'ÂDİYÂT',
+  'KÂRİA', 'TEKÂSUR', 'ASR', 'HUMEZE', 'FÎL', 'KUREYŞ', 'MÂÛN', 'KEVSER',
+  'KÂFİRÛN', 'NASR', 'TEBBET', 'MESED', 'İHLÂS', 'FELAK', 'NÂS'
+];
+const SURA_NAME_KEYS = new Set(SURA_NAMES.map(suraCaseKey));
 const FORBIDDEN_TRANSFORMS = [
   { from: /\bdin\b/iu, to: /\bdîn\b/iu },
   { from: /\bherşey\b/iu, to: /\bher\s+şey\b/iu },
@@ -32,6 +50,18 @@ function canonicalText(text) {
     .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function suraCaseKey(text) {
+  return canonicalText(text)
+    .replace(/[()]/g, '')
+    .toLocaleUpperCase('tr-TR');
+}
+
+function isSuraCaseOnlyChange(original, fixed) {
+  const from = suraCaseKey(original);
+  const to = suraCaseKey(fixed);
+  return !!from && from === to && SURA_NAME_KEYS.has(to) && canonicalText(original) !== canonicalText(fixed);
 }
 
 function escapeRegExp(text) {
@@ -71,6 +101,7 @@ function isProtectedChange(original, fixed) {
   const to = canonicalText(fixed);
   if (!from || !to || from === to) return false;
 
+  if (isSuraCaseOnlyChange(original, fixed)) return true;
   if (PROTECTED_PATTERNS.some(pattern => pattern.test(from))) return true;
   return FORBIDDEN_TRANSFORMS.some(pair => pair.from.test(from) && pair.to.test(to));
 }

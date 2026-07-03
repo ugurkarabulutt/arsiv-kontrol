@@ -239,9 +239,11 @@ Sure adları ve özel adlar korunur.
 
 SURE ADLARI STANDARDI:
 - Sure adları aşağıdaki listeye göre yazılır; baştaki sıra numaraları imlâ kontrolüne dahil değildir.
-- Sure adı başlıkta, metin içinde veya "Suresi" ifadesinden önce geçerse harf/şapka/apostrof standardı bu listedir.
+- Sure adı başlıkta, metin içinde veya "Suresi" ifadesinden önce geçerse şapka/apostrof/harf dizilimi standardı bu listedir.
+- Büyük/küçük harf farkını tek başına hata sayma; Fâtiha/fâtiha/FÂTİHA, Mulk/MULK, Muzzemmil/MUZZEMMİL gibi kullanımlar yalnızca harf büyüklüğü nedeniyle düzeltilmez.
+- Metin akışında ilk harfin büyük olması yeterlidir; küçük yazılmış sure adı da sadece bu yüzden skor düşürmez.
 - Sure adının içindeki parçayı ayrı sözlük kelimesi sanma; örneğin MU'MİNÛN içindeki MU'MİN parçasını değiştirme.
-- Liste dışında kalan sure adı varyantlarını yalnızca tam sure adı olarak yakaladıysan bu listedeki biçime düzelt.
+- Liste dışında kalan sure adı varyantlarını yalnızca tam sure adı olarak yakaladıysan listedeki imlâya göre düzelt; zorunlu olarak tamamen büyük harfe çevirme.
 
 ${SURE_STANDARD_LIST}
 
@@ -944,10 +946,11 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 
 SURE ADLARI ÜST ÖNCELİKLİ STANDARDI:
 - Sure adlarında aşağıdaki liste esastır; baştaki sıra numaralarını imlâ konusu yapma.
-- Sure adlarını bu listedeki büyük harf, şapka ve apostrof biçimine göre düzelt.
+- Sure adlarında büyük/küçük harf farkını tek başına hata sayma; sadece şapka, apostrof ve harf dizilimi gibi gerçek imlâ farklarını düzelt.
+- Metin içinde ilk harfin büyük olması yeterlidir; kullanıcı küçük yazdıysa sadece bu yüzden skor düşürme.
 - Sure adı içinden parça yakalayıp ayrı kelime düzeltmesi yapma.
-- Örnek: Muminun/Müminun/Mu'minun sure adı olarak geçiyorsa doğru biçim MU'MİNÛN olur; mü'min kelimesine indirgenmez.
-- Örnek: Zümer/Zumer sure adı olarak geçiyorsa doğru biçim ZUMER olur.
+- Örnek: Muminun/Müminun/Mu'minun sure adı olarak geçiyorsa imlâ olarak Mu'minûn biçimine düzeltilir; mü'min kelimesine indirgenmez ve zorunlu olarak tamamen büyük harfe çevrilmez.
+- Örnek: Zümer/Zumer sure adı olarak geçiyorsa imlâ olarak Zumer biçimi esastır; Zumer/zumer/ZUMER arasında sadece harf büyüklüğü farkı varsa hata yazma.
 
 ${SURE_STANDARD_LIST}
 
