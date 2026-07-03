@@ -1565,6 +1565,63 @@ app.post('/api/ai/insight', auth, admin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+function fallbackHelperResponse(task, text, result, question) {
+  const len = String(text || '').trim().length;
+  const totalErrors = Number(result?.totalErrors || 0);
+  const score = Number(result?.score || 0);
+  const suggestions = [];
+  if (len && len < MIN_ANALYSIS_TEXT_CHARS) suggestions.push('Metin çok kısa; daha sağlıklı kontrol için birkaç cümlelik bağlam ekleyin.');
+  if (len > 18000) suggestions.push('Metin uzun görünüyor; parça parça denetlemek daha güvenilir sonuç verir.');
+  if (String(text || '').includes('\t')) suggestions.push('Tablo veya sütun düzeni olabilir; denetim sonrası düzen karşılaştırmasını mutlaka kontrol edin.');
+  if (result && totalErrors === 0) suggestions.push('Sonuç temiz görünüyor; yine de düzeltilmiş metin kaynak metinle aynı mı kontrol edin.');
+  if (result && totalErrors > 0) suggestions.push(`Sistem ${totalErrors} bulgu göstermiş. Önce anlamı etkileyen düzeltmeleri ve şüpheli kelime dönüşümlerini kontrol edin.`);
+  if (result && score < 60) suggestions.push('Skor düşük olduğu için düzeltilmiş metin verilmemiş olabilir; metni bölerek yeniden denemek faydalı olabilir.');
+  if (!suggestions.length) suggestions.push('Metin denetime hazır görünüyor. Denetim sonrası şüpheli bulguları geri bildirimle işaretleyebilirsiniz.');
+  return {
+    title: task === 'feedback' ? 'Geri Bildirim Taslağı' : task === 'explain' ? 'Sonuç Yorumu' : 'Denetim Yardımcısı',
+    summary: question ? `Sorunuz için mevcut veriye göre kısa değerlendirme hazırlandı: ${question}` : suggestions[0],
+    steps: ['Metin yapısı kontrol edildi.', 'Mevcut denetim sonucu değerlendirildi.', 'Kullanıcı için uygulanabilir öneriler çıkarıldı.'],
+    suggestions,
+    feedbackDraft: task === 'feedback' ? 'Bu bulgunun neden hatalı olduğunu düşündüğünüzü, doğru kabul edilmesi gereken yazımı ve sistemin önerdiği yanlış dönüşümü tek cümlede belirtin.' : '',
+    riskLevel: result && score < 60 ? 'high' : totalErrors > 0 ? 'medium' : 'low'
+  };
+}
+
+app.post('/api/ai/helper', auth, async (req, res) => {
+  try {
+    const task = ['prepare', 'explain', 'feedback', 'ask'].includes(req.body?.task) ? req.body.task : 'ask';
+    const text = String(req.body?.text || '').slice(0, 12000);
+    const question = String(req.body?.question || '').trim().slice(0, 900);
+    const result = req.body?.result && typeof req.body.result === 'object' ? req.body.result : null;
+    if (!text.trim() && !result && !question) return res.status(400).json({ error: 'Yardımcı için metin, sonuç veya soru gerekli.' });
+    if (!OPENAI_API_KEY) return res.json({ answer: fallbackHelperResponse(task, text, result, question), model: 'assistant' });
+
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({
+        model: AI_REPORT_MODEL,
+        temperature: 0.15,
+        max_tokens: 1100,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Görevin kullanıcıya ikinci göz olmak, metni denetime hazırlamak, sonucu sade anlatmak ve kaliteli geri bildirim taslağı oluşturmaktır. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular ve geri bildirim netliği konusunda yardımcı ol. JSON döndür: title, summary, steps(array), suggestions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
+          { role: 'user', content: JSON.stringify({ task, question, text, result }).slice(0, 24000) }
+        ]
+      })
+    });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'Denetim Yardımcısı yanıt veremedi.');
+    }
+    const d = await r.json();
+    let answer;
+    try { answer = JSON.parse(d.choices[0].message.content); }
+    catch { answer = { ...fallbackHelperResponse(task, text, result, question), summary: d.choices[0].message.content }; }
+    res.json({ answer, model: 'assistant' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/cron/daily-report', async (req, res) => {
   try {
     const cronSecret = process.env.CRON_SECRET;

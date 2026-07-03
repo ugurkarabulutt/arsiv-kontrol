@@ -115,6 +115,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Denetim Yardımcısı AI:** Kullanıcı tarafındaki Metin Denetimi ekranına güvenli "Denetim
+  Yardımcısı" eklendi. Yardımcı; metni denetime hazırlama, sonucu sade açıklama, şüpheli
+  noktaları ikinci göz olarak yorumlama, geri bildirim taslağı oluşturma ve serbest soru yanıtlama
+  görevlerini yapar. Metni kendi başına düzeltmez, kural değiştirmez, dini/içerik yorumu yapmaz,
+  kullanıcı adına onay/red vermez. Backend `POST /api/ai/helper` endpoint'i `gpt-4o-mini` ile
+  JSON yanıt üretir; API anahtarı yoksa güvenli fallback önerileri döner.
+- **Canlı AI hissi:** Kullanıcı ve admin AI ekranlarında model adı gösterilmez. İşlem sırasında
+  "metin okunuyor / bulgular değerlendiriliyor / öneriler çıkarılıyor" gibi süreç adımları,
+  canlı nokta animasyonu ve tamamlandı durumları gösterilir. Admin AI rapor ve soru ekranı da
+  aynı süreç panelini kullanır; kullanıcıya `4o mini çalışıyor` gibi teknik ifade gösterilmez.
 - **Premium UX ve okunurluk turu:** Uygulama fontu `Noto Sans` olarak değiştirildi; yaşça büyük
   kullanıcılar için daha okunur ve yüksek kontrastlı metin yapısı hedeflendi. Açık/koyu tema
   paletleri daha premium, daha az parlak ve daha katmanlı hale getirildi. Sol menü beyaz düz

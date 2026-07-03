@@ -334,6 +334,28 @@ canvas{width:100%!important;}
 .ai-box-head{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);font-weight:700;font-size:13px;}
 .ai-box-body{padding:14px;}
 .ai-answer{white-space:pre-line;font-size:14px;line-height:1.65;color:var(--ink2);background:var(--bg2);border:1px solid var(--border);padding:12px;min-height:80px;}
+.assistant-panel{margin-top:16px;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);box-shadow:var(--soft-shadow);}
+.assistant-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.assistant-title{font-weight:800;font-size:14px;color:var(--ink);}
+.assistant-live{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 0 rgba(202,164,74,.4);animation:pulseLive 1.4s infinite;}
+@keyframes pulseLive{70%{box-shadow:0 0 0 8px rgba(202,164,74,0)}100%{box-shadow:0 0 0 0 rgba(202,164,74,0)}}
+.assistant-body{padding:14px;}
+.assistant-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.assistant-question{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.assistant-question input{flex:1;min-width:220px;background:var(--white);border:1px solid var(--border);color:var(--ink);padding:10px 12px;border-radius:7px;outline:none;}
+.assistant-question input:focus{border-color:var(--gold);box-shadow:var(--focus);}
+.assistant-output{background:var(--surface2);border:1px solid var(--border);padding:12px 14px;color:var(--ink2);font-size:14px;line-height:1.65;min-height:72px;}
+.assistant-output strong{color:var(--ink);}
+.assistant-steps{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
+.assistant-step{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.assistant-step::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--border);}
+.assistant-step.active{color:var(--gold);}
+.assistant-step.active::before{background:var(--gold);animation:pulseLive 1.2s infinite;}
+.assistant-step.done{color:var(--green);}
+.assistant-step.done::before{background:var(--green);}
+.assistant-list{margin:8px 0 0 18px;}
+.assistant-list li{margin-bottom:5px;}
 .report-card{border-bottom:1px solid var(--border);padding:12px 0;}
 .report-card:last-child{border-bottom:none;}
 .report-title{font-weight:700;font-size:15px;margin-bottom:4px;color:var(--ink);}
@@ -577,6 +599,24 @@ canvas{width:100%!important;}
         <button class="btn-sec" onclick="clearAnalyze()">Temizle</button>
         <span class="status-msg" id="statusMsg"></span>
       </div>
+      <div class="assistant-panel">
+        <div class="assistant-head">
+          <div class="assistant-title">Denetim Yardımcısı</div>
+          <div class="assistant-live"><span class="live-dot"></span><span id="helperLiveText">Hazır</span></div>
+        </div>
+        <div class="assistant-body">
+          <div class="assistant-actions">
+            <button class="btn-mini" onclick="runHelper('prepare')">Metni Hazırla</button>
+            <button class="btn-mini" onclick="runHelper('explain')">Sonucu Açıkla</button>
+            <button class="btn-mini" onclick="runHelper('feedback')">Geri Bildirim Taslağı</button>
+          </div>
+          <div class="assistant-output" id="helperOutput">Metni yapıştırınca ya da denetim sonucu oluşunca ikinci göz olarak yardımcı olur.</div>
+          <div class="assistant-question">
+            <input id="helperQuestion" placeholder="Yardımcıya sorun: Bu metinde dikkat etmem gereken ne var?">
+            <button class="btn-sec" onclick="runHelper('ask')">Sor</button>
+          </div>
+        </div>
+      </div>
       <div id="resultsArea" style="margin-top:18px"></div>
     </div>
 
@@ -657,7 +697,7 @@ canvas{width:100%!important;}
       <div class="settings-card">
         <div class="settings-card-head">AI Yardımcı Önerisi</div>
         <div class="settings-card-body">
-          <div class="info-box" style="margin-bottom:0">Ekip üyeleri tarafına ayrı bir “Denetim Yardımcısı” eklenebilir. Bu asistan metni göndermeden önce kısa kontrol listesi, eksik alan uyarısı, son kopyalanan sonucu bulma, geri bildirim yazarken açıklamayı netleştirme ve büyük metinlerde bölme önerisi sunmalı. Kod veya kural değiştirme yetkisi olmamalı; sadece kullanıcıyı yönlendirmeli.</div>
+          <div class="info-box" style="margin-bottom:0">Denetim Yardımcısı metni denetime hazırlamak, sonucu ikinci göz olarak açıklamak, şüpheli noktaları görünür yapmak ve geri bildirimi ekip için daha net hale getirmek için çalışır. Kod, kural, onay veya red yetkisi yoktur; kullanıcıya güvenli rehberlik eder.</div>
         </div>
       </div>
     </div>
@@ -696,8 +736,11 @@ canvas{width:100%!important;}
         </div>
       </div>
       <div class="ai-box" style="margin-bottom:12px">
-        <div class="ai-box-head">AI Yanıtı</div>
-        <div class="ai-box-body"><div class="ai-answer" id="aiAnswer">Henüz soru sorulmadı.</div></div>
+        <div class="ai-box-head">Canlı AI Değerlendirmesi</div>
+        <div class="ai-box-body">
+          <div id="adminAiProcess" class="assistant-steps" style="display:none"></div>
+          <div class="ai-answer" id="aiAnswer">Henüz soru sorulmadı.</div>
+        </div>
       </div>
       <div class="ai-box">
         <div class="ai-box-head">Rapor Geçmişi</div>
@@ -1135,8 +1178,61 @@ function showDuplicate(container,msg){
   container.innerHTML=`<div class="loading-box" style="color:var(--gold-dk,#8b6914);border:1px solid var(--gold,#c49a2a);background:var(--grn-bg,#fff8e6)">⚠ ${esc(msg||'Bu metni daha önce denetlediniz.')}</div>`;
   setStatus('Bu metin daha önce denetlenmiş.','err');
 }
+function setAssistantProcess(targetId,steps,activeIndex=0){
+  const box=el(targetId);
+  if(!box)return;
+  box.style.display='flex';
+  box.innerHTML=steps.map((s,i)=>`<div class="assistant-step ${i<activeIndex?'done':i===activeIndex?'active':''}">${esc(s)}</div>`).join('');
+}
+async function animateAssistantProcess(targetId,steps){
+  for(let i=0;i<steps.length;i++){
+    setAssistantProcess(targetId,steps,i);
+    await new Promise(resolve=>setTimeout(resolve,420));
+  }
+  setAssistantProcess(targetId,steps,steps.length);
+}
+function renderAssistantAnswer(answer){
+  const a=answer||{};
+  const suggestions=Array.isArray(a.suggestions)?a.suggestions:[];
+  const steps=Array.isArray(a.steps)?a.steps:[];
+  return `<strong>${esc(a.title||'Denetim Yardımcısı')}</strong><br>${esc(a.summary||'Kısa değerlendirme hazır.')}
+    ${steps.length?`<ul class="assistant-list">${steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}
+    ${suggestions.length?`<div style="margin-top:8px"><strong>Öneriler</strong><ul class="assistant-list">${suggestions.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
+    ${a.feedbackDraft?`<div style="margin-top:8px"><strong>Geri bildirim taslağı</strong><br>${esc(a.feedbackDraft)}</div>`:''}`;
+}
+async function runHelper(task){
+  const out=el('helperOutput');
+  const live=el('helperLiveText');
+  const question=v('helperQuestion');
+  const text=cleanInputText(el('inputText')?.value||'');
+  if(!text&&!currentResult&&!question){out.textContent='Önce metin girin, denetim yapın veya yardımcıya soru yazın.';return;}
+  if(live)live.textContent='Çalışıyor';
+  out.innerHTML='<div id="helperProcess" class="assistant-steps"></div>';
+  const steps=task==='prepare'
+    ?['Metin uzunluğu ve yapı okunuyor','Kopyalama/düzen riskleri kontrol ediliyor','Denetime hazırlık önerileri çıkarılıyor']
+    :task==='feedback'
+      ?['Sorun bağlamı toparlanıyor','Geri bildirim netleştiriliyor','Ekip için temiz taslak hazırlanıyor']
+      :task==='explain'
+        ?['Sonuç skoru okunuyor','Bulgular önem sırasına alınıyor','Kullanıcı için kısa açıklama hazırlanıyor']
+        :['Sorunuz anlaşılıyor','Mevcut metin ve sonuç birlikte değerlendiriliyor','Yanıt hazırlanıyor'];
+  const animation=animateAssistantProcess('helperProcess',steps);
+  try{
+    const r=await api('POST','/api/ai/helper',{task,text,result:currentResult,question});
+    await animation;
+    if(r.error)throw new Error(r.error);
+    out.innerHTML=renderAssistantAnswer(r.answer);
+    if(live)live.textContent='Yanıt hazır';
+  }catch(e){
+    out.textContent=e.message;
+    if(live)live.textContent='Tekrar deneyin';
+  }
+}
 function renderResults(d,container){
   currentResult=d;
+  const live=el('helperLiveText');
+  if(live)live.textContent='Sonuç için hazır';
+  const helperOut=el('helperOutput');
+  if(helperOut)helperOut.innerHTML='Denetim sonucu oluştu. İsterseniz <strong>Sonucu Açıkla</strong> ile ikinci göz yorumu alabilir veya <strong>Geri Bildirim Taslağı</strong> oluşturabilirsiniz.';
   const cats=d.categories||{};
   const sc=d.score||0;
   const fc=sc>=80?'sf-high':sc>=55?'sf-mid':'sf-low';
@@ -1627,7 +1723,7 @@ function renderReport(report){
   const list=arr=>Array.isArray(arr)&&arr.length?`<ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
   return `<div class="report-card">
     <div class="report-title">${esc(report.title||c.title||'AI Raporu')}</div>
-    <div class="report-meta">${reportPeriodLabel(report.period)} · ${dt} · ${esc(report.model||'')}</div>
+    <div class="report-meta">${reportPeriodLabel(report.period)} · ${dt} · Canlı değerlendirme</div>
     ${c.executiveSummary?`<div class="report-section"><strong>Özet:</strong> ${esc(c.executiveSummary)}</div>`:''}
     ${c.activitySummary?`<div class="report-section"><strong>Aktivite:</strong> ${esc(c.activitySummary)}</div>`:''}
     ${c.feedbackSummary?`<div class="report-section"><strong>Geri Bildirim:</strong> ${esc(c.feedbackSummary)}</div>`:''}
@@ -1646,10 +1742,14 @@ async function loadAiReports(){
 }
 
 async function generateAiReport(period){
-  const st=el('aiStatus'); if(st){st.textContent='Rapor üretiliyor...';st.className='status-msg';}
+  const st=el('aiStatus'); if(st){st.textContent='Canlı rapor hazırlanıyor...';st.className='status-msg';}
+  el('aiAnswer').textContent='Operasyon verisi okunuyor ve rapor hazırlanıyor.';
+  const animation=animateAssistantProcess('adminAiProcess',['Dönem verisi toplanıyor','Geri bildirim ve skorlar değerlendiriliyor','Yönetim özeti hazırlanıyor']);
   const r=await api('POST','/api/ai/reports/generate',{period});
+  await animation;
   if(r.error){if(st){st.textContent=r.error;st.className='status-msg err';}return;}
-  if(st){st.textContent='✓ Rapor üretildi.';st.className='status-msg ok';}
+  if(st){st.textContent='✓ Rapor hazır.';st.className='status-msg ok';}
+  el('aiAnswer').textContent='Rapor hazır. Aşağıdaki rapor geçmişinden inceleyebilirsiniz.';
   await loadAiReports();
   setTimeout(()=>{if(st)st.textContent='';},2500);
 }
@@ -1658,12 +1758,15 @@ async function askAiAssistant(){
   const q=v('aiQuestion');
   const st=el('aiStatus');
   if(!q){if(st){st.textContent='Soru yazın.';st.className='status-msg err';}return;}
-  if(st){st.textContent='AI analiz ediyor...';st.className='status-msg';}
-  el('aiAnswer').textContent='Analiz ediliyor...';
+  if(st){st.textContent='Canlı değerlendirme hazırlanıyor...';st.className='status-msg';}
+  el('aiAnswer').textContent='Sorunuz değerlendiriliyor.';
+  const animation=animateAssistantProcess('adminAiProcess',['Sorunuz ayrıştırılıyor','Operasyon metrikleri okunuyor','Risk ve öneriler çıkarılıyor','Yanıt sadeleştiriliyor']);
   const r=await api('POST','/api/ai/insight',{question:q,period:v('aiPeriod')});
+  await animation;
   if(r.error){el('aiAnswer').textContent=r.error;if(st){st.textContent='';}return;}
   el('aiAnswer').textContent=r.answer||'Yanıt yok.';
-  if(st){st.textContent=`✓ ${r.model||'AI'} yanıtladı.`;st.className='status-msg ok';}
+  if(st){st.textContent='✓ Yanıt hazır.';st.className='status-msg ok';}
+  const process=el('adminAiProcess'); if(process)setTimeout(()=>{process.style.display='none';},1600);
   setTimeout(()=>{if(st)st.textContent='';},2500);
 }
 
