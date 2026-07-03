@@ -675,9 +675,10 @@ function cleanInputText(text){return String(text||'').normalize('NFC').replace(/
 function handleTextInput(){
   const input=el('inputText');
   if(!input)return;
-  input.style.height='auto';input.style.height=input.scrollHeight+'px';
   const cleaned=cleanInputText(input.value);
   const count=cleaned.length;
+  input.style.height='auto';
+  input.style.height=count===0?'180px':`${input.scrollHeight}px`;
   const box=el('textHealth');
   if(el('textCount'))el('textCount').textContent=`${count.toLocaleString('tr-TR')} karakter`;
   let hint='Denetime hazır.';
@@ -1002,6 +1003,7 @@ async function downloadPDF(){
 
 function clearAnalyze(){
   el('inputText').value='';
+  handleTextInput();
   el('resultsArea').innerHTML='';
   selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';
   const d=el('fileDrop');

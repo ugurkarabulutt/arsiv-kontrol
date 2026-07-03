@@ -114,6 +114,14 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-03
+- **Temizle reset bug düzeltmesi:** Metin denetimi ekranında `Temizle` butonu yalnızca
+  textarea değerini boşaltıyor, karakter sayacı ve otomatik büyüyen alan yüksekliği eski
+  metinden kalıyordu. `clearAnalyze()` artık `handleTextInput()` çağırır; boş metinde sayaç
+  `0 karakter` olur, yardımcı metin ilk hale döner ve textarea yüksekliği 180px başlangıç
+  yüksekliğine resetlenir.
+- **Test:** `npm.cmd run check` başarılı; 27/27 test geçti ve frontend parse kontrolü tamamlandı.
+
 ### 2026-07-01
 - **Bildirim imza tekrarı:** Bildirim gövdesinin sonundaki tek başına `Arşiv Kontrol AI`
   imza satırı kaldırıldı; gönderen adı zaten kart footer'ında gösterildiği için tekrar
