@@ -268,5 +268,119 @@
       }
     },
     "expected": { "score": 96, "totalErrors": 1, "correctedText": "R\u00fbm Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Tabi anlamindaki tabi kelimesi tabi olmak diye yorumlanmaz",
+    "sourceText": "Tabi bu konu istisare ile neticelenir.",
+    "modelResult": {
+      "correctedText": "T\u00e2b\u00ee bu konu istisare ile neticelenir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Tabi", "fixed": "T\u00e2b\u00ee", "rule": "Baglam yanlisi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Tabi bu konu istisare ile neticelenir." }
+  },
+  {
+    "name": "Tabii kelimesi tabi olmak anlamina cevrilmez",
+    "sourceText": "Yapabilir tabi\u00ee, ama konu farklidir.",
+    "modelResult": {
+      "correctedText": "Yapabilir t\u00e2b\u00ee, ama konu farklidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "tabi\u00ee", "fixed": "t\u00e2b\u00ee", "rule": "Baglam yanlisi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Yapabilir tabi\u00ee, ama konu farklidir." }
+  },
+  {
+    "name": "Sure kelimesi sure adi sanilip sapkalanmaz",
+    "sourceText": "Bu s\u00fcreyi belirleyen kisinin gayretidir.",
+    "modelResult": {
+      "correctedText": "Bu s\u00fbreyi belirleyen kisinin gayretidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "s\u00fcreyi", "fixed": "s\u00fbreyi", "rule": "Baglam yanlisi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Bu s\u00fcreyi belirleyen kisinin gayretidir." }
+  },
+  {
+    "name": "Afet kelimesi sapkali afete cevrilmez",
+    "sourceText": "Nefsin afetleriyle davranmasi derecat kaybettirir.",
+    "modelResult": {
+      "correctedText": "Nefsin \u00e2fetleriyle davranmasi derecat kaybettirir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "afetleriyle", "fixed": "\u00e2fetleriyle", "rule": "Yanlis sapka" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Nefsin afetleriyle davranmasi derecat kaybettirir." }
+  },
+  {
+    "name": "Zahid kelimesi sapkali zahide cevrilmez",
+    "sourceText": "Bu kisi zahidlerden kilar.",
+    "modelResult": {
+      "correctedText": "Bu kisi z\u00e2hidlerden kilar.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "zahidlerden", "fixed": "z\u00e2hidlerden", "rule": "Yanlis sapka" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Bu kisi zahidlerden kilar." }
+  },
+  {
+    "name": "Efendimiz kelimesine tek basina SAV eklenmez",
+    "sourceText": "Bu nazardan kurtulacaklarini Efendimiz bildiriyor.",
+    "modelResult": {
+      "correctedText": "Bu nazardan kurtulacaklarini Efendimiz (S.A.V) bildiriyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Efendimiz", "fixed": "Efendimiz (S.A.V)", "rule": "Baglam varsayimi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Bu nazardan kurtulacaklarini Efendimiz bildiriyor." }
+  },
+  {
+    "name": "SAV kisaltmasina fazladan nokta eklenmez",
+    "sourceText": "Peygamber Efendimiz (S.A.V)'e gelerek sordu.",
+    "modelResult": {
+      "correctedText": "Peygamber Efendimiz (S.A.V.)'e gelerek sordu.",
+      "categories": {
+        "noktalama": {
+          "issues": [
+            { "original": "Efendimiz (S.A.V)'e", "fixed": "Efendimiz (S.A.V.)'e", "rule": "Kisaltma noktasi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Peygamber Efendimiz (S.A.V)'e gelerek sordu." }
+  },
+  {
+    "name": "Sifir hata sonucunda model metni gizlice degistiremez",
+    "sourceText": "Allah\u00fb Teal\u00e2 ve \u00e2yet kelimeleri dogru yazildi.",
+    "modelResult": {
+      "correctedText": "Allah Teala ve ayet kelimeleri dogru yazildi.",
+      "categories": {}
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah\u00fb Teal\u00e2 ve \u00e2yet kelimeleri dogru yazildi." }
   }
 ]

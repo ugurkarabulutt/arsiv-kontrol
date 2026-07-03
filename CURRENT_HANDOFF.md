@@ -23,6 +23,15 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-03 Codex canlı feedback yanlış-pozitif turu: Canlı feedback kayıtlarından doğrulanan
+  hatalı dönüşümler `analysis-core.js` güvenlik filtresine eklendi. `Tabi/Tabiî → tâbî`,
+  `süre → sûre`, `afet → âfet`, `zahid → zâhid`, `zülmanî → zulmanî`, tek başına
+  `Efendimiz → Efendimiz (S.A.V)`, `(S.A.V) → (S.A.V.)`, `Nebîler → Nebiler`,
+  `nefs → nefis`, `ahiret → âhiret` ve yalnızca `islâm → İslâm` case dönüşümü skor dışı
+  bırakılır ve düzeltilmiş metinden geri alınır. Model geçerli issue üretmeden metni
+  değiştirdiyse, `totalErrors=0` sonucunda `correctedText` kaynak metne resetlenir.
+  Sistem prompt'una aynı bağlam uyarıları eklendi. `npm.cmd run check` başarılı; test sayısı
+  39'a çıktı.
 - 2026-07-03 Codex sure case turu: Sure adlarında büyük/küçük harf farkı tek başına hata
   sayılmayacak şekilde prompt ve backend filtreleri güncellendi. `analysis-core.js`
   `SURA_NAMES`/`isSuraCaseOnlyChange` ile `Fâtiha → FÂTİHA`, `Mulk → MULK`,
@@ -203,6 +212,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   `clearAnalyze()` sayaç ve textarea yüksekliğini resetleyecek şekilde güncellendi.
 - `npm.cmd run check`: başarılı (2026-07-03 Codex sure case turu). 31/31 test geçti;
   sure adlarında sadece büyük/küçük harf dönüşümleri skor dışı bırakılıyor.
+- `npm.cmd run check`: başarılı (2026-07-03 Codex canlı feedback yanlış-pozitif turu). 39/39
+  test geçti; yeni canlı feedback regresyonları ve sıfır-hata metin koruması doğrulandı.
 - `npm test`: 9/9 başarılı (5 analiz/PDF + 4 rol/yetki testi).
 - `node --check server.js`: başarılı.
 - Frontend inline JavaScript parse kontrolü: başarılı.

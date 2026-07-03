@@ -115,6 +115,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Canlı feedback yanlış-pozitif turu:** Canlı `alerts` feedback kayıtları incelendi. Toplam
+  45 geri bildirim içinde 29 kayıt orijinal metinle doğrulanabildi. Gerçek hata olduğu teyit
+  edilen dönüşümler backend güvenlik katmanında yasaklandı: `Tabi/Tabiî → tâbî`,
+  `süre → sûre`, `afet → âfet`, `zahid → zâhid`, `zülmanî → zulmanî`,
+  tek başına `Efendimiz → Efendimiz (S.A.V)`, `(S.A.V) → (S.A.V.)`,
+  `Nebîler → Nebiler`, `nefs → nefis`, `ahiret → âhiret` ve yalnızca `islâm → İslâm`
+  büyük/küçük harf dönüşümü. Bu issue'lar skor dışı bırakılır ve düzeltilmiş metinden geri alınır.
+- **Sıfır hata metin koruması:** Model hiç geçerli issue üretmediği halde `correctedText`
+  içinde metni değiştirmişse, sunucu artık skor 100 sonucunda kaynak metni aynen korur. Bu,
+  “hata yok ama karşılaştırmada metin bozulmuş” geri bildirimlerini engeller.
+- **Prompt güçlendirme:** Canlı feedbacklerden çıkan bağlam uyarıları sistem prompt'una eklendi:
+  `Tabi/Tabiî` konuşma bağlamında `tâbî` yapılmaz, zaman anlamındaki `süre` sure adı sanılmaz,
+  yukarıdaki korumalı kelimeler ters yöne bozulmaz ve `(S.A.V)` kısaltmasına fazladan nokta eklenmez.
+- **Test:** `npm.cmd run check` başarılı; kalite regresyon havuzuna 8 yeni canlı feedback vakası
+  eklendi ve toplam test sayısı 39'a çıktı. `Rum → RÛM` gibi şapka farkı içeren sure adı
+  düzeltmeleri hâlâ gerçek imlâ farkı olarak korunur; `her şeyi → herşeyi` mevcut sözlük
+  kararına göre doğru düzeltmedir.
 - **Sure adlarında büyük/küçük harf kararı:** Sure isimlerinde büyük/küçük harf farkı artık
   tek başına hata sayılmaz. Sistem `Fâtiha → FÂTİHA`, `Mulk → MULK`, `Muzzemmil → MUZZEMMİL`,
   `Zumer → ZUMER` gibi sadece case dönüşümlerini skorlamaz ve düzeltilmiş metinden geri alır.

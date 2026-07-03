@@ -977,7 +977,10 @@ NASIL ÇALIŞACAKSIN:
    "derece" yapma. "dinlenmeye" kelimesini "dînlenmeye" yapma.
 16. "Muhterem Efendimiz" bağlamında geçen Efendimiz'e "(S.A.V)" ekleme; bunu yalnızca açıkça Peygamber Efendimiz
    kastedildiğinde ve kaynak kural gerektiriyorsa uygula.
-17. Slayt, hadîs dökümü, tablo benzeri satır düzenlerini koru. Satır sırası, başlıklar, numaralar ve tırnak dengesi
+17. "Tabi/Tabiî" kelimesi konuşma içinde "elbette/doğal olarak" anlamındaysa "tâbî" yapma. "süre" zaman/uzunluk
+   anlamındaysa "sûre" yapma. "afet", "zahid", "ahiret", "zülmanî", "Nebîler" ve "nefs" kelimelerini ters yöne
+   bozma. "(S.A.V)" kısaltmasına fazladan nokta ekleme.
+18. Slayt, hadîs dökümü, tablo benzeri satır düzenlerini koru. Satır sırası, başlıklar, numaralar ve tırnak dengesi
    düzeltilmiş metinde bozulmamalıdır.
 
 BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):

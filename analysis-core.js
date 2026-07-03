@@ -31,6 +31,17 @@ const SURA_NAME_KEYS = new Set(SURA_NAMES.map(suraCaseKey));
 const FORBIDDEN_TRANSFORMS = [
   { from: /\bdin\b/iu, to: /\bdîn\b/iu },
   { from: /\bherşey\b/iu, to: /\bher\s+şey\b/iu },
+  { from: /(?<![\p{L}\p{N}_])tabi(?:î)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])tâbî(?![\p{L}\p{N}_])/iu },
+  { from: /(?<![\p{L}\p{N}_])zülmanî(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])zulmanî(?![\p{L}\p{N}_])/iu },
+  { from: /(?<![\p{L}\p{N}_])afet(?:ler(?:iyle|in|den|de|i|e)?|leriyle|lerden|lerde|ler|in|den|de|i|e)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])âfet/iu },
+  { from: /(?<![\p{L}\p{N}_])zahid(?:ler(?:den|de|i|e)?|lerden|lerde|ler|in|den|de|i|e)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])zâhid/iu },
+  { from: /(?<![\p{L}\p{N}_])süre(?:yi|nin|si|de|den|ler(?:i|in|den|de)?|yle)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])sûre/iu },
+  { from: /^(?:muhterem\s+)?efendimiz$/iu, to: /^efendimiz\s*\(s\.a\.v\.?\)$/iu },
+  { from: /\befendimiz\s*\(s\.a\.v\)(?:'|’)?/iu, to: /\befendimiz\s*\(s\.a\.v\.\)(?:'|’)?/iu },
+  { from: /(?<![\p{L}\p{N}_])islâm(?:'|’)?[a-zçğıöşüâîû]*(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])İslâm(?:'|’)?[a-zçğıöşüâîû]*(?![\p{L}\p{N}_])/u },
+  { from: /(?<![\p{L}\p{N}_])nebîler(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])nebiler(?![\p{L}\p{N}_])/iu },
+  { from: /\bnefs\b/iu, to: /\bnefis\b/iu },
+  { from: /(?<![\p{L}\p{N}_])ahiret(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])âhiret(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])(?:muminun|m[uü]'?m[iİı]n[uû]n)(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])m[üu]'?m[iİı]n(?![\p{L}\p{N}_])/iu },
   { from: /\bzumer\b/iu, to: /\bzümer\b/iu },
   { from: /\btabiî\s+ki\b/iu, to: /\btâbî\s+ki\b/iu },
@@ -161,6 +172,9 @@ function finalizeResult(result = {}, sourceText = '') {
   }
   result.score = Math.max(0, 100 - penalty);
   result.totalErrors = total;
+  if (sourceText && total === 0) {
+    result.correctedText = sourceText;
+  }
   if (result.score < LOW_SCORE_THRESHOLD) {
     result.correctedText = '';
     result.summary = LOW_SCORE_MSG;
