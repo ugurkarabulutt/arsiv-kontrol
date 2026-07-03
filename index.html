@@ -286,6 +286,17 @@ canvas{width:100%!important;}
 .alert-type.feedback{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
 .alert-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
 .alert-filter.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.alert-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.alert-select{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:var(--gold);}
+.status-chip{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink3);white-space:nowrap;}
+.status-chip.resolved{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.contrib-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.contrib-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;border-bottom:1px solid var(--border);padding:8px 0;font-size:12px;}
+.contrib-row:last-child{border-bottom:none;}
+.contrib-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.contrib-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.contrib-score{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--gold);}
+@media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
 .notice-list{display:flex;flex-direction:column;gap:12px;}
 .notice-card{position:relative;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:16px 18px 14px;margin:0;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
 .notice-card.unread{background:linear-gradient(90deg,var(--red-bg),var(--white) 42%);}
@@ -647,7 +658,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false;
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set();
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
@@ -1235,6 +1246,24 @@ async function loadDash(){
       <td>${st}</td>
     </tr>`;
   }).join('');
+  const feedbackLeaders=(stats.feedbackUsers||[]).slice(0,8).map(u=>`
+    <div class="contrib-row">
+      <div>
+        <div class="contrib-name">${esc(u.name)}</div>
+        <div class="contrib-meta">${u.resolvedRate||0}% çözüm oranı</div>
+      </div>
+      <div class="contrib-meta">${u.feedbackCount||0} geri bildirim</div>
+      <div class="contrib-score">${u.resolvedCount||0} çözüm</div>
+    </div>`).join('');
+  const topContributors=(stats.topContributors||[]).map(u=>`
+    <div class="contrib-row">
+      <div>
+        <div class="contrib-name">${esc(u.name)}</div>
+        <div class="contrib-meta">${u.feedbackCount||0} bildirim · ${u.resolvedCount||0} çözülen</div>
+      </div>
+      <div class="contrib-meta">Katkı</div>
+      <div class="contrib-score">${u.contributionScore||0}</div>
+    </div>`).join('');
   container.innerHTML=`
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-lbl">Toplam</div><div class="stat-val">${t.allTime}</div></div>
@@ -1246,8 +1275,22 @@ async function loadDash(){
       <div class="stat-card"><div class="stat-lbl">Geri Bildirim</div><div class="stat-val gold">${t.feedback||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">7 Gün Feedback</div><div class="stat-val orange">${t.feedback7||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">Okunmamış Feedback</div><div class="stat-val red">${t.unreadFeedback||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Açık Feedback</div><div class="stat-val orange">${t.feedbackOpen||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Çözülen Feedback</div><div class="stat-val green">${t.feedbackResolvedItems||0}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Çözüm Oranı</div><div class="stat-val gold">${t.feedbackResolutionRate||0}%</div></div>
+      <div class="stat-card"><div class="stat-lbl">Katkı Veren</div><div class="stat-val">${t.feedbackContributors||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">Çözüm Bildirimi</div><div class="stat-val green">${t.feedbackResolved||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">Duyuru</div><div class="stat-val">${t.announcements||0}</div></div>
+    </div>
+    <div class="contrib-grid">
+      <div class="dash-card">
+        <div class="dash-card-head">En Çok Geri Bildirim Verenler</div>
+        <div class="dash-card-body">${feedbackLeaders||'<div class="empty-state">Veri yok</div>'}</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-head">Sistem İyileştirmesine En Çok Katkı Sağlayanlar</div>
+        <div class="dash-card-body">${topContributors||'<div class="empty-state">Veri yok</div>'}</div>
+      </div>
     </div>
     <div class="dash-grid">
       <div class="dash-card"><div class="dash-card-head">Hata Kategorileri</div><div class="dash-card-body">${catBars||'<div class="empty-state">Veri yok</div>'}</div></div>
@@ -1350,6 +1393,8 @@ async function loadAlerts(){
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Uyarı yok.</div>';return;}
   const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.type===alertFilter);
   if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtrede kayıt yok.</div>';return;}
+  const visibleFeedbackIds=new Set(filtered.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved').map(a=>a.id));
+  selectedFeedbackIds=new Set([...selectedFeedbackIds].filter(id=>visibleFeedbackIds.has(id)));
   function alertBody(a){
     if(a.type!=='feedback')return `<div class="alert-msg">${esc(a.message)}</div>`;
     const parts=String(a.message||'').split(' | ');
@@ -1360,19 +1405,38 @@ async function loadAlerts(){
     }).join('')}</div>`;
   }
   const alertLabel=a=>a.type==='feedback'?'Geri Bildirim':a.type==='feedback_resolution'?'Çözüm':a.type==='announcement'?'Duyuru':a.type==='low_score'?'Düşük Skor':'Uyarı';
-  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
+  const statusLabel=a=>a.feedbackStatus==='resolved'?'Çözüldü':a.feedbackStatus==='read'?'Okundu':'Açık';
+  const toolbar=`<div class="alert-toolbar">
+    <div class="alert-filters" style="margin-bottom:0">
+      <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(true)">Görünenleri Seç</button>
+      <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(false)">Seçimi Temizle</button>
+    </div>
+    <button class="btn-green" style="padding:5px 10px;font-size:10px" onclick="resolveSelectedFeedback()">Seçilenleri Çözüldü Bildir (${selectedFeedbackIds.size})</button>
+  </div>`;
+  container.innerHTML=`${filtered.some(a=>a.type==='feedback')?toolbar:''}<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
     <div class="alert-item ${!a.read&&['feedback','low_score'].includes(a.type)?'unread':''}">
+      ${a.type==='feedback'?`<input class="alert-select" type="checkbox" data-id="${a.id}" ${a.feedbackStatus==='resolved'?'disabled':''} ${selectedFeedbackIds.has(a.id)?'checked':''} onchange="toggleFeedbackSelection('${a.id}',this.checked)">`:''}
       <div class="alert-dot ${a.read||!['feedback','low_score'].includes(a.type)?'read':''}"></div>
       <div class="alert-type ${['feedback','feedback_resolution'].includes(a.type)?'feedback':''}">${alertLabel(a)}</div>
       ${alertBody(a)}
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+        ${a.type==='feedback'?`<div class="status-chip ${a.feedbackStatus==='resolved'?'resolved':''}">${statusLabel(a)}</div>`:''}
         ${a.type==='feedback'?`<button class="btn-green" style="padding:3px 8px;font-size:9px" onclick="respondFeedback('${a.id}')">Çözüm bildir</button>`:''}
         ${!a.read&&['feedback','low_score'].includes(a.type)?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
       </div>
     </div>`).join('')}</div>`;
 }
 function setAlertFilter(type){alertFilter=type;loadAlerts();}
+function toggleFeedbackSelection(id,checked){if(checked)selectedFeedbackIds.add(id);else selectedFeedbackIds.delete(id);loadAlerts();}
+function toggleVisibleFeedbackSelection(select){
+  document.querySelectorAll('.alert-select:not(:disabled)').forEach(cb=>{
+    const id=cb.dataset.id;
+    if(select)selectedFeedbackIds.add(id);
+    else selectedFeedbackIds.delete(id);
+  });
+  loadAlerts();
+}
 async function readAlert(id){await api('POST',`/api/alerts/${id}/read`);loadAlerts();refreshBadges();}
 async function readAllAlerts(){await api('POST','/api/alerts/read-all');loadAlerts();refreshBadges();}
 async function respondFeedback(id){
@@ -1386,6 +1450,20 @@ async function respondFeedback(id){
   loadAlerts();refreshBadges();
   setTimeout(()=>setStatus('',''),2200);
 }
+async function resolveSelectedFeedback(){
+  const ids=[...selectedFeedbackIds];
+  if(!ids.length){setStatus('Çözüldü bildirimi için en az bir geri bildirim seçin.','err');return;}
+  const note=prompt('Bu çözüm turunda kullanıcıya gidecek ortak çözüm notu nedir?');
+  if(note===null)return;
+  const clean=note.trim();
+  if(!clean){setStatus('Çözüm notu boş olamaz.','err');return;}
+  const r=await api('POST','/api/alerts/resolve-bulk',{ids,note:clean});
+  if(r.error){setStatus(r.error,'err');return;}
+  selectedFeedbackIds.clear();
+  setStatus(`✓ ${r.feedbackCount} geri bildirim çözüldü, ${r.userCount} kullanıcıya kişisel teşekkür bildirimi gönderildi.`,'ok');
+  loadAlerts();loadDash();refreshBadges();
+  setTimeout(()=>setStatus('',''),3000);
+}
 
 function messageFields(message){
   return String(message||'').split(' | ').map(p=>{
@@ -1397,7 +1475,22 @@ function messageFields(message){
 
 function parseStructuredMessage(message){
   const fields={title:'Duyuru',body:String(message||''),sender:''};
-  String(message||'').split(' | ').forEach(part=>{
+  const raw=String(message||'');
+  if(raw.includes('\n')){
+    const bodyLines=[];
+    raw.split(/\n/).forEach(line=>{
+      const idx=line.indexOf(':');
+      const key=idx>=0?line.slice(0,idx).trim().toLowerCase():'';
+      const val=idx>=0?line.slice(idx+1).trim():line.trim();
+      if(key==='başlık'||key==='baslik')fields.title=val||fields.title;
+      else if(key==='mesaj')bodyLines.push(val);
+      else if(key==='gönderen'||key==='gonderen')fields.sender=val;
+      else if(line.trim())bodyLines.push(line.trim());
+    });
+    if(bodyLines.length)fields.body=bodyLines.join('\n');
+    return fields;
+  }
+  raw.split(' | ').forEach(part=>{
     const idx=part.indexOf(':');
     if(idx<0)return;
     const key=part.slice(0,idx).trim().toLowerCase();

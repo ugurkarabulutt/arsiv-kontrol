@@ -58,10 +58,24 @@ create table if not exists public.alerts (
   user_id    uuid references public.users(id) on delete set null,
   history_id uuid references public.history(id) on delete cascade,
   score      integer,
+  feedback_status text default 'open',
+  resolved_at timestamptz,
+  resolved_by text,
+  resolution_group text,
+  resolution_note text,
   read       boolean not null default false,
   created_at timestamptz not null default now()
 );
 create index if not exists alerts_created_at_idx on public.alerts (created_at desc);
+create index if not exists alerts_feedback_status_idx on public.alerts (type, feedback_status);
+
+-- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
+alter table public.alerts add column if not exists feedback_status text default 'open';
+alter table public.alerts add column if not exists resolved_at timestamptz;
+alter table public.alerts add column if not exists resolved_by text;
+alter table public.alerts add column if not exists resolution_group text;
+alter table public.alerts add column if not exists resolution_note text;
+create index if not exists alerts_feedback_status_idx on public.alerts (type, feedback_status);
 
 -- ── settings (kurallar vb.) ─────────────────────────────────────────────────
 create table if not exists public.settings (

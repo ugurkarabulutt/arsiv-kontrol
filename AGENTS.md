@@ -115,6 +115,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Geri bildirim katkı ve çözüm istatistikleri:** Admin dashboard'a geri bildirim yaşam
+  döngüsü metrikleri eklendi: toplam/açık/çözülen feedback, çözüm oranı, katkı veren
+  kullanıcı sayısı, en çok geri bildirim verenler ve sistem iyileştirmesine en çok katkı
+  sağlayan kullanıcılar. Katkı skoru çözülen feedbackleri daha yüksek ağırlıkla sayar.
+- **Toplu kişisel çözüm bildirimi:** Adminler Uyarılar ekranında birden fazla `feedback`
+  kaydını seçip tek çözüm notuyla kapatabilir. Sistem seçilen feedbackleri kullanıcıya göre
+  gruplar; aynı kullanıcı birden fazla sorun bildirdiyse tek kişisel mesaj gönderilir.
+  Aynı hatayı birden çok kullanıcı raporladıysa, çözüm sırasında raporlayan her kullanıcıya
+  kendi adıyla ayrı teşekkür bildirimi gider. Bu özellik yalnızca geri bildirim butonuyla
+  oluşturulan `feedback` kayıtları için çalışır; genel yenilikler yine `announcement`
+  kanalından toplu duyurulur.
+- **Alerts çözüm modeli:** `schema.sql` `alerts.feedback_status`, `resolved_at`,
+  `resolved_by`, `resolution_group` ve `resolution_note` kolonlarını içerir. Kolonlar canlı
+  DB'de yoksa uygulama kırılmaz; tam çözüm durumu ve oran takibi için ALTER satırları canlı
+  Supabase SQL Editor'de uygulanmalıdır.
+- **Test:** `npm.cmd run check` başarılı; 39/39 test geçti, frontend parse kontrolü de tamamlandı.
 - **Canlı feedback yanlış-pozitif turu:** Canlı `alerts` feedback kayıtları incelendi. Toplam
   45 geri bildirim içinde 29 kayıt orijinal metinle doğrulanabildi. Gerçek hata olduğu teyit
   edilen dönüşümler backend güvenlik katmanında yasaklandı: `Tabi/Tabiî → tâbî`,

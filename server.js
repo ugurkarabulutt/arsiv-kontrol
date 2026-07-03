@@ -351,7 +351,11 @@ const mapHistory = h => ({
 });
 const mapAlert   = a => ({
   id: a.id, type: a.type, message: a.message, userId: a.user_id,
-  historyId: a.history_id, score: a.score, read: a.read, createdAt: a.created_at
+  historyId: a.history_id, score: a.score, read: a.read,
+  feedbackStatus: a.feedback_status || (a.type === 'feedback' && a.read ? 'read' : 'open'),
+  resolvedAt: a.resolved_at, resolvedBy: a.resolved_by,
+  resolutionGroup: a.resolution_group, resolutionNote: a.resolution_note,
+  createdAt: a.created_at
 });
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const FEEDBACK_REASONS = Object.freeze({
@@ -362,6 +366,38 @@ const FEEDBACK_REASONS = Object.freeze({
   score_wrong: 'Skor yanlış',
   other: 'Diğer'
 });
+
+function parseAlertFields(message = '') {
+  const fields = {};
+  String(message || '').split(' | ').forEach(part => {
+    const idx = part.indexOf(':');
+    if (idx < 0) return;
+    fields[part.slice(0, idx).trim().toLowerCase()] = part.slice(idx + 1).trim();
+  });
+  return fields;
+}
+
+function feedbackSummary(alert) {
+  const fields = parseAlertFields(alert?.message);
+  const reason = fields['geri bildirim'] || 'Geri bildirim';
+  const finding = fields.bulgu ? `: ${fields.bulgu}` : '';
+  const record = fields['kayıt'] ? ` (${fields['kayıt']})` : '';
+  return `${reason}${finding}${record}`.slice(0, 260);
+}
+
+function buildFeedbackResolutionMessage(userName, feedbacks, note) {
+  const safeName = String(userName || 'kardeşimiz').trim();
+  const lines = feedbacks.map((f, i) => `${i + 1}. ${feedbackSummary(f)}`);
+  return [
+    'Başlık: Geri Bildirimlerinizle Çözülen Sorunlar',
+    `Mesaj: Sevgili ${safeName},`,
+    'Geri bildirimleriniz sayesinde aşağıdaki sorunlar sistemde düzeltildi:',
+    ...lines,
+    note ? `Çözüm notu: ${note}` : '',
+    'Geri bildirimleriniz, sistemi birlikte daha doğru, kullanışlı ve sağlıklı hale getirmemiz için çok kıymetlidir. Katkınız için teşekkür ederiz.',
+    `Gönderen: ${SYSTEM_SENDER_NAME}`
+  ].filter(Boolean).join('\n');
+}
 
 // ── Rules helpers (settings tablosunda key='rules') ─────────────────────────
 async function loadRules() {
@@ -413,6 +449,11 @@ async function seed() {
   const { error: originalTextErr } = await supabase.from('history').select('original_text').limit(1);
   HAS_ORIGINAL_TEXT = !originalTextErr;
   if (!HAS_ORIGINAL_TEXT) console.warn('⚠ history.original_text kolonu yok — geçmişte orijinal metin saklanmayacak.');
+
+  const { error: feedbackMetaErr } = await supabase.from('alerts')
+    .select('feedback_status,resolved_at,resolved_by,resolution_group,resolution_note').limit(1);
+  HAS_ALERT_FEEDBACK_META = !feedbackMetaErr;
+  if (!HAS_ALERT_FEEDBACK_META) console.warn('⚠ alerts feedback çözüm kolonları yok — çözüm durumu read/notification üzerinden sınırlı izlenecek.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -673,14 +714,16 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/feedback', auth, async (req, res) =
     if (cleanRule) parts.push(`Kural: ${cleanRule}`);
     if (cleanNote) parts.push(`Not: ${cleanNote}`);
 
-    const { error } = await supabase.from('alerts').insert({
+    const feedbackRow = {
       type: 'feedback',
       message: parts.join(' | '),
       user_id: req.session.userId,
       history_id: history.id,
       score: history.score,
       read: false
-    });
+    };
+    if (HAS_ALERT_FEEDBACK_META) feedbackRow.feedback_status = 'open';
+    const { error } = await supabase.from('alerts').insert(feedbackRow);
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -797,10 +840,90 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
     });
     if (insertError) throw new Error(insertError.message);
 
-    const { error: updateError } = await supabase.from('alerts').update({ read: true }).eq('id', alert.id);
+    const patch = { read: true };
+    if (HAS_ALERT_FEEDBACK_META) {
+      patch.feedback_status = 'resolved';
+      patch.resolved_at = new Date().toISOString();
+      patch.resolved_by = req.session.name || req.session.username;
+      patch.resolution_group = insertError ? null : `single-${alert.id}`;
+      patch.resolution_note = cleanNote;
+    }
+    const { error: updateError } = await supabase.from('alerts').update(patch).eq('id', alert.id);
     if (updateError) throw new Error(updateError.message);
 
     res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(String).filter(Boolean).slice(0, 100) : [];
+    const cleanNote = String(req.body?.note || '').trim().slice(0, 1200);
+    if (!ids.length) return res.status(400).json({ error: 'Çözülecek geri bildirim seçilmedi.' });
+    if (!cleanNote) return res.status(400).json({ error: 'Çözüm notu gerekli.' });
+
+    const { data: rows, error: rowsError } = await supabase.from('alerts')
+      .select('*, users:user_id(id,name,username)')
+      .in('id', ids)
+      .eq('type', 'feedback');
+    if (rowsError) throw new Error(rowsError.message);
+
+    const feedbacks = (rows || []).filter(a => {
+      if (!a.user_id) return false;
+      if (HAS_ALERT_FEEDBACK_META && a.feedback_status === 'resolved') return false;
+      return true;
+    });
+    if (!feedbacks.length) return res.status(400).json({ error: 'Bildirim gönderilecek açık geri bildirim bulunamadı.' });
+
+    const byUser = new Map();
+    feedbacks.forEach(alert => {
+      const key = alert.user_id;
+      if (!byUser.has(key)) byUser.set(key, []);
+      byUser.get(key).push(alert);
+    });
+
+    const groupId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const notices = [];
+    for (const [userId, items] of byUser.entries()) {
+      const first = items[0];
+      const userName = first.users?.name || first.users?.username || 'kardeşimiz';
+      notices.push({
+        type: 'feedback_resolution',
+        message: buildFeedbackResolutionMessage(userName, items, cleanNote),
+        user_id: userId,
+        history_id: first.history_id || null,
+        score: first.score || null,
+        read: false,
+        ...(HAS_ALERT_FEEDBACK_META ? {
+          feedback_status: 'notice',
+          resolution_group: groupId,
+          resolution_note: cleanNote
+        } : {})
+      });
+    }
+
+    const { error: insertError } = await supabase.from('alerts').insert(notices);
+    if (insertError) throw new Error(insertError.message);
+
+    const patch = { read: true };
+    if (HAS_ALERT_FEEDBACK_META) {
+      patch.feedback_status = 'resolved';
+      patch.resolved_at = new Date().toISOString();
+      patch.resolved_by = req.session.name || req.session.username;
+      patch.resolution_group = groupId;
+      patch.resolution_note = cleanNote;
+    }
+    const { error: updateError } = await supabase.from('alerts')
+      .update(patch)
+      .in('id', feedbacks.map(f => f.id));
+    if (updateError) throw new Error(updateError.message);
+
+    res.json({
+      success: true,
+      feedbackCount: feedbacks.length,
+      userCount: byUser.size,
+      groupId
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -846,8 +969,8 @@ app.get('/api/stats', auth, admin, async (req, res) => {
   try {
     const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }] = await Promise.all([
       supabase.from('history').select('*'),
-      supabase.from('users').select('active'),
-      supabase.from('alerts').select('type,read,created_at')
+      supabase.from('users').select('id,name,username,active'),
+      supabase.from('alerts').select('*')
     ]);
     if (hErr) throw new Error(hErr.message);
     if (uErr) throw new Error(uErr.message);
@@ -888,6 +1011,38 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const lowScoreAlerts = alerts.filter(a => a.type === 'low_score');
     const resolutionAlerts = alerts.filter(a => a.type === 'feedback_resolution');
     const announcementAlerts = alerts.filter(a => a.type === 'announcement');
+    const feedbackResolvedItems = feedbackAlerts.filter(a => a.feedback_status === 'resolved');
+    const feedbackOpenItems = feedbackAlerts.filter(a => a.feedback_status !== 'resolved');
+    const usersById = new Map((userRows || []).map(u => [u.id, u]));
+    const feedbackByUser = {};
+    feedbackAlerts.forEach(a => {
+      const key = a.user_id || 'unknown';
+      const u = usersById.get(a.user_id);
+      if (!feedbackByUser[key]) {
+        feedbackByUser[key] = {
+          userId: a.user_id,
+          name: u?.name || u?.username || 'Bilinmeyen',
+          feedbackCount: 0,
+          resolvedCount: 0,
+          openCount: 0,
+          lastAt: a.created_at
+        };
+      }
+      feedbackByUser[key].feedbackCount++;
+      if (a.feedback_status === 'resolved') feedbackByUser[key].resolvedCount++;
+      else feedbackByUser[key].openCount++;
+      if (new Date(a.created_at) > new Date(feedbackByUser[key].lastAt || 0)) feedbackByUser[key].lastAt = a.created_at;
+    });
+    const feedbackUsers = Object.values(feedbackByUser)
+      .map(u => ({
+        ...u,
+        contributionScore: u.resolvedCount * 3 + u.feedbackCount,
+        resolvedRate: u.feedbackCount ? Math.round((u.resolvedCount / u.feedbackCount) * 100) : 0
+      }))
+      .sort((a, b) => b.feedbackCount - a.feedbackCount || b.resolvedCount - a.resolvedCount);
+    const topContributors = [...feedbackUsers]
+      .sort((a, b) => b.contributionScore - a.contributionScore || b.resolvedCount - a.resolvedCount)
+      .slice(0, 8);
     const feedback7 = feedbackAlerts.filter(a => now - new Date(a.created_at).getTime() < 7 * 864e5).length;
     const adminAlertTypes = ['feedback', 'low_score'];
     const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
@@ -917,6 +1072,10 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         unreadAlerts,
         feedback: feedbackAlerts.length,
         feedback7,
+        feedbackOpen: feedbackOpenItems.length,
+        feedbackResolvedItems: feedbackResolvedItems.length,
+        feedbackResolutionRate: feedbackAlerts.length ? Math.round((feedbackResolvedItems.length / feedbackAlerts.length) * 100) : 0,
+        feedbackContributors: feedbackUsers.filter(u => u.userId).length,
         unreadFeedback,
         lowScoreAlerts: lowScoreAlerts.length,
         feedbackResolved: resolutionAlerts.length,
@@ -929,7 +1088,9 @@ app.get('/api/stats', auth, admin, async (req, res) => {
       })).sort((a,b) => b.count - a.count),
       catTotals,
       daily,
-      riskItems
+      riskItems,
+      feedbackUsers,
+      topContributors
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -1113,6 +1274,7 @@ const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar gön
 let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
 let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
+let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
