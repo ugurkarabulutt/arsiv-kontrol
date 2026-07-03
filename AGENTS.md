@@ -138,12 +138,12 @@ tespit edilir).
   eksik feedback kayıtlarını azaltmak için eklendi.
 - **Tek AI raporu ve feedback kapısı:** Kullanıcı tarafındaki çoklu yardımcı butonları kaldırıldı;
   tek ana aksiyon `AI Raporu Oluştur` oldu. Bu rapor metni, denetim sonucunu, şüpheli bulguları,
-  kopyalama güvenliğini ve ekibe bildirim gerekip gerekmediğini birlikte değerlendirir. Rapor
-  `low` risk dönerse genel ve bulgu bazlı feedback butonları kapalı kalır; yalnızca `medium/high`
-  riskte ekibe bildirim alanı açılır. Amaç pozitif/sağlıklı sonuçların admin feedback kuyruğunu
-  şişirmesini engellemektir.
-- **Kullanıcı sonuç ekranı sadeleştirme:** `Prompt` ve `Kural` sürüm chipleri normal kullanıcı
-  sonuç ekranından gizlendi; yalnızca admin rolünde görünür. `Temizle` artık sonuç belleğini önce
+  kopyalama güvenliğini ve ekibe bildirim gerekip gerekmediğini birlikte değerlendirir. Sonuçta
+  bulgu varsa genel ve bulgu bazlı feedback butonları doğrudan görünür; temiz/0 bulgulu sonuçlarda
+  feedback kapalı kalır. Amaç pozitif/sağlıklı sonuçların admin feedback kuyruğunu şişirmesini
+  engellerken, gerçek bulgu içeren sonuçlarda kullanıcının hızlı geri bildirim verebilmesidir.
+- **Kullanıcı sonuç ekranı sadeleştirme:** `Prompt` ve `Kural` sürüm chipleri kullanıcı
+  sonuç ekranından tamamen kaldırıldı. `Temizle` artık sonuç belleğini önce
   sıfırlar, sonra input/yardımcı alanını resetler; Denetim Yardımcısı tek tıkla `Hazır` durumuna
   döner. Yardımcı durum metni `AI hazır`/`Rapor için hazır` diline çekildi ve canlı AI noktası
   daha belirgin menekşe vurgu rengiyle gösterilir.

@@ -39,11 +39,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   açıklanır; not kutusu bağlamlı taslakla açılır.
 - 2026-07-03 Codex tek AI raporu/feedback kapısı turu: Kullanıcı tarafındaki çoklu Denetim
   Yardımcısı butonları kaldırıldı ve tek `AI Raporu Oluştur` aksiyonuna indirildi. Rapor sonucunda
-  `low` risk varsa ekibe bildirim kapalı kalır; yalnızca `medium/high` riskte genel feedback alanı
-  ve bulgu bazlı feedback butonları görünür. Böylece kullanıcı neye basacağını düşünmez ve admin
-  tarafına pozitif/risksiz sonuçlardan gereksiz geri bildirim düşmez.
+  temiz/0 bulgulu sonuçlarda ekibe bildirim kapalı kalır; sonuçta bulgu varsa genel feedback alanı
+  ve bulgu bazlı feedback butonları doğrudan görünür. Böylece kullanıcı neye basacağını düşünmez,
+  admin tarafına pozitif sonuçlardan gereksiz geri bildirim düşmez ama hatalı bulgular hızlıca
+  raporlanabilir.
 - 2026-07-03 Codex kullanıcı sonuç ekranı sadeleştirme turu: Normal kullanıcı ekranında teknik
-  `Prompt`/`Kural` chipleri gizlendi; admin rolünde görünmeye devam eder. `Temizle` sırası
+  `Prompt`/`Kural` chipleri sonuç ekranından tamamen kaldırıldı. `Temizle` sırası
   düzeltildi; sonuç belleği önce sıfırlanır ve yardımcı tek tıkla `Hazır` durumuna döner.
   Yardımcı metinleri `AI hazır`/`Rapor için hazır` diline çekildi, canlı durum noktası daha
   belirgin menekşe AI vurgu rengine alındı.

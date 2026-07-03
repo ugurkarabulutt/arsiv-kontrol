@@ -1286,18 +1286,22 @@ function normalizeRisk(answer){
 function applyAiReportGate(answer){
   currentAiReport=answer||null;
   const risk=normalizeRisk(answer);
+  const hasFindings=Number(currentResult?.totalErrors||0)>0;
+  const canFeedback=hasFindings||risk!=='low';
   const gate=el('feedbackGate');
   const actions=el('resultFeedbackActions');
-  document.querySelectorAll('.issue-feedback-action').forEach(x=>x.style.display=risk==='low'?'none':'');
+  document.querySelectorAll('.issue-feedback-action').forEach(x=>x.style.display=canFeedback?'':'none');
   if(!gate||!actions)return;
-  if(risk==='low'){
+  if(!canFeedback){
     gate.className='feedback-gate safe';
-    gate.innerHTML='AI raporu bu sonucu düşük riskli gördü. Ekibe bildirim açılmadı; gereksiz kayıt oluşmaması için sadece riskli veya şüpheli sonuçlar bildirilebilir.';
+    gate.innerHTML='Bu sonuç temiz görünüyor. Gereksiz kayıt oluşmaması için ekibe bildirim kapalı.';
     actions.style.display='none';
     return;
   }
   gate.className='feedback-gate open';
-  gate.innerHTML=risk==='high'
+  gate.innerHTML=hasFindings
+    ? 'Bu sonuçta bulgu var. Eksik, hatalı veya yanlış olduğunu düşündüğünüz noktayı ekibe bildirebilirsiniz.'
+    : risk==='high'
     ? 'AI raporu bu sonucu riskli gördü. Ekibe bildirim gönderebilirsiniz; kısa notunuz çözüm paketine eklenecek.'
     : 'AI raporu bazı noktaların kontrol edilmesini önerdi. Gerekirse bu sonucu ekibe bildirebilirsiniz.';
   actions.style.display='';
@@ -1316,6 +1320,7 @@ function renderResults(d,container){
   const meta=d.analysisMeta||{};
   const promptVersion=d.promptVersion||meta.promptVersion;
   const rulesHash=d.rulesHash||meta.rulesHash;
+  const hasFindings=Number(d.totalErrors||0)>0;
   const catDefs=[{key:'sozluk',label:'Sözlük'},{key:'imla',label:'İmla'},{key:'noktalama',label:'Noktalama'},{key:'etiket',label:'Etiket'},{key:'yapi',label:'Yapı'}];
   const scoreBoxes=catDefs.map(c=>{
     const cnt=cats[c.key]?.count||0;
@@ -1328,7 +1333,7 @@ function renderResults(d,container){
       :iss.map((it,j)=>`<div class="issue-item" style="animation-delay:${(ci*5+j)*.04}s">
           <div class="issue-row"><div class="i-orig">${esc(it.original)}</div><div class="i-arr">→</div><div class="i-fix">${esc(it.fixed)}</div></div>
           <div class="i-rule">${esc(it.rule||c.label)}</div>
-          ${d.id?`<div class="issue-actions issue-feedback-action" style="display:none"><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'nonexistent')">Bu bulgu hatalı</button><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'wrong_fix')">Bu düzeltme yanlış</button></div>`:''}
+          ${d.id?`<div class="issue-actions issue-feedback-action" style="${hasFindings?'':'display:none'}"><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'nonexistent')">Bu bulgu hatalı</button><button class="btn-mini" onclick="sendIssueFeedback('${d.id}','${c.key}',${j},'wrong_fix')">Bu düzeltme yanlış</button></div>`:''}
         </div>`).join('');
     return `<div class="cat-panel"><div class="cat-head"><span class="cat-name">${c.label}</span><span class="cat-cnt ${cat.count>0?'cnt-err':'cnt-ok'}">${cat.count} sorun</span></div>${issHtml}</div>`;
   }).join('');
@@ -1340,9 +1345,8 @@ function renderResults(d,container){
         <div class="score-track"><div class="score-fill ${fc}" style="width:${sc}%"></div></div>
       </div>${scoreBoxes}
     </div>
-    ${hasAdminRole(me?.role)&&(promptVersion||rulesHash)?`<div class="analysis-meta">${promptVersion?`<span class="meta-chip">Prompt ${esc(promptVersion)}</span>`:''}${rulesHash?`<span class="meta-chip">Kural ${esc(rulesHash)}</span>`:''}</div>`:''}
     ${d.summary?`<div class="summary-box ${sc<60?'summary-warn':''}">${esc(d.summary)}</div>`:''}
-    ${d.id?`<div class="feedback-panel"><div id="feedbackGate" class="feedback-gate">Ekibe bildirim göndermek için önce AI raporu oluşturun. Rapor risk görürse bildirim alanı açılır.</div><div class="feedback-actions" id="resultFeedbackActions" style="display:none">
+    ${d.id?`<div class="feedback-panel"><div id="feedbackGate" class="feedback-gate ${hasFindings?'open':'safe'}">${hasFindings?'Bu sonuçta bulgu var. Eksik, hatalı veya yanlış olduğunu düşündüğünüz noktayı ekibe bildirebilirsiniz.':'Bu sonuç temiz görünüyor. Gereksiz kayıt oluşmaması için ekibe bildirim kapalı.'}</div><div class="feedback-actions" id="resultFeedbackActions" style="${hasFindings?'':'display:none'}">
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','missing_issue')">Eksik hata</button>
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','layout_broken')">Düzen bozuldu</button>
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','score_wrong')">Skor yanlış</button>
@@ -1378,7 +1382,6 @@ function copyAnalysisReport(){
   const catLabels={sozluk:'Sözlük',imla:'İmla',noktalama:'Noktalama',etiket:'Etiket',yapi:'Yapı'};
   Object.keys(catLabels).forEach(k=>lines.push(`${catLabels[k]}: ${cats[k]?.count||0}`));
   if(d.summary)lines.push('',`Özet: ${d.summary}`);
-  if(meta.promptVersion||meta.rulesHash)lines.push('',`Prompt: ${meta.promptVersion||'-'}`,`Kural: ${meta.rulesHash||'-'}`);
   const issueLines=[];
   Object.keys(catLabels).forEach(k=>{
     (cats[k]?.issues||[]).slice(0,4).forEach(it=>issueLines.push(`- ${catLabels[k]}: ${it.original||''} -> ${it.fixed||''} (${it.rule||''})`));
