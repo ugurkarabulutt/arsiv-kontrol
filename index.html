@@ -50,6 +50,7 @@ try{
   --red:#9b2424;--red-bg:#fff0f0;
   --green:#1f6b3a;--grn-bg:#eef9f1;
   --blue:#27527e;--blue-bg:#eef5ff;
+  --ai:#6f4dff;--ai-rgb:111,77,255;
   --orange:#83500f;--orange-bg:#fff3e4;
   --border:#d9ccb9;--bord2:#bba98f;--white:var(--surface-strong);
   --shadow:0 18px 42px rgba(46,34,18,.08);
@@ -69,6 +70,7 @@ try{
   --red:#ee8585;--red-bg:#332020;
   --green:#82d59b;--grn-bg:#1d3023;
   --blue:#9bbce8;--blue-bg:#1e2938;
+  --ai:#9f8cff;--ai-rgb:159,140,255;
   --orange:#e2ad6a;--orange-bg:#30261c;
   --border:#343434;--bord2:#4c4a46;--white:var(--surface-strong);
   --shadow:0 20px 48px rgba(0,0,0,.34);
@@ -337,9 +339,9 @@ canvas{width:100%!important;}
 .assistant-panel{margin-top:16px;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);box-shadow:var(--soft-shadow);}
 .assistant-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border);}
 .assistant-title{font-weight:800;font-size:14px;color:var(--ink);}
-.assistant-live{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 0 rgba(202,164,74,.4);animation:pulseLive 1.4s infinite;}
-@keyframes pulseLive{70%{box-shadow:0 0 0 8px rgba(202,164,74,0)}100%{box-shadow:0 0 0 0 rgba(202,164,74,0)}}
+.assistant-live{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ai);}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--ai);box-shadow:0 0 0 0 rgba(var(--ai-rgb),.46),0 0 12px rgba(var(--ai-rgb),.55);animation:pulseLive 1.15s infinite;}
+@keyframes pulseLive{70%{box-shadow:0 0 0 9px rgba(var(--ai-rgb),0),0 0 14px rgba(var(--ai-rgb),.46)}100%{box-shadow:0 0 0 0 rgba(var(--ai-rgb),0),0 0 8px rgba(var(--ai-rgb),.38)}}
 .assistant-body{padding:14px;}
 .assistant-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
 .assistant-actions .btn-primary{padding:10px 14px;}
@@ -351,8 +353,8 @@ canvas{width:100%!important;}
 .assistant-steps{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
 .assistant-step{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
 .assistant-step::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--border);}
-.assistant-step.active{color:var(--gold);}
-.assistant-step.active::before{background:var(--gold);animation:pulseLive 1.2s infinite;}
+.assistant-step.active{color:var(--ai);}
+.assistant-step.active::before{background:var(--ai);animation:pulseLive 1.2s infinite;}
 .assistant-step.done{color:var(--green);}
 .assistant-step.done::before{background:var(--green);}
 .assistant-list{margin:8px 0 0 18px;}
@@ -947,13 +949,13 @@ function updateHelperNudge(count,text){
   const live=el('helperLiveText');
   const out=el('helperOutput');
   if(!live||!out||currentResult)return;
-  if(count===0){live.textContent='Hazır';out.textContent='Metni yapıştırınca ya da denetim sonucu oluşunca ikinci göz olarak yardımcı olur.';return;}
+  if(count===0){live.textContent='Hazır';out.textContent='Metni yapıştırınca AI raporu için hazır olur.';return;}
   if(count<MIN_TEXT_CHARS){live.textContent='Bağlam bekliyor';out.textContent='Metin kısa görünüyor. Birkaç cümle daha eklerseniz Denetim Yardımcısı daha sağlıklı hazırlık kontrolü yapabilir.';return;}
   if(count>MAX_TEXT_CHARS){live.textContent='Bölme önerisi var';out.textContent='Metin sistem sınırını aşıyor. Yardımcıdan metni nasıl bölmeniz gerektiği konusunda öneri alabilirsiniz.';return;}
   if(count>18000){live.textContent='Uzun metin algılandı';out.textContent='Uzun metinlerde düzen ve kopyalama riski artar. AI Raporu ile parça/paragraf kontrolü alabilirsiniz.';return;}
   if(/\t| {3,}/.test(text)){live.textContent='Düzen izi var';out.textContent='Metinde tablo veya hizalama izi görünüyor. Denetimden önce düzen risklerini kontrol ettirebilirsiniz.';return;}
-  live.textContent='Hazırlık yapabilir';
-  out.textContent='Metin denetime hazır görünüyor. İsterseniz yardımcı önce yapı ve kopyalama risklerini kontrol edebilir.';
+  live.textContent='AI hazır';
+  out.textContent='Metin hazır görünüyor. AI raporu sonucu, şüpheli noktaları ve ekibe bildirim gerekip gerekmediğini tek yerde kontrol eder.';
 }
 function persistWorkDraft(){
   try{
@@ -1304,7 +1306,7 @@ function renderResults(d,container){
   currentResult=d;
   currentAiReport=null;
   const live=el('helperLiveText');
-  if(live)live.textContent='Sonuç için hazır';
+  if(live)live.textContent='Rapor için hazır';
   const helperOut=el('helperOutput');
   if(helperOut)helperOut.innerHTML='Denetim sonucu oluştu. <strong>AI Raporu Oluştur</strong> ile sonucu tek raporda kontrol edip ekibe bildirim gerekip gerekmediğini görebilirsiniz.';
   const cats=d.categories||{};
@@ -1338,7 +1340,7 @@ function renderResults(d,container){
         <div class="score-track"><div class="score-fill ${fc}" style="width:${sc}%"></div></div>
       </div>${scoreBoxes}
     </div>
-    ${(promptVersion||rulesHash)?`<div class="analysis-meta">${promptVersion?`<span class="meta-chip">Prompt ${esc(promptVersion)}</span>`:''}${rulesHash?`<span class="meta-chip">Kural ${esc(rulesHash)}</span>`:''}</div>`:''}
+    ${hasAdminRole(me?.role)&&(promptVersion||rulesHash)?`<div class="analysis-meta">${promptVersion?`<span class="meta-chip">Prompt ${esc(promptVersion)}</span>`:''}${rulesHash?`<span class="meta-chip">Kural ${esc(rulesHash)}</span>`:''}</div>`:''}
     ${d.summary?`<div class="summary-box ${sc<60?'summary-warn':''}">${esc(d.summary)}</div>`:''}
     ${d.id?`<div class="feedback-panel"><div id="feedbackGate" class="feedback-gate">Ekibe bildirim göndermek için önce AI raporu oluşturun. Rapor risk görürse bildirim alanı açılır.</div><div class="feedback-actions" id="resultFeedbackActions" style="display:none">
       <button class="btn-mini" onclick="sendResultFeedback('${d.id}','missing_issue')">Eksik hata</button>
@@ -1432,10 +1434,10 @@ async function downloadPDF(){
 }
 
 function clearAnalyze(){
+  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';currentAiReport=null;
   el('inputText').value='';
   handleTextInput();
   el('resultsArea').innerHTML='';
-  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';currentAiReport=null;
   clearWorkDraft();
   const d=el('fileDrop');
   d.className='file-drop';

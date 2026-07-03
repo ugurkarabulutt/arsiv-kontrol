@@ -142,6 +142,11 @@ tespit edilir).
   `low` risk dönerse genel ve bulgu bazlı feedback butonları kapalı kalır; yalnızca `medium/high`
   riskte ekibe bildirim alanı açılır. Amaç pozitif/sağlıklı sonuçların admin feedback kuyruğunu
   şişirmesini engellemektir.
+- **Kullanıcı sonuç ekranı sadeleştirme:** `Prompt` ve `Kural` sürüm chipleri normal kullanıcı
+  sonuç ekranından gizlendi; yalnızca admin rolünde görünür. `Temizle` artık sonuç belleğini önce
+  sıfırlar, sonra input/yardımcı alanını resetler; Denetim Yardımcısı tek tıkla `Hazır` durumuna
+  döner. Yardımcı durum metni `AI hazır`/`Rapor için hazır` diline çekildi ve canlı AI noktası
+  daha belirgin menekşe vurgu rengiyle gösterilir.
 - **Premium UX ve okunurluk turu:** Uygulama fontu `Noto Sans` olarak değiştirildi; yaşça büyük
   kullanıcılar için daha okunur ve yüksek kontrastlı metin yapısı hedeflendi. Açık/koyu tema
   paletleri daha premium, daha az parlak ve daha katmanlı hale getirildi. Sol menü beyaz düz
