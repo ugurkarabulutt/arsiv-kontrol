@@ -454,6 +454,10 @@ async function seed() {
     .select('feedback_status,resolved_at,resolved_by,resolution_group,resolution_note').limit(1);
   HAS_ALERT_FEEDBACK_META = !feedbackMetaErr;
   if (!HAS_ALERT_FEEDBACK_META) console.warn('⚠ alerts feedback çözüm kolonları yok — çözüm durumu read/notification üzerinden sınırlı izlenecek.');
+
+  const { error: resolutionLogErr } = await supabase.from('issue_resolution_log').select('id').limit(1);
+  HAS_ISSUE_RESOLUTION_LOG = !resolutionLogErr;
+  if (!HAS_ISSUE_RESOLUTION_LOG) console.warn('⚠ issue_resolution_log tablosu yok — çözüm kayıt defteri pasif.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -851,6 +855,18 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
     const { error: updateError } = await supabase.from('alerts').update(patch).eq('id', alert.id);
     if (updateError) throw new Error(updateError.message);
 
+    if (HAS_ISSUE_RESOLUTION_LOG) {
+      await supabase.from('issue_resolution_log').upsert({
+        resolution_group: `single-${alert.id}`,
+        title: cleanNote.slice(0, 160),
+        summary: feedbackSummary(alert),
+        status: 'resolved',
+        feedback_count: 1,
+        user_count: 1,
+        created_by: req.session.name || req.session.username
+      }, { onConflict: 'resolution_group' });
+    }
+
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -918,6 +934,20 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
       .in('id', feedbacks.map(f => f.id));
     if (updateError) throw new Error(updateError.message);
 
+    if (HAS_ISSUE_RESOLUTION_LOG) {
+      const sampleItems = feedbacks.slice(0, 8).map(feedbackSummary).join('\n');
+      const { error: logError } = await supabase.from('issue_resolution_log').insert({
+        resolution_group: groupId,
+        title: cleanNote.slice(0, 160),
+        summary: sampleItems,
+        status: 'resolved',
+        feedback_count: feedbacks.length,
+        user_count: byUser.size,
+        created_by: req.session.name || req.session.username
+      });
+      if (logError) throw new Error(logError.message);
+    }
+
     res.json({
       success: true,
       feedbackCount: feedbacks.length,
@@ -967,14 +997,23 @@ app.post('/api/my-notifications/read-all', auth, async (req, res) => {
 // ── DASHBOARD STATS ───────────────────────────────────────────────────────
 app.get('/api/stats', auth, admin, async (req, res) => {
   try {
-    const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }] = await Promise.all([
+    const [
+      { data: histRows, error: hErr },
+      { data: userRows, error: uErr },
+      { data: alertRows, error: aErr },
+      resolutionLogResult
+    ] = await Promise.all([
       supabase.from('history').select('*'),
       supabase.from('users').select('id,name,username,active'),
-      supabase.from('alerts').select('*')
+      supabase.from('alerts').select('*'),
+      HAS_ISSUE_RESOLUTION_LOG
+        ? supabase.from('issue_resolution_log').select('*').order('created_at', { ascending: false }).limit(12)
+        : Promise.resolve({ data: [], error: null })
     ]);
     if (hErr) throw new Error(hErr.message);
     if (uErr) throw new Error(uErr.message);
     if (aErr) throw new Error(aErr.message);
+    if (resolutionLogResult.error) throw new Error(resolutionLogResult.error.message);
 
     const hist = (histRows || []).map(mapHistory);
     const users = (userRows || []).filter(u => u.active);
@@ -1090,7 +1129,17 @@ app.get('/api/stats', auth, admin, async (req, res) => {
       daily,
       riskItems,
       feedbackUsers,
-      topContributors
+      topContributors,
+      resolutionLog: (resolutionLogResult.data || []).map(row => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        status: row.status,
+        feedbackCount: row.feedback_count,
+        userCount: row.user_count,
+        createdBy: row.created_by,
+        createdAt: row.created_at
+      }))
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -1275,6 +1324,7 @@ let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu
 let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
+let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

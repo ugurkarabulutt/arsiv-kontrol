@@ -115,6 +115,11 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Sorun/çözüm kayıt defteri:** `issue_resolution_log` tablosu eklendi. Tekil veya toplu
+  feedback çözümü yapıldığında çözüm turu kısa başlık, özet, çözülen feedback sayısı,
+  etkilenen kullanıcı sayısı, çözen kişi ve tarih ile kayıt altına alınır. Admin dashboard'da
+  "Sorun / Çözüm Kayıt Defteri" paneli son çözüm turlarını gösterir. Tablo canlı DB'de yoksa
+  uygulama kırılmaz; panel boş gelir ve kayıt yazılmaz.
 - **Geri bildirim katkı ve çözüm istatistikleri:** Admin dashboard'a geri bildirim yaşam
   döngüsü metrikleri eklendi: toplam/açık/çözülen feedback, çözüm oranı, katkı veren
   kullanıcı sayısı, en çok geri bildirim verenler ve sistem iyileştirmesine en çok katkı

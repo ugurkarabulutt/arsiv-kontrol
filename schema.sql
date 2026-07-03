@@ -69,6 +69,20 @@ create table if not exists public.alerts (
 create index if not exists alerts_created_at_idx on public.alerts (created_at desc);
 create index if not exists alerts_feedback_status_idx on public.alerts (type, feedback_status);
 
+-- issue_resolution_log
+create table if not exists public.issue_resolution_log (
+  id uuid primary key default gen_random_uuid(),
+  resolution_group text unique,
+  title text not null,
+  summary text,
+  status text not null default 'resolved',
+  feedback_count integer not null default 0,
+  user_count integer not null default 0,
+  created_by text,
+  created_at timestamptz not null default now()
+);
+create index if not exists issue_resolution_log_created_at_idx on public.issue_resolution_log (created_at desc);
+
 -- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
 alter table public.alerts add column if not exists feedback_status text default 'open';
 alter table public.alerts add column if not exists resolved_at timestamptz;

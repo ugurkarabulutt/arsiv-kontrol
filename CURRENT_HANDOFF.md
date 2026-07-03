@@ -23,6 +23,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-03 Codex sorun/çözüm kayıt defteri turu: `schema.sql` içine
+  `issue_resolution_log` tablosu eklendi. Tekil ve toplu feedback çözüm akışları çözüm
+  turunu kısa başlık, özet, feedback sayısı, kullanıcı sayısı, çözen kişi ve tarih ile bu
+  tabloya yazar. Admin dashboard'da "Sorun / Çözüm Kayıt Defteri" paneli son çözüm turlarını
+  gösterir. Tablo canlı DB'de yoksa uygulama kırılmaz ama kayıt defteri pasif kalır.
+  `npm.cmd run check` başarılı; 39/39 test geçti.
 - 2026-07-03 Codex geri bildirim katkı/çözüm istatistik turu: Admin dashboard'a toplam/açık/
   çözülen feedback, çözüm oranı, katkı veren kullanıcı sayısı, en çok geri bildirim verenler
   ve sistem iyileştirmesine en çok katkı sağlayanlar eklendi. Uyarılar ekranında feedback

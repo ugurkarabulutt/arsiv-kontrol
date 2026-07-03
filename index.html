@@ -296,6 +296,11 @@ canvas{width:100%!important;}
 .contrib-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .contrib-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
 .contrib-score{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--gold);}
+.resolution-log{display:flex;flex-direction:column;gap:8px;}
+.resolution-log-item{border-bottom:1px solid var(--border);padding:8px 0;}
+.resolution-log-item:last-child{border-bottom:none;}
+.resolution-log-title{font-weight:700;font-size:13px;margin-bottom:4px;color:var(--ink);}
+.resolution-log-summary{font-size:12px;line-height:1.55;color:var(--ink2);white-space:pre-line;max-height:72px;overflow:hidden;}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
 .notice-list{display:flex;flex-direction:column;gap:12px;}
 .notice-card{position:relative;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:16px 18px 14px;margin:0;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
@@ -1264,6 +1269,14 @@ async function loadDash(){
       <div class="contrib-meta">Katkı</div>
       <div class="contrib-score">${u.contributionScore||0}</div>
     </div>`).join('');
+  const resolutionLog=(stats.resolutionLog||[]).map(item=>{
+    const dt=new Date(item.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="resolution-log-item">
+      <div class="resolution-log-title">${esc(item.title||'Çözüm kaydı')}</div>
+      <div class="contrib-meta">${dt} · ${item.feedbackCount||0} geri bildirim · ${item.userCount||0} kullanıcı · ${esc(item.createdBy||'Sistem')}</div>
+      ${item.summary?`<div class="resolution-log-summary">${esc(item.summary)}</div>`:''}
+    </div>`;
+  }).join('');
   container.innerHTML=`
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-lbl">Toplam</div><div class="stat-val">${t.allTime}</div></div>
@@ -1291,6 +1304,10 @@ async function loadDash(){
         <div class="dash-card-head">Sistem İyileştirmesine En Çok Katkı Sağlayanlar</div>
         <div class="dash-card-body">${topContributors||'<div class="empty-state">Veri yok</div>'}</div>
       </div>
+    </div>
+    <div class="dash-card" style="margin-bottom:12px">
+      <div class="dash-card-head">Sorun / Çözüm Kayıt Defteri</div>
+      <div class="dash-card-body"><div class="resolution-log">${resolutionLog||'<div class="empty-state">Henüz çözüm kaydı yok.</div>'}</div></div>
     </div>
     <div class="dash-grid">
       <div class="dash-card"><div class="dash-card-head">Hata Kategorileri</div><div class="dash-card-body">${catBars||'<div class="empty-state">Veri yok</div>'}</div></div>
