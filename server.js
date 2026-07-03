@@ -50,7 +50,7 @@ app.set('trust proxy', 1);
 app.use(cookieSession({
   name: 'arsiv_session',
   keys: [SESSION_SECRET],
-  maxAge: 8 * 60 * 60 * 1000,
+  maxAge: 30 * 24 * 60 * 60 * 1000,
   httpOnly: true,
   sameSite: 'lax',
   secure: Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production')

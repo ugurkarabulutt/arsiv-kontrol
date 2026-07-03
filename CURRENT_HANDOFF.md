@@ -23,6 +23,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-03 Codex premium UX/ayarlar turu: Genel font `Noto Sans` oldu; açık/koyu tema,
+  buton hover/active durumları, tıklamada parlak geçiş efekti, sol menü katman hissi ve bölüm
+  ayraçları iyileştirildi. `Ayarlar` ekranı eklendi; kullanıcı küçük/orta/büyük yazı boyutu
+  seçebilir ve tercih cihazda saklanır. Metin denetimi girişi ve son analiz sonucu otomatik
+  taslak olarak `localStorage` içinde tutulur; sayfa uzun süre açık kalır veya yenilenirse
+  çalışma geri yüklenir. `Temizle` taslağı da siler. Oturum çerez süresi 30 güne çıkarıldı.
 - 2026-07-03 Codex rapor takvimi/PDF feedback paketi turu: `/api/cron/daily-report` artık
   İstanbul 00:00 takvim sınırlarına göre çalışır; her gece günlük, pazartesi haftalık, ayın
   1'i aylık ve 1 Ocak yıllık raporu birlikte üretir. Aynı dönem aralığı daha önce üretildiyse

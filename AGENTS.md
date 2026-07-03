@@ -115,6 +115,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Premium UX ve okunurluk turu:** Uygulama fontu `Noto Sans` olarak değiştirildi; yaşça büyük
+  kullanıcılar için daha okunur ve yüksek kontrastlı metin yapısı hedeflendi. Açık/koyu tema
+  paletleri daha premium, daha az parlak ve daha katmanlı hale getirildi. Sol menü beyaz düz
+  blok görünümünden çıkarılıp yüzey, gölge, aktif durum ve bölüm alt çizgileriyle belirgin
+  bir navigasyon katmanına dönüştürüldü. Butonlara hover/active durumları ve tıklamada kısa
+  parlak geçiş efekti eklendi.
+- **Kullanıcı ayarları ve taslak koruma:** Yeni `Ayarlar` ekranı eklendi. Kullanıcı küçük,
+  orta veya büyük yazı boyutu seçebilir; tercih `localStorage` ile cihazda hatırlanır ve örnek
+  metinle anında gösterilir. Metin denetim alanı ve son analiz sonucu otomatik taslak olarak
+  cihazda saklanır; kullanıcı ekranı uzun süre açık bırakır veya sayfayı yenilerse metin/sonuç
+  geri gelir. `Temizle` bilinçli olarak bu taslağı da temizler. Oturum çerez süresi 30 güne
+  çıkarıldı.
 - **Panel AI asistan ve rapor altyapısı:** Admin paneline "AI Asistan ve Raporlar" ekranı
   eklendi. `gpt-4o-mini` ile günlük/haftalık/aylık/yıllık operasyon raporu üretilebilir ve
   seçilen dönem verisine soru sorulabilir. Backend ham veriyi modele vermeden önce denetim,
