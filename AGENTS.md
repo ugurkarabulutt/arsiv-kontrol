@@ -115,6 +115,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-03
+- **Panel AI asistan ve rapor altyapısı:** Admin paneline "AI Asistan ve Raporlar" ekranı
+  eklendi. `gpt-4o-mini` ile günlük/haftalık/aylık/yıllık operasyon raporu üretilebilir ve
+  seçilen dönem verisine soru sorulabilir. Backend ham veriyi modele vermeden önce denetim,
+  skor, hata kategorisi, kullanıcı aktivitesi, feedback, çözüm kayıtları ve düşük skor
+  uyarılarından sınırlı operasyon özeti çıkarır.
+- **AI rapor kayıtları:** `schema.sql` içine `ai_reports` tablosu eklendi. Raporlar dönem,
+  dönem başlangıç/bitiş, başlık, AI JSON içeriği, kaynak metrikler, model ve oluşturan kişiyle
+  kalıcı saklanır. Tablo canlı DB'de yoksa endpoint kontrollü hata döner.
+- **Otomatik günlük rapor:** Vercel cron `/api/cron/daily-report` yolunu her gün UTC 21:00'de
+  çağıracak şekilde ayarlandı; bu İstanbul saatiyle 00:00'a denk gelir. Endpoint `CRON_SECRET`
+  varsa Bearer/query secret veya Vercel cron header ile korunur.
+- **Test:** `npm.cmd run check` başarılı; 39/39 test geçti. `vercel.json` JSON parse kontrolü
+  başarılı.
 - **Operasyon paneli UX dönüşümü:** Masaüstünde üst navigasyon yerine sol menülü panel
   düzenine geçildi. Denetim, Operasyon ve Yönetim başlıkları altında ilgili ekranlar
   gruplanır; mobil hamburger menü korunur. Bu düzen ileride e-tablo, IbrahimLive.com ve

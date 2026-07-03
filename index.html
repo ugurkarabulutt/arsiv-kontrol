@@ -307,6 +307,18 @@ canvas{width:100%!important;}
 .resolution-log-item:last-child{border-bottom:none;}
 .resolution-log-title{font-weight:700;font-size:13px;margin-bottom:4px;color:var(--ink);}
 .resolution-log-summary{font-size:12px;line-height:1.55;color:var(--ink2);white-space:pre-line;max-height:72px;overflow:hidden;}
+.ai-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.ai-box{background:var(--white);border:1px solid var(--bord2);}
+.ai-box-head{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);font-weight:700;font-size:13px;}
+.ai-box-body{padding:14px;}
+.ai-answer{white-space:pre-line;font-size:14px;line-height:1.65;color:var(--ink2);background:var(--bg2);border:1px solid var(--border);padding:12px;min-height:80px;}
+.report-card{border-bottom:1px solid var(--border);padding:12px 0;}
+.report-card:last-child{border-bottom:none;}
+.report-title{font-weight:700;font-size:15px;margin-bottom:4px;color:var(--ink);}
+.report-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-bottom:8px;}
+.report-section{font-size:13px;line-height:1.6;color:var(--ink2);margin-top:7px;}
+.report-section ul{margin:4px 0 0 18px;}
+@media(max-width:900px){.ai-panel-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
 .notice-list{display:flex;flex-direction:column;gap:12px;}
 .notice-card{position:relative;background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:16px 18px 14px;margin:0;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
@@ -450,7 +462,8 @@ canvas{width:100%!important;}
       <button class="btn-mobile" onclick="mNav('gecmis')">Geçmiş</button>
       <button class="btn-mobile" onclick="mNav('bildirim')">Bildirimler <span class="badge-m" id="mNoticeBadge" style="display:none">0</span></button>
       <button class="btn-mobile" onclick="mNav('profil')">Profilim</button>
-      <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
+    <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
+      <button class="btn-mobile admin-only" onclick="mNav('ai')" style="display:none">AI Asistan</button>
       <button class="btn-mobile admin-only" id="mBtnOnay" onclick="mNav('onay')" style="display:none">Onaylar <span class="badge-m" id="mOnayBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('feedback')" style="display:none">Geri Bildirim Merkezi</button>
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Sistem Uyarıları <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
@@ -470,6 +483,7 @@ canvas{width:100%!important;}
 
     <div class="side-section-label admin-only" style="display:none">Operasyon</div>
     <button class="side-link admin-only" data-tab="dash" onclick="showTab('dash')" style="display:none"><span>Dashboard</span></button>
+    <button class="side-link admin-only" data-tab="ai" onclick="showTab('ai')" style="display:none"><span>AI Asistan ve Raporlar</span></button>
     <button class="side-link admin-only" data-tab="onay" onclick="showTab('onay')" style="display:none"><span>İş Panosu</span><span class="badge" id="sideOnayBadge" style="display:none">0</span></button>
     <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
     <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyarıları</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
@@ -576,6 +590,42 @@ canvas{width:100%!important;}
       <div class="page-sub">Ekip geneli istatistikler</div>
       <div class="divider"></div>
       <div id="dashContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <div class="tab-content" id="tabContent-ai">
+      <div class="page-title">AI Asistan ve Raporlar</div>
+      <div class="page-sub">Operasyon verisini yorumlayan, raporlayan ve geliştirme önerisi üreten yönetim asistanı</div>
+      <div class="divider"></div>
+      <div class="ai-panel-grid">
+        <div class="ai-box">
+          <div class="ai-box-head">Rapor Üret</div>
+          <div class="ai-box-body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+              <button class="btn-primary" onclick="generateAiReport('daily')">Günlük</button>
+              <button class="btn-sec" onclick="generateAiReport('weekly')">Haftalık</button>
+              <button class="btn-sec" onclick="generateAiReport('monthly')">Aylık</button>
+              <button class="btn-sec" onclick="generateAiReport('yearly')">Yıllık</button>
+            </div>
+            <div class="info-box" style="margin-bottom:0">Günlük rapor Vercel Cron ile her gece İstanbul saati 00:00 için otomatik üretilecek şekilde ayarlandı.</div>
+          </div>
+        </div>
+        <div class="ai-box">
+          <div class="ai-box-head">AI Asistana Sor</div>
+          <div class="ai-box-body">
+            <div class="mfield"><label>Dönem</label><select id="aiPeriod"><option value="daily">Günlük</option><option value="weekly" selected>Haftalık</option><option value="monthly">Aylık</option><option value="yearly">Yıllık</option></select></div>
+            <textarea id="aiQuestion" style="min-height:86px;resize:vertical" placeholder="Örn: Bu hafta en kritik tekrar eden sorunlar ne? Hangi kullanıcılar kaliteye en çok katkı sağladı?"></textarea>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:10px"><button class="btn-primary" onclick="askAiAssistant()">Analiz Et</button><span class="status-msg" id="aiStatus"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-box" style="margin-bottom:12px">
+        <div class="ai-box-head">AI Yanıtı</div>
+        <div class="ai-box-body"><div class="ai-answer" id="aiAnswer">Henüz soru sorulmadı.</div></div>
+      </div>
+      <div class="ai-box">
+        <div class="ai-box-head">Rapor Geçmişi</div>
+        <div class="ai-box-body" id="aiReportsContent"><div class="empty-state">Yükleniyor...</div></div>
+      </div>
     </div>
 
     <div class="tab-content" id="tabContent-onay">
@@ -807,6 +857,7 @@ function showTab(name){
   document.querySelectorAll(`.side-link[data-tab="${name}"]`).forEach(e=>e.classList.add('active-tab'));
   if(name==='gecmis')loadHistory();
   if(name==='dash')loadDash();
+  if(name==='ai')loadAiReports();
   if(name==='onay')loadOnay();
   if(name==='feedback')loadFeedbackCenter();
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
@@ -1421,6 +1472,56 @@ function drawDailyChart(daily){
     if(i%2===0){ctx.fillStyle='#7a6e5e';ctx.font=`8px monospace`;ctx.textAlign='center';ctx.fillText(d.label,pad.l+i*bw+bw/2,H-pad.b+12);}
     if(d.count>0){ctx.fillStyle='#1a1410';ctx.font=`bold 8px monospace`;ctx.textAlign='center';ctx.fillText(d.count,pad.l+i*bw+bw/2,y-3);}
   });
+}
+
+function reportPeriodLabel(period){
+  return period==='weekly'?'Haftalık':period==='monthly'?'Aylık':period==='yearly'?'Yıllık':'Günlük';
+}
+
+function renderReport(report){
+  const c=report.content||{};
+  const dt=new Date(report.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const list=arr=>Array.isArray(arr)&&arr.length?`<ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
+  return `<div class="report-card">
+    <div class="report-title">${esc(report.title||c.title||'AI Raporu')}</div>
+    <div class="report-meta">${reportPeriodLabel(report.period)} · ${dt} · ${esc(report.model||'')}</div>
+    ${c.executiveSummary?`<div class="report-section"><strong>Özet:</strong> ${esc(c.executiveSummary)}</div>`:''}
+    ${c.activitySummary?`<div class="report-section"><strong>Aktivite:</strong> ${esc(c.activitySummary)}</div>`:''}
+    ${c.feedbackSummary?`<div class="report-section"><strong>Geri Bildirim:</strong> ${esc(c.feedbackSummary)}</div>`:''}
+    ${Array.isArray(c.risks)?`<div class="report-section"><strong>Riskler:</strong>${list(c.risks)}</div>`:''}
+    ${Array.isArray(c.recommendations)?`<div class="report-section"><strong>Öneriler:</strong>${list(c.recommendations)}</div>`:''}
+    ${Array.isArray(c.nextActions)?`<div class="report-section"><strong>Sonraki Aksiyonlar:</strong>${list(c.nextActions)}</div>`:''}
+  </div>`;
+}
+
+async function loadAiReports(){
+  const container=el('aiReportsContent');
+  const reports=await api('GET','/api/ai/reports');
+  if(reports.error){container.innerHTML=`<div class="empty-state">${esc(reports.error)}</div>`;return;}
+  if(!reports.length){container.innerHTML='<div class="empty-state">Henüz AI raporu yok.</div>';return;}
+  container.innerHTML=reports.map(renderReport).join('');
+}
+
+async function generateAiReport(period){
+  const st=el('aiStatus'); if(st){st.textContent='Rapor üretiliyor...';st.className='status-msg';}
+  const r=await api('POST','/api/ai/reports/generate',{period});
+  if(r.error){if(st){st.textContent=r.error;st.className='status-msg err';}return;}
+  if(st){st.textContent='✓ Rapor üretildi.';st.className='status-msg ok';}
+  await loadAiReports();
+  setTimeout(()=>{if(st)st.textContent='';},2500);
+}
+
+async function askAiAssistant(){
+  const q=v('aiQuestion');
+  const st=el('aiStatus');
+  if(!q){if(st){st.textContent='Soru yazın.';st.className='status-msg err';}return;}
+  if(st){st.textContent='AI analiz ediyor...';st.className='status-msg';}
+  el('aiAnswer').textContent='Analiz ediliyor...';
+  const r=await api('POST','/api/ai/insight',{question:q,period:v('aiPeriod')});
+  if(r.error){el('aiAnswer').textContent=r.error;if(st){st.textContent='';}return;}
+  el('aiAnswer').textContent=r.answer||'Yanıt yok.';
+  if(st){st.textContent=`✓ ${r.model||'AI'} yanıtladı.`;st.className='status-msg ok';}
+  setTimeout(()=>{if(st)st.textContent='';},2500);
 }
 
 async function loadOnay(){

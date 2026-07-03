@@ -25,6 +25,7 @@ const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_KEY      = process.env.SUPABASE_KEY;
 const PROMPT_VERSION    = '2026-06-30.4';
+const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
 const MAX_ANALYSIS_TEXT_CHARS = 120000;
 
@@ -458,6 +459,10 @@ async function seed() {
   const { error: resolutionLogErr } = await supabase.from('issue_resolution_log').select('id').limit(1);
   HAS_ISSUE_RESOLUTION_LOG = !resolutionLogErr;
   if (!HAS_ISSUE_RESOLUTION_LOG) console.warn('⚠ issue_resolution_log tablosu yok — çözüm kayıt defteri pasif.');
+
+  const { error: aiReportsErr } = await supabase.from('ai_reports').select('id').limit(1);
+  HAS_AI_REPORTS = !aiReportsErr;
+  if (!HAS_AI_REPORTS) console.warn('⚠ ai_reports tablosu yok — AI rapor kayıtları pasif.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -1187,6 +1192,225 @@ app.get('/api/stats', auth, admin, async (req, res) => {
 });
 
 // ── ANALYSIS ──────────────────────────────────────────────────────────────
+function periodRange(period = 'daily', now = new Date()) {
+  const end = new Date(now);
+  const start = new Date(now);
+  if (period === 'weekly') start.setDate(start.getDate() - 7);
+  else if (period === 'monthly') start.setMonth(start.getMonth() - 1);
+  else if (period === 'yearly') start.setFullYear(start.getFullYear() - 1);
+  else start.setDate(start.getDate() - 1);
+  return { start, end };
+}
+
+async function collectOperationalSnapshot(period = 'daily') {
+  const { start, end } = periodRange(period);
+  const [{ data: histRows, error: hErr }, { data: userRows, error: uErr }, { data: alertRows, error: aErr }, logResult] = await Promise.all([
+    supabase.from('history').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+    supabase.from('users').select('id,name,username,active,role'),
+    supabase.from('alerts').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+    HAS_ISSUE_RESOLUTION_LOG
+      ? supabase.from('issue_resolution_log').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false }).limit(30)
+      : Promise.resolve({ data: [], error: null })
+  ]);
+  if (hErr) throw new Error(hErr.message);
+  if (uErr) throw new Error(uErr.message);
+  if (aErr) throw new Error(aErr.message);
+  if (logResult.error) throw new Error(logResult.error.message);
+
+  const hist = (histRows || []).map(mapHistory);
+  const alerts = alertRows || [];
+  const usersById = new Map((userRows || []).map(u => [u.id, u]));
+  const feedback = alerts.filter(a => a.type === 'feedback');
+  const feedbackResolved = feedback.filter(a => a.feedback_status === 'resolved');
+  const feedbackOpen = feedback.filter(a => a.feedback_status !== 'resolved');
+  const lowScore = alerts.filter(a => a.type === 'low_score');
+  const catTotals = { sozluk: 0, imla: 0, noktalama: 0, etiket: 0, yapi: 0 };
+  hist.forEach(h => {
+    if (h.catCounts) Object.keys(catTotals).forEach(k => { catTotals[k] += h.catCounts[k] || 0; });
+  });
+
+  const userActivity = {};
+  hist.forEach(h => {
+    const key = h.userId || h.username || 'unknown';
+    if (!userActivity[key]) userActivity[key] = { name: h.name || h.username || 'Bilinmeyen', denetim: 0, scoreSum: 0, errors: 0 };
+    userActivity[key].denetim++;
+    userActivity[key].scoreSum += h.score || 0;
+    userActivity[key].errors += h.totalErrors || 0;
+  });
+  feedback.forEach(a => {
+    const key = a.user_id || 'unknown-feedback';
+    const u = usersById.get(a.user_id);
+    if (!userActivity[key]) userActivity[key] = { name: u?.name || u?.username || 'Bilinmeyen', denetim: 0, scoreSum: 0, errors: 0 };
+    userActivity[key].feedback = (userActivity[key].feedback || 0) + 1;
+    if (a.feedback_status === 'resolved') userActivity[key].resolvedFeedback = (userActivity[key].resolvedFeedback || 0) + 1;
+  });
+  const topUsers = Object.values(userActivity).map(u => ({
+    ...u,
+    avgScore: u.denetim ? Math.round(u.scoreSum / u.denetim) : 0,
+    avgErrors: u.denetim ? Math.round(u.errors / u.denetim) : 0
+  })).sort((a, b) => (b.denetim + (b.feedback || 0)) - (a.denetim + (a.feedback || 0))).slice(0, 12);
+
+  const feedbackSamples = feedbackOpen.concat(feedbackResolved).slice(0, 20).map(a => ({
+    status: a.feedback_status || 'open',
+    score: a.score || null,
+    summary: feedbackSummary(a),
+    createdAt: a.created_at
+  }));
+
+  return {
+    period,
+    periodStart: start.toISOString(),
+    periodEnd: end.toISOString(),
+    totals: {
+      denetim: hist.length,
+      avgScore: hist.length ? Math.round(hist.reduce((sum, h) => sum + (h.score || 0), 0) / hist.length) : 0,
+      totalErrors: hist.reduce((sum, h) => sum + (h.totalErrors || 0), 0),
+      lowScore: lowScore.length,
+      feedback: feedback.length,
+      feedbackOpen: feedbackOpen.length,
+      feedbackResolved: feedbackResolved.length,
+      activeUsers: (userRows || []).filter(u => u.active).length,
+      approvalsPending: hist.filter(h => !h.status || h.status === 'bekliyor').length
+    },
+    catTotals,
+    topUsers,
+    feedbackSamples,
+    resolutionLog: (logResult.data || []).map(row => ({
+      title: row.title,
+      feedbackCount: row.feedback_count,
+      userCount: row.user_count,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      summary: row.summary
+    }))
+  };
+}
+
+function fallbackReport(snapshot) {
+  return {
+    title: `${snapshot.period} operasyon raporu`,
+    executiveSummary: `Bu dönemde ${snapshot.totals.denetim} denetim, ${snapshot.totals.feedback} geri bildirim ve ${snapshot.totals.feedbackResolved} çözülen geri bildirim kaydedildi.`,
+    activitySummary: `Ortalama skor ${snapshot.totals.avgScore}. Toplam hata sayısı ${snapshot.totals.totalErrors}.`,
+    feedbackSummary: `Açık geri bildirim ${snapshot.totals.feedbackOpen}, çözülen geri bildirim ${snapshot.totals.feedbackResolved}.`,
+    risks: snapshot.totals.lowScore ? [`${snapshot.totals.lowScore} düşük skor uyarısı var.`] : ['Belirgin düşük skor uyarısı yok.'],
+    recommendations: ['Tekrarlayan geri bildirimleri haftalık kalite regresyon testlerine ekleyin.'],
+    nextActions: ['Açık geri bildirimleri Geri Bildirim Merkezi üzerinden çözüm paketine dönüştürün.']
+  };
+}
+
+async function generateAiReportContent(snapshot) {
+  if (!OPENAI_API_KEY) return fallbackReport(snapshot);
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      model: AI_REPORT_MODEL,
+      temperature: 0.2,
+      max_tokens: 1800,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: 'Sen Arşiv Kontrol AI yönetim panelinin operasyon analisti asistanısın. Verilen metrikleri kısa, somut ve yönetime uygun Türkçe rapora dönüştür. Halüsinasyon yapma; yalnızca verilen veriye dayan. JSON döndür: title, executiveSummary, activitySummary, feedbackSummary, risks(array), recommendations(array), nextActions(array).' },
+        { role: 'user', content: JSON.stringify(snapshot).slice(0, 24000) }
+      ]
+    })
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    throw new Error(e.error?.message || 'AI rapor API hatası');
+  }
+  const d = await r.json();
+  try { return JSON.parse(d.choices[0].message.content); }
+  catch { return { ...fallbackReport(snapshot), raw: d.choices[0].message.content }; }
+}
+
+async function createAiReport(period, createdBy = 'Sistem') {
+  if (!HAS_AI_REPORTS) throw new Error('ai_reports tablosu yok. schema.sql içindeki ai_reports SQL bölümünü Supabase SQL Editor’de çalıştırın.');
+  const snapshot = await collectOperationalSnapshot(period);
+  const content = await generateAiReportContent(snapshot);
+  const { data, error } = await supabase.from('ai_reports').insert({
+    period,
+    period_start: snapshot.periodStart,
+    period_end: snapshot.periodEnd,
+    title: content.title || `${period} AI raporu`,
+    content,
+    metrics: snapshot,
+    model: OPENAI_API_KEY ? AI_REPORT_MODEL : 'fallback',
+    created_by: createdBy
+  }).select('*').single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+const mapAiReport = row => ({
+  id: row.id,
+  period: row.period,
+  periodStart: row.period_start,
+  periodEnd: row.period_end,
+  title: row.title,
+  content: row.content || {},
+  metrics: row.metrics || {},
+  model: row.model,
+  createdBy: row.created_by,
+  createdAt: row.created_at
+});
+
+app.get('/api/ai/reports', auth, admin, async (req, res) => {
+  try {
+    if (!HAS_AI_REPORTS) return res.status(400).json({ error: 'ai_reports tablosu yok. Supabase SQL gerekli.' });
+    const { data, error } = await supabase.from('ai_reports').select('*').order('created_at', { ascending: false }).limit(50);
+    if (error) throw new Error(error.message);
+    res.json((data || []).map(mapAiReport));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/ai/reports/generate', auth, admin, async (req, res) => {
+  try {
+    const period = ['daily', 'weekly', 'monthly', 'yearly'].includes(req.body?.period) ? req.body.period : 'daily';
+    const report = await createAiReport(period, req.session.name || req.session.username);
+    res.json({ success: true, report: mapAiReport(report) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/ai/insight', auth, admin, async (req, res) => {
+  try {
+    const question = String(req.body?.question || '').trim().slice(0, 1200);
+    if (!question) return res.status(400).json({ error: 'Soru gerekli.' });
+    const period = ['daily', 'weekly', 'monthly', 'yearly'].includes(req.body?.period) ? req.body.period : 'weekly';
+    const snapshot = await collectOperationalSnapshot(period);
+    if (!OPENAI_API_KEY) return res.json({ answer: fallbackReport(snapshot).executiveSummary, model: 'fallback' });
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({
+        model: AI_REPORT_MODEL,
+        temperature: 0.2,
+        max_tokens: 1200,
+        messages: [
+          { role: 'system', content: 'Sen Arşiv Kontrol AI admin panelinde çalışan veri analisti asistansın. Veriye dayan, kısa ve uygulanabilir Türkçe cevap ver.' },
+          { role: 'user', content: `Soru: ${question}\n\nVeri:\n${JSON.stringify(snapshot).slice(0, 22000)}` }
+        ]
+      })
+    });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'AI asistan API hatası');
+    }
+    const d = await r.json();
+    res.json({ answer: d.choices[0].message.content, model: AI_REPORT_MODEL });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/cron/daily-report', async (req, res) => {
+  try {
+    const cronSecret = process.env.CRON_SECRET;
+    const isVercelCron = req.headers['x-vercel-cron'] === '1';
+    const provided = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.query.secret;
+    if (cronSecret && provided !== cronSecret && !isVercelCron) return res.status(401).json({ error: 'Yetkisiz.' });
+    const report = await createAiReport('daily', 'Sistem Cron');
+    res.json({ success: true, reportId: report.id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 async function buildSystemPrompt(rulesText) {
   const rules = rulesText ?? await loadRules();
   return `Sen "Arşiv Kontrol AI" sistemisin. Görevin yalnızca cevap metinlerini verilen kurallara göre denetlemek ve düzeltmektir.
@@ -1367,6 +1591,7 @@ let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_versi
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
+let HAS_AI_REPORTS = false; // startup'ta tespit edilir (AI rapor kayıtları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

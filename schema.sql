@@ -83,6 +83,22 @@ create table if not exists public.issue_resolution_log (
 );
 create index if not exists issue_resolution_log_created_at_idx on public.issue_resolution_log (created_at desc);
 
+-- ai_reports
+create table if not exists public.ai_reports (
+  id uuid primary key default gen_random_uuid(),
+  period text not null,
+  period_start timestamptz,
+  period_end timestamptz,
+  title text,
+  content jsonb not null default '{}'::jsonb,
+  metrics jsonb not null default '{}'::jsonb,
+  model text,
+  created_by text,
+  created_at timestamptz not null default now()
+);
+create index if not exists ai_reports_created_at_idx on public.ai_reports (created_at desc);
+create index if not exists ai_reports_period_idx on public.ai_reports (period, created_at desc);
+
 -- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
 alter table public.alerts add column if not exists feedback_status text default 'open';
 alter table public.alerts add column if not exists resolved_at timestamptz;
