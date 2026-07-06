@@ -982,7 +982,7 @@ function updateHelperNudge(count,text){
   if(count<MIN_TEXT_CHARS){live.textContent='Bağlam bekliyor';out.textContent='Metin kısa görünüyor. Birkaç cümle daha eklerseniz Denetim Yardımcısı daha sağlıklı hazırlık kontrolü yapabilir.';return;}
   if(count>MAX_TEXT_CHARS){live.textContent='Bölme önerisi var';out.textContent='Metin sistem sınırını aşıyor. Yardımcıdan metni nasıl bölmeniz gerektiği konusunda öneri alabilirsiniz.';return;}
   if(count>18000){live.textContent='Uzun metin algılandı';out.textContent='Uzun metinlerde düzen ve kopyalama riski artar. AI Raporu ile parça/paragraf kontrolü alabilirsiniz.';return;}
-  if(/\t| {3,}/.test(text)){live.textContent='Düzen izi var';out.textContent='Metinde tablo veya hizalama izi görünüyor. Denetimden önce düzen risklerini kontrol ettirebilirsiniz.';return;}
+  if(/\t| {3,}/.test(text)){live.textContent='Düzen kontrolü önerilir';out.textContent='Metinde satır, boşluk veya tablo düzeni olabilir. Denetimden sonra metin düzenini kontrol etmeniz önerilir.';return;}
   live.textContent='AI hazır';
   out.textContent='Metin hazır görünüyor. AI raporu sonucu, şüpheli noktaları ve ekibe bildirim gerekip gerekmediğini tek yerde kontrol eder.';
 }
