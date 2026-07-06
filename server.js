@@ -1624,6 +1624,18 @@ function fallbackHelperResponse(task, text, result, question) {
   };
 }
 
+function sanitizeHelperAnswer(answer) {
+  const cleanLine = value => String(value || '').replace(/.*akademik\s+referans.*$/giu, '').trim();
+  const cleanList = value => (Array.isArray(value) ? value : []).map(cleanLine).filter(Boolean);
+  const out = { ...(answer || {}) };
+  out.steps = cleanList(out.steps);
+  out.suggestions = cleanList(out.suggestions);
+  out.checks = cleanList(out.checks);
+  out.nextActions = cleanList(out.nextActions);
+  out.feedbackDraft = cleanLine(out.feedbackDraft);
+  return out;
+}
+
 app.post('/api/ai/helper', auth, async (req, res) => {
   try {
     const task = ['report', 'prepare', 'explain', 'feedback', 'suspect', 'copycheck'].includes(req.body?.task) ? req.body.task : 'report';
@@ -1631,7 +1643,7 @@ app.post('/api/ai/helper', auth, async (req, res) => {
     const question = '';
     const result = req.body?.result && typeof req.body.result === 'object' ? req.body.result : null;
     if (!text.trim() && !result) return res.status(400).json({ error: 'Yardımcı için metin veya denetim sonucu gerekli.' });
-    if (!OPENAI_API_KEY) return res.json({ answer: fallbackHelperResponse(task, text, result, question), model: 'assistant' });
+    if (!OPENAI_API_KEY) return res.json({ answer: sanitizeHelperAnswer(fallbackHelperResponse(task, text, result, question)), model: 'assistant' });
 
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -1642,7 +1654,7 @@ app.post('/api/ai/helper', auth, async (req, res) => {
         max_tokens: 1100,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Kullanıcı tarafında tek ana görevin AI Denetim Raporu üretmektir: sonucu sade açıkla, şüpheli bulguları yakala, kopyalama/karşılaştırma güvenliğini kontrol et ve ekibe bildirim gerekip gerekmediğini risk seviyesine göre belirt. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Pozitif/düşük riskli sonuçlarda ekibe bildirim önermemelisin; yalnızca riskli veya kontrol gerektiren sonuçlarda feedbackDraft üret. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
+          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Kullanıcı tarafında tek ana görevin AI Denetim Raporu üretmektir: sonucu sade açıkla, şüpheli bulguları yakala, kopyalama/karşılaştırma güvenliğini kontrol et ve ekibe bildirim gerekip gerekmediğini risk seviyesine göre belirt. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Akademik referans, kaynakça, dış kaynak, ilave akademik çalışma veya akademik öneri isteme; bu sistem yalnızca arşiv denetim standardına göre çalışır. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Pozitif/düşük riskli sonuçlarda ekibe bildirim önermemelisin; yalnızca riskli veya kontrol gerektiren sonuçlarda feedbackDraft üret. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
           { role: 'user', content: JSON.stringify({ task, question, text, result }).slice(0, 24000) }
         ]
       })
@@ -1655,7 +1667,7 @@ app.post('/api/ai/helper', auth, async (req, res) => {
     let answer;
     try { answer = JSON.parse(d.choices[0].message.content); }
     catch { answer = { ...fallbackHelperResponse(task, text, result, question), summary: d.choices[0].message.content }; }
-    res.json({ answer, model: 'assistant' });
+    res.json({ answer: sanitizeHelperAnswer(answer), model: 'assistant' });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

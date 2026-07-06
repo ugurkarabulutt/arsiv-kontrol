@@ -138,6 +138,7 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .side-link:hover{background:var(--surface2);border-color:var(--border);color:var(--ink);transform:translateX(2px);}
 .side-link.active-tab{background:linear-gradient(90deg,var(--gold-bg),var(--surface));border-color:var(--border);border-left-color:var(--gold);color:var(--ink);font-weight:700;box-shadow:var(--soft-shadow);}
 .side-link .badge{position:static;width:auto;min-width:17px;height:17px;padding:0 5px;}
+.side-logout{margin-top:12px;color:var(--red);border-top-color:var(--border);}
 .app-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tab-content{display:none;max-width:1160px;margin:0 auto;padding:24px 16px;}
 .tab-content.active{display:block;}
@@ -580,6 +581,7 @@ canvas{width:100%!important;}
     <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kayıtları</span></button>
     <button class="side-link" data-tab="profil" onclick="showTab('profil')"><span>Profilim</span></button>
     <button class="side-link" data-tab="ayarlar" onclick="showTab('ayarlar')"><span>Ayarlar</span></button>
+    <button class="side-link side-logout" onclick="doLogout()"><span>Çıkış Yap</span></button>
   </aside>
 
   <div class="app-body">
@@ -1272,10 +1274,13 @@ function buildLiveSteps(context='helper',task='prepare',text='',result=null,ques
 }
 function renderAssistantAnswer(answer){
   const a=answer||{};
-  const suggestions=Array.isArray(a.suggestions)?a.suggestions:[];
-  const steps=Array.isArray(a.steps)?a.steps:[];
-  const checks=Array.isArray(a.checks)?a.checks:[];
-  const nextActions=Array.isArray(a.nextActions)?a.nextActions:[];
+  const cleanAiLine=s=>String(s||'').replace(/.*akademik\s+referans.*$/giu,'').trim();
+  const cleanAiList=list=>(Array.isArray(list)?list:[]).map(cleanAiLine).filter(Boolean);
+  const cleanDraft=cleanAiLine(a.feedbackDraft);
+  const suggestions=cleanAiList(a.suggestions);
+  const steps=cleanAiList(a.steps);
+  const checks=cleanAiList(a.checks);
+  const nextActions=cleanAiList(a.nextActions);
   const risk=a.riskLevel==='high'?'Yüksek dikkat':a.riskLevel==='medium'?'Kontrol gerekli':'Düşük risk';
   return `<strong>${esc(a.title||'Denetim Yardımcısı')}</strong><br>${esc(a.summary||'Kısa değerlendirme hazır.')}
     <div style="margin-top:8px"><span class="status-chip ${a.riskLevel==='low'?'resolved':''}">${risk}</span></div>
@@ -1283,7 +1288,7 @@ function renderAssistantAnswer(answer){
     ${checks.length?`<div style="margin-top:8px"><strong>Kontrol edilenler</strong><ul class="assistant-list">${checks.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
     ${suggestions.length?`<div style="margin-top:8px"><strong>Öneriler</strong><ul class="assistant-list">${suggestions.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
     ${nextActions.length?`<div style="margin-top:8px"><strong>Sonraki adım</strong><ul class="assistant-list">${nextActions.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
-    ${a.feedbackDraft?`<div style="margin-top:8px"><strong>Geri bildirim taslağı</strong><br>${esc(a.feedbackDraft)}</div>`:''}`;
+    ${cleanDraft?`<div style="margin-top:8px"><strong>Geri bildirim taslağı</strong><br>${esc(cleanDraft)}</div>`:''}`;
 }
 async function runHelper(task){
   const out=el('helperOutput');
@@ -1482,7 +1487,7 @@ function setStatus(msg,type){const e=el('statusMsg');e.textContent=msg;e.classNa
 function diffTokens(a,b){
   const A=String(a||'').match(/\S+|\s+/g)||[];
   const B=String(b||'').match(/\S+|\s+/g)||[];
-  if(A.length>1400||B.length>1400)return null;
+  if(A.length>1400||B.length>1400)return simpleDiffFromIssues(String(a||''),String(b||''),currentResult);
   const dp=Array(A.length+1);
   for(let i=0;i<=A.length;i++)dp[i]=new Uint16Array(B.length+1);
   for(let i=A.length-1;i>=0;i--){
@@ -1502,12 +1507,31 @@ function diffTokens(a,b){
   }
   return {left,right};
 }
+function simpleDiffFromIssues(original,corrected,result){
+  let left=esc(original),right=esc(corrected);
+  const issues=[];
+  Object.values(result?.categories||{}).forEach(cat=>{
+    if(Array.isArray(cat?.issues))issues.push(...cat.issues);
+  });
+  const seen=new Set();
+  issues.slice(0,500).forEach(issue=>{
+    const o=String(issue?.original||'').trim();
+    const f=String(issue?.fixed||'').trim();
+    if(!o&&!f)return;
+    const key=o+'→'+f;
+    if(seen.has(key))return;
+    seen.add(key);
+    if(o)left=left.replace(esc(o),`<span class="diff-del">${esc(o)}</span>`);
+    if(f)right=right.replace(esc(f),`<span class="diff-ins">${esc(f)}</span>`);
+  });
+  return {left,right};
+}
 
 function renderComparePanel(original,corrected){
   const diff=diffTokens(original,corrected);
   const left=diff?diff.left:esc(original);
   const right=diff?diff.right:esc(corrected);
-  const note=diff?'Kırmızı çıkarılan, yeşil eklenen/değişen kısımları gösterir.':'Metin uzun olduğu için renkli fark kapatıldı; metinler yan yana gösteriliyor.';
+  const note='Kırmızı çıkarılan, yeşil eklenen/değişen kısımları gösterir.';
   return `<div class="compare-panel">
     <div class="compare-head"><h3>Karşılaştırma</h3><span class="diff-note">${note}</span></div>
     <div class="compare-grid">
