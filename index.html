@@ -243,6 +243,7 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .diff-ins{background:var(--grn-bg);color:var(--green);font-weight:600;}
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
+@media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
@@ -365,6 +366,12 @@ canvas{width:100%!important;}
 .report-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-bottom:8px;}
 .report-section{font-size:13px;line-height:1.6;color:var(--ink2);margin-top:7px;}
 .report-section ul{margin:4px 0 0 18px;}
+.report-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:var(--surface2);border:1px solid var(--border);}
+.report-filter-main{display:flex;gap:6px;flex-wrap:wrap;}
+.report-filter .btn-mini.active{background:var(--ink);color:var(--white);border-color:var(--ink);}
+.report-date-wrap{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.report-date-wrap input{height:34px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;padding:0 9px;outline:none;}
+.report-date-wrap input:focus{border-color:var(--gold);box-shadow:var(--focus);}
 @media(max-width:900px){.ai-panel-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
 @media(max-width:640px){
@@ -765,7 +772,22 @@ canvas{width:100%!important;}
       </div>
       <div class="ai-box">
         <div class="ai-box-head">Rapor Geçmişi</div>
-        <div class="ai-box-body" id="aiReportsContent"><div class="empty-state">Yükleniyor...</div></div>
+        <div class="ai-box-body">
+          <div class="report-filter">
+            <div class="report-filter-main">
+              <button class="btn-mini active" data-report-period="" onclick="setReportPeriodFilter('')">Tümü</button>
+              <button class="btn-mini" data-report-period="daily" onclick="setReportPeriodFilter('daily')">Günlük</button>
+              <button class="btn-mini" data-report-period="weekly" onclick="setReportPeriodFilter('weekly')">Haftalık</button>
+              <button class="btn-mini" data-report-period="monthly" onclick="setReportPeriodFilter('monthly')">Aylık</button>
+              <button class="btn-mini" data-report-period="yearly" onclick="setReportPeriodFilter('yearly')">Yıllık</button>
+            </div>
+            <div class="report-date-wrap">
+              <input type="date" id="reportDateFilter" onchange="loadAiReports()" aria-label="Rapor tarihi">
+              <button class="btn-mini" onclick="clearReportDateFilter()">Tarihi Temizle</button>
+            </div>
+          </div>
+          <div id="aiReportsContent"><div class="empty-state">Yükleniyor...</div></div>
+        </div>
       </div>
     </div>
 
@@ -917,7 +939,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null;
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,reportPeriodFilter='',reportDateFilter='';
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
@@ -1924,13 +1946,24 @@ function reportPeriodLabel(period){
 function renderReport(report){
   const c=report.content||{};
   const dt=new Date(report.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-  const list=arr=>Array.isArray(arr)&&arr.length?`<ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
+  const textValue=value=>{
+    if(value==null)return'';
+    if(typeof value==='string')return value;
+    if(Array.isArray(value))return value.map(textValue).filter(Boolean).join(', ');
+    if(typeof value==='object'){
+      if(value.name||value.title)return [value.name,value.title,value.count&&`${value.count} kayıt`,value.avgScore&&`ortalama ${value.avgScore}`].filter(Boolean).join(' - ');
+      return Object.entries(value).map(([k,v])=>`${k}: ${textValue(v)}`).filter(Boolean).join(', ');
+    }
+    return String(value);
+  };
+  const list=arr=>Array.isArray(arr)&&arr.length?`<ul>${arr.map(x=>`<li>${esc(textValue(x))}</li>`).join('')}</ul>`:'';
+  const section=(label,value)=>{const text=textValue(value);return text?`<div class="report-section"><strong>${label}:</strong> ${esc(text)}</div>`:'';};
   return `<div class="report-card">
     <div class="report-title">${esc(report.title||c.title||'AI Raporu')}</div>
     <div class="report-meta">${reportPeriodLabel(report.period)} · ${dt} · Canlı değerlendirme</div>
-    ${c.executiveSummary?`<div class="report-section"><strong>Özet:</strong> ${esc(c.executiveSummary)}</div>`:''}
-    ${c.activitySummary?`<div class="report-section"><strong>Aktivite:</strong> ${esc(c.activitySummary)}</div>`:''}
-    ${c.feedbackSummary?`<div class="report-section"><strong>Geri Bildirim:</strong> ${esc(c.feedbackSummary)}</div>`:''}
+    ${section('Özet',c.executiveSummary)}
+    ${section('Aktivite',c.activitySummary)}
+    ${section('Geri Bildirim',c.feedbackSummary)}
     ${Array.isArray(c.risks)?`<div class="report-section"><strong>Riskler:</strong>${list(c.risks)}</div>`:''}
     ${Array.isArray(c.recommendations)?`<div class="report-section"><strong>Öneriler:</strong>${list(c.recommendations)}</div>`:''}
     ${Array.isArray(c.nextActions)?`<div class="report-section"><strong>Sonraki Aksiyonlar:</strong>${list(c.nextActions)}</div>`:''}
@@ -1939,10 +1972,26 @@ function renderReport(report){
 
 async function loadAiReports(){
   const container=el('aiReportsContent');
-  const reports=await api('GET','/api/ai/reports');
+  reportDateFilter=el('reportDateFilter')?.value||'';
+  const qs=new URLSearchParams();
+  if(reportPeriodFilter)qs.set('period',reportPeriodFilter);
+  if(reportDateFilter)qs.set('date',reportDateFilter);
+  const reports=await api('GET',`/api/ai/reports${qs.toString()?`?${qs}`:''}`);
   if(reports.error){container.innerHTML=`<div class="empty-state">${esc(reports.error)}</div>`;return;}
-  if(!reports.length){container.innerHTML='<div class="empty-state">Henüz AI raporu yok.</div>';return;}
+  if(!reports.length){container.innerHTML='<div class="empty-state">Bu filtreye uygun rapor yok.</div>';return;}
   container.innerHTML=reports.map(renderReport).join('');
+}
+
+function setReportPeriodFilter(period){
+  reportPeriodFilter=period||'';
+  document.querySelectorAll('[data-report-period]').forEach(btn=>btn.classList.toggle('active',btn.dataset.reportPeriod===reportPeriodFilter));
+  loadAiReports();
+}
+function clearReportDateFilter(){
+  const input=el('reportDateFilter');
+  if(input)input.value='';
+  reportDateFilter='';
+  loadAiReports();
 }
 
 async function generateAiReport(period){

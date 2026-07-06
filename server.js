@@ -1424,7 +1424,7 @@ async function generateAiReportContent(snapshot) {
       max_tokens: 1800,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: 'Sen Arşiv Kontrol AI yönetim panelinin operasyon analisti asistanısın. Verilen metrikleri kısa, somut ve yönetime uygun Türkçe rapora dönüştür. Halüsinasyon yapma; yalnızca verilen veriye dayan. JSON döndür: title, executiveSummary, activitySummary, feedbackSummary, risks(array), recommendations(array), nextActions(array).' },
+        { role: 'system', content: 'Sen Arşiv Kontrol AI yönetim panelinin operasyon analisti asistanısın. Verilen metrikleri kısa, somut ve yönetime uygun Türkçe rapora dönüştür. Halüsinasyon yapma; yalnızca verilen veriye dayan. Asla ham obje, [object Object], JSON parçası veya teknik veri yapısı yazma; activitySummary ve feedbackSummary mutlaka düz Türkçe cümle olmalı. Akademik referans, eğitim programı veya dış kaynak önerme; yalnızca sistem kalitesi, geri bildirim çözümü, denetim tutarlılığı ve operasyon takibi için uygulanabilir öneriler ver. JSON döndür: title, executiveSummary, activitySummary, feedbackSummary, risks(array), recommendations(array), nextActions(array).' },
         { role: 'user', content: JSON.stringify(snapshot).slice(0, 24000) }
       ]
     })
@@ -1533,7 +1533,16 @@ const mapAiReport = row => ({
 app.get('/api/ai/reports', auth, admin, async (req, res) => {
   try {
     if (!HAS_AI_REPORTS) return res.status(400).json({ error: 'ai_reports tablosu yok. Supabase SQL gerekli.' });
-    const { data, error } = await supabase.from('ai_reports').select('*').order('created_at', { ascending: false }).limit(50);
+    const period = ['daily', 'weekly', 'monthly', 'yearly'].includes(req.query.period) ? req.query.period : '';
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query.date || '')) ? String(req.query.date) : '';
+    let query = supabase.from('ai_reports').select('*').order('created_at', { ascending: false }).limit(80);
+    if (period) query = query.eq('period', period);
+    if (date) {
+      const start = new Date(`${date}T00:00:00+03:00`);
+      const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+      query = query.lt('period_start', end.toISOString()).gt('period_end', start.toISOString());
+    }
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
     res.json((data || []).map(mapAiReport));
   } catch (e) { res.status(500).json({ error: e.message }); }
