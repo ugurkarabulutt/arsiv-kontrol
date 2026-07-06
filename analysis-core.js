@@ -227,7 +227,7 @@ function finalizeResult(result = {}, sourceText = '') {
 
   result.categories = cats;
   if (sourceText && result.correctedText) {
-    result.correctedText = acceptedIssues.length ? applyAcceptedIssues(sourceText, acceptedIssues) : sourceText;
+    result.correctedText = rejectedIssues.reduce((text, issue) => restoreRejectedChange(text, issue), result.correctedText);
   }
   result.score = Math.max(0, 100 - penalty);
   result.totalErrors = total;

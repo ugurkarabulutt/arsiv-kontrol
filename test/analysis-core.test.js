@@ -130,7 +130,7 @@ test('korumali ifadeleri degistiren issue gecersiz sayilir', () => {
   assert.equal(isProtectedChange('Resul', 'resûl'), false);
 });
 
-test('duzeltilmis metin sadece kabul edilen bulgulardan uretilir', () => {
+test('duzeltilmis tam metin korunur ama reddedilen bulgular skor disi kalir', () => {
   const source = 'Ayet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2';
   const result = finalizeResult({
     correctedText: 'Âyet yazildi.\nManevi metin bozuldu.\nTablo düz metne çevrildi.',
@@ -145,7 +145,7 @@ test('duzeltilmis metin sadece kabul edilen bulgulardan uretilir', () => {
   }, source);
 
   assert.equal(result.totalErrors, 1);
-  assert.equal(result.correctedText, 'Âyet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2');
+  assert.equal(result.correctedText, 'Âyet yazildi.\nManevî metin bozuldu.\nTablo düz metne çevrildi.');
 });
 
 test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
