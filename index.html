@@ -2030,14 +2030,18 @@ function renderAlertItems(container, filtered, showFeedbackToolbar){
     </div>`).join('')}</div>`;
 }
 function setAlertFilter(type){alertFilter=type;loadAlerts();}
-function toggleFeedbackSelection(id,checked){if(checked)selectedFeedbackIds.add(id);else selectedFeedbackIds.delete(id);loadAlerts();}
+function reloadFeedbackView(){
+  if(el('tabContent-feedback')?.classList.contains('active')) loadFeedbackCenter();
+  else loadAlerts();
+}
+function toggleFeedbackSelection(id,checked){if(checked)selectedFeedbackIds.add(id);else selectedFeedbackIds.delete(id);reloadFeedbackView();}
 function toggleVisibleFeedbackSelection(select){
   document.querySelectorAll('.alert-select:not(:disabled)').forEach(cb=>{
     const id=cb.dataset.id;
     if(select)selectedFeedbackIds.add(id);
     else selectedFeedbackIds.delete(id);
   });
-  loadAlerts();
+  reloadFeedbackView();
 }
 async function readAlert(id){await api('POST',`/api/alerts/${id}/read`);loadAlerts();refreshBadges();}
 async function readAllAlerts(){await api('POST','/api/alerts/read-all');loadAlerts();refreshBadges();}
@@ -2049,7 +2053,7 @@ async function respondFeedback(id){
   const r=await api('POST',`/api/alerts/${id}/respond`,{note:clean});
   if(r.error){setStatus(r.error,'err');return;}
   setStatus('✓ Kullanıcıya çözüm bildirimi gönderildi.','ok');
-  loadAlerts();refreshBadges();
+  reloadFeedbackView();refreshBadges();
   setTimeout(()=>setStatus('',''),2200);
 }
 async function resolveSelectedFeedback(){
@@ -2063,7 +2067,7 @@ async function resolveSelectedFeedback(){
   if(r.error){setStatus(r.error,'err');return;}
   selectedFeedbackIds.clear();
   setStatus(`✓ ${r.feedbackCount} geri bildirim çözüldü, ${r.userCount} kullanıcıya kişisel teşekkür bildirimi gönderildi.`,'ok');
-  loadAlerts();loadDash();refreshBadges();
+  reloadFeedbackView();loadDash();refreshBadges();
   setTimeout(()=>setStatus('',''),3000);
 }
 async function downloadFeedbackWorkPackage(){
@@ -2245,16 +2249,18 @@ async function loadUsers(){
       const targetIsSuper=u.role==='super_admin'||String(u.username).toLowerCase()==='admin';
       const canEdit=hasSuperAdminRole(me?.role)||!targetIsSuper;
       const canDelete=hasSuperAdminRole(me?.role)&&!targetIsSuper&&u.id!==me?.id;
-      const safeNameArg=JSON.stringify(u.name||'').replace(/"/g,'&quot;');
+      const idArg=attrJson(u.id);
+      const nameArg=attrJson(u.name||'');
+      const roleArg=attrJson(u.role||'');
       return `<tr>
       <td><strong>${esc(u.name)}</strong></td>
       <td class="mono" style="font-size:10px">${esc(u.username)}</td>
       <td><span class="role-pill ${rolePill(u.role)}">${roleShortLabel(u.role)}</span></td>
       <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Pasif'}</td>
       <td><div class="td-actions">
-        ${hasAdminRole(me?.role)?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openNotifyUser('${u.id}',${safeNameArg})">Bildirim</button>`:''}
-        ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser('${u.id}','${esc(u.name)}','${u.role}',${u.active})">Düzenle</button>`:''}
-        ${canDelete?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser('${u.id}','${esc(u.name)}')">Sil</button>`:''}
+        ${hasAdminRole(me?.role)?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openNotifyUser(${idArg},${nameArg})">Bildirim</button>`:''}
+        ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser(${idArg},${nameArg},${roleArg},${Boolean(u.active)})">Düzenle</button>`:''}
+        ${canDelete?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteUser(${idArg},${nameArg})">Sil</button>`:''}
       </div></td>
     </tr>`;}).join('')}</tbody></table></div>`;
 }
@@ -2364,6 +2370,13 @@ const v=id=>el(id).value.trim();
 function openModal(id){el(id).classList.add('open');}
 function closeModal(id){el(id).classList.remove('open');}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function attrJson(value){
+  return JSON.stringify(String(value??''))
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
 
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&me)analyze();});
 document.addEventListener('click',e=>{

@@ -114,6 +114,16 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-06
+- **Kapsamlı audit düzeltmeleri:** Cron rapor endpoint'i artık `CRON_SECRET` olmadan çalışmaz
+  ve spoof edilebilir `x-vercel-cron` header'ına güvenmez. Proje kökü statik servis edilmez;
+  sadece `icons`, `manifest.webmanifest` ve `sw.js` açık servis edilir. Feedback not limiti
+  frontend/backend uyumlu biçimde 2000 karakterdir.
+- **Geri bildirim ve kullanıcı yönetimi sağlamlığı:** Geri Bildirim Merkezi seçim/çözüm sonrası
+  bulunduğu ekranı yeniler; kullanıcıyı Sistem Uyarıları sekmesine atmaz. Kullanıcı yönetiminde
+  Bildirim/Düzenle/Sil butonları id, ad ve rol değerlerini güvenli JSON argümanıyla taşır;
+  apostrof veya tırnak içeren isimler butonları bozmaz.
+
 ### 2026-07-03
 - **Denetim Yardımcısı AI:** Kullanıcı tarafındaki Metin Denetimi ekranına güvenli "Denetim
   Yardımcısı" eklendi. Yardımcı; metni denetime hazırlama, sonucu sade açıklama, şüpheli

@@ -55,7 +55,9 @@ app.use(cookieSession({
   sameSite: 'lax',
   secure: Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production')
 }));
-app.use(express.static(__dirname));
+app.use('/icons', express.static(path.join(__dirname, 'icons')));
+app.get('/manifest.webmanifest', (req, res) => res.sendFile(path.join(__dirname, 'manifest.webmanifest')));
+app.get('/sw.js', (req, res) => res.sendFile(path.join(__dirname, 'sw.js')));
 
 // Render/UptimeRobot için oturum ve veritabanı gerektirmeyen canlılık kontrolü.
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
@@ -701,7 +703,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/feedback', auth, async (req, res) =
   try {
     const { reason, note, category, original, fixed, rule } = req.body || {};
     const reasonLabel = FEEDBACK_REASONS[reason] || FEEDBACK_REASONS.other;
-    const cleanNote = String(note || '').trim().slice(0, 1000);
+    const cleanNote = String(note || '').trim().slice(0, 2000);
     const cleanCategory = String(category || '').trim().slice(0, 40);
     const cleanOriginal = String(original || '').trim().slice(0, 220);
     const cleanFixed = String(fixed || '').trim().slice(0, 220);
@@ -1651,9 +1653,9 @@ app.post('/api/ai/helper', auth, async (req, res) => {
 app.get('/api/cron/daily-report', async (req, res) => {
   try {
     const cronSecret = process.env.CRON_SECRET;
-    const isVercelCron = req.headers['x-vercel-cron'] === '1';
     const provided = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.query.secret;
-    if (cronSecret && provided !== cronSecret && !isVercelCron) return res.status(401).json({ error: 'Yetkisiz.' });
+    if (!cronSecret) return res.status(500).json({ error: 'CRON_SECRET tanımlı değil.' });
+    if (provided !== cronSecret) return res.status(401).json({ error: 'Yetkisiz.' });
     const result = await createDueAiReports('Sistem Cron');
     res.json({
       success: true,
