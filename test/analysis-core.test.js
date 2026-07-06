@@ -129,3 +129,38 @@ test('korumali ifadeleri degistiren issue gecersiz sayilir', () => {
   assert.equal(isProtectedChange('Tabiî ki', 'tâbî ki'), true);
   assert.equal(isProtectedChange('Resul', 'resûl'), false);
 });
+
+test('duzeltilmis metin sadece kabul edilen bulgulardan uretilir', () => {
+  const source = 'Ayet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2';
+  const result = finalizeResult({
+    correctedText: 'Âyet yazildi.\nManevi metin bozuldu.\nTablo düz metne çevrildi.',
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'Ayet', fixed: 'Âyet', rule: 'Sozluk' },
+          { original: 'Manevî', fixed: 'Manevi', rule: 'Yanlis sapka silme' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.correctedText, 'Âyet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2');
+});
+
+test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
+  assert.equal(isProtectedChange('nefsi', 'nefs'), true);
+  assert.equal(isProtectedChange('nefsin', 'nefisin'), true);
+  assert.equal(isProtectedChange('taktirde', 'takdirde'), true);
+  assert.equal(isProtectedChange('taktirde', 'taktir de'), true);
+  assert.equal(isProtectedChange('A.S', 'S.A.V'), true);
+  assert.equal(isProtectedChange('Efendimiz (A.S)', 'Efendimiz (S.A.V)'), true);
+  assert.equal(isProtectedChange('derecatlar', 'dereceler'), true);
+  assert.equal(isProtectedChange('Kur’ân-ı Kerim', 'Kur’ân'), true);
+  assert.equal(isProtectedChange('Resûl’ü', 'Resûl'), true);
+  assert.equal(isProtectedChange('manevî', 'manevi'), true);
+  assert.equal(isProtectedChange('İnşaallah', 'inşaallah'), true);
+  assert.equal(isProtectedChange('birr', 'bir'), true);
+  assert.equal(isProtectedChange('hâdise', 'hadîse'), true);
+  assert.equal(isProtectedChange('afv-u', 'af ve'), true);
+});

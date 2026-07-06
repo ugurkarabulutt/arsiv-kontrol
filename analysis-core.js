@@ -45,10 +45,21 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /(?<![\p{L}\p{N}_])(?:muminun|m[uü]'?m[iİı]n[uû]n)(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])m[üu]'?m[iİı]n(?![\p{L}\p{N}_])/iu },
   { from: /\bzumer\b/iu, to: /\bzümer\b/iu },
   { from: /\btabiî\s+ki\b/iu, to: /\btâbî\s+ki\b/iu },
-  { from: /\bderecat\b/iu, to: /\bderece\b/iu },
+  { from: /\bderecat[\p{L}\p{N}_]*/iu, to: /\bderece[\p{L}\p{N}_]*/iu },
   { from: /\bdinlenmeye\b/iu, to: /\bdînlenmeye\b/iu },
   { from: /\bmuhterem\s+efendimiz\b/iu, to: /\befendimiz\s*\(s\.a\.v\)/iu },
-  { from: /\ballah(?:'|’)?ın\s+izniyle\.\s+allah\s+razı\s+olsun\.?/iu, to: /\ballah(?:'|’)?ın\s+izniyle,\s+allah\s+razı\s+olsun\.?/iu }
+  { from: /\ballah(?:'|’)?ın\s+izniyle\.\s+allah\s+razı\s+olsun\.?/iu, to: /\ballah(?:'|’)?ın\s+izniyle,\s+allah\s+razı\s+olsun\.?/iu },
+  { from: /\bnefsi\b/iu, to: /\bnefs\b/iu },
+  { from: /\bnefsin\b/iu, to: /\bnefisin\b/iu },
+  { from: /\btaktirde\b/iu, to: /\b(?:takdirde|taktir\s+de)\b/iu },
+  { from: /\b(?:a\.s\.?|a\.s)\b/iu, to: /\b(?:s\.a\.v\.?|s\.a\.v)\b/iu },
+  { from: /\befendimiz[\s\S]{0,24}\b(?:a\.s\.?|a\.s)\b/iu, to: /\befendimiz[\s\S]{0,24}\b(?:s\.a\.v\.?|s\.a\.v)\b/iu },
+  { from: /\bmumin\b/iu, to: /\bmu'?min[uû]n\b/iu },
+  { from: /\bbirr\b/iu, to: /\bbir\b/iu },
+  { from: /\bhâdise\b/iu, to: /\bhadîse\b/iu },
+  { from: /\bafv-u\b/iu, to: /\baf\s+ve\b/iu },
+  { from: /\bmace\b/iu, to: /\bmâce\b/iu },
+  { from: /\bkiyame\b/iu, to: /\bkıyâmet\b/iu }
 ];
 
 function normalizeText(text) {
@@ -69,10 +80,43 @@ function suraCaseKey(text) {
     .toLocaleUpperCase('tr-TR');
 }
 
+function foldText(text) {
+  return canonicalText(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('tr-TR');
+}
+
+function hasCircumflex(text) {
+  return /[âîûÂÎÛ]/u.test(canonicalText(text));
+}
+
 function isSuraCaseOnlyChange(original, fixed) {
   const from = suraCaseKey(original);
   const to = suraCaseKey(fixed);
   return !!from && from === to && SURA_NAME_KEYS.has(to) && canonicalText(original) !== canonicalText(fixed);
+}
+
+function isCaseOnlyChange(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  return !!from && !!to && from !== to && from.toLocaleLowerCase('tr-TR') === to.toLocaleLowerCase('tr-TR');
+}
+
+function isSourceDiacriticProtected(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (/^dîn(?:in|i|e|den|de)?$/iu.test(from) && /^din(?:in|i|e|den|de)?$/iu.test(to)) return false;
+  return !!from && !!to && from !== to && hasCircumflex(from) && foldText(from) === foldText(to);
+}
+
+function isSuspiciousTruncation(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!from || !to || to.length >= from.length) return false;
+  if (!foldText(from).startsWith(foldText(to))) return false;
+  const dropped = from.slice(to.length);
+  return /[\s'’-]/u.test(dropped) || dropped.length > 1;
 }
 
 function escapeRegExp(text) {
@@ -112,7 +156,10 @@ function isProtectedChange(original, fixed) {
   const to = canonicalText(fixed);
   if (!from || !to || from === to) return false;
 
+  if (isCaseOnlyChange(original, fixed)) return true;
   if (isSuraCaseOnlyChange(original, fixed)) return true;
+  if (isSourceDiacriticProtected(original, fixed)) return true;
+  if (isSuspiciousTruncation(original, fixed)) return true;
   if (PROTECTED_PATTERNS.some(pattern => pattern.test(from))) return true;
   return FORBIDDEN_TRANSFORMS.some(pair => pair.from.test(from) && pair.to.test(to));
 }
@@ -124,6 +171,16 @@ function restoreRejectedChange(text, issue) {
   if (!fixed.trim()) return text;
 
   return String(text).split(fixed).join(original);
+}
+
+function applyAcceptedIssues(sourceText, issues) {
+  return issues.reduce((text, issue) => {
+    const original = String(issue?.original || '');
+    const fixed = String(issue?.fixed || '');
+    if (!original || !fixed) return text;
+    if (text.includes(original)) return text.replace(original, fixed);
+    return text.replace(new RegExp(escapeRegExp(original), 'iu'), fixed);
+  }, sourceText);
 }
 
 function textHash(text) {
@@ -145,6 +202,7 @@ function finalizeResult(result = {}, sourceText = '') {
   let penalty = 0;
   let total = 0;
   const rejectedIssues = [];
+  const acceptedIssues = [];
 
   for (const [key, weight] of Object.entries(CAT_WEIGHTS)) {
     const category = cats[key] || {};
@@ -156,6 +214,7 @@ function finalizeResult(result = {}, sourceText = '') {
           && sourceContainsIssue(sourceText, issue.original)
           && !isProtectedChange(issue.original, issue.fixed);
         if (!keep && issue) rejectedIssues.push(issue);
+        if (keep) acceptedIssues.push(issue);
         return keep;
       });
     }
@@ -167,8 +226,8 @@ function finalizeResult(result = {}, sourceText = '') {
   }
 
   result.categories = cats;
-  if (sourceText && result.correctedText && rejectedIssues.length) {
-    result.correctedText = rejectedIssues.reduce(restoreRejectedChange, result.correctedText);
+  if (sourceText && result.correctedText) {
+    result.correctedText = acceptedIssues.length ? applyAcceptedIssues(sourceText, acceptedIssues) : sourceText;
   }
   result.score = Math.max(0, 100 - penalty);
   result.totalErrors = total;

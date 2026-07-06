@@ -115,6 +115,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-06
+- **Açık feedback çözüm paketi:** Canlı açık geri bildirimler kök sebeplere ayrıldı ve
+  backend doğrulama katmanı genişletildi. `nefsi/nefsin`, `taktirde`, `A.S/S.A.V`,
+  `Efendimiz (A.S)`, `derecat*`, ek/tamlayan kırpma, kaynakta şapkalı yazılmış kelimeyi
+  şapkasızlaştırma, `birr`, `hâdise`, `afv-u` ve hadîs kaynak adı dönüşümleri yanlış-pozitif
+  olarak skor dışı bırakılır.
+- **Düzeltilmiş metin güvenliği:** `correctedText` artık modelin serbest metni olarak
+  kabul edilmez; kaynak metne yalnızca kabul edilen issue'lar kontrollü uygulanır. Böylece
+  issue listesinde olmayan gizli değişiklikler, tablo/düzen bozulmaları ve şapkalı kelime
+  sadeleşmeleri düzeltilmiş metne sızmaz.
+- **Feedback modalı sağlamlığı:** Uzun geri bildirim notlarında gönder butonu görünür kalır,
+  modal gövdesi kaydırılabilir ve gönderim sırasında çift tıklama engellenir.
 - **Kapsamlı audit düzeltmeleri:** Cron rapor endpoint'i artık `CRON_SECRET` olmadan çalışmaz
   ve spoof edilebilir `x-vercel-cron` header'ına güvenmez. Proje kökü statik servis edilmez;
   sadece `icons`, `manifest.webmanifest` ve `sw.js` açık servis edilir. Feedback not limiti

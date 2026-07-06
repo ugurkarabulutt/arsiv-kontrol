@@ -402,18 +402,18 @@ canvas{width:100%!important;}
 .mfield select{font-family:'JetBrains Mono',monospace;font-size:12px;}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 .form-err{color:var(--red);font-size:13px;min-height:16px;}
-.feedback-modal{max-width:620px;border-radius:22px;border:1px solid var(--bord2);border-top:1px solid var(--bord2);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden;}
+.feedback-modal{max-width:620px;border-radius:22px;border:1px solid var(--bord2);border-top:1px solid var(--bord2);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden;display:flex;flex-direction:column;}
 .feedback-modal .modal-head{position:relative;padding:22px 24px 12px;border-bottom:0;justify-content:center;background:var(--white);}
 .feedback-modal .modal-head h3{font-size:20px;font-weight:800;text-align:center;}
 .feedback-modal .modal-close{position:absolute;right:18px;top:14px;width:42px;height:42px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);font-size:30px;display:flex;align-items:center;justify-content:center;}
-.feedback-modal .modal-body{padding:18px 28px 28px;}
+.feedback-modal .modal-body{padding:18px 28px 28px;overflow-y:auto;}
 .feedback-label{font-size:17px;font-weight:800;margin-bottom:10px;color:var(--ink);}
 .feedback-context{font-size:13px;line-height:1.55;color:var(--ink3);background:var(--surface2);border:1px solid var(--border);padding:10px 12px;margin-bottom:12px;}
 .feedback-textarea{width:100%;min-height:190px;max-height:48vh;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:16px;line-height:1.65;padding:16px 18px;border-radius:16px;resize:none;outline:none;}
 .feedback-textarea:focus{border-color:var(--ai);box-shadow:0 0 0 3px rgba(var(--ai-rgb),.18);}
 .feedback-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);text-align:right;margin-top:6px;}
 .feedback-help{font-size:12px;line-height:1.55;color:var(--ink3);margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-.feedback-modal .modal-foot{margin-top:18px;justify-content:stretch;}
+.feedback-modal .modal-foot{margin:18px -4px 0;justify-content:stretch;position:sticky;bottom:-28px;background:linear-gradient(to top,var(--white) 78%,rgba(255,255,255,0));padding:18px 4px 0;}
 .feedback-modal .modal-foot button{flex:1;border-radius:999px;padding:13px 16px;font-size:15px;}
 .rules-editor{width:100%;min-height:400px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;padding:14px;resize:vertical;outline:none;border-radius:0;}
 .rules-editor:focus{border-color:var(--gold);}
@@ -906,7 +906,7 @@ canvas{width:100%!important;}
       <div class="feedback-count" id="feedbackModalCount">0 / 2000</div>
       <div class="feedback-help">Bu not admin tarafındaki çözüm paketine düşer. Doğru kabul edilmesi gereken yazımı ve kısa sebebini yazmanız yeterlidir.</div>
       <div class="form-err" id="feedbackModalErr"></div>
-      <div class="modal-foot"><button class="btn-sec" onclick="closeFeedbackModal()">Vazgeç</button><button class="btn-primary" onclick="submitFeedbackModal()">Gönder</button></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeFeedbackModal()">Vazgeç</button><button class="btn-primary" id="feedbackSubmitBtn" onclick="submitFeedbackModal()">Gönder</button></div>
     </div>
   </div>
 </div>
@@ -1580,14 +1580,21 @@ async function submitFeedbackModal(){
   if(!payload){closeFeedbackModal();return;}
   if(!note){el('feedbackModalErr').textContent='Lütfen kısa bir not yazın.';return;}
   el('feedbackModalErr').textContent='';
+  const submitBtn=el('feedbackSubmitBtn');
+  if(submitBtn?.disabled)return;
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='Gönderiliyor...';}
   const historyId=payload.historyId;
   const body={...payload,note};
   delete body.historyId;
-  const r=await api('POST',`/api/history/${historyId}/feedback`,body);
-  if(r.error){el('feedbackModalErr').textContent=r.error;return;}
-  closeFeedbackModal();
-  setStatus('✓ Geri bildirim gönderildi.','ok');
-  setTimeout(()=>setStatus('',''),2500);
+  try{
+    const r=await api('POST',`/api/history/${historyId}/feedback`,body);
+    if(r.error){el('feedbackModalErr').textContent=r.error;return;}
+    closeFeedbackModal();
+    setStatus('✓ Geri bildirim gönderildi.','ok');
+    setTimeout(()=>setStatus('',''),2500);
+  }finally{
+    if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Gönder';}
+  }
 }
 
 function explainIssueBeforeFeedback(issue, reason){

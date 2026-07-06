@@ -277,6 +277,15 @@ ulül elbab / ululelbab / ulul elbab → ulûl'elbab
 tilavet → tilâvet
 huşu → huşû
 daimi → daimî
+taktir de / takdirde → taktirde (arşiv kullanımında bitişik kabul edilir)
+Resûlallah → Resûlullah
+
+KORUNACAK BAĞLAMLAR:
+- Kaynakta şapkalı doğru yazılmış kelimeleri şapkasızlaştırma: manevî, itikâf, daimî, âyet, Allahû Tealâ.
+- "dîn" ailesi güncel karar gereği istisnadır; dîn/dînin/dîni yerine din/dinin/dini kullanılır.
+- "nefsi", "nefsin" ve "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" kullanımlarını eklerinden koparma.
+- "A.S" ve "S.A.V" kısaltmalarını bağlamdan emin olmadan birbirine çevirme.
+- Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelime silinmez.
 
 ════════════════════════════════════════
 KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
@@ -1712,6 +1721,15 @@ NASIL ÇALIŞACAKSIN:
    bozma. "(S.A.V)" kısaltmasına fazladan nokta ekleme.
 18. Slayt, hadîs dökümü, tablo benzeri satır düzenlerini koru. Satır sırası, başlıklar, numaralar ve tırnak dengesi
    düzeltilmiş metinde bozulmamalıdır.
+19. Kaynakta şapkalı yazılmış kelimeyi şapkasızlaştırma: manevî, itikâf, daimî, âyet, Allahû Tealâ gibi yazımlar
+   metinde doğruysa aynen korunmalıdır. Tek istisna güncel karar gereği dîn/dînin/dîni gibi biçimlerin din/dinin/dini yapılmasıdır.
+20. "taktirde" arşiv kullanımında bitişik kabul edilir; "takdirde" veya "taktir de" yapma.
+21. "nefsi", "nefsin", "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" gibi kullanımları bağlamından koparıp
+   "nefs" veya "nefisin" yapma; ekleri ve özel terkipleri koru.
+22. "A.S" ve "S.A.V" kısaltmalarını bağlamdan emin olmadan birbirine çevirme. Efendimiz (A.S) ifadesini
+   otomatik olarak Efendimiz (S.A.V) yapma.
+23. Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelimeyi silme;
+   "Kur'ân-ı Kerim" ifadesini sadece "Kur'ân" olarak kısaltma.
 
 BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - Her yaptığın düzeltmeyi MUTLAKA ilgili kategorinin issues listesine ekle.

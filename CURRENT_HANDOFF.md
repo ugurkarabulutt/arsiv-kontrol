@@ -23,6 +23,17 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Bu çalışma ağacındaki değişiklikler
 
+- 2026-07-06 Codex açık feedback çözüm paketi: Canlı açık geri bildirimler kök sebeplere
+  göre gruplandı. Backend güvenlik filtresi `nefsi/nefsin`, `taktirde`, `A.S/S.A.V`,
+  `Efendimiz (A.S)`, `derecat*`, ek/tamlayan kırpma, kaynakta şapkalı doğru yazılmış
+  kelimelerin şapkasızlaştırılması, `birr`, `hâdise`, `afv-u`, hadîs kaynak adları gibi
+  canlı yanlış dönüşümleri skor dışı bırakacak şekilde genişletildi. En kritik mimari
+  düzeltme: `correctedText` artık modelin serbest çıktısı olarak kabul edilmiyor; kaynak
+  metne yalnızca kabul edilen issue'lar kontrollü uygulanıyor. Bu, gizli metin bozma,
+  tablo/düzen kaybı ve "hata listesinde yok ama düzeltilmiş metin bozuldu" sınıfını kapatır.
+  Feedback modalı uzun notlarda gönder butonunu görünür tutacak ve çift gönderimi önleyecek
+  şekilde güncellendi. Kullanıcılara çözüm bildirimi henüz gönderilmedi; onay sonrası
+  açık feedbackler kullanıcı bazında tek mesajla kapatılmalıdır.
 - 2026-07-06 Codex kapsamlı audit düzeltme turu: `/api/cron/daily-report` artık
   mutlaka `CRON_SECRET` ister ve spoof edilebilir cron header'ına güvenmez. Proje kökü
   statik servis edilmez; sadece `icons`, `manifest.webmanifest` ve `sw.js` açık servis edilir.
