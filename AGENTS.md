@@ -115,6 +115,12 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Operasyon paneli toparlama turu:** Rapor Geçmişi ekranı ay/tarih filtresi, özet
+  sayaçları ve katlanabilir rapor kartlarıyla sadeleştirildi. Geri Bildirim Merkezi
+  açık/okunmamış/çözülen/tümü filtreleri ve kullanıcı adı gösterimi aldı. Mesaj Kayıtları
+  toplu/kişisel/çözüm/duyuru filtreleri ve özet sayaçlarıyla düzenlendi. Canlı Supabase
+  kontrolünde 197 toplam feedback içinde 29 açık kayıt görüldü: Serap Pamuk 7, Bihter
+  Oksak 6, Aysun Aydöner 6, Nuray Ardagümüşoğlu 5, Mihrimah Bilgili 3, Hacer Terzi 2.
 - **Gerçek görüntüleme takibi:** Kullanıcı bildirimleri ve Standartlarımız kartları artık
   `Okundu/Okudum` butonuna bağlı değildir. Kart ekranda en az 1 saniye görünür kalırsa
   tekil olarak görüntülendi sayılır; admin takip sayaçları bu gerçek görüntüleme kaydından

@@ -218,6 +218,7 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .issue-actions{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;}
 .btn-mini{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);color:var(--ink2);border:1px solid var(--border);padding:5px 8px;cursor:pointer;border-radius:6px;position:relative;overflow:hidden;transition:all .16s;}
 .btn-mini:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px);box-shadow:var(--soft-shadow);}
+.btn-mini.active{background:var(--ink);color:var(--white);border-color:var(--ink);}
 .feedback-panel{background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:12px 14px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
 .feedback-panel p{font-size:13px;color:var(--ink2);}
 .feedback-actions{display:flex;gap:6px;flex-wrap:wrap;}
@@ -370,7 +371,12 @@ canvas{width:100%!important;}
 .feedback-gate.safe{border-color:var(--green);background:var(--grn-bg);}
 .report-card{border-bottom:1px solid var(--border);padding:12px 0;}
 .report-card:last-child{border-bottom:none;}
-.report-title{font-weight:700;font-size:15px;margin-bottom:4px;color:var(--ink);}
+.report-card{background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);padding:0;margin-bottom:10px;box-shadow:0 10px 24px rgba(35,24,14,.04);}
+.report-card[open]{border-left-color:var(--ai);}
+.report-card summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:var(--surface2);}
+.report-card summary::-webkit-details-marker{display:none;}
+.report-card-body{padding:12px 16px 16px;}
+.report-title{font-weight:800;font-size:15px;margin-bottom:4px;color:var(--ink);}
 .report-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-bottom:8px;}
 .report-section{font-size:13px;line-height:1.6;color:var(--ink2);margin-top:7px;}
 .report-section ul{margin:4px 0 0 18px;}
@@ -380,8 +386,26 @@ canvas{width:100%!important;}
 .report-date-wrap{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .report-date-wrap input{height:34px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;padding:0 9px;outline:none;}
 .report-date-wrap input:focus{border-color:var(--gold);box-shadow:var(--focus);}
+.report-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--bord2);border-bottom:none;margin-bottom:10px;}
+.report-summary-item{padding:10px 12px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--white);}
+.report-summary-item:last-child{border-right:none;}
+.report-summary-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.9px;text-transform:uppercase;color:var(--ink3);}
+.report-summary-value{font-size:24px;font-weight:850;color:var(--ink);margin-top:4px;}
+.report-badge{font-family:'JetBrains Mono',monospace;font-size:10px;border:1px solid var(--gold);background:var(--gold-bg);color:var(--gold-dk,#8b6914);padding:4px 7px;white-space:nowrap;}
+.feedback-summary-grid,.msg-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--bord2);border-bottom:none;margin-bottom:10px;}
+.feedback-summary-card,.msg-summary-card{padding:10px 12px;background:var(--white);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.feedback-summary-card:last-child,.msg-summary-card:last-child{border-right:none;}
+.feedback-filter-bar,.msg-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);}
+.feedback-user{font-weight:800;color:var(--ink);margin-bottom:5px;}
+.feedback-user .mono{font-weight:500;}
+.message-log-card{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);}
+.message-log-card:last-child{border-bottom:none;}
+.message-kind{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;border:1px solid var(--gold);background:var(--gold-bg);color:var(--gold-dk,#8b6914);padding:4px 7px;height:max-content;}
+.message-kind.solution{border-color:var(--green);background:var(--grn-bg);color:var(--green);}
+.message-preview{margin-top:8px;white-space:pre-line;color:var(--ink2);line-height:1.55;}
 @media(max-width:900px){.ai-panel-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
+@media(max-width:760px){.report-summary-grid,.feedback-summary-grid,.msg-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.message-log-card{grid-template-columns:1fr}.message-kind{width:max-content}.report-card summary{flex-direction:column}.report-date-wrap input{width:100%}}
 @media(max-width:640px){
   .modal-overlay{align-items:flex-end;padding:10px;}
   .feedback-modal{max-width:none;border-radius:26px 26px 18px 18px;max-height:88vh;}
@@ -808,7 +832,9 @@ canvas{width:100%!important;}
             </div>
             <div class="report-date-wrap">
               <input type="date" id="reportDateFilter" onchange="loadAiReports()" aria-label="Rapor tarihi">
-              <button class="btn-mini" onclick="clearReportDateFilter()">Tarihi Temizle</button>
+              <input type="month" id="reportMonthFilter" onchange="loadAiReports()" aria-label="Rapor ayı">
+              <button class="btn-mini" onclick="setReportToday()">Bugün</button>
+              <button class="btn-mini" onclick="clearReportDateFilter()">Filtreyi Temizle</button>
             </div>
           </div>
           <div id="aiReportsContent"><div class="empty-state">Yükleniyor...</div></div>
@@ -994,7 +1020,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,reportPeriodFilter='',reportDateFilter='',scrollLockEnabled=true;
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true;
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
@@ -2056,16 +2082,72 @@ function renderReport(report){
   </div>`;
 }
 
+function renderReportModern(report){
+  const c=report.content||{};
+  const dt=new Date(report.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const range=report.periodStart&&report.periodEnd
+    ?`${new Date(report.periodStart).toLocaleDateString('tr-TR')} - ${new Date(report.periodEnd).toLocaleDateString('tr-TR')}`
+    :'Dönem bilgisi yok';
+  const textValue=value=>{
+    if(value==null)return'';
+    if(typeof value==='string')return value;
+    if(Array.isArray(value))return value.map(textValue).filter(Boolean).join(', ');
+    if(typeof value==='object'){
+      if(value.name||value.title)return [value.name,value.title,value.count&&`${value.count} kayıt`,value.avgScore&&`ortalama ${value.avgScore}`].filter(Boolean).join(' - ');
+      return Object.entries(value).map(([k,v])=>`${k}: ${textValue(v)}`).filter(Boolean).join(', ');
+    }
+    return String(value);
+  };
+  const list=arr=>Array.isArray(arr)&&arr.length?`<ul>${arr.map(x=>`<li>${esc(textValue(x))}</li>`).join('')}</ul>`:'';
+  const section=(label,value)=>{const text=textValue(value);return text?`<div class="report-section"><strong>${label}:</strong> ${esc(text)}</div>`:'';};
+  const summary=textValue(c.executiveSummary);
+  return `<details class="report-card">
+    <summary>
+      <div>
+        <div class="report-title">${esc(report.title||c.title||'AI Raporu')}</div>
+        <div class="report-meta">${reportPeriodLabel(report.period)} · ${esc(range)} · ${dt}</div>
+        <div class="report-section" style="margin-top:4px">${esc(summary.slice(0,180))}${summary.length>180?'...':''}</div>
+      </div>
+      <span class="report-badge">${reportPeriodLabel(report.period)}</span>
+    </summary>
+    <div class="report-card-body">
+      ${section('Özet',c.executiveSummary)}
+      ${section('Aktivite',c.activitySummary)}
+      ${section('Geri Bildirim',c.feedbackSummary)}
+      ${Array.isArray(c.risks)?`<div class="report-section"><strong>Riskler:</strong>${list(c.risks)}</div>`:''}
+      ${Array.isArray(c.recommendations)?`<div class="report-section"><strong>Öneriler:</strong>${list(c.recommendations)}</div>`:''}
+      ${Array.isArray(c.nextActions)?`<div class="report-section"><strong>Sonraki Aksiyonlar:</strong>${list(c.nextActions)}</div>`:''}
+    </div>
+  </details>`;
+}
+
 async function loadAiReports(){
   const container=el('aiReportsContent');
   reportDateFilter=el('reportDateFilter')?.value||'';
+  reportMonthFilter=el('reportMonthFilter')?.value||'';
   const qs=new URLSearchParams();
   if(reportPeriodFilter)qs.set('period',reportPeriodFilter);
   if(reportDateFilter)qs.set('date',reportDateFilter);
   const reports=await api('GET',`/api/ai/reports${qs.toString()?`?${qs}`:''}`);
   if(reports.error){container.innerHTML=`<div class="empty-state">${esc(reports.error)}</div>`;return;}
-  if(!reports.length){container.innerHTML='<div class="empty-state">Bu filtreye uygun rapor yok.</div>';return;}
-  container.innerHTML=reports.map(renderReport).join('');
+  let filtered=Array.isArray(reports)?reports:[];
+  if(reportMonthFilter){
+    filtered=filtered.filter(r=>{
+      const d=new Date(r.periodStart||r.createdAt);
+      return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,7)===reportMonthFilter;
+    });
+  }
+  if(!filtered.length){container.innerHTML='<div class="empty-state">Bu filtreye uygun rapor yok.</div>';return;}
+  const counts=filtered.reduce((acc,r)=>{acc[r.period]=(acc[r.period]||0)+1;return acc;},{});
+  const latest=filtered[0]?.createdAt?new Date(filtered[0].createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  container.innerHTML=`
+    <div class="report-summary-grid">
+      <div class="report-summary-item"><div class="report-summary-label">Toplam</div><div class="report-summary-value">${filtered.length}</div></div>
+      <div class="report-summary-item"><div class="report-summary-label">Günlük</div><div class="report-summary-value">${counts.daily||0}</div></div>
+      <div class="report-summary-item"><div class="report-summary-label">Haftalık</div><div class="report-summary-value">${counts.weekly||0}</div></div>
+      <div class="report-summary-item"><div class="report-summary-label">Son Rapor</div><div class="report-summary-value" style="font-size:15px">${latest}</div></div>
+    </div>
+    ${filtered.map(renderReportModern).join('')}`;
 }
 
 function setReportPeriodFilter(period){
@@ -2076,7 +2158,18 @@ function setReportPeriodFilter(period){
 function clearReportDateFilter(){
   const input=el('reportDateFilter');
   if(input)input.value='';
+  const month=el('reportMonthFilter');
+  if(month)month.value='';
   reportDateFilter='';
+  reportMonthFilter='';
+  loadAiReports();
+}
+function setReportToday(){
+  const input=el('reportDateFilter');
+  const month=el('reportMonthFilter');
+  const today=new Date().toISOString().slice(0,10);
+  if(input)input.value=today;
+  if(month)month.value='';
   loadAiReports();
 }
 
@@ -2154,18 +2247,45 @@ async function loadFeedbackCenter(){
   const alerts=await api('GET','/api/alerts');
   const container=el('feedbackContent');
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
-  const filtered=alerts.filter(a=>a.type==='feedback');
-  if(!filtered.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
-  renderAlertItems(container, filtered, true);
+  const allFeedback=alerts.filter(a=>a.type==='feedback');
+  if(!allFeedback.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
+  const visible=allFeedback.filter(a=>{
+    if(feedbackFilter==='open')return a.feedbackStatus!=='resolved';
+    if(feedbackFilter==='resolved')return a.feedbackStatus==='resolved';
+    if(feedbackFilter==='unread')return !a.read&&a.feedbackStatus!=='resolved';
+    return true;
+  });
+  const open=allFeedback.filter(a=>a.feedbackStatus!=='resolved').length;
+  const resolved=allFeedback.filter(a=>a.feedbackStatus==='resolved').length;
+  const unread=allFeedback.filter(a=>!a.read&&a.feedbackStatus!=='resolved').length;
+  const users=new Set(allFeedback.map(a=>a.userId).filter(Boolean)).size;
+  const summary=`<div class="feedback-summary-grid">
+    <div class="feedback-summary-card"><div class="report-summary-label">Açık</div><div class="report-summary-value">${open}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">Çözülen</div><div class="report-summary-value">${resolved}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">Okunmamış</div><div class="report-summary-value">${unread}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">Kullanıcı</div><div class="report-summary-value">${users}</div></div>
+  </div>`;
+  const filters=`<div class="feedback-filter-bar">
+    <button class="btn-mini ${feedbackFilter==='open'?'active':''}" onclick="setFeedbackFilter('open')">Açık Kuyruk</button>
+    <button class="btn-mini ${feedbackFilter==='unread'?'active':''}" onclick="setFeedbackFilter('unread')">Okunmamış</button>
+    <button class="btn-mini ${feedbackFilter==='resolved'?'active':''}" onclick="setFeedbackFilter('resolved')">Çözülen</button>
+    <button class="btn-mini ${feedbackFilter==='all'?'active':''}" onclick="setFeedbackFilter('all')">Tümü</button>
+  </div>`;
+  if(!visible.length){container.innerHTML=summary+filters+'<div class="empty-state">Bu filtrede geri bildirim yok.</div>';return;}
+  renderAlertItems(container, visible, true, summary+filters);
 }
 
-function renderAlertItems(container, filtered, showFeedbackToolbar){
+function setFeedbackFilter(filter){feedbackFilter=filter||'open';loadFeedbackCenter();}
+
+function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml=''){
   const visibleFeedbackIds=new Set(filtered.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved').map(a=>a.id));
   selectedFeedbackIds=new Set([...selectedFeedbackIds].filter(id=>visibleFeedbackIds.has(id)));
   function alertBody(a){
     if(a.type!=='feedback')return `<div class="alert-msg">${esc(a.message)}</div>`;
     const parts=String(a.message||'').split(' | ');
-    return `<div class="alert-msg">${parts.map(p=>{
+    return `<div class="alert-msg">
+      <div class="feedback-user">${esc(a.userName||'Bilinmeyen kullanıcı')} ${a.userUsername?`<span class="mono">(${esc(a.userUsername)})</span>`:''}</div>
+      ${parts.map(p=>{
       const idx=p.indexOf(':');
       if(idx<0)return `<div>${esc(p)}</div>`;
       return `<div><strong>${esc(p.slice(0,idx))}:</strong> ${esc(p.slice(idx+1).trim())}</div>`;
@@ -2181,7 +2301,7 @@ function renderAlertItems(container, filtered, showFeedbackToolbar){
     </div>
     <button class="btn-green" style="padding:5px 10px;font-size:10px" onclick="resolveSelectedFeedback()">Seçilenleri Çözüldü Bildir (${selectedFeedbackIds.size})</button>
   </div>`;
-  container.innerHTML=`${showFeedbackToolbar&&filtered.some(a=>a.type==='feedback')?toolbar:''}<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
+  container.innerHTML=`${prefixHtml}${showFeedbackToolbar&&filtered.some(a=>a.type==='feedback')?toolbar:''}<div style="background:var(--white);border:1px solid var(--bord2)">${filtered.map(a=>`
     <div class="alert-item ${!a.read&&['feedback','low_score'].includes(a.type)?'unread':''}">
       ${a.type==='feedback'?`<input class="alert-select" type="checkbox" data-id="${a.id}" ${a.feedbackStatus==='resolved'?'disabled':''} ${selectedFeedbackIds.has(a.id)?'checked':''} onchange="toggleFeedbackSelection('${a.id}',this.checked)">`:''}
       <div class="alert-dot ${a.read||!['feedback','low_score'].includes(a.type)?'read':''}"></div>
@@ -2266,19 +2386,47 @@ async function loadMessageLog(){
   const container=el('msgLogContent');
   if(rows.error){container.innerHTML=`<div class="empty-state">${esc(rows.error)}</div>`;return;}
   if(!rows.length){container.innerHTML='<div class="empty-state">Mesaj kaydı yok.</div>';return;}
-  const displayRows=dedupeMessageLogRows(rows);
-  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${displayRows.map(r=>`
-    <div class="alert-item">
-      <div class="alert-type ${r.type==='feedback_resolution'?'feedback':''}">${r.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
+  const deduped=dedupeMessageLogRows(rows);
+  const displayRows=deduped.filter(r=>{
+    const total=Number(r.delivery?.total||1);
+    if(msgLogFilter==='bulk')return total>1;
+    if(msgLogFilter==='single')return total<=1;
+    if(msgLogFilter==='solution')return r.type==='feedback_resolution';
+    if(msgLogFilter==='announcement')return r.type==='announcement';
+    return true;
+  });
+  const bulk=deduped.filter(r=>Number(r.delivery?.total||1)>1).length;
+  const solution=deduped.filter(r=>r.type==='feedback_resolution').length;
+  const announcement=deduped.filter(r=>r.type==='announcement').length;
+  const totalReads=deduped.reduce((sum,r)=>sum+Number(r.delivery?.readCount||0),0);
+  const summary=`<div class="msg-summary-grid">
+    <div class="msg-summary-card"><div class="report-summary-label">Kayıt</div><div class="report-summary-value">${deduped.length}</div></div>
+    <div class="msg-summary-card"><div class="report-summary-label">Toplu</div><div class="report-summary-value">${bulk}</div></div>
+    <div class="msg-summary-card"><div class="report-summary-label">Çözüm</div><div class="report-summary-value">${solution}</div></div>
+    <div class="msg-summary-card"><div class="report-summary-label">Görüntüleme</div><div class="report-summary-value">${totalReads}</div></div>
+  </div>`;
+  const filters=`<div class="msg-filter-bar">
+    <button class="btn-mini ${msgLogFilter==='all'?'active':''}" onclick="setMsgLogFilter('all')">Tümü</button>
+    <button class="btn-mini ${msgLogFilter==='bulk'?'active':''}" onclick="setMsgLogFilter('bulk')">Toplu Mesaj</button>
+    <button class="btn-mini ${msgLogFilter==='single'?'active':''}" onclick="setMsgLogFilter('single')">Kişisel</button>
+    <button class="btn-mini ${msgLogFilter==='solution'?'active':''}" onclick="setMsgLogFilter('solution')">Çözüm</button>
+    <button class="btn-mini ${msgLogFilter==='announcement'?'active':''}" onclick="setMsgLogFilter('announcement')">Duyuru</button>
+  </div>`;
+  if(!displayRows.length){container.innerHTML=summary+filters+'<div class="empty-state">Bu filtrede mesaj kaydı yok.</div>';return;}
+  container.innerHTML=summary+filters+`<div style="background:var(--white);border:1px solid var(--bord2)">${displayRows.map(r=>`
+    <div class="message-log-card">
+      <div class="message-kind ${r.type==='feedback_resolution'?'solution':''}">${r.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
       <div class="alert-msg">
         ${renderMessageRecipient(r)}
         ${renderMessageSeenSummary(r)}
         ${r.resolutionResponse?`<div style="margin-top:6px"><span class="resolution-status ${r.resolutionResponse.status}">${esc(resolutionStatusLabel(r.resolutionResponse.status))}</span>${r.resolutionResponse.note?`<div style="margin-top:6px;white-space:pre-line">${esc(r.resolutionResponse.note)}</div>`:''}</div>`:''}
-        <div style="margin-top:6px;white-space:pre-line">${esc(r.message||'')}</div>
+        <div class="message-preview">${esc(r.message||'')}</div>
       </div>
       <div class="alert-time">${new Date(r.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
     </div>`).join('')}</div>`;
 }
+
+function setMsgLogFilter(filter){msgLogFilter=filter||'all';loadMessageLog();}
 
 function dedupeMessageLogRows(rows){
   const seen=new Set();

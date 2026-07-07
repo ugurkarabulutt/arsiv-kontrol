@@ -1063,7 +1063,23 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
   try {
     const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);
     if (error) throw new Error(error.message);
-    res.json((data || []).map(mapAlert));
+    const userIds = [...new Set((data || []).map(a => a.user_id).filter(Boolean))];
+    const usersById = new Map();
+    if (userIds.length) {
+      const { data: users, error: usersError } = await supabase.from('users')
+        .select('id,name,username')
+        .in('id', userIds);
+      if (usersError) throw new Error(usersError.message);
+      (users || []).forEach(u => usersById.set(u.id, u));
+    }
+    res.json((data || []).map(row => {
+      const user = usersById.get(row.user_id);
+      return {
+        ...mapAlert(row),
+        userName: user?.name || user?.username || '',
+        userUsername: user?.username || ''
+      };
+    }));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
