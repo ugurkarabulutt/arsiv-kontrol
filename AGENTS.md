@@ -115,6 +115,11 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Mesaj kayıtları UX düzeltmesi:** Çözüm mesajı hitabı artık `Sevgili {kullanıcının sistemdeki adı}`
+  satırıyla başlar; virgül eklenmez ve isim/kalp sistemde kayıtlı haliyle korunur. Mesaj Kayıtları
+  ekranında aynı toplu mesaj tek kartta gösterilir; alıcılar tek tek basılmaz. Kartta yalnızca göz
+  butonu ile `görüntüleyen/toplam` sayısı görünür, tıklanınca sadece görüntüleyen kullanıcılar açılır;
+  görüntülemeyenler listesi bu ekranda gösterilmez. `npm.cmd run check` başarılı; 44/44 test geçti.
 - **Çözüm bildirimi geri dönüş döngüsü:** Kullanıcıların `feedback_resolution` bildirimleri
   altında artık `Sorun çözüldü` ve `Çözülmedi` seçenekleri vardır. `Çözülmedi` seçilirse
   not alanı açılır ve cevap admin kuyruğuna `Çözüm sonrası sorun devam ediyor` başlıklı yeni

@@ -2266,17 +2266,51 @@ async function loadMessageLog(){
   const container=el('msgLogContent');
   if(rows.error){container.innerHTML=`<div class="empty-state">${esc(rows.error)}</div>`;return;}
   if(!rows.length){container.innerHTML='<div class="empty-state">Mesaj kaydı yok.</div>';return;}
-  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${rows.map(r=>`
+  const displayRows=dedupeMessageLogRows(rows);
+  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${displayRows.map(r=>`
     <div class="alert-item">
       <div class="alert-type ${r.type==='feedback_resolution'?'feedback':''}">${r.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
       <div class="alert-msg">
-        <div><strong>Alıcı:</strong> ${esc(r.recipientName||'—')} ${r.recipientUsername?`<span class="mono" style="font-size:10px;color:var(--ink3)">(${esc(r.recipientUsername)})</span>`:''}</div>
-        ${r.delivery?`<div style="margin-top:6px;font-size:12px;color:var(--ink2)"><strong>Takip:</strong> ${r.delivery.readCount}/${r.delivery.total} görüntüledi.${r.delivery.unreadCount?` <strong>Görmeyenler:</strong> ${esc(r.delivery.unreadUsers.map(u=>u.name).join(', '))}`:''}</div>`:''}
+        ${renderMessageRecipient(r)}
+        ${renderMessageSeenSummary(r)}
         ${r.resolutionResponse?`<div style="margin-top:6px"><span class="resolution-status ${r.resolutionResponse.status}">${esc(resolutionStatusLabel(r.resolutionResponse.status))}</span>${r.resolutionResponse.note?`<div style="margin-top:6px;white-space:pre-line">${esc(r.resolutionResponse.note)}</div>`:''}</div>`:''}
         <div style="margin-top:6px;white-space:pre-line">${esc(r.message||'')}</div>
       </div>
       <div class="alert-time">${new Date(r.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
     </div>`).join('')}</div>`;
+}
+
+function dedupeMessageLogRows(rows){
+  const seen=new Set();
+  return (rows||[]).filter(r=>{
+    const total=Number(r.delivery?.total||1);
+    if(total<=1)return true;
+    const key=`${r.type}::${r.message}`;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function renderMessageRecipient(r){
+  const total=Number(r.delivery?.total||1);
+  if(total>1)return `<div><strong>Alıcı:</strong> Toplu mesaj <span class="mono" style="font-size:10px;color:var(--ink3)">(${total} kişi)</span></div>`;
+  return `<div><strong>Alıcı:</strong> ${esc(r.recipientName||'—')} ${r.recipientUsername?`<span class="mono" style="font-size:10px;color:var(--ink3)">(${esc(r.recipientUsername)})</span>`:''}</div>`;
+}
+
+function renderMessageSeenSummary(r){
+  if(!r.delivery)return '';
+  const id=`seen-${String(r.id||'').replace(/[^a-zA-Z0-9_-]/g,'')}`;
+  const readers=(r.delivery.readUsers||[]).map(u=>u.name).filter(Boolean);
+  return `<div style="margin-top:6px;font-size:12px;color:var(--ink2)">
+    <button class="btn-mini" style="padding:4px 8px" onclick="toggleSeenList('${id}')">👁 ${r.delivery.readCount}/${r.delivery.total} görüntüledi</button>
+    <div id="${id}" style="display:none;margin-top:8px;white-space:pre-line">${readers.length?`Görüntüleyenler: ${esc(readers.join(', '))}`:'Henüz görüntüleyen yok.'}</div>
+  </div>`;
+}
+
+function toggleSeenList(id){
+  const box=el(id);
+  if(box)box.style.display=box.style.display==='none'?'':'none';
 }
 
 function resolutionStatusLabel(status){
