@@ -423,10 +423,18 @@ async function saveJsonSetting(key, value) {
 
 async function recordUserActivity(userId) {
   if (!userId) return;
+  const now = new Date().toISOString();
   try {
+    if (HAS_USER_LAST_SEEN) {
+      const { error } = await supabase.from('users').update({ last_seen_at: now }).eq('id', userId);
+      if (error) {
+        HAS_USER_LAST_SEEN = false;
+        console.warn('users.last_seen_at yazılamadı, settings yedeğine düşülüyor:', error.message);
+      }
+    }
     const activity = await loadJsonSetting('user_last_seen', {});
     const next = activity && typeof activity === 'object' ? activity : {};
-    next[userId] = new Date().toISOString();
+    next[userId] = now;
     await saveJsonSetting('user_last_seen', next);
   } catch (error) {
     console.warn('Son aktiflik kaydedilemedi:', error.message);
@@ -567,6 +575,10 @@ async function seed() {
   const { error: aiReportsErr } = await supabase.from('ai_reports').select('id').limit(1);
   HAS_AI_REPORTS = !aiReportsErr;
   if (!HAS_AI_REPORTS) console.warn('⚠ ai_reports tablosu yok — AI rapor kayıtları pasif.');
+
+  const { error: lastSeenErr } = await supabase.from('users').select('last_seen_at').limit(1);
+  HAS_USER_LAST_SEEN = !lastSeenErr;
+  if (!HAS_USER_LAST_SEEN) console.warn('⚠ users.last_seen_at kolonu yok — son aktiflik settings yedeğinden okunacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -598,6 +610,12 @@ const auth = async (req, res, next) => {
     if (!req.session?.userId) return res.status(401).json({ error: 'Giriş gerekli.' });
     await startupReady;
     normalizeSessionRole(req);
+    const now = Date.now();
+    const lastWrite = Number(req.session.lastSeenWriteAt || 0);
+    if (!lastWrite || now - lastWrite > 60_000) {
+      req.session.lastSeenWriteAt = now;
+      await recordUserActivity(req.session.userId);
+    }
     next();
   } catch (error) {
     next(error);
@@ -669,7 +687,7 @@ app.get('/api/users', auth, admin, async (req, res) => {
     const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     const lastSeen = await loadJsonSetting('user_last_seen', {});
-    res.json((data || []).map(u => ({ ...mapUser(u), lastSeenAt: lastSeen?.[u.id] || null })));
+    res.json((data || []).map(u => ({ ...mapUser(u), lastSeenAt: u.last_seen_at || lastSeen?.[u.id] || null })));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/users', auth, admin, superAdmin, async (req, res) => {
@@ -2194,6 +2212,7 @@ let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_tex
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
 let HAS_AI_REPORTS = false; // startup'ta tespit edilir (AI rapor kayıtları)
+let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at kolonu)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

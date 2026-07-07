@@ -48,6 +48,10 @@ alter table public.history add column if not exists text_hash text;
 alter table public.history add column if not exists original_text text;
 alter table public.history add column if not exists prompt_version text;
 alter table public.history add column if not exists rules_hash text;
+
+-- Kullanıcı son aktiflik takibi:
+alter table public.users add column if not exists last_seen_at timestamptz;
+create index if not exists users_last_seen_at_idx on public.users (last_seen_at desc);
 create index if not exists history_text_hash_idx on public.history (user_id, text_hash);
 
 -- ── alerts ─────────────────────────────────────────────────────────────────

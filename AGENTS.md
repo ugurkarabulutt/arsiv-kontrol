@@ -115,6 +115,11 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Son aktiflik güvenilirliği:** `recordUserActivity` artık yalnızca login/me çağrısında
+  değil, yetkili API isteklerinde dakikada en fazla bir kez çalışır. Canlı DB'de
+  `users.last_seen_at` kolonu varsa doğrudan oraya yazar; kolon yoksa mevcut
+  `settings.user_last_seen` yedeğine düşer. `schema.sql` içine `users.last_seen_at`
+  ALTER ve indeks satırları eklendi.
 - **Operasyon paneli toparlama turu:** Rapor Geçmişi ekranı ay/tarih filtresi, özet
   sayaçları ve katlanabilir rapor kartlarıyla sadeleştirildi. Geri Bildirim Merkezi
   açık/okunmamış/çözülen/tümü filtreleri ve kullanıcı adı gösterimi aldı. Mesaj Kayıtları
