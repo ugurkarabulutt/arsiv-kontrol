@@ -115,6 +115,11 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Sistem özellik dokümanı ve feedback kapatma:** Kullanıcı onayıyla canlı DB'deki
+  29 açık feedback kaydı `approved-close-2026-07-07` çözüm grubuyla `resolved` kapatıldı;
+  kullanıcılara yeni bildirim gönderilmedi. Sistem kapsamı, kullanıcı/admin özellikleri,
+  feedback, bildirim, standart, rapor ve teknik mimari detayları
+  `docs/SISTEM_OZELLIKLERI.md` dosyasında kalıcı kaynak olarak toplandı.
 - **Son aktiflik güvenilirliği:** `recordUserActivity` artık yalnızca login/me çağrısında
   değil, yetkili API isteklerinde dakikada en fazla bir kez çalışır. Canlı DB'de
   `users.last_seen_at` kolonu varsa doğrudan oraya yazar; kolon yoksa mevcut
