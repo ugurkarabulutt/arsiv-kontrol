@@ -115,6 +115,13 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Çözüm bildirimi geri dönüş döngüsü:** Kullanıcıların `feedback_resolution` bildirimleri
+  altında artık `Sorun çözüldü` ve `Çözülmedi` seçenekleri vardır. `Çözülmedi` seçilirse
+  not alanı açılır ve cevap admin kuyruğuna `Çözüm sonrası sorun devam ediyor` başlıklı yeni
+  feedback olarak düşer. Yanıtlar SQL migration gerektirmeden `settings` içindeki
+  `resolution_feedback_responses` kaydında tutulur. Süper admin için ayrı `Çözüm Takibi`
+  ekranı eklendi; Mesaj Kayıtları ekranında da gönderilen çözüm bildirimlerinin yanıt durumu
+  görünür. `npm.cmd run check` başarılı; 44/44 test geçti.
 - **Canlı feedback çözüm turu:** Test hesabının rastgele geri bildirimi kalite hatası kabul
   edilmedi. Gerçek kullanıcı feedbacklerinden gelen `vücud`, `şerr`, `arif`, `cahiliye`,
   `dinde`, `ve vechini`, `NEFSİ EMMÂRE`, hadis kaynak numarası, `Mu'min`, `A'raf` ve `Nur`

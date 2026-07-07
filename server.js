@@ -376,6 +376,7 @@ const mapAlert   = a => ({
   createdAt: a.created_at
 });
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
+const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const DEFAULT_STANDARDS = [
   {
     id: 'imla-din-hersey-2026-07',
@@ -483,6 +484,24 @@ function buildFeedbackResolutionMessage(userName, feedbacks, note) {
     'Geri bildirimleriniz, sistemi birlikte daha doğru, kullanışlı ve sağlıklı hale getirmemiz için çok kıymetlidir. Katkınız için teşekkür ederiz.',
     `Gönderen: ${SYSTEM_SENDER_NAME}`
   ].filter(Boolean).join('\n');
+}
+
+function normalizeResolutionResponse(row, notice, user) {
+  if (!row) return null;
+  return {
+    noticeId: notice?.id || row.noticeId,
+    status: row.status,
+    note: row.note || '',
+    respondedAt: row.respondedAt,
+    userId: row.userId || notice?.user_id || '',
+    userName: user?.name || row.userName || user?.username || '',
+    username: user?.username || row.username || '',
+    message: notice?.message || row.message || ''
+  };
+}
+
+function resolutionResponseLabel(status) {
+  return status === 'confirmed' ? 'Sorun çözüldü' : status === 'unresolved' ? 'Çözülmedi' : 'Yanıt bekleniyor';
 }
 
 // ── Rules helpers (settings tablosunda key='rules') ─────────────────────────
@@ -1066,6 +1085,7 @@ app.get('/api/notification-log', auth, admin, superAdmin, async (req, res) => {
       if (usersError) throw new Error(usersError.message);
       (users || []).forEach(u => usersById.set(u.id, u));
     }
+    const responseMap = await loadJsonSetting(RESOLUTION_RESPONSE_KEY, {});
 
     const grouped = new Map();
     for (const n of notices || []) {
@@ -1085,6 +1105,7 @@ app.get('/api/notification-log', auth, admin, superAdmin, async (req, res) => {
         ...mapAlert(n),
         recipientName: user?.name || user?.username || 'Bilinmeyen kullanıcı',
         recipientUsername: user?.username || '',
+        resolutionResponse: normalizeResolutionResponse(responseMap?.[n.id], n, user),
         delivery: {
           total: group.total,
           readCount: group.read.length,
@@ -1094,6 +1115,35 @@ app.get('/api/notification-log', auth, admin, superAdmin, async (req, res) => {
         }
       };
     }));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/resolution-responses', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const responseMap = await loadJsonSetting(RESOLUTION_RESPONSE_KEY, {});
+    const noticeIds = Object.keys(responseMap || {});
+    if (!noticeIds.length) return res.json([]);
+    const { data: notices, error } = await supabase.from('alerts')
+      .select('*')
+      .in('id', noticeIds)
+      .eq('type', 'feedback_resolution')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    const userIds = [...new Set((notices || []).map(n => n.user_id).filter(Boolean))];
+    const usersById = new Map();
+    if (userIds.length) {
+      const { data: users, error: usersError } = await supabase.from('users')
+        .select('id,name,username')
+        .in('id', userIds);
+      if (usersError) throw new Error(usersError.message);
+      (users || []).forEach(u => usersById.set(u.id, u));
+    }
+    const byNotice = new Map((notices || []).map(n => [n.id, n]));
+    res.json(noticeIds.map(id => {
+      const notice = byNotice.get(id);
+      const user = notice ? usersById.get(notice.user_id) : null;
+      return normalizeResolutionResponse(responseMap[id], notice, user);
+    }).filter(Boolean).sort((a, b) => new Date(b.respondedAt || 0) - new Date(a.respondedAt || 0)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1273,7 +1323,64 @@ app.get('/api/my-notifications', auth, async (req, res) => {
       .order('created_at', { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
-    res.json((data || []).map(mapAlert));
+    const responseMap = await loadJsonSetting(RESOLUTION_RESPONSE_KEY, {});
+    res.json((data || []).map(row => ({
+      ...mapAlert(row),
+      resolutionResponse: row.type === 'feedback_resolution' ? normalizeResolutionResponse(responseMap?.[row.id], row, null) : null
+    })));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/my-notifications/:id/resolution-response', auth, async (req, res) => {
+  try {
+    const status = req.body?.status === 'confirmed' ? 'confirmed' : req.body?.status === 'unresolved' ? 'unresolved' : '';
+    const note = String(req.body?.note || '').trim().slice(0, 1200);
+    if (!status) return res.status(400).json({ error: 'Geçerli bir yanıt seçin.' });
+    if (status === 'unresolved' && !note) return res.status(400).json({ error: 'Sorun devam ediyorsa kısa bir not yazın.' });
+    const { data: notice, error } = await supabase.from('alerts')
+      .select('*')
+      .eq('id', req.params.id)
+      .eq('user_id', req.session.userId)
+      .eq('type', 'feedback_resolution')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!notice) return res.status(404).json({ error: 'Çözüm bildirimi bulunamadı.' });
+
+    const responseMap = await loadJsonSetting(RESOLUTION_RESPONSE_KEY, {});
+    responseMap[notice.id] = {
+      noticeId: notice.id,
+      userId: req.session.userId,
+      userName: req.session.name || req.session.username,
+      username: req.session.username,
+      status,
+      note,
+      respondedAt: new Date().toISOString(),
+      message: notice.message
+    };
+    await saveJsonSetting(RESOLUTION_RESPONSE_KEY, responseMap);
+    await supabase.from('alerts').update({ read: true }).eq('id', notice.id);
+
+    if (status === 'unresolved') {
+      await supabase.from('alerts').insert({
+        type: 'feedback',
+        message: [
+          'Geri Bildirim: Çözüm sonrası sorun devam ediyor',
+          `Not: ${note}`,
+          `Kayıt: ${notice.history_id || 'Çözüm bildirimi'}`,
+          `Önceki çözüm bildirimi: ${notice.id}`
+        ].join(' | '),
+        user_id: req.session.userId,
+        history_id: notice.history_id,
+        score: notice.score,
+        read: false,
+        ...(HAS_ALERT_FEEDBACK_META ? {
+          feedback_status: 'open',
+          resolution_group: notice.resolution_group || null
+        } : {})
+      });
+    }
+
+    res.json({ success: true, response: normalizeResolutionResponse(responseMap[notice.id], notice, null) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

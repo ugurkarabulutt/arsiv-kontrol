@@ -404,6 +404,13 @@ canvas{width:100%!important;}
 .notice-footer{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
 .notice-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:76px;}
 .notice-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
+.resolution-confirm{margin-top:14px;padding:12px;border:1px solid var(--border);background:var(--surface2);}
+.resolution-confirm-title{font-weight:800;font-size:13px;margin-bottom:8px;color:var(--ink);}
+.resolution-confirm-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.resolution-confirm textarea{width:100%;min-height:96px;margin-top:10px;background:var(--white);border:1px solid var(--border);color:var(--ink);padding:11px 12px;font-family:inherit;font-size:14px;line-height:1.5;resize:vertical;}
+.resolution-status{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;border:1px solid var(--border);padding:5px 8px;background:var(--white);color:var(--ink2);}
+.resolution-status.confirmed{border-color:var(--green);background:var(--grn-bg);color:var(--green);}
+.resolution-status.unresolved{border-color:var(--red);background:var(--red-bg);color:var(--red);}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,.6);z-index:100;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
@@ -512,6 +519,8 @@ canvas{width:100%!important;}
   .notice-actions{align-items:flex-start;flex-direction:row;justify-content:space-between;width:100%;border-top:1px solid var(--border);padding-top:10px;}
   .notice-title{font-size:17px;}
   .notice-body{font-size:15.5px;line-height:1.72;}
+  .resolution-confirm-actions{flex-direction:column;}
+  .resolution-confirm-actions button{width:100%;}
 }
 @media(max-width:420px){
   .score-row{grid-template-columns:repeat(2,1fr);}
@@ -589,6 +598,7 @@ canvas{width:100%!important;}
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
+      <button class="btn-mobile super-admin-only" onclick="mNav('resolution')" style="display:none">Çözüm Takibi</button>
       <button class="btn-mobile" onclick="mNav('ayarlar')">Ayarlar</button>
       <button class="btn-mobile" onclick="doLogout()" style="color:#e08080;margin-top:8px">Çıkış Yap</button>
     </div>
@@ -612,6 +622,7 @@ canvas{width:100%!important;}
     <button class="side-link admin-only" data-tab="kullanici" onclick="showTab('kullanici')" style="display:none"><span>Kullanıcılar</span></button>
     <button class="side-link admin-only" data-tab="kurallar" onclick="showTab('kurallar')" style="display:none"><span>Kurallar</span></button>
     <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kayıtları</span></button>
+    <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>Çözüm Takibi</span></button>
     <button class="side-link" data-tab="profil" onclick="showTab('profil')"><span>Profilim</span></button>
     <button class="side-link" data-tab="ayarlar" onclick="showTab('ayarlar')"><span>Ayarlar</span></button>
     <button class="side-link side-logout" onclick="doLogout()"><span>Çıkış Yap</span></button>
@@ -871,6 +882,13 @@ canvas{width:100%!important;}
       <div class="page-sub">Süper admin görünümü: kullanıcılara gönderilen duyuru ve çözüm bildirimleri</div>
       <div class="divider"></div>
       <div id="msgLogContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <div class="tab-content" id="tabContent-resolution">
+      <div class="page-title">Çözüm Takibi</div>
+      <div class="page-sub">Süper admin görünümü: kullanıcıların çözüm bildirimlerine verdiği yanıtlar</div>
+      <div class="divider"></div>
+      <div id="resolutionContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
     <div class="tab-content" id="tabContent-kullanici">
@@ -1148,6 +1166,7 @@ function showTab(name){
   if(name==='feedback')loadFeedbackCenter();
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
   if(name==='msglog')loadMessageLog();
+  if(name==='resolution')loadResolutionResponses();
   if(name==='bildirim')loadMyNotifications();
   if(name==='standartlar')loadStandards();
   if(name==='kullanici')loadUsers();
@@ -2253,9 +2272,32 @@ async function loadMessageLog(){
       <div class="alert-msg">
         <div><strong>Alıcı:</strong> ${esc(r.recipientName||'—')} ${r.recipientUsername?`<span class="mono" style="font-size:10px;color:var(--ink3)">(${esc(r.recipientUsername)})</span>`:''}</div>
         ${r.delivery?`<div style="margin-top:6px;font-size:12px;color:var(--ink2)"><strong>Takip:</strong> ${r.delivery.readCount}/${r.delivery.total} görüntüledi.${r.delivery.unreadCount?` <strong>Görmeyenler:</strong> ${esc(r.delivery.unreadUsers.map(u=>u.name).join(', '))}`:''}</div>`:''}
+        ${r.resolutionResponse?`<div style="margin-top:6px"><span class="resolution-status ${r.resolutionResponse.status}">${esc(resolutionStatusLabel(r.resolutionResponse.status))}</span>${r.resolutionResponse.note?`<div style="margin-top:6px;white-space:pre-line">${esc(r.resolutionResponse.note)}</div>`:''}</div>`:''}
         <div style="margin-top:6px;white-space:pre-line">${esc(r.message||'')}</div>
       </div>
       <div class="alert-time">${new Date(r.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+    </div>`).join('')}</div>`;
+}
+
+function resolutionStatusLabel(status){
+  return status==='confirmed'?'Sorun çözüldü':status==='unresolved'?'Çözülmedi':'Yanıt bekleniyor';
+}
+
+async function loadResolutionResponses(){
+  const rows=await api('GET','/api/resolution-responses');
+  const container=el('resolutionContent');
+  if(rows.error){container.innerHTML=`<div class="empty-state">${esc(rows.error)}</div>`;return;}
+  if(!rows.length){container.innerHTML='<div class="empty-state">Henüz çözüm yanıtı yok.</div>';return;}
+  container.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)">${rows.map(r=>`
+    <div class="alert-item">
+      <div class="alert-type feedback">Çözüm Yanıtı</div>
+      <div class="alert-msg">
+        <div><strong>Kullanıcı:</strong> ${esc(r.userName||'—')} ${r.username?`<span class="mono" style="font-size:10px;color:var(--ink3)">(${esc(r.username)})</span>`:''}</div>
+        <div style="margin-top:6px"><span class="resolution-status ${r.status}">${esc(resolutionStatusLabel(r.status))}</span></div>
+        ${r.note?`<div style="margin-top:8px;white-space:pre-line">${esc(r.note)}</div>`:''}
+        <details style="margin-top:8px"><summary class="mono" style="cursor:pointer;color:var(--ink3)">İlgili çözüm mesajı</summary><div style="margin-top:6px;white-space:pre-line">${esc(r.message||'')}</div></details>
+      </div>
+      <div class="alert-time">${r.respondedAt?new Date(r.respondedAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</div>
     </div>`).join('')}</div>`;
 }
 
@@ -2337,6 +2379,8 @@ function renderNotice(n){
   const msg=parseStructuredMessage(n.message);
   const date=new Date(n.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const senderName='Arşiv Kontrol AI';
+  const response=n.resolutionResponse;
+  const canRespond=n.type==='feedback_resolution';
   return `
     <div class="notice-card ${n.read?'':'unread'}">
       <div>
@@ -2349,12 +2393,53 @@ function renderNotice(n){
         <div class="notice-footer">
           <span>Gönderen: ${esc(senderName)}</span>
         </div>
+        ${canRespond?renderResolutionConfirm(n.id,response):''}
       </div>
       <div class="notice-actions">
         <div class="notice-date">${date}</div>
         ${!n.read?`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="readNotice('${n.id}')">Okundu</button>`:`<span class="btn-sec" style="padding:5px 10px;font-size:10px;cursor:default;opacity:.75">Okundu</span>`}
       </div>
     </div>`;
+}
+
+function renderResolutionConfirm(id,response){
+  if(response?.status){
+    return `<div class="resolution-confirm">
+      <div class="resolution-confirm-title">Çözüm durumunuz</div>
+      <span class="resolution-status ${response.status}">${esc(resolutionStatusLabel(response.status))}</span>
+      ${response.note?`<div style="margin-top:8px;white-space:pre-line;color:var(--ink2);font-size:13px">${esc(response.note)}</div>`:''}
+    </div>`;
+  }
+  return `<div class="resolution-confirm" id="resolutionBox-${id}">
+    <div class="resolution-confirm-title">Bu sorun sizde çözüldü mü?</div>
+    <div class="resolution-confirm-actions">
+      <button class="btn-green" onclick="sendResolutionResponse('${id}','confirmed')">Sorun çözüldü</button>
+      <button class="btn-sec" onclick="showResolutionNote('${id}')">Çözülmedi</button>
+    </div>
+    <div id="resolutionNoteWrap-${id}" style="display:none">
+      <textarea id="resolutionNote-${id}" maxlength="1200" placeholder="Sorun devam ediyorsa kısaca neyin devam ettiğini yazın."></textarea>
+      <div class="resolution-confirm-actions" style="margin-top:8px">
+        <button class="btn-primary" onclick="sendResolutionResponse('${id}','unresolved')">Gönder</button>
+        <button class="btn-sec" onclick="hideResolutionNote('${id}')">Vazgeç</button>
+      </div>
+    </div>
+    <div class="form-err" id="resolutionErr-${id}"></div>
+  </div>`;
+}
+
+function showResolutionNote(id){const w=el(`resolutionNoteWrap-${id}`);if(w)w.style.display='';setTimeout(()=>el(`resolutionNote-${id}`)?.focus(),50);}
+function hideResolutionNote(id){const w=el(`resolutionNoteWrap-${id}`);if(w)w.style.display='none';const e=el(`resolutionErr-${id}`);if(e)e.textContent='';}
+async function sendResolutionResponse(id,status){
+  const note=status==='unresolved'?(el(`resolutionNote-${id}`)?.value||'').trim():'';
+  const err=el(`resolutionErr-${id}`);
+  if(err)err.textContent='';
+  if(status==='unresolved'&&!note){if(err)err.textContent='Lütfen sorunun nasıl devam ettiğini kısaca yazın.';return;}
+  const r=await api('POST',`/api/my-notifications/${id}/resolution-response`,{status,note});
+  if(r.error){if(err)err.textContent=r.error;return;}
+  setStatus(status==='confirmed'?'✓ Çözüm yanıtınız kaydedildi.':'✓ Sorunun devam ettiği ekibe iletildi.','ok');
+  loadMyNotifications();
+  refreshNoticeBadge();
+  setTimeout(()=>setStatus('',''),2500);
 }
 
 async function loadMyNotifications(){
