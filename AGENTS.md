@@ -114,6 +114,21 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-07
+- **Canlı feedback çözüm turu:** Test hesabının rastgele geri bildirimi kalite hatası kabul
+  edilmedi. Gerçek kullanıcı feedbacklerinden gelen `vücud`, `şerr`, `arif`, `cahiliye`,
+  `dinde`, `ve vechini`, `NEFSİ EMMÂRE`, hadis kaynak numarası, `Mu'min`, `A'raf` ve `Nur`
+  bağlamları kod seviyesinde korumaya alındı. Doğru kabul edilen kelime halleri
+  `CANONICAL_WORD_STANDARDS` sabitinde kayıtlıdır ve otomatik testlerle izlenir.
+- **Düzeltilmiş metin güvenliği güçlendirmesi:** `correctedText` artık kaynak metin üzerine
+  yalnızca kabul edilen issue'ların kontrollü uygulanmasıyla üretilir. Modelin serbest
+  correctedText çıktısındaki tablo/paragraf bozulması, uygulanmayan bulgu veya ek kelime
+  üretimi sonuç metnine taşınmaz.
+- **Kullanıcı denetim ekranı sadeleştirme:** Kullanıcı tarafındaki `AI Raporu Oluştur`
+  butonu ve Denetim Yardımcısı paneli kaldırıldı. Geri bildirim akışı bulgu bazlı ve
+  doğrudan sonuç ekranında kaldı; admin AI rapor altyapısına dokunulmadı.
+- **Test:** `npm.cmd run check` başarılı; 44/44 test geçti.
+
 ### 2026-07-06
 - **Açık feedback çözüm paketi:** Canlı açık geri bildirimler kök sebeplere ayrıldı ve
   backend doğrulama katmanı genişletildi. `nefsi/nefsin`, `taktirde`, `A.S/S.A.V`,

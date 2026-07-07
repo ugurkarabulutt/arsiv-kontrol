@@ -204,6 +204,11 @@ velî
 resûl (küçük harf, özel isim değilse)
 nebî
 din (dîn değil; Efendimizin sözlüğünde bu kelime bundan sonra şapkasız yazılır)
+dinde (dînde değil)
+vücud (vücût değil)
+şerr (şer değil)
+arif (ârif değil)
+cahiliye (câhiliye değil)
 tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
 ni'met
 ulûl'elbab
@@ -283,6 +288,7 @@ Resûlallah → Resûlullah
 KORUNACAK BAĞLAMLAR:
 - Kaynakta şapkalı doğru yazılmış kelimeleri şapkasızlaştırma: manevî, itikâf, daimî, âyet, Allahû Tealâ.
 - "dîn" ailesi güncel karar gereği istisnadır; dîn/dînin/dîni yerine din/dinin/dini kullanılır.
+- "vücud", "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
 - "nefsi", "nefsin" ve "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" kullanımlarını eklerinden koparma.
 - "A.S" ve "S.A.V" kısaltmalarını bağlamdan emin olmadan birbirine çevirme.
 - Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelime silinmez.
@@ -1872,8 +1878,11 @@ async function buildSystemPrompt(rulesText) {
 
 GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
+- "dinde" doğru yazımdır; "dinde" kelimesini "dînde" olarak düzeltme.
 - "herşey" doğru yazımdır; "herşey" kelimesini "her şey" olarak ayırma. Metinde "her şey" varsa "herşey" olarak düzelt.
-- Bu iki karar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
+- "vücud", "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "vücût", "şer", "ârif" veya "câhiliye" biçimine çevirme.
+- "hadis no." gibi kaynak/numara ifadelerinde "hadis" kelimesini "hadîs" yapma.
+- Bu kararlar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
 
 SURE ADLARI ÜST ÖNCELİKLİ STANDARDI:
 - Sure adlarında aşağıdaki liste esastır; baştaki sıra numaralarını imlâ konusu yapma.
@@ -1922,6 +1931,9 @@ NASIL ÇALIŞACAKSIN:
    otomatik olarak Efendimiz (S.A.V) yapma.
 23. Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelimeyi silme;
    "Kur'ân-ı Kerim" ifadesini sadece "Kur'ân" olarak kısaltma.
+24. "ve vechini" gibi tekrar sanılan dinî/alıntı ifadelerde kelime silme; "ve" bağlacını emin olmadan kaldırma.
+25. NEFSİ EMMÂRE gibi başlıklara kaynakta yoksa iki nokta ekleme.
+26. Hadis kaynak numarası, sure adı ve âyet atfı bağlamlarını sözlük kelimesi gibi zorla dönüştürme; Mu'min suresi Mu'minûn değildir, Nur suresi Nûr diye zorlanmaz.
 
 BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - Her yaptığın düzeltmeyi MUTLAKA ilgili kategorinin issues listesine ekle.

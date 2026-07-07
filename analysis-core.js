@@ -10,6 +10,18 @@ const PROTECTED_PATTERNS = [
   /\bdinlenmeye\b/iu,
   /\bmuhterem\s+efendimiz\b/iu
 ];
+const CANONICAL_WORD_STANDARDS = Object.freeze({
+  din: 'din',
+  dinde: 'dinde',
+  hersey: 'herşey',
+  vucud: 'vücud',
+  serr: 'şerr',
+  arif: 'arif',
+  cahiliye: 'cahiliye',
+  ayet: 'âyet',
+  daimi: 'daimî',
+  teala: 'Tealâ'
+});
 const SURA_NAMES = [
   'FÂTİHA', 'BAKARA', 'ÂLİ İMRÂN', 'NİSÂ', 'MÂİDE', "EN'ÂM", "A'RÂF", 'ENFÂL',
   'TEVBE', 'YÛNUS', 'HÛD', 'YÛSUF', "RA'D", 'İBRÂHÎM', 'HİCR', 'NAHL', 'İSRÂ',
@@ -30,7 +42,15 @@ const SURA_NAMES = [
 const SURA_NAME_KEYS = new Set(SURA_NAMES.map(suraCaseKey));
 const FORBIDDEN_TRANSFORMS = [
   { from: /\bdin\b/iu, to: /\bdîn\b/iu },
+  { from: /\bdin(?:de|den|e|i|in)?\b/iu, to: /\bdîn(?:de|den|e|i|in)?\b/iu },
   { from: /\bherşey\b/iu, to: /\bher\s+şey\b/iu },
+  { from: /\bvücud\b/iu, to: /\bvüc[ûu]t\b/iu },
+  { from: /(?<![\p{L}\p{N}_])şerr(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])şer(?![\p{L}\p{N}_])/iu },
+  { from: /(?<![\p{L}\p{N}_])arif(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])ârif(?![\p{L}\p{N}_])/iu },
+  { from: /(?<![\p{L}\p{N}_])cahiliye(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])câhiliye(?![\p{L}\p{N}_])/iu },
+  { from: /\bve\s+vechini\b/iu, to: /\bvechini\b/iu },
+  { from: /\bnefs(?:i)?\s+emmâre\b/iu, to: /\bnefs(?:i)?\s+emmâre:/iu },
+  { from: /\bhadis\s+no\b/iu, to: /\bhadîs\s+no\b/iu },
   { from: /(?<![\p{L}\p{N}_])tabi(?:î)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])tâbî(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])zülmanî(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])zulmanî(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])afet(?:ler(?:iyle|in|den|de|i|e)?|leriyle|lerden|lerde|ler|in|den|de|i|e)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])âfet/iu },
@@ -55,11 +75,15 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\b(?:a\.s\.?|a\.s)\b/iu, to: /\b(?:s\.a\.v\.?|s\.a\.v)\b/iu },
   { from: /\befendimiz[\s\S]{0,24}\b(?:a\.s\.?|a\.s)\b/iu, to: /\befendimiz[\s\S]{0,24}\b(?:s\.a\.v\.?|s\.a\.v)\b/iu },
   { from: /\bmumin\b/iu, to: /\bmu'?min[uû]n\b/iu },
+  { from: /\bmu'?min\b/iu, to: /\bmu'?min[uû]n\b/iu },
+  { from: /\ba'?raf\b/iu, to: /\ba'?r[âa]f\b/iu },
+  { from: /\bnur\b/iu, to: /\bnûr\b/iu },
   { from: /\bbirr\b/iu, to: /\bbir\b/iu },
   { from: /\bhâdise\b/iu, to: /\bhadîse\b/iu },
   { from: /\bafv-u\b/iu, to: /\baf\s+ve\b/iu },
   { from: /\bmace\b/iu, to: /\bmâce\b/iu },
-  { from: /\bkiyame\b/iu, to: /\bkıyâmet\b/iu }
+  { from: /\bkiyame\b/iu, to: /\bkıyâmet\b/iu },
+  { from: /[\.\?!]\s+allah\s+razı\s+olsun\.?/iu, to: /,\s+allah\s+razı\s+olsun\.?/iu }
 ];
 
 function normalizeText(text) {
@@ -156,6 +180,7 @@ function isProtectedChange(original, fixed) {
   const to = canonicalText(fixed);
   if (!from || !to || from === to) return false;
 
+  if (to === `${from}:`) return true;
   if (isCaseOnlyChange(original, fixed)) return true;
   if (isSuraCaseOnlyChange(original, fixed)) return true;
   if (isSourceDiacriticProtected(original, fixed)) return true;
@@ -243,7 +268,9 @@ function finalizeResult(result = {}, sourceText = '') {
   }
 
   result.categories = cats;
-  if (sourceText && result.correctedText) {
+  if (sourceText) {
+    result.correctedText = applyAcceptedIssues(sourceText, acceptedIssues);
+  } else if (result.correctedText) {
     result.correctedText = rejectedIssues.reduce((text, issue) => restoreRejectedChange(text, issue), result.correctedText);
   }
   if (result.correctedText) {
@@ -263,6 +290,7 @@ function finalizeResult(result = {}, sourceText = '') {
 
 module.exports = {
   CAT_WEIGHTS,
+  CANONICAL_WORD_STANDARDS,
   candidateTextHashes,
   canonicalText,
   equivalentIssue,

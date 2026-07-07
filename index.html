@@ -659,18 +659,6 @@ canvas{width:100%!important;}
         <button class="btn-sec" onclick="clearAnalyze()">Temizle</button>
         <span class="status-msg" id="statusMsg"></span>
       </div>
-      <div class="assistant-panel">
-        <div class="assistant-head">
-          <div class="assistant-title">Denetim Yardımcısı</div>
-          <div class="assistant-live"><span class="live-dot"></span><span id="helperLiveText">Hazır</span></div>
-        </div>
-        <div class="assistant-body">
-          <div class="assistant-actions">
-            <button class="btn-primary" onclick="runHelper('report')">AI Raporu Oluştur</button>
-          </div>
-          <div class="assistant-output" id="helperOutput">AI raporu; denetim sonucunu, şüpheli noktaları, kopyalama güvenliğini ve ekibe bildirim gerekip gerekmediğini tek yerde açıklar.</div>
-        </div>
-      </div>
       <div id="resultsArea" style="margin-top:18px"></div>
     </div>
 
@@ -1416,10 +1404,6 @@ function applyAiReportGate(answer){
 function renderResults(d,container){
   currentResult=d;
   currentAiReport=null;
-  const live=el('helperLiveText');
-  if(live)live.textContent='Rapor için hazır';
-  const helperOut=el('helperOutput');
-  if(helperOut)helperOut.innerHTML='Denetim sonucu oluştu. <strong>AI Raporu Oluştur</strong> ile sonucu tek raporda kontrol edip ekibe bildirim gerekip gerekmediğini görebilirsiniz.';
   const cats=d.categories||{};
   const sc=d.score||0;
   const fc=sc>=80?'sf-high':sc>=55?'sf-mid':'sf-low';

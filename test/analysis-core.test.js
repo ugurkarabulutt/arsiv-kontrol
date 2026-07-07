@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const PDFDocument = require('pdfkit');
 const {
+  CANONICAL_WORD_STANDARDS,
   LOW_SCORE_MSG,
   candidateTextHashes,
   finalizeResult,
@@ -145,7 +146,7 @@ test('duzeltilmis tam metin korunur ama reddedilen bulgular skor disi kalir', ()
   }, source);
 
   assert.equal(result.totalErrors, 1);
-  assert.equal(result.correctedText, 'Âyet yazildi.\nManevî metin bozuldu.\nTablo düz metne çevrildi.');
+  assert.equal(result.correctedText, 'Âyet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2');
 });
 
 test('duzeltilmis metni saran gereksiz dis tirnaklari kaldirir', () => {
@@ -174,4 +175,40 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('birr', 'bir'), true);
   assert.equal(isProtectedChange('hâdise', 'hadîse'), true);
   assert.equal(isProtectedChange('afv-u', 'af ve'), true);
+  assert.equal(isProtectedChange('vücud', 'vücût'), true);
+  assert.equal(isProtectedChange('şerr', 'şer'), true);
+  assert.equal(isProtectedChange('dinde', 'dînde'), true);
+  assert.equal(isProtectedChange('arif', 'ârif'), true);
+  assert.equal(isProtectedChange('cahiliye', 'câhiliye'), true);
+  assert.equal(isProtectedChange('ve vechini', 'vechini'), true);
+  assert.equal(isProtectedChange('NEFSİ EMMÂRE', 'NEFSİ EMMÂRE:'), true);
+  assert.equal(isProtectedChange('Sahihi Buhari 12. cilt hadis no. 2043', 'Sahihi Buhari 12. cilt hadîs no. 2043'), true);
+  assert.equal(isProtectedChange("Mu'min", "Mu'minûn"), true);
+  assert.equal(isProtectedChange("A'raf", "A'RÂF"), true);
+  assert.equal(isProtectedChange('Nur', 'NÛR'), true);
+});
+
+test('canli feedback standart kelimeleri kayitli tutulur', () => {
+  assert.equal(CANONICAL_WORD_STANDARDS.vucud, 'vücud');
+  assert.equal(CANONICAL_WORD_STANDARDS.serr, 'şerr');
+  assert.equal(CANONICAL_WORD_STANDARDS.arif, 'arif');
+  assert.equal(CANONICAL_WORD_STANDARDS.cahiliye, 'cahiliye');
+  assert.equal(CANONICAL_WORD_STANDARDS.dinde, 'dinde');
+});
+
+test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alinmaz', () => {
+  const source = 'Baslik\n\nGelelim fizik beden ve nefs konusuna.\nTablo: A | B';
+  const result = finalizeResult({
+    correctedText: 'Gelelim fizik beden ve Nefise konusuna. Tablo bozuldu.',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'Baslik', fixed: 'Başlık', rule: 'İmla standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.correctedText, 'Başlık\n\nGelelim fizik beden ve nefs konusuna.\nTablo: A | B');
 });
