@@ -115,6 +115,10 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Standart takip UX düzeltmesi:** Standartlarımız ekranındaki admin takip alanında
+  `Görmeyenler` listesi kaldırıldı. Her standartta göz butonu ile `görüntüleyen/toplam`
+  sayısı gösterilir; tıklanınca yalnızca görüntüleyen kullanıcılar açılır. Mesaj Kayıtları
+  ile aynı takip dili kullanılır. `npm.cmd run check` başarılı; 44/44 test geçti.
 - **Çözüm tekrarı kontrolü:** Canlı kontrolde Test hesabına görünen eski çözüm mesajının
   farklı bir feedback kaydına ait olduğu, açık görünen Test kaydının ayrı ve rastgele bir
   kayıt olduğu doğrulandı. Bu Test kaydı canlı DB'de `resolved` işaretlendi ve yeni mesaj

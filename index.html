@@ -2528,12 +2528,20 @@ async function loadStandards(){
         ${s.read?'<span class="standard-read">Okundu</span>':`<button class="standard-read unread" onclick="markStandardRead('${s.id}')">Okudum</button>`}
       </div>
       <div class="standard-card-body">${esc(s.content)}</div>
-      ${s.tracking?`<div class="standard-card-body" style="border-top:1px solid var(--border);font-size:12px">
-        <strong>Admin takip:</strong> ${s.tracking.readCount}/${s.tracking.readCount+s.tracking.unreadCount} görüntüledi.
-        ${s.tracking.unreadCount?`<br><strong>Görmeyenler:</strong> ${esc(s.tracking.unreadUsers.map(u=>u.name).join(', '))}`:''}
-      </div>`:''}
+      ${s.tracking?renderStandardTracking(s):''}
     </div>`).join('')}</div>`;
   autoMarkStandardsViewed(standards);
+}
+
+function renderStandardTracking(s){
+  const tracking=s.tracking||{};
+  const total=Number(tracking.readCount||0)+Number(tracking.unreadCount||0);
+  const id=`std-seen-${String(s.id||'').replace(/[^a-zA-Z0-9_-]/g,'')}`;
+  const readers=(tracking.readUsers||[]).map(u=>u.name).filter(Boolean);
+  return `<div class="standard-card-body" style="border-top:1px solid var(--border);font-size:12px">
+    <button class="btn-mini" style="padding:4px 8px" onclick="toggleSeenList('${id}')">👁 ${tracking.readCount||0}/${total} görüntüledi</button>
+    <div id="${id}" style="display:none;margin-top:8px;white-space:pre-line">${readers.length?`Görüntüleyenler: ${esc(readers.join(', '))}`:'Henüz görüntüleyen yok.'}</div>
+  </div>`;
 }
 
 async function autoMarkStandardsViewed(standards){
