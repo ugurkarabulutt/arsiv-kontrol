@@ -2268,6 +2268,7 @@ async function loadMessageLog(){
       <div class="alert-type ${r.type==='feedback_resolution'?'feedback':''}">${r.type==='feedback_resolution'?'Çözüm':'Duyuru'}</div>
       <div class="alert-msg">
         <div><strong>Alıcı:</strong> ${esc(r.recipientName||'—')} ${r.recipientUsername?`<span class="mono" style="font-size:10px;color:var(--ink3)">(${esc(r.recipientUsername)})</span>`:''}</div>
+        ${r.delivery?`<div style="margin-top:6px;font-size:12px;color:var(--ink2)"><strong>Takip:</strong> ${r.delivery.readCount}/${r.delivery.total} görüntüledi.${r.delivery.unreadCount?` <strong>Görmeyenler:</strong> ${esc(r.delivery.unreadUsers.map(u=>u.name).join(', '))}`:''}</div>`:''}
         <div style="margin-top:6px;white-space:pre-line">${esc(r.message||'')}</div>
       </div>
       <div class="alert-time">${new Date(r.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
@@ -2367,7 +2368,7 @@ function renderNotice(n){
       </div>
       <div class="notice-actions">
         <div class="notice-date">${date}</div>
-        ${!n.read?`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="readNotice('${n.id}')">Okundu</button>`:''}
+        ${!n.read?`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="readNotice('${n.id}')">Okundu</button>`:`<span class="btn-sec" style="padding:5px 10px;font-size:10px;cursor:default;opacity:.75">Okundu</span>`}
       </div>
     </div>`;
 }
@@ -2378,9 +2379,16 @@ async function loadMyNotifications(){
   if(notices.error){container.innerHTML=`<div class="empty-state">${esc(notices.error)}</div>`;return;}
   if(!notices?.length){container.innerHTML='<div class="empty-state">Size özel bildirim yok.</div>';return;}
   container.innerHTML=`<div class="notice-list">${notices.map(renderNotice).join('')}</div>`;
+  autoMarkNotificationsViewed(notices);
 }
 async function readNotice(id){await api('POST',`/api/my-notifications/${id}/read`);loadMyNotifications();refreshNoticeBadge();}
 async function readAllNotices(){await api('POST','/api/my-notifications/read-all');loadMyNotifications();refreshNoticeBadge();}
+
+async function autoMarkNotificationsViewed(notices){
+  if(!Array.isArray(notices)||!notices.some(n=>!n.read))return;
+  await api('POST','/api/my-notifications/read-all');
+  refreshNoticeBadge();
+}
 
 async function refreshNoticeBadge(){
   if(!me)return;
@@ -2417,7 +2425,19 @@ async function loadStandards(){
         ${s.read?'<span class="standard-read">Okundu</span>':`<button class="standard-read unread" onclick="markStandardRead('${s.id}')">Okudum</button>`}
       </div>
       <div class="standard-card-body">${esc(s.content)}</div>
+      ${s.tracking?`<div class="standard-card-body" style="border-top:1px solid var(--border);font-size:12px">
+        <strong>Admin takip:</strong> ${s.tracking.readCount}/${s.tracking.readCount+s.tracking.unreadCount} görüntüledi.
+        ${s.tracking.unreadCount?`<br><strong>Görmeyenler:</strong> ${esc(s.tracking.unreadUsers.map(u=>u.name).join(', '))}`:''}
+      </div>`:''}
     </div>`).join('')}</div>`;
+  autoMarkStandardsViewed(standards);
+}
+
+async function autoMarkStandardsViewed(standards){
+  const ids=(standards||[]).filter(s=>!s.read).map(s=>s.id);
+  if(!ids.length)return;
+  await api('POST','/api/standards/read-visible',{ids});
+  refreshStandardsBadge();
 }
 
 async function markStandardRead(id){
@@ -2456,7 +2476,7 @@ async function loadUsers(){
   });
   if(!users?.length){container.innerHTML='<div class="empty-state">Kullanıcı yok.</div>';return;}
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Ad</th><th>Kullanıcı Adı</th><th>Rol</th><th>Durum</th><th></th></tr></thead>
+    <thead><tr><th>Ad</th><th>Kullanıcı Adı</th><th>Rol</th><th>Durum</th><th>Son Aktif</th><th></th></tr></thead>
     <tbody>${users.map(u=>{
       const targetIsSuper=u.role==='super_admin'||String(u.username).toLowerCase()==='admin';
       const canEdit=hasSuperAdminRole(me?.role)||!targetIsSuper;
@@ -2469,6 +2489,7 @@ async function loadUsers(){
       <td class="mono" style="font-size:10px">${esc(u.username)}</td>
       <td><span class="role-pill ${rolePill(u.role)}">${roleShortLabel(u.role)}</span></td>
       <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Pasif'}</td>
+      <td class="mono" style="font-size:10px">${u.lastSeenAt?new Date(u.lastSeenAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</td>
       <td><div class="td-actions">
         ${hasAdminRole(me?.role)?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openNotifyUser(${idArg},${nameArg})">Bildirim</button>`:''}
         ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser(${idArg},${nameArg},${roleArg},${Boolean(u.active)})">Düzenle</button>`:''}

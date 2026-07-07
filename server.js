@@ -414,11 +414,37 @@ async function saveJsonSetting(key, value) {
   if (error) throw new Error(error.message);
 }
 
+async function recordUserActivity(userId) {
+  if (!userId) return;
+  try {
+    const activity = await loadJsonSetting('user_last_seen', {});
+    const next = activity && typeof activity === 'object' ? activity : {};
+    next[userId] = new Date().toISOString();
+    await saveJsonSetting('user_last_seen', next);
+  } catch (error) {
+    console.warn('Son aktiflik kaydedilemedi:', error.message);
+  }
+}
+
 async function loadStandardsCatalog() {
   const catalog = await loadJsonSetting('standards_catalog', null);
   if (Array.isArray(catalog) && catalog.length) return catalog;
   await saveJsonSetting('standards_catalog', DEFAULT_STANDARDS);
   return DEFAULT_STANDARDS;
+}
+
+function readReceiptIds(receiptValue) {
+  if (Array.isArray(receiptValue)) return receiptValue;
+  if (receiptValue && typeof receiptValue === 'object') return Object.keys(receiptValue);
+  return [];
+}
+
+function addReadReceipt(readMap, userId, itemId) {
+  const current = readMap[userId];
+  const next = current && typeof current === 'object' && !Array.isArray(current) ? current : {};
+  if (Array.isArray(current)) current.forEach(id => { next[id] = next[id] || new Date().toISOString(); });
+  next[itemId] = next[itemId] || new Date().toISOString();
+  readMap[userId] = next;
 }
 
 function parseAlertFields(message = '') {
@@ -575,6 +601,7 @@ app.post('/api/auth/login', async (req, res) => {
     req.session.username = user.username;
     req.session.name = user.name;
     req.session.role = role;
+    await recordUserActivity(user.id);
     res.json({ success: true, id: user.id, name: user.name, role, username: user.username });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -584,6 +611,7 @@ app.get('/api/auth/me', async (req, res, next) => {
   try {
     await startupReady;
     normalizeSessionRole(req);
+    await recordUserActivity(req.session.userId);
     res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
   } catch (error) {
     next(error);
@@ -615,7 +643,8 @@ app.get('/api/users', auth, admin, async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
-    res.json((data || []).map(mapUser));
+    const lastSeen = await loadJsonSetting('user_last_seen', {});
+    res.json((data || []).map(u => ({ ...mapUser(u), lastSeenAt: lastSeen?.[u.id] || null })));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/users', auth, admin, superAdmin, async (req, res) => {
@@ -736,8 +765,35 @@ app.get('/api/standards', auth, async (req, res) => {
       loadJsonSetting('standards_read_receipts', {})
     ]);
     const readMap = receipts && typeof receipts === 'object' ? receipts : {};
-    const userReads = new Set(Array.isArray(readMap[req.session.userId]) ? readMap[req.session.userId] : []);
-    const standards = catalog.map(item => ({ ...item, read: userReads.has(item.id) }));
+    const userReads = new Set(readReceiptIds(readMap[req.session.userId]));
+    let trackingByStandard = null;
+    if (isAdminRole(req.session.role)) {
+      const { data: users, error: usersError } = await supabase.from('users').select('id,name,username,active').eq('active', true);
+      if (usersError) throw new Error(usersError.message);
+      trackingByStandard = new Map(catalog.map(item => [item.id, { read: [], unread: [] }]));
+      for (const user of users || []) {
+        const seen = new Set(readReceiptIds(readMap[user.id]));
+        for (const standard of catalog) {
+          const target = seen.has(standard.id) ? 'read' : 'unread';
+          trackingByStandard.get(standard.id)?.[target].push({ id: user.id, name: user.name, username: user.username });
+        }
+      }
+    }
+    const standards = catalog.map(item => {
+      const tracking = trackingByStandard?.get(item.id);
+      return {
+        ...item,
+        read: userReads.has(item.id),
+        ...(tracking ? {
+          tracking: {
+            readCount: tracking.read.length,
+            unreadCount: tracking.unread.length,
+            readUsers: tracking.read,
+            unreadUsers: tracking.unread
+          }
+        } : {})
+      };
+    });
     res.json({ standards, unreadCount: standards.filter(item => !item.read).length });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -749,10 +805,23 @@ app.post('/api/standards/:id/read', auth, async (req, res) => {
     if (!catalog.some(item => item.id === standardId)) return res.status(404).json({ error: 'Standart bulunamadı.' });
     const receipts = await loadJsonSetting('standards_read_receipts', {});
     const readMap = receipts && typeof receipts === 'object' ? receipts : {};
-    const current = Array.isArray(readMap[req.session.userId]) ? readMap[req.session.userId] : [];
-    readMap[req.session.userId] = [...new Set([...current, standardId])];
+    addReadReceipt(readMap, req.session.userId, standardId);
     await saveJsonSetting('standards_read_receipts', readMap);
     res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/standards/read-visible', auth, async (req, res) => {
+  try {
+    const catalog = await loadStandardsCatalog();
+    const allowed = new Set(catalog.map(item => item.id));
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(String).filter(id => allowed.has(id)).slice(0, 100) : [];
+    if (!ids.length) return res.json({ success: true, count: 0 });
+    const receipts = await loadJsonSetting('standards_read_receipts', {});
+    const readMap = receipts && typeof receipts === 'object' ? receipts : {};
+    ids.forEach(id => addReadReceipt(readMap, req.session.userId, id));
+    await saveJsonSetting('standards_read_receipts', readMap);
+    res.json({ success: true, count: ids.length });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -992,12 +1061,31 @@ app.get('/api/notification-log', auth, admin, superAdmin, async (req, res) => {
       (users || []).forEach(u => usersById.set(u.id, u));
     }
 
+    const grouped = new Map();
+    for (const n of notices || []) {
+      const key = `${n.type}::${n.message}`;
+      if (!grouped.has(key)) grouped.set(key, { total: 0, read: [], unread: [] });
+      const group = grouped.get(key);
+      const user = usersById.get(n.user_id);
+      const item = { id: n.user_id, name: user?.name || user?.username || 'Bilinmeyen kullanıcı', username: user?.username || '' };
+      group.total++;
+      group[n.read ? 'read' : 'unread'].push(item);
+    }
+
     res.json((notices || []).map(n => {
       const user = usersById.get(n.user_id);
+      const group = grouped.get(`${n.type}::${n.message}`) || { total: 1, read: [], unread: [] };
       return {
         ...mapAlert(n),
         recipientName: user?.name || user?.username || 'Bilinmeyen kullanıcı',
-        recipientUsername: user?.username || ''
+        recipientUsername: user?.username || '',
+        delivery: {
+          total: group.total,
+          readCount: group.read.length,
+          unreadCount: group.unread.length,
+          readUsers: group.read,
+          unreadUsers: group.unread
+        }
       };
     }));
   } catch (e) { res.status(500).json({ error: e.message }); }
