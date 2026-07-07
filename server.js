@@ -1172,6 +1172,9 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
     if (alertError) throw new Error(alertError.message);
     if (!alert) return res.status(404).json({ error: 'Geri bildirim bulunamadı.' });
     if (!alert.user_id) return res.status(400).json({ error: 'Bu geri bildirim kullanıcıya bağlı değil.' });
+    if (HAS_ALERT_FEEDBACK_META && alert.feedback_status === 'resolved') {
+      return res.status(400).json({ error: 'Bu geri bildirim zaten çözüldü olarak işaretlenmiş.' });
+    }
 
     const message = [
       'Geri bildiriminiz incelendi',

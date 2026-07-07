@@ -115,6 +115,12 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Çözüm tekrarı kontrolü:** Canlı kontrolde Test hesabına görünen eski çözüm mesajının
+  farklı bir feedback kaydına ait olduğu, açık görünen Test kaydının ayrı ve rastgele bir
+  kayıt olduğu doğrulandı. Bu Test kaydı canlı DB'de `resolved` işaretlendi ve yeni mesaj
+  gönderilmedi. Tekil `Çözüm bildir` endpoint'i resolved işaretli feedbacke ikinci kez
+  çözüm bildirimi göndermeyi reddeder. Açık kuyruk 29 gerçek feedback / 6 kullanıcı olarak
+  doğrulandı. `npm.cmd run check` başarılı; 44/44 test geçti.
 - **Mesaj kayıtları UX düzeltmesi:** Çözüm mesajı hitabı artık `Sevgili {kullanıcının sistemdeki adı}`
   satırıyla başlar; virgül eklenmez ve isim/kalp sistemde kayıtlı haliyle korunur. Mesaj Kayıtları
   ekranında aynı toplu mesaj tek kartta gösterilir; alıcılar tek tek basılmaz. Kartta yalnızca göz
