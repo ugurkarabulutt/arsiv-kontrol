@@ -115,6 +115,10 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-07
+- **Gerçek görüntüleme takibi:** Kullanıcı bildirimleri ve Standartlarımız kartları artık
+  `Okundu/Okudum` butonuna bağlı değildir. Kart ekranda en az 1 saniye görünür kalırsa
+  tekil olarak görüntülendi sayılır; admin takip sayaçları bu gerçek görüntüleme kaydından
+  beslenir. Sayfa açılışında görünmeyen bildirim veya standartlar topluca okundu yapılmaz.
 - **Standart takip UX düzeltmesi:** Standartlarımız ekranındaki admin takip alanında
   `Görmeyenler` listesi kaldırıldı. Her standartta göz butonu ile `görüntüleyen/toplam`
   sayısı gösterilir; tıklanınca yalnızca görüntüleyen kullanıcılar açılır. Mesaj Kayıtları

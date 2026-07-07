@@ -826,7 +826,7 @@ canvas{width:100%!important;}
     <div class="tab-content" id="tabContent-bildirim">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
         <div><div class="page-title">Bildirimler</div><div class="page-sub">Size özel duyuru ve çözüm yanıtları</div></div>
-        <button class="btn-sec" onclick="readAllNotices()">Tümünü Okundu</button>
+        <span class="btn-sec" style="cursor:default;opacity:.8">1 sn görünce görüntülendi sayılır</span>
       </div>
       <div class="divider"></div>
       <div id="noticeContent"><div class="empty-state">Yükleniyor...</div></div>
@@ -858,7 +858,7 @@ canvas{width:100%!important;}
     <div class="tab-content" id="tabContent-alerts">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
         <div><div class="page-title">Sistem Uyarıları</div><div class="page-sub">Düşük skorlar ve teknik operasyon uyarıları</div></div>
-        <button class="btn-sec" onclick="readAllAlerts()">Tümünü Okundu</button>
+        <button class="btn-sec" onclick="readAllAlerts()">Tümünü Görüldü Yap</button>
       </div>
       <div class="divider"></div>
       <div class="alert-filters">
@@ -2191,7 +2191,7 @@ function renderAlertItems(container, filtered, showFeedbackToolbar){
         <div class="alert-time">${new Date(a.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
         ${a.type==='feedback'?`<div class="status-chip ${a.feedbackStatus==='resolved'?'resolved':''}">${statusLabel(a)}</div>`:''}
         ${a.type==='feedback'?`<button class="btn-green" style="padding:3px 8px;font-size:9px" onclick="respondFeedback('${a.id}')">Çözüm bildir</button>`:''}
-        ${!a.read&&['feedback','low_score'].includes(a.type)?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Okundu</button>`:''}
+        ${!a.read&&['feedback','low_score'].includes(a.type)?`<button class="btn-sec" style="padding:2px 8px;font-size:9px" onclick="readAlert('${a.id}')">Görüldü</button>`:''}
       </div>
     </div>`).join('')}</div>`;
 }
@@ -2416,7 +2416,7 @@ function renderNotice(n){
   const response=n.resolutionResponse;
   const canRespond=n.type==='feedback_resolution';
   return `
-    <div class="notice-card ${n.read?'':'unread'}">
+    <div class="notice-card ${n.read?'':'unread'}" data-notice-id="${esc(n.id)}" data-unread="${n.read?'0':'1'}">
       <div>
         <div class="notice-kicker">
           <span class="notice-status-dot ${n.read?'read':''}"></span>
@@ -2431,7 +2431,7 @@ function renderNotice(n){
       </div>
       <div class="notice-actions">
         <div class="notice-date">${date}</div>
-        ${!n.read?`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="readNotice('${n.id}')">Okundu</button>`:`<span class="btn-sec" style="padding:5px 10px;font-size:10px;cursor:default;opacity:.75">Okundu</span>`}
+        <span class="notice-view-state btn-sec" style="padding:5px 10px;font-size:10px;cursor:default;opacity:${n.read?'.75':'1'}">${n.read?'Görüntülendi':'Görüntüleniyor'}</span>
       </div>
     </div>`;
 }
@@ -2487,10 +2487,83 @@ async function loadMyNotifications(){
 async function readNotice(id){await api('POST',`/api/my-notifications/${id}/read`);loadMyNotifications();refreshNoticeBadge();}
 async function readAllNotices(){await api('POST','/api/my-notifications/read-all');loadMyNotifications();refreshNoticeBadge();}
 
-async function autoMarkNotificationsViewed(notices){
+let noticeViewObserver=null;
+let standardViewObserver=null;
+const visibleReadTimers=new Map();
+
+function clearVisibleReadTimers(prefix){
+  for(const [key,timer] of visibleReadTimers.entries()){
+    if(key.startsWith(prefix)){clearTimeout(timer);visibleReadTimers.delete(key);}
+  }
+}
+
+function visibleReadTargets(selector){
+  return Array.from(document.querySelectorAll(selector)).filter(node=>node.dataset.unread==='1');
+}
+
+function markViewedInDom(node,label='Görüntülendi'){
+  if(!node)return;
+  node.dataset.unread='0';
+  node.classList.remove('unread');
+  const status=node.querySelector('.notice-status-dot');
+  if(status)status.classList.add('read');
+  const state=node.querySelector('.notice-view-state,.standard-read');
+  if(state){
+    state.textContent=label;
+    state.classList.remove('unread');
+    state.style.opacity='.75';
+  }
+}
+
+function updateStandardsCounterLocal(){
+  const counter=el('standardsCounter');
+  if(!counter)return;
+  const unread=visibleReadTargets('.standard-card[data-unread="1"]').length;
+  counter.textContent=unread?`${unread} okunmamış standart`:'Tüm standartlar görüntülendi';
+}
+
+function observeVisibleRead({selector,idKey,timerPrefix,postUrl,afterRead}){
+  const targets=visibleReadTargets(selector);
+  if(!targets.length)return null;
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const node=entry.target;
+      const id=node.dataset[idKey];
+      const timerKey=`${timerPrefix}:${id}`;
+      const visible=entry.isIntersecting&&entry.intersectionRatio>=0.6;
+      if(!visible){
+        const existing=visibleReadTimers.get(timerKey);
+        if(existing){clearTimeout(existing);visibleReadTimers.delete(timerKey);}
+        return;
+      }
+      if(visibleReadTimers.has(timerKey)||node.dataset.unread!=='1')return;
+      const timer=setTimeout(async()=>{
+        visibleReadTimers.delete(timerKey);
+        if(node.dataset.unread!=='1')return;
+        const r=await api('POST',postUrl(id));
+        if(r.error)return;
+        markViewedInDom(node);
+        observer.unobserve(node);
+        if(afterRead)afterRead();
+      },1000);
+      visibleReadTimers.set(timerKey,timer);
+    });
+  },{threshold:[0,0.6,1]});
+  targets.forEach(node=>observer.observe(node));
+  return observer;
+}
+
+function autoMarkNotificationsViewed(notices){
   if(!Array.isArray(notices)||!notices.some(n=>!n.read))return;
-  await api('POST','/api/my-notifications/read-all');
-  refreshNoticeBadge();
+  if(noticeViewObserver)noticeViewObserver.disconnect();
+  clearVisibleReadTimers('notice');
+  noticeViewObserver=observeVisibleRead({
+    selector:'.notice-card[data-unread="1"]',
+    idKey:'noticeId',
+    timerPrefix:'notice',
+    postUrl:id=>`/api/my-notifications/${id}/read`,
+    afterRead:refreshNoticeBadge
+  });
 }
 
 async function refreshNoticeBadge(){
@@ -2519,13 +2592,13 @@ async function loadStandards(){
   if(counter)counter.textContent=unread?`${unread} okunmamış standart`:'Tüm standartlar okundu';
   if(!standards.length){container.innerHTML='<div class="empty-state">Henüz standart eklenmemiş.</div>';return;}
   container.innerHTML=`<div class="standard-list">${standards.map(s=>`
-    <div class="standard-card ${s.read?'':'unread'}">
+    <div class="standard-card ${s.read?'':'unread'}" data-standard-id="${esc(s.id)}" data-unread="${s.read?'0':'1'}">
       <div class="standard-card-head">
         <div>
           <div class="standard-card-title">${esc(s.title)}</div>
           <div class="standard-card-meta">${esc(s.category||'Standart')} · ${s.createdAt?new Date(s.createdAt).toLocaleDateString('tr-TR'):'Tarih yok'}</div>
         </div>
-        ${s.read?'<span class="standard-read">Okundu</span>':`<button class="standard-read unread" onclick="markStandardRead('${s.id}')">Okudum</button>`}
+        <span class="standard-read ${s.read?'':'unread'}">${s.read?'Görüntülendi':'Görüntüleniyor'}</span>
       </div>
       <div class="standard-card-body">${esc(s.content)}</div>
       ${s.tracking?renderStandardTracking(s):''}
@@ -2544,11 +2617,17 @@ function renderStandardTracking(s){
   </div>`;
 }
 
-async function autoMarkStandardsViewed(standards){
-  const ids=(standards||[]).filter(s=>!s.read).map(s=>s.id);
-  if(!ids.length)return;
-  await api('POST','/api/standards/read-visible',{ids});
-  refreshStandardsBadge();
+function autoMarkStandardsViewed(standards){
+  if(!Array.isArray(standards)||!standards.some(s=>!s.read))return;
+  if(standardViewObserver)standardViewObserver.disconnect();
+  clearVisibleReadTimers('standard');
+  standardViewObserver=observeVisibleRead({
+    selector:'.standard-card[data-unread="1"]',
+    idKey:'standardId',
+    timerPrefix:'standard',
+    postUrl:id=>`/api/standards/${id}/read`,
+    afterRead:()=>{refreshStandardsBadge();updateStandardsCounterLocal();}
+  });
 }
 
 async function markStandardRead(id){
