@@ -234,7 +234,14 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .corrected-body{padding:18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
 .compare-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
+.compare-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .compare-head h3{font-size:15px;font-weight:600;}
+.scroll-lock-control{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(var(--ai-rgb),.55);background:linear-gradient(135deg,rgba(var(--ai-rgb),.14),var(--gold-bg));color:var(--ink);padding:7px 10px;border-radius:999px;box-shadow:0 8px 22px rgba(var(--ai-rgb),.14);}
+.scroll-lock-label{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;letter-spacing:.3px;white-space:nowrap;}
+.scroll-lock-switch{width:46px;height:24px;border:1px solid rgba(var(--ai-rgb),.65);background:var(--ai);border-radius:999px;position:relative;cursor:pointer;transition:all .2s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);}
+.scroll-lock-switch::after{content:'';position:absolute;top:3px;left:23px;width:16px;height:16px;background:white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.24);transition:left .2s;}
+.scroll-lock-switch.off{background:var(--surface2);border-color:var(--bord2);}
+.scroll-lock-switch.off::after{left:4px;background:var(--ink3);}
 .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
 .compare-col{background:var(--white);min-width:0;}
 .compare-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg2);}
@@ -243,6 +250,7 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .diff-ins{background:var(--grn-bg);color:var(--green);font-weight:600;}
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
+@media(max-width:760px){.compare-head{align-items:flex-start}.scroll-lock-control{width:100%;justify-content:space-between}}
 @media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
@@ -446,6 +454,21 @@ canvas{width:100%!important;}
 .pref-title{font-weight:700;color:var(--ink);font-size:14px;}
 .pref-sub{font-size:12px;color:var(--ink3);margin-top:2px;}
 .draft-pill{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);background:var(--grn-bg);border:1px solid var(--green);padding:4px 8px;border-radius:999px;display:inline-flex;margin-top:8px;}
+.standard-counter{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);background:var(--gold-bg);border:1px solid var(--gold);padding:7px 10px;border-radius:999px;}
+.standards-admin{margin-bottom:14px;}
+.standard-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start;}
+.standard-form input,.standard-form textarea{background:var(--bg2);border:1px solid var(--border);color:var(--ink);padding:10px 12px;font-family:inherit;font-size:14px;outline:none;}
+.standard-form textarea{grid-column:1 / 3;min-height:94px;resize:vertical;line-height:1.55;}
+.standard-list{display:grid;gap:12px;}
+.standard-card{background:var(--white);border:1px solid var(--bord2);border-left:3px solid var(--gold);box-shadow:var(--soft-shadow);}
+.standard-card.unread{border-left-color:var(--ai);}
+.standard-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.standard-card-title{font-size:16px;font-weight:850;color:var(--ink);}
+.standard-card-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-top:4px;}
+.standard-card-body{padding:15px 16px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;}
+.standard-read{font-family:'JetBrains Mono',monospace;font-size:10px;border-radius:999px;padding:6px 10px;white-space:nowrap;border:1px solid var(--green);color:var(--green);background:var(--grn-bg);}
+.standard-read.unread{border-color:var(--ai);color:var(--ai);background:rgba(var(--ai-rgb),.12);}
+@media(max-width:760px){.standard-form{grid-template-columns:1fr}.standard-form textarea{grid-column:auto}.standard-form button{width:100%}.standard-card-head{flex-direction:column}.standard-read{align-self:flex-start}}
 :root[data-theme="dark"] .topbar{background:linear-gradient(90deg,#10100f,#171613);}
 :root[data-theme="dark"] .side-link.active-tab{background:linear-gradient(90deg,#332917,var(--surface));}
 :root[data-theme="dark"] .summary-box,
@@ -530,6 +553,7 @@ canvas{width:100%!important;}
         <button class="btn-top" id="tabBtnAnaliz" onclick="showTab('analiz')">Denetle</button>
         <button class="btn-top" id="tabBtnGecmis" onclick="showTab('gecmis')">Geçmiş</button>
         <button class="btn-top" id="tabBtnBildirim" onclick="showTab('bildirim')">Bildirimler<span class="badge" id="noticeBadge" style="display:none">0</span></button>
+        <button class="btn-top" id="tabBtnStandartlar" onclick="showTab('standartlar')">Standartlarımız<span class="badge" id="standardsBadge" style="display:none">0</span></button>
         <button class="btn-top" id="tabBtnProfil" onclick="showTab('profil')">Profilim</button>
         <button class="btn-top admin-only" id="tabBtnDash" onclick="showTab('dash')" style="display:none">Dashboard</button>
         <button class="btn-top admin-only" id="tabBtnOnay" onclick="showTab('onay')" style="display:none">Onaylar<span class="badge" id="onayBadge" style="display:none">0</span></button>
@@ -555,6 +579,7 @@ canvas{width:100%!important;}
       <button class="btn-mobile" onclick="mNav('analiz')">Denetle</button>
       <button class="btn-mobile" onclick="mNav('gecmis')">Geçmiş</button>
       <button class="btn-mobile" onclick="mNav('bildirim')">Bildirimler <span class="badge-m" id="mNoticeBadge" style="display:none">0</span></button>
+      <button class="btn-mobile" onclick="mNav('standartlar')">Standartlarımız <span class="badge-m" id="mStandardsBadge" style="display:none">0</span></button>
       <button class="btn-mobile" onclick="mNav('profil')">Profilim</button>
     <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
       <button class="btn-mobile admin-only" onclick="mNav('ai')" style="display:none">AI Asistan</button>
@@ -574,6 +599,7 @@ canvas{width:100%!important;}
     <button class="side-link" data-tab="analiz" onclick="showTab('analiz')"><span>Metin Denetimi</span></button>
     <button class="side-link" data-tab="gecmis" onclick="showTab('gecmis')"><span>Denetim Geçmişi</span></button>
     <button class="side-link" data-tab="bildirim" onclick="showTab('bildirim')"><span>Bildirimlerim</span><span class="badge" id="sideNoticeBadge" style="display:none">0</span></button>
+    <button class="side-link" data-tab="standartlar" onclick="showTab('standartlar')"><span>Standartlarımız</span><span class="badge" id="sideStandardsBadge" style="display:none">0</span></button>
 
     <div class="side-section-label admin-only" style="display:none">Operasyon</div>
     <button class="side-link admin-only" data-tab="dash" onclick="showTab('dash')" style="display:none"><span>Dashboard</span></button>
@@ -663,7 +689,7 @@ canvas{width:100%!important;}
           <option value="reddedildi">Reddedilen</option>
           <option value="low">Düşük skor</option>
         </select>
-        <button class="btn-sec" style="padding:8px 12px" onclick="clearHistoryFilters()">Sıfırla</button>
+        <button class="btn-sec" style="padding:8px 12px" onclick="clearHistoryFilters()" title="Sadece arama ve filtre seçimlerini temizler">Filtreleri Temizle</button>
         <span class="mono" id="histFilterSummary" style="font-size:11px;color:var(--ink3)"></span>
       </div>
       <div class="score-chart-box" id="scoreChartBox" style="display:none">
@@ -807,6 +833,29 @@ canvas{width:100%!important;}
       <div id="noticeContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
+    <div class="tab-content" id="tabContent-standartlar">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div><div class="page-title">Standartlarımız</div><div class="page-sub">Arşiv denetiminde esas alınan güncel standartlar</div></div>
+        <span class="standard-counter" id="standardsCounter">—</span>
+      </div>
+      <div class="divider"></div>
+      <div class="standards-admin admin-only" style="display:none">
+        <div class="settings-card">
+          <div class="settings-card-head">Yeni Standart Ekle</div>
+          <div class="settings-card-body">
+            <div class="standard-form">
+              <input id="standardTitle" placeholder="Başlık">
+              <input id="standardCategory" placeholder="Kategori">
+              <textarea id="standardContent" placeholder="Standart metni"></textarea>
+              <button class="btn-primary" onclick="addStandard()">Standart Ekle</button>
+            </div>
+            <div class="pref-sub" style="margin-top:8px">Yeni standart eklendiğinde tüm kullanıcılar okuyana kadar kendi menülerinde okunmamış olarak görünür.</div>
+          </div>
+        </div>
+      </div>
+      <div id="standardsContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
     <div class="tab-content" id="tabContent-alerts">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
         <div><div class="page-title">Sistem Uyarıları</div><div class="page-sub">Düşük skorlar ve teknik operasyon uyarıları</div></div>
@@ -939,7 +988,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,reportPeriodFilter='',reportDateFilter='';
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,reportPeriodFilter='',reportDateFilter='',scrollLockEnabled=true;
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
@@ -1077,6 +1126,7 @@ function enterApp(user){
   restoreWorkDraft();
   if(hasAdminRole(user.role))refreshBadges();
   refreshNoticeBadge();
+  refreshStandardsBadge();
 }
 function hasAdminRole(role){return role==='admin'||role==='super_admin';}
 function hasSuperAdminRole(role){return role==='super_admin';}
@@ -1111,6 +1161,7 @@ function showTab(name){
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
   if(name==='msglog')loadMessageLog();
   if(name==='bildirim')loadMyNotifications();
+  if(name==='standartlar')loadStandards();
   if(name==='kullanici')loadUsers();
   if(name==='kurallar')loadRules();
   if(name==='ayarlar')applyFontSize(localStorage.getItem('arsiv-font-size')||'medium');
@@ -1421,6 +1472,7 @@ function renderResults(d,container){
       </div>
       <div class="corrected-body">${esc(d.correctedText)}</div>
     </div>`:''}`;
+  setTimeout(bindCompareScrollLock,0);
 }
 
 function copyAnalysisReport(){
@@ -1555,12 +1607,43 @@ function renderComparePanel(original,corrected){
   const right=diff?diff.right:esc(corrected);
   const note='Kırmızı çıkarılan, yeşil eklenen/değişen kısımları gösterir.';
   return `<div class="compare-panel">
-    <div class="compare-head"><h3>Karşılaştırma</h3><span class="diff-note">${note}</span></div>
+    <div class="compare-head">
+      <div class="compare-title-row"><h3>Karşılaştırma</h3><span class="diff-note">${note}</span></div>
+      <div class="scroll-lock-control" title="Açıkken iki metin birlikte kayar.">
+        <span class="scroll-lock-label">Scroll Lock</span>
+        <button class="scroll-lock-switch ${scrollLockEnabled?'':'off'}" id="scrollLockSwitch" onclick="toggleScrollLock()" aria-label="Scroll Lock"></button>
+      </div>
+    </div>
     <div class="compare-grid">
-      <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text">${left}</div></div>
-      <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text">${right}</div></div>
+      <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text compare-sync" data-compare-side="left">${left}</div></div>
+      <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text compare-sync" data-compare-side="right">${right}</div></div>
     </div>
   </div>`;
+}
+
+function bindCompareScrollLock(){
+  const panes=[...document.querySelectorAll('.compare-sync')];
+  if(panes.length<2)return;
+  let syncing=false;
+  panes.forEach(pane=>{
+    pane.addEventListener('scroll',()=>{
+      if(syncing||!scrollLockEnabled)return;
+      const other=panes.find(p=>p!==pane);
+      if(!other)return;
+      const yMax=Math.max(1,pane.scrollHeight-pane.clientHeight);
+      const xMax=Math.max(1,pane.scrollWidth-pane.clientWidth);
+      syncing=true;
+      other.scrollTop=(pane.scrollTop/yMax)*Math.max(1,other.scrollHeight-other.clientHeight);
+      other.scrollLeft=(pane.scrollLeft/xMax)*Math.max(1,other.scrollWidth-other.clientWidth);
+      syncing=false;
+    },{passive:true});
+  });
+}
+
+function toggleScrollLock(){
+  scrollLockEnabled=!scrollLockEnabled;
+  const sw=el('scrollLockSwitch');
+  if(sw)sw.classList.toggle('off',!scrollLockEnabled);
 }
 
 async function sendResultFeedback(historyId,reason){
@@ -2305,6 +2388,55 @@ async function refreshNoticeBadge(){
   if(notices.error)return;
   const unread=(notices||[]).filter(n=>!n.read).length;
   ['noticeBadge','mNoticeBadge','sideNoticeBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=unread>0?'':'none';e.textContent=unread>9?'9+':unread;}});
+}
+
+async function refreshStandardsBadge(){
+  if(!me)return;
+  const data=await api('GET','/api/standards');
+  if(data.error)return;
+  const unread=Number(data.unreadCount||0);
+  ['standardsBadge','mStandardsBadge','sideStandardsBadge'].forEach(id=>{const e=el(id);if(e){e.style.display=unread>0?'':'none';e.textContent=unread>9?'9+':unread;}});
+}
+
+async function loadStandards(){
+  const data=await api('GET','/api/standards');
+  const container=el('standardsContent');
+  const counter=el('standardsCounter');
+  if(data.error){container.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;if(counter)counter.textContent='Yüklenemedi';return;}
+  const standards=Array.isArray(data.standards)?data.standards:[];
+  const unread=standards.filter(s=>!s.read).length;
+  if(counter)counter.textContent=unread?`${unread} okunmamış standart`:'Tüm standartlar okundu';
+  if(!standards.length){container.innerHTML='<div class="empty-state">Henüz standart eklenmemiş.</div>';return;}
+  container.innerHTML=`<div class="standard-list">${standards.map(s=>`
+    <div class="standard-card ${s.read?'':'unread'}">
+      <div class="standard-card-head">
+        <div>
+          <div class="standard-card-title">${esc(s.title)}</div>
+          <div class="standard-card-meta">${esc(s.category||'Standart')} · ${s.createdAt?new Date(s.createdAt).toLocaleDateString('tr-TR'):'Tarih yok'}</div>
+        </div>
+        ${s.read?'<span class="standard-read">Okundu</span>':`<button class="standard-read unread" onclick="markStandardRead('${s.id}')">Okudum</button>`}
+      </div>
+      <div class="standard-card-body">${esc(s.content)}</div>
+    </div>`).join('')}</div>`;
+}
+
+async function markStandardRead(id){
+  const r=await api('POST',`/api/standards/${id}/read`);
+  if(r.error){setStatus(r.error,'err');return;}
+  await loadStandards();
+  await refreshStandardsBadge();
+}
+
+async function addStandard(){
+  const title=el('standardTitle')?.value.trim();
+  const category=el('standardCategory')?.value.trim();
+  const content=el('standardContent')?.value.trim();
+  const r=await api('POST','/api/standards',{title,category,content});
+  if(r.error){setStatus(r.error,'err');return;}
+  el('standardTitle').value='';el('standardCategory').value='';el('standardContent').value='';
+  await loadStandards();
+  await refreshStandardsBadge();
+  setStatus('Standart eklendi. Kullanıcıların menüsünde okunmamış olarak görünecek.','ok');
 }
 
 async function refreshBadges(){

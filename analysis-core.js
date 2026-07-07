@@ -173,6 +173,23 @@ function restoreRejectedChange(text, issue) {
   return String(text).split(fixed).join(original);
 }
 
+function stripOuterTextQuotes(text) {
+  let value = String(text || '').trim();
+  const pairs = [['"', '"'], ['“', '”'], ['‘', '’']];
+  let changed = true;
+  while (changed && value.length >= 2) {
+    changed = false;
+    for (const [open, close] of pairs) {
+      if (value.startsWith(open) && value.endsWith(close)) {
+        value = value.slice(open.length, -close.length).trim();
+        changed = true;
+        break;
+      }
+    }
+  }
+  return value;
+}
+
 function applyAcceptedIssues(sourceText, issues) {
   return issues.reduce((text, issue) => {
     const original = String(issue?.original || '');
@@ -228,6 +245,9 @@ function finalizeResult(result = {}, sourceText = '') {
   result.categories = cats;
   if (sourceText && result.correctedText) {
     result.correctedText = rejectedIssues.reduce((text, issue) => restoreRejectedChange(text, issue), result.correctedText);
+  }
+  if (result.correctedText) {
+    result.correctedText = stripOuterTextQuotes(result.correctedText);
   }
   result.score = Math.max(0, 100 - penalty);
   result.totalErrors = total;

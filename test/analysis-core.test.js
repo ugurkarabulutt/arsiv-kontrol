@@ -148,6 +148,17 @@ test('duzeltilmis tam metin korunur ama reddedilen bulgular skor disi kalir', ()
   assert.equal(result.correctedText, 'Âyet yazildi.\nManevî metin bozuldu.\nTablo düz metne çevrildi.');
 });
 
+test('duzeltilmis metni saran gereksiz dis tirnaklari kaldirir', () => {
+  const result = finalizeResult({
+    correctedText: '"Âyet yazildi. Metin içindeki "alıntı" korunur."',
+    categories: {
+      sozluk: { issues: [{ original: 'Ayet', fixed: 'Âyet', rule: 'Sozluk' }] }
+    }
+  }, 'Ayet yazildi. Metin içindeki "alıntı" korunur.');
+
+  assert.equal(result.correctedText, 'Âyet yazildi. Metin içindeki "alıntı" korunur.');
+});
+
 test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('nefsi', 'nefs'), true);
   assert.equal(isProtectedChange('nefsin', 'nefisin'), true);

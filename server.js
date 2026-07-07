@@ -370,6 +370,29 @@ const mapAlert   = a => ({
   createdAt: a.created_at
 });
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
+const DEFAULT_STANDARDS = [
+  {
+    id: 'imla-din-hersey-2026-07',
+    title: 'Din ve herşey yazımı',
+    category: 'İmlâ Standardı',
+    content: 'Efendimizin sözlüğünde dîn yerine din yazımı esas alınır. Ayrıca her şey ifadesi arşiv standardında birleşik olarak herşey şeklinde kabul edilir.',
+    createdAt: '2026-07-01T00:00:00.000Z'
+  },
+  {
+    id: 'sure-adlari-mihr-2026-07',
+    title: 'Sure isimleri standardı',
+    category: 'Sure Adları',
+    content: 'Sure isimleri mihr.com imlâ standardına göre değerlendirilir. Büyük/küçük harf farkı tek başına hata sayılmaz; asıl kontrol şapka, apostrof ve harf dizilimidir.',
+    createdAt: '2026-07-02T00:00:00.000Z'
+  },
+  {
+    id: 'duzen-koruma-2026-07',
+    title: 'Metin düzeni koruma standardı',
+    category: 'Düzen',
+    content: 'Slayt, tablo, numaralı liste, hadîs dökümü ve paragraf yapısı korunur. Sistem yalnızca gerekli imlâ ve noktalama düzeltmelerini yapmalı; metin düzenini düz yazıya çevirmemelidir.',
+    createdAt: '2026-07-07T00:00:00.000Z'
+  }
+];
 const FEEDBACK_REASONS = Object.freeze({
   nonexistent: 'Metinde olmayan hata',
   wrong_fix: 'Yanlış düzeltme',
@@ -378,6 +401,25 @@ const FEEDBACK_REASONS = Object.freeze({
   score_wrong: 'Skor yanlış',
   other: 'Diğer'
 });
+
+async function loadJsonSetting(key, fallback) {
+  const { data, error } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+  if (error || !data?.value) return fallback;
+  try { return JSON.parse(data.value); }
+  catch { return fallback; }
+}
+
+async function saveJsonSetting(key, value) {
+  const { error } = await supabase.from('settings').upsert({ key, value: JSON.stringify(value) });
+  if (error) throw new Error(error.message);
+}
+
+async function loadStandardsCatalog() {
+  const catalog = await loadJsonSetting('standards_catalog', null);
+  if (Array.isArray(catalog) && catalog.length) return catalog;
+  await saveJsonSetting('standards_catalog', DEFAULT_STANDARDS);
+  return DEFAULT_STANDARDS;
+}
 
 function parseAlertFields(message = '') {
   const fields = {};
@@ -687,6 +729,47 @@ app.post('/api/rules/reset', auth, admin, async (req, res) => {
 });
 
 // ── HISTORY ───────────────────────────────────────────────────────────────
+app.get('/api/standards', auth, async (req, res) => {
+  try {
+    const [catalog, receipts] = await Promise.all([
+      loadStandardsCatalog(),
+      loadJsonSetting('standards_read_receipts', {})
+    ]);
+    const readMap = receipts && typeof receipts === 'object' ? receipts : {};
+    const userReads = new Set(Array.isArray(readMap[req.session.userId]) ? readMap[req.session.userId] : []);
+    const standards = catalog.map(item => ({ ...item, read: userReads.has(item.id) }));
+    res.json({ standards, unreadCount: standards.filter(item => !item.read).length });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/standards/:id/read', auth, async (req, res) => {
+  try {
+    const catalog = await loadStandardsCatalog();
+    const standardId = String(req.params.id || '');
+    if (!catalog.some(item => item.id === standardId)) return res.status(404).json({ error: 'Standart bulunamadı.' });
+    const receipts = await loadJsonSetting('standards_read_receipts', {});
+    const readMap = receipts && typeof receipts === 'object' ? receipts : {};
+    const current = Array.isArray(readMap[req.session.userId]) ? readMap[req.session.userId] : [];
+    readMap[req.session.userId] = [...new Set([...current, standardId])];
+    await saveJsonSetting('standards_read_receipts', readMap);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/standards', auth, admin, async (req, res) => {
+  try {
+    const title = String(req.body?.title || '').trim().slice(0, 120);
+    const category = String(req.body?.category || 'Standart').trim().slice(0, 80);
+    const content = String(req.body?.content || '').trim().slice(0, 2000);
+    if (!title || !content) return res.status(400).json({ error: 'Başlık ve standart metni gerekli.' });
+    const catalog = await loadStandardsCatalog();
+    const slug = title.toLocaleLowerCase('tr-TR').replace(/[^a-z0-9çğıöşü]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'standart';
+    const id = `${Date.now()}-${slug}`;
+    await saveJsonSetting('standards_catalog', [{ id, title, category, content, createdAt: new Date().toISOString() }, ...catalog]);
+    res.json({ success: true, id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/history', auth, async (req, res) => {
   try {
     let q = supabase.from('history').select('*').order('created_at', { ascending: false }).limit(200);
