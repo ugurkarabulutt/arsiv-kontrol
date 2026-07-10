@@ -114,6 +114,10 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-10 Final Feedback Temizlik Turu
+- **Final feedback temizlik ve kalite kilidi:** Canli Supabase feedback kuyrugundaki 52 acik kayit kullanici onayli `feedback-cleanup-2026-07-10` cozum grubuyla `resolved` kapatildi. Ayni turda 7 kullaniciya kisisel `feedback_resolution` bildirimi gonderildi; ilk yazimda olusan encoding riski sonrasinda son 7 bildirim kaydi tekrar kontrol edilip okunur metinle guncellendi. Canli kontrolde acik feedback sayisi `0` olarak dogrulandi.
+- **Ek regresyon korumalari:** `vucudunu -> vucutunu` gibi ekli kelime bozulmalari engellendi; yalnizca yalniz duran `vucud/vucud/vucut` kokleri `vucut` standardina baglandi. `kadirdir -> kaadirdir`, `5 dakika 10 dakikalik` virgulleme, `Efendimiz (S.A.V)'dir` noktalama ve `Irade eksikligi; irade... -> Irade eksikligi: Irade...` kurallari deterministic test kapsaminda guvenceye alindi.
+- **Test ve deploy:** `npm.cmd run check` basarili; 49/49 test gecti. Degisiklikler `95c7621` commit'iyle production'a deploy edildi ve `https://arsiv.ibrahimlive.ai/health` canli ortamda `ok` donusuyle dogrulandi.
 ### 2026-07-10
 - **13 feedback karar standardı:** Kullanıcı onayıyla 13 maddelik geri bildirim kararları
   kod ve prompt katmanına işlendi. `vücud/vücût → vücut`, `Hazreti İsa → Hazreti İsa (A.S)`,
