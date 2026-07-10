@@ -122,10 +122,13 @@ tespit edilir).
   `hayy/hayydırlar`, `hidayet` kelimesine ek uydurma, `vücut/vücuttan → vücud/vücuddan`,
   `Şerif → Şerîf` ve kaynakta olmayan `Evet/diyor` gibi içerik eklemeleri güvenlik filtresine
   alındı.
-- **Tekrar sayım güvenliği:** `finalizeResult` artık kaynak metindeki gerçek geçiş sayısından
-  fazla aynı `original` issue kabul etmez. Böylece kaynakta bir kez geçen `Kur'ân-ı`, `hidayet`
-  veya benzeri ifadeler model tarafından birkaç kez hata sayılırsa fazlalıklar skor ve
-  düzeltilmiş metinden düşer.
+- **Kesin standart ve tekrar sayım güvenliği:** `finalizeResult` artık kritik standartları
+  yalnızca modele bırakmaz; model kaçırsa bile `dîn...`, `her şey...`, `vücud/vücût`,
+  `inşallah`, `Hadis-i Şerif`, `Hazreti İsa` ve sure/âyet referans boşlukları için
+  deterministic issue ekler. Ayrıca kaynak metindeki gerçek geçiş sayısından fazla aynı
+  `original` issue kabul etmez. Böylece kaynakta bir kez geçen `Kur'ân-ı`, `hidayet` veya
+  benzeri ifadeler model tarafından birkaç kez hata sayılırsa fazlalıklar skor ve düzeltilmiş
+  metinden düşer.
 - **Test:** `npm.cmd run check` başarılı; 45/45 test geçti. Yeni regresyon testi 13 kararın
   kabul edilen ve reddedilen yönlerini birlikte doğrular.
 

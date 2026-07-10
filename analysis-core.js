@@ -261,6 +261,78 @@ function restoreRejectedChange(text, issue) {
   return String(text).split(fixed).join(original);
 }
 
+function caseLike(original, fixed) {
+  const value = String(original || '');
+  const replacement = String(fixed || '');
+  if (!value || !replacement) return replacement;
+  if (value === value.toLocaleUpperCase('tr-TR')) return replacement.toLocaleUpperCase('tr-TR');
+  const first = value[0];
+  if (first === first.toLocaleUpperCase('tr-TR') && first !== first.toLocaleLowerCase('tr-TR')) {
+    return replacement[0].toLocaleUpperCase('tr-TR') + replacement.slice(1);
+  }
+  return replacement;
+}
+
+function deterministicFixed(original) {
+  const text = canonicalText(original);
+  if (!text) return '';
+
+  if (/^dîn[\p{L}\p{N}_]*$/iu.test(text)) {
+    return caseLike(original, text.replace(/^dîn/iu, 'din'));
+  }
+  if (/^inşallah$/iu.test(text)) return caseLike(original, 'inşaallah');
+  if (/^her\s+şey[\p{L}\p{N}_]*$/iu.test(text)) {
+    return caseLike(original, text.replace(/^her\s+şey/iu, 'herşey'));
+  }
+  if (/^vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*$/iu.test(text)) {
+    let fixed = text.replace(/^vüc(?:ud|ûd|ût)/iu, 'vücut');
+    fixed = fixed.replace(/^vücutd/iu, 'vücutt');
+    return caseLike(original, fixed);
+  }
+  if (/^hadis-i\s+şerif$/iu.test(text)) return caseLike(original, 'Hadîs-i Şerif');
+  return '';
+}
+
+function addDeterministicIssue(cats, seen, original, fixed, rule) {
+  if (!original || !fixed || original === fixed) return;
+  const key = `${canonicalText(original)}=>${canonicalText(fixed)}`;
+  if (seen.has(key)) return;
+  seen.add(key);
+  if (!cats.imla) cats.imla = {};
+  if (!Array.isArray(cats.imla.issues)) cats.imla.issues = [];
+  cats.imla.issues.push({ original, fixed, rule });
+}
+
+function applyDeterministicStandards(cats, sourceText) {
+  const text = String(sourceText || '');
+  if (!text) return cats;
+
+  const seen = new Set();
+  Object.values(cats || {}).forEach(category => {
+    (category?.issues || []).forEach(issue => {
+      seen.add(`${canonicalText(issue.original)}=>${canonicalText(issue.fixed)}`);
+    });
+  });
+
+  const tokenRe = /(?<![\p{L}\p{N}_])(?:dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|hadis-i\s+şerif)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(tokenRe)) {
+    const original = match[0];
+    addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin arşiv standardı');
+  }
+
+  const hazretiIsaRe = /(?<![\p{L}\p{N}_])Hazreti\s+İsa(?!\s*\(A\.S\.?\))(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(hazretiIsaRe)) {
+    addDeterministicIssue(cats, seen, match[0], `${match[0]} (A.S)`, 'Nebî isimleri standardı');
+  }
+
+  const referenceRe = /(?<![\p{L}\p{N}_])(\d+)\s+\.\s*([A-ZÇĞİÖŞÜÂÎÛ'’]+)\s*-\s*(\d+)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(referenceRe)) {
+    addDeterministicIssue(cats, seen, match[0], `${match[1]}. ${match[2]}-${match[3]}`, 'Sure/âyet referans düzeni');
+  }
+
+  return cats;
+}
+
 function stripOuterTextQuotes(text) {
   let value = String(text || '').trim();
   const pairs = [['"', '"'], ['“', '”'], ['‘', '’']];
@@ -303,7 +375,7 @@ function candidateTextHashes(text) {
 }
 
 function finalizeResult(result = {}, sourceText = '') {
-  const cats = result.categories || {};
+  const cats = sourceText ? applyDeterministicStandards(result.categories || {}, sourceText) : (result.categories || {});
   let penalty = 0;
   let total = 0;
   const rejectedIssues = [];

@@ -29,8 +29,11 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   olarak yazılır ve `Şerif` kelimesine şapka eklenmez. `dîn...` ekli halleri `din...`
   yönünde düzeltilir; `herşey` ekli halleri ayrılmaz; `tabiî`, `derecât`, `hayy/hayydırlar`,
   `hidayet` kelimesine kaynakta olmayan ek uydurma ve kaynakta olmayan `Evet/diyor` gibi
-  içerik eklemeleri güvenlik filtresine alındı. `finalizeResult` aynı `original` bulguyu
-  kaynakta geçtiği sayıdan fazla kabul etmez. `npm.cmd run check` başarılı; 45/45 test geçti.
+  içerik eklemeleri güvenlik filtresine alındı. Kritik standartlar modele bırakılmadı:
+  `finalizeResult` model kaçırsa bile `dîn...`, `her şey...`, `vücud/vücût`, `inşallah`,
+  `Hadis-i Şerif`, `Hazreti İsa` ve sure/âyet referans boşlukları için deterministic issue
+  üretir. Aynı `original` bulguyu kaynakta geçtiği sayıdan fazla kabul etmez.
+  `npm.cmd run check` başarılı; 45/45 test geçti.
 - 2026-07-07 Codex sistem özellik dokümanı ve feedback kapatma: Kullanıcı onayıyla canlı
   DB'deki 29 açık feedback kaydı `approved-close-2026-07-07` çözüm grubuyla `resolved`
   kapatıldı; kullanıcılara yeni bildirim gönderilmedi. Sistem kapsamı, kullanıcı/admin
