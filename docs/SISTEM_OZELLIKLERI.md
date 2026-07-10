@@ -85,12 +85,20 @@ Sistemde özel arşiv kararları kod ve kural katmanında korunur.
 Önemli kararlar:
 - `dîn` yerine `din` doğru kabul edilir.
 - `her şey` yerine `herşey` doğru kabul edilir.
+- `vücud` ve `vücût` yerine `vücut` doğru kabul edilir.
+- `Hazreti İsa` ifadesine her zaman `(A.S)` eklenir.
+- `Hadîs-i Şerif` standardında `Hadîs` şapkalı, `Şerif` şapkasızdır.
 - Sure isimleri mihr.com imlâ standardına göre değerlendirilir.
 - Sure isimlerinde yalnızca büyük/küçük harf farkı tek başına hata sayılmaz.
 - Asıl kontrol şapka, apostrof ve harf dizilimidir.
 
 Korumaya alınmış örnekler:
-- `vücud`
+- `vücut`
+- `herşey`, `herşeye`, `herşeydir`
+- `hayy`, `hayydırlar`
+- `tabiî`
+- `derecât`
+- `hidayet`
 - `şerr`
 - `arif`
 - `cahiliye`
@@ -366,4 +374,3 @@ Stack:
 - Kullanıcılara bu kapatma için yeni bildirim gönderilmedi.
 - Son aktiflik takibi güçlendirildi.
 - Sistem özellikleri bu dosyada kalıcı olarak kayıt altına alındı.
-

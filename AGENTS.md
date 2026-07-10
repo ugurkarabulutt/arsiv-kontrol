@@ -114,6 +114,21 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-10
+- **13 feedback karar standardı:** Kullanıcı onayıyla 13 maddelik geri bildirim kararları
+  kod ve prompt katmanına işlendi. `vücud/vücût → vücut`, `Hazreti İsa → Hazreti İsa (A.S)`,
+  `HADİS-İ ŞERİF → HADÎS-İ ŞERİF`, `dîn... → din...`, `inşallah → inşaallah` ve âyet/sure
+  referans boşluk düzeltmeleri kabul edildi. `herşey` ekli halleri, `tabiî`, `derecât`,
+  `hayy/hayydırlar`, `hidayet` kelimesine ek uydurma, `vücut/vücuttan → vücud/vücuddan`,
+  `Şerif → Şerîf` ve kaynakta olmayan `Evet/diyor` gibi içerik eklemeleri güvenlik filtresine
+  alındı.
+- **Tekrar sayım güvenliği:** `finalizeResult` artık kaynak metindeki gerçek geçiş sayısından
+  fazla aynı `original` issue kabul etmez. Böylece kaynakta bir kez geçen `Kur'ân-ı`, `hidayet`
+  veya benzeri ifadeler model tarafından birkaç kez hata sayılırsa fazlalıklar skor ve
+  düzeltilmiş metinden düşer.
+- **Test:** `npm.cmd run check` başarılı; 45/45 test geçti. Yeni regresyon testi 13 kararın
+  kabul edilen ve reddedilen yönlerini birlikte doğrular.
+
 ### 2026-07-07
 - **Sistem özellik dokümanı ve feedback kapatma:** Kullanıcı onayıyla canlı DB'deki
   29 açık feedback kaydı `approved-close-2026-07-07` çözüm grubuyla `resolved` kapatıldı;

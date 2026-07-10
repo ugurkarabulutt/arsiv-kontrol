@@ -14,7 +14,7 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   din: 'din',
   dinde: 'dinde',
   hersey: 'herşey',
-  vucud: 'vücud',
+  vucut: 'vücut',
   serr: 'şerr',
   arif: 'arif',
   cahiliye: 'cahiliye',
@@ -42,9 +42,12 @@ const SURA_NAMES = [
 const SURA_NAME_KEYS = new Set(SURA_NAMES.map(suraCaseKey));
 const FORBIDDEN_TRANSFORMS = [
   { from: /\bdin\b/iu, to: /\bdîn\b/iu },
-  { from: /\bdin(?:de|den|e|i|in)?\b/iu, to: /\bdîn(?:de|den|e|i|in)?\b/iu },
-  { from: /\bherşey\b/iu, to: /\bher\s+şey\b/iu },
-  { from: /\bvücud\b/iu, to: /\bvüc[ûu]t\b/iu },
+  { from: /(?<![\p{L}\p{N}_])din[\p{L}\p{N}_]*/iu, to: /(?<![\p{L}\p{N}_])dîn[\p{L}\p{N}_]*/iu },
+  { from: /\bherşey[\p{L}\p{N}_]*/iu, to: /\bher\s+şey[\p{L}\p{N}_]*/iu },
+  { from: /\bvücut[\p{L}\p{N}_]*/iu, to: /\bvüc(?:ud|ûd|ût)[\p{L}\p{N}_]*/iu },
+  { from: /\bvücud[\p{L}\p{N}_]*/iu, to: /\bvüc(?:ûd|ût)[\p{L}\p{N}_]*/iu },
+  { from: /\bhayy[\p{L}\p{N}_]*/iu, to: /\bhayat[\p{L}\p{N}_]*/iu },
+  { from: /\bşerif\b/iu, to: /\bşerîf\b/iu },
   { from: /(?<![\p{L}\p{N}_])şerr(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])şer(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])arif(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])ârif(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])cahiliye(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])câhiliye(?![\p{L}\p{N}_])/iu },
@@ -66,6 +69,7 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\bzumer\b/iu, to: /\bzümer\b/iu },
   { from: /\btabiî\s+ki\b/iu, to: /\btâbî\s+ki\b/iu },
   { from: /\bderecat[\p{L}\p{N}_]*/iu, to: /\bderece[\p{L}\p{N}_]*/iu },
+  { from: /\bderecât[\p{L}\p{N}_]*/iu, to: /\bderece[\p{L}\p{N}_]*/iu },
   { from: /\bdinlenmeye\b/iu, to: /\bdînlenmeye\b/iu },
   { from: /\bmuhterem\s+efendimiz\b/iu, to: /\befendimiz\s*\(s\.a\.v\)/iu },
   { from: /\ballah(?:'|’)?ın\s+izniyle\.\s+allah\s+razı\s+olsun\.?/iu, to: /\ballah(?:'|’)?ın\s+izniyle,\s+allah\s+razı\s+olsun\.?/iu },
@@ -130,6 +134,7 @@ function isCaseOnlyChange(original, fixed) {
 function isSourceDiacriticProtected(original, fixed) {
   const from = canonicalText(original);
   const to = canonicalText(fixed);
+  if (/^dîn[\p{L}\p{N}_]*$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return false;
   if (/^dîn(?:in|i|e|den|de)?$/iu.test(from) && /^din(?:in|i|e|den|de)?$/iu.test(to)) return false;
   return !!from && !!to && from !== to && hasCircumflex(from) && foldText(from) === foldText(to);
 }
@@ -141,6 +146,50 @@ function isSuspiciousTruncation(original, fixed) {
   if (!foldText(from).startsWith(foldText(to))) return false;
   const dropped = from.slice(to.length);
   return /[\s'’-]/u.test(dropped) || dropped.length > 1;
+}
+
+function isAllowedContentAddition(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  return foldText(from) === 'hazreti isa' && /^hazreti\s+isa\s*\(a\.s\.?\)$/iu.test(foldText(to));
+}
+
+function isSuspiciousContentAddition(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!from || !to || from === to || !to.includes(from)) return false;
+  if (isAllowedContentAddition(original, fixed)) return false;
+
+  const extra = to.replace(from, ' ').trim();
+  if (!extra) return false;
+  return /[\p{L}]{2,}/u.test(extra);
+}
+
+function isSuspiciousWordExpansion(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!from || !to || from.length < 4 || from === to) return false;
+  if (isAllowedContentAddition(original, fixed)) return false;
+  if (!foldText(to).startsWith(foldText(from))) return false;
+
+  const extra = to.slice(from.length);
+  return /^[\p{L}\p{N}_]+$/u.test(extra);
+}
+
+function isDecisionProtectedTransform(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  const foldedFrom = foldText(original);
+  const foldedTo = foldText(fixed);
+
+  if (foldedFrom.startsWith('hersey') && foldedTo.startsWith('her sey')) return true;
+  if (foldedFrom.startsWith('vucut') && foldedTo.startsWith('vucud')) return true;
+  if (foldedFrom.startsWith('vucud') && (foldedTo.startsWith('vucut') || foldedTo.startsWith('vucut'))) return false;
+  if (foldedFrom === 'tabii' && foldedTo === 'tabi') return true;
+  if (foldedFrom.startsWith('hayy') && foldedTo.startsWith('hayat')) return true;
+  if (foldedFrom === 'hidayet' && foldedTo.startsWith('hidayet') && foldedTo !== 'hidayet') return true;
+  if (from.includes('şerif') && to.includes('şerîf')) return true;
+  return false;
 }
 
 function escapeRegExp(text) {
@@ -160,6 +209,17 @@ function sourceContainsIssue(sourceText, original) {
   const right = needsWordBoundary(needle[needle.length - 1]) ? '(?![\\p{L}\\p{N}_])' : '';
   const re = new RegExp(`${left}${escapeRegExp(needle)}${right}`, 'iu');
   return re.test(source);
+}
+
+function sourceIssueOccurrenceCount(sourceText, original) {
+  const source = canonicalText(sourceText);
+  const needle = canonicalText(original);
+  if (!needle) return 0;
+
+  const left = needsWordBoundary(needle[0]) ? '(?<![\\p{L}\\p{N}_])' : '';
+  const right = needsWordBoundary(needle[needle.length - 1]) ? '(?![\\p{L}\\p{N}_])' : '';
+  const re = new RegExp(`${left}${escapeRegExp(needle)}${right}`, 'giu');
+  return [...source.matchAll(re)].length;
 }
 
 function equivalentIssue(original, fixed) {
@@ -185,6 +245,9 @@ function isProtectedChange(original, fixed) {
   if (isSuraCaseOnlyChange(original, fixed)) return true;
   if (isSourceDiacriticProtected(original, fixed)) return true;
   if (isSuspiciousTruncation(original, fixed)) return true;
+  if (isSuspiciousContentAddition(original, fixed)) return true;
+  if (isSuspiciousWordExpansion(original, fixed)) return true;
+  if (isDecisionProtectedTransform(original, fixed)) return true;
   if (PROTECTED_PATTERNS.some(pattern => pattern.test(from))) return true;
   return FORBIDDEN_TRANSFORMS.some(pair => pair.from.test(from) && pair.to.test(to));
 }
@@ -245,18 +308,26 @@ function finalizeResult(result = {}, sourceText = '') {
   let total = 0;
   const rejectedIssues = [];
   const acceptedIssues = [];
+  const acceptedIssueUses = new Map();
 
   for (const [key, weight] of Object.entries(CAT_WEIGHTS)) {
     const category = cats[key] || {};
     let issues = Array.isArray(category.issues) ? category.issues : [];
     if (sourceText) {
       issues = issues.filter(issue => {
+        const originalKey = canonicalText(issue?.original || '');
+        const maxOccurrences = sourceIssueOccurrenceCount(sourceText, issue?.original || '');
+        const usedOccurrences = acceptedIssueUses.get(originalKey) || 0;
         const keep = issue
           && !equivalentIssue(issue.original, issue.fixed)
-          && sourceContainsIssue(sourceText, issue.original)
+          && maxOccurrences > 0
+          && usedOccurrences < maxOccurrences
           && !isProtectedChange(issue.original, issue.fixed);
         if (!keep && issue) rejectedIssues.push(issue);
-        if (keep) acceptedIssues.push(issue);
+        if (keep) {
+          acceptedIssueUses.set(originalKey, usedOccurrences + 1);
+          acceptedIssues.push(issue);
+        }
         return keep;
       });
     }

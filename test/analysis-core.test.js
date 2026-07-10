@@ -186,10 +186,15 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange("Mu'min", "Mu'minûn"), true);
   assert.equal(isProtectedChange("A'raf", "A'RÂF"), true);
   assert.equal(isProtectedChange('Nur', 'NÛR'), true);
+  assert.equal(isProtectedChange('vücut', 'vücud'), true);
+  assert.equal(isProtectedChange('vücuttan', 'vücuddan'), true);
+  assert.equal(isProtectedChange('hayydırlar', 'hayattadırlar'), true);
+  assert.equal(isProtectedChange('hidayet', 'hidayete'), true);
+  assert.equal(isProtectedChange('HADİS-İ ŞERİF', 'HADÎS-İ ŞERÎF'), true);
 });
 
 test('canli feedback standart kelimeleri kayitli tutulur', () => {
-  assert.equal(CANONICAL_WORD_STANDARDS.vucud, 'vücud');
+  assert.equal(CANONICAL_WORD_STANDARDS.vucut, 'vücut');
   assert.equal(CANONICAL_WORD_STANDARDS.serr, 'şerr');
   assert.equal(CANONICAL_WORD_STANDARDS.arif, 'arif');
   assert.equal(CANONICAL_WORD_STANDARDS.cahiliye, 'cahiliye');
@@ -211,4 +216,74 @@ test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alin
 
   assert.equal(result.totalErrors, 1);
   assert.equal(result.correctedText, 'Başlık\n\nGelelim fizik beden ve nefs konusuna.\nTablo: A | B');
+});
+
+test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {
+  const source = [
+    '1 .ENFÂL-29 ve 1 .YÛNUS -7',
+    'dînde dînimizin dînsiz inşallah Hazreti İsa',
+    'HADİS-İ ŞERİF herşeydir vücud vücut vücuttan',
+    'daimi daimî daimî',
+    'tabiî derecât hayydırlar hidayet',
+    "KUR'ÂN başlığı korunur",
+    'İşte 7 tane âyet-i kerimede her devirde devrin imamı var mı?'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: '1 .ENFÂL-29', fixed: '1. ENFÂL-29', rule: 'Referans düzeni' },
+          { original: '1 .YÛNUS -7', fixed: '1. YÛNUS-7', rule: 'Referans düzeni' },
+          { original: 'dînde', fixed: 'dinde', rule: 'Din standardı' },
+          { original: 'dînimizin', fixed: 'dinimizin', rule: 'Din standardı' },
+          { original: 'dînsiz', fixed: 'dinsiz', rule: 'Din standardı' },
+          { original: 'inşallah', fixed: 'inşaallah', rule: 'İmlâ standardı' },
+          { original: 'Hazreti İsa', fixed: 'Hazreti İsa (A.S)', rule: 'Nebî isimleri' },
+          { original: 'HADİS-İ ŞERİF', fixed: 'HADÎS-İ ŞERİF', rule: 'Hadîs standardı' },
+          { original: 'vücud', fixed: 'vücut', rule: 'Sözlük standardı' },
+          { original: 'daimi', fixed: 'daimî', rule: 'İmlâ standardı' },
+          { original: 'daimi', fixed: 'daimî', rule: 'Tekrar sayılmamalı' },
+          { original: 'tabiî', fixed: 'tabi', rule: 'Yanlış sadeleştirme' },
+          { original: 'derecât', fixed: 'derece', rule: 'Yanlış sadeleştirme' },
+          { original: "KUR'ÂN", fixed: "Kur'ân", rule: 'Case only' },
+          { original: 'herşeydir', fixed: 'her şeydir', rule: 'Yanlış ayırma' },
+          { original: 'vücut', fixed: 'vücud', rule: 'Yanlış yön' },
+          { original: 'vücuttan', fixed: 'vücuddan', rule: 'Yanlış yön' },
+          { original: 'hayydırlar', fixed: 'hayattadırlar', rule: 'Yanlış sadeleştirme' },
+          { original: 'hidayet', fixed: 'hidayete', rule: 'Kaynakta olmayan ek' },
+          { original: 'HADİS-İ ŞERİF', fixed: 'HADÎS-İ ŞERÎF', rule: 'Şerif yanlış şapka' },
+          {
+            original: 'İşte 7 tane âyet-i kerimede her devirde devrin imamı var mı?',
+            fixed: 'İşte 7 tane âyet-i kerimede her devirde devrin imamı var mı? Evet.',
+            rule: 'Kaynakta olmayan cevap'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.categories.imla.issues.map(i => i.original).join('|'), [
+    '1 .ENFÂL-29',
+    '1 .YÛNUS -7',
+    'dînde',
+    'dînimizin',
+    'dînsiz',
+    'inşallah',
+    'Hazreti İsa',
+    'HADİS-İ ŞERİF',
+    'vücud',
+    'daimi'
+  ].join('|'));
+  assert.equal(result.totalErrors, 10);
+  assert.equal(result.correctedText, [
+    '1. ENFÂL-29 ve 1. YÛNUS-7',
+    'dinde dinimizin dinsiz inşaallah Hazreti İsa (A.S)',
+    'HADÎS-İ ŞERİF herşeydir vücut vücut vücuttan',
+    'daimî daimî daimî',
+    'tabiî derecât hayydırlar hidayet',
+    "KUR'ÂN başlığı korunur",
+    'İşte 7 tane âyet-i kerimede her devirde devrin imamı var mı?'
+  ].join('\n'));
 });

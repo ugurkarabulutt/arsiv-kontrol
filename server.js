@@ -205,7 +205,7 @@ resûl (küçük harf, özel isim değilse)
 nebî
 din (dîn değil; Efendimizin sözlüğünde bu kelime bundan sonra şapkasız yazılır)
 dinde (dînde değil)
-vücud (vücût değil)
+vücut (vücud/vücût değil)
 şerr (şer değil)
 arif (ârif değil)
 cahiliye (câhiliye değil)
@@ -276,6 +276,7 @@ Sahabe → sahâbe
 İnşallah → inşaallah
 Sallallahu aleyhi vesellem → (S.A.V)
 hadis → hadîs
+Hadis-i Şerif / HADİS-İ ŞERİF → Hadîs-i Şerif / HADÎS-İ ŞERİF (Şerif kelimesindeki i şapkasızdır)
 Radıyallahu anh → (R.A)
 Aleyhisselam → (A.S)
 ulül elbab / ululelbab / ulul elbab → ulûl'elbab
@@ -288,7 +289,10 @@ Resûlallah → Resûlullah
 KORUNACAK BAĞLAMLAR:
 - Kaynakta şapkalı doğru yazılmış kelimeleri şapkasızlaştırma: manevî, itikâf, daimî, âyet, Allahû Tealâ.
 - "dîn" ailesi güncel karar gereği istisnadır; dîn/dînin/dîni yerine din/dinin/dini kullanılır.
-- "vücud", "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
+- "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
+- "herşey" ailesi birleşik kalır: herşey, herşeye, herşeydir gibi ekli biçimleri "her şey..." diye ayırma.
+- "hayy" kökünden gelen ifadeleri "hayat/hayatta" diye sadeleştirme; hayydırlar gibi kullanımları koru.
+- "Hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme.
 - "nefsi", "nefsin" ve "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" kullanımlarını eklerinden koparma.
 - "A.S" ve "S.A.V" kısaltmalarını bağlamdan emin olmadan birbirine çevirme.
 - Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelime silinmez.
@@ -302,6 +306,7 @@ KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
 - Muhterem Efendimiz, Hocamız, Efendimiz ifadesi Peygamber Efendimiz'i açıkça kastetmiyorsa
   (S.A.V) ekleme.
 - Tüm nebî isimlerinde mutlaka (A.S) ekle: Musa (A.S), Nuh (A.S), İsa (A.S)
+- "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.
 - Mehdi (A.S) — mutlaka (A.S) ekle
 
 ════════════════════════════════════════
@@ -2022,9 +2027,14 @@ async function buildSystemPrompt(rulesText) {
 
 GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
-- "dinde" doğru yazımdır; "dinde" kelimesini "dînde" olarak düzeltme.
-- "herşey" doğru yazımdır; "herşey" kelimesini "her şey" olarak ayırma. Metinde "her şey" varsa "herşey" olarak düzelt.
-- "vücud", "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "vücût", "şer", "ârif" veya "câhiliye" biçimine çevirme.
+- "din" ailesi şapkasızdır: din, dinde, dinimizin, dinsiz gibi kullanımları dîn/dînde/dînimizin/dînsiz yapma.
+- "herşey" doğru yazımdır; ekli biçimleri de birleşik kalır: herşey, herşeye, herşeydir. Metinde "her şey" varsa "herşey" olarak düzelt.
+- "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "vücut/vücuttan" gibi doğru kullanımları "vücud/vücuddan" yapma.
+- "Hadîs-i Şerif" standardında Hadîs kelimesinde î vardır, Şerif kelimesindeki i şapkasızdır. "HADİS-İ ŞERİF" varsa "HADÎS-İ ŞERİF" yap; "ŞERÎF" yapma.
+- "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.
+- "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "şer", "ârif" veya "câhiliye" biçimine çevirme.
+- "hayy/hayydırlar" gibi kullanımları "hayat/hayattadırlar" diye sadeleştirme.
+- "hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme.
 - "hadis no." gibi kaynak/numara ifadelerinde "hadis" kelimesini "hadîs" yapma.
 - Bu kararlar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
 
@@ -2057,7 +2067,7 @@ NASIL ÇALIŞACAKSIN:
    düzeltilmiş metinde de korunmalıdır.
 14. Kelime içinden parça yakalayıp düzeltme yapma. "Muminun/Mu'minûn Suresi" içindeki "Mumin/Mu'min" parçasını
    "mü'min" kelimesi sanma.
-15. "Tabiî ki" ifadesi "tâbî" değildir; bu ifadeyi tâbî olarak düzeltme. "derecat" kelimesini otomatik olarak
+15. "Tabiî ki" ve tek başına "tabiî" ifadelerini "tâbî" veya "tabi" yapma. "derecat/derecât" kelimelerini otomatik olarak
    "derece" yapma. "dinlenmeye" kelimesini "dînlenmeye" yapma.
 16. "Muhterem Efendimiz" bağlamında geçen Efendimiz'e "(S.A.V)" ekleme; bunu yalnızca açıkça Peygamber Efendimiz
    kastedildiğinde ve kaynak kural gerektiriyorsa uygula.
@@ -2078,6 +2088,8 @@ NASIL ÇALIŞACAKSIN:
 24. "ve vechini" gibi tekrar sanılan dinî/alıntı ifadelerde kelime silme; "ve" bağlacını emin olmadan kaldırma.
 25. NEFSİ EMMÂRE gibi başlıklara kaynakta yoksa iki nokta ekleme.
 26. Hadis kaynak numarası, sure adı ve âyet atfı bağlamlarını sözlük kelimesi gibi zorla dönüştürme; Mu'min suresi Mu'minûn değildir, Nur suresi Nûr diye zorlanmaz.
+27. Sure/âyet referanslarında sayı-nokta düzenini koru ve sadece boşluğu düzelt: "1 .ENFÂL-29" → "1. ENFÂL-29", "1 .YÛNUS -7" → "1. YÛNUS-7".
+28. Kaynakta olmayan cevap, açıklama veya konuşma fiili ekleme. "Evet", "diyor" gibi kelimeler kaynakta zaten yoksa düzeltilmiş metne eklenmez; kaynakta varsa ikinci kez yazılmaz.
 
 BULGULARIN EKSIKSIZ OLMASI (ZORUNLU):
 - Her yaptığın düzeltmeyi MUTLAKA ilgili kategorinin issues listesine ekle.
