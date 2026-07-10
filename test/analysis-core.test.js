@@ -346,3 +346,49 @@ test('deterministik eksik uygulamalar ve ozet gercek kategorilerden uretilir', (
   );
   assert.equal(result.summary, 'Metinde iml\u00e2 hatalar\u0131 bulunmaktad\u0131r. D\u00fczeltmeler uygulanm\u0131\u015ft\u0131r.');
 });
+
+test('vucut ve kaadir ekli kullanim standartlari dogru uygulanir', () => {
+  const source = 'v\u00fccud v\u00fccudunu kadirdir';
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'v\u00fccudunu', fixed: 'v\u00fccutunu', rule: 'Yanlis ekli vucut' },
+          { original: 'kadirdir', fixed: 'k\u00e2dirdir', rule: 'Yanlis sapka' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.correctedText, 'v\u00fccut v\u00fccudunu kaadirdir');
+  assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ['v\u00fccud', 'v\u00fccut'],
+    ['kadirdir', 'kaadirdir']
+  ]);
+});
+
+test('kalan acik feedback noktalama vakalari guvenli ele alinir', () => {
+  const source = "5 dakika 10 dakikal\u0131k bekledi. Efendimiz (S.A.V)'dir ve \u0130rade eksikli\u011fi; irade burada zay\u0131f.";
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      noktalama: {
+        issues: [
+          { original: '5 dakika 10 dakikal\u0131k', fixed: '5 dakika, 10 dakikal\u0131k', rule: 'Virg\u00fcl' },
+          { original: "Efendimiz (S.A.V)'dir", fixed: "Efendimiz (S.A.V)'dir.", rule: 'Nokta' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(
+    result.correctedText,
+    "5 dakika 10 dakikal\u0131k bekledi. Efendimiz (S.A.V)'dir ve \u0130rade eksikli\u011fi: \u0130rade burada zay\u0131f."
+  );
+  assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ['\u0130rade eksikli\u011fi; irade', '\u0130rade eksikli\u011fi: \u0130rade']
+  ]);
+});

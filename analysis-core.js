@@ -201,13 +201,17 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom.startsWith('tirmizi') && /tirmizi\s*,/iu.test(foldedTo)) return true;
   if (foldedFrom.startsWith('es safi') && /^es-safi/iu.test(foldedTo)) return true;
   if (foldedFrom === 'mumin' && (foldedTo === 'mu min' || /^m[üu]'?min$/iu.test(to))) return true;
+  if (/^5\s+dakika\s+10\s+dakikal[ıi]k/iu.test(from) && /^5\s+dakika,\s+10\s+dakikal[ıi]k/iu.test(to)) return true;
+  if (/efendimiz\s*\(s\.a\.v\)'dir$/iu.test(from) && /efendimiz\s*\(s\.a\.v\)'dir\.$/iu.test(to)) return true;
   if (/^la$/iu.test(foldedFrom) && foldedTo.includes('olmuyor')) return true;
   if ((foldedFrom.includes('sinifta -biz') || foldedFrom.includes('s\u0131n\u0131fta -biz'))
     && (/[\u2013\u2014]|--/.test(to) || foldedTo.includes('sinifta biz') || foldedTo.includes('s\u0131n\u0131fta biz'))) return true;
   if (foldedFrom === 'nebi' && foldedTo === 'nebi' && canonicalText(original)[0] !== canonicalText(fixed)[0]) return true;
   if (foldedFrom.startsWith('hersey') && foldedTo.startsWith('her sey')) return true;
   if (foldedFrom.startsWith('vucut') && foldedTo.startsWith('vucud')) return true;
-  if (foldedFrom.startsWith('vucud') && (foldedTo.startsWith('vucut') || foldedTo.startsWith('vucut'))) return false;
+  if (foldedFrom.startsWith('vucud') && foldedTo.startsWith('vucut') && foldedFrom !== 'vucud') return true;
+  if (foldedFrom === 'vucud' && foldedTo === 'vucut') return false;
+  if (foldedFrom.startsWith('kadir') && foldedTo.startsWith('kadir') && hasCircumflex(fixed)) return true;
   if (foldedFrom === 'tabii' && foldedTo === 'tabi') return true;
   if (foldedFrom.startsWith('hayy') && foldedTo.startsWith('hayat')) return true;
   if (foldedFrom === 'hidayet' && foldedTo.startsWith('hidayet') && foldedTo !== 'hidayet') return true;
@@ -326,10 +330,11 @@ function deterministicFixed(original) {
   if (/^her\s+şey[\p{L}\p{N}_]*$/iu.test(text)) {
     return caseLike(original, text.replace(/^her\s+şey/iu, 'herşey'));
   }
-  if (/^vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*$/iu.test(text)) {
-    let fixed = text.replace(/^vüc(?:ud|ûd|ût)/iu, 'vücut');
-    fixed = fixed.replace(/^vücutd/iu, 'vücutt');
-    return caseLike(original, fixed);
+  if (/^v\u00fcc(?:ud|\u00fbd|\u00fbt)$/iu.test(text)) {
+    return caseLike(original, 'v\u00fccut');
+  }
+  if (/^kadir[\p{L}\p{N}_]*$/iu.test(text)) {
+    return caseLike(original, text.replace(/^kadir/iu, 'kaadir'));
   }
   if (/^hadis-i\s+şerif$/iu.test(text)) return caseLike(original, 'Hadîs-i Şerif');
   return '';
@@ -363,6 +368,12 @@ function applyDeterministicStandards(cats, sourceText) {
     addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin arşiv standardı');
   }
 
+  const kadirRe = /(?<![\p{L}\p{N}_])kadir[\p{L}\p{N}_]*(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(kadirRe)) {
+    const original = match[0];
+    addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin ar\u015fiv standard\u0131');
+  }
+
   const hazretiIsaRe = /(?<![\p{L}\p{N}_])Hazreti\s+İsa(?!\s*\(A\.S\.?\))(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(hazretiIsaRe)) {
     addDeterministicIssue(cats, seen, match[0], `${match[0]} (A.S)`, 'Nebî isimleri standardı');
@@ -386,6 +397,18 @@ function applyDeterministicStandards(cats, sourceText) {
   const fullSentenceSpaceRe = /(?<![\p{L}\p{N}_])([\p{L}\p{N}_]+[\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db][\p{L}\p{N}_]*)(?![\p{L}\p{N}_])/gu;
   for (const match of text.matchAll(fullSentenceSpaceRe)) {
     addDeterministicIssue(cats, seen, match[0], `${match[1]} ${match[2]}`, 'C\u00fcmle aras\u0131 bo\u015fluk');
+  }
+
+  const iradeLabelRe = /(?<![\p{L}\p{N}_])(\u0130rade eksikli\u011fi);\s+([a-z\u00e7\u011f\u0131i\u00f6\u015f\u00fc][\p{L}\p{N}_]*)(?![\p{L}\p{N}_])/gu;
+  for (const match of text.matchAll(iradeLabelRe)) {
+    const word = match[2][0].toLocaleUpperCase('tr-TR') + match[2].slice(1);
+    addDeterministicIssue(
+      cats,
+      seen,
+      match[0],
+      `${match[1]}: ${word}`,
+      'Ba\u015fl\u0131k sonras\u0131 b\u00fcy\u00fck harf'
+    );
   }
 
   return cats;
