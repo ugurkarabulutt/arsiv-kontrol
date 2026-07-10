@@ -374,3 +374,21 @@ Stack:
 - Kullanıcılara bu kapatma için yeni bildirim gönderilmedi.
 - Son aktiflik takibi güçlendirildi.
 - Sistem özellikleri bu dosyada kalıcı olarak kayıt altına alındı.
+
+## 23. 2026-07-10 Ek Feedback Kalite Turu
+
+- Yeni acik feedbacklerden gelen net yanlis-pozitif donusumler backend korumasina alindi:
+  `var ama -> var, ama`, cift tirnak cogaltma, `dilemeyenler -> dileyemeyenler`,
+  `aheze -> ahize`, `zekat` sapkalama, `oluyken -> olu iken`, `amenustecibu`
+  bosluk ekleme, `heryeri -> herseyi`, `peygamber -> nebi`, `7 safha 4 teslimi`
+  virgulleme, `helalinden/maddi/ahirette` sapkalama, `Allah -> Allahu Teala`
+  genisletme, `sergilerse -> sergilesin`, `artisi -> artisini`,
+  `Tirmizi -> Tirmizi,`, `Es Safi -> Es-Safi`, kaynakta olmayan kelime ekleme,
+  uzun cizgi donusumu ve `Nebi -> nebi` case kaybi.
+- Model ozetleri artik kabul edilen gercek kategori sayimindan uretilir; altta sorun
+  olmayan kategori ozet metninde hata varmis gibi yazilmaz.
+- `...lazim` bitisik yazimlari ve cumle sonu bosluk eksikleri deterministic olarak
+  uygulanir; `S.A.V` gibi kisaltmalar bu bosluk kuralina takilmaz.
+- Super admin geri bildirim ekraninda olumlu/tesekkur icerikleri ayri filtreye alindi.
+- Sol panelde geri bildirimle ilgili ekranlar `Geri Bildirim` basligi altinda toplandi.
+- Dogrulama: `npm.cmd run check` basarili; 47/47 test gecti.

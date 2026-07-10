@@ -287,3 +287,62 @@ test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {
     'İşte 7 tane âyet-i kerimede her devirde devrin imamı var mı?'
   ].join('\n'));
 });
+
+test('yeni acik feedbacklerde net yanlis pozitifler skor disi kalir', () => {
+  const source = [
+    'Allah\u2019\u0131n yaratt\u0131\u011f\u0131 sistemde hikmet var ama insan acele eder.',
+    'dilemeyenler Aheze etme zekat \u00f6l\u00fcyken \u00e2men\u00fbstec\u00eeb\u00fb heryeri peygamber',
+    '7 safha 4 teslimi helalinden maddi Allah\u2019\u0131n Allah kat\u0131nda',
+    'sergilerse art\u0131\u015f\u0131 ahirette Tirmizi E\u015f \u015eafi la s\u0131n\u0131fta -biz Nebi',
+    'Metin i\u00e7inde "al\u0131nt\u0131" vard\u0131r.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'var ama', fixed: 'var, ama', rule: 'Virg\u00fcl' },
+          { original: 'dilemeyenler', fixed: 'dileyemeyenler', rule: 'Anlam de\u011fi\u015fikli\u011fi' },
+          { original: 'Aheze', fixed: 'Ahize', rule: 'Yanl\u0131\u015f s\u00f6zl\u00fck' },
+          { original: 'zekat', fixed: 'zek\u00e2t', rule: '\u015eapka' },
+          { original: '\u00f6l\u00fcyken', fixed: '\u00f6l\u00fc iken', rule: 'Ayr\u0131 yaz\u0131m' },
+          { original: '\u00e2men\u00fbstec\u00eeb\u00fb', fixed: '\u00e2men\u00fb stec\u00eeb\u00fb', rule: 'Bo\u015fluk' },
+          { original: 'heryeri', fixed: 'her\u015feyi', rule: 'Yanl\u0131\u015f kelime' },
+          { original: 'peygamber', fixed: 'neb\u00ee', rule: 'E\u015f anlaml\u0131 d\u00f6n\u00fc\u015f\u00fcm' },
+          { original: '7 safha 4 teslimi', fixed: '7 safha, 4 teslimi', rule: 'Virg\u00fcl' },
+          { original: 'helalinden', fixed: 'hel\u00e2linden', rule: '\u015eapka' },
+          { original: 'maddi', fixed: 'madd\u00ee', rule: '\u015eapka' },
+          { original: 'Allah\u2019\u0131n', fixed: 'Allah\u00fb Teal\u00e2\u2019n\u0131n', rule: 'Eklenen unvan' },
+          { original: 'Allah kat\u0131nda', fixed: 'Allah\u00fb Teal\u00e2 kat\u0131nda', rule: 'Eklenen unvan' },
+          { original: 'sergilerse', fixed: 'sergilesin', rule: 'Kip de\u011fi\u015fikli\u011fi' },
+          { original: 'art\u0131\u015f\u0131', fixed: 'art\u0131\u015f\u0131n\u0131', rule: 'Ek de\u011fi\u015fikli\u011fi' },
+          { original: 'ahirette', fixed: '\u00e2hirette', rule: '\u015eapka' },
+          { original: 'Tirmizi', fixed: 'Tirmizi,', rule: 'Virg\u00fcl' },
+          { original: 'E\u015f \u015eafi', fixed: 'E\u015f-\u015eafi', rule: 'Tire' },
+          { original: 'Mumin', fixed: "M\u00fc'min", rule: 'Sure adini kelimeye indirme' },
+          { original: 'la', fixed: 'la olmuyor.', rule: 'Kaynakta olmayan ek' },
+          { original: 's\u0131n\u0131fta -biz', fixed: 's\u0131n\u0131fta \u2014biz', rule: 'Uzun \u00e7izgi' },
+          { original: 'Nebi', fixed: 'neb\u00ee', rule: 'B\u00fcy\u00fck harf kayb\u0131' },
+          { original: '"al\u0131nt\u0131"', fixed: '""al\u0131nt\u0131""', rule: 'T\u0131rnak \u00e7o\u011faltma' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('deterministik eksik uygulamalar ve ozet gercek kategorilerden uretilir', () => {
+  const source = 'etmesil\u00e2z\u0131m uzakla\u015fman\u0131zl\u00e2z\u0131m dinleyeceksin.Pazar d\u00eenleyip';
+  const result = finalizeResult({ correctedText: '', categories: {} }, source);
+
+  assert.equal(result.totalErrors, 4);
+  assert.equal(
+    result.correctedText,
+    'etmesi l\u00e2z\u0131m uzakla\u015fman\u0131z l\u00e2z\u0131m dinleyeceksin. Pazar dinleyip'
+  );
+  assert.equal(result.summary, 'Metinde iml\u00e2 hatalar\u0131 bulunmaktad\u0131r. D\u00fczeltmeler uygulanm\u0131\u015ft\u0131r.');
+});

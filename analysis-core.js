@@ -182,6 +182,29 @@ function isDecisionProtectedTransform(original, fixed) {
   const foldedFrom = foldText(original);
   const foldedTo = foldText(fixed);
 
+  if (foldedFrom.includes(' ama') && /,\s+ama\b/iu.test(to)) return true;
+  if (/^"+/.test(canonicalText(fixed)) || /"+$/.test(canonicalText(fixed))) return true;
+  if (foldedFrom.startsWith('dilemeyen') && foldedTo.startsWith('dileyemeyen')) return true;
+  if (foldedFrom.startsWith('aheze') && foldedTo.startsWith('ahize')) return true;
+  if (foldedFrom.startsWith('zekat') && foldedTo.startsWith('zekat') && hasCircumflex(fixed)) return true;
+  if (foldedFrom.startsWith('oluyken') && foldedTo.startsWith('olu iken')) return true;
+  if (foldedFrom.startsWith('amenustecibu') && foldedTo.startsWith('amenu stecibu')) return true;
+  if (foldedFrom.startsWith('heryeri') && foldedTo.startsWith('herseyi')) return true;
+  if (foldedFrom === 'peygamber' && foldedTo === 'nebi') return true;
+  if (/^7\s+safha\s+4\s+teslim/i.test(from) && /^7\s+safha,\s+4\s+teslim/i.test(to)) return true;
+  if (foldedFrom.startsWith('helal') && foldedTo.startsWith('helal') && hasCircumflex(fixed)) return true;
+  if (foldedFrom.startsWith('maddi') && foldedTo.startsWith('maddi') && hasCircumflex(fixed)) return true;
+  if (foldedFrom.startsWith('allah') && foldedTo.startsWith('allahu teala')) return true;
+  if (foldedFrom.startsWith('sergilerse') && foldedTo.startsWith('sergilesin')) return true;
+  if (foldedFrom.startsWith('artisi') && foldedTo.startsWith('artisini')) return true;
+  if (foldedFrom.startsWith('ahiret') && foldedTo.startsWith('ahiret') && hasCircumflex(fixed)) return true;
+  if (foldedFrom.startsWith('tirmizi') && /tirmizi\s*,/iu.test(foldedTo)) return true;
+  if (foldedFrom.startsWith('es safi') && /^es-safi/iu.test(foldedTo)) return true;
+  if (foldedFrom === 'mumin' && (foldedTo === 'mu min' || /^m[üu]'?min$/iu.test(to))) return true;
+  if (/^la$/iu.test(foldedFrom) && foldedTo.includes('olmuyor')) return true;
+  if ((foldedFrom.includes('sinifta -biz') || foldedFrom.includes('s\u0131n\u0131fta -biz'))
+    && (/[\u2013\u2014]|--/.test(to) || foldedTo.includes('sinifta biz') || foldedTo.includes('s\u0131n\u0131fta biz'))) return true;
+  if (foldedFrom === 'nebi' && foldedTo === 'nebi' && canonicalText(original)[0] !== canonicalText(fixed)[0]) return true;
   if (foldedFrom.startsWith('hersey') && foldedTo.startsWith('her sey')) return true;
   if (foldedFrom.startsWith('vucut') && foldedTo.startsWith('vucud')) return true;
   if (foldedFrom.startsWith('vucud') && (foldedTo.startsWith('vucut') || foldedTo.startsWith('vucut'))) return false;
@@ -190,6 +213,25 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom === 'hidayet' && foldedTo.startsWith('hidayet') && foldedTo !== 'hidayet') return true;
   if (from.includes('şerif') && to.includes('şerîf')) return true;
   return false;
+}
+
+function buildResultSummary(cats, total) {
+  if (!total) return 'Metinde arşiv standardına göre hata bulunmadı.';
+  const labels = {
+    sozluk: 'sözlük',
+    imla: 'imlâ',
+    noktalama: 'noktalama',
+    etiket: 'etiket',
+    yapi: 'yapı'
+  };
+  const active = Object.entries(cats || {})
+    .filter(([, category]) => (category?.count || 0) > 0)
+    .map(([key]) => labels[key])
+    .filter(Boolean);
+  const list = active.length <= 1
+    ? (active[0] || 'denetim')
+    : `${active.slice(0, -1).join(', ')} ve ${active[active.length - 1]}`;
+  return `Metinde ${list} hataları bulunmaktadır. Düzeltmeler uygulanmıştır.`;
 }
 
 function escapeRegExp(text) {
@@ -295,6 +337,7 @@ function deterministicFixed(original) {
 
 function addDeterministicIssue(cats, seen, original, fixed, rule) {
   if (!original || !fixed || original === fixed) return;
+  if (/^[A-Z]\.[A-Z]$/i.test(String(original)) && /^[A-Z]\.\s+[A-Z]$/i.test(String(fixed))) return;
   const key = `${canonicalText(original)}=>${canonicalText(fixed)}`;
   if (seen.has(key)) return;
   seen.add(key);
@@ -328,6 +371,21 @@ function applyDeterministicStandards(cats, sourceText) {
   const referenceRe = /(?<![\p{L}\p{N}_])(\d+)\s+\.\s*([A-ZÇĞİÖŞÜÂÎÛ'’]+)\s*-\s*(\d+)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(referenceRe)) {
     addDeterministicIssue(cats, seen, match[0], `${match[1]}. ${match[2]}-${match[3]}`, 'Sure/âyet referans düzeni');
+  }
+
+  const standardLazimRe = /(?<![\p{L}\p{N}_])([\p{L}\p{N}_]+)l\u00e2z\u0131m(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(standardLazimRe)) {
+    addDeterministicIssue(cats, seen, match[0], `${match[1]} l\u00e2z\u0131m`, 'Biti\u015fik yaz\u0131m d\u00fczeni');
+  }
+
+  const standardSentenceSpaceRe = /([\p{L}\p{N}_][\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db])/gu;
+  for (const match of text.matchAll(standardSentenceSpaceRe)) {
+    addDeterministicIssue(cats, seen, match[0], `${match[1]} ${match[2]}`, 'C\u00fcmle aras\u0131 bo\u015fluk');
+  }
+
+  const fullSentenceSpaceRe = /(?<![\p{L}\p{N}_])([\p{L}\p{N}_]+[\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db][\p{L}\p{N}_]*)(?![\p{L}\p{N}_])/gu;
+  for (const match of text.matchAll(fullSentenceSpaceRe)) {
+    addDeterministicIssue(cats, seen, match[0], `${match[1]} ${match[2]}`, 'C\u00fcmle aras\u0131 bo\u015fluk');
   }
 
   return cats;
@@ -427,6 +485,8 @@ function finalizeResult(result = {}, sourceText = '') {
   if (result.score < LOW_SCORE_THRESHOLD) {
     result.correctedText = '';
     result.summary = LOW_SCORE_MSG;
+  } else {
+    result.summary = buildResultSummary(cats, total);
   }
   return result;
 }

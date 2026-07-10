@@ -628,28 +628,30 @@ canvas{width:100%!important;}
     </div>
   </div>
 
-  <aside class="side-nav">
+      <aside class="side-nav">
     <div class="side-section-label">Denetim</div>
     <button class="side-link" data-tab="analiz" onclick="showTab('analiz')"><span>Metin Denetimi</span></button>
-    <button class="side-link" data-tab="gecmis" onclick="showTab('gecmis')"><span>Denetim Geçmişi</span></button>
+    <button class="side-link" data-tab="gecmis" onclick="showTab('gecmis')"><span>Denetim Ge&ccedil;mi&#351;i</span></button>
     <button class="side-link" data-tab="bildirim" onclick="showTab('bildirim')"><span>Bildirimlerim</span><span class="badge" id="sideNoticeBadge" style="display:none">0</span></button>
-    <button class="side-link" data-tab="standartlar" onclick="showTab('standartlar')"><span>Standartlarımız</span><span class="badge" id="sideStandardsBadge" style="display:none">0</span></button>
+    <button class="side-link" data-tab="standartlar" onclick="showTab('standartlar')"><span>Standartlar&#305;m&#305;z</span><span class="badge" id="sideStandardsBadge" style="display:none">0</span></button>
 
     <div class="side-section-label admin-only" style="display:none">Operasyon</div>
     <button class="side-link admin-only" data-tab="dash" onclick="showTab('dash')" style="display:none"><span>Dashboard</span></button>
     <button class="side-link admin-only" data-tab="ai" onclick="showTab('ai')" style="display:none"><span>AI Asistan ve Raporlar</span></button>
-    <button class="side-link admin-only" data-tab="onay" onclick="showTab('onay')" style="display:none"><span>İş Panosu</span><span class="badge" id="sideOnayBadge" style="display:none">0</span></button>
-    <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
-    <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyarıları</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
+    <button class="side-link admin-only" data-tab="onay" onclick="showTab('onay')" style="display:none"><span>&#304;&#351; Panosu</span><span class="badge" id="sideOnayBadge" style="display:none">0</span></button>
 
-    <div class="side-section-label admin-only" style="display:none">Yönetim</div>
-    <button class="side-link admin-only" data-tab="kullanici" onclick="showTab('kullanici')" style="display:none"><span>Kullanıcılar</span></button>
+    <div class="side-section-label admin-only" style="display:none">Geri Bildirim</div>
+    <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
+    <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>&Ccedil;&ouml;z&uuml;m Takibi</span></button>
+    <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kay&#305;tlar&#305;</span></button>
+    <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyar&#305;lar&#305;</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
+
+    <div class="side-section-label admin-only" style="display:none">Y&ouml;netim</div>
+    <button class="side-link admin-only" data-tab="kullanici" onclick="showTab('kullanici')" style="display:none"><span>Kullan&#305;c&#305;lar</span></button>
     <button class="side-link admin-only" data-tab="kurallar" onclick="showTab('kurallar')" style="display:none"><span>Kurallar</span></button>
-    <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kayıtları</span></button>
-    <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>Çözüm Takibi</span></button>
     <button class="side-link" data-tab="profil" onclick="showTab('profil')"><span>Profilim</span></button>
     <button class="side-link" data-tab="ayarlar" onclick="showTab('ayarlar')"><span>Ayarlar</span></button>
-    <button class="side-link side-logout" onclick="doLogout()"><span>Çıkış Yap</span></button>
+    <button class="side-link side-logout" onclick="doLogout()"><span>&Ccedil;&#305;k&#305;&#351; Yap</span></button>
   </aside>
 
   <div class="app-body">
@@ -2250,29 +2252,37 @@ async function loadFeedbackCenter(){
   const allFeedback=alerts.filter(a=>a.type==='feedback');
   if(!allFeedback.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
   const visible=allFeedback.filter(a=>{
-    if(feedbackFilter==='open')return a.feedbackStatus!=='resolved';
+    const positive=isPositiveFeedback(a);
+    if(feedbackFilter==='positive')return positive;
+    if(feedbackFilter==='open')return a.feedbackStatus!=='resolved'&&!positive;
     if(feedbackFilter==='resolved')return a.feedbackStatus==='resolved';
     if(feedbackFilter==='unread')return !a.read&&a.feedbackStatus!=='resolved';
     return true;
   });
-  const open=allFeedback.filter(a=>a.feedbackStatus!=='resolved').length;
+  const open=allFeedback.filter(a=>a.feedbackStatus!=='resolved'&&!isPositiveFeedback(a)).length;
   const resolved=allFeedback.filter(a=>a.feedbackStatus==='resolved').length;
-  const unread=allFeedback.filter(a=>!a.read&&a.feedbackStatus!=='resolved').length;
+  const positive=allFeedback.filter(isPositiveFeedback).length;
   const users=new Set(allFeedback.map(a=>a.userId).filter(Boolean)).size;
   const summary=`<div class="feedback-summary-grid">
-    <div class="feedback-summary-card"><div class="report-summary-label">Açık</div><div class="report-summary-value">${open}</div></div>
-    <div class="feedback-summary-card"><div class="report-summary-label">Çözülen</div><div class="report-summary-value">${resolved}</div></div>
-    <div class="feedback-summary-card"><div class="report-summary-label">Okunmamış</div><div class="report-summary-value">${unread}</div></div>
-    <div class="feedback-summary-card"><div class="report-summary-label">Kullanıcı</div><div class="report-summary-value">${users}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">A&ccedil;&#305;k</div><div class="report-summary-value">${open}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">&Ccedil;&ouml;z&uuml;len</div><div class="report-summary-value">${resolved}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">Olumlu</div><div class="report-summary-value">${positive}</div></div>
+    <div class="feedback-summary-card"><div class="report-summary-label">Kullan&#305;c&#305;</div><div class="report-summary-value">${users}</div></div>
   </div>`;
   const filters=`<div class="feedback-filter-bar">
-    <button class="btn-mini ${feedbackFilter==='open'?'active':''}" onclick="setFeedbackFilter('open')">Açık Kuyruk</button>
-    <button class="btn-mini ${feedbackFilter==='unread'?'active':''}" onclick="setFeedbackFilter('unread')">Okunmamış</button>
-    <button class="btn-mini ${feedbackFilter==='resolved'?'active':''}" onclick="setFeedbackFilter('resolved')">Çözülen</button>
-    <button class="btn-mini ${feedbackFilter==='all'?'active':''}" onclick="setFeedbackFilter('all')">Tümü</button>
+    <button class="btn-mini ${feedbackFilter==='open'?'active':''}" onclick="setFeedbackFilter('open')">A&ccedil;&#305;k Kuyruk</button>
+    <button class="btn-mini ${feedbackFilter==='unread'?'active':''}" onclick="setFeedbackFilter('unread')">Okunmam&#305;&#351;</button>
+    <button class="btn-mini ${feedbackFilter==='positive'?'active':''}" onclick="setFeedbackFilter('positive')">Olumlu / Te&#351;ekk&uuml;r</button>
+    <button class="btn-mini ${feedbackFilter==='resolved'?'active':''}" onclick="setFeedbackFilter('resolved')">&Ccedil;&ouml;z&uuml;len</button>
+    <button class="btn-mini ${feedbackFilter==='all'?'active':''}" onclick="setFeedbackFilter('all')">T&uuml;m&uuml;</button>
   </div>`;
   if(!visible.length){container.innerHTML=summary+filters+'<div class="empty-state">Bu filtrede geri bildirim yok.</div>';return;}
   renderAlertItems(container, visible, true, summary+filters);
+}
+
+function isPositiveFeedback(a){
+  const message=String(a?.message||'').toLocaleLowerCase('tr-TR');
+  return /(teşekkür|eline sağlık|ellerinize sağlık|güzel|olumlu|başarılı|harika)/u.test(message);
 }
 
 function setFeedbackFilter(filter){feedbackFilter=filter||'open';loadFeedbackCenter();}
