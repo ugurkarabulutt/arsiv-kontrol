@@ -125,6 +125,10 @@ tespit edilir).
   `Kaadir` yapilmaz; yalniz `kadirdir -> kaadirdir` standardi korunur.
 - **Test:** `npm.cmd run check` basarili; 50/50 test gecti. Yeni regresyon testi 11 Temmuz
   feedback vakalarinin skor ve duzeltilmis metin uzerinde kullanici lehine korundugunu dogrular.
+- **Canli feedback kapatma:** Deploy sonrasi canli DB'de acik kalan 18 feedback kaydi
+  `feedback-fix-2026-07-12-1783851067872` cozum grubuyla `resolved` kapatildi. Birgul
+  Nursoy, Hacer Terzi, Nuray Ardagumusoglu ve Serap Pamuk icin 4 kisisel
+  `feedback_resolution` bildirimi gonderildi. Son kontrolde acik feedback sayisi `0`.
 
 ### 2026-07-10 Final Feedback Temizlik Turu
 - **Final feedback temizlik ve kalite kilidi:** Canli Supabase feedback kuyrugundaki 52 acik kayit kullanici onayli `feedback-cleanup-2026-07-10` cozum grubuyla `resolved` kapatildi. Ayni turda 7 kullaniciya kisisel `feedback_resolution` bildirimi gonderildi; ilk yazimda olusan encoding riski sonrasinda son 7 bildirim kaydi tekrar kontrol edilip okunur metinle guncellendi. Canli kontrolde acik feedback sayisi `0` olarak dogrulandi.

@@ -415,3 +415,6 @@ Stack:
 - `Kadir` genel kelime/kaynak ismi olarak otomatik `Kaadir` yapilmaz; yalniz `kadirdir -> kaadirdir`
   standardi korunur.
 - Dogrulama: `npm.cmd run check` basarili; 50/50 test gecti.
+- Canli operasyon: production deploy sonrasi 18 acik feedback kaydi `feedback-fix-2026-07-12-1783851067872`
+  cozum grubuyla kapatildi. 4 kullaniciya kisisel cozum bildirimi gonderildi ve son canli kontrolde
+  acik feedback sayisi `0` olarak dogrulandi.
