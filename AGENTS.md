@@ -115,6 +115,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-12
+- **12 Temmuz ek feedback koruma turu:** Canli feedbackteki 6 yeni vaka kullanici lehine
+  cozuldu. `Kusluk namazi ... rekat` cumlesinde anlam bozan virgulleme/dagilim degisikligi
+  reddedilir; `vaad/vaadde` kok kullanimi `vaat/vaatte` yapilmaz; `afetlerine` sapkali
+  bicime zorlanmaz; `...` ile `...`/ellipsis farki hata sayilmaz; `biraraya` sozluk
+  standardi olarak korunur ve `bir araya` kaynakta gecerse `biraraya` yapilir. `19 tane
+  haslet ruhun` ifadesi yalniz virgulle birakilmaz, deterministic olarak `Ruhta 19 tane
+  haslet` bicimine duzeltilir.
+- **Test:** `npm.cmd run check` basarili; 51/51 test gecti. Yeni regresyon testi 12 Temmuz
+  feedback vakalarini skor ve duzeltilmis metin uzerinde dogrular.
 - **Yeni feedback koruma turu:** 11-12 Temmuz canli feedbacklerinde kullanicilarin hakli
   oldugu kabul edilen 17 acik vaka kalite katmanina islendi. `Kadir/Kaadir`, `Kadiri/Kaadiri`,
   `Vel Asr/Vel-Asr`, sure/ayet referans formatini nokta standardina zorlama, `Allah -> Allahu

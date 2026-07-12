@@ -20,7 +20,9 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   cahiliye: 'cahiliye',
   ayet: 'âyet',
   daimi: 'daimî',
-  teala: 'Tealâ'
+  teala: 'Tealâ',
+  biraraya: 'biraraya',
+  vaad: 'vaad'
 });
 const SURA_NAMES = [
   'FÂTİHA', 'BAKARA', 'ÂLİ İMRÂN', 'NİSÂ', 'MÂİDE', "EN'ÂM", "A'RÂF", 'ENFÂL',
@@ -204,6 +206,9 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom === 'mumin' && (foldedTo === 'mu min' || /^m[üu]'?min$/iu.test(to))) return true;
   if (/^5\s+dakika\s+10\s+dakikal[ıi]k/iu.test(from) && /^5\s+dakika,\s+10\s+dakikal[ıi]k/iu.test(to)) return true;
   if (/efendimiz\s*\(s\.a\.v\)'dir$/iu.test(from) && /efendimiz\s*\(s\.a\.v\)'dir\.$/iu.test(to)) return true;
+  if (foldedFrom.includes('kusluk namaz') && foldedFrom.includes('rekat') && foldedTo.includes('rekat')) return true;
+  if (foldedFrom.startsWith('vaad') && foldedTo.startsWith('vaat')) return true;
+  if (foldedFrom === '19 tane haslet ruhun' && /^19 tane haslet ruhun\s*[,.;:]$/iu.test(foldedTo)) return true;
   if (/^kadir(?:i|i|\u00ee)?$/iu.test(from) && /^kaadir(?:i|i|\u00ee)?$/iu.test(to)) return true;
   if (/^vel\s+asr$/iu.test(from) && /^vel-asr$/iu.test(to)) return true;
   if (/^\d+\/[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(to)) return true;
@@ -212,8 +217,11 @@ function isDecisionProtectedTransform(original, fixed) {
   if (/^allah['\u2019]da$/iu.test(from) && /^allah['\u2019]ta$/iu.test(to)) return true;
   if (/^sagir$/iu.test(from) && /^sa\u011fir$/iu.test(to)) return true;
   if (/^ukba$/iu.test(from) && /^ukb\u00e2$/iu.test(to)) return true;
+  if (foldedFrom.startsWith('afet') && foldedTo.startsWith('afet') && hasCircumflex(fixed)) return true;
   if (/^rahmete$/iu.test(from) && /^rahmeti$/iu.test(to)) return true;
   if (/^zur\u00fbf$/iu.test(from) && /^zumer$/iu.test(to)) return true;
+  if (from.replace(/…/gu, '...') === to.replace(/…/gu, '...')) return true;
+  if (foldedFrom.startsWith('biraraya') && foldedTo.startsWith('bir araya')) return true;
   if (/^la$/iu.test(foldedFrom) && foldedTo.includes('olmuyor')) return true;
   if ((foldedFrom.includes('sinifta -biz') || foldedFrom.includes('s\u0131n\u0131fta -biz'))
     && (/[\u2013\u2014]|--/.test(to) || foldedTo.includes('sinifta biz') || foldedTo.includes('s\u0131n\u0131fta biz'))) return true;
@@ -349,6 +357,8 @@ function deterministicFixed(original) {
     return caseLike(original, text.replace(/^kadir/iu, 'kaadir'));
   }
   if (/^Zur\u00fbf$/iu.test(text)) return 'Zuhr\u00fbf';
+  if (/^19 tane haslet ruhun$/iu.test(text)) return 'Ruhta 19 tane haslet';
+  if (/^bir\s+araya$/iu.test(text)) return 'biraraya';
   if (/^hadis-i\s+şerif$/iu.test(text)) return caseLike(original, 'Hadîs-i Şerif');
   return '';
 }
@@ -390,6 +400,16 @@ function applyDeterministicStandards(cats, sourceText) {
   const zuhrufRe = /(?<![\p{L}\p{N}_])Zur\u00fbf(?![\p{L}\p{N}_])/gu;
   for (const match of text.matchAll(zuhrufRe)) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sure adi standardi');
+  }
+
+  const hasletRe = /(?<![\p{L}\p{N}_])19\s+tane\s+haslet\s+ruhun(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(hasletRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Haslet ifade duzeni');
+  }
+
+  const birArayaRe = /(?<![\p{L}\p{N}_])bir\s+araya(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(birArayaRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sozluk standardi');
   }
 
   const hazretiIsaRe = /(?<![\p{L}\p{N}_])Hazreti\s+İsa(?!\s*\(A\.S\.?\))(?![\p{L}\p{N}_])/giu;

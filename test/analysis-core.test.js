@@ -451,3 +451,49 @@ test('11 Temmuz yeni feedback vakalari kullanici lehine korunur', () => {
     ['Zur\u00fbf', 'Zuhr\u00fbf']
   ]);
 });
+
+test('12 Temmuz geri bildirimleri sozluk ve baglam lehine korunur', () => {
+  const source = [
+    'Kuşluk namazı 4 rekât öğle, 4 rekât ikindi, 3 rekât akşam toplam 11 rekât.',
+    'Efendimizin sözlüğünde vaadde ifadesi vaad kökünden gelir.',
+    '19 tane haslet ruhun içinde yer alır.',
+    'Nefsin afetlerine dikkat edilir.',
+    'Sevgi, saygı, güler yüz…',
+    'Bir araya gelince hizmet tamamlanır.',
+    'biraraya yazımı sözlükte korunur.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          {
+            original: 'Kuşluk namazı 4 rekât öğle, 4 rekât ikindi, 3 rekât akşam toplam 11 rekât.',
+            fixed: 'Kuşluk namazı 4 rekât, öğle 4 rekât, ikindi 3 rekât, akşam toplam 11 rekât.',
+            rule: 'Yanlis namaz dagilimi'
+          },
+          { original: 'vaadde', fixed: 'vaatte', rule: 'Sozluk' },
+          { original: '19 tane haslet ruhun', fixed: '19 tane haslet ruhun,', rule: 'Virgul' },
+          { original: 'afetlerine', fixed: 'âfetlerine', rule: 'Sapka' },
+          { original: 'Sevgi, saygı, güler yüz…', fixed: 'Sevgi, saygı, güler yüz...', rule: 'Uc nokta' },
+          { original: 'biraraya', fixed: 'bir araya', rule: 'Sozluk' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.score, 92);
+  assert.ok(result.correctedText.includes('Kuşluk namazı 4 rekât öğle, 4 rekât ikindi, 3 rekât akşam toplam 11 rekât.'));
+  assert.ok(result.correctedText.includes('vaadde ifadesi'));
+  assert.ok(result.correctedText.includes('Ruhta 19 tane haslet içinde yer alır.'));
+  assert.ok(result.correctedText.includes('afetlerine dikkat edilir.'));
+  assert.ok(result.correctedText.includes('güler yüz…'));
+  assert.ok(result.correctedText.includes('biraraya gelince hizmet tamamlanır.'));
+  assert.ok(result.correctedText.includes('biraraya yazımı sözlükte korunur.'));
+  assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ['19 tane haslet ruhun', 'Ruhta 19 tane haslet'],
+    ['Bir araya', 'biraraya']
+  ]);
+});

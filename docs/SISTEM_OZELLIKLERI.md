@@ -418,3 +418,14 @@ Stack:
 - Canli operasyon: production deploy sonrasi 18 acik feedback kaydi `feedback-fix-2026-07-12-1783851067872`
   cozum grubuyla kapatildi. 4 kullaniciya kisisel cozum bildirimi gonderildi ve son canli kontrolde
   acik feedback sayisi `0` olarak dogrulandi.
+
+## 26. 2026-07-13 Ek Feedback Koruma Turu
+
+- 6 yeni canli feedback kullanici lehine cozuldu.
+- Namaz rekat dagilimini anlam olarak bozan otomatik virgulleme reddedilir.
+- `vaad/vaadde` kok kullanimi korunur; `vaatte` yapilmaz.
+- `afetlerine` kelimesi sapkali bicime zorlanmaz.
+- `...` ve ellipsis farki tek basina hata sayilmaz.
+- `biraraya` sozluk standardi olarak korunur; kaynakta `bir araya` gecerse `biraraya` yapilir.
+- `19 tane haslet ruhun` ifadesi `Ruhta 19 tane haslet` olarak deterministic duzeltilir.
+- Dogrulama: `npm.cmd run check` basarili; 51/51 test gecti.
