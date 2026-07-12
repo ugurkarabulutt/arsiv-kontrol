@@ -402,3 +402,16 @@ Stack:
 - Yeni kalite korumalari test kapsaminda: ekli `vucud` kelimeleri, `kadirdir`, sure/standart kaynakli yanlis-pozitifler, surecler arasi virgulleme/noktalama ve `Irade eksikligi` bicimi.
 - Dogrulama: `npm.cmd run check` basarili; 49/49 test gecti.
 - Production dogrulama: `95c7621` commit'i deploy edildi; `/health` canli ortamda `ok` dondu.
+
+## 25. 2026-07-12 Yeni Feedback Koruma Turu
+
+- 11-12 Temmuz canli feedbacklerinde gelen 17 yeni vaka kullanici lehine degerlendirildi.
+- Sistem artik su baglamlari yanlis pozitif olarak skorlamaz ve duzeltilmis metne uygulamaz:
+  `Kadir -> Kaadir`, `Kadiri -> Kaadiri`, `Vel Asr -> Vel-Asr`, sure/ayet referans formatini
+  nokta standardina zorlama, tablo sablonundaki referans bosluklarini degistirme,
+  `Allah -> Allahu Teala` baglam genisletmesi, Arapca ayet kelimesi `dinehum`, `hadisi -> hadis-i`,
+  `Allah'da -> Allah'ta`, `sagir -> sagir`, `ukba -> ukba`, `rahmete -> rahmeti`.
+- `Zuruf -> Zumer` yanlis eslesmesi engellendi; `Zuruf` gorulurse dogru standart `Zuhruf` olarak uygulanir.
+- `Kadir` genel kelime/kaynak ismi olarak otomatik `Kaadir` yapilmaz; yalniz `kadirdir -> kaadirdir`
+  standardi korunur.
+- Dogrulama: `npm.cmd run check` basarili; 50/50 test gecti.

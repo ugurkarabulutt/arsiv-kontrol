@@ -265,8 +265,6 @@ test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {
   }, source);
 
   assert.equal(result.categories.imla.issues.map(i => i.original).join('|'), [
-    '1 .ENFÂL-29',
-    '1 .YÛNUS -7',
     'dînde',
     'dînimizin',
     'dînsiz',
@@ -276,9 +274,9 @@ test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {
     'vücud',
     'daimi'
   ].join('|'));
-  assert.equal(result.totalErrors, 10);
+  assert.equal(result.totalErrors, 8);
   assert.equal(result.correctedText, [
-    '1. ENFÂL-29 ve 1. YÛNUS-7',
+    '1 .ENFÂL-29 ve 1 .YÛNUS -7',
     'dinde dinimizin dinsiz inşaallah Hazreti İsa (A.S)',
     'HADÎS-İ ŞERİF herşeydir vücut vücut vücuttan',
     'daimî daimî daimî',
@@ -390,5 +388,66 @@ test('kalan acik feedback noktalama vakalari guvenli ele alinir', () => {
   );
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
     ['\u0130rade eksikli\u011fi; irade', '\u0130rade eksikli\u011fi: \u0130rade']
+  ]);
+});
+
+test('11 Temmuz yeni feedback vakalari kullanici lehine korunur', () => {
+  const source = [
+    'Feyzu\u2019l-Kadir kaynagi Kadir olarak kalir.',
+    'Kadir\u00ee bir tarikat ismidir.',
+    "Kur'an'da Vel Asr yaziyor.",
+    '39/ZUMER-17 referansi tablo formatinda kalir.',
+    'Sadece nereleri Allah gosteriyor kendisine?',
+    'Ayet Arapcasinda d\u00eenehum geciyor.',
+    "Peygamber Efendimiz'in had\u00eesi soyledir.",
+    "Allah'da ifadesi kaynakta boyle yazildi.",
+    '6 . C\u00c2S\u0130YE-19 ve 4 . ENF\u00c2L-73 tablo sablonudur.',
+    'Efendimizin sohbetlerinde sagir yazimi geciyor.',
+    'Ayet icinde rahmete kelimesi degismez.',
+    'ukba tdk ve mihr.com kullanimidir.',
+    'Zur\u00fbf sure adi aslinda Zuhr\u00fbf olmali.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'Kadir', fixed: 'Kaadir', rule: 'Kaynak ismi' },
+          { original: 'Kadir\u00ee', fixed: 'Kaadir\u00ee', rule: 'Ozel isim' },
+          { original: 'Vel Asr', fixed: 'Vel-Asr', rule: 'Tire' },
+          { original: '39/ZUMER-17', fixed: '39. ZUMER-17', rule: 'Referans' },
+          { original: 'Sadece nereleri Allah gosteriyor kendisine?', fixed: 'Sadece nereleri Allahu Teala gosteriyor Kendisine?', rule: 'Zamir' },
+          { original: 'd\u00eenehum', fixed: 'dinehum', rule: 'Din standardi' },
+          { original: 'had\u00eesi', fixed: 'had\u00ees-i', rule: 'Hadis tamlamasi' },
+          { original: "Allah'da", fixed: "Allah'ta", rule: 'Ek' },
+          { original: '6 . C\u00c2S\u0130YE-19', fixed: '6. C\u00c2S\u0130YE-19', rule: 'Tablo' },
+          { original: '4 . ENF\u00c2L-73', fixed: '4. ENF\u00c2L-73', rule: 'Tablo' },
+          { original: 'sagir', fixed: 'sa\u011fir', rule: 'Sozluk' },
+          { original: 'rahmete', fixed: 'rahmeti', rule: 'Ayet' },
+          { original: 'ukba', fixed: 'ukb\u00e2', rule: 'Sozluk' },
+          { original: 'Zur\u00fbf', fixed: 'Zumer', rule: 'Sure adi' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.ok(result.correctedText.includes('Feyzu\u2019l-Kadir kaynagi Kadir olarak kalir.'));
+  assert.ok(result.correctedText.includes('Kadir\u00ee bir tarikat ismidir.'));
+  assert.ok(result.correctedText.includes('Vel Asr yaziyor.'));
+  assert.ok(result.correctedText.includes('39/ZUMER-17 referansi'));
+  assert.ok(result.correctedText.includes('Allah gosteriyor kendisine?'));
+  assert.ok(result.correctedText.includes('d\u00eenehum geciyor.'));
+  assert.ok(result.correctedText.includes('had\u00eesi soyledir.'));
+  assert.ok(result.correctedText.includes("Allah'da ifadesi"));
+  assert.ok(result.correctedText.includes('6 . C\u00c2S\u0130YE-19'));
+  assert.ok(result.correctedText.includes('sagir yazimi'));
+  assert.ok(result.correctedText.includes('rahmete kelimesi'));
+  assert.ok(result.correctedText.includes('ukba tdk'));
+  assert.ok(result.correctedText.includes('Zuhr\u00fbf sure adi'));
+  assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ['Zur\u00fbf', 'Zuhr\u00fbf']
   ]);
 });

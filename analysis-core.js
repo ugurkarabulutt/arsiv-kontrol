@@ -134,8 +134,8 @@ function isCaseOnlyChange(original, fixed) {
 function isSourceDiacriticProtected(original, fixed) {
   const from = canonicalText(original);
   const to = canonicalText(fixed);
+  if (/^dîn(?:ehum|ekum|ihim|ikum|ihi|ehu)$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return true;
   if (/^dîn[\p{L}\p{N}_]*$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return false;
-  if (/^dîn(?:in|i|e|den|de)?$/iu.test(from) && /^din(?:in|i|e|den|de)?$/iu.test(to)) return false;
   return !!from && !!to && from !== to && hasCircumflex(from) && foldText(from) === foldText(to);
 }
 
@@ -195,6 +195,7 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom.startsWith('helal') && foldedTo.startsWith('helal') && hasCircumflex(fixed)) return true;
   if (foldedFrom.startsWith('maddi') && foldedTo.startsWith('maddi') && hasCircumflex(fixed)) return true;
   if (foldedFrom.startsWith('allah') && foldedTo.startsWith('allahu teala')) return true;
+  if (foldedFrom.includes('allah') && foldedTo.includes('allahu teala')) return true;
   if (foldedFrom.startsWith('sergilerse') && foldedTo.startsWith('sergilesin')) return true;
   if (foldedFrom.startsWith('artisi') && foldedTo.startsWith('artisini')) return true;
   if (foldedFrom.startsWith('ahiret') && foldedTo.startsWith('ahiret') && hasCircumflex(fixed)) return true;
@@ -203,6 +204,16 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom === 'mumin' && (foldedTo === 'mu min' || /^m[üu]'?min$/iu.test(to))) return true;
   if (/^5\s+dakika\s+10\s+dakikal[ıi]k/iu.test(from) && /^5\s+dakika,\s+10\s+dakikal[ıi]k/iu.test(to)) return true;
   if (/efendimiz\s*\(s\.a\.v\)'dir$/iu.test(from) && /efendimiz\s*\(s\.a\.v\)'dir\.$/iu.test(to)) return true;
+  if (/^kadir(?:i|i|\u00ee)?$/iu.test(from) && /^kaadir(?:i|i|\u00ee)?$/iu.test(to)) return true;
+  if (/^vel\s+asr$/iu.test(from) && /^vel-asr$/iu.test(to)) return true;
+  if (/^\d+\/[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(to)) return true;
+  if (/^\d+\s+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(to)) return true;
+  if (/^had\u00eesi$/iu.test(from) && /^had\u00ees-i$/iu.test(to)) return true;
+  if (/^allah['\u2019]da$/iu.test(from) && /^allah['\u2019]ta$/iu.test(to)) return true;
+  if (/^sagir$/iu.test(from) && /^sa\u011fir$/iu.test(to)) return true;
+  if (/^ukba$/iu.test(from) && /^ukb\u00e2$/iu.test(to)) return true;
+  if (/^rahmete$/iu.test(from) && /^rahmeti$/iu.test(to)) return true;
+  if (/^zur\u00fbf$/iu.test(from) && /^zumer$/iu.test(to)) return true;
   if (/^la$/iu.test(foldedFrom) && foldedTo.includes('olmuyor')) return true;
   if ((foldedFrom.includes('sinifta -biz') || foldedFrom.includes('s\u0131n\u0131fta -biz'))
     && (/[\u2013\u2014]|--/.test(to) || foldedTo.includes('sinifta biz') || foldedTo.includes('s\u0131n\u0131fta biz'))) return true;
@@ -324,6 +335,7 @@ function deterministicFixed(original) {
   if (!text) return '';
 
   if (/^dîn[\p{L}\p{N}_]*$/iu.test(text)) {
+    if (/^dîn(?:ehum|ekum|ihim|ikum|ihi|ehu)$/iu.test(text)) return '';
     return caseLike(original, text.replace(/^dîn/iu, 'din'));
   }
   if (/^inşallah$/iu.test(text)) return caseLike(original, 'inşaallah');
@@ -333,9 +345,10 @@ function deterministicFixed(original) {
   if (/^v\u00fcc(?:ud|\u00fbd|\u00fbt)$/iu.test(text)) {
     return caseLike(original, 'v\u00fccut');
   }
-  if (/^kadir[\p{L}\p{N}_]*$/iu.test(text)) {
+  if (/^kadirdir$/iu.test(text)) {
     return caseLike(original, text.replace(/^kadir/iu, 'kaadir'));
   }
+  if (/^Zur\u00fbf$/iu.test(text)) return 'Zuhr\u00fbf';
   if (/^hadis-i\s+şerif$/iu.test(text)) return caseLike(original, 'Hadîs-i Şerif');
   return '';
 }
@@ -368,10 +381,15 @@ function applyDeterministicStandards(cats, sourceText) {
     addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin arşiv standardı');
   }
 
-  const kadirRe = /(?<![\p{L}\p{N}_])kadir[\p{L}\p{N}_]*(?![\p{L}\p{N}_])/giu;
+  const kadirRe = /(?<![\p{L}\p{N}_])kadirdir(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(kadirRe)) {
     const original = match[0];
     addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin ar\u015fiv standard\u0131');
+  }
+
+  const zuhrufRe = /(?<![\p{L}\p{N}_])Zur\u00fbf(?![\p{L}\p{N}_])/gu;
+  for (const match of text.matchAll(zuhrufRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sure adi standardi');
   }
 
   const hazretiIsaRe = /(?<![\p{L}\p{N}_])Hazreti\s+İsa(?!\s*\(A\.S\.?\))(?![\p{L}\p{N}_])/giu;
@@ -379,10 +397,6 @@ function applyDeterministicStandards(cats, sourceText) {
     addDeterministicIssue(cats, seen, match[0], `${match[0]} (A.S)`, 'Nebî isimleri standardı');
   }
 
-  const referenceRe = /(?<![\p{L}\p{N}_])(\d+)\s+\.\s*([A-ZÇĞİÖŞÜÂÎÛ'’]+)\s*-\s*(\d+)(?![\p{L}\p{N}_])/giu;
-  for (const match of text.matchAll(referenceRe)) {
-    addDeterministicIssue(cats, seen, match[0], `${match[1]}. ${match[2]}-${match[3]}`, 'Sure/âyet referans düzeni');
-  }
 
   const standardLazimRe = /(?<![\p{L}\p{N}_])([\p{L}\p{N}_]+)l\u00e2z\u0131m(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(standardLazimRe)) {

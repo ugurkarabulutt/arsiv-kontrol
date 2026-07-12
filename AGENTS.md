@@ -114,6 +114,18 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-12
+- **Yeni feedback koruma turu:** 11-12 Temmuz canli feedbacklerinde kullanicilarin hakli
+  oldugu kabul edilen 17 acik vaka kalite katmanina islendi. `Kadir/Kaadir`, `Kadiri/Kaadiri`,
+  `Vel Asr/Vel-Asr`, sure/ayet referans formatini nokta standardina zorlama, `Allah -> Allahu
+  Teala` baglam genisletmesi, `dinehum`, `hadisi/hadis-i`, `Allah'da/Allah'ta`, `sagir/sagir`,
+  `ukba/ukba`, `rahmete/rahmeti` ve tablo sablonu bosluklari kullanici lehine korunur.
+  `Zuruf -> Zumer` yanlis eslesmesi reddedildi; kaynak `Zuruf` ise dogru hedef `Zuhruf`
+  olarak deterministic standarda alindi. `Kadir` genel kelime olarak artik otomatik
+  `Kaadir` yapilmaz; yalniz `kadirdir -> kaadirdir` standardi korunur.
+- **Test:** `npm.cmd run check` basarili; 50/50 test gecti. Yeni regresyon testi 11 Temmuz
+  feedback vakalarinin skor ve duzeltilmis metin uzerinde kullanici lehine korundugunu dogrular.
+
 ### 2026-07-10 Final Feedback Temizlik Turu
 - **Final feedback temizlik ve kalite kilidi:** Canli Supabase feedback kuyrugundaki 52 acik kayit kullanici onayli `feedback-cleanup-2026-07-10` cozum grubuyla `resolved` kapatildi. Ayni turda 7 kullaniciya kisisel `feedback_resolution` bildirimi gonderildi; ilk yazimda olusan encoding riski sonrasinda son 7 bildirim kaydi tekrar kontrol edilip okunur metinle guncellendi. Canli kontrolde acik feedback sayisi `0` olarak dogrulandi.
 - **Ek regresyon korumalari:** `vucudunu -> vucutunu` gibi ekli kelime bozulmalari engellendi; yalnizca yalniz duran `vucud/vucud/vucut` kokleri `vucut` standardina baglandi. `kadirdir -> kaadirdir`, `5 dakika 10 dakikalik` virgulleme, `Efendimiz (S.A.V)'dir` noktalama ve `Irade eksikligi; irade... -> Irade eksikligi: Irade...` kurallari deterministic test kapsaminda guvenceye alindi.
