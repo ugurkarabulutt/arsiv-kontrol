@@ -124,6 +124,10 @@ tespit edilir).
   haslet` bicimine duzeltilir.
 - **Test:** `npm.cmd run check` basarili; 51/51 test gecti. Yeni regresyon testi 12 Temmuz
   feedback vakalarini skor ve duzeltilmis metin uzerinde dogrular.
+- **Canli feedback kapatma:** Production deploy sonrasi 6 acik feedback kaydi
+  `feedback-fix-2026-07-13-1783893985888` cozum grubuyla `resolved` kapatildi. Birgul
+  Nursoy, Nuray Ardagumusoglu ve Hacer Terzi icin 3 kisisel `feedback_resolution`
+  bildirimi gonderildi. Son kontrolde acik feedback sayisi `0`.
 - **Yeni feedback koruma turu:** 11-12 Temmuz canli feedbacklerinde kullanicilarin hakli
   oldugu kabul edilen 17 acik vaka kalite katmanina islendi. `Kadir/Kaadir`, `Kadiri/Kaadiri`,
   `Vel Asr/Vel-Asr`, sure/ayet referans formatini nokta standardina zorlama, `Allah -> Allahu

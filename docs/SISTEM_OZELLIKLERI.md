@@ -429,3 +429,6 @@ Stack:
 - `biraraya` sozluk standardi olarak korunur; kaynakta `bir araya` gecerse `biraraya` yapilir.
 - `19 tane haslet ruhun` ifadesi `Ruhta 19 tane haslet` olarak deterministic duzeltilir.
 - Dogrulama: `npm.cmd run check` basarili; 51/51 test gecti.
+- Canli operasyon: production deploy sonrasi 6 acik feedback kaydi
+  `feedback-fix-2026-07-13-1783893985888` cozum grubuyla kapatildi. 3 kullaniciya kisisel
+  cozum bildirimi gonderildi ve son kontrolde acik feedback sayisi `0`.

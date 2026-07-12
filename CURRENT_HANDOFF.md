@@ -431,3 +431,5 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Kodda cozuldu: namaz rekat dagilimini bozan virgulleme reddedilir; `vaadde -> vaatte`, `afetlerine -> afetlerine` sapkalama, `...`/ellipsis farki ve `biraraya -> bir araya` yanlis pozitifleri korunur.
 - Deterministik duzeltme: `19 tane haslet ruhun -> Ruhta 19 tane haslet`; `bir araya -> biraraya`.
 - Test: `npm.cmd run check` basarili; 51/51 test gecti.
+- Production: `c3647f5 fix: protect latest dictionary feedback` Vercel production'a deploy edildi; `/health ok`, ana sayfa 200.
+- Canli kapatma: 6 acik feedback `feedback-fix-2026-07-13-1783893985888` grubuyla kapatildi. Birgul Nursoy 2, Nuray Ardagumusoglu 2, Hacer Terzi 2 feedback icin 3 kisisel cozum bildirimi gonderildi. Son kontrolde acik feedback `0`.
