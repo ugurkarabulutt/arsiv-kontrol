@@ -442,3 +442,14 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Test: `npm.cmd run check` basarili; 53/53 test gecti.
 - Production: `f588a97 fix: apply accepted issues robustly` Vercel production'a deploy edildi; `/health ok`, ana sayfa 200.
 - Canli kapatma: Aysun Aydoner'in 2 acik feedback kaydi `feedback-fix-2026-07-13-apply-1783962347176` grubuyla kapatildi ve tek kisisel cozum bildirimi gonderildi. Son kontrolde acik feedback `0`.
+
+## 2026-07-14 Uc Acik Feedback Koruma Turu
+
+- Canli kontrolde Hacer Terzi tarafindan 3 acik feedback goruldu.
+- Cozulen kokler: kaynakta zaten bulunan noktanin `lazim -> lazim.` gibi tekrar hata sayilmasi,
+  `kitab -> kitâb` sapkalama zorlamasi ve `3/ALI IMRAN-20 -> 3. ALI IMRAN-20` gibi cok
+  kelimeli sure adi iceren meal/referans formatinin degistirilmesi.
+- Tekrar sebebi: Onceki referans korumasi tek kelimeli sure adlarini kapsiyordu; `ALI IMRAN`
+  bosluklu oldugu icin ayni kok sorun tekrar acik feedbacke dustu. Kural genellendi ve
+  regresyon testine alindi.
+- Test: `npm.cmd run check` basarili; 54/54 test gecti.

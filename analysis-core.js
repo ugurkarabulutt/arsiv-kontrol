@@ -209,10 +209,11 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom.includes('kusluk namaz') && foldedFrom.includes('rekat') && foldedTo.includes('rekat')) return true;
   if (foldedFrom.startsWith('vaad') && foldedTo.startsWith('vaat')) return true;
   if (foldedFrom === '19 tane haslet ruhun' && /^19 tane haslet ruhun\s*[,.;:]$/iu.test(foldedTo)) return true;
+  if (/^kitab$/iu.test(from) && /^kitâb$/iu.test(to)) return true;
   if (/^kadir(?:i|i|\u00ee)?$/iu.test(from) && /^kaadir(?:i|i|\u00ee)?$/iu.test(to)) return true;
   if (/^vel\s+asr$/iu.test(from) && /^vel-asr$/iu.test(to)) return true;
-  if (/^\d+\/[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(to)) return true;
-  if (/^\d+\s+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019]+\s*-\s*\d+$/iu.test(to)) return true;
+  if (/^\d+\/[\p{L}'\u2019\s]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019\s]+\s*-\s*\d+$/iu.test(to)) return true;
+  if (/^\d+\s+\.\s*[\p{L}'\u2019\s]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019\s]+\s*-\s*\d+$/iu.test(to)) return true;
   if (/^had\u00eesi$/iu.test(from) && /^had\u00ees-i$/iu.test(to)) return true;
   if (/^allah['\u2019]da$/iu.test(from) && /^allah['\u2019]ta$/iu.test(to)) return true;
   if (/^sagir$/iu.test(from) && /^sa\u011fir$/iu.test(to)) return true;
@@ -274,6 +275,16 @@ function sourceContainsIssue(sourceText, original) {
   const right = needsWordBoundary(needle[needle.length - 1]) ? '(?![\\p{L}\\p{N}_])' : '';
   const re = new RegExp(`${left}${escapeRegExp(needle)}${right}`, 'iu');
   return re.test(source);
+}
+
+function sourceAlreadyHasFixedPunctuation(sourceText, original, fixed) {
+  const source = canonicalText(sourceText);
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!source || !from || !to) return false;
+  if (!/^[\p{L}\p{N}_]+$/iu.test(from)) return false;
+  if (!new RegExp(`^${escapeRegExp(from)}[.!?]$`, 'iu').test(to)) return false;
+  return sourceContainsIssue(source, to);
 }
 
 function sourceIssueOccurrenceCount(sourceText, original) {
@@ -533,6 +544,7 @@ function finalizeResult(result = {}, sourceText = '') {
           && !equivalentIssue(issue.original, issue.fixed)
           && maxOccurrences > 0
           && usedOccurrences < maxOccurrences
+          && !sourceAlreadyHasFixedPunctuation(sourceText, issue.original, issue.fixed)
           && !isProtectedChange(issue.original, issue.fixed);
         if (!keep && issue) rejectedIssues.push(issue);
         if (keep) {

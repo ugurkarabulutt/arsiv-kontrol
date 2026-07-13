@@ -114,6 +114,17 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-14
+- **3 acik feedback kalici koruma turu:** Hacer Terzi geri bildirimleriyle gelen 3 yeni
+  yanlis-pozitif vaka cozuldu. Kaynakta nokta zaten varsa `lazim -> lazim.` gibi tek kelime
+  nokta ekleme bulgusu skor disi kalir; `kitab -> kitâb` sapkalama zorlamasi reddedilir;
+  `3/ALI IMRAN-20 -> 3. ALI IMRAN-20` gibi cok kelimeli sure adi iceren meal/referans
+  formatlari degistirilmez.
+- **Tekrar sebebi:** Onceki referans korumasi tek kelimeli sure adlarini (`39/ZUMER-17`)
+  kapsiyordu; `ALI IMRAN` gibi bosluklu sure adlari regex disinda kaliyordu. Kural artik
+  cok kelimeli referans adlarini da kapsar ve regresyon testindedir.
+- **Test:** `npm.cmd run check` basarili; 54/54 test gecti.
+
 ### 2026-07-12
 - **13 Temmuz kritik uygulama katmani duzeltmesi:** Aysun Aydoner geri bildiriminde gorulen
   "hatalari buluyor ama duzeltilmis metne uygulamiyor" kok sebebi giderildi. Issue dogrulama

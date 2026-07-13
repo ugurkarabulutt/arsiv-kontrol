@@ -446,3 +446,16 @@ Stack:
 - Canli operasyon: Aysun Aydoner'in 2 acik feedback kaydi
   `feedback-fix-2026-07-13-apply-1783962347176` cozum grubuyla kapatildi. Kisisel cozum
   bildirimi gonderildi ve son kontrolde acik feedback sayisi `0`.
+
+## 28. 2026-07-14 Uc Acik Feedback Koruma Turu
+
+- Hacer Terzi tarafindan bildirilen 3 yeni canli feedback kullanici lehine cozuldu.
+- Kaynak metinde nokta zaten varsa `lazim -> lazim.` gibi tek kelimelik nokta bulgusu
+  tekrar hata sayilmaz.
+- `kitab -> kitâb` sapkalama zorlamasi reddedilir; ayet/meâl baglaminda kelime keyfi
+  bicimde sapkalandirilmaz.
+- `3/ALI IMRAN-20` gibi bosluklu/cok kelimeli sure adi iceren meal referanslari nokta
+  standardina zorlanmaz.
+- Tekrar sebebi kayda alindi: onceki referans korumasi tek kelimeli sure adlarini kapsiyor,
+  `ALI IMRAN` gibi bosluklu referanslari kaciriyordu. Kural genellendi.
+- Dogrulama: `npm.cmd run check` basarili; 54/54 test gecti.

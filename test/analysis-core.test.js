@@ -519,6 +519,31 @@ test('issue bulunduysa apostrof ve bosluk farkina ragmen duzeltilmis metne uygul
   ]);
 });
 
+test('13 Temmuz son feedbackleri nokta sapka ve cok kelimeli referans formatinda korunur', () => {
+  const source = [
+    'Bu isin yapilmasi l\u00e2z\u0131m.',
+    'Ayet mealinde kitab kelimesi geciyor.',
+    '3/\u00c2L\u0130 \u0130MR\u00c2N-20 me\u00e2l alintisi olarak kalir.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'l\u00e2z\u0131m', fixed: 'l\u00e2z\u0131m.', rule: 'Nokta' },
+          { original: 'kitab', fixed: 'kit\u00e2b', rule: 'Sapka' },
+          { original: '3/\u00c2L\u0130 \u0130MR\u00c2N-20', fixed: '3. \u00c2L\u0130 \u0130MR\u00c2N-20', rule: 'Referans' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
 test('modelin ekledigi gereksiz cift tirnaklar temizlenir', () => {
   const result = finalizeResult({
     correctedText: '""Düzeltilmiş metin içinde ""alıntı"" korunur.""',
