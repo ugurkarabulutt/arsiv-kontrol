@@ -440,3 +440,5 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Kok sebep: kaynak dogrulama canonical/toleransli, fakat `applyAcceptedIssues` daha dar eslesmeyle uyguluyordu. Apostrof/tirnak/bosluk farkinda issue skorlanabiliyor ama metne uygulanmayabiliyordu.
 - Cozum: `applyAcceptedIssues` flexible pattern ile apostrof, tirnak, ellipsis ve bosluk farklarini tolere eder. `normalizeDoubledQuotes` modelin ekledigi gereksiz cift tirnaklari temizler.
 - Test: `npm.cmd run check` basarili; 53/53 test gecti.
+- Production: `f588a97 fix: apply accepted issues robustly` Vercel production'a deploy edildi; `/health ok`, ana sayfa 200.
+- Canli kapatma: Aysun Aydoner'in 2 acik feedback kaydi `feedback-fix-2026-07-13-apply-1783962347176` grubuyla kapatildi ve tek kisisel cozum bildirimi gonderildi. Son kontrolde acik feedback `0`.

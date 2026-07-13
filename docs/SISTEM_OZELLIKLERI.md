@@ -443,3 +443,6 @@ Stack:
 - Cift tirnak korumasi: Modelin ekledigi gereksiz `""...""` bicimleri temizlenir; metin icindeki
   normal alinti tirnaklari korunur.
 - Dogrulama: `npm.cmd run check` basarili; 53/53 test gecti.
+- Canli operasyon: Aysun Aydoner'in 2 acik feedback kaydi
+  `feedback-fix-2026-07-13-apply-1783962347176` cozum grubuyla kapatildi. Kisisel cozum
+  bildirimi gonderildi ve son kontrolde acik feedback sayisi `0`.

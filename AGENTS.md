@@ -123,6 +123,9 @@ tespit edilir).
   `normalizeDoubledQuotes` ile temizlenir.
 - **Test:** `npm.cmd run check` basarili; 53/53 test gecti. Yeni testler "issue bulunduysa
   duzeltilmis metne uygulanir" ve "gereksiz cift tirnaklar temizlenir" regresyonlarini kapsar.
+- **Canli feedback kapatma:** Aysun Aydoner'in 2 acik feedback kaydi
+  `feedback-fix-2026-07-13-apply-1783962347176` grubuyla kapatildi. Kendisine tek kisisel
+  cozum bildirimi gonderildi. Son kontrolde acik feedback sayisi `0`.
 
 - **12 Temmuz ek feedback koruma turu:** Canli feedbackteki 6 yeni vaka kullanici lehine
   cozuldu. `Kusluk namazi ... rekat` cumlesinde anlam bozan virgulleme/dagilim degisikligi
