@@ -458,3 +458,14 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Canli kapatma: 3 acik feedback `feedback-fix-2026-07-14-hacer-1783977404365` grubuyla
   kapatildi. Hacer Terzi icin tek kisisel cozum bildirimi gonderildi. Son kontrolde acik
   feedback sayisi `0`.
+
+## 2026-07-14 Feedback Kok Kategori ve Tekrar Uyarisi
+
+- Feedback mesajlari kok kategoriye ayrilir: referans/sure formati, noktalama, sapka/sozluk,
+  tirnak, duzeltilmis metne uygulama, duzen/paragraf, kaynakta olmayan icerik ve genel kalite.
+- Geri Bildirim Merkezi acik kayitlarda ayni kok kategoride daha once cozulmus feedback varsa
+  kartta "Daha once cozulmus kategoriye benziyor" uyarisi, cozum sayisi ve son cozum tarihini
+  gosterir.
+- Tekil ve toplu cozum kapatmalarinda kok kategoriler kullanici mesajina eklenmez; ic kayit
+  olarak `resolution_note` ve `issue_resolution_log.summary` alanlarina yazilir.
+- Test: `npm.cmd run check` basarili; 54/54 test gecti.

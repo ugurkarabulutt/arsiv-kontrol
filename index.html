@@ -398,6 +398,9 @@ canvas{width:100%!important;}
 .feedback-filter-bar,.msg-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);}
 .feedback-user{font-weight:800;color:var(--ink);margin-bottom:5px;}
 .feedback-user .mono{font-weight:500;}
+.feedback-root{display:inline-flex;align-items:center;gap:5px;margin:6px 0 4px;padding:4px 8px;border:1px solid var(--border);background:var(--surface2);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);}
+.feedback-root-match{margin:7px 0 4px;padding:8px 10px;border:1px solid rgba(var(--ai-rgb),.35);border-left:3px solid var(--ai);background:rgba(var(--ai-rgb),.08);font-size:12px;line-height:1.45;color:var(--ink2);}
+.feedback-root-match strong{color:var(--ink);}
 .message-log-card{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);}
 .message-log-card:last-child{border-bottom:none;}
 .message-kind{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;border:1px solid var(--gold);background:var(--gold-bg);color:var(--gold-dk,#8b6914);padding:4px 7px;height:max-content;}
@@ -2293,8 +2296,12 @@ function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml='
   function alertBody(a){
     if(a.type!=='feedback')return `<div class="alert-msg">${esc(a.message)}</div>`;
     const parts=String(a.message||'').split(' | ');
+    const root=a.rootCategory?`<div class="feedback-root">Kök: ${esc(a.rootCategory.label||a.rootCategory.key)}</div>`:'';
+    const match=a.similarResolved?`<div class="feedback-root-match"><strong>Daha önce çözülmüş kategoriye benziyor:</strong> ${esc(a.similarResolved.label)} · ${Number(a.similarResolved.count||0)} çözüm${a.similarResolved.latestAt?` · Son: ${new Date(a.similarResolved.latestAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:''}</div>`:'';
     return `<div class="alert-msg">
       <div class="feedback-user">${esc(a.userName||'Bilinmeyen kullanıcı')} ${a.userUsername?`<span class="mono">(${esc(a.userUsername)})</span>`:''}</div>
+      ${root}
+      ${match}
       ${parts.map(p=>{
       const idx=p.indexOf(':');
       if(idx<0)return `<div>${esc(p)}</div>`;

@@ -462,3 +462,16 @@ Stack:
 - Canli operasyon: 3 acik feedback `feedback-fix-2026-07-14-hacer-1783977404365` cozum
   grubuyla kapatildi. Hacer Terzi icin tek kisisel cozum bildirimi gonderildi ve son
   kontrolde acik feedback sayisi `0`.
+
+## 29. Feedback Kok Kategori ve Tekrar Uyarisi
+
+- Sistem feedback mesajlarini kok kategoriye ayirir: referans/sure formati, noktalama,
+  sapka/sozluk, tirnak, duzeltilmis metne uygulama, duzen/paragraf, kaynakta olmayan icerik
+  ve genel kalite.
+- Acik feedback daha once cozulmus ayni kok kategoriye benziyorsa Geri Bildirim Merkezi
+  kartinda admin icin uyarilir. Kartta kategori adi, daha once kac kez cozuldugu ve son
+  cozum tarihi gorunur.
+- Cozum kapatilirken kok kategori bilgisi kullaniciya giden mesaji sisirmez; yalniz
+  admin ic kayitlarinda `resolution_note` ve `issue_resolution_log.summary` icinde saklanir.
+- Bu sistem tekrar eden kok sorunlari manuel olarak yeniden kesfetmeyi azaltmak icin eklendi.
+- Dogrulama: `npm.cmd run check` basarili; 54/54 test gecti.

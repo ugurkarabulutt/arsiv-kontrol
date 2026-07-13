@@ -115,6 +115,14 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-14
+- **Feedback kok kategori ve tekrar uyarisi:** Geri bildirimler artik mesaj iceriginden kok
+  kategoriye ayrilir: referans/sure formati, noktalama, sapka/sozluk, tirnak, duzeltilmis
+  metne uygulama, duzen/paragraf, kaynakta olmayan icerik ve genel kalite. Acik feedback,
+  daha once cozulmus ayni kok kategoriye benziyorsa Geri Bildirim Merkezi kartinda
+  "Daha once cozulmus kategoriye benziyor" uyarisi, cozum sayisi ve son cozum tarihi gorunur.
+  Cozum kapatilirken kok kategoriler ic kayit olarak `resolution_note` ve
+  `issue_resolution_log.summary` alanlarina eklenir; kullaniciya giden mesaj sade kalir.
+- **Test:** `npm.cmd run check` basarili; 54/54 test gecti.
 - **3 acik feedback kalici koruma turu:** Hacer Terzi geri bildirimleriyle gelen 3 yeni
   yanlis-pozitif vaka cozuldu. Kaynakta nokta zaten varsa `lazim -> lazim.` gibi tek kelime
   nokta ekleme bulgusu skor disi kalir; `kitab -> kitâb` sapkalama zorlamasi reddedilir;

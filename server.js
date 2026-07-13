@@ -485,6 +485,94 @@ function feedbackSummary(alert) {
   return `${reason}${finding}${record}`.slice(0, 260);
 }
 
+const FEEDBACK_ROOT_CATEGORIES = [
+  { key: 'reference-format', label: 'Referans / sure formatı', patterns: [/referans/u, /meal/u, /meâl/u, /kur'?an/u, /sure/u, /ayet/u, /\d+\s*[/.]\s*[\p{L}'’\s]+-\d+/u] },
+  { key: 'punctuation-existing', label: 'Noktalama zaten kaynakta var', patterns: [/nokta/u, /virgul/u, /virgül/u, /noktalama/u, /ustunu ciz/u, /üstünü çiz/u, /zaten/u] },
+  { key: 'diacritic-dictionary', label: 'Şapka / sözlük standardı', patterns: [/sapka/u, /şapka/u, /kitab/u, /kitâb/u, /sozluk/u, /sözlük/u, /â/u, /î/u, /û/u] },
+  { key: 'quote-safety', label: 'Tırnak / çift tırnak güvenliği', patterns: [/tirnak/u, /tırnak/u, /cift tirnak/u, /çift tırnak/u, /""/u] },
+  { key: 'apply-corrected-text', label: 'Düzeltilmiş metne uygulama', patterns: [/duzeltilmis metin/u, /düzeltilmiş metin/u, /uygulamiyor/u, /uygulamıyor/u, /hatalari veriyor/u, /hataları veriyor/u] },
+  { key: 'layout-structure', label: 'Düzen / tablo / paragraf koruma', patterns: [/duzen/u, /düzen/u, /tablo/u, /slayt/u, /paragraf/u, /satir/u, /satır/u] },
+  { key: 'content-addition', label: 'Kaynakta olmayan içerik ekleme', patterns: [/kaynakta olmayan/u, /metinde yok/u, /ekleme/u, /eklenmis/u, /eklenmiş/u] },
+  { key: 'general-quality', label: 'Genel denetim kalitesi', patterns: [/.+/u] }
+];
+
+function foldFeedbackText(value = '') {
+  return String(value || '')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c');
+}
+
+function feedbackRootCategory(alertOrMessage) {
+  const raw = typeof alertOrMessage === 'string' ? alertOrMessage : alertOrMessage?.message;
+  const fields = parseAlertFields(raw || '');
+  const haystack = foldFeedbackText([
+    raw,
+    fields.bulgu,
+    fields.kural,
+    fields.not,
+    fields['geri bildirim']
+  ].filter(Boolean).join(' '));
+  const category = FEEDBACK_ROOT_CATEGORIES.find(item => item.patterns.some(pattern => pattern.test(haystack)))
+    || FEEDBACK_ROOT_CATEGORIES[FEEDBACK_ROOT_CATEGORIES.length - 1];
+  return { key: category.key, label: category.label };
+}
+
+function feedbackRootCategorySummary(feedbacks = []) {
+  const byKey = new Map();
+  feedbacks.forEach(feedback => {
+    const category = feedbackRootCategory(feedback);
+    if (!byKey.has(category.key)) byKey.set(category.key, { ...category, count: 0 });
+    byKey.get(category.key).count++;
+  });
+  return [...byKey.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'tr'));
+}
+
+function appendRootCategoryNote(note, feedbacks = []) {
+  const roots = feedbackRootCategorySummary(feedbacks);
+  if (!roots.length) return note;
+  return `${note}\nKök kategoriler: ${roots.map(root => `${root.label} (${root.count})`).join(', ')}`;
+}
+
+function feedbackSimilarityMap(feedbackAlerts = []) {
+  const resolvedByRoot = new Map();
+  feedbackAlerts
+    .filter(alert => alert.feedback_status === 'resolved')
+    .forEach(alert => {
+      const category = feedbackRootCategory(alert);
+      const current = resolvedByRoot.get(category.key) || {
+        key: category.key,
+        label: category.label,
+        count: 0,
+        latestAt: null,
+        examples: []
+      };
+      current.count++;
+      if (!current.latestAt || new Date(alert.resolved_at || alert.created_at) > new Date(current.latestAt)) {
+        current.latestAt = alert.resolved_at || alert.created_at;
+      }
+      if (current.examples.length < 3) current.examples.push(feedbackSummary(alert));
+      resolvedByRoot.set(category.key, current);
+    });
+
+  const result = new Map();
+  feedbackAlerts.forEach(alert => {
+    const category = feedbackRootCategory(alert);
+    const resolved = category.key === 'general-quality' ? null : resolvedByRoot.get(category.key);
+    result.set(alert.id, {
+      rootCategory: category,
+      similarResolved: alert.feedback_status !== 'resolved' && resolved ? resolved : null
+    });
+  });
+  return result;
+}
+
 function buildFeedbackResolutionMessage(userName, feedbacks, note) {
   const safeName = String(userName || 'kardeşimiz').trim();
   const lines = feedbacks.map((f, i) => `${i + 1}. ${feedbackSummary(f)}`);
@@ -757,6 +845,7 @@ app.post('/api/users/:id/notify', auth, admin, async (req, res) => {
     if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     if (!target.active) return res.status(400).json({ error: 'Pasif kullanıcıya bildirim gönderilemez.' });
 
+    const internalResolutionNote = appendRootCategoryNote(cleanNote, [alert]);
     const message = [
       `Başlık: ${cleanTitle}`,
       `Mesaj: ${cleanMessage}`,
@@ -1095,12 +1184,14 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
       if (usersError) throw new Error(usersError.message);
       (users || []).forEach(u => usersById.set(u.id, u));
     }
+    const feedbackSimilarities = feedbackSimilarityMap((data || []).filter(a => a.type === 'feedback'));
     res.json((data || []).map(row => {
       const user = usersById.get(row.user_id);
       return {
         ...mapAlert(row),
         userName: user?.name || user?.username || '',
-        userUsername: user?.username || ''
+        userUsername: user?.username || '',
+        ...(feedbackSimilarities.get(row.id) || {})
       };
     }));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1238,7 +1329,7 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
       patch.resolved_at = new Date().toISOString();
       patch.resolved_by = req.session.name || req.session.username;
       patch.resolution_group = insertError ? null : `single-${alert.id}`;
-      patch.resolution_note = cleanNote;
+      patch.resolution_note = internalResolutionNote;
     }
     const { error: updateError } = await supabase.from('alerts').update(patch).eq('id', alert.id);
     if (updateError) throw new Error(updateError.message);
@@ -1247,7 +1338,7 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
       await supabase.from('issue_resolution_log').upsert({
         resolution_group: `single-${alert.id}`,
         title: cleanNote.slice(0, 160),
-        summary: feedbackSummary(alert),
+        summary: `${feedbackSummary(alert)}\nKök kategoriler: ${feedbackRootCategorySummary([alert]).map(root => `${root.label} (${root.count})`).join(', ')}`,
         status: 'resolved',
         feedback_count: 1,
         user_count: 1,
@@ -1297,6 +1388,7 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
     }
 
     const groupId = `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const internalResolutionNote = appendRootCategoryNote(cleanNote, feedbacks);
     const notices = [];
     for (const [userId, items] of byUser.entries()) {
       const first = items[0];
@@ -1312,7 +1404,7 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
         ...(HAS_ALERT_FEEDBACK_META ? {
           feedback_status: 'notice',
           resolution_group: groupId,
-          resolution_note: cleanNote
+          resolution_note: internalResolutionNote
         } : {})
       });
     }
@@ -1326,7 +1418,7 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
       patch.resolved_at = new Date().toISOString();
       patch.resolved_by = req.session.name || req.session.username;
       patch.resolution_group = groupId;
-      patch.resolution_note = cleanNote;
+      patch.resolution_note = internalResolutionNote;
     }
     const { error: updateError } = await supabase.from('alerts')
       .update(patch)
@@ -1335,10 +1427,11 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
 
     if (HAS_ISSUE_RESOLUTION_LOG) {
       const sampleItems = feedbacks.slice(0, 8).map(feedbackSummary).join('\n');
+      const rootSummary = feedbackRootCategorySummary(feedbacks).map(root => `${root.label} (${root.count})`).join(', ');
       const { error: logError } = await supabase.from('issue_resolution_log').insert({
         resolution_group: groupId,
         title: cleanNote.slice(0, 160),
-        summary: sampleItems,
+        summary: `${sampleItems}\nKök kategoriler: ${rootSummary}`,
         status: 'resolved',
         feedback_count: feedbacks.length,
         user_count: byUser.size,
