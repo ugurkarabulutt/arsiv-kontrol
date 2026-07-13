@@ -450,7 +450,7 @@ function applyDeterministicStandards(cats, sourceText) {
 
 function stripOuterTextQuotes(text) {
   let value = String(text || '').trim();
-  const pairs = [['"', '"'], ['“', '”'], ['‘', '’']];
+  const pairs = [['"', '"'], ['“', '”'], ['‘', '’'], ['«', '»'], ['â€œ', 'â€'], ['â€˜', 'â€™']];
   let changed = true;
   while (changed && value.length >= 2) {
     changed = false;
@@ -465,16 +465,40 @@ function stripOuterTextQuotes(text) {
   return value;
 }
 
+function normalizeDoubledQuotes(text) {
+  return String(text || '')
+    .replace(/"{2,}([^"\n]+)"{2,}/g, '"$1"')
+    .replace(/'{2,}([^'\n]+)'{2,}/g, "'$1'")
+    .replace(/“{2,}([^”\n]+)”{2,}/g, '“$1”')
+    .replace(/‘{2,}([^’\n]+)’{2,}/g, '‘$1’');
+}
+
+function flexibleIssuePattern(original) {
+  const chars = [...String(original || '')];
+  let pattern = '';
+  for (const ch of chars) {
+    if (/\s/u.test(ch)) pattern += '\\s+';
+    else if (/['’‘\x60´ʼ]/u.test(ch)) pattern += "['’‘\\x60´ʼ]";
+    else if (/["“”«»]/u.test(ch)) pattern += '["“”«»]';
+    else if (ch === '…') pattern += '(?:…|\\.\\.\\.)';
+    else pattern += escapeRegExp(ch);
+  }
+  return new RegExp(pattern, 'iu');
+}
+
 function applyAcceptedIssues(sourceText, issues) {
   return issues.reduce((text, issue) => {
     const original = String(issue?.original || '');
     const fixed = String(issue?.fixed || '');
     if (!original || !fixed) return text;
     if (text.includes(original)) return text.replace(original, fixed);
-    return text.replace(new RegExp(escapeRegExp(original), 'iu'), fixed);
+    const exact = new RegExp(escapeRegExp(original), 'iu');
+    if (exact.test(text)) return text.replace(exact, fixed);
+    const flexible = flexibleIssuePattern(original);
+    if (flexible.test(text)) return text.replace(flexible, fixed);
+    return text;
   }, sourceText);
 }
-
 function textHash(text) {
   return crypto.createHash('sha256').update(normalizeText(text), 'utf8').digest('hex');
 }
@@ -533,6 +557,7 @@ function finalizeResult(result = {}, sourceText = '') {
   }
   if (result.correctedText) {
     result.correctedText = stripOuterTextQuotes(result.correctedText);
+    result.correctedText = normalizeDoubledQuotes(result.correctedText);
   }
   result.score = Math.max(0, 100 - penalty);
   result.totalErrors = total;

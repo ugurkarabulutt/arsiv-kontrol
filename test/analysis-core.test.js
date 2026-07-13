@@ -497,3 +497,33 @@ test('12 Temmuz geri bildirimleri sozluk ve baglam lehine korunur', () => {
     ['Bir araya', 'biraraya']
   ]);
 });
+
+test('issue bulunduysa apostrof ve bosluk farkina ragmen duzeltilmis metne uygulanir', () => {
+  const source = "Allah’a ulaşmayı dileyen kişi her şey için dua eder.";
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: "Allah'a", fixed: 'Allah’a', rule: 'Apostrof tipi' },
+          { original: 'her şey', fixed: 'herşey', rule: 'Sozluk standardi' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.correctedText, 'Allah’a ulaşmayı dileyen kişi herşey için dua eder.');
+  assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ['her şey', 'herşey']
+  ]);
+});
+
+test('modelin ekledigi gereksiz cift tirnaklar temizlenir', () => {
+  const result = finalizeResult({
+    correctedText: '""Düzeltilmiş metin içinde ""alıntı"" korunur.""',
+    categories: {}
+  }, '');
+
+  assert.equal(result.correctedText, 'Düzeltilmiş metin içinde "alıntı" korunur.');
+});

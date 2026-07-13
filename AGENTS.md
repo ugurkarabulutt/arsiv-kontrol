@@ -115,6 +115,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-12
+- **13 Temmuz kritik uygulama katmani duzeltmesi:** Aysun Aydoner geri bildiriminde gorulen
+  "hatalari buluyor ama duzeltilmis metne uygulamiyor" kok sebebi giderildi. Issue dogrulama
+  kaynak metni kanonik olarak bulabiliyor; ancak uygulama katmani apostrof, tirnak ve bosluk
+  varyantlarinda daha dar eslesiyordu. `applyAcceptedIssues` artik apostrof/tirnak/ellipsis ve
+  bosluk farklarina toleransli uygular. Modelin ekledigi gereksiz `""...""` cift tirnaklari
+  `normalizeDoubledQuotes` ile temizlenir.
+- **Test:** `npm.cmd run check` basarili; 53/53 test gecti. Yeni testler "issue bulunduysa
+  duzeltilmis metne uygulanir" ve "gereksiz cift tirnaklar temizlenir" regresyonlarini kapsar.
+
 - **12 Temmuz ek feedback koruma turu:** Canli feedbackteki 6 yeni vaka kullanici lehine
   cozuldu. `Kusluk namazi ... rekat` cumlesinde anlam bozan virgulleme/dagilim degisikligi
   reddedilir; `vaad/vaadde` kok kullanimi `vaat/vaatte` yapilmaz; `afetlerine` sapkali

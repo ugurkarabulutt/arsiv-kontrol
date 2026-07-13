@@ -432,3 +432,14 @@ Stack:
 - Canli operasyon: production deploy sonrasi 6 acik feedback kaydi
   `feedback-fix-2026-07-13-1783893985888` cozum grubuyla kapatildi. 3 kullaniciya kisisel
   cozum bildirimi gonderildi ve son kontrolde acik feedback sayisi `0`.
+
+## 27. 2026-07-13 Kritik Uygulama Katmani Duzeltmesi
+
+- Sorun: Sistem bazi durumlarda hatayi bulup listeliyor, fakat duzeltilmis metne uygulamadan
+  sonucu veriyordu. Bu ozellikle apostrof, tirnak ve bosluk karakteri kaynak/model arasinda
+  farkli oldugunda ortaya cikabiliyordu.
+- Cozum: `applyAcceptedIssues` artik kaynakta canonical olarak dogrulanan issue'lari duzeltilmis
+  metne de toleransli regex ile uygular.
+- Cift tirnak korumasi: Modelin ekledigi gereksiz `""...""` bicimleri temizlenir; metin icindeki
+  normal alinti tirnaklari korunur.
+- Dogrulama: `npm.cmd run check` basarili; 53/53 test gecti.
