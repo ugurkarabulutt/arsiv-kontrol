@@ -453,3 +453,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   bosluklu oldugu icin ayni kok sorun tekrar acik feedbacke dustu. Kural genellendi ve
   regresyon testine alindi.
 - Test: `npm.cmd run check` basarili; 54/54 test gecti.
+- Production: `5afe883 fix: protect latest feedback cases` Vercel production'a deploy edildi;
+  `/health ok`, ana sayfa 200.
+- Canli kapatma: 3 acik feedback `feedback-fix-2026-07-14-hacer-1783977404365` grubuyla
+  kapatildi. Hacer Terzi icin tek kisisel cozum bildirimi gonderildi. Son kontrolde acik
+  feedback sayisi `0`.

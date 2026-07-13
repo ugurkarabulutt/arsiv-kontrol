@@ -124,6 +124,9 @@ tespit edilir).
   kapsiyordu; `ALI IMRAN` gibi bosluklu sure adlari regex disinda kaliyordu. Kural artik
   cok kelimeli referans adlarini da kapsar ve regresyon testindedir.
 - **Test:** `npm.cmd run check` basarili; 54/54 test gecti.
+- **Canli feedback kapatma:** 3 acik feedback `feedback-fix-2026-07-14-hacer-1783977404365`
+  cozum grubuyla kapatildi. Hacer Terzi icin tek kisisel `feedback_resolution` bildirimi
+  gonderildi. Son kontrolde acik feedback sayisi `0`.
 
 ### 2026-07-12
 - **13 Temmuz kritik uygulama katmani duzeltmesi:** Aysun Aydoner geri bildiriminde gorulen

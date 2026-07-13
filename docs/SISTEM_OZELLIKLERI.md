@@ -459,3 +459,6 @@ Stack:
 - Tekrar sebebi kayda alindi: onceki referans korumasi tek kelimeli sure adlarini kapsiyor,
   `ALI IMRAN` gibi bosluklu referanslari kaciriyordu. Kural genellendi.
 - Dogrulama: `npm.cmd run check` basarili; 54/54 test gecti.
+- Canli operasyon: 3 acik feedback `feedback-fix-2026-07-14-hacer-1783977404365` cozum
+  grubuyla kapatildi. Hacer Terzi icin tek kisisel cozum bildirimi gonderildi ve son
+  kontrolde acik feedback sayisi `0`.
