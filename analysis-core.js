@@ -210,6 +210,19 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom.startsWith('vaad') && foldedTo.startsWith('vaat')) return true;
   if (foldedFrom === '19 tane haslet ruhun' && /^19 tane haslet ruhun\s*[,.;:]$/iu.test(foldedTo)) return true;
   if (/^kitab$/iu.test(from) && /^kitâb$/iu.test(to)) return true;
+  if (/^cihad/iu.test(from) && /^cihâd/iu.test(to)) return true;
+  if (/^ebu$/iu.test(from) && /^ebû$/iu.test(to)) return true;
+  if (/^inşaallah$/iu.test(from) && /^inşallah$/iu.test(to)) return true;
+  if (/^kasiyet$/iu.test(from) && /^kasvet$/iu.test(to)) return true;
+  if (/^lâzımgelen$/iu.test(from) && /^lâzım\s+gelen$/iu.test(to)) return true;
+  if (/^dîn[ie]$/iu.test(from) && /^din[ie]$/iu.test(to)) return true;
+  if (/^hz\.\s*isa/iu.test(from) && /^hazreti\s+isa\s*\(a\.s\.?\)/iu.test(to)) return true;
+  if (/^[\p{L}'\u2019]+\([\p{L}'\u2019]+\)$/iu.test(from) && new RegExp(`^${escapeRegExp(from.replace('(', ' ('))}$`, 'iu').test(to)) return true;
+  if (from.endsWith(';') && to === `${from.slice(0, -1)}:`) return true;
+  if (from.includes('. ') && foldText(to) === foldText(from.replace('. ', ', '))) return true;
+  if (foldedFrom.length <= 4 && foldedTo.length === foldedFrom.length - 1 && foldedFrom.startsWith(foldedTo)) return true;
+  if (foldedFrom.includes('euzu billahi') && foldedTo.replace(/\s+/g, '').startsWith('euzubillahi')) return true;
+  if (from.includes("'") && !to.includes("'") && foldText(from.replace(/'/g, '')) === foldText(to)) return true;
   if (/^kadir(?:i|i|\u00ee)?$/iu.test(from) && /^kaadir(?:i|i|\u00ee)?$/iu.test(to)) return true;
   if (/^vel\s+asr$/iu.test(from) && /^vel-asr$/iu.test(to)) return true;
   if (/^\d+\/[\p{L}'\u2019\s]+\s*-\s*\d+$/iu.test(from) && /^\d+\.\s*[\p{L}'\u2019\s]+\s*-\s*\d+$/iu.test(to)) return true;
@@ -368,6 +381,7 @@ function deterministicFixed(original) {
     return caseLike(original, text.replace(/^kadir/iu, 'kaadir'));
   }
   if (/^Zur\u00fbf$/iu.test(text)) return 'Zuhr\u00fbf';
+  if (/^ş(?:u|û)ra$/iu.test(text)) return caseLike(original, 'şûrâ');
   if (/^19 tane haslet ruhun$/iu.test(text)) return 'Ruhta 19 tane haslet';
   if (/^bir\s+araya$/iu.test(text)) return 'biraraya';
   if (/^hadis-i\s+şerif$/iu.test(text)) return caseLike(original, 'Hadîs-i Şerif');
@@ -410,6 +424,11 @@ function applyDeterministicStandards(cats, sourceText) {
 
   const zuhrufRe = /(?<![\p{L}\p{N}_])Zur\u00fbf(?![\p{L}\p{N}_])/gu;
   for (const match of text.matchAll(zuhrufRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sure adi standardi');
+  }
+
+  const shuraRe = /(?<![\p{L}\p{N}_])Ş(?:u|û)ra(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(shuraRe)) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sure adi standardi');
   }
 
@@ -462,6 +481,7 @@ function applyDeterministicStandards(cats, sourceText) {
 function stripOuterTextQuotes(text) {
   let value = String(text || '').trim();
   const pairs = [['"', '"'], ['“', '”'], ['‘', '’'], ['«', '»'], ['â€œ', 'â€'], ['â€˜', 'â€™']];
+  pairs.push(["'", "'"], ['\u201c', '\u201d'], ['\u2018', '\u2019'], ['\u00ab', '\u00bb']);
   let changed = true;
   while (changed && value.length >= 2) {
     changed = false;
@@ -480,6 +500,8 @@ function normalizeDoubledQuotes(text) {
   return String(text || '')
     .replace(/"{2,}([^"\n]+)"{2,}/g, '"$1"')
     .replace(/'{2,}([^'\n]+)'{2,}/g, "'$1'")
+    .replace(/\u201c{2,}([^\u201d\n]+)\u201d{2,}/gu, '\u201c$1\u201d')
+    .replace(/\u2018{2,}([^\u2019\n]+)\u2019{2,}/gu, '\u2018$1\u2019')
     .replace(/“{2,}([^”\n]+)”{2,}/g, '“$1”')
     .replace(/‘{2,}([^’\n]+)’{2,}/g, '‘$1’');
 }

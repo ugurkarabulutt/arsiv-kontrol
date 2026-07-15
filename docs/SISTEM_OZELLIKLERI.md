@@ -475,3 +475,16 @@ Stack:
   admin ic kayitlarinda `resolution_note` ve `issue_resolution_log.summary` icinde saklanir.
 - Bu sistem tekrar eden kok sorunlari manuel olarak yeniden kesfetmeyi azaltmak icin eklendi.
 - Dogrulama: `npm.cmd run check` basarili; 54/54 test gecti.
+
+## 30. 2026-07-15 18 Acik Feedback Kok Koruma Turu
+
+- 18 acik feedback tek kok koruma turunda ele alindi.
+- Kalite katmani artik su tekrar eden hatalari skorlamaz ve duzeltilmis metne uygulamaz:
+  cift/dis tirnak uretimi, Arapca ayet/transliterasyon parantez ve bosluk bozma,
+  `cihad/Ebu` sapka zorlamasi, sure apostrof dusurme, noktalı virgulu iki noktaya zorlama,
+  ayri cumleyi virgul ile birlestirme, `Eûzü...` duasini bitisiklestirme,
+  `inşaallah -> inşallah`, metinde olmayan `kasiyet -> kasvet`, `lâzımgelen -> lâzım gelen`,
+  ayet icinde `dîni/dîne -> dini/dine` ve `Hz. İsa’ya -> Hazreti İsa (A.S)’ya`.
+- Sistem `Şura` yazimini deterministik olarak `Şûrâ` bicimine duzeltir; sadece buyuk/kucuk
+  harf farkini hata saymaz.
+- Dogrulama: `npm.cmd run check` basarili; 56/56 test gecti.

@@ -115,6 +115,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-14
+- **15 Temmuz 18 acik feedback kok koruma turu:** Bihter Oksak, Serap Pamuk ve Nuray
+  Ardagumusoglu tarafindan gelen 18 acik feedback kok siniflara ayrildi ve kalite katmanina
+  islendi. Cozulen siniflar: dis/cift tirnak temizligi, `Sura -> Şûrâ` eksik sapka yakalama,
+  Arapca ayet/transliterasyon parantez ve bosluk korumasi, `cihad` ve `Ebu` sapka zorlamasini
+  reddetme, sure apostrof dusurme (`Ra'd -> RAD`), noktalı virgulu iki noktaya zorlama,
+  ayri cumleyi virgul ile birlestirme, `Eûzü...` duasini bitisiklestirme, `inşaallah` ters
+  standardini reddetme, metinde olmayan `kasiyet -> kasvet`, `lâzımgelen`, ayet icindeki
+  `dîni/dîne` ve `Hz. İsa’ya -> Hazreti İsa (A.S)’ya` donusumlerini koruma.
+- **Test:** `npm.cmd run check` basarili; 56/56 test gecti. Yeni regresyon testi 14 Temmuz
+  acik feedback koklerini birlikte dogrular.
 - **Feedback kok kategori ve tekrar uyarisi:** Geri bildirimler artik mesaj iceriginden kok
   kategoriye ayrilir: referans/sure formati, noktalama, sapka/sozluk, tirnak, duzeltilmis
   metne uygulama, duzen/paragraf, kaynakta olmayan icerik ve genel kalite. Acik feedback,

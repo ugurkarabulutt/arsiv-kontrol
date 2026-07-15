@@ -469,3 +469,17 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Tekil ve toplu cozum kapatmalarinda kok kategoriler kullanici mesajina eklenmez; ic kayit
   olarak `resolution_note` ve `issue_resolution_log.summary` alanlarina yazilir.
 - Test: `npm.cmd run check` basarili; 54/54 test gecti.
+
+## 2026-07-15 18 Acik Feedback Kok Koruma Turu
+
+- Canli kontrolde 18 acik feedback goruldu: Bihter Oksak 12, Serap Pamuk 2,
+  Nuray Ardagumusoglu 4.
+- Kodda cozuldu: dis/cift tirnak temizligi genisletildi; `Sura -> Şûrâ` deterministik
+  eksik sapka duzeltmesi eklendi; Arapca ayet/transliterasyon icinde parantez boslugu,
+  `Eûzü...` bitisiklestirme, `dîni/dîne -> dini/dine`, `gayz(gayzi) -> gayz (gayzi)` gibi
+  baglam bozucu donusumler reddedildi.
+- Korunan standartlar: `cihad` ve `Ebu` sapka zorlamasi, `Ra'd` apostrof dusurme,
+  `diyor ki; -> diyor ki:`, `Allah Resûl'ü (S.A.V); -> :`, ayri cumleyi virgul ile
+  birlestirme, `inşaallah -> inşallah`, `kasiyet -> kasvet`, `lâzımgelen -> lâzım gelen`,
+  `Hz. İsa’ya -> Hazreti İsa (A.S)’ya`.
+- Test: `npm.cmd run check` basarili; 56/56 test gecti.

@@ -193,6 +193,20 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('HADİS-İ ŞERİF', 'HADÎS-İ ŞERÎF'), true);
 });
 
+test('akilli dis tirnaklar ve cift akilli tirnaklar temizlenir', () => {
+  const smart = finalizeResult({
+    correctedText: '\u201cD\u00fczeltilmi\u015f metin\u201d',
+    categories: {}
+  }, '');
+  assert.equal(smart.correctedText, 'D\u00fczeltilmi\u015f metin');
+
+  const doubledSmart = finalizeResult({
+    correctedText: '\u201c\u201cal\u0131nt\u0131\u201d\u201d',
+    categories: {}
+  }, '');
+  assert.equal(doubledSmart.correctedText, 'al\u0131nt\u0131');
+});
+
 test('canli feedback standart kelimeleri kayitli tutulur', () => {
   assert.equal(CANONICAL_WORD_STANDARDS.vucut, 'vücut');
   assert.equal(CANONICAL_WORD_STANDARDS.serr, 'şerr');
@@ -542,6 +556,80 @@ test('13 Temmuz son feedbackleri nokta sapka ve cok kelimeli referans formatinda
   assert.equal(result.totalErrors, 0);
   assert.equal(result.score, 100);
   assert.equal(result.correctedText, source);
+});
+
+test('14 Temmuz acik feedback kokleri tekrar skorlanmaz', () => {
+  const source = [
+    '\u015eura suresinde eksik sapka vardir.',
+    'Arapca ayette gayz(gayzi) ifadesi korunur.',
+    'Efendimizin sozlugunde cihad-\u0131 kelimesinde sapka yoktur.',
+    'Bu emirlere dikkat edilir.',
+    "Ra'd suresi apostrofla yazilir.",
+    'Res\u00fbl diyor ki; bu ifade kalabilir.',
+    'Allah\u2019a giden yolun giri\u015f kap\u0131s\u0131 do\u011fru olmakt\u0131r. Do\u011fruyu s\u00f6yleyebilmektir.',
+    'Ebu kelimesi slaytta boyle gecmistir.',
+    'E\u00fbz\u00fc bill\u00e2hi mine\u2019\u015f-\u015feyt\u00e2nirrac\u00eem ayr\u0131 yazilmistir.',
+    'in\u015faallah iki a ile korunur.',
+    "Allah Res\u00fbl'\u00fc (S.A.V); ifadesi kalabilir.",
+    'Metinde kasiyet kelimesi yoktur.',
+    'Efendimizin sozlugunde l\u00e2z\u0131mgelen birlesik kullanilir.',
+    'Arapca ayette d\u00eeni ve d\u00eene halleri korunur.',
+    'Hz. \u0130sa\u2019ya tefsir icinde boyle yazilmistir.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'cihad-\u0131', fixed: 'cih\u00e2d-\u0131', rule: 'Sapka' },
+          { original: 'mir', fixed: 'mi', rule: 'Harf silme' },
+          { original: "Ra'd", fixed: 'RAD', rule: 'Sure apostrof' },
+          { original: 'Ebu', fixed: 'Eb\u00fb', rule: 'Sapka' },
+          { original: 'E\u00fbz\u00fc bill\u00e2hi mine\u2019\u015f-\u015feyt\u00e2nirrac\u00eem', fixed: 'E\u00fbzubill\u00e2himine\u015f\u015feyt\u00e2nirrac\u00eem', rule: 'Arapca ifade' },
+          { original: 'in\u015faallah', fixed: 'in\u015fallah', rule: 'Ters standart' },
+          { original: 'kasiyet', fixed: 'kasvet', rule: 'Metinde olmayan' },
+          { original: 'l\u00e2z\u0131mgelen', fixed: 'l\u00e2z\u0131m gelen', rule: 'Sozluk' },
+          { original: 'd\u00eeni', fixed: 'dini', rule: 'Ayet Arapcasi' },
+          { original: 'd\u00eene', fixed: 'dine', rule: 'Ayet Arapcasi' }
+        ]
+      },
+      noktalama: {
+        issues: [
+          { original: 'gayz(gayzi)', fixed: 'gayz (gayzi)', rule: 'Parantez' },
+          { original: 'diyor ki;', fixed: 'diyor ki:', rule: 'Noktalama' },
+          { original: "Allah Res\u00fbl'\u00fc (S.A.V);", fixed: "Allah Res\u00fbl'\u00fc (S.A.V):", rule: 'Noktalama' }
+        ]
+      },
+      yapi: {
+        issues: [
+          {
+            original: 'Allah\u2019a giden yolun giri\u015f kap\u0131s\u0131 do\u011fru olmakt\u0131r. Do\u011fruyu s\u00f6yleyebilmektir.',
+            fixed: "Allah'a giden yolun giri\u015f kap\u0131s\u0131 do\u011fru olmakt\u0131r, do\u011fruyu s\u00f6yleyebilmektir.",
+            rule: 'Cumle birlestirme'
+          },
+          { original: 'Hz. \u0130sa\u2019ya', fixed: 'Hazreti \u0130sa (A.S)\u2019ya', rule: 'Nebiler' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ['\u015eura', '\u015e\u00fbr\u00e2']
+  ]);
+  assert.ok(result.correctedText.includes('\u015e\u00fbr\u00e2 suresinde'));
+  assert.ok(result.correctedText.includes('gayz(gayzi) ifadesi'));
+  assert.ok(result.correctedText.includes('cihad-\u0131 kelimesinde'));
+  assert.ok(result.correctedText.includes('Bu emirlere dikkat edilir.'));
+  assert.ok(result.correctedText.includes("Ra'd suresi"));
+  assert.ok(result.correctedText.includes('diyor ki;'));
+  assert.ok(result.correctedText.includes('Do\u011fruyu s\u00f6yleyebilmektir.'));
+  assert.ok(result.correctedText.includes('in\u015faallah iki a ile korunur.'));
+  assert.ok(result.correctedText.includes('l\u00e2z\u0131mgelen birlesik'));
+  assert.ok(result.correctedText.includes('d\u00eeni ve d\u00eene halleri korunur.'));
+  assert.ok(result.correctedText.includes('Hz. \u0130sa\u2019ya tefsir'));
 });
 
 test('modelin ekledigi gereksiz cift tirnaklar temizlenir', () => {
