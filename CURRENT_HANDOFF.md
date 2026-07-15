@@ -483,3 +483,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   birlestirme, `inşaallah -> inşallah`, `kasiyet -> kasvet`, `lâzımgelen -> lâzım gelen`,
   `Hz. İsa’ya -> Hazreti İsa (A.S)’ya`.
 - Test: `npm.cmd run check` basarili; 56/56 test gecti.
+- Production: `3eb3d57 fix: protect latest feedback roots` Vercel production'a deploy edildi;
+  `/health ok`, ana sayfa 200.
+- Canli kapatma: 18 acik feedback `feedback-fix-2026-07-15-18-1784128089002` grubuyla
+  kapatildi. Bihter Oksak, Serap Pamuk ve Nuray Ardagumusoglu icin 3 kisisel cozum bildirimi
+  gonderildi. Son kontrolde acik feedback sayisi `0`.

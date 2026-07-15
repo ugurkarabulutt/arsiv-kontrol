@@ -488,3 +488,6 @@ Stack:
 - Sistem `Şura` yazimini deterministik olarak `Şûrâ` bicimine duzeltir; sadece buyuk/kucuk
   harf farkini hata saymaz.
 - Dogrulama: `npm.cmd run check` basarili; 56/56 test gecti.
+- Canli operasyon: 18 acik feedback `feedback-fix-2026-07-15-18-1784128089002` cozum
+  grubuyla kapatildi. Bihter Oksak, Serap Pamuk ve Nuray Ardagumusoglu icin 3 kisisel
+  cozum bildirimi gonderildi ve son kontrolde acik feedback sayisi `0`.

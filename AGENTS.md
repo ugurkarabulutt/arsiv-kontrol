@@ -125,6 +125,9 @@ tespit edilir).
   `dîni/dîne` ve `Hz. İsa’ya -> Hazreti İsa (A.S)’ya` donusumlerini koruma.
 - **Test:** `npm.cmd run check` basarili; 56/56 test gecti. Yeni regresyon testi 14 Temmuz
   acik feedback koklerini birlikte dogrular.
+- **Canli feedback kapatma:** 18 acik feedback `feedback-fix-2026-07-15-18-1784128089002`
+  cozum grubuyla kapatildi. Bihter Oksak, Serap Pamuk ve Nuray Ardagumusoglu icin 3
+  kisisel `feedback_resolution` bildirimi gonderildi. Son kontrolde acik feedback sayisi `0`.
 - **Feedback kok kategori ve tekrar uyarisi:** Geri bildirimler artik mesaj iceriginden kok
   kategoriye ayrilir: referans/sure formati, noktalama, sapka/sozluk, tirnak, duzeltilmis
   metne uygulama, duzen/paragraf, kaynakta olmayan icerik ve genel kalite. Acik feedback,
