@@ -123,6 +123,11 @@ tespit edilir).
 - **Test:** `npm.cmd run check` başarılı; 57/57 test geçti. Yeni regresyon testi canlı iki
   örneğin toplam hata sayısını `0`, skoru `100` ve düzeltilmiş metni kaynak metinle aynı
   tuttuğunu doğrular.
+- **Canlı feedback kapatma:** Serap Pamuk'a ait 2 açık feedback
+  `feedback-fix-2026-07-16-serr-1784153654037` çözüm grubuyla kapatıldı ve tek kişisel
+  `feedback_resolution` bildirimi gönderildi. Aysun Aydöner'in eski çift tırnak
+  `Çözülmedi` takip yanıtı, çift tırnak regresyonu canlı kodda testle güvence altında olduğu
+  için kapatıldı. Son kontrolde açık feedback `0`, çözüm sonrası açık takip `0`.
 
 ### 2026-07-14
 - **15 Temmuz 18 acik feedback kok koruma turu:** Bihter Oksak, Serap Pamuk ve Nuray
