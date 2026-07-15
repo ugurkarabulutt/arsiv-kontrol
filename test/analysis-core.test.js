@@ -177,6 +177,8 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('afv-u', 'af ve'), true);
   assert.equal(isProtectedChange('vücud', 'vücût'), true);
   assert.equal(isProtectedChange('şerr', 'şer'), true);
+  assert.equal(isProtectedChange('şerrdir', 'şerdir'), true);
+  assert.equal(isProtectedChange('şerrle', 'şerle'), true);
   assert.equal(isProtectedChange('dinde', 'dînde'), true);
   assert.equal(isProtectedChange('arif', 'ârif'), true);
   assert.equal(isProtectedChange('cahiliye', 'câhiliye'), true);
@@ -191,6 +193,25 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('hayydırlar', 'hayattadırlar'), true);
   assert.equal(isProtectedChange('hidayet', 'hidayete'), true);
   assert.equal(isProtectedChange('HADİS-İ ŞERİF', 'HADÎS-İ ŞERÎF'), true);
+});
+
+test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
+  const source = 'Bu ifade şerrdir. Şerrle mücadele edilir.';
+  const result = finalizeResult({
+    correctedText: 'Bu ifade şerdir. Şerle mücadele edilir.',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'şerrdir', fixed: 'şerdir', rule: 'İmlâ standardı' },
+          { original: 'Şerrle', fixed: 'Şerle', rule: 'İmlâ standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
 });
 
 test('akilli dis tirnaklar ve cift akilli tirnaklar temizlenir', () => {

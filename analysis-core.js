@@ -50,7 +50,7 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\bvücud[\p{L}\p{N}_]*/iu, to: /\bvüc(?:ûd|ût)[\p{L}\p{N}_]*/iu },
   { from: /\bhayy[\p{L}\p{N}_]*/iu, to: /\bhayat[\p{L}\p{N}_]*/iu },
   { from: /\bşerif\b/iu, to: /\bşerîf\b/iu },
-  { from: /(?<![\p{L}\p{N}_])şerr(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])şer(?![\p{L}\p{N}_])/iu },
+  { from: /(?<![\p{L}\p{N}_])şerr[\p{L}\p{N}_]*/iu, to: /(?<![\p{L}\p{N}_])şer[\p{L}\p{N}_]*/iu },
   { from: /(?<![\p{L}\p{N}_])arif(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])ârif(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])cahiliye(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])câhiliye(?![\p{L}\p{N}_])/iu },
   { from: /\bve\s+vechini\b/iu, to: /\bvechini\b/iu },

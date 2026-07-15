@@ -114,6 +114,16 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-16
+- **Şerr kökü ekli kullanım koruması:** Serap Pamuk geri bildirimleriyle gelen
+  `"şerrdir" -> "şerdir"` ve `"şerrle" -> "şerle"` yanlış dönüşüm kökü kalıcı olarak
+  kapatıldı. `şerr` standardı artık yalnız tek kelime olarak değil, ek almış formlarda da
+  korunur; model bu kökü `şer` köküne düşürürse bulgu skor dışı kalır ve düzeltilmiş metne
+  uygulanmaz.
+- **Test:** `npm.cmd run check` başarılı; 57/57 test geçti. Yeni regresyon testi canlı iki
+  örneğin toplam hata sayısını `0`, skoru `100` ve düzeltilmiş metni kaynak metinle aynı
+  tuttuğunu doğrular.
+
 ### 2026-07-14
 - **15 Temmuz 18 acik feedback kok koruma turu:** Bihter Oksak, Serap Pamuk ve Nuray
   Ardagumusoglu tarafindan gelen 18 acik feedback kok siniflara ayrildi ve kalite katmanina
