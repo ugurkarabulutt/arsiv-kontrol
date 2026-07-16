@@ -125,6 +125,9 @@ tespit edilir).
 - **Test:** `npm.cmd run check` başarılı; 58/58 test geçti. Yeni regresyon testi iki canlı
   feedback kökünü birlikte doğrular: toplam hata `0`, skor `100`, düzeltilmiş metin kaynak
   metinle aynı kalır.
+- **Canlı feedback kapatma:** Nuray Ardagümüşoğlu'na ait 2 açık feedback
+  `feedback-fix-2026-07-16-apostrophe-punctuation-1784179484959` çözüm grubuyla kapatıldı
+  ve tek kişisel `feedback_resolution` bildirimi gönderildi. Son kontrolde açık feedback `0`.
 - **Şerr kökü ekli kullanım koruması:** Serap Pamuk geri bildirimleriyle gelen
   `"şerrdir" -> "şerdir"` ve `"şerrle" -> "şerle"` yanlış dönüşüm kökü kalıcı olarak
   kapatıldı. `şerr` standardı artık yalnız tek kelime olarak değil, ek almış formlarda da
