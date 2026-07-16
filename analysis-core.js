@@ -218,6 +218,31 @@ function isApostropheFragmentVowelRewrite(original, fixed) {
   return consonantSkeleton(fromTail) === consonantSkeleton(toTail);
 }
 
+function isUnrelatedTabiRewrite(original, fixed) {
+  const foldedFrom = foldText(original).replace(/\s+/g, '');
+  const foldedTo = foldText(fixed).replace(/\s+/g, '');
+  return foldedTo === 'tabi' && !/^tabii?$/.test(foldedFrom);
+}
+
+function isMeaningChangingHerseyRewrite(original, fixed) {
+  const foldedFrom = foldText(original).replace(/\s+/g, '');
+  const foldedTo = foldText(fixed).replace(/\s+/g, '');
+  return foldedTo.startsWith('hersey') && !foldedFrom.startsWith('hersey');
+}
+
+function isLeadingConnectorDeletion(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  const match = from.match(/^(ve|veya|ama|fakat|çünkü|lakin)\s+(.+)$/iu);
+  return !!match && foldText(match[2]) === foldText(to);
+}
+
+function isHidayetSuffixDrop(original, fixed) {
+  const foldedFrom = foldText(original);
+  const foldedTo = foldText(fixed);
+  return /^hidayet[\p{L}\p{N}_]+$/u.test(foldedFrom) && foldedTo === 'hidayet';
+}
+
 function isDecisionProtectedTransform(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -376,6 +401,10 @@ function isProtectedChange(original, fixed) {
   if (isSuspiciousContentAddition(original, fixed)) return true;
   if (isSuspiciousWordExpansion(original, fixed)) return true;
   if (isApostropheFragmentVowelRewrite(original, fixed)) return true;
+  if (isUnrelatedTabiRewrite(original, fixed)) return true;
+  if (isMeaningChangingHerseyRewrite(original, fixed)) return true;
+  if (isLeadingConnectorDeletion(original, fixed)) return true;
+  if (isHidayetSuffixDrop(original, fixed)) return true;
   if (isDecisionProtectedTransform(original, fixed)) return true;
   if (PROTECTED_PATTERNS.some(pattern => pattern.test(from))) return true;
   return FORBIDDEN_TRANSFORMS.some(pair => pair.from.test(from) && pair.to.test(to));

@@ -292,8 +292,11 @@ KORUNACAK BAĞLAMLAR:
 - "dîn" ailesi güncel karar gereği istisnadır; dîn/dînin/dîni yerine din/dinin/dini kullanılır.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
 - "herşey" ailesi birleşik kalır: herşey, herşeye, herşeydir gibi ekli biçimleri "her şey..." diye ayırma.
+- "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
+- "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy" kökünden gelen ifadeleri "hayat/hayatta" diye sadeleştirme; hayydırlar gibi kullanımları koru.
-- "Hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme.
+- "Hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
+- Metnin başındaki veya cümle içindeki "ve, veya, ama, fakat, çünkü" gibi bağlaçları imlâ gerekçesiyle silme.
 - "nefsi", "nefsin" ve "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" kullanımlarını eklerinden koparma.
 - "A.S" ve "S.A.V" kısaltmalarını bağlamdan emin olmadan birbirine çevirme.
 - Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelime silinmez.
@@ -2123,13 +2126,16 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
 - "din" ailesi şapkasızdır: din, dinde, dinimizin, dinsiz gibi kullanımları dîn/dînde/dînimizin/dînsiz yapma.
 - "herşey" doğru yazımdır; ekli biçimleri de birleşik kalır: herşey, herşeye, herşeydir. Metinde "her şey" varsa "herşey" olarak düzelt.
+- "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "vücut/vücuttan" gibi doğru kullanımları "vücud/vücuddan" yapma.
 - "Hadîs-i Şerif" standardında Hadîs kelimesinde î vardır, Şerif kelimesindeki i şapkasızdır. "HADİS-İ ŞERİF" varsa "HADÎS-İ ŞERİF" yap; "ŞERÎF" yapma.
 - "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.
 - "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "şer", "ârif" veya "câhiliye" biçimine çevirme.
+- "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy/hayydırlar" gibi kullanımları "hayat/hayattadırlar" diye sadeleştirme.
-- "hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme.
+- "hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
 - "hadis no." gibi kaynak/numara ifadelerinde "hadis" kelimesini "hadîs" yapma.
+- "ve, veya, ama, fakat, çünkü" gibi bağlaçları imlâ gerekçesiyle silme.
 - Bu kararlar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
 
 SURE ADLARI ÜST ÖNCELİKLİ STANDARDI:

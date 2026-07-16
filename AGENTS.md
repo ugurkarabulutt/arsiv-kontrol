@@ -115,6 +115,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-16
+- **Tavsiye/birşey/bağlaç/hidayet ekleri kök koruması:** Nuray Ardagümüşoğlu ve Hacer
+  Terzi geri bildirimleriyle gelen 6 açık kayıt 4 kök sınıfa ayrıldı ve kalite katmanında
+  genel guard olarak çözüldü. `tavsiye -> tâbî` gibi ilgisiz kelimeyi `tâbî` yapma,
+  `birşey -> herşey` gibi anlam değiştirme, `ve elimize -> elimize` gibi baştaki bağlacı
+  silme ve `hidayete -> hidayet` gibi ekli `hidayet` kullanımlarını köke kırpma skor dışı
+  bırakılır ve düzeltilmiş metne uygulanmaz.
+- **Prompt güçlendirme:** Üst öncelikli kurallara `birşey/herşey` anlam ayrımı, `tavsiye`
+  kelimesinin korunması, `hidayete/hidayeti/hidayetten` gibi ekli kullanımların eklerinin
+  düşürülmemesi ve `ve/veya/ama/fakat/çünkü` bağlaçlarının silinmemesi eklendi.
+- **Test:** `npm.cmd run check` başarılı; 59/59 test geçti. Yeni regresyon testi dört kök
+  sınıfı birlikte doğrular: toplam hata `0`, skor `100`, düzeltilmiş metin kaynak metinle
+  aynı kalır.
 - **Apostroflu terkip ve mevcut nokta koruması:** Nuray Ardagümüşoğlu geri bildirimleriyle
   gelen `"fazl'ıl" -> "fazl'ul"` ve `"Allah’ın Zat’ı" -> "Allah’ın Zat’ı."` yanlış
   dönüşümleri kök seviyede çözüldü. Apostrof sonrası kısa Arapça/transliterasyon

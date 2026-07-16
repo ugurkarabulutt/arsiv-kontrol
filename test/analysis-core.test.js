@@ -196,6 +196,10 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange("fazl'ıl", "fazl'ul"), true);
   assert.equal(isProtectedChange("fazl’ıl", "fazl’ul"), true);
   assert.equal(isProtectedChange("Allah'in", "Allah'ın"), false);
+  assert.equal(isProtectedChange('tavsiye', 'tâbî'), true);
+  assert.equal(isProtectedChange('birşey', 'herşey'), true);
+  assert.equal(isProtectedChange('ve elimize', 'elimize'), true);
+  assert.equal(isProtectedChange('hidayete', 'hidayet'), true);
 });
 
 test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
@@ -230,6 +234,43 @@ test('apostroflu terkip ve kaynakta mevcut cok kelimeli nokta tekrar hata sayilm
       yapi: {
         issues: [
           { original: 'Allah’ın Zat’ı', fixed: 'Allah’ın Zat’ı.', rule: 'Cümle sonu nokta eksik' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('tavsiye birsey baglac ve hidayet ekleri kokten korunur', () => {
+  const source = [
+    'Bu konuda tavsiye verilir.',
+    'Burada birşey anlatılır.',
+    've elimize ulaşan metin korunur.',
+    'Kişi hidayete erer. Hidayete davet edilir.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: [
+      'Bu konuda tâbî verilir.',
+      'Burada herşey anlatılır.',
+      'elimize ulaşan metin korunur.',
+      'Kişi hidayet erer. Hidayet davet edilir.'
+    ].join(' '),
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'tavsiye', fixed: 'tâbî', rule: 'Sözlük standardı' },
+          { original: 'birşey', fixed: 'herşey', rule: 'Güncel sözlük kararı' },
+          { original: 'hidayete', fixed: 'hidayet', rule: 'Sözlük standardı' },
+          { original: 'Hidayete', fixed: 'Hidayet', rule: 'Sözlük standardı' }
+        ]
+      },
+      imla: {
+        issues: [
+          { original: 've elimize', fixed: 'elimize', rule: 'İmlâ standardı' }
         ]
       }
     }
