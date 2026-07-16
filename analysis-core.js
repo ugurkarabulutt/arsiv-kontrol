@@ -24,6 +24,17 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   biraraya: 'biraraya',
   vaad: 'vaad'
 });
+const TURKISH_APOSTROPHE_SUFFIXES = new Set([
+  'a', 'e', 'i', 'ı', 'u', 'ü',
+  'in', 'ın', 'un', 'ün',
+  'im', 'ım', 'um', 'üm',
+  'imiz', 'ımız', 'umuz', 'ümüz',
+  'de', 'da', 'te', 'ta',
+  'den', 'dan', 'ten', 'tan',
+  'le', 'la', 'yle', 'yla',
+  'dir', 'dır', 'dur', 'dür', 'tir', 'tır', 'tur', 'tür',
+  'ye', 'ya', 'nin', 'nın', 'nun', 'nün'
+]);
 const SURA_NAMES = [
   'FÂTİHA', 'BAKARA', 'ÂLİ İMRÂN', 'NİSÂ', 'MÂİDE', "EN'ÂM", "A'RÂF", 'ENFÂL',
   'TEVBE', 'YÛNUS', 'HÛD', 'YÛSUF', "RA'D", 'İBRÂHÎM', 'HİCR', 'NAHL', 'İSRÂ',
@@ -178,6 +189,35 @@ function isSuspiciousWordExpansion(original, fixed) {
   return /^[\p{L}\p{N}_]+$/u.test(extra);
 }
 
+function consonantSkeleton(text) {
+  return foldText(text).replace(/[aeıiou]/giu, '');
+}
+
+function isApostropheFragmentVowelRewrite(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  if (!from || !to || from === to || from.includes(' ') || to.includes(' ')) return false;
+  if (!from.includes("'") || !to.includes("'")) return false;
+
+  const fromParts = from.split("'");
+  const toParts = to.split("'");
+  if (fromParts.length !== 2 || toParts.length !== 2) return false;
+
+  const [fromStem, fromTail] = fromParts;
+  const [toStem, toTail] = toParts;
+  if (!fromStem || !toStem || !fromTail || !toTail) return false;
+  if (foldText(fromStem) !== foldText(toStem)) return false;
+  if (fromTail.length > 4 || toTail.length > 4) return false;
+  if (!/^[a-zçğıöşüâîû]+$/iu.test(fromTail) || !/^[a-zçğıöşüâîû]+$/iu.test(toTail)) return false;
+
+  const foldedFromTail = foldText(fromTail);
+  const foldedToTail = foldText(toTail);
+  if (foldedFromTail === foldedToTail) return false;
+  if (TURKISH_APOSTROPHE_SUFFIXES.has(foldedFromTail) && TURKISH_APOSTROPHE_SUFFIXES.has(foldedToTail)) return false;
+
+  return consonantSkeleton(fromTail) === consonantSkeleton(toTail);
+}
+
 function isDecisionProtectedTransform(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -295,7 +335,6 @@ function sourceAlreadyHasFixedPunctuation(sourceText, original, fixed) {
   const from = canonicalText(original);
   const to = canonicalText(fixed);
   if (!source || !from || !to) return false;
-  if (!/^[\p{L}\p{N}_]+$/iu.test(from)) return false;
   if (!new RegExp(`^${escapeRegExp(from)}[.!?]$`, 'iu').test(to)) return false;
   return sourceContainsIssue(source, to);
 }
@@ -336,6 +375,7 @@ function isProtectedChange(original, fixed) {
   if (isSuspiciousTruncation(original, fixed)) return true;
   if (isSuspiciousContentAddition(original, fixed)) return true;
   if (isSuspiciousWordExpansion(original, fixed)) return true;
+  if (isApostropheFragmentVowelRewrite(original, fixed)) return true;
   if (isDecisionProtectedTransform(original, fixed)) return true;
   if (PROTECTED_PATTERNS.some(pattern => pattern.test(from))) return true;
   return FORBIDDEN_TRANSFORMS.some(pair => pair.from.test(from) && pair.to.test(to));

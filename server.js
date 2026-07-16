@@ -211,6 +211,7 @@ arif (ârif değil)
 cahiliye (câhiliye değil)
 tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
 ni'met
+fazl’ıl azîm
 ulûl'elbab
 hidayet (hidâyet değil)
 takva

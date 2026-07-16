@@ -193,6 +193,9 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('hayydırlar', 'hayattadırlar'), true);
   assert.equal(isProtectedChange('hidayet', 'hidayete'), true);
   assert.equal(isProtectedChange('HADİS-İ ŞERİF', 'HADÎS-İ ŞERÎF'), true);
+  assert.equal(isProtectedChange("fazl'ıl", "fazl'ul"), true);
+  assert.equal(isProtectedChange("fazl’ıl", "fazl’ul"), true);
+  assert.equal(isProtectedChange("Allah'in", "Allah'ın"), false);
 });
 
 test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
@@ -204,6 +207,29 @@ test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
         issues: [
           { original: 'şerrdir', fixed: 'şerdir', rule: 'İmlâ standardı' },
           { original: 'Şerrle', fixed: 'Şerle', rule: 'İmlâ standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('apostroflu terkip ve kaynakta mevcut cok kelimeli nokta tekrar hata sayilmaz', () => {
+  const source = 'Efendimizin sözlüğünde fazl’ıl azîm şeklinde geçer. Hedef Allah’ın Zat’ı. Sonra devam eder.';
+  const result = finalizeResult({
+    correctedText: 'Efendimizin sözlüğünde fazl’ul azîm şeklinde geçer. Hedef Allah’ın Zat’ı. Sonra devam eder.',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'fazl’ıl', fixed: 'fazl’ul', rule: 'İmlâ standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: 'Allah’ın Zat’ı', fixed: 'Allah’ın Zat’ı.', rule: 'Cümle sonu nokta eksik' }
         ]
       }
     }

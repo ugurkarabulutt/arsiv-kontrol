@@ -115,6 +115,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-16
+- **Apostroflu terkip ve mevcut nokta koruması:** Nuray Ardagümüşoğlu geri bildirimleriyle
+  gelen `"fazl'ıl" -> "fazl'ul"` ve `"Allah’ın Zat’ı" -> "Allah’ın Zat’ı."` yanlış
+  dönüşümleri kök seviyede çözüldü. Apostrof sonrası kısa Arapça/transliterasyon
+  parçalarında yalnızca sesli harf değiştirerek yapılan şüpheli dönüşümler genel olarak
+  skor dışı bırakılır; normal Türkçe kesme eki düzeltmeleri bu korumadan muaf tutulur.
+  Kaynak metinde nokta zaten varsa, tek kelime değil çok kelimeli ifadelerde de "nokta
+  eksik" bulgusu reddedilir. Prompt sözlüğüne `fazl’ıl azîm` standardı eklendi.
+- **Test:** `npm.cmd run check` başarılı; 58/58 test geçti. Yeni regresyon testi iki canlı
+  feedback kökünü birlikte doğrular: toplam hata `0`, skor `100`, düzeltilmiş metin kaynak
+  metinle aynı kalır.
 - **Şerr kökü ekli kullanım koruması:** Serap Pamuk geri bildirimleriyle gelen
   `"şerrdir" -> "şerdir"` ve `"şerrle" -> "şerle"` yanlış dönüşüm kökü kalıcı olarak
   kapatıldı. `şerr` standardı artık yalnız tek kelime olarak değil, ek almış formlarda da
