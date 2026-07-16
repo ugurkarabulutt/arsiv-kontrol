@@ -127,6 +127,10 @@ tespit edilir).
 - **Test:** `npm.cmd run check` başarılı; 59/59 test geçti. Yeni regresyon testi dört kök
   sınıfı birlikte doğrular: toplam hata `0`, skor `100`, düzeltilmiş metin kaynak metinle
   aynı kalır.
+- **Canlı feedback kapatma:** 6 açık feedback
+  `feedback-fix-2026-07-16-latest-roots-1784217498144` çözüm grubuyla kapatıldı. Nuray
+  Ardagümüşoğlu ve Hacer Terzi için 2 kişisel `feedback_resolution` bildirimi gönderildi.
+  Son kontrolde açık feedback `0`, çözüm sonrası açık takip `0`.
 - **Apostroflu terkip ve mevcut nokta koruması:** Nuray Ardagümüşoğlu geri bildirimleriyle
   gelen `"fazl'ıl" -> "fazl'ul"` ve `"Allah’ın Zat’ı" -> "Allah’ın Zat’ı."` yanlış
   dönüşümleri kök seviyede çözüldü. Apostrof sonrası kısa Arapça/transliterasyon
