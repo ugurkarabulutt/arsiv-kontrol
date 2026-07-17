@@ -212,6 +212,7 @@ cahiliye (câhiliye değil)
 tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
 ni'met
 fazl’ıl azîm
+keyfe mâ yeşâ
 ulûl'elbab
 hidayet (hidâyet değil)
 takva
@@ -295,6 +296,10 @@ KORUNACAK BAĞLAMLAR:
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "bir şey" ifadesi ayrı yazılır; bunu "birşey" yapma. Özel karar yalnızca "her şey" → "herşey" içindir.
 - "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
+- "suretiyle" ayrı ve doğru bir kullanımdır; bunu "surette" yapma.
+- "keyfe meaşadır / keyfe meşadır" görülürse doğru standart "keyfe mâ yeşâdır" olmalıdır.
+- "Allah arasındadır" ifadesinde Allah kelimesine kesme eki ekleme; "Allah'a arasındadır" yanlıştır.
+- "kaadirdir" ve "halifesi" yazımlarını "kâdirdir/halîfesi" yapma.
 - "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
 - "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
@@ -309,6 +314,7 @@ KORUNACAK BAĞLAMLAR:
 KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
 ════════════════════════════════════════
 - Peygamber Efendimiz, Allah Resûlü, Hz. Muhammed → mutlaka (S.A.V) ekle
+- Bu ifadeden hemen sonra (S.A.V) zaten varsa ikinci kez ekleme.
 - Sallallahu aleyhi vesellem gibi uzun yazılmışsa → (S.A.V) olarak kısalt
 - Resûlullah'tan sonra (S.A.V) yazılabilir veya yazılmayabilir
 - Muhterem Efendimiz, Hocamız, Efendimiz ifadesi Peygamber Efendimiz'i açıkça kastetmiyorsa
@@ -2133,6 +2139,10 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "bir şey" ayrı yazılır; bunu "birşey" yapma. Özel birleşik yazım kararı sadece "her şey" → "herşey" içindir.
 - "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
+- "suretiyle" doğru ve ayrı bir kullanımdır; bunu "surette" yapma.
+- "keyfe meaşadır / keyfe meşadır" görülürse doğru standart "keyfe mâ yeşâdır" olmalıdır.
+- "Allah arasındadır" ifadesinde Allah kelimesine kesme eki ekleme; "Allah'a arasındadır" yanlıştır.
+- "kaadirdir" ve "halifesi" yazımlarını "kâdirdir/halîfesi" yapma.
 - "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
 - "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "vücut/vücuttan" gibi doğru kullanımları "vücud/vücuddan" yapma.
@@ -2182,6 +2192,7 @@ NASIL ÇALIŞACAKSIN:
 17. "Tabi/Tabiî" kelimesi konuşma içinde "elbette/doğal olarak" anlamındaysa "tâbî" yapma. "süre" zaman/uzunluk
    anlamındaysa "sûre" yapma. "afet", "zahid", "ahiret", "zülmanî", "Nebîler" ve "nefs" kelimelerini ters yöne
    bozma. "(S.A.V)" kısaltmasına fazladan nokta ekleme.
+17a. Allah Resûlü/Peygamber Efendimiz ifadesinden sonra (S.A.V) zaten varsa ikinci kez (S.A.V) ekleme.
 18. Slayt, hadîs dökümü, tablo benzeri satır düzenlerini koru. Satır sırası, başlıklar, numaralar ve tırnak dengesi
    düzeltilmiş metinde bozulmamalıdır.
 19. Kaynakta şapkalı yazılmış kelimeyi şapkasızlaştırma: manevî, itikâf, daimî, âyet, Allahû Tealâ gibi yazımlar

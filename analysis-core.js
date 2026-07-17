@@ -22,7 +22,11 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   daimi: 'daimî',
   teala: 'Tealâ',
   biraraya: 'biraraya',
-  vaad: 'vaad'
+  vaad: 'vaad',
+  kaadir: 'kaadir',
+  halife: 'halife',
+  suretiyle: 'suretiyle',
+  meyesa: 'mâ yeşâ'
 });
 const TURKISH_APOSTROPHE_SUFFIXES = new Set([
   'a', 'e', 'i', 'ı', 'u', 'ü',
@@ -261,6 +265,42 @@ function isSekliSemalSuffixTrim(original, fixed) {
   return /^sekli semal/u.test(from) && /^sekil semal/u.test(to);
 }
 
+function isKeyfeMeyesaMisspelling(original, fixed) {
+  const from = foldText(original).replace(/ı/g, 'i').replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/ı/g, 'i').replace(/\s+/g, ' ').trim();
+  return /^(?:keyfe\s+)?measadir$/u.test(from) && /^(?:keyfe\s+)?mesadir$/u.test(to);
+}
+
+function isSuretiyleToSurette(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
+  return from === 'suretiyle' && to === 'surette';
+}
+
+function sourceProtectsAllahArasindadir(sourceText, original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
+  if (from !== 'allah' || !/^allah'?a$/u.test(to)) return false;
+  return /\ballah\s+aras[ıi]ndad[ıi]r\b/u.test(foldText(sourceText));
+}
+
+function sourceAlreadyHasSavAfterIssue(sourceText, original, fixed) {
+  const foldedFrom = foldText(original).replace(/\s+/g, ' ').trim();
+  const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
+  if (!foldedFrom || !foldedTo || !foldedTo.includes('(s.a.v')) return false;
+  if (foldedFrom.includes('(s.a.v')) return false;
+  if (!foldedTo.startsWith(foldedFrom)) return false;
+
+  const source = foldText(sourceText).replace(/\s+/g, ' ');
+  const pattern = new RegExp(`${escapeRegExp(foldedFrom)}\\s*\\(\\s*s\\.a\\.v\\.?\\s*\\)`, 'u');
+  return pattern.test(source);
+}
+
+function isSourceContextProtectedIssue(sourceText, original, fixed) {
+  return sourceProtectsAllahArasindadir(sourceText, original, fixed)
+    || sourceAlreadyHasSavAfterIssue(sourceText, original, fixed);
+}
+
 function isDecisionProtectedTransform(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -328,11 +368,15 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom.startsWith('vucud') && foldedTo.startsWith('vucut') && foldedFrom !== 'vucud') return true;
   if (foldedFrom === 'vucud' && foldedTo === 'vucut') return false;
   if (foldedFrom.startsWith('kadir') && foldedTo.startsWith('kadir') && hasCircumflex(fixed)) return true;
+  if (foldedFrom.startsWith('kaadir') && foldedTo.startsWith('kadir') && hasCircumflex(fixed)) return true;
+  if (foldedFrom.startsWith('halife') && foldedTo.startsWith('halife') && hasCircumflex(fixed)) return true;
   if (foldedFrom === 'tabii' && foldedTo === 'tabi') return true;
   if (foldedFrom.startsWith('hayy') && foldedTo.startsWith('hayat')) return true;
   if (foldedFrom === 'hidayet' && foldedTo.startsWith('hidayet') && foldedTo !== 'hidayet') return true;
   if (from.includes('şerif') && to.includes('şerîf')) return true;
   if (isSuretteRewrite(original, fixed)) return true;
+  if (isSuretiyleToSurette(original, fixed)) return true;
+  if (isKeyfeMeyesaMisspelling(original, fixed)) return true;
   if (isBirSeyCompaction(original, fixed)) return true;
   if (isSekliSemalSuffixTrim(original, fixed)) return true;
   return false;
@@ -480,6 +524,9 @@ function deterministicFixed(original) {
   if (/^kadirdir$/iu.test(text)) {
     return caseLike(original, text.replace(/^kadir/iu, 'kaadir'));
   }
+  if (/^keyfe\s+(?:meaşadır|meşadır)$/iu.test(text)) {
+    return caseLike(original, 'keyfe mâ yeşâdır');
+  }
   if (/^Zur\u00fbf$/iu.test(text)) return 'Zuhr\u00fbf';
   if (/^ş(?:u|û)ra$/iu.test(text)) return caseLike(original, 'şûrâ');
   if (/^19 tane haslet ruhun$/iu.test(text)) return 'Ruhta 19 tane haslet';
@@ -520,6 +567,12 @@ function applyDeterministicStandards(cats, sourceText) {
   for (const match of text.matchAll(kadirRe)) {
     const original = match[0];
     addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin ar\u015fiv standard\u0131');
+  }
+
+  const keyfeMeyesaRe = /(?<![\p{L}\p{N}_])keyfe\s+(?:meaşadır|meşadır)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(keyfeMeyesaRe)) {
+    const original = match[0];
+    addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Efendimizin sözlüğü standardı');
   }
 
   const zuhrufRe = /(?<![\p{L}\p{N}_])Zur\u00fbf(?![\p{L}\p{N}_])/gu;
@@ -599,11 +652,23 @@ function stripOuterTextQuotes(text) {
 function normalizeDoubledQuotes(text) {
   return String(text || '')
     .replace(/"{2,}([^"\n]+)"{2,}/g, '"$1"')
+    .replace(/"{2,}/g, '"')
     .replace(/'{2,}([^'\n]+)'{2,}/g, "'$1'")
     .replace(/\u201c{2,}([^\u201d\n]+)\u201d{2,}/gu, '\u201c$1\u201d')
+    .replace(/\u201c{2,}/gu, '\u201c')
+    .replace(/\u201d{2,}/gu, '\u201d')
     .replace(/\u2018{2,}([^\u2019\n]+)\u2019{2,}/gu, '\u2018$1\u2019')
+    .replace(/\u2018{2,}/gu, '\u2018')
+    .replace(/\u2019{2,}/gu, '\u2019')
     .replace(/“{2,}([^”\n]+)”{2,}/g, '“$1”')
-    .replace(/‘{2,}([^’\n]+)’{2,}/g, '‘$1’');
+    .replace(/“{2,}/g, '“')
+    .replace(/”{2,}/g, '”')
+    .replace(/‘{2,}([^’\n]+)’{2,}/g, '‘$1’')
+    .replace(/\s+"$/g, '');
+}
+
+function normalizeRepeatedSav(text) {
+  return String(text || '').replace(/(\(\s*S\.A\.V\.?\s*\))\s+\(\s*S\.A\.V\.?\s*\)/giu, '$1');
 }
 
 function flexibleIssuePattern(original) {
@@ -667,6 +732,7 @@ function finalizeResult(result = {}, sourceText = '') {
           && maxOccurrences > 0
           && usedOccurrences < maxOccurrences
           && !sourceAlreadyHasFixedPunctuation(sourceText, issue.original, issue.fixed)
+          && !isSourceContextProtectedIssue(sourceText, issue.original, issue.fixed)
           && !isProtectedChange(issue.original, issue.fixed);
         if (!keep && issue) rejectedIssues.push(issue);
         if (keep) {
@@ -692,6 +758,7 @@ function finalizeResult(result = {}, sourceText = '') {
   if (result.correctedText) {
     result.correctedText = stripOuterTextQuotes(result.correctedText);
     result.correctedText = normalizeDoubledQuotes(result.correctedText);
+    result.correctedText = normalizeRepeatedSav(result.correctedText);
   }
   result.score = Math.max(0, 100 - penalty);
   result.totalErrors = total;

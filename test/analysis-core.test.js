@@ -324,6 +324,54 @@ test('17 Temmuz Hacer feedback kokleri korunur ve kapanmayan SAV parantezi duzel
   assert.equal(result.correctedText, source.replace('Peygamber Efendimiz (S.A.V:', 'Peygamber Efendimiz (S.A.V):'));
 });
 
+test('18 Temmuz acik feedback kokleri kullanici lehine kalici cozulur', () => {
+  const source = [
+    'Allah \u015fekli \u015femalinize bakmaz.',
+    'Evet, keyfe mea\u015fad\u0131r. Allah\u00fb Teal\u00e2.',
+    'Allah her\u015feye kaadirdir.',
+    'Bu onunla Allah aras\u0131ndad\u0131r.',
+    'Yery\u00fcz\u00fcn\u00fcn halifesi herkes i\u00e7in vazifeli mi?',
+    'Onun ayak izini takip etmek suretiyle.',
+    'Allah Res\u00fbl\u00fc (S.A.V) buyurdu.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: [
+      'Allah \u015fekil \u015femalinize bakmaz.',
+      'Evet, keyfe me\u015fad\u0131r. Allah\u00fb Teal\u00e2.',
+      'Allah her\u015feye k\u00e2dirdir.',
+      "Bu onunla Allah'a aras\u0131ndad\u0131r.",
+      'Yery\u00fcz\u00fcn\u00fcn hal\u00eefesi herkes i\u00e7in vazifeli mi?',
+      'Onun ayak izini takip etmek surette.',
+      'Allah Res\u00fbl\u00fc (S.A.V) (S.A.V) buyurdu.'
+    ].join(' '),
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'Allah', fixed: "Allah'a", rule: 'S\u00f6zl\u00fck standard\u0131' },
+          { original: 'suretiyle', fixed: 'surette', rule: 'S\u00f6zl\u00fck standard\u0131' },
+          { original: 'Allah Res\u00fbl\u00fc', fixed: 'Allah Res\u00fbl\u00fc (S.A.V)', rule: 'Peygamber isimleri' }
+        ]
+      },
+      imla: {
+        issues: [
+          { original: '\u015fekli \u015femalinize', fixed: '\u015fekil \u015femalinize', rule: '\u0130ml\u00e2 standard\u0131' },
+          { original: 'mea\u015fad\u0131r', fixed: 'me\u015fad\u0131r', rule: '\u0130ml\u00e2 standard\u0131' },
+          { original: 'kaadirdir', fixed: 'k\u00e2dirdir', rule: '\u0130ml\u00e2 standard\u0131' },
+          { original: 'halifesi', fixed: 'hal\u00eefesi', rule: '\u0130ml\u00e2 standard\u0131' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.deepEqual(result.categories.imla.issues.map(issue => [issue.original, issue.fixed]), [
+    ['keyfe mea\u015fad\u0131r', 'keyfe m\u00e2 ye\u015f\u00e2d\u0131r']
+  ]);
+  assert.equal(result.correctedText, source.replace('keyfe mea\u015fad\u0131r', 'keyfe m\u00e2 ye\u015f\u00e2d\u0131r'));
+});
+
 test('bagimsiz kucuk harf ayet standardi korunur', () => {
   const source = 'Bu ayet aciklandi.';
   const result = finalizeResult({
@@ -788,4 +836,13 @@ test('modelin ekledigi gereksiz cift tirnaklar temizlenir', () => {
   }, '');
 
   assert.equal(result.correctedText, 'Düzeltilmiş metin içinde "alıntı" korunur.');
+});
+
+test('cift tirnak temizligi tekrarli ic alintilarda genis varyasyonlari kapsar', () => {
+  const result = finalizeResult({
+    correctedText: 'Sonuçta ""birinci"" ve ""ikinci"" alıntı kaldı. """"',
+    categories: {}
+  }, '');
+
+  assert.equal(result.correctedText, 'Sonuçta "birinci" ve "ikinci" alıntı kaldı.');
 });

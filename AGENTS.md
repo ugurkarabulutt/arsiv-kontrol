@@ -114,6 +114,22 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-18
+- **8 açık feedback kök çözüm turu:** Hacer Terzi, Nuray Ardagümüşoğlu ve Aysun Aydöner
+  geri bildirimleriyle gelen yeni açık kayıtlar kalite katmanına işlendi. Sistem artık
+  `şekli şemalinize -> şekil şemalinize`, `kaadirdir -> kâdirdir`, `halifesi -> halîfesi`,
+  `suretiyle -> surette`, `Allah arasındadır -> Allah'a arasındadır` ve metinde zaten
+  `(S.A.V)` varken ikinci kez `(S.A.V)` ekleme dönüşümlerini skor dışı bırakır ve
+  düzeltilmiş metne uygulamaz.
+- **Keyfe mâ yeşâ standardı:** `keyfe meaşadır` veya `keyfe meşadır` kullanımı deterministic
+  olarak `keyfe mâ yeşâdır` standardına düzeltilir; modelin `meaşadır -> meşadır` üretimi
+  yanlış-pozitif kabul edilip reddedilir.
+- **Çift tırnak geniş koruma:** Gereksiz `""...""` ve birden çok iç alıntıda tekrar eden çift
+  tırnak varyasyonları temizlenir; sonda kalan boş çift tırnak artığı kaldırılır.
+- **Prompt ve test:** Üst öncelikli prompt kuralları `suretiyle`, `keyfe mâ yeşâdır`,
+  `Allah arasındadır`, `kaadirdir`, `halifesi` ve mükerrer `(S.A.V)` korumalarıyla
+  güncellendi. `npm.cmd run check` başarılı; 63/63 test geçti.
+
 ### 2026-07-17
 - **Hacer Terzi 6 açık feedback kök turu:** Canlı feedbacklerde gelen `surette -> sürette`,
   `bir şey -> birşey` ve `şekli şemalinize -> şekil şemalinize` yanlış-pozitif olarak
