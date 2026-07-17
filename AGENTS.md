@@ -125,6 +125,10 @@ tespit edilir).
   büyük başlık/listede geçen `AYET` kullanımı normal cümle kelimesi gibi skorlanmaz.
 - **Prompt ve test:** Üst öncelikli prompt kurallarına `bir şey`, `surette`, `şekli şemal`
   ve S.A.V mikro noktalama korumaları eklendi. `npm.cmd run check` başarılı; 61/61 test geçti.
+- **Canlı feedback kapatma:** Hacer Terzi'ye ait 6 açık feedback
+  `feedback-fix-2026-07-17-hacer-roots-1784252599562` çözüm grubuyla kapatıldı. Hacer
+  Terzi için tek kişisel `feedback_resolution` bildirimi gönderildi. Son kontrolde açık
+  feedback `0`, çözüm sonrası açık takip `0`.
 
 ### 2026-07-16
 - **Tavsiye/birşey/bağlaç/hidayet ekleri kök koruması:** Nuray Ardagümüşoğlu ve Hacer
