@@ -296,7 +296,7 @@ KORUNACAK BAĞLAMLAR:
 - "bir şey" ifadesi ayrı yazılır; bunu "birşey" yapma. Özel karar yalnızca "her şey" → "herşey" içindir.
 - "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
 - "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
-- "(S.A.V:" ile "(S.A.V):" arasındaki arşiv parantez-iki nokta mikro farklarını hata olarak işaretleme; S.A.V kısaltması bağlamını bozma.
+- "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy" kökünden gelen ifadeleri "hayat/hayatta" diye sadeleştirme; hayydırlar gibi kullanımları koru.
 - "Hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
@@ -2134,7 +2134,7 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "bir şey" ayrı yazılır; bunu "birşey" yapma. Özel birleşik yazım kararı sadece "her şey" → "herşey" içindir.
 - "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
 - "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
-- "(S.A.V:" ile "(S.A.V):" arasındaki parantez-iki nokta mikro farkını hata olarak işaretleme; S.A.V kısaltması bağlamını bozma.
+- "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "vücut/vücuttan" gibi doğru kullanımları "vücud/vücuddan" yapma.
 - "Hadîs-i Şerif" standardında Hadîs kelimesinde î vardır, Şerif kelimesindeki i şapkasızdır. "HADİS-İ ŞERİF" varsa "HADÎS-İ ŞERİF" yap; "ŞERÎF" yapma.
 - "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.

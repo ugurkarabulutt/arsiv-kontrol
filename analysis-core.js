@@ -261,13 +261,6 @@ function isSekliSemalSuffixTrim(original, fixed) {
   return /^sekli semal/u.test(from) && /^sekil semal/u.test(to);
 }
 
-function isSavColonParenthesisMove(original, fixed) {
-  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
-  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
-  const normalize = value => value.replace(/\(s\.a\.v\.?\):/giu, '(s.a.v:');
-  return /\(s\.a\.v\.?:/iu.test(from) && normalize(from) === normalize(to);
-}
-
 function isDecisionProtectedTransform(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -342,7 +335,6 @@ function isDecisionProtectedTransform(original, fixed) {
   if (isSuretteRewrite(original, fixed)) return true;
   if (isBirSeyCompaction(original, fixed)) return true;
   if (isSekliSemalSuffixTrim(original, fixed)) return true;
-  if (isSavColonParenthesisMove(original, fixed)) return true;
   return false;
 }
 

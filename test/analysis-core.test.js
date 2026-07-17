@@ -281,7 +281,7 @@ test('tavsiye birsey baglac ve hidayet ekleri kokten korunur', () => {
   assert.equal(result.correctedText, source);
 });
 
-test('17 Temmuz Hacer feedback kokleri yanlis pozitif uretmez', () => {
+test('17 Temmuz Hacer feedback kokleri korunur ve kapanmayan SAV parantezi duzeltilir', () => {
   const source = [
     'Mutlak surette kisi bu konuda dikkatli olur.',
     'Hidayettedir ve hidayete erer. MURSIDE TABI OLMAYAN (10 AYET)',
@@ -315,18 +315,13 @@ test('17 Temmuz Hacer feedback kokleri yanlis pozitif uretmez', () => {
         issues: [
           { original: 'Peygamber Efendimiz (S.A.V:', fixed: 'Peygamber Efendimiz (S.A.V):', rule: 'Noktalama' }
         ]
-      },
-      yapi: {
-        issues: [
-          { original: 'Nebiler Sultani Peygamber Efendimiz (S.A.V:', fixed: 'Nebiler Sultani Peygamber Efendimiz (S.A.V):', rule: 'Yapi' }
-        ]
       }
     }
   }, source);
 
-  assert.equal(result.totalErrors, 0);
-  assert.equal(result.score, 100);
-  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 97);
+  assert.equal(result.correctedText, source.replace('Peygamber Efendimiz (S.A.V:', 'Peygamber Efendimiz (S.A.V):'));
 });
 
 test('bagimsiz kucuk harf ayet standardi korunur', () => {

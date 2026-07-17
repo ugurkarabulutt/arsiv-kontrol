@@ -116,15 +116,19 @@ tespit edilir).
 
 ### 2026-07-17
 - **Hacer Terzi 6 açık feedback kök turu:** Canlı feedbacklerde gelen `surette -> sürette`,
-  `bir şey -> birşey`, `şekli şemalinize -> şekil şemalinize` ve `(S.A.V:)`/`(S.A.V):`
-  parantez-iki nokta mikro farkları yanlış-pozitif olarak korumaya alındı. `surette`,
-  `bir şey` ve `şekli şemalinize` bu bağlamlarda kaynakta olduğu gibi korunur; S.A.V
-  kısaltmasının iki nokta/parantez yerleşimi skor düşüren hata yapılmaz.
+  `bir şey -> birşey` ve `şekli şemalinize -> şekil şemalinize` yanlış-pozitif olarak
+  korumaya alındı. `surette`, `bir şey` ve `şekli şemalinize` bu bağlamlarda kaynakta
+  olduğu gibi korunur.
+- **S.A.V parantez standardı revizyonu:** Kullanıcı düzeltmesiyle `(S.A.V:` gibi kapanmamış
+  parantezlerin gerçek noktalama hatası olduğu netleştirildi. Sistem bu kullanımı hata
+  olarak göstermeli ve `(S.A.V):` biçimine düzeltmelidir; bu sınıf yanlış-pozitif korumasından
+  çıkarıldı.
 - **Âyet standardı bağlamı:** Bağımsız küçük harf `ayet -> âyet` standardı korunur. Ancak
   `Hidayet/Hidayette/hidayete` içindeki `ayet` parçası kelime gibi yakalanmaz ve yalnızca
   büyük başlık/listede geçen `AYET` kullanımı normal cümle kelimesi gibi skorlanmaz.
 - **Prompt ve test:** Üst öncelikli prompt kurallarına `bir şey`, `surette`, `şekli şemal`
-  ve S.A.V mikro noktalama korumaları eklendi. `npm.cmd run check` başarılı; 61/61 test geçti.
+  korumaları ve kapanmamış S.A.V parantezini düzeltme standardı eklendi. `npm.cmd run check`
+  başarılı; 61/61 test geçti.
 - **Canlı feedback kapatma:** Hacer Terzi'ye ait 6 açık feedback
   `feedback-fix-2026-07-17-hacer-roots-1784252599562` çözüm grubuyla kapatıldı. Hacer
   Terzi için tek kişisel `feedback_resolution` bildirimi gönderildi. Son kontrolde açık
