@@ -129,6 +129,10 @@ tespit edilir).
 - **Prompt ve test:** Üst öncelikli prompt kuralları `suretiyle`, `keyfe mâ yeşâdır`,
   `Allah arasındadır`, `kaadirdir`, `halifesi` ve mükerrer `(S.A.V)` korumalarıyla
   güncellendi. `npm.cmd run check` başarılı; 63/63 test geçti.
+- **Canlı feedback kapatma:** 8 açık feedback
+  `feedback-fix-2026-07-18-latest-roots-1784328201245` çözüm grubuyla kapatıldı. Hacer
+  Terzi, Nuray Ardagümüşoğlu ve Aysun Aydöner için 3 kişisel `feedback_resolution`
+  bildirimi gönderildi. Son kontrolde açık feedback `0`.
 
 ### 2026-07-17
 - **Hacer Terzi 6 açık feedback kök turu:** Canlı feedbacklerde gelen `surette -> sürette`,
