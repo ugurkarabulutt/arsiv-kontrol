@@ -114,6 +114,18 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-17
+- **Hacer Terzi 6 açık feedback kök turu:** Canlı feedbacklerde gelen `surette -> sürette`,
+  `bir şey -> birşey`, `şekli şemalinize -> şekil şemalinize` ve `(S.A.V:)`/`(S.A.V):`
+  parantez-iki nokta mikro farkları yanlış-pozitif olarak korumaya alındı. `surette`,
+  `bir şey` ve `şekli şemalinize` bu bağlamlarda kaynakta olduğu gibi korunur; S.A.V
+  kısaltmasının iki nokta/parantez yerleşimi skor düşüren hata yapılmaz.
+- **Âyet standardı bağlamı:** Bağımsız küçük harf `ayet -> âyet` standardı korunur. Ancak
+  `Hidayet/Hidayette/hidayete` içindeki `ayet` parçası kelime gibi yakalanmaz ve yalnızca
+  büyük başlık/listede geçen `AYET` kullanımı normal cümle kelimesi gibi skorlanmaz.
+- **Prompt ve test:** Üst öncelikli prompt kurallarına `bir şey`, `surette`, `şekli şemal`
+  ve S.A.V mikro noktalama korumaları eklendi. `npm.cmd run check` başarılı; 61/61 test geçti.
+
 ### 2026-07-16
 - **Tavsiye/birşey/bağlaç/hidayet ekleri kök koruması:** Nuray Ardagümüşoğlu ve Hacer
   Terzi geri bildirimleriyle gelen 6 açık kayıt 4 kök sınıfa ayrıldı ve kalite katmanında

@@ -293,6 +293,10 @@ KORUNACAK BAĞLAMLAR:
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
 - "herşey" ailesi birleşik kalır: herşey, herşeye, herşeydir gibi ekli biçimleri "her şey..." diye ayırma.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
+- "bir şey" ifadesi ayrı yazılır; bunu "birşey" yapma. Özel karar yalnızca "her şey" → "herşey" içindir.
+- "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
+- "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
+- "(S.A.V:" ile "(S.A.V):" arasındaki arşiv parantez-iki nokta mikro farklarını hata olarak işaretleme; S.A.V kısaltması bağlamını bozma.
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy" kökünden gelen ifadeleri "hayat/hayatta" diye sadeleştirme; hayydırlar gibi kullanımları koru.
 - "Hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
@@ -2127,6 +2131,10 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" ailesi şapkasızdır: din, dinde, dinimizin, dinsiz gibi kullanımları dîn/dînde/dînimizin/dînsiz yapma.
 - "herşey" doğru yazımdır; ekli biçimleri de birleşik kalır: herşey, herşeye, herşeydir. Metinde "her şey" varsa "herşey" olarak düzelt.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
+- "bir şey" ayrı yazılır; bunu "birşey" yapma. Özel birleşik yazım kararı sadece "her şey" → "herşey" içindir.
+- "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
+- "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
+- "(S.A.V:" ile "(S.A.V):" arasındaki parantez-iki nokta mikro farkını hata olarak işaretleme; S.A.V kısaltması bağlamını bozma.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "vücut/vücuttan" gibi doğru kullanımları "vücud/vücuddan" yapma.
 - "Hadîs-i Şerif" standardında Hadîs kelimesinde î vardır, Şerif kelimesindeki i şapkasızdır. "HADİS-İ ŞERİF" varsa "HADÎS-İ ŞERİF" yap; "ŞERÎF" yapma.
 - "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.

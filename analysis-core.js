@@ -243,6 +243,31 @@ function isHidayetSuffixDrop(original, fixed) {
   return /^hidayet[\p{L}\p{N}_]+$/u.test(foldedFrom) && foldedTo === 'hidayet';
 }
 
+function isSuretteRewrite(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  return /\bsurette\b/u.test(from) && /\bs[üû]rette\b/u.test(to);
+}
+
+function isBirSeyCompaction(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, '').trim();
+  return /^bir sey\b/u.test(from) && to.startsWith('birsey');
+}
+
+function isSekliSemalSuffixTrim(original, fixed) {
+  const from = foldText(original);
+  const to = foldText(fixed);
+  return /^sekli semal/u.test(from) && /^sekil semal/u.test(to);
+}
+
+function isSavColonParenthesisMove(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  const normalize = value => value.replace(/\(s\.a\.v\.?\):/giu, '(s.a.v:');
+  return /\(s\.a\.v\.?:/iu.test(from) && normalize(from) === normalize(to);
+}
+
 function isDecisionProtectedTransform(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -314,6 +339,10 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom.startsWith('hayy') && foldedTo.startsWith('hayat')) return true;
   if (foldedFrom === 'hidayet' && foldedTo.startsWith('hidayet') && foldedTo !== 'hidayet') return true;
   if (from.includes('şerif') && to.includes('şerîf')) return true;
+  if (isSuretteRewrite(original, fixed)) return true;
+  if (isBirSeyCompaction(original, fixed)) return true;
+  if (isSekliSemalSuffixTrim(original, fixed)) return true;
+  if (isSavColonParenthesisMove(original, fixed)) return true;
   return false;
 }
 
@@ -364,7 +393,13 @@ function sourceAlreadyHasFixedPunctuation(sourceText, original, fixed) {
   return sourceContainsIssue(source, to);
 }
 
-function sourceIssueOccurrenceCount(sourceText, original) {
+function isAyetStandardIssue(original, fixed) {
+  return foldText(original).replace(/\s+/g, '') === 'ayet'
+    && foldText(fixed).replace(/\s+/g, '') === 'ayet'
+    && hasCircumflex(fixed);
+}
+
+function sourceIssueOccurrenceCount(sourceText, original, fixed = '') {
   const source = canonicalText(sourceText);
   const needle = canonicalText(original);
   if (!needle) return 0;
@@ -372,7 +407,11 @@ function sourceIssueOccurrenceCount(sourceText, original) {
   const left = needsWordBoundary(needle[0]) ? '(?<![\\p{L}\\p{N}_])' : '';
   const right = needsWordBoundary(needle[needle.length - 1]) ? '(?![\\p{L}\\p{N}_])' : '';
   const re = new RegExp(`${left}${escapeRegExp(needle)}${right}`, 'giu');
-  return [...source.matchAll(re)].length;
+  const matches = [...source.matchAll(re)];
+  if (isAyetStandardIssue(original, fixed)) {
+    return matches.filter(match => match[0] !== match[0].toLocaleUpperCase('tr-TR')).length;
+  }
+  return matches.length;
 }
 
 function equivalentIssue(original, fixed) {
@@ -629,7 +668,7 @@ function finalizeResult(result = {}, sourceText = '') {
     if (sourceText) {
       issues = issues.filter(issue => {
         const originalKey = canonicalText(issue?.original || '');
-        const maxOccurrences = sourceIssueOccurrenceCount(sourceText, issue?.original || '');
+        const maxOccurrences = sourceIssueOccurrenceCount(sourceText, issue?.original || '', issue?.fixed || '');
         const usedOccurrences = acceptedIssueUses.get(originalKey) || 0;
         const keep = issue
           && !equivalentIssue(issue.original, issue.fixed)

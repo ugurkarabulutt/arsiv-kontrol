@@ -281,6 +281,72 @@ test('tavsiye birsey baglac ve hidayet ekleri kokten korunur', () => {
   assert.equal(result.correctedText, source);
 });
 
+test('17 Temmuz Hacer feedback kokleri yanlis pozitif uretmez', () => {
+  const source = [
+    'Mutlak surette kisi bu konuda dikkatli olur.',
+    'Hidayettedir ve hidayete erer. MURSIDE TABI OLMAYAN (10 AYET)',
+    'Nebiler Sultani Peygamber Efendimiz (S.A.V: buyurdu.',
+    'Boyle bir sey mumkun degildir.',
+    'Allah sekli semalinize bakmaz.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: [
+      'Mutlak surette kisi bu konuda dikkatli olur.',
+      'Hidayettedir ve hidayete erer. MURSIDE TABI OLMAYAN (10 AYET)',
+      'Nebiler Sultani Peygamber Efendimiz (S.A.V): buyurdu.',
+      'Boyle birsey mumkun degildir.',
+      'Allah sekil semalinize bakmaz.'
+    ].join(' '),
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'ayet', fixed: '\u00e2yet', rule: 'Sozluk standardi' }
+        ]
+      },
+      imla: {
+        issues: [
+          { original: 'surette', fixed: 's\u00fcrette', rule: 'Imla standardi' },
+          { original: 'bir sey', fixed: 'birsey', rule: 'Imla standardi' },
+          { original: 'sekli semalinize', fixed: 'sekil semalinize', rule: 'Imla standardi' }
+        ]
+      },
+      noktalama: {
+        issues: [
+          { original: 'Peygamber Efendimiz (S.A.V:', fixed: 'Peygamber Efendimiz (S.A.V):', rule: 'Noktalama' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: 'Nebiler Sultani Peygamber Efendimiz (S.A.V:', fixed: 'Nebiler Sultani Peygamber Efendimiz (S.A.V):', rule: 'Yapi' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('bagimsiz kucuk harf ayet standardi korunur', () => {
+  const source = 'Bu ayet aciklandi.';
+  const result = finalizeResult({
+    correctedText: 'Bu \u00e2yet aciklandi.',
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'ayet', fixed: '\u00e2yet', rule: 'Sozluk standardi' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 95);
+  assert.equal(result.correctedText, 'Bu \u00e2yet aciklandi.');
+});
+
 test('akilli dis tirnaklar ve cift akilli tirnaklar temizlenir', () => {
   const smart = finalizeResult({
     correctedText: '\u201cD\u00fczeltilmi\u015f metin\u201d',
