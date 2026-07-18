@@ -372,6 +372,54 @@ test('18 Temmuz acik feedback kokleri kullanici lehine kalici cozulur', () => {
   assert.equal(result.correctedText, source.replace('keyfe mea\u015fad\u0131r', 'keyfe m\u00e2 ye\u015f\u00e2d\u0131r'));
 });
 
+test('18 Temmuz yeni feedback transliterasyon hristiyan ve salih kokleri korunur', () => {
+  const source = [
+    '7/AR\u00c2F-16 K\u00e2le fe bim\u00e2 agveyten\u00ee le ak\u2019udenne lehum s\u0131r\u00e2tekel mustek\u00eem(mustek\u00eeme).',
+    'Hristiyanlar 72 f\u0131rkaya ayr\u0131ld\u0131lar.',
+    'neb\u00eelerle, s\u0131dd\u00eeklarla, \u015fehitlerle salihlerle beraberdirler.'
+  ].join(' ');
+
+  const result = finalizeResult({
+    correctedText: [
+      '7/AR\u00c2F-16 K\u00e2le fe bim\u00e2 agveyten\u00ee le ak\u2019udenne lehum s\u0131r\u00e2tekel Mustak\u00eem(Mustak\u00eemin\u2019e).',
+      'H\u0131ristiyanlar 72 f\u0131rkaya ayr\u0131ld\u0131lar.',
+      'neb\u00eelerle, s\u0131dd\u00eeklarla, \u015fehitlerle s\u00e2lihlerle beraberdirler.'
+    ].join(' '),
+    categories: {
+      imla: {
+        issues: [
+          { original: 'mustek\u00eem', fixed: 'Mustak\u00eem', rule: 'S\u00f6zl\u00fck standard\u0131' },
+          { original: 'mustek\u00eeme', fixed: 'Mustak\u00eemin\u2019e', rule: 'S\u00f6zl\u00fck standard\u0131' },
+          { original: 'Hristiyanlar', fixed: 'H\u0131ristiyanlar', rule: 'TDK standard\u0131' },
+          { original: 'salihlerle', fixed: 's\u00e2lihlerle', rule: '\u0130ml\u00e2 standard\u0131' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('turkce Sirati Mustakim standardi arapca transliterasyon korumasindan etkilenmez', () => {
+  const source = 'S\u0131rat\u0131 Mustek\u00eem yolundan ayr\u0131lmamak gerekir.';
+  const result = finalizeResult({
+    correctedText: 'S\u0131rat\u0131 Mustak\u00eem yolundan ayr\u0131lmamak gerekir.',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'Mustek\u00eem', fixed: 'Mustak\u00eem', rule: 'S\u0131rat\u0131 Mustak\u00eem standard\u0131' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.equal(result.correctedText, 'S\u0131rat\u0131 Mustak\u00eem yolundan ayr\u0131lmamak gerekir.');
+});
+
 test('bagimsiz kucuk harf ayet standardi korunur', () => {
   const source = 'Bu ayet aciklandi.';
   const result = finalizeResult({
@@ -410,6 +458,9 @@ test('canli feedback standart kelimeleri kayitli tutulur', () => {
   assert.equal(CANONICAL_WORD_STANDARDS.arif, 'arif');
   assert.equal(CANONICAL_WORD_STANDARDS.cahiliye, 'cahiliye');
   assert.equal(CANONICAL_WORD_STANDARDS.dinde, 'dinde');
+  assert.equal(CANONICAL_WORD_STANDARDS.hristiyan, 'Hristiyan');
+  assert.equal(CANONICAL_WORD_STANDARDS.salih, 'salih');
+  assert.equal(CANONICAL_WORD_STANDARDS.mustekim, 'mustekîm');
 });
 
 test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alinmaz', () => {

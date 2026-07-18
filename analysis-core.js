@@ -26,7 +26,10 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   kaadir: 'kaadir',
   halife: 'halife',
   suretiyle: 'suretiyle',
-  meyesa: 'mâ yeşâ'
+  meyesa: 'mâ yeşâ',
+  hristiyan: 'Hristiyan',
+  salih: 'salih',
+  mustekim: 'mustekîm'
 });
 const TURKISH_APOSTROPHE_SUFFIXES = new Set([
   'a', 'e', 'i', 'ı', 'u', 'ü',
@@ -130,6 +133,14 @@ function foldText(text) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('tr-TR');
+}
+
+function asciiFold(text) {
+  return foldText(text)
+    .replace(/\u0131/g, 'i')
+    .replace(/[’']/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function hasCircumflex(text) {
@@ -277,6 +288,20 @@ function isSuretiyleToSurette(original, fixed) {
   return from === 'suretiyle' && to === 'surette';
 }
 
+function isArabicTransliterationMustekimRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/[()]/g, ' ');
+  const to = asciiFold(fixed).replace(/[()]/g, ' ');
+  return /\bmustekim(?:e)?\b/u.test(from)
+    && /\bmustakim(?:in'?e)?\b/u.test(to);
+}
+
+function sourceProtectsArabicTransliteration(sourceText, original, fixed) {
+  if (!isArabicTransliterationMustekimRewrite(original, fixed)) return false;
+  const source = asciiFold(sourceText);
+  return /siratekel\s+mustekim(?:\s*\(\s*mustekime\s*\))?/u.test(source)
+    || (/\b(?:kale\s+fe\s+bima|agveyteni|ak'?udenne|lehum)\b/u.test(source) && /\bmustekim(?:e)?\b/u.test(source));
+}
+
 function sourceProtectsAllahArasindadir(sourceText, original, fixed) {
   const from = foldText(original).replace(/\s+/g, ' ').trim();
   const to = foldText(fixed).replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
@@ -298,7 +323,23 @@ function sourceAlreadyHasSavAfterIssue(sourceText, original, fixed) {
 
 function isSourceContextProtectedIssue(sourceText, original, fixed) {
   return sourceProtectsAllahArasindadir(sourceText, original, fixed)
+    || sourceProtectsArabicTransliteration(sourceText, original, fixed)
     || sourceAlreadyHasSavAfterIssue(sourceText, original, fixed);
+}
+
+function isHristiyanVowelInsertion(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  return /^hristiyan[\p{L}\p{N}_]*$/u.test(from)
+    && /^h\u0131ristiyan[\p{L}\p{N}_]*$/u.test(to);
+}
+
+function isSalihCircumflexRewrite(original, fixed) {
+  const from = foldText(original);
+  const to = foldText(fixed);
+  return /^salih[\p{L}\p{N}_]*$/u.test(from)
+    && /^salih[\p{L}\p{N}_]*$/u.test(to)
+    && hasCircumflex(fixed);
 }
 
 function isDecisionProtectedTransform(original, fixed) {
@@ -379,6 +420,8 @@ function isDecisionProtectedTransform(original, fixed) {
   if (isKeyfeMeyesaMisspelling(original, fixed)) return true;
   if (isBirSeyCompaction(original, fixed)) return true;
   if (isSekliSemalSuffixTrim(original, fixed)) return true;
+  if (isHristiyanVowelInsertion(original, fixed)) return true;
+  if (isSalihCircumflexRewrite(original, fixed)) return true;
   return false;
 }
 

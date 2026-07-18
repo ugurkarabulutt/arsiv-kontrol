@@ -300,6 +300,10 @@ KORUNACAK BAĞLAMLAR:
 - "keyfe meaşadır / keyfe meşadır" görülürse doğru standart "keyfe mâ yeşâdır" olmalıdır.
 - "Allah arasındadır" ifadesinde Allah kelimesine kesme eki ekleme; "Allah'a arasındadır" yanlıştır.
 - "kaadirdir" ve "halifesi" yazımlarını "kâdirdir/halîfesi" yapma.
+- Arapça âyet okunuşu/transliterasyon satırlarını Türkçe sözlük standardına çevirme; "sırâtekel mustekîm(mustekîme)" gibi ifadeler aynen korunur.
+- Türkçe anlatıdaki "Sıratı Mustakîm" standardı korunur; bu standart Arapça okunuş/transliterasyon içindeki mustekîm/mustekîme ifadelerine uygulanmaz.
+- "Hristiyan/Hristiyanlar" doğru yazımdır; bu kelimeleri "Hıristiyan/Hıristiyanlar" yapma.
+- "salih/salihler/salihlerle" yazımlarını otomatik "sâlih/sâlihler/sâlihlerle" yapma.
 - "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
 - "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
