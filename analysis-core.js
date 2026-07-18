@@ -296,6 +296,14 @@ function isNumberedNimetApostropheRewrite(original, fixed) {
   return !!fromMatch && !!toMatch && fromMatch[1] === toMatch[1];
 }
 
+function isKuranKerimTruncation(original, fixed) {
+  const from = asciiFold(original);
+  const to = asciiFold(fixed);
+  return /kur'?an-i\s+kerim\b/u.test(from)
+    && /kur'?an\b/u.test(to)
+    && !/\bkerim\b/u.test(to);
+}
+
 function isArabicTransliterationMustekimRewrite(original, fixed) {
   const from = asciiFold(original).replace(/[()]/g, ' ');
   const to = asciiFold(fixed).replace(/[()]/g, ' ');
@@ -431,6 +439,7 @@ function isDecisionProtectedTransform(original, fixed) {
   if (isHristiyanVowelInsertion(original, fixed)) return true;
   if (isSalihCircumflexRewrite(original, fixed)) return true;
   if (isNumberedNimetApostropheRewrite(original, fixed)) return true;
+  if (isKuranKerimTruncation(original, fixed)) return true;
   return false;
 }
 

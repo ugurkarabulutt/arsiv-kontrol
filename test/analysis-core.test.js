@@ -429,6 +429,28 @@ test('18 Temmuz Serap feedback numarali nimet listesi yalniz nokta duzeltir', ()
   assert.equal(result.correctedText, source.replace('3 nimet', '3. nimet'));
 });
 
+test('18 Temmuz Hacer feedback Kuran-i Kerim tamlamasi kisaltilmaz', () => {
+  const source = 'Kur\u2019\u00e2n-\u0131 Ker\u00eem bunu b\u00f6yle mi yaz\u0131yor?';
+  const result = finalizeResult({
+    correctedText: "Kur'\u00e2n bunu b\u00f6yle mi yaz\u0131yor?",
+    categories: {
+      noktalama: {
+        issues: [
+          {
+            original: 'Kur\u2019\u00e2n-\u0131 Ker\u00eem bunu b\u00f6yle mi yaz\u0131yor?',
+            fixed: "Kur'\u00e2n bunu b\u00f6yle mi yaz\u0131yor?",
+            rule: 'Noktalama standard\u0131'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
 test('turkce Sirati Mustakim standardi arapca transliterasyon korumasindan etkilenmez', () => {
   const source = 'S\u0131rat\u0131 Mustek\u00eem yolundan ayr\u0131lmamak gerekir.';
   const result = finalizeResult({

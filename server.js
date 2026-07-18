@@ -314,6 +314,7 @@ KORUNACAK BAĞLAMLAR:
 - "nefsi", "nefsin" ve "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" kullanımlarını eklerinden koparma.
 - "A.S" ve "S.A.V" kısaltmalarını bağlamdan emin olmadan birbirine çevirme.
 - Kur'ân-ı Kerim, Kur'ân-ı, kelâm-ı, Resûl'ü gibi tamlayan/ekli ifadelerde ek veya ikinci kelime silinmez.
+- "Kur'ân-ı Kerîm" tamlamasını "Kur'ân" diye kısaltma; "-ı Kerîm" kısmı kaynakta varsa aynen korunur.
 
 ════════════════════════════════════════
 KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
