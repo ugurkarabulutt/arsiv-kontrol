@@ -133,6 +133,24 @@ tespit edilir).
   `feedback-fix-2026-07-18-latest-roots-1784328201245` çözüm grubuyla kapatıldı. Hacer
   Terzi, Nuray Ardagümüşoğlu ve Aysun Aydöner için 3 kişisel `feedback_resolution`
   bildirimi gönderildi. Son kontrolde açık feedback `0`.
+- **Yeni mustekîm/Hristiyan/salih feedback turu:** Nuray Ardagümüşoğlu geri bildirimleriyle
+  gelen 4 açık kayıt kalite katmanına işlendi. Arapça âyet okunuşu/transliterasyon satırında
+  geçen `sırâtekel mustekîm(mustekîme)` ifadeleri Türkçe `Sıratı Mustakîm` standardına
+  zorlanmaz; ancak Türkçe anlatıdaki `Sıratı Mustakîm` düzeltmesi korunur. `Hristiyanlar`
+  yazımı TDK yazım kuralıyla uyumlu biçimde korunur ve `Hıristiyanlar` yapılmaz. `salih`,
+  `salihler`, `salihlerle` yazımları otomatik `sâlih/sâlihler/sâlihlerle` yapılmaz.
+  `npm.cmd run check` başarılı; 65/65 test geçti. Production deploy `/health ok` ile
+  doğrulandı. 4 feedback `feedback-fix-2026-07-18-translit-hristiyan-salih-1784399770169`
+  grubuyla kapatıldı ve Nuray Ardagümüşoğlu için tek kişisel çözüm bildirimi gönderildi.
+- **Serap Pamuk nimet listesi feedback turu:** Canlı kuyruğa sonradan düşen 2 açık feedback
+  ayrıca incelendi. Numaralı nimet listesinde `3 nimet -> 3. ni'met` birleşik dönüşümü
+  reddedilir; eksik nokta varsa yalnız `3 nimet -> 3. nimet` uygulanır ve `nimet` kelimesi
+  bu listede `ni'met` yapılmaz. `Bismillâhirrahmânirrahîm` arşiv standardı bitişik yazım
+  olarak korunur; bu konuda sistem standardı doğru olduğu için kod değişikliği yapılmadı,
+  kullanıcıya açıklamayla bildirildi. `npm.cmd run check` başarılı; 66/66 test geçti.
+  Production deploy `/health ok` ile doğrulandı. 2 feedback
+  `feedback-fix-2026-07-18-serap-nimet-bismillah-1784400162577` grubuyla kapatıldı ve
+  Serap Pamuk için tek kişisel çözüm bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
 
 ### 2026-07-17
 - **Hacer Terzi 6 açık feedback kök turu:** Canlı feedbacklerde gelen `surette -> sürette`,
