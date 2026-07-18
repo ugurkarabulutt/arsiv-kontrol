@@ -151,6 +151,14 @@ tespit edilir).
   Production deploy `/health ok` ile doğrulandı. 2 feedback
   `feedback-fix-2026-07-18-serap-nimet-bismillah-1784400162577` grubuyla kapatıldı ve
   Serap Pamuk için tek kişisel çözüm bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
+- **Hacer Terzi Kur'ân-ı Kerîm feedback turu:** Canlı kuyruğa sonradan düşen 1 açık feedback
+  incelendi. `Kur’ân-ı Kerîm bunu böyle mi yazıyor? -> Kur'ân bunu böyle mi yazıyor?`
+  dönüşümü kök seviyede engellendi; `Kur'ân-ı Kerîm`, `Kur’ân-ı Kerîm` gibi tamlamalarda
+  `-ı Kerîm` kısmı kaynakta varsa silinmez. Prompt'a aynı açık kural eklendi.
+  `npm.cmd run check` başarılı; 67/67 test geçti. Production deploy `/health ok` ile
+  doğrulandı. Feedback `feedback-fix-2026-07-18-hacer-kuran-kerim-1784400533116` grubuyla
+  kapatıldı ve Hacer Terzi için tek kişisel çözüm bildirimi gönderildi. Son canlı kontrolde
+  açık feedback `0`.
 
 ### 2026-07-17
 - **Hacer Terzi 6 açık feedback kök turu:** Canlı feedbacklerde gelen `surette -> sürette`,

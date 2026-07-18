@@ -3,8 +3,9 @@
 ## 2026-07-18 Codex Güncel Durum
 
 - Son production commitleri: `0542e3d fix: protect latest feedback standards` ve
-  `6ac4dc8 fix: preserve numbered nimet list items`.
-- Canlı doğrulama: `npm.cmd run check` son çalışmada başarılı, 66/66 test geçti.
+  `6ac4dc8 fix: preserve numbered nimet list items`, ardından
+  `16d19b4 fix: preserve Kuran-i Kerim phrase`.
+- Canlı doğrulama: `npm.cmd run check` son çalışmada başarılı, 67/67 test geçti.
   `https://arsiv.ibrahimlive.ai/health` canlıda `ok`, ana sayfa HTTP 200.
 - Kapatılan canlı feedback grupları:
   - `feedback-fix-2026-07-18-translit-hristiyan-salih-1784399770169`: Nuray
@@ -14,6 +15,9 @@
     geri bildirimleri; numaralı nimet listesinde yalnız `3 nimet -> 3. nimet`
     uygulanır, `ni'met` yapılmaz. Bismillâhirrahmânirrahîm bitişik arşiv standardı
     olarak korundu ve kullanıcıya açıklama gönderildi.
+  - `feedback-fix-2026-07-18-hacer-kuran-kerim-1784400533116`: Hacer Terzi geri
+    bildirimi; `Kur’ân-ı Kerîm` tamlaması `Kur'ân` diye kısaltılmaz, `-ı Kerîm`
+    kısmı kaynakta varsa korunur.
 - Son canlı kontrolde açık feedback sayısı `0`.
 
 Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
