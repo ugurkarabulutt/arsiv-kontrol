@@ -402,6 +402,33 @@ test('18 Temmuz yeni feedback transliterasyon hristiyan ve salih kokleri korunur
   assert.equal(result.correctedText, source);
 });
 
+test('18 Temmuz Serap feedback numarali nimet listesi yalniz nokta duzeltir', () => {
+  const source = [
+    '1. nimet devrin imam\u0131n\u0131n ruhunun ba\u015f\u0131n\u0131n \u00fczerine gelmesidir.',
+    '2. nimet kalbe \u00eem\u00e2n yaz\u0131lmas\u0131',
+    '3 nimet g\u00fcnahlar\u0131n sevaba \u00e7evrilmesi',
+    '4. nimet ruhun v\u00fccuttan ayr\u0131lmas\u0131'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: source.replace('3 nimet', "3. ni'met"),
+    categories: {
+      yapi: {
+        issues: [
+          { original: '3 nimet', fixed: "3. ni'met", rule: 'Yap\u0131 standard\u0131' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.deepEqual(result.categories.imla.issues.map(issue => [issue.original, issue.fixed]), [
+    ['3 nimet', '3. nimet']
+  ]);
+  assert.equal(result.correctedText, source.replace('3 nimet', '3. nimet'));
+});
+
 test('turkce Sirati Mustakim standardi arapca transliterasyon korumasindan etkilenmez', () => {
   const source = 'S\u0131rat\u0131 Mustek\u00eem yolundan ayr\u0131lmamak gerekir.';
   const result = finalizeResult({

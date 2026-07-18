@@ -288,6 +288,14 @@ function isSuretiyleToSurette(original, fixed) {
   return from === 'suretiyle' && to === 'surette';
 }
 
+function isNumberedNimetApostropheRewrite(original, fixed) {
+  const from = asciiFold(original);
+  const to = asciiFold(fixed);
+  const fromMatch = from.match(/^(\d+)\.?\s+nimet\b/u);
+  const toMatch = to.match(/^(\d+)\.?\s+ni'met\b/u);
+  return !!fromMatch && !!toMatch && fromMatch[1] === toMatch[1];
+}
+
 function isArabicTransliterationMustekimRewrite(original, fixed) {
   const from = asciiFold(original).replace(/[()]/g, ' ');
   const to = asciiFold(fixed).replace(/[()]/g, ' ');
@@ -422,6 +430,7 @@ function isDecisionProtectedTransform(original, fixed) {
   if (isSekliSemalSuffixTrim(original, fixed)) return true;
   if (isHristiyanVowelInsertion(original, fixed)) return true;
   if (isSalihCircumflexRewrite(original, fixed)) return true;
+  if (isNumberedNimetApostropheRewrite(original, fixed)) return true;
   return false;
 }
 
@@ -636,6 +645,11 @@ function applyDeterministicStandards(cats, sourceText) {
   const birArayaRe = /(?<![\p{L}\p{N}_])bir\s+araya(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(birArayaRe)) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sozluk standardi');
+  }
+
+  const numberedNimetRe = /(^|\n)([ \t]*)(\d+)\s+nimet(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(numberedNimetRe)) {
+    addDeterministicIssue(cats, seen, `${match[2]}${match[3]} nimet`, `${match[2]}${match[3]}. nimet`, 'Numarali liste duzeni');
   }
 
   const hazretiIsaRe = /(?<![\p{L}\p{N}_])Hazreti\s+İsa(?!\s*\(A\.S\.?\))(?![\p{L}\p{N}_])/giu;

@@ -304,6 +304,7 @@ KORUNACAK BAĞLAMLAR:
 - Türkçe anlatıdaki "Sıratı Mustakîm" standardı korunur; bu standart Arapça okunuş/transliterasyon içindeki mustekîm/mustekîme ifadelerine uygulanmaz.
 - "Hristiyan/Hristiyanlar" doğru yazımdır; bu kelimeleri "Hıristiyan/Hıristiyanlar" yapma.
 - "salih/salihler/salihlerle" yazımlarını otomatik "sâlih/sâlihler/sâlihlerle" yapma.
+- Numaralı nimet listelerinde "1. nimet, 2. nimet, 3. nimet" biçimini kullan; bu bağlamda "nimet" kelimesini "ni'met" yapma. Eksik nokta varsa yalnızca numarayı düzelt: "3 nimet" → "3. nimet".
 - "şekli şemali/şekli şemalinize" gibi ifadelerde "şekli" ekini düşürme; "şekil şemalinize" yapma.
 - "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
