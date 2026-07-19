@@ -114,6 +114,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-19
+- **Tekrarlanan sure adı standardı kalıcı çözümü:** Serap Pamuk geri bildirimiyle gelen
+  `ŞURA-8` düzeltilip aynı metindeki `ŞURA-28` geçişinin düzeltilmemesi kök seviyede
+  çözüldü. Kök sebep, deterministic standart ekleme katmanının aynı `original -> fixed`
+  çiftini tekil sayıp tekrar eden geçişleri eklememesiydi; uygulama katmanı da her issue'yu
+  bir geçişe uyguladığı için yalnız ilk geçiş düzeliyordu. `addDeterministicIssue` artık
+  tekrar eden deterministic standart geçişlerini kayda alır; mevcut güvenlik sayacı kaynak
+  metindeki gerçek geçiş sayısından fazlasını yine kabul etmez.
+- **Regresyon testi:** Tek AI bulgusu `ŞURA -> ŞÛRÂ` olsa bile kaynakta geçen tüm sure adı
+  referanslarının (`ŞURA-8`, `ŞURA-28`) `ŞÛRÂ-8`, `ŞÛRÂ-28` olarak uygulandığını doğrulayan
+  test eklendi. `npm.cmd run check` başarılı; 68/68 test geçti.
+- **Deploy ve canlı kapanış:** Commit `cc86b43` production'a deploy edildi
+  (`dpl_BikBzJGB7btZA2Awj7ArTboRPD5i`), `https://arsiv.ibrahimlive.ai/health` canlıda
+  `ok` ve ana sayfa HTTP 200 döndü. Feedback
+  `feedback-fix-2026-07-19-serap-shura-repeat-1784458769071` çözüm grubuyla kapatıldı,
+  Serap Pamuk'a kişisel `feedback_resolution` bildirimi gönderildi. Son canlı kontrolde
+  açık feedback `0`.
+
 ### 2026-07-18
 - **8 açık feedback kök çözüm turu:** Hacer Terzi, Nuray Ardagümüşoğlu ve Aysun Aydöner
   geri bildirimleriyle gelen yeni açık kayıtlar kalite katmanına işlendi. Sistem artık

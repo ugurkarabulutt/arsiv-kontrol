@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-07-19 Codex Güncel Durum
+
+- Son production commit: `cc86b43 fix: apply repeated deterministic standards`.
+- Kalıcı çözüm: Aynı metinde birden fazla geçen deterministic standart düzeltmeleri artık
+  tekil kayda indirilmiyor. Bu özellikle Serap Pamuk geri bildirimiyle görülen `ŞURA-8`
+  düzelirken aynı metindeki `ŞURA-28` geçişinin kalması sorununu çözdü. Bundan sonra tek
+  AI bulgusu `ŞURA -> ŞÛRÂ` olsa bile kaynakta geçen tüm gerçek geçişler uygulanır; kaynakta
+  olmayan fazla tekrarlar mevcut güvenlik sayacıyla yine reddedilir.
+- Doğrulama: `npm.cmd run check` başarılı, 68/68 test geçti. Yeni regresyon testi tekrar
+  eden sure adı referanslarının tamamının `ŞÛRÂ` standardına uygulandığını doğrular.
+- Deploy: Vercel production deployment `dpl_BikBzJGB7btZA2Awj7ArTboRPD5i`; özel alan adı
+  `https://arsiv.ibrahimlive.ai` aliaslandı. Canlı `/health` `ok`, ana sayfa HTTP 200.
+- Canlı feedback kapanışı: Serap Pamuk kaydı
+  `feedback-fix-2026-07-19-serap-shura-repeat-1784458769071` çözüm grubuyla kapatıldı ve
+  kendisine kişisel çözüm bildirimi gönderildi. Son canlı kontrolde açık feedback sayısı `0`.
+
 ## 2026-07-18 Codex Güncel Durum
 
 - Son production commitleri: `0542e3d fix: protect latest feedback standards` ve
