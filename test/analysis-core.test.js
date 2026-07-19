@@ -451,6 +451,34 @@ test('18 Temmuz Hacer feedback Kuran-i Kerim tamlamasi kisaltilmaz', () => {
   assert.equal(result.correctedText, source);
 });
 
+test('tekrar eden sure adi standartlari tek AI bulgusuyla tum gecislere uygulanir', () => {
+  const source = [
+    '7. VELIYYIN VE LA NASIR',
+    '\u015eURA-8, BAKARA-107',
+    '13. VELIYYUL HAMID',
+    '\u015eURA-28'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: source.replace('\u015eURA-8', '\u015e\u00dbR\u00c2-8'),
+    categories: {
+      imla: {
+        issues: [
+          { original: '\u015eURA', fixed: '\u015e\u00dbR\u00c2', rule: 'Sure adi standardi' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.score, 92);
+  assert.equal(result.correctedText, source.replaceAll('\u015eURA', '\u015e\u00dbR\u00c2'));
+  assert.deepEqual(result.categories.imla.issues.map(issue => [issue.original, issue.fixed]), [
+    ['\u015eURA', '\u015e\u00dbR\u00c2'],
+    ['\u015eURA', '\u015e\u00dbR\u00c2']
+  ]);
+});
+
 test('turkce Sirati Mustakim standardi arapca transliterasyon korumasindan etkilenmez', () => {
   const source = 'S\u0131rat\u0131 Mustek\u00eem yolundan ayr\u0131lmamak gerekir.';
   const result = finalizeResult({

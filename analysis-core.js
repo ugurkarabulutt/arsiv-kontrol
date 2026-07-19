@@ -600,8 +600,7 @@ function addDeterministicIssue(cats, seen, original, fixed, rule) {
   if (!original || !fixed || original === fixed) return;
   if (/^[A-Z]\.[A-Z]$/i.test(String(original)) && /^[A-Z]\.\s+[A-Z]$/i.test(String(fixed))) return;
   const key = `${canonicalText(original)}=>${canonicalText(fixed)}`;
-  if (seen.has(key)) return;
-  seen.add(key);
+  seen.set(key, (seen.get(key) || 0) + 1);
   if (!cats.imla) cats.imla = {};
   if (!Array.isArray(cats.imla.issues)) cats.imla.issues = [];
   cats.imla.issues.push({ original, fixed, rule });
@@ -611,10 +610,11 @@ function applyDeterministicStandards(cats, sourceText) {
   const text = String(sourceText || '');
   if (!text) return cats;
 
-  const seen = new Set();
+  const seen = new Map();
   Object.values(cats || {}).forEach(category => {
     (category?.issues || []).forEach(issue => {
-      seen.add(`${canonicalText(issue.original)}=>${canonicalText(issue.fixed)}`);
+      const key = `${canonicalText(issue.original)}=>${canonicalText(issue.fixed)}`;
+      seen.set(key, (seen.get(key) || 0) + 1);
     });
   });
 
