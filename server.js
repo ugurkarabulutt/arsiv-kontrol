@@ -56,6 +56,7 @@ app.use(cookieSession({
   secure: Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production')
 }));
 app.use('/icons', express.static(path.join(__dirname, 'icons')));
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'icons', 'favicon.ico')));
 app.get('/manifest.webmanifest', (req, res) => res.sendFile(path.join(__dirname, 'manifest.webmanifest')));
 app.get('/sw.js', (req, res) => res.sendFile(path.join(__dirname, 'sw.js')));
 
