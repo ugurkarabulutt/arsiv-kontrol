@@ -291,6 +291,7 @@ Resûlallah → Resûlullah
 KORUNACAK BAĞLAMLAR:
 - Kaynakta şapkalı doğru yazılmış kelimeleri şapkasızlaştırma: manevî, itikâf, daimî, âyet, Allahû Tealâ.
 - "dîn" ailesi güncel karar gereği istisnadır; dîn/dînin/dîni yerine din/dinin/dini kullanılır.
+- Âyet okunuşu/transliterasyon içinde geçen "dînâ/dînen" gibi kelimeleri Türkçe din standardına çevirme; âyet metni korunur.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
 - "herşey" ailesi birleşik kalır: herşey, herşeye, herşeydir gibi ekli biçimleri "her şey..." diye ayırma.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
@@ -300,6 +301,13 @@ KORUNACAK BAĞLAMLAR:
 - "keyfe meaşadır / keyfe meşadır" görülürse doğru standart "keyfe mâ yeşâdır" olmalıdır.
 - "Allah arasındadır" ifadesinde Allah kelimesine kesme eki ekleme; "Allah'a arasındadır" yanlıştır.
 - "kaadirdir" ve "halifesi" yazımlarını "kâdirdir/halîfesi" yapma.
+- "takva" doğru yazımdır; bunu "takvâ" yapma.
+- "afet" kelimesini anlamca ilgisiz şekilde "ni'met" yapma.
+- "Allah'ın Zat'ında ifna olur" ifadesini "fena bulur" diye değiştirme; bağlamdaki ifade korunur.
+- "mürşide" ve "mürşide tâbiiyet" ifadelerini "mürşidin/mürşidin tâbiiyet" yapma; hâl eki anlamı korunur.
+- Kaynaklarda sayfa referansı "s 120" gibi yazılmışsa standart "s.120" biçimidir; "s. 120" araya boşluklu biçimi kullanma.
+- Sure adında eksik harf varsa düzelt ama yalnız bunun için kelimeyi zorunlu tamamen büyük harfe çevirme: "Hac" metin akışında "Hacc" olur, "HAC" başlık/listede "HACC" olur.
+- Kaynakta zaten "o taktirde" varsa "taktirde" bulgusunu "o taktirde" yaparak "o o taktirde" üretme.
 - Arapça âyet okunuşu/transliterasyon satırlarını Türkçe sözlük standardına çevirme; "sırâtekel mustekîm(mustekîme)" gibi ifadeler aynen korunur.
 - Türkçe anlatıdaki "Sıratı Mustakîm" standardı korunur; bu standart Arapça okunuş/transliterasyon içindeki mustekîm/mustekîme ifadelerine uygulanmaz.
 - "Hristiyan/Hristiyanlar" doğru yazımdır; bu kelimeleri "Hıristiyan/Hıristiyanlar" yapma.

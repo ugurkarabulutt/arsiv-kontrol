@@ -2,6 +2,16 @@
 
 ## 2026-07-23 Codex Güncel Durum
 
+- Açık feedback kalite turu: Canlıda 15 açık feedback doğrulandı (Serap Pamuk 6, Hacer
+  Terzi 6, Nuray Ardagümüşoğlu 2, Aysun Aydöner 1). Yanlış-pozitif kökler kod ve prompt
+  katmanında korumaya alındı: `takva -> takvâ`, âyet/transliterasyon içindeki
+  `dînâ/dînen -> dinâ/dinen`, `taktirde -> o taktirde`, `afet -> ni'met`,
+  `ifna olur -> fena bulur`, `mürşide/mürşide tâbiiyet -> mürşidin/mürşidin tâbiiyet`.
+  Doğru standart ayrımı olarak `s 120 -> s.120` deterministik yapıldı; `Hac` metin akışında
+  `Hacc`, başlık/listede `HAC` ise `HACC` olacak şekilde case korunuyor.
+- Doğrulama: `npm.cmd run check` başarılı; 70/70 test geçti. Bu tur henüz commit/deploy
+  edilmeden önceki yerel durumdur; commit, Vercel deploy, canlı `/health` ve feedback
+  kapanış/bildirim adımları sıradadır.
 - Son production commit: `280c3ed fix: harden last seen tracking`.
 - Son aktiflik kalıcı düzeltildi: `recordUserActivity` artık tek ortak
   `settings.user_last_seen` JSON satırına bağlı kalmıyor; her kullanıcı için ayrı

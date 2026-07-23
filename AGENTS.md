@@ -115,6 +115,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-23
+- **15 açık feedback kök doğrulama turu:** Canlı feedback kuyruğunda 15 açık kayıt
+  doğrulandı: Serap Pamuk 6, Hacer Terzi 6, Nuray Ardagümüşoğlu 2, Aysun Aydöner 1.
+  Kullanıcı lehine yanlış-pozitif olan dönüşümler kalite katmanında kalıcı olarak
+  reddedildi: `takva -> takvâ`, âyet/transliterasyon içinde `dînâ/dînen -> dinâ/dinen`,
+  `taktirde -> o taktirde` ile `o o taktirde` üretimi, `afet -> ni'met`,
+  `Allah'ın Zat'ında ifna olur -> Allah'ın Zat'ında fena bulur` ve
+  `mürşide/mürşide tâbiiyet -> mürşidin/mürşidin tâbiiyet`.
+- **Doğru standart ayrımı:** Kullanıcıların bildirdiği bazı kayıtların düzeltme yönü doğru
+  kabul edildi ve sistem davranışı netleştirildi. `s 120` sayfa referansı artık deterministik
+  olarak `s.120` biçimine gider; araya boşluklu `s. 120` hedefi reddedilir. `Hac/HAC`
+  sure adı eksik harfliyse `Hacc/HACC` yapılır, ancak metin akışındaki `Hac` gereksiz yere
+  tamamen büyük harfe çevrilmez.
+- **Regresyon testi:** 23 Temmuz açık feedback köklerini kapsayan iki test eklendi:
+  yanlış-pozitiflerin skor dışı kalması ve doğru sayfa/Hacc standartlarının uygulanması.
+  `npm.cmd run check` başarılı; 70/70 test geçti.
 - **Son aktiflik kalıcı güvenilirlik düzeltmesi:** Canlı DB'de `users.last_seen_at` kolonu
   henüz uygulanmadığında son aktif verisinin eksik veya kırılgan görünmemesi için aktivite
   takibi güçlendirildi. `recordUserActivity` artık tek ortak `settings.user_last_seen` JSON

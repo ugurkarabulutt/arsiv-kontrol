@@ -538,6 +538,7 @@ test('canli feedback standart kelimeleri kayitli tutulur', () => {
   assert.equal(CANONICAL_WORD_STANDARDS.hristiyan, 'Hristiyan');
   assert.equal(CANONICAL_WORD_STANDARDS.salih, 'salih');
   assert.equal(CANONICAL_WORD_STANDARDS.mustekim, 'mustekîm');
+  assert.equal(CANONICAL_WORD_STANDARDS.takva, 'takva');
 });
 
 test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alinmaz', () => {
@@ -555,6 +556,84 @@ test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alin
 
   assert.equal(result.totalErrors, 1);
   assert.equal(result.correctedText, 'Başlık\n\nGelelim fizik beden ve nefs konusuna.\nTablo: A | B');
+});
+
+test('23 temmuz acik feedback yanlis pozitifleri korunur', () => {
+  const source = [
+    'Allah sadece takva sahiplerinden kabul eder.',
+    'radîtu lekumul islâme dînâ(dînen) fe menidturra.',
+    'Eğer bilmiyorsanız, o taktirde zikir ehline sorun.',
+    'Onlar, 19 afet açısından o afetleri buzdolabına koyanlardır.',
+    "Ruh Allah'ın Zat'ında ifna olur.",
+    'Ne mürşide tâbiiyet var, ne zikir var.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'takva', fixed: 'takvâ', rule: 'Sözlük standardı' },
+          { original: 'afet', fixed: "ni'met", rule: 'Sözlük standardı' },
+          { original: 'mürşide', fixed: 'mürşidin', rule: 'Sözlük standardı' }
+        ]
+      },
+      imla: {
+        issues: [
+          { original: 'dînâ', fixed: 'dinâ', rule: 'Din standardı' },
+          { original: 'dînen', fixed: 'dinen', rule: 'Din standardı' },
+          { original: 'taktirde', fixed: 'o taktirde', rule: 'İmlâ standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: "Allah'ın Zat'ında ifna olur.", fixed: "Allah'ın Zat'ında fena bulur.", rule: 'Anlam düzeltmesi' },
+          { original: 'mürşide tâbiiyet', fixed: 'mürşidin tâbiiyet', rule: 'Metin yapısı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('23 temmuz dogru feedbacklerde sayfa ve hacc standardi uygulanir', () => {
+  const source = [
+    'Kaynak: Ramüzü’l-Ehadis, s 120, Ravi: Hz. Zamre.',
+    '4. Hac - 35: Kalpleri titreyenlerdir.',
+    '22/Hac 37: Len yenâlallâhe luhûmuhâ.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'Hac', fixed: 'HACC', rule: 'Sure adı standardı' }
+        ]
+      },
+      noktalama: {
+        issues: [
+          { original: 's 120', fixed: 's. 120', rule: 'Noktalama standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: '22/Hac 37', fixed: '22/HACC 37', rule: 'Sure adı standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 3);
+  assert.equal(result.score, 88);
+  assert.equal(result.correctedText, [
+    'Kaynak: Ramüzü’l-Ehadis, s.120, Ravi: Hz. Zamre.',
+    '4. Hacc - 35: Kalpleri titreyenlerdir.',
+    '22/Hacc 37: Len yenâlallâhe luhûmuhâ.'
+  ].join('\n'));
 });
 
 test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {

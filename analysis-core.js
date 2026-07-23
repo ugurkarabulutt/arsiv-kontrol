@@ -21,6 +21,7 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   ayet: 'âyet',
   daimi: 'daimî',
   teala: 'Tealâ',
+  takva: 'takva',
   biraraya: 'biraraya',
   vaad: 'vaad',
   kaadir: 'kaadir',
@@ -96,6 +97,12 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\bnefsi\b/iu, to: /\bnefs\b/iu },
   { from: /\bnefsin\b/iu, to: /\bnefisin\b/iu },
   { from: /\btaktirde\b/iu, to: /\b(?:takdirde|taktir\s+de)\b/iu },
+  { from: /\btaktirde\b/iu, to: /\bo\s+taktirde\b/iu },
+  { from: /(?<![\p{L}\p{N}_])takva[\p{L}\p{N}_]*/iu, to: /(?<![\p{L}\p{N}_])takvâ[\p{L}\p{N}_]*/iu },
+  { from: /(?<![\p{L}\p{N}_])afet(?:ler(?:iyle|in|den|de|i|e)?|leriyle|lerden|lerde|ler|in|den|de|i|e)?(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])ni'?met/iu },
+  { from: /\bifna\s+olur\b/iu, to: /\bfena\s+bulur\b/iu },
+  { from: /\bmürşide(?:\s+tâbiiyet)?\b/iu, to: /\bmürşidin(?:\s+tâbiiyet)?\b/iu },
+  { from: /(?<![\p{L}\p{N}_])s\s+\d+(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])s\.\s+\d+(?![\p{L}\p{N}_])/iu },
   { from: /\b(?:a\.s\.?|a\.s)\b/iu, to: /\b(?:s\.a\.v\.?|s\.a\.v)\b/iu },
   { from: /\befendimiz[\s\S]{0,24}\b(?:a\.s\.?|a\.s)\b/iu, to: /\befendimiz[\s\S]{0,24}\b(?:s\.a\.v\.?|s\.a\.v)\b/iu },
   { from: /\bmumin\b/iu, to: /\bmu'?min[uû]n\b/iu },
@@ -163,6 +170,7 @@ function isSourceDiacriticProtected(original, fixed) {
   const from = canonicalText(original);
   const to = canonicalText(fixed);
   if (/^dîn(?:ehum|ekum|ihim|ikum|ihi|ehu)$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return true;
+  if (/^dîn(?:â|en)$/iu.test(from) && /^din(?:â|en)$/iu.test(to)) return true;
   if (/^dîn[\p{L}\p{N}_]*$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return false;
   return !!from && !!to && from !== to && hasCircumflex(from) && foldText(from) === foldText(to);
 }
@@ -582,6 +590,9 @@ function deterministicFixed(original) {
   if (/^v\u00fcc(?:ud|\u00fbd|\u00fbt)$/iu.test(text)) {
     return caseLike(original, 'v\u00fccut');
   }
+  if (/^s\s+\d+$/iu.test(text)) {
+    return text.replace(/^s\s+/iu, match => match[0] === 'S' ? 'S.' : 's.');
+  }
   if (/^kadirdir$/iu.test(text)) {
     return caseLike(original, text.replace(/^kadir/iu, 'kaadir'));
   }
@@ -654,6 +665,11 @@ function applyDeterministicStandards(cats, sourceText) {
   const birArayaRe = /(?<![\p{L}\p{N}_])bir\s+araya(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(birArayaRe)) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sozluk standardi');
+  }
+
+  const pageReferenceRe = /(?<![\p{L}\p{N}_])s\s+\d+(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(pageReferenceRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Kaynak sayfa standardi');
   }
 
   const numberedNimetRe = /(^|\n)([ \t]*)(\d+)\s+nimet(?![\p{L}\p{N}_])/giu;
@@ -763,6 +779,21 @@ function applyAcceptedIssues(sourceText, issues) {
     return text;
   }, sourceText);
 }
+
+function normalizeHaccCase(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!/\bhac\b/iu.test(from) || !/\bHACC\b/u.test(to)) return fixed;
+  if (/\bHAC\b/u.test(from)) return fixed;
+  return String(fixed).replace(/\bHACC\b/gu, 'Hacc');
+}
+
+function normalizeIssueForStandards(issue) {
+  if (!issue || typeof issue !== 'object') return issue;
+  const fixed = normalizeHaccCase(issue.original, issue.fixed);
+  return fixed === issue.fixed ? issue : { ...issue, fixed };
+}
+
 function textHash(text) {
   return crypto.createHash('sha256').update(normalizeText(text), 'utf8').digest('hex');
 }
@@ -787,7 +818,7 @@ function finalizeResult(result = {}, sourceText = '') {
 
   for (const [key, weight] of Object.entries(CAT_WEIGHTS)) {
     const category = cats[key] || {};
-    let issues = Array.isArray(category.issues) ? category.issues : [];
+    let issues = Array.isArray(category.issues) ? category.issues.map(normalizeIssueForStandards) : [];
     if (sourceText) {
       issues = issues.filter(issue => {
         const originalKey = canonicalText(issue?.original || '');
