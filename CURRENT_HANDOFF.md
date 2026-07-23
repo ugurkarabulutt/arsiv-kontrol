@@ -9,10 +9,13 @@
   `ifna olur -> fena bulur`, `mürşide/mürşide tâbiiyet -> mürşidin/mürşidin tâbiiyet`.
   Doğru standart ayrımı olarak `s 120 -> s.120` deterministik yapıldı; `Hac` metin akışında
   `Hacc`, başlık/listede `HAC` ise `HACC` olacak şekilde case korunuyor.
-- Doğrulama: `npm.cmd run check` başarılı; 70/70 test geçti. Bu tur henüz commit/deploy
-  edilmeden önceki yerel durumdur; commit, Vercel deploy, canlı `/health` ve feedback
-  kapanış/bildirim adımları sıradadır.
-- Son production commit: `280c3ed fix: harden last seen tracking`.
+- Doğrulama ve kapanış: `npm.cmd run check` başarılı; 70/70 test geçti. Commit `46fd64d`
+  production'a deploy edildi (`https://arsiv-kontrol-qcgtmp4gm-ugurkarabulutts-projects.vercel.app`),
+  `https://arsiv.ibrahimlive.ai/health` canlıda `ok`. 15 açık feedback
+  `feedback-fix-2026-07-23-latest-standards-1784822374472` çözüm grubuyla kapatıldı;
+  Hacer Terzi, Serap Pamuk, Nuray Ardagümüşoğlu ve Aysun Aydöner'e toplam 4 kişisel
+  çözüm bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
+- Son production commit: `46fd64d fix: harden latest feedback standards`.
 - Son aktiflik kalıcı düzeltildi: `recordUserActivity` artık tek ortak
   `settings.user_last_seen` JSON satırına bağlı kalmıyor; her kullanıcı için ayrı
   `settings.user_last_seen:{userId}` kaydı yazıyor. Bu, eşzamanlı kullanıcı isteklerinde

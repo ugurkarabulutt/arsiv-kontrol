@@ -130,6 +130,12 @@ tespit edilir).
 - **Regresyon testi:** 23 Temmuz açık feedback köklerini kapsayan iki test eklendi:
   yanlış-pozitiflerin skor dışı kalması ve doğru sayfa/Hacc standartlarının uygulanması.
   `npm.cmd run check` başarılı; 70/70 test geçti.
+- **Deploy ve canlı kapanış:** Commit `46fd64d` production'a deploy edildi
+  (`https://arsiv-kontrol-qcgtmp4gm-ugurkarabulutts-projects.vercel.app`) ve
+  `https://arsiv.ibrahimlive.ai/health` canlıda `ok` döndü. 15 açık feedback
+  `feedback-fix-2026-07-23-latest-standards-1784822374472` çözüm grubuyla kapatıldı;
+  Hacer Terzi, Serap Pamuk, Nuray Ardagümüşoğlu ve Aysun Aydöner için 4 kişisel
+  `feedback_resolution` bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
 - **Son aktiflik kalıcı güvenilirlik düzeltmesi:** Canlı DB'de `users.last_seen_at` kolonu
   henüz uygulanmadığında son aktif verisinin eksik veya kırılgan görünmemesi için aktivite
   takibi güçlendirildi. `recordUserActivity` artık tek ortak `settings.user_last_seen` JSON
