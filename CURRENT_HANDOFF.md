@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-07-24 Codex Güncel Durum
+
+- Masaüstü favicon eksikliği giderildi. Önceki durumda PWA/Apple ikonları vardı ancak
+  `favicon.ico` yoktu; canlı `/favicon.ico` ana sayfa HTML'i döndürüyordu. Mevcut uygulama
+  ikonundan `icons/favicon.ico`, `icons/favicon-32.png` ve `icons/favicon-16.png` üretildi.
+- `index.html` içine favicon linkleri eklendi; Express ve Vercel routing `/favicon.ico`
+  isteğini gerçek ikon dosyasına döndürecek şekilde güncellendi.
+- `scripts/check-frontend.js` artık favicon PNG ölçülerini, ICO başlığını ve HTML linklerini
+  doğrular. `npm.cmd run check` başarılı; 70/70 test geçti.
+- Commit `66f1cdf fix: add desktop favicon` production'a deploy edildi
+  (`https://arsiv-kontrol-jy6wdrgok-ugurkarabulutts-projects.vercel.app`), özel alan adı
+  `https://arsiv.ibrahimlive.ai` aliaslandı. Canlı doğrulama: `/favicon.ico`
+  `image/vnd.microsoft.icon`, 3481 byte, ICO başlığı `00-00-01-00-02-00`; PNG favicon
+  `image/png`; `/health` `ok`.
+
 ## 2026-07-23 Codex Güncel Durum
 
 - Açık feedback kalite turu: Canlıda 15 açık feedback doğrulandı (Serap Pamuk 6, Hacer

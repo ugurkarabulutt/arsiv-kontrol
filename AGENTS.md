@@ -114,6 +114,19 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-24
+- **Masaüstü favicon düzeltmesi:** PWA/Apple ikonları olmasına rağmen masaüstü tarayıcı
+  faviconu eksikti; `/favicon.ico` canlıda ana sayfa HTML fallback'i döndürüyordu. Mevcut
+  uygulama ikonundan `icons/favicon.ico`, `icons/favicon-32.png` ve `icons/favicon-16.png`
+  üretildi. `index.html` içine masaüstü favicon linkleri eklendi; Express ve Vercel routing
+  `/favicon.ico` isteğini gerçek ICO dosyasına yönlendirecek şekilde güncellendi.
+- **Doğrulama ve deploy:** `scripts/check-frontend.js` favicon dosya ölçülerini, ICO başlığını
+  ve HTML favicon linklerini kontrol edecek şekilde genişletildi. `npm.cmd run check`
+  başarılı; 70/70 test geçti. Commit `66f1cdf` production'a deploy edildi
+  (`https://arsiv-kontrol-jy6wdrgok-ugurkarabulutts-projects.vercel.app`) ve
+  `https://arsiv.ibrahimlive.ai/favicon.ico` canlıda `image/vnd.microsoft.icon`, 3481 byte,
+  geçerli ICO başlığı `00-00-01-00-02-00` döndürdü. Canlı `/health` `ok`.
+
 ### 2026-07-23
 - **15 açık feedback kök doğrulama turu:** Canlı feedback kuyruğunda 15 açık kayıt
   doğrulandı: Serap Pamuk 6, Hacer Terzi 6, Nuray Ardagümüşoğlu 2, Aysun Aydöner 1.
