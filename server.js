@@ -402,6 +402,8 @@ const mapAlert   = a => ({
 });
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
+const USER_LAST_SEEN_LEGACY_KEY = 'user_last_seen';
+const USER_LAST_SEEN_KEY_PREFIX = 'user_last_seen:';
 const DEFAULT_STANDARDS = [
   {
     id: 'imla-din-hersey-2026-07',
@@ -446,6 +448,89 @@ async function saveJsonSetting(key, value) {
   if (error) throw new Error(error.message);
 }
 
+function parseJsonSettingValue(value, fallback) {
+  if (!value) return fallback;
+  try { return JSON.parse(value); }
+  catch { return fallback; }
+}
+
+function normalizeIsoDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+}
+
+function latestActivity(...items) {
+  let winner = null;
+  for (const item of items) {
+    const at = normalizeIsoDate(item?.at || item);
+    if (!at) continue;
+    if (!winner || new Date(at) > new Date(winner.at)) winner = { at, source: item?.source || 'activity' };
+  }
+  return winner;
+}
+
+async function saveUserLastSeenBackup(userId, now) {
+  try {
+    await saveJsonSetting(`${USER_LAST_SEEN_KEY_PREFIX}${userId}`, { at: now });
+    return;
+  } catch (error) {
+    console.warn('Tekil son aktiflik yedeği yazılamadı, eski yedeğe düşülüyor:', error.message);
+  }
+  const activity = await loadJsonSetting(USER_LAST_SEEN_LEGACY_KEY, {});
+  const next = activity && typeof activity === 'object' ? activity : {};
+  next[userId] = now;
+  await saveJsonSetting(USER_LAST_SEEN_LEGACY_KEY, next);
+}
+
+async function loadUserLastSeenBackups() {
+  const result = {};
+  const legacy = await loadJsonSetting(USER_LAST_SEEN_LEGACY_KEY, {});
+  if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
+    Object.entries(legacy).forEach(([userId, at]) => {
+      const seenAt = normalizeIsoDate(at);
+      if (seenAt) result[userId] = seenAt;
+    });
+  }
+
+  const { data, error } = await supabase.from('settings')
+    .select('key,value')
+    .like('key', `${USER_LAST_SEEN_KEY_PREFIX}%`);
+  if (error) {
+    console.warn('Tekil son aktiflik yedekleri okunamadı:', error.message);
+    return result;
+  }
+  for (const row of data || []) {
+    const userId = String(row.key || '').slice(USER_LAST_SEEN_KEY_PREFIX.length);
+    if (!userId) continue;
+    const parsed = parseJsonSettingValue(row.value, null);
+    const seenAt = normalizeIsoDate(parsed?.at || parsed?.lastSeenAt || parsed);
+    if (!seenAt) continue;
+    const latest = latestActivity({ at: result[userId] }, { at: seenAt });
+    result[userId] = latest?.at || seenAt;
+  }
+  return result;
+}
+
+async function loadLatestHistoryByUser(userIds) {
+  const ids = Array.isArray(userIds) ? userIds.filter(Boolean) : [];
+  if (!ids.length) return {};
+  const { data, error } = await supabase.from('history')
+    .select('user_id,created_at')
+    .in('user_id', ids)
+    .order('created_at', { ascending: false })
+    .limit(5000);
+  if (error) {
+    console.warn('Kullanıcı son denetim tarihleri okunamadı:', error.message);
+    return {};
+  }
+  const result = {};
+  for (const row of data || []) {
+    if (row.user_id && !result[row.user_id]) result[row.user_id] = row.created_at;
+  }
+  return result;
+}
+
 async function recordUserActivity(userId) {
   if (!userId) return;
   const now = new Date().toISOString();
@@ -457,10 +542,7 @@ async function recordUserActivity(userId) {
         console.warn('users.last_seen_at yazılamadı, settings yedeğine düşülüyor:', error.message);
       }
     }
-    const activity = await loadJsonSetting('user_last_seen', {});
-    const next = activity && typeof activity === 'object' ? activity : {};
-    next[userId] = now;
-    await saveJsonSetting('user_last_seen', next);
+    await saveUserLastSeenBackup(userId, now);
   } catch (error) {
     console.warn('Son aktiflik kaydedilemedi:', error.message);
   }
@@ -799,8 +881,20 @@ app.get('/api/users', auth, admin, async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
-    const lastSeen = await loadJsonSetting('user_last_seen', {});
-    res.json((data || []).map(u => ({ ...mapUser(u), lastSeenAt: u.last_seen_at || lastSeen?.[u.id] || null })));
+    const users = data || [];
+    const userIds = users.map(u => u.id).filter(Boolean);
+    const [lastSeenBackups, latestHistoryByUser] = await Promise.all([
+      loadUserLastSeenBackups(),
+      loadLatestHistoryByUser(userIds)
+    ]);
+    res.json(users.map(u => {
+      const activity = latestActivity(
+        { at: u.last_seen_at, source: 'activity' },
+        { at: lastSeenBackups?.[u.id], source: 'activity' },
+        { at: latestHistoryByUser?.[u.id], source: 'history' }
+      );
+      return { ...mapUser(u), lastSeenAt: activity?.at || null, lastSeenSource: activity?.source || null };
+    }));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/users', auth, admin, superAdmin, async (req, res) => {

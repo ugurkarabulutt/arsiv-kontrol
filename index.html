@@ -2839,12 +2839,13 @@ async function loadUsers(){
       const idArg=attrJson(u.id);
       const nameArg=attrJson(u.name||'');
       const roleArg=attrJson(u.role||'');
+      const lastSeenTitle=u.lastSeenAt?(u.lastSeenSource==='history'?'Son denetim kaydından hesaplandı':'Son canlı aktivite kaydı'):'Aktivite kaydı yok';
       return `<tr>
       <td><strong>${esc(u.name)}</strong></td>
       <td class="mono" style="font-size:10px">${esc(u.username)}</td>
       <td><span class="role-pill ${rolePill(u.role)}">${roleShortLabel(u.role)}</span></td>
       <td><span class="dot ${u.active?'dot-on':'dot-off'}"></span>${u.active?'Aktif':'Pasif'}</td>
-      <td class="mono" style="font-size:10px">${u.lastSeenAt?new Date(u.lastSeenAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</td>
+      <td class="mono" style="font-size:10px" title="${esc(lastSeenTitle)}">${u.lastSeenAt?new Date(u.lastSeenAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</td>
       <td><div class="td-actions">
         ${hasAdminRole(me?.role)?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openNotifyUser(${idArg},${nameArg})">Bildirim</button>`:''}
         ${canEdit?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openEditUser(${idArg},${nameArg},${roleArg},${Boolean(u.active)})">Düzenle</button>`:''}
