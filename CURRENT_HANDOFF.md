@@ -16,9 +16,11 @@
   gerçek son aktif sinyali var; kalanlarda güvenilir aktivite sinyali yok.
 - Doğrulama: `npm.cmd run check` başarılı, 68/68 test geçti. Vercel production deployment
   `dpl_EgTozzSEGcZKEgqvD4qng4jmnUsk`; canlı `/health` `ok`.
-- Not: Canlı DB'de `users.last_seen_at` kolonu hâlâ uygulanmamış görünüyor. Uygulama artık
-  bu kolon olmadan da doğru çalışır; kolon uygulanırsa aynı endpoint otomatik olarak onu da
-  en güçlü kaynak olarak kullanır.
+- 2026-07-23 canlı DB güncellemesi: `users.last_seen_at` kolonu ve
+  `users_last_seen_at_idx` indeksi Supabase SQL Editor'da uygulandı. Backfill sonucu
+  `son_aktif_dolu=16`, `toplam_kullanici=38`. Temiz Vercel production deploy
+  `dpl_Eub4NnvaNT92AVBNZhK5Hfhj9eXg`; canlı `/health` `ok`. Son doğrulamada kolon
+  service role ile okunuyor ve 16/38 kullanıcıda dolu.
 
 ## 2026-07-19 Codex Güncel Durum
 

@@ -131,6 +131,11 @@ tespit edilir).
   gerçek son aktif sinyali var; kalanlarda güvenilir aktivite sinyali olmadığı için boş
   görünmesi doğru. `npm.cmd run check` başarılı; 68/68 test geçti. Commit `280c3ed`
   production'a deploy edildi (`dpl_EgTozzSEGcZKEgqvD4qng4jmnUsk`), canlı `/health` `ok`.
+- **Canlı DB kolon uygulaması:** Kullanıcı tarafından Supabase SQL Editor'da
+  `users.last_seen_at` kolonu ve `users_last_seen_at_idx` indeksi uygulandı. Backfill sonucu
+  `son_aktif_dolu=16`, `toplam_kullanici=38`. Sonrasında temiz Vercel production deploy
+  alındı (`dpl_Eub4NnvaNT92AVBNZhK5Hfhj9eXg`) ve canlı kontrolde kolon service role ile
+  okunabilir, `/health` `ok` olarak doğrulandı.
 
 ### 2026-07-19
 - **Tekrarlanan sure adı standardı kalıcı çözümü:** Serap Pamuk geri bildirimiyle gelen

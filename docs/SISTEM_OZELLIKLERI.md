@@ -219,6 +219,7 @@ Son aktiflik:
 - Eski `settings.user_last_seen` toplu yedeği geriye dönük okunur ama yeni kayıtlar tekil
   kullanıcı anahtarlarına yazılır; bu eşzamanlı kullanıcı aktivitelerinde veri kaybı riskini azaltır.
 - Hiç aktivite kaydı yoksa son denetim tarihi güvenilir ikincil sinyal olarak kullanılır.
+- 23.07.2026 itibarıyla canlı DB'de `users.last_seen_at` kolonu uygulanmıştır.
 
 ## 13. İş Panosu
 
