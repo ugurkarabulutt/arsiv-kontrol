@@ -114,6 +114,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-23
+- **Son aktiflik kalıcı güvenilirlik düzeltmesi:** Canlı DB'de `users.last_seen_at` kolonu
+  henüz uygulanmadığında son aktif verisinin eksik veya kırılgan görünmemesi için aktivite
+  takibi güçlendirildi. `recordUserActivity` artık tek ortak `settings.user_last_seen` JSON
+  satırına bağlı kalmaz; her kullanıcı için ayrı `settings.user_last_seen:{userId}` yedeği
+  yazar. Böylece eşzamanlı kullanıcı isteklerinde ortak JSON satırının birbirini ezmesi
+  riski azaltıldı.
+- **Kullanıcı listesi son aktif hesaplama:** `/api/users` artık son aktif zamanını sırasıyla
+  `users.last_seen_at`, tekil settings yedeği, eski toplu settings yedeği ve son denetim
+  geçmişinden en güncel güvenilir tarih olarak hesaplar. UI'da tarih hücresine veri kaynağı
+  için kısa açıklama eklendi; aktivite sinyali olmayan kullanıcılar bilinçli olarak `—`
+  görünür.
+- **Canlı migrasyon ve doğrulama:** Eski `settings.user_last_seen` içindeki 26 kayıt canlıda
+  tekil `user_last_seen:{userId}` kayıtlarına taşındı. Canlı kontrolde 38 kullanıcıdan 16'sında
+  gerçek son aktif sinyali var; kalanlarda güvenilir aktivite sinyali olmadığı için boş
+  görünmesi doğru. `npm.cmd run check` başarılı; 68/68 test geçti. Commit `280c3ed`
+  production'a deploy edildi (`dpl_EgTozzSEGcZKEgqvD4qng4jmnUsk`), canlı `/health` `ok`.
+
 ### 2026-07-19
 - **Tekrarlanan sure adı standardı kalıcı çözümü:** Serap Pamuk geri bildirimiyle gelen
   `ŞURA-8` düzeltilip aynı metindeki `ŞURA-28` geçişinin düzeltilmemesi kök seviyede

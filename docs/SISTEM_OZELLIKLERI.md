@@ -1,6 +1,6 @@
 # Arşiv Kontrol AI - Sistem Özellikleri
 
-Son güncelleme: 2026-07-07
+Son güncelleme: 2026-07-23
 
 Bu dosya, Arşiv Kontrol AI sisteminin mevcut kapsamını, kullanıcı/admin özelliklerini,
 operasyon mantığını ve önemli teknik kararlarını tek yerde tutmak için hazırlanmıştır.
@@ -214,7 +214,11 @@ Son aktiflik:
 - Login sırasında güncellenir.
 - Kullanıcı sistemde yetkili API işlemi yaptıkça dakikada en fazla bir kez güncellenir.
 - `users.last_seen_at` kolonu varsa oradan okunur.
-- Kolon yoksa `settings.user_last_seen` yedeği kullanılır.
+- Kolon yoksa veya henüz uygulanmadıysa her kullanıcı için ayrı `settings.user_last_seen:{userId}`
+  yedeği kullanılır.
+- Eski `settings.user_last_seen` toplu yedeği geriye dönük okunur ama yeni kayıtlar tekil
+  kullanıcı anahtarlarına yazılır; bu eşzamanlı kullanıcı aktivitelerinde veri kaybı riskini azaltır.
+- Hiç aktivite kaydı yoksa son denetim tarihi güvenilir ikincil sinyal olarak kullanılır.
 
 ## 13. İş Panosu
 

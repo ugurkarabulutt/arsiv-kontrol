@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-07-23 Codex Güncel Durum
+
+- Son production commit: `280c3ed fix: harden last seen tracking`.
+- Son aktiflik kalıcı düzeltildi: `recordUserActivity` artık tek ortak
+  `settings.user_last_seen` JSON satırına bağlı kalmıyor; her kullanıcı için ayrı
+  `settings.user_last_seen:{userId}` kaydı yazıyor. Bu, eşzamanlı kullanıcı isteklerinde
+  son aktif verisinin birbirini ezmesi riskini azaltır.
+- `/api/users` son aktif zamanını en güncel güvenilir kaynaktan hesaplar: `users.last_seen_at`
+  varsa onu, tekil settings yedeğini, eski toplu settings yedeğini ve son denetim geçmişini
+  birlikte değerlendirir. Hiç aktivite sinyali olmayan kullanıcılar bilinçli olarak `—`
+  görünür.
+- Canlı veri migrasyonu: eski `settings.user_last_seen` içindeki 26 kayıt tekil
+  `user_last_seen:{userId}` kayıtlarına taşındı. Canlı kontrolde 38 kullanıcıdan 16'sında
+  gerçek son aktif sinyali var; kalanlarda güvenilir aktivite sinyali yok.
+- Doğrulama: `npm.cmd run check` başarılı, 68/68 test geçti. Vercel production deployment
+  `dpl_EgTozzSEGcZKEgqvD4qng4jmnUsk`; canlı `/health` `ok`.
+- Not: Canlı DB'de `users.last_seen_at` kolonu hâlâ uygulanmamış görünüyor. Uygulama artık
+  bu kolon olmadan da doğru çalışır; kolon uygulanırsa aynı endpoint otomatik olarak onu da
+  en güçlü kaynak olarak kullanır.
+
 ## 2026-07-19 Codex Güncel Durum
 
 - Son production commit: `cc86b43 fix: apply repeated deterministic standards`.
