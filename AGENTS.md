@@ -115,6 +115,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-25
+- **13 açık feedback kök kalite turu:** Canlı geri bildirimlerde kullanıcıların haklı
+  olduğu 13 kök sınıf kod ve prompt katmanına işlendi. Sistem artık `ilim -> Kur'ân ilmi`,
+  `Mehdi -> Mehdî`, `beka -> bekâ`, `münezzehtir -> Sûbhân'dır`, âyet/alıntı tekrarını
+  silme (`lânetle lânetle -> lânetle`), `Allah ile bile olursanız -> Allah ile olursanız`
+  ve kaynak cümleye açıklama ekleyen genişletmeleri skor dışı bırakır ve düzeltilmiş metne
+  uygulamaz.
+- **Yeni deterministic standartlar:** Model kaçırsa bile `nefisleriyle -> nefsleriyle`,
+  `fedakarlık -> fedakârlık`, `Kur'an/Kur’an -> Kur'ân`, `ŞURA -> ŞÛRÂ`,
+  `Şura suresinin -> Şûrâ Suresi'nin`, `Her Resûl -> Her resûl`, eksik kaynak parantezleri,
+  `2.Gay yolu -> 2. Gayy yolu`, `gayy yolu/GAYY YOLU`, `âyetTE -> ÂYETTE` ve
+  `HADİS-İ ŞERİF -> HADÎS-İ ŞERİF` uygulama katmanında üretilir. Bu kökler için üç yeni
+  regresyon testi eklendi; `npm.cmd run check` başarılı, 73/73 test geçti.
 - **AI geçici hata dayanıklılığı:** Canlı kullanımda görülen `The server had an error
   processing your request` benzeri ham OpenAI hata mesajlarının kullanıcıya yansıması
   engellendi. `server.js` içine ortak `fetchOpenAIChatCompletion` katmanı eklendi; metin

@@ -539,6 +539,11 @@ test('canli feedback standart kelimeleri kayitli tutulur', () => {
   assert.equal(CANONICAL_WORD_STANDARDS.salih, 'salih');
   assert.equal(CANONICAL_WORD_STANDARDS.mustekim, 'mustekîm');
   assert.equal(CANONICAL_WORD_STANDARDS.takva, 'takva');
+  assert.equal(CANONICAL_WORD_STANDARDS.beka, 'beka');
+  assert.equal(CANONICAL_WORD_STANDARDS.mehdi, 'Mehdi');
+  assert.equal(CANONICAL_WORD_STANDARDS.fedakarlik, 'fedakârlık');
+  assert.equal(CANONICAL_WORD_STANDARDS.kuran, "Kur'ân");
+  assert.equal(CANONICAL_WORD_STANDARDS.gayy, 'gayy yolu');
 });
 
 test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alinmaz', () => {
@@ -634,6 +639,82 @@ test('23 temmuz dogru feedbacklerde sayfa ve hacc standardi uygulanir', () => {
     '4. Hacc - 35: Kalpleri titreyenlerdir.',
     '22/Hacc 37: Len yenâlallâhe luhûmuhâ.'
   ].join('\n'));
+});
+
+test('25 temmuz acik feedback kokleri kalici cozulur', () => {
+  const source = [
+    "Buradaki ilim, Kur'ân ilmi.",
+    'Mehdilerdir. beka makamı. Allah münezzehtir.',
+    'Onlar cehennemde lânetle lânetle. İtaat ettik dediler.',
+    'Allah ile bile olursanız yardım gelir.',
+    "Allah'ın bizden istediği yükselme ve yücelme."
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'ilim', fixed: "Kur'ân ilmi", rule: 'Yanlış genişletme' },
+          { original: 'Mehdilerdir', fixed: 'Mehdîlerdir', rule: 'Yanlış şapka' },
+          { original: 'beka', fixed: 'bekâ', rule: 'Yanlış şapka' },
+          { original: 'münezzehtir', fixed: 'Sûbhân’dır', rule: 'Anlam dönüşümü' },
+          { original: 'lânetle lânetle. İtaat', fixed: 'lânetle. İtaat', rule: 'Tekrar silme' },
+          { original: 'Allah ile bile olursanız', fixed: 'Allah ile olursanız', rule: 'Kelime silme' },
+          {
+            original: "Allah'ın bizden istediği yükselme ve yücelme.",
+            fixed: "Allah'ın bizden istediği yükselme ve yücelme: Yükselme, mutlaka ruhun Allah'ın Zat'ına ulaşmasıdır.",
+            rule: 'Kaynakta olmayan açıklama'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.score, 100);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.correctedText, source);
+  assert.ok(!result.correctedText.includes("Kur'ân ilmi, Kur'ân ilmi"));
+  assert.ok(!result.correctedText.includes('Mehdîlerdir'));
+  assert.ok(!result.correctedText.includes('bekâ makamı'));
+  assert.ok(!result.correctedText.includes('Sûbhân'));
+  assert.ok(result.correctedText.includes('lânetle lânetle. İtaat'));
+  assert.ok(result.correctedText.includes('Allah ile bile olursanız'));
+  assert.ok(!result.correctedText.includes('Yükselme, mutlaka ruhun'));
+});
+
+test('25 temmuz sozluk ve sure deterministik standartlari uygulanir', () => {
+  const source = [
+    "nefisleriyle fedakarlık fedakarlıkta Kur'an.",
+    "ŞURA-61 ve Şura suresinin 13. âyet-i kerimesi.",
+    'HADİS-İ ŞERİF'
+  ].join('\n');
+
+  const result = finalizeResult({ correctedText: '', categories: {} }, source);
+
+  assert.equal(result.totalErrors, 7);
+  assert.equal(result.score, 72);
+  assert.ok(result.correctedText.includes('nefsleriyle fedakârlık fedakârlıkta Kur'));
+  assert.ok(result.correctedText.includes('ŞÛRÂ-61 ve Şûrâ Suresi'));
+  assert.ok(result.correctedText.includes('HADÎS-İ ŞERİF'));
+});
+
+test('25 temmuz referans ve baslik deterministik standartlari uygulanir', () => {
+  const source = [
+    'Her Resûl görev yapar. (Araf 175.. (Bakara 129.151, Âli İmran 164, Cuma 2.',
+    "2.Gay yolu. gayy yolu ve ALLAH'A ULAŞMAYI DİLEMEYENLER gayy YOLU.",
+    "KUR'ÂN'DA 73 âyetTE"
+  ].join('\n');
+
+  const result = finalizeResult({ correctedText: '', categories: {} }, source);
+
+  assert.equal(result.totalErrors, 7);
+  assert.equal(result.score, 72);
+  assert.ok(result.correctedText.includes('Her resûl görev yapar. (Araf 175)'));
+  assert.ok(result.correctedText.includes('(Bakara 129.151, Âli İmran 164, Cuma 2)'));
+  assert.ok(result.correctedText.includes('2. Gayy yolu. Gayy yolu'));
+  assert.ok(result.correctedText.includes("DİLEMEYENLER GAYY YOLU."));
+  assert.ok(result.correctedText.includes("KUR'ÂN'DA 73 ÂYETTE"));
 });
 
 test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {
@@ -850,11 +931,11 @@ test('11 Temmuz yeni feedback vakalari kullanici lehine korunur', () => {
     }
   }, source);
 
-  assert.equal(result.totalErrors, 1);
-  assert.equal(result.score, 96);
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.score, 92);
   assert.ok(result.correctedText.includes('Feyzu\u2019l-Kadir kaynagi Kadir olarak kalir.'));
   assert.ok(result.correctedText.includes('Kadir\u00ee bir tarikat ismidir.'));
-  assert.ok(result.correctedText.includes('Vel Asr yaziyor.'));
+  assert.ok(result.correctedText.includes("Kur'ân'da Vel Asr yaziyor."));
   assert.ok(result.correctedText.includes('39/ZUMER-17 referansi'));
   assert.ok(result.correctedText.includes('Allah gosteriyor kendisine?'));
   assert.ok(result.correctedText.includes('d\u00eenehum geciyor.'));
@@ -866,6 +947,7 @@ test('11 Temmuz yeni feedback vakalari kullanici lehine korunur', () => {
   assert.ok(result.correctedText.includes('ukba tdk'));
   assert.ok(result.correctedText.includes('Zuhr\u00fbf sure adi'));
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
+    ["Kur'an'da", "Kur'ân'da"],
     ['Zur\u00fbf', 'Zuhr\u00fbf']
   ]);
 });

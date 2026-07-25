@@ -2,6 +2,17 @@
 
 ## 2026-07-25 Codex Güncel Durum
 
+- 13 açık feedback kökü kod ve prompt katmanına işlendi. Yanlış-pozitif korumalar:
+  `ilim -> Kur'ân ilmi`, `Mehdi -> Mehdî`, `beka -> bekâ`, `münezzehtir -> Sûbhân'dır`,
+  `lânetle lânetle -> lânetle`, `Allah ile bile olursanız -> Allah ile olursanız` ve
+  kaynak cümleye açıklama ekleyen dönüşümler skor dışı kalır ve düzeltilmiş metne uygulanmaz.
+- Eksik standartlar deterministic katmana alındı: `nefisleriyle -> nefsleriyle`,
+  `fedakarlık -> fedakârlık`, `Kur'an/Kur’an -> Kur'ân`, `ŞURA -> ŞÛRÂ`,
+  `Şura suresinin -> Şûrâ Suresi'nin`, `Her Resûl -> Her resûl`, eksik kaynak
+  parantezleri, `2.Gay yolu -> 2. Gayy yolu`, `gayy yolu/GAYY YOLU`, `âyetTE -> ÂYETTE`
+  ve `HADİS-İ ŞERİF -> HADÎS-İ ŞERİF`.
+- `CANONICAL_WORD_STANDARDS` içine `beka`, `Mehdi`, `fedakârlık`, `Kur'ân` ve `gayy yolu`
+  standartları eklendi. `npm.cmd run check` başarılı; 73/73 test geçti.
 - Canlı kullanımda görülen `The server had an error processing your request` benzeri ham
   OpenAI hata mesajlarının kullanıcı ekranına yansıması kök seviyede giderildi. Sorun,
   `server.js` içindeki OpenAI hatasının doğrudan `throw new Error(...)` edilmesi ve

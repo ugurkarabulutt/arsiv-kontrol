@@ -282,6 +282,8 @@ din (dîn değil; Efendimizin sözlüğünde bu kelime bundan sonra şapkasız y
 dinde (dînde değil)
 vücut (vücud/vücût değil)
 şerr (şer değil)
+beka (bekâ değil)
+Mehdi (mehdî değil)
 arif (ârif değil)
 cahiliye (câhiliye değil)
 tâbî (bağlı/uyan anlamındaysa; "Tabiî ki" ifadesi değildir)
@@ -342,10 +344,12 @@ her şey → herşey
 Ayet → âyet (sure/kitap adı veya özel başlık içinde değilse)
 Ayet-i kerime → âyet-i kerime
 Kuran → Kur'ân
+Kur'an / Kur’an → Kur'ân
 Mumin → mü'min (Muminun/Mu'minûn/Mü'minûn Suresi içinde değilse)
 Tabi → tâbî (Tabiî ki/Tabii ki ifadesi değilse)
 Iman → îmân (özel isim veya başlık içinde değilse)
 Nefis → nefs
+nefisleri / nefisleriyle → nefsleri / nefsleriyle
 hidâyet → hidayet
 Efendimizin → Efendimiz'in
 Nimet → ni'met
@@ -354,6 +358,8 @@ Sahabe → sahâbe
 Sallallahu aleyhi vesellem → (S.A.V)
 hadis → hadîs
 Hadis-i Şerif / HADİS-İ ŞERİF → Hadîs-i Şerif / HADÎS-İ ŞERİF (Şerif kelimesindeki i şapkasızdır)
+fedakarlık → fedakârlık
+Şura suresinin → Şûrâ Suresi'nin
 Radıyallahu anh → (R.A)
 Aleyhisselam → (A.S)
 ulül elbab / ululelbab / ulul elbab → ulûl'elbab
@@ -368,6 +374,11 @@ KORUNACAK BAĞLAMLAR:
 - "dîn" ailesi güncel karar gereği istisnadır; dîn/dînin/dîni yerine din/dinin/dini kullanılır.
 - Âyet okunuşu/transliterasyon içinde geçen "dînâ/dînen" gibi kelimeleri Türkçe din standardına çevirme; âyet metni korunur.
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "şerr", "arif", "cahiliye" ve "dinde" yazımlarını ters yönde şapkalı veya sadeleştirilmiş biçime çevirme.
+- "beka" ve "Mehdi" arşiv standardıdır; bunları "bekâ" veya "mehdî" yapma.
+- "ilim" kelimesini bağlam ekleyerek "Kur'ân ilmi" yapma; kaynakta yalnız "ilim" varsa yalnız "ilim" kalır.
+- "münezzehtir" ifadesini "Sûbhân'dır/Sübhan'dır" diye değiştirme; anlam açıklaması ekleme.
+- "lânetle lânetle" gibi âyet/alıntı tekrarlarını yazım tekrarı sanıp tek kelimeye düşürme.
+- "Allah ile bile olursanız" ifadesindeki "bile" kelimesini silme.
 - "herşey" ailesi birleşik kalır: herşey, herşeye, herşeydir gibi ekli biçimleri "her şey..." diye ayırma.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "bir şey" ifadesi ayrı yazılır; bunu "birşey" yapma. Özel karar yalnızca "her şey" → "herşey" içindir.
@@ -2305,6 +2316,16 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "Hadîs-i Şerif" standardında Hadîs kelimesinde î vardır, Şerif kelimesindeki i şapkasızdır. "HADİS-İ ŞERİF" varsa "HADÎS-İ ŞERİF" yap; "ŞERÎF" yapma.
 - "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.
 - "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "şer", "ârif" veya "câhiliye" biçimine çevirme.
+- "beka" ve "Mehdi" doğru arşiv yazımıdır; bunları "bekâ" veya "mehdî" yapma.
+- "ilim" kelimesini kendi başına "Kur'ân ilmi" diye genişletme; kaynakta yalnız "ilim" varsa yalnız "ilim" kalmalıdır.
+- "münezzehtir" ifadesini "Sûbhân'dır/Sübhan'dır" diye değiştirme; anlam açıklaması veya çeviri ekleme.
+- "lânetle lânetle" gibi âyet/alıntı tekrarlarını yazım tekrarı sanıp silme; kaynak tekrar korunur.
+- "Allah ile bile olursanız" ifadesindeki "bile" kelimesini silme.
+- "nefisleri/nefisleriyle" kullanımı arşiv standardında "nefsleri/nefsleriyle" olarak düzeltilir.
+- "fedakarlık" ailesi "fedakârlık" olarak düzeltilir ve aynı metindeki tüm tekrarlar uygulanır.
+- "Kur'an/Kur’an" yazımı "Kur'ân" olarak düzeltilir; metnin başında veya başlıkta büyük harf düzeni korunur.
+- "Şura suresinin" gibi kullanımlarda doğru yazım "Şûrâ Suresi'nin" olmalıdır; "ŞURA" başlık/listede geçiyorsa "ŞÛRÂ" olarak kalır.
+- Kaynak referans parantezlerinde eksik kapanış varsa kapat; örnek: "(Araf 175.." → "(Araf 175)".
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy/hayydırlar" gibi kullanımları "hayat/hayattadırlar" diye sadeleştirme.
 - "hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
