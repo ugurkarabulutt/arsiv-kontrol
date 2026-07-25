@@ -46,4 +46,10 @@ if (social.readUInt32BE(16) !== 1200 || social.readUInt32BE(20) !== 630) {
 if (!html.includes('property="og:image"') || !html.includes('name="twitter:card"')) {
   throw new Error('Open Graph/Twitter paylaşım metaları eksik.');
 }
+if (!html.includes('function friendlyAnalyzeError') || !html.includes('AI servisi geçici olarak yanıt veremedi')) {
+  throw new Error('Denetim hata mesajları kullanıcı dostu Türkçe metne bağlanmalı.');
+}
+if (!html.includes('Denetim tamamlanamadı. Metniniz korunuyor.')) {
+  throw new Error('Denetim hatasında metnin korunduğu kullanıcıya belirtilmeli.');
+}
 console.log('Frontend/PWA doğrulaması: başarılı');

@@ -114,6 +114,20 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-25
+- **AI geçici hata dayanıklılığı:** Canlı kullanımda görülen `The server had an error
+  processing your request` benzeri ham OpenAI hata mesajlarının kullanıcıya yansıması
+  engellendi. `server.js` içine ortak `fetchOpenAIChatCompletion` katmanı eklendi; metin
+  denetimi, Denetim Yardımcısı, admin AI insight ve operasyon raporu çağrıları bu katmana
+  alındı. 408/429/5xx/timeout gibi geçici hatalarda otomatik yeniden deneme yapılır.
+- **Kullanıcı dostu hata dili:** AI çağrısı yine de başarısız kalırsa frontend artık teknik
+  İngilizce servis metni göstermez. Kullanıcıya metninin ekranda korunduğu, birkaç dakika
+  sonra tekrar `Denetle & Düzelt` yapılabileceği Türkçe olarak bildirilir. Toplu dosya
+  denetimi de aynı güvenli hata dilini kullanır.
+- **Regresyon kontrolü:** `scripts/check-frontend.js` kullanıcı dostu AI hata mesajı ve
+  metnin korunduğunu belirten durum metni için kontrol içerir. `npm.cmd run check` başarılı;
+  70/70 test geçti.
+
 ### 2026-07-24
 - **Masaüstü favicon düzeltmesi:** PWA/Apple ikonları olmasına rağmen masaüstü tarayıcı
   faviconu eksikti; `/favicon.ico` canlıda ana sayfa HTML fallback'i döndürüyordu. Mevcut

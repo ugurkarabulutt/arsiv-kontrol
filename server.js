@@ -28,6 +28,13 @@ const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
 const MAX_ANALYSIS_TEXT_CHARS = 120000;
+const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 70000);
+const OPENAI_RETRY_DELAYS_MS = [800, 1800];
+const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
+const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
+const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen yöneticiye bildirin.';
+const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Metni kısaltıp parçalara bölerek tekrar deneyin veya yöneticiden destek isteyin.';
 
 if (process.env.VERCEL && !process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
@@ -42,6 +49,73 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 const SYSTEM_SENDER_NAME = 'Arşiv Kontrol AI';
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function httpError(message, statusCode, cause) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  if (cause) err.cause = cause;
+  return err;
+}
+
+async function safeJson(response) {
+  try { return await response.json(); }
+  catch { return {}; }
+}
+
+function openaiUserMessage(status) {
+  if (status === 401 || status === 403) return AI_CONFIG_ERROR_MSG;
+  if (status === 400 || status === 413) return AI_REQUEST_REJECTED_MSG;
+  if (OPENAI_RETRYABLE_STATUS.has(status)) return AI_TEMPORARY_UNAVAILABLE_MSG;
+  return 'AI servisi şu anda beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin; devam ederse yöneticinize bildirin.';
+}
+
+async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
+  let lastStatus = 503;
+  let lastMessage = '';
+  for (let attempt = 0; attempt <= OPENAI_RETRY_DELAYS_MS.length; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+    try {
+      const response = await fetch(OPENAI_CHAT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        const data = await safeJson(response);
+        if (!data?.choices?.length) throw httpError('AI servisi eksik yanıt döndürdü. Lütfen tekrar deneyin.', 502);
+        return data;
+      }
+
+      const upstream = await safeJson(response);
+      lastStatus = response.status;
+      lastMessage = upstream.error?.message || response.statusText || '';
+      const retryable = OPENAI_RETRYABLE_STATUS.has(response.status);
+      if (!retryable || attempt === OPENAI_RETRY_DELAYS_MS.length) {
+        console.warn(`[OpenAI] ${contextLabel} başarısız: status=${response.status} message=${lastMessage}`);
+        throw httpError(openaiUserMessage(response.status), retryable ? 503 : response.status);
+      }
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.statusCode) throw err;
+      lastMessage = err.name === 'AbortError' ? 'timeout' : (err.message || 'network');
+      if (attempt === OPENAI_RETRY_DELAYS_MS.length) {
+        const status = err.name === 'AbortError' ? 504 : lastStatus;
+        console.warn(`[OpenAI] ${contextLabel} bağlantı hatası: ${lastMessage}`);
+        throw httpError(AI_TEMPORARY_UNAVAILABLE_MSG, status, err);
+      }
+    }
+    await sleep(OPENAI_RETRY_DELAYS_MS[attempt]);
+  }
+  throw httpError(AI_TEMPORARY_UNAVAILABLE_MSG, 503);
+}
 
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -1957,25 +2031,16 @@ function fallbackReport(snapshot) {
 
 async function generateAiReportContent(snapshot) {
   if (!OPENAI_API_KEY) return fallbackReport(snapshot);
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({
-      model: AI_REPORT_MODEL,
-      temperature: 0.2,
-      max_tokens: 1800,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: 'Sen Arşiv Kontrol AI yönetim panelinin operasyon analisti asistanısın. Verilen metrikleri kısa, somut ve yönetime uygun Türkçe rapora dönüştür. Halüsinasyon yapma; yalnızca verilen veriye dayan. Asla ham obje, [object Object], JSON parçası veya teknik veri yapısı yazma; activitySummary ve feedbackSummary mutlaka düz Türkçe cümle olmalı. Akademik referans, eğitim programı veya dış kaynak önerme; yalnızca sistem kalitesi, geri bildirim çözümü, denetim tutarlılığı ve operasyon takibi için uygulanabilir öneriler ver. JSON döndür: title, executiveSummary, activitySummary, feedbackSummary, risks(array), recommendations(array), nextActions(array).' },
-        { role: 'user', content: JSON.stringify(snapshot).slice(0, 24000) }
-      ]
-    })
-  });
-  if (!r.ok) {
-    const e = await r.json().catch(() => ({}));
-    throw new Error(e.error?.message || 'AI rapor API hatası');
-  }
-  const d = await r.json();
+  const d = await fetchOpenAIChatCompletion({
+    model: AI_REPORT_MODEL,
+    temperature: 0.2,
+    max_tokens: 1800,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: 'Sen Arşiv Kontrol AI yönetim panelinin operasyon analisti asistanısın. Verilen metrikleri kısa, somut ve yönetime uygun Türkçe rapora dönüştür. Halüsinasyon yapma; yalnızca verilen veriye dayan. Asla ham obje, [object Object], JSON parçası veya teknik veri yapısı yazma; activitySummary ve feedbackSummary mutlaka düz Türkçe cümle olmalı. Akademik referans, eğitim programı veya dış kaynak önerme; yalnızca sistem kalitesi, geri bildirim çözümü, denetim tutarlılığı ve operasyon takibi için uygulanabilir öneriler ver. JSON döndür: title, executiveSummary, activitySummary, feedbackSummary, risks(array), recommendations(array), nextActions(array).' },
+      { role: 'user', content: JSON.stringify(snapshot).slice(0, 24000) }
+    ]
+  }, 'operasyon raporu');
   try { return JSON.parse(d.choices[0].message.content); }
   catch { return { ...fallbackReport(snapshot), raw: d.choices[0].message.content }; }
 }
@@ -2095,7 +2160,7 @@ app.post('/api/ai/reports/generate', auth, admin, async (req, res) => {
     const period = ['daily', 'weekly', 'monthly', 'yearly'].includes(req.body?.period) ? req.body.period : 'daily';
     const report = await createAiReport(period, req.session.name || req.session.username);
     res.json({ success: true, report: mapAiReport(report) });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/ai/insight', auth, admin, async (req, res) => {
@@ -2105,26 +2170,17 @@ app.post('/api/ai/insight', auth, admin, async (req, res) => {
     const period = ['daily', 'weekly', 'monthly', 'yearly'].includes(req.body?.period) ? req.body.period : 'weekly';
     const snapshot = await collectOperationalSnapshot(period);
     if (!OPENAI_API_KEY) return res.json({ answer: fallbackReport(snapshot).executiveSummary, model: 'fallback' });
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({
-        model: AI_REPORT_MODEL,
-        temperature: 0.2,
-        max_tokens: 1200,
-        messages: [
-          { role: 'system', content: 'Sen Arşiv Kontrol AI admin panelinde çalışan veri analisti asistansın. Veriye dayan, kısa ve uygulanabilir Türkçe cevap ver.' },
-          { role: 'user', content: `Soru: ${question}\n\nVeri:\n${JSON.stringify(snapshot).slice(0, 22000)}` }
-        ]
-      })
-    });
-    if (!r.ok) {
-      const e = await r.json().catch(() => ({}));
-      throw new Error(e.error?.message || 'AI asistan API hatası');
-    }
-    const d = await r.json();
+    const d = await fetchOpenAIChatCompletion({
+      model: AI_REPORT_MODEL,
+      temperature: 0.2,
+      max_tokens: 1200,
+      messages: [
+        { role: 'system', content: 'Sen Arşiv Kontrol AI admin panelinde çalışan veri analisti asistansın. Veriye dayan, kısa ve uygulanabilir Türkçe cevap ver.' },
+        { role: 'user', content: `Soru: ${question}\n\nVeri:\n${JSON.stringify(snapshot).slice(0, 22000)}` }
+      ]
+    }, 'admin ai insight');
     res.json({ answer: d.choices[0].message.content, model: AI_REPORT_MODEL });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 function fallbackHelperResponse(task, text, result, question) {
@@ -2196,30 +2252,21 @@ app.post('/api/ai/helper', auth, async (req, res) => {
     if (!text.trim() && !result) return res.status(400).json({ error: 'Yardımcı için metin veya denetim sonucu gerekli.' });
     if (!OPENAI_API_KEY) return res.json({ answer: sanitizeHelperAnswer(fallbackHelperResponse(task, text, result, question)), model: 'assistant' });
 
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({
-        model: AI_REPORT_MODEL,
-        temperature: 0.15,
-        max_tokens: 1100,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Kullanıcı tarafında tek ana görevin AI Denetim Raporu üretmektir: sonucu sade açıkla, şüpheli bulguları yakala, kopyalama/karşılaştırma güvenliğini kontrol et ve ekibe bildirim gerekip gerekmediğini risk seviyesine göre belirt. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Akademik referans, kaynakça, dış kaynak, ilave akademik çalışma veya akademik öneri isteme; bu sistem yalnızca arşiv denetim standardına göre çalışır. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Pozitif/düşük riskli sonuçlarda ekibe bildirim önermemelisin; yalnızca riskli veya kontrol gerektiren sonuçlarda feedbackDraft üret. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
-          { role: 'user', content: JSON.stringify({ task, question, text, result }).slice(0, 24000) }
-        ]
-      })
-    });
-    if (!r.ok) {
-      const e = await r.json().catch(() => ({}));
-      throw new Error(e.error?.message || 'Denetim Yardımcısı yanıt veremedi.');
-    }
-    const d = await r.json();
+    const d = await fetchOpenAIChatCompletion({
+      model: AI_REPORT_MODEL,
+      temperature: 0.15,
+      max_tokens: 1100,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: `Sen Arşiv Kontrol AI içinde çalışan Denetim Yardımcısısın. Kullanıcı tarafında tek ana görevin AI Denetim Raporu üretmektir: sonucu sade açıkla, şüpheli bulguları yakala, kopyalama/karşılaştırma güvenliğini kontrol et ve ekibe bildirim gerekip gerekmediğini risk seviyesine göre belirt. Metni kendi başına düzeltme, kural değiştirme, dini/içerik yorumu yapma, kullanıcı adına onay/red verme. Akademik referans, kaynakça, dış kaynak, ilave akademik çalışma veya akademik öneri isteme; bu sistem yalnızca arşiv denetim standardına göre çalışır. Sadece sistem kullanımı, denetim kalitesi, şüpheli bulgular, kopyalama güvenliği ve geri bildirim netliği konusunda yardımcı ol. Pozitif/düşük riskli sonuçlarda ekibe bildirim önermemelisin; yalnızca riskli veya kontrol gerektiren sonuçlarda feedbackDraft üret. Yanıtların her seferinde bağlama özel olsun; aynı kalıp cümleleri tekrar etme. JSON döndür: title, summary, steps(array), suggestions(array), checks(array), nextActions(array), feedbackDraft, riskLevel(low|medium|high). Model adından bahsetme.` },
+        { role: 'user', content: JSON.stringify({ task, question, text, result }).slice(0, 24000) }
+      ]
+    }, 'denetim yardımcısı');
     let answer;
     try { answer = JSON.parse(d.choices[0].message.content); }
     catch { answer = { ...fallbackHelperResponse(task, text, result, question), summary: d.choices[0].message.content }; }
     res.json({ answer: sanitizeHelperAnswer(answer), model: 'assistant' });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.get('/api/cron/daily-report', async (req, res) => {
@@ -2388,22 +2435,16 @@ Tam yanıt şeması:
 
 async function openaiText(text) {
   const rules = await loadRules();
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 16000,
-      temperature: 0,
-      response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
-      messages: [
-        { role: 'system', content: await buildSystemPrompt(rules) },
-        { role: 'user', content: `Metni denetle:\n\n${text}` }
-      ]
-    })
-  });
-  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API hatası'); }
-  const d = await r.json();
+  const d = await fetchOpenAIChatCompletion({
+    model: 'gpt-4o',
+    max_tokens: 16000,
+    temperature: 0,
+    response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
+    messages: [
+      { role: 'system', content: await buildSystemPrompt(rules) },
+      { role: 'user', content: `Metni denetle:\n\n${text}` }
+    ]
+  }, 'metin denetimi');
   const result = finalizeResult(parseResult(d.choices[0].message.content), text);
   result.analysisMeta = { promptVersion: PROMPT_VERSION, rulesHash: textHash(rules).slice(0, 12) };
   return result;

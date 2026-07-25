@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-07-25 Codex Güncel Durum
+
+- Canlı kullanımda görülen `The server had an error processing your request` benzeri ham
+  OpenAI hata mesajlarının kullanıcı ekranına yansıması kök seviyede giderildi. Sorun,
+  `server.js` içindeki OpenAI hatasının doğrudan `throw new Error(...)` edilmesi ve
+  `index.html` tarafında aynen basılmasıydı.
+- `server.js` içine ortak `fetchOpenAIChatCompletion` katmanı eklendi. Metin denetimi,
+  Denetim Yardımcısı, admin AI insight ve operasyon raporu çağrıları artık bu katmanı kullanır.
+  408/429/5xx/timeout gibi geçici hatalarda kısa aralıklarla yeniden deneme yapılır; başarısız
+  kalırsa kullanıcıya sade Türkçe mesaj döner.
+- `index.html` içine `friendlyAnalyzeError` eklendi. Denetim başarısız olduğunda kullanıcıya
+  teknik İngilizce servis mesajı gösterilmez; metnin ekranda korunduğu ve tekrar denenebileceği
+  net yazılır. Toplu dosya denetimi de aynı hata dilini kullanır.
+- `scripts/check-frontend.js` bu davranışı regresyon kalkanına ekledi. `npm.cmd run check`
+  başarılı; 70/70 test geçti.
+
 ## 2026-07-24 Codex Güncel Durum
 
 - Masaüstü favicon eksikliği giderildi. Önceki durumda PWA/Apple ikonları vardı ancak

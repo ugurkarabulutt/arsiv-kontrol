@@ -1235,6 +1235,18 @@ function batchSelect(e){
   d.innerHTML=`<div style="font-size:26px;margin-bottom:6px">📂</div><p>${batchFiles.length} dosya seçildi</p><small class="mono">Denetle butonuna basın</small>`;
 }
 
+function friendlyAnalyzeError(message){
+  const text=String(message||'').trim();
+  if(!text)return 'Denetim tamamlanamadı. Metniniz ekranda korunuyor; lütfen tekrar deneyin.';
+  if(/AI servisi|AI bağlantısı|AI isteği|Metin çok|Lütfen|Dosya|API anahtarı|Bu metni/i.test(text))return text;
+  if(/server had an error|help\.openai\.com|openai|temporar|overload|rate limit|timeout|network|fetch failed|ECONN|ENOTFOUND|429|500|502|503|504/i.test(text)){
+    return 'AI servisi geçici olarak yanıt veremedi. Metniniz kaybolmadı; birkaç dakika sonra tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
+  }
+  return text.length>180
+    ? 'Denetim tamamlanamadı. Metniniz kaybolmadı; lütfen tekrar deneyin. Devam ederse yöneticinize bildirin.'
+    : text;
+}
+
 async function analyze(){
   const btn=el('analyzeBtn'),res=el('resultsArea');
   if(isAnalyzing)return;
@@ -1284,8 +1296,9 @@ async function analyze(){
     }
     if(hasAdminRole(me?.role))refreshBadges();
   }catch(e){
-    res.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(e.message)}</div>`;
-    setStatus('Denetim başarısız.','err');
+    const msg=friendlyAnalyzeError(e.message);
+    res.innerHTML=`<div class="loading-box" style="color:var(--red)"><strong>Denetim tamamlanamadı</strong><p>${esc(msg)}</p></div>`;
+    setStatus('Denetim tamamlanamadı. Metniniz korunuyor.','err');
   }
   isAnalyzing=false;
   btn.disabled=false;
@@ -1313,7 +1326,7 @@ async function runBatch(res){
         results[i]=data.duplicate
           ?{filename:file.name,success:false,duplicate:true,error:data.message}
           :{filename:file.name,success:true,score:data.score,totalErrors:data.totalErrors,id:data.id};
-      }catch(e){results[i]={filename:file.name,success:false,error:e.message};}
+      }catch(e){results[i]={filename:file.name,success:false,error:friendlyAnalyzeError(e.message)};}
     }
   }
   await Promise.all([worker(),worker()]);
