@@ -2,9 +2,10 @@
 
 ## 2026-07-25 Codex Güncel Durum
 
-- 13 açık feedback kökü kod ve prompt katmanına işlendi. Yanlış-pozitif korumalar:
+- 14 açık feedback kökü kod ve prompt katmanına işlendi. Yanlış-pozitif korumalar:
   `ilim -> Kur'ân ilmi`, `Mehdi -> Mehdî`, `beka -> bekâ`, `münezzehtir -> Sûbhân'dır`,
   `lânetle lânetle -> lânetle`, `Allah ile bile olursanız -> Allah ile olursanız` ve
+  `gayret üstüne gayret -> gayret üstüne gayret,` gibi gereksiz virgül eklemeleri ile
   kaynak cümleye açıklama ekleyen dönüşümler skor dışı kalır ve düzeltilmiş metne uygulanmaz.
 - Eksik standartlar deterministic katmana alındı: `nefisleriyle -> nefsleriyle`,
   `fedakarlık -> fedakârlık`, `Kur'an/Kur’an -> Kur'ân`, `ŞURA -> ŞÛRÂ`,

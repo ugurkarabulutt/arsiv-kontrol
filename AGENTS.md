@@ -115,12 +115,12 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-25
-- **13 açık feedback kök kalite turu:** Canlı geri bildirimlerde kullanıcıların haklı
-  olduğu 13 kök sınıf kod ve prompt katmanına işlendi. Sistem artık `ilim -> Kur'ân ilmi`,
+- **14 açık feedback kök kalite turu:** Canlı geri bildirimlerde kullanıcıların haklı
+  olduğu 14 kök sınıf kod ve prompt katmanına işlendi. Sistem artık `ilim -> Kur'ân ilmi`,
   `Mehdi -> Mehdî`, `beka -> bekâ`, `münezzehtir -> Sûbhân'dır`, âyet/alıntı tekrarını
   silme (`lânetle lânetle -> lânetle`), `Allah ile bile olursanız -> Allah ile olursanız`
-  ve kaynak cümleye açıklama ekleyen genişletmeleri skor dışı bırakır ve düzeltilmiş metne
-  uygulamaz.
+  ve `gayret üstüne gayret -> gayret üstüne gayret,` gibi gereksiz virgül eklemeleri ile
+  kaynak cümleye açıklama ekleyen genişletmeleri skor dışı bırakır ve düzeltilmiş metne uygulamaz.
 - **Yeni deterministic standartlar:** Model kaçırsa bile `nefisleriyle -> nefsleriyle`,
   `fedakarlık -> fedakârlık`, `Kur'an/Kur’an -> Kur'ân`, `ŞURA -> ŞÛRÂ`,
   `Şura suresinin -> Şûrâ Suresi'nin`, `Her Resûl -> Her resûl`, eksik kaynak parantezleri,

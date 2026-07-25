@@ -440,6 +440,7 @@ function isDecisionProtectedTransform(original, fixed) {
   if (/^7\s+safha\s+4\s+teslim/i.test(from) && /^7\s+safha,\s+4\s+teslim/i.test(to)) return true;
   if (foldedFrom.startsWith('helal') && foldedTo.startsWith('helal') && hasCircumflex(fixed)) return true;
   if (foldedFrom.startsWith('maddi') && foldedTo.startsWith('maddi') && hasCircumflex(fixed)) return true;
+  if (foldedFrom === 'gayret ustune gayret' && foldedTo === 'gayret ustune gayret,') return true;
   if (foldedFrom.startsWith('allah') && foldedTo.startsWith('allahu teala')) return true;
   if (foldedFrom.includes('allah') && foldedTo.includes('allahu teala')) return true;
   if (foldedFrom.startsWith('sergilerse') && foldedTo.startsWith('sergilesin')) return true;

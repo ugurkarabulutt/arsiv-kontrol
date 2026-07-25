@@ -647,7 +647,8 @@ test('25 temmuz acik feedback kokleri kalici cozulur', () => {
     'Mehdilerdir. beka makamı. Allah münezzehtir.',
     'Onlar cehennemde lânetle lânetle. İtaat ettik dediler.',
     'Allah ile bile olursanız yardım gelir.',
-    "Allah'ın bizden istediği yükselme ve yücelme."
+    "Allah'ın bizden istediği yükselme ve yücelme.",
+    'gayret üstüne gayret gerekir.'
   ].join('\n');
 
   const result = finalizeResult({
@@ -665,7 +666,8 @@ test('25 temmuz acik feedback kokleri kalici cozulur', () => {
             original: "Allah'ın bizden istediği yükselme ve yücelme.",
             fixed: "Allah'ın bizden istediği yükselme ve yücelme: Yükselme, mutlaka ruhun Allah'ın Zat'ına ulaşmasıdır.",
             rule: 'Kaynakta olmayan açıklama'
-          }
+          },
+          { original: 'gayret üstüne gayret', fixed: 'gayret üstüne gayret,', rule: 'Gereksiz virgül' }
         ]
       }
     }
@@ -681,6 +683,7 @@ test('25 temmuz acik feedback kokleri kalici cozulur', () => {
   assert.ok(result.correctedText.includes('lânetle lânetle. İtaat'));
   assert.ok(result.correctedText.includes('Allah ile bile olursanız'));
   assert.ok(!result.correctedText.includes('Yükselme, mutlaka ruhun'));
+  assert.ok(result.correctedText.includes('gayret üstüne gayret gerekir.'));
 });
 
 test('25 temmuz sozluk ve sure deterministik standartlari uygulanir', () => {
