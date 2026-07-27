@@ -12,10 +12,13 @@
   edilmez; sistem yalnız `22/Hac 37`, `4. Hac - 35`, `Hac Suresi` gibi gerçek sure/referans
   bağlamlarını düzeltir.
 - Doğrulama: `npm.cmd run check` başarılı; 77/77 test geçti. `git diff --check` yalnızca
-  Git'in Windows satır sonu uyarılarını verdi, boşluk hatası yok.
-- Sonraki adım: Değişiklikleri commit/push edip Vercel production deploy almak, canlı
-  `/health` doğrulamak, ardından ilgili canlı feedbackleri kapatıp Mihrimah Bilgili ve
-  Birgül Nursoy'a kişisel çözüm bildirimi göndermek.
+  Git'in Windows satır sonu uyarılarını verdi, boşluk hatası yok. Production deploy alındı;
+  canlı `https://arsiv.ibrahimlive.ai/health` `ok`, ana sayfa HTTP 200.
+- Canlı kapanış: 14 açık feedback `feedback-fix-2026-07-27-sure-sozluk` çözüm grubuyla
+  kapatıldı. Mihrimah Bilgili'ye 13, Birgül Nursoy'a 1 geri bildirimi için kişisel çözüm
+  bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
+- Mesaj formatı: kişisel çözüm bildirimleri bundan sonra `Sevgili [kullanıcı adı],`
+  satırıyla başlar; kullanıcıya görünen gövdede `Mesaj:` etiketi kullanılmaz.
 
 ## 2026-07-25 Codex Güncel Durum
 

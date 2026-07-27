@@ -784,7 +784,7 @@ function buildFeedbackResolutionMessage(userName, feedbacks, note) {
   const lines = feedbacks.map((f, i) => `${i + 1}. ${feedbackSummary(f)}`);
   return [
     'Başlık: Geri Bildirimlerinizle Çözülen Sorunlar',
-    `Mesaj: Sevgili ${safeName}`,
+    `Sevgili ${safeName},`,
     'Geri bildirimleriniz sayesinde aşağıdaki sorunlar sistemde düzeltildi:',
     ...lines,
     note ? `Çözüm notu: ${note}` : '',

@@ -128,6 +128,12 @@ tespit edilir).
   `Hac -> Hacc/HACC` modeli kabul edilmez; yalnız gerçek sure/referans bağlamı düzeltilir.
 - **Regresyon testi:** 26 Temmuz açık feedback kökleri için dört yeni test eklendi.
   `npm.cmd run check` başarılı; 77/77 test geçti.
+- **Canlı kapanış ve bildirim:** Production deploy sonrası 14 açık feedback
+  `feedback-fix-2026-07-27-sure-sozluk` çözüm grubuyla kapatıldı. Mihrimah Bilgili'ye
+  13 geri bildirimi için, Birgül Nursoy'a 1 geri bildirimi için kişisel
+  `feedback_resolution` bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
+  Kişisel çözüm bildirimi üreticisi de güncellendi; bundan sonra mesaj gövdesi
+  `Sevgili [kullanıcı adı],` satırıyla başlar, `Mesaj:` etiketi göstermez.
 
 ### 2026-07-25
 - **14 açık feedback kök kalite turu:** Canlı geri bildirimlerde kullanıcıların haklı
