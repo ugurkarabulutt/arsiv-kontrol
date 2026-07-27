@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-07-27 Codex Güncel Durum
+
+- Canlı geri bildirim kuyruğunda görülen 14 açık kayıt kod ve prompt katmanında kök
+  seviyede çözüldü. Kökler: `İhyâ’u Ulûmi’d-dîn / Ulumi’d-dîn` kaynak başlığı koruması,
+  `derecat` ve `afet` ailelerinde gereksiz şapka engeli, `hadîsi` gibi ekli `hadîs`
+  kullanımlarının kırpılmaması, `Suresinin/Suresini` apostrof koruması, doğru `Âli İmrân`
+  biçimi, `Câsiye`, `Yûnus`, `Hûd`, `Fâtır`, `Hacc`, `A'râf`, `MUSÎBET`, `VELÎ`, `zahid`,
+  `Şerr` ve `(S.A.V)` standartları.
+- `Hac` için güvenlik ayrımı netleştirildi: tek başına `Hac -> Hacc/HACC` AI bulgusu kabul
+  edilmez; sistem yalnız `22/Hac 37`, `4. Hac - 35`, `Hac Suresi` gibi gerçek sure/referans
+  bağlamlarını düzeltir.
+- Doğrulama: `npm.cmd run check` başarılı; 77/77 test geçti. `git diff --check` yalnızca
+  Git'in Windows satır sonu uyarılarını verdi, boşluk hatası yok.
+- Sonraki adım: Değişiklikleri commit/push edip Vercel production deploy almak, canlı
+  `/health` doğrulamak, ardından ilgili canlı feedbackleri kapatıp Mihrimah Bilgili ve
+  Birgül Nursoy'a kişisel çözüm bildirimi göndermek.
+
 ## 2026-07-25 Codex Güncel Durum
 
 - 14 açık feedback kökü kod ve prompt katmanına işlendi. Yanlış-pozitif korumalar:

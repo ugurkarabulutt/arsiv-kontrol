@@ -114,6 +114,21 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-27
+- **14 açık feedback sözlük/sure kalite turu:** Canlı geri bildirim kuyruğunda Mihrimah
+  Bilgili ve Birgül Nursoy tarafından bildirilen 14 kayıt kök sınıflara ayrıldı ve kod +
+  prompt katmanına işlendi. Kaynak/kitap adlarında geçen `İhyâ’u Ulûmi’d-dîn` /
+  `Ulumi’d-dîn` yazımı artık `din` standardına zorlanmaz; `derecat` ve `afet` kelime
+  ailelerine gereksiz şapka eklenmez; `hadîsi` gibi ekli kullanımlar `hadîs` köküne
+  kırpılmaz.
+- **Sure ve slayt standartları güçlendirildi:** `Âli İmrân` yazımı tireli veya yanlış
+  şapkalı biçimlere çevrilmez; `Suresinin/Suresini` kelimeleri apostrofla ayrılmaz.
+  `Câsiye`, `Yûnus`, `Hûd`, `Fâtır`, `Hacc`, `A'râf`, `MUSÎBET`, `VELÎ`, `zahid`,
+  `Şerr` ve `(S.A.V)` standartları deterministic katmanda güvenceye alındı. Tek başına
+  `Hac -> Hacc/HACC` modeli kabul edilmez; yalnız gerçek sure/referans bağlamı düzeltilir.
+- **Regresyon testi:** 26 Temmuz açık feedback kökleri için dört yeni test eklendi.
+  `npm.cmd run check` başarılı; 77/77 test geçti.
+
 ### 2026-07-25
 - **14 açık feedback kök kalite turu:** Canlı geri bildirimlerde kullanıcıların haklı
   olduğu 14 kök sınıf kod ve prompt katmanına işlendi. Sistem artık `ilim -> Kur'ân ilmi`,

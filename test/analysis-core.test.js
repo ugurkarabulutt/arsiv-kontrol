@@ -711,13 +711,87 @@ test('25 temmuz referans ve baslik deterministik standartlari uygulanir', () => 
 
   const result = finalizeResult({ correctedText: '', categories: {} }, source);
 
-  assert.equal(result.totalErrors, 7);
-  assert.equal(result.score, 72);
+  assert.equal(result.totalErrors, 8);
+  assert.equal(result.score, 68);
   assert.ok(result.correctedText.includes('Her resûl görev yapar. (Araf 175)'));
-  assert.ok(result.correctedText.includes('(Bakara 129.151, Âli İmran 164, Cuma 2)'));
+  assert.ok(result.correctedText.includes('(Bakara 129.151, Âli İmrân 164, Cuma 2)'));
   assert.ok(result.correctedText.includes('2. Gayy yolu. Gayy yolu'));
   assert.ok(result.correctedText.includes("DİLEMEYENLER GAYY YOLU."));
   assert.ok(result.correctedText.includes("KUR'ÂN'DA 73 ÂYETTE"));
+});
+
+test('26 temmuz acik feedback kaynak ve ekli kelime korumalari uygulanir', () => {
+  const source = [
+    "Kaynak: Tirmizi Huccetü’l İslâm İmam Gazali, İhya’u Ulumi’d-dîn, 3. cilt, s. 425",
+    'Bu hadîsi açıklar mısınız?',
+    'Derecata ulaştıran 19 AFETİ vardır.',
+    'Hacet namazında Felak okunur.',
+    '5/MÂİDE-80 nefislerinin takdim ettiği şey kötüdür.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      "Kaynak: Tirmizi Huccetü’l İslâm İmam Gazali, İhya’u Ulumi’d-din, 3. cilt, s. 425",
+      'Bu hadîs açıklar mısınız?',
+      'Derecâta ulaştıran 19 ÂFETİ vardır.',
+      'Hacet namazında Felâk okunur.',
+      '5/MÂİDE-80 nefslerinin takdim ettiği şey kötüdür.'
+    ].join('\n'),
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'dîn', fixed: 'din', rule: 'Din standardı' },
+          { original: 'hadîsi', fixed: 'hadîs', rule: 'Kök kırpma' },
+          { original: 'Derecata', fixed: 'Derecâta', rule: 'Yanlış şapka' },
+          { original: 'AFETİ', fixed: 'ÂFETİ', rule: 'Yanlış şapka' },
+          { original: 'Felak', fixed: 'Felâk', rule: 'Yanlış sure şapkası' },
+          { original: 'nefislerinin', fixed: 'nefslerinin', rule: 'Âyet metni korunmalı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.score, 100);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.correctedText, source);
+});
+
+test('26 temmuz acik feedback sure ve slayt standartlari deterministik uygulanir', () => {
+  const source = [
+    'Ali-İmran Suresinin 200. âyet-i kerimesi.',
+    'Casiye Suresi, Yunus-7, Hud-15, Fatir kelimesi, 22/Hac 37, Araf Suresi.'
+  ].join('\n');
+
+  const result = finalizeResult({ correctedText: '', categories: {} }, source);
+
+  assert.ok(result.correctedText.includes('Âli İmrân Suresinin 200'));
+  assert.ok(result.correctedText.includes('Câsiye Suresi, Yûnus-7, Hûd-15, Fâtır kelimesi, 22/Hacc 37, A\'râf Suresi.'));
+  assert.ok(!result.correctedText.includes("Suresi'nin"));
+});
+
+test('26 temmuz acik feedback slayt kelime standartlari deterministik uygulanir', () => {
+  const source = 'SLAYT: MUSIBET, VELI, zahit ve şer.';
+  const result = finalizeResult({ correctedText: '', categories: {} }, source);
+
+  assert.ok(result.correctedText.includes('SLAYT: MUSÎBET, VELÎ, zahid ve şerr.'));
+});
+
+test('26 temmuz acik feedback suresinin apostrofu ve SAV bicimi korunur', () => {
+  const source = 'Âli İmrân Suresinin hükmü. Peygamber Efendimiz (S.AV.) buyurdu.';
+  const result = finalizeResult({
+    correctedText: "Âlî İmrân Suresi'nin hükmü. Peygamber Efendimiz (S.AV.) buyurdu.",
+    categories: {
+      imla: {
+        issues: [
+          { original: 'Âli İmrân Suresinin', fixed: "Âlî İmrân Suresi'nin", rule: 'Yanlış apostrof' },
+          { original: '(S.AV.)', fixed: '(S.AV.)', rule: 'Bozuk kısaltma' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.correctedText, 'Âli İmrân Suresinin hükmü. Peygamber Efendimiz (S.A.V) buyurdu.');
 });
 
 test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {

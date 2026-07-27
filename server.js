@@ -282,6 +282,8 @@ din (dîn değil; Efendimizin sözlüğünde bu kelime bundan sonra şapkasız y
 dinde (dînde değil)
 vücut (vücud/vücût değil)
 şerr (şer değil)
+derecat (derecât değil)
+afet (âfet değil)
 beka (bekâ değil)
 Mehdi (mehdî değil)
 arif (ârif değil)
@@ -340,6 +342,7 @@ Resul → resûl
 Veli → velî
 Nebi → nebî
 dîn → din
+dîn → din (özel kaynak/kitap adı içinde, örn. İhyâ’u Ulûmi’d-dîn, özgün yazım korunur)
 her şey → herşey
 Ayet → âyet (sure/kitap adı veya özel başlık içinde değilse)
 Ayet-i kerime → âyet-i kerime
@@ -349,7 +352,7 @@ Mumin → mü'min (Muminun/Mu'minûn/Mü'minûn Suresi içinde değilse)
 Tabi → tâbî (Tabiî ki/Tabii ki ifadesi değilse)
 Iman → îmân (özel isim veya başlık içinde değilse)
 Nefis → nefs
-nefisleri / nefisleriyle → nefsleri / nefsleriyle
+nefisleri / nefisleriyle → nefsleri / nefsleriyle (âyet/kaynak metninde "nefislerinin" geçiyorsa bunu "nefslerinin" yapma)
 hidâyet → hidayet
 Efendimizin → Efendimiz'in
 Nimet → ni'met
@@ -358,8 +361,15 @@ Sahabe → sahâbe
 Sallallahu aleyhi vesellem → (S.A.V)
 hadis → hadîs
 Hadis-i Şerif / HADİS-İ ŞERİF → Hadîs-i Şerif / HADÎS-İ ŞERİF (Şerif kelimesindeki i şapkasızdır)
+hadîsi / hadîsin / hadîste gibi ekli kullanımları köke kırpma; "hadîsi" kelimesini "hadîs" yapma
 fedakarlık → fedakârlık
-Şura suresinin → Şûrâ Suresi'nin
+Şura suresinin → Şûrâ Suresinin
+Âli İmrân doğru yazımdır; "Âlî", "Âl-i" veya "Ali-İmran" yapma.
+Câsiye, Yûnus, Hûd, Fâtır, Hacc ve A'râf sure adlarında şapka/apostrof standardını uygula; Felak kelimesine şapka ekleme.
+derecat ve afet ailelerinde "a" harfini şapkalama; derecata/derecatı ve AFETİ/afetleri şapkasız kalır.
+şer kelimesi arşiv standardında şerr olarak düzeltilir; şerr kelimesindeki çift r korunur.
+MUSİBET/musibet yazımı musîbet/MUSÎBET olarak düzeltilir; VELI başlığı VELÎ olur; zahit yazımı zahid olmalıdır.
+(S.AV.) veya (S.A.V.) gibi bozuk kısaltmaları (S.A.V) standardına getir.
 Radıyallahu anh → (R.A)
 Aleyhisselam → (A.S)
 ulül elbab / ululelbab / ulul elbab → ulûl'elbab
@@ -2302,6 +2312,7 @@ async function buildSystemPrompt(rulesText) {
 GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
 - "din" ailesi şapkasızdır: din, dinde, dinimizin, dinsiz gibi kullanımları dîn/dînde/dînimizin/dînsiz yapma.
+- Özel kaynak/kitap adlarında özgün yazımı koru: "İhyâ’u Ulûmi’d-dîn" veya "İhya’u Ulumi’d-dîn" içindeki "dîn" kelimesini "din" yapma.
 - "herşey" doğru yazımdır; ekli biçimleri de birleşik kalır: herşey, herşeye, herşeydir. Metinde "her şey" varsa "herşey" olarak düzelt.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "bir şey" ayrı yazılır; bunu "birşey" yapma. Özel birleşik yazım kararı sadece "her şey" → "herşey" içindir.
@@ -2321,10 +2332,18 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "münezzehtir" ifadesini "Sûbhân'dır/Sübhan'dır" diye değiştirme; anlam açıklaması veya çeviri ekleme.
 - "lânetle lânetle" gibi âyet/alıntı tekrarlarını yazım tekrarı sanıp silme; kaynak tekrar korunur.
 - "Allah ile bile olursanız" ifadesindeki "bile" kelimesini silme.
-- "nefisleri/nefisleriyle" kullanımı arşiv standardında "nefsleri/nefsleriyle" olarak düzeltilir.
+- "hadîsi/hadîsin/hadîste" gibi ekli kullanımları köke kırpma; "hadîsi" kelimesini "hadîs" yapma.
+- "derecat" ailesindeki a harfini şapkalama; derecata/derecatı/derecatlar gibi yazımlar derecât yapılmaz.
+- "afet" ailesindeki a harfini şapkalama; AFETİ/afetleri/afetinden gibi yazımlar ÂFET/âfet yapılmaz.
+- "Felak" sure adında a harfi şapkasızdır; Felâk yapma.
+- "nefisleri/nefisleriyle" kullanımı arşiv standardında "nefsleri/nefsleriyle" olarak düzeltilir; ancak âyet/kaynak satırında özellikle "nefislerinin" geçiyorsa bunu "nefslerinin" yapma.
 - "fedakarlık" ailesi "fedakârlık" olarak düzeltilir ve aynı metindeki tüm tekrarlar uygulanır.
 - "Kur'an/Kur’an" yazımı "Kur'ân" olarak düzeltilir; metnin başında veya başlıkta büyük harf düzeni korunur.
-- "Şura suresinin" gibi kullanımlarda doğru yazım "Şûrâ Suresi'nin" olmalıdır; "ŞURA" başlık/listede geçiyorsa "ŞÛRÂ" olarak kalır.
+- "Şura suresinin" gibi kullanımlarda doğru yazım "Şûrâ Suresinin" olmalıdır; Suresinin/Suresini kelimelerini apostrofla "Suresi'nin/Suresi'ni" yapma.
+- "Âli İmrân" doğru yazımdır; "Âlî", "Âl-i" veya "Ali-İmran" yapma. Câsiye, Yûnus, Hûd, Fâtır, Hacc ve A'râf sure adlarında şapka/apostrof standardını uygula.
+- "şer" kelimesi arşiv standardında "şerr" olarak düzeltilir; "şerr" kelimesindeki çift r korunur.
+- "MUSIBET/MUSİBET/musibet" yazımı "MUSÎBET/musîbet" olmalıdır. "VELI" başlığı "VELÎ" olur. "zahit" yazımı "zahid" olmalıdır.
+- "(S.AV.)" veya "(S.A.V.)" gibi bozuk kısaltmaları "(S.A.V)" standardına getir.
 - Kaynak referans parantezlerinde eksik kapanış varsa kapat; örnek: "(Araf 175.." → "(Araf 175)".
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy/hayydırlar" gibi kullanımları "hayat/hayattadırlar" diye sadeleştirme.
