@@ -344,6 +344,7 @@ Nebi → nebî
 dîn → din
 dîn → din (özel kaynak/kitap adı içinde, örn. İhyâ’u Ulûmi’d-dîn, özgün yazım korunur)
 her şey → herşey
+MULK-8 âyetindeki "herbir grup" yazımı birleşik korunur; "her bir grup" yapma
 Ayet → âyet (sure/kitap adı veya özel başlık içinde değilse)
 Ayet-i kerime → âyet-i kerime
 Kuran → Kur'ân
@@ -370,6 +371,7 @@ derecat ve afet ailelerinde "a" harfini şapkalama; derecata/derecatı ve AFETİ
 şer kelimesi arşiv standardında şerr olarak düzeltilir; şerr kelimesindeki çift r korunur.
 MUSİBET/musibet yazımı musîbet/MUSÎBET olarak düzeltilir; VELI başlığı VELÎ olur; zahit yazımı zahid olmalıdır.
 (S.AV.) veya (S.A.V.) gibi bozuk kısaltmaları (S.A.V) standardına getir.
+Sayı alternatifi içeren ifadeleri anlam ekleyerek değiştirme; örnek: "6 tane, 7 tane âyet-i kerime var." cümlesi aynen korunur, "6 tane âyet-i kerime âyet-i kerime var" yapılmaz.
 Radıyallahu anh → (R.A)
 Aleyhisselam → (A.S)
 ulül elbab / ululelbab / ulul elbab → ulûl'elbab
@@ -2316,6 +2318,8 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "herşey" doğru yazımdır; ekli biçimleri de birleşik kalır: herşey, herşeye, herşeydir. Metinde "her şey" varsa "herşey" olarak düzelt.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "bir şey" ayrı yazılır; bunu "birşey" yapma. Özel birleşik yazım kararı sadece "her şey" → "herşey" içindir.
+- MULK-8 âyetindeki "Oraya herbir grup" yazımı birleşik korunur; bunu "her bir grup" yapma.
+- "6 tane, 7 tane âyet-i kerime var." gibi sayı alternatifi içeren cümleleri sadeleştirme veya açıklama ekleyerek değiştirme. "6 tane, 7 tane" ifadesi aynen korunur.
 - "surette" doğru yazımdır; özellikle "mutlak surette" ifadesini "sürette" veya "sûrette" yapma.
 - "suretiyle" doğru ve ayrı bir kullanımdır; bunu "surette" yapma.
 - "keyfe meaşadır / keyfe meşadır" görülürse doğru standart "keyfe mâ yeşâdır" olmalıdır.

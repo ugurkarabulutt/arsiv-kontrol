@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-07-28 Codex Güncel Durum
+
+- Canlı kuyrukta Birgül Nursoy'a ait 3 açık feedback görüldü. Kökler: `MULK-8`
+  bağlamında `herbir -> her bir` yanlış ayrımı ve `6 tane, 7 tane âyet-i kerime var.`
+  cümlesinin `6 tane âyet-i kerime` diye ikinci sayıyı düşürerek/genişleterek bozulması.
+- Kod ve prompt katmanına kalıcı koruma eklendi. `herbir` kayıtlı standartlara alındı;
+  `herbir -> her bir` yasak dönüşüm oldu. `MULK-8` bağlamında kaynak `her bir grup`
+  içerirse deterministic olarak `herbir grup` yapılır.
+- `6 tane, 7 tane` gibi sayı alternatifi içeren ifadeler artık kaynakta olduğu gibi
+  korunur; modelin bu yapıyı sadeleştiren veya açıklama ekleyerek değiştiren bulguları
+  skor dışı kalır ve düzeltilmiş metne uygulanmaz.
+- Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti.
+- Sonraki adım: Değişiklikleri commit/push edip production'a deploy etmek, canlı `/health`
+  doğrulamak, ardından 3 açık feedbacki çözüm grubuyla kapatıp Birgül Nursoy'a tek kişisel
+  çözüm bildirimi göndermek.
+
 ## 2026-07-27 Codex Güncel Durum
 
 - Canlı geri bildirim kuyruğunda görülen 14 açık kayıt kod ve prompt katmanında kök

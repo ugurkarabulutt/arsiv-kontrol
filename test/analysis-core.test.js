@@ -544,6 +544,7 @@ test('canli feedback standart kelimeleri kayitli tutulur', () => {
   assert.equal(CANONICAL_WORD_STANDARDS.fedakarlik, 'fedakârlık');
   assert.equal(CANONICAL_WORD_STANDARDS.kuran, "Kur'ân");
   assert.equal(CANONICAL_WORD_STANDARDS.gayy, 'gayy yolu');
+  assert.equal(CANONICAL_WORD_STANDARDS.herbir, 'herbir');
 });
 
 test('kabul edilen bulgular kaynak metne uygulanir ve modelin duzen bozmasi alinmaz', () => {
@@ -792,6 +793,49 @@ test('26 temmuz acik feedback suresinin apostrofu ve SAV bicimi korunur', () => 
 
   assert.equal(result.totalErrors, 1);
   assert.equal(result.correctedText, 'Âli İmrân Suresinin hükmü. Peygamber Efendimiz (S.A.V) buyurdu.');
+});
+
+test('28 temmuz Birgul feedback herbir ve sayi alternatifi korunur', () => {
+  const source = [
+    '2. MULK-8 Oraya herbir grup atılışında onun bekçileri sorar.',
+    'Cezbe ile ilgili 6 tane, 7 tane âyet-i kerime var.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      '2. MULK-8 Oraya her bir grup atılışında onun bekçileri sorar.',
+      'Cezbe ile ilgili 6 tane âyet-i kerime âyet-i kerime var.'
+    ].join('\n'),
+    categories: {
+      imla: {
+        issues: [
+          { original: 'herbir', fixed: 'her bir', rule: 'İmlâ standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: '6 tane, 7 tane', fixed: '6 tane âyet-i kerime', rule: 'Metin yapısı' },
+          {
+            original: 'Cezbe ile ilgili 6 tane, 7 tane âyet-i kerime var.',
+            fixed: 'Cezbe ile ilgili 6 tane âyet-i kerime var.',
+            rule: 'Metin yapısı'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('28 temmuz Mulk 8 baglaminda her bir grup herbir grup olur', () => {
+  const source = '2. MULK-8 Oraya her bir grup atılışında onun bekçileri sorar.';
+  const result = finalizeResult({ correctedText: '', categories: {} }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.correctedText, '2. MULK-8 Oraya herbir grup atılışında onun bekçileri sorar.');
 });
 
 test('yonetici kararli 13 vaka regresyonlari uygulanir', () => {

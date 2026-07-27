@@ -14,6 +14,7 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   din: 'din',
   dinde: 'dinde',
   hersey: 'herşey',
+  herbir: 'herbir',
   vucut: 'vücut',
   serr: 'şerr',
   derecat: 'derecat',
@@ -94,6 +95,7 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\bdin\b/iu, to: /\bdîn\b/iu },
   { from: /(?<![\p{L}\p{N}_])din[\p{L}\p{N}_]*/iu, to: /(?<![\p{L}\p{N}_])dîn[\p{L}\p{N}_]*/iu },
   { from: /\bherşey[\p{L}\p{N}_]*/iu, to: /\bher\s+şey[\p{L}\p{N}_]*/iu },
+  { from: /\bherbir[\p{L}\p{N}_]*/iu, to: /\bher\s+bir[\p{L}\p{N}_]*/iu },
   { from: /\bvücut[\p{L}\p{N}_]*/iu, to: /\bvüc(?:ud|ûd|ût)[\p{L}\p{N}_]*/iu },
   { from: /\bvücud[\p{L}\p{N}_]*/iu, to: /\bvüc(?:ûd|ût)[\p{L}\p{N}_]*/iu },
   { from: /\bhayy[\p{L}\p{N}_]*/iu, to: /\bhayat[\p{L}\p{N}_]*/iu },
@@ -369,6 +371,20 @@ function isMeaningChangingHerseyRewrite(original, fixed) {
   const foldedFrom = foldText(original).replace(/\s+/g, '');
   const foldedTo = foldText(fixed).replace(/\s+/g, '');
   return foldedTo.startsWith('hersey') && !foldedFrom.startsWith('hersey');
+}
+
+function isHerbirSplit(original, fixed) {
+  const foldedFrom = foldText(original).replace(/\s+/g, '').trim();
+  const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
+  return /^herbir[\p{L}\p{N}_]*$/u.test(foldedFrom)
+    && /^her bir[\p{L}\p{N}_]*$/u.test(foldedTo);
+}
+
+function isNumberTaneAlternativeRewrite(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
+  const match = from.match(/(?<![\p{L}\p{N}_])(\d+\s+tane\s*,\s*\d+\s+tane)(?![\p{L}\p{N}_])/u);
+  return !!match && !to.includes(match[1]);
 }
 
 function isLeadingConnectorDeletion(original, fixed) {
@@ -720,6 +736,8 @@ function isProtectedChange(original, fixed) {
   if (isApostropheFragmentVowelRewrite(original, fixed)) return true;
   if (isUnrelatedTabiRewrite(original, fixed)) return true;
   if (isMeaningChangingHerseyRewrite(original, fixed)) return true;
+  if (isHerbirSplit(original, fixed)) return true;
+  if (isNumberTaneAlternativeRewrite(original, fixed)) return true;
   if (isLeadingConnectorDeletion(original, fixed)) return true;
   if (isRepeatedWordDeletion(original, fixed)) return true;
   if (isHidayetSuffixDrop(original, fixed)) return true;
@@ -905,6 +923,12 @@ function applyDeterministicStandards(cats, sourceText) {
   const savBrokenRe = /\(\s*S\.AV\.?\s*\)/giu;
   for (const match of text.matchAll(savBrokenRe)) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'S.A.V yazım standardı');
+  }
+
+  const mulkEightWindows = text.matchAll(/MULK-8[\s\S]{0,420}/giu);
+  for (const window of mulkEightWindows) {
+    const phrase = window[0].match(/(?<![\p{L}\p{N}_])her\s+bir\s+grup(?![\p{L}\p{N}_])/iu);
+    if (phrase) addDeterministicIssue(cats, seen, phrase[0], phrase[0].replace(/her\s+bir/iu, 'herbir'), 'Mulk-8 ayet yazımı');
   }
 
   const hasletRe = /(?<![\p{L}\p{N}_])19\s+tane\s+haslet\s+ruhun(?![\p{L}\p{N}_])/giu;

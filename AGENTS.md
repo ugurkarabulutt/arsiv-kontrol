@@ -114,6 +114,20 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-07-28
+- **Birgül Nursoy 3 açık feedback kök çözümü:** Canlı kuyrukta görülen 3 açık kayıt iki köke
+  ayrıldı ve kalıcı çözüldü. `MULK-8` âyetindeki `herbir grup` yazımı artık birleşik
+  korunur; modelin `herbir -> her bir` dönüşümü skor dışı bırakılır ve düzeltilmiş metne
+  uygulanmaz. Aynı bağlamda kaynak `her bir grup` içerirse deterministic olarak
+  `herbir grup` standardına döner.
+- **Sayı alternatifi koruması:** `6 tane, 7 tane âyet-i kerime var.` gibi sayı alternatifi
+  içeren cümleler artık sadeleştirilmez ve kaynakta olmayan açıklamayla genişletilmez.
+  Modelin `6 tane, 7 tane -> 6 tane âyet-i kerime` gibi ikinci sayıyı düşüren dönüşümleri
+  yanlış-pozitif kabul edilir; `6 tane âyet-i kerime âyet-i kerime` benzeri tekrar üretimi
+  düzeltilmiş metne alınmaz.
+- **Regresyon testi:** İki yeni test eklendi; canlı feedback kökleri birebir simüle edildi.
+  `npm.cmd run check` başarılı; 79/79 test geçti.
+
 ### 2026-07-27
 - **14 açık feedback sözlük/sure kalite turu:** Canlı geri bildirim kuyruğunda Mihrimah
   Bilgili ve Birgül Nursoy tarafından bildirilen 14 kayıt kök sınıflara ayrıldı ve kod +
