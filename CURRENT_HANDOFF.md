@@ -11,10 +11,11 @@
 - `6 tane, 7 tane` gibi sayı alternatifi içeren ifadeler artık kaynakta olduğu gibi
   korunur; modelin bu yapıyı sadeleştiren veya açıklama ekleyerek değiştiren bulguları
   skor dışı kalır ve düzeltilmiş metne uygulanmaz.
-- Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti.
-- Sonraki adım: Değişiklikleri commit/push edip production'a deploy etmek, canlı `/health`
-  doğrulamak, ardından 3 açık feedbacki çözüm grubuyla kapatıp Birgül Nursoy'a tek kişisel
-  çözüm bildirimi göndermek.
+- Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. Production deploy alındı;
+  canlı `https://arsiv.ibrahimlive.ai/health` `ok`, ana sayfa HTTP 200.
+- Canlı kapanış: 3 açık feedback `feedback-fix-2026-07-28-herbir-count-alternatives`
+  çözüm grubuyla kapatıldı. Birgül Nursoy'a üç geri bildirimi için tek kişisel çözüm
+  bildirimi gönderildi. Son canlı kontrolde açık feedback `0`.
 
 ## 2026-07-27 Codex Güncel Durum
 

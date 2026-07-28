@@ -127,6 +127,10 @@ tespit edilir).
   düzeltilmiş metne alınmaz.
 - **Regresyon testi:** İki yeni test eklendi; canlı feedback kökleri birebir simüle edildi.
   `npm.cmd run check` başarılı; 79/79 test geçti.
+- **Canlı kapanış ve bildirim:** Production deploy sonrası 3 açık feedback
+  `feedback-fix-2026-07-28-herbir-count-alternatives` çözüm grubuyla kapatıldı. Birgül
+  Nursoy'a üç geri bildirimi için tek kişisel `feedback_resolution` bildirimi gönderildi.
+  Son canlı kontrolde açık feedback `0`; canlı `/health` `ok`.
 
 ### 2026-07-27
 - **14 açık feedback sözlük/sure kalite turu:** Canlı geri bildirim kuyruğunda Mihrimah
