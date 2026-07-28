@@ -115,6 +115,13 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-07-28
+- **Onay sayaçları 1000 satır sınırı düzeltmesi:** Dashboard ve İş Panosu sayaçlarında
+  Supabase'in varsayılan 1000 satır dönüşü nedeniyle bekleyen onay sayısı `997` gibi eksik
+  görünebiliyordu. `/api/stats` artık `history` ve `alerts` kayıtlarını sayfalı çeker;
+  İş Panosu için `/api/history/approval-board` endpoint'i eklendi ve her kolon gerçek
+  `exact count` ile sayılır. Kart listesi performans için son 80 örneği gösterir, başlıktaki
+  sayı gerçek toplamdır. Canlı salt-okunur sayımda `history_total=2076`,
+  `bekliyor=2073`, `onaylandi=2`, `reddedildi=1` görülmüştü.
 - **Birgül Nursoy 3 açık feedback kök çözümü:** Canlı kuyrukta görülen 3 açık kayıt iki köke
   ayrıldı ve kalıcı çözüldü. `MULK-8` âyetindeki `herbir grup` yazımı artık birleşik
   korunur; modelin `herbir -> her bir` dönüşümü skor dışı bırakılır ve düzeltilmiş metne

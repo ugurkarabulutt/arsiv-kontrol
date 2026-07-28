@@ -2,6 +2,14 @@
 
 ## 2026-07-28 Codex Güncel Durum
 
+- Onay sayaçları düzeltildi. Canlı salt-okunur sayımda gerçek durum `history_total=2076`,
+  `bekliyor=2073`, `onaylandi=2`, `reddedildi=1` iken uygulama benzeri sınırsız olmayan
+  sorguda yalnız 1000 satır dönüyor ve bunun içinde `bekliyor=997` göründüğü doğrulandı.
+  Kök sebep Supabase varsayılan 1000 satır dönüşünün `/api/stats` hesaplarını eksik
+  beslemesi ve İş Panosu'nun `/api/history` son 200 kayıtla kolon saymasıydı.
+- `/api/stats` artık `history` ve `alerts` kayıtlarını sayfalı çeker. İş Panosu için
+  `/api/history/approval-board` endpoint'i eklendi; bekleyen/onaylanan/reddedilen kolonları
+  gerçek `exact count` ile sayılır, performans için yalnız son 80 kart gösterilir.
 - Canlı kuyrukta Birgül Nursoy'a ait 3 açık feedback görüldü. Kökler: `MULK-8`
   bağlamında `herbir -> her bir` yanlış ayrımı ve `6 tane, 7 tane âyet-i kerime var.`
   cümlesinin `6 tane âyet-i kerime` diye ikinci sayıyı düşürerek/genişleterek bozulması.

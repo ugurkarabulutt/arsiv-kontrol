@@ -506,6 +506,32 @@ const mapAlert   = a => ({
   resolutionGroup: a.resolution_group, resolutionNote: a.resolution_note,
   createdAt: a.created_at
 });
+
+async function fetchAllPages(makeQuery, pageSize = 1000) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await makeQuery().range(from, from + pageSize - 1);
+    if (error) throw new Error(error.message);
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows;
+}
+
+async function loadApprovalGroup(filterQuery) {
+  const { data, error, count } = await filterQuery(
+    supabase.from('history')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(80)
+  );
+  if (error) throw new Error(error.message);
+  return {
+    count: count || 0,
+    items: (data || []).map(mapHistory)
+  };
+}
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const USER_LAST_SEEN_LEGACY_KEY = 'user_last_seen';
@@ -1206,6 +1232,23 @@ app.get('/api/history', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get('/api/history/approval-board', auth, admin, async (req, res) => {
+  try {
+    const [pending, approved, rejected] = await Promise.all([
+      loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor')),
+      loadApprovalGroup(q => q.eq('status', 'onaylandi')),
+      loadApprovalGroup(q => q.eq('status', 'reddedildi'))
+    ]);
+    res.json({
+      groups: {
+        bekliyor: pending,
+        onaylandi: approved,
+        reddedildi: rejected
+      }
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
   try {
     let query = supabase.from('history').select('*').eq('id', req.params.id);
@@ -1767,21 +1810,19 @@ app.post('/api/my-notifications/read-all', auth, async (req, res) => {
 app.get('/api/stats', auth, admin, async (req, res) => {
   try {
     const [
-      { data: histRows, error: hErr },
+      histRows,
       { data: userRows, error: uErr },
-      { data: alertRows, error: aErr },
+      alertRows,
       resolutionLogResult
     ] = await Promise.all([
-      supabase.from('history').select('*'),
+      fetchAllPages(() => supabase.from('history').select('*').order('created_at', { ascending: false })),
       supabase.from('users').select('id,name,username,active'),
-      supabase.from('alerts').select('*'),
+      fetchAllPages(() => supabase.from('alerts').select('*').order('created_at', { ascending: false })),
       HAS_ISSUE_RESOLUTION_LOG
         ? supabase.from('issue_resolution_log').select('*').order('created_at', { ascending: false }).limit(12)
         : Promise.resolve({ data: [], error: null })
     ]);
-    if (hErr) throw new Error(hErr.message);
     if (uErr) throw new Error(uErr.message);
-    if (aErr) throw new Error(aErr.message);
     if (resolutionLogResult.error) throw new Error(resolutionLogResult.error.message);
 
     const hist = (histRows || []).map(mapHistory);

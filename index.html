@@ -2224,14 +2224,16 @@ async function askAiAssistant(){
 }
 
 async function loadOnay(){
-  const hist=await api('GET','/api/history');
+  const board=await api('GET','/api/history/approval-board');
   const container=el('onayContent');
+  if(board.error){container.innerHTML=`<div class="empty-state">${esc(board.error)}</div>`;return;}
+  const src=board.groups||{};
   const groups=[
-    {key:'bekliyor',title:'Bekleyen',items:(hist||[]).filter(h=>!h.status||h.status==='bekliyor')},
-    {key:'onaylandi',title:'Onaylanan',items:(hist||[]).filter(h=>h.status==='onaylandi')},
-    {key:'reddedildi',title:'Reddedilen',items:(hist||[]).filter(h=>h.status==='reddedildi')}
+    {key:'bekliyor',title:'Bekleyen',count:src.bekliyor?.count||0,items:src.bekliyor?.items||[]},
+    {key:'onaylandi',title:'Onaylanan',count:src.onaylandi?.count||0,items:src.onaylandi?.items||[]},
+    {key:'reddedildi',title:'Reddedilen',count:src.reddedildi?.count||0,items:src.reddedildi?.items||[]}
   ];
-  if(!(hist||[]).length){container.innerHTML='<div class="empty-state">Henüz denetim yok.</div>';return;}
+  if(!groups.some(g=>g.count)){container.innerHTML='<div class="empty-state">Henüz denetim yok.</div>';return;}
   function card(h){
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -2249,8 +2251,11 @@ async function loadOnay(){
   }
   container.innerHTML=`<div class="workflow-board">${groups.map(g=>`
     <div class="workflow-col">
-      <div class="workflow-head"><div class="workflow-title">${g.title}</div><div class="workflow-count">${g.items.length}</div></div>
-      <div class="workflow-list">${g.items.length?g.items.slice(0,80).map(card).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Kayıt yok.</div>`}</div>
+      <div class="workflow-head"><div class="workflow-title">${g.title}</div><div class="workflow-count">${g.count}</div></div>
+      <div class="workflow-list">
+        ${g.count>g.items.length?`<div class="empty-state" style="padding:8px 12px;font-size:11px">Son ${g.items.length} kayıt gösteriliyor.</div>`:''}
+        ${g.items.length?g.items.map(card).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Kayıt yok.</div>`}
+      </div>
     </div>`).join('')}</div>`;
 }
 
