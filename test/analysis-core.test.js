@@ -191,10 +191,18 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('vücut', 'vücud'), true);
   assert.equal(isProtectedChange('vücuttan', 'vücuddan'), true);
   assert.equal(isProtectedChange('hayydırlar', 'hayattadırlar'), true);
+  assert.equal(isProtectedChange('hayydırlar', 'diridirler'), true);
+  assert.equal(isProtectedChange('Allah (cc.)', 'Allah (A.S)'), true);
+  assert.equal(isProtectedChange('ahlaki', 'ahlakı'), true);
+  assert.equal(isProtectedChange('ardarda', 'ard arda'), true);
+  assert.equal(isProtectedChange('aciz', 'âciz'), true);
   assert.equal(isProtectedChange('hidayet', 'hidayete'), true);
   assert.equal(isProtectedChange('HADİS-İ ŞERİF', 'HADÎS-İ ŞERÎF'), true);
   assert.equal(isProtectedChange("fazl'ıl", "fazl'ul"), true);
   assert.equal(isProtectedChange("fazl’ıl", "fazl’ul"), true);
+  assert.equal(isProtectedChange('Tabi ki', 'Tabiatıyla'), true);
+  assert.equal(isProtectedChange('Sebîlel gayy’dadır', 'Sebîli gayy’dadır'), true);
+  assert.equal(isProtectedChange('Allah’a ulaşmayı dilemek ve zikir yok.', 'Allah’a ulaşmayı dilemek ve zikir yoksa.'), true);
   assert.equal(isProtectedChange("Allah'in", "Allah'ın"), false);
   assert.equal(isProtectedChange('tavsiye', 'tâbî'), true);
   assert.equal(isProtectedChange('birşey', 'herşey'), true);
@@ -1111,7 +1119,7 @@ test('12 Temmuz geri bildirimleri sozluk ve baglam lehine korunur', () => {
   assert.ok(result.correctedText.includes('Ruhta 19 tane haslet içinde yer alır.'));
   assert.ok(result.correctedText.includes('afetlerine dikkat edilir.'));
   assert.ok(result.correctedText.includes('güler yüz…'));
-  assert.ok(result.correctedText.includes('biraraya gelince hizmet tamamlanır.'));
+  assert.ok(result.correctedText.includes('Biraraya gelince hizmet tamamlanır.'));
   assert.ok(result.correctedText.includes('biraraya yazımı sözlükte korunur.'));
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
     ['19 tane haslet ruhun', 'Ruhta 19 tane haslet'],
@@ -1255,4 +1263,241 @@ test('cift tirnak temizligi tekrarli ic alintilarda genis varyasyonlari kapsar',
   }, '');
 
   assert.equal(result.correctedText, 'Sonuçta "birinci" ve "ikinci" alıntı kaldı.');
+});
+
+test('29 Temmuz acik feedback kokleri kelime siniri ve baglamla korunur', () => {
+  const source = [
+    'Dilemediği zamanda Allah razı olsun.',
+    'Yunus Emre ne diyor? Yunus diyor ki: sevgi esastır. 10/Yunus-7 referansı da geçer.',
+    '3/ÂLİ İMRÂN-55 içinde İsa kelimesi kaynakta böyle geçer.',
+    '67/MULK-22 sırâtın mustekîm(mustekîmin) ifadesi korunur.',
+    '22/HACC-53 tebia dînekum cümlesi Arapça okunuştur.',
+    'Resûlullah\'ın sünnetinde bu konu anlatılır.',
+    '12. Sebîlel gayy’dadır. Sebîlel rüşddedir.',
+    'ŞERİAT ve şerr konusu şeriat kitabı içinde geçer.',
+    'BAKARA – 139 De ki: Allah razı olsun.',
+    'Allah’a ulaşmak var ya, işte bu çok önemlidir.',
+    'Nefret ettirmeyiniz.',
+    'Kaynak: Buhari, Fezailül Kuran 21. Kaynak: Kitab-ul Burhan Fi Alamet-il Mehdi.',
+    'Akıl tevbe eder, nefs de tevbeyi bozar. Derhal tevbe edilir.',
+    'ORTAK AKIL NEFS 19 AFETİ ile AKLA ulaşır.',
+    'Bu fizik vücuttur. Kardeşler bir vücudun azaları gibidirler.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'dilemediği zamanda', fixed: 'dilemediği zaman da', rule: 'Bağlaç' },
+          { original: 'Yunus', fixed: 'Yûnus', rule: 'Sure adı' },
+          { original: 'İsa', fixed: 'İsa (A.S)', rule: 'Nebî adı' },
+          { original: 'mustekîm', fixed: 'Mustakîm', rule: 'Transliterasyon' },
+          { original: 'dîn', fixed: 'din', rule: 'Din standardı' },
+          { original: 'Resûlullah\'ın', fixed: 'Resûlullah\'ın (S.A.V)', rule: 'S.A.V' },
+          { original: 'şer', fixed: 'şerr', rule: 'Şerr standardı' },
+          { original: 'şeriat kitabı', fixed: 'şeriat kitabı,', rule: 'Noktalama' },
+          { original: 'BAKARA – 139 De ki:', fixed: 'BAKARA – 139: De ki:', rule: 'Referans' },
+          { original: 'Nefret', fixed: 'nefs', rule: 'Nefs standardı' },
+          { original: 'Fezailül', fixed: "Fezâilü'l", rule: 'Kaynak' },
+          { original: 'Alamet-il', fixed: "Alâmet-i'l", rule: 'Kaynak' },
+          { original: 'AFETİ', fixed: 'ÂFETİ', rule: 'Afet' },
+          { original: 'vücud', fixed: 'vücut', rule: 'Vücut standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          {
+            original: 'Allah’a ulaşmak var ya, işte bu çok önemlidir.',
+            fixed: 'Allah’a ulaşmak, işte bu çok önemlidir.',
+            rule: 'Sadeleştirme'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.ok(result.correctedText.includes('Dilemediği zaman da Allah razı olsun.'));
+  assert.ok(result.correctedText.includes('Yunus Emre ne diyor? Yunus diyor ki:'));
+  assert.ok(result.correctedText.includes('10/Yûnus-7 referansı'));
+  assert.ok(result.correctedText.includes('İsa kelimesi kaynakta böyle geçer.'));
+  assert.ok(result.correctedText.includes('sırâtın mustekîm(mustekîmin)'));
+  assert.ok(result.correctedText.includes('tebia dînekum'));
+  assert.ok(result.correctedText.includes('Resûlullah (S.A.V)\'in sünnetinde'));
+  assert.ok(result.correctedText.includes('12. Sebîlel gayy’dadır. Sebîlel rüşddedir.'));
+  assert.ok(result.correctedText.includes('ŞERİAT ve şerr konusu şeriat kitabı içinde geçer.'));
+  assert.ok(result.correctedText.includes('BAKARA – 139 De ki: Allah razı olsun.'));
+  assert.ok(result.correctedText.includes('Allah’a ulaşmak var ya, işte bu çok önemlidir.'));
+  assert.ok(result.correctedText.includes('Nefret ettirmeyiniz.'));
+  assert.ok(result.correctedText.includes('Fezailül Kuran 21'));
+  assert.ok(result.correctedText.includes('Alamet-il Mehdi'));
+  assert.ok(result.correctedText.includes('Akıl tövbe eder, nefs de tövbeyi bozar. Derhal tövbe edilir.'));
+  assert.ok(result.correctedText.includes('19 AFETİ ile AKLA'));
+  assert.ok(result.correctedText.includes('Bu fizik vücuttur. Kardeşler bir vücudun azaları gibidirler.'));
+  assert.equal(result.correctedText.includes('Yûnus Emre'), false);
+  assert.equal(result.correctedText.includes('ŞERRİAT'), false);
+  assert.equal(result.correctedText.includes('şerrr'), false);
+  assert.equal(result.correctedText.includes('nefs ettirmeyiniz'), false);
+});
+
+test('Adem A.S zurriyet kalibi duzeltilir ama nefret nefs yapilmaz', () => {
+  const source = [
+    "Kin ve nefret kalpte kalmamali.",
+    "Evvela kesin bilelim, Âdem (A.s)'ın sureti bay ve bayan herkesi Allahû Tealâ Kendisine kul olsun diye yaratmıştır."
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'nefret', fixed: 'nefs', rule: 'Nefs standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.ok(result.correctedText.includes("Kin ve nefret kalpte kalmamali."));
+  assert.ok(result.correctedText.includes("Âdem (A.S)'ın zürriyeti bay ve bayan herkesi"));
+  assert.equal(result.correctedText.includes('Kin ve nefs kalpte'), false);
+  assert.equal(result.totalErrors, 1);
+});
+
+test('1 Agustos acik feedback kokleri korunur ve gerekli referans duzeltmeleri uygulanir', () => {
+  const source = [
+    'Allah faziletler verir. Bu fazılla doğru yazılmıştır. Yakîn sahibi olur.',
+    'Bu sure de anlatılıyor. Kalbin dini teslim olur.',
+    'Müslümanın dini ayrı.”diyor.',
+    'Yâsîn-60, 61’de: Âyet açıklaması gelir.',
+    'Zikirle. Sevgili kardeşlerim, devam ediyor.',
+    'Öyleyse Tevrat, İncil’de de bu konular anlatılıyor.',
+    'Tabiatıyla bu böyledir. Bu istikamete ilk düşünmemiz lâzımgelen şey, gayrettir.',
+    "Hz. Musa'ya Hızır'a var dedi;",
+    'Gel ey kardeş şimdi gel böyle,',
+    'nice aşıkların bağrını dele,',
+    "Cebrail delildir Ahmet'e bile,",
+    'bir kâmil mürşide varmazsan olmaz.',
+    'Tövbe 69: İşte onlar hüsrana uğrayanlardır.',
+    'Yunus 7, 8’de âyetlerden gâfil olanların yaptıkları herşey boşa gidiyor.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'faziletler', fixed: 'fazlalar', rule: 'İmlâ standardı' },
+          { original: 'fazılla', fixed: 'fazl ile', rule: 'İmlâ standardı' },
+          { original: 'yakîn', fixed: 'yakın', rule: 'İmlâ standardı' },
+          { original: 'sure de', fixed: 'surede', rule: 'Sözlük standardı' },
+          { original: 'dini', fixed: 'dinî', rule: 'Sözlük standardı' },
+          { original: 'Tabiatıyla', fixed: 'Tabiî ki', rule: 'Sözlük standardı' },
+          {
+            original: 'Bu istikamete ilk düşünmemiz lâzımgelen şey,',
+            fixed: 'Bu istikamette ilk düşünmemiz lâzım gelen şey,',
+            rule: 'Yapı standardı'
+          }
+        ]
+      },
+      noktalama: {
+        issues: [
+          {
+            original: 'Müslümanın dini ayrı.”diyor.',
+            fixed: '"Müslümanın dini ayrı." diyor."',
+            rule: 'Noktalama standardı'
+          },
+          { original: 'Yâsîn-60, 61’de:', fixed: 'Yâsîn-60, 61’de', rule: 'Gereksiz iki nokta' },
+          { original: 'Sevgili kardeşlerim', fixed: 'Sevgili kardeşlerim,', rule: 'Virgül' },
+          { original: "Hz. Musa'ya Hızır'a var dedi;", fixed: "Hz. Musa'ya Hızır'a var dedi.", rule: 'Noktalama' }
+        ]
+      },
+      yapi: {
+        issues: [
+          {
+            original: 'Öyleyse Tevrat, İncil’de de bu konular anlatılıyor.',
+            fixed: "Öyleyse Tevrat, İncil ve Kur'ân'da da bu konular anlatılıyor.",
+            rule: 'Eksik bağlaç'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.ok(result.correctedText.includes('Allah faziletler verir. Bu fazılla doğru yazılmıştır. Yakîn sahibi olur.'));
+  assert.ok(result.correctedText.includes('Bu sure de anlatılıyor. Kalbin dini teslim olur.'));
+  assert.ok(result.correctedText.includes('Müslümanın dini ayrı." diyor.'));
+  assert.ok(result.correctedText.includes('Yâsîn-60, 61’de: Âyet açıklaması gelir.'));
+  assert.ok(result.correctedText.includes('Zikirle. Sevgili kardeşlerim, devam ediyor.'));
+  assert.ok(result.correctedText.includes('Öyleyse Tevrat, İncil’de de bu konular anlatılıyor.'));
+  assert.ok(result.correctedText.includes('Tabiatıyla bu böyledir. Bu istikamete ilk düşünmemiz lâzımgelen şey, gayrettir.'));
+  assert.ok(result.correctedText.includes("Hz. Musa'ya Hızır'a var dedi,"));
+  assert.ok(result.correctedText.includes('\nNice aşıkların bağrını dele,'));
+  assert.ok(result.correctedText.includes('\nBir kâmil mürşide varmazsan olmaz.'));
+  assert.ok(result.correctedText.includes('Tevbe 69: İşte onlar hüsrana uğrayanlardır.'));
+  assert.ok(result.correctedText.includes('Yûnus 7, 8’de âyetlerden gâfil olanların yaptıkları herşey boşa gidiyor.'));
+  assert.equal(result.correctedText.includes('fazlalar'), false);
+  assert.equal(result.correctedText.includes('fazl ile'), false);
+  assert.equal(result.correctedText.includes('surede anlatılıyor'), false);
+  assert.equal(result.correctedText.includes("Kur'ân'da da bu konular"), false);
+  assert.equal(result.totalErrors, 6);
+});
+
+test('Mumtehine sure adi noktasiz i varyantina bozulmaz', () => {
+  assert.equal(isProtectedChange('Mumtehine', 'Mumtehıne'), true);
+
+  const source = 'Mumtehıne Suresi burada geçiyor. Mumtehine doğru yazımdır.';
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'Mumtehine', fixed: 'Mumtehıne', rule: 'Sure adı standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.ok(result.correctedText.includes('Mumtehine Suresi burada geçiyor.'));
+  assert.ok(result.correctedText.includes('Mumtehine doğru yazımdır.'));
+  assert.equal(result.correctedText.includes('Mumtehıne'), false);
+  assert.equal(result.totalErrors, 1);
+});
+
+test('2 Agustos acik feedback metne ozel yanlis pozitifleri korunur', () => {
+  const source = [
+    'Allah (cc.) kullarına rahmet eder.',
+    'Bu ahlaki bir ölçüdür.',
+    'Onlar hayydırlar.',
+    'Sebîlel gayy’dadır ve Sebîlel rüşddedir.',
+    'Allah’a ulaşmayı dilemek ve zikir yok.',
+    'Tabi ki bu cümle böyle kalır.',
+    'ardarda gelen aciz kullar anlatılır.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'Allah (cc.)', fixed: 'Allah (A.S)', rule: 'Yanlış unvan' },
+          { original: 'ahlaki', fixed: 'ahlakı', rule: 'Yanlış ek' },
+          { original: 'hayydırlar', fixed: 'diridirler', rule: 'Anlam sadeleştirme' },
+          { original: 'Sebîlel gayy’dadır', fixed: 'Sebîli gayy’dadır', rule: 'Yanlış terkip' },
+          { original: 'Sebîlel rüşddedir', fixed: 'Sebîli rüşddedir', rule: 'Yanlış terkip' },
+          { original: 'Tabi ki', fixed: 'Tabiatıyla', rule: 'Anlam değişikliği' },
+          { original: 'ardarda', fixed: 'ard arda', rule: 'Alan standardı' },
+          { original: 'aciz', fixed: 'âciz', rule: 'Alan standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: 'Allah’a ulaşmayı dilemek ve zikir yok.', fixed: 'Allah’a ulaşmayı dilemek ve zikir yoksa.', rule: 'Yanlış şart ekleme' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
 });

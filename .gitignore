@@ -1,6 +1,9 @@
 node_modules/
 .env
-data/
+data/*
+!data/qa-seed.js
+tmp/
+demo-public-preview/
 *.log
 .DS_Store
 _*.txt

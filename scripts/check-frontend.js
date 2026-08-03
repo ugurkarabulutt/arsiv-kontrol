@@ -2,8 +2,34 @@ const fs = require('fs');
 const path = require('path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
 const script = html.match(/<script>([\s\S]*?)<\/script>/);
 const root = path.join(__dirname, '..');
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function indexOfRequired(source, needle, label) {
+  const index = source.indexOf(needle);
+  if (index === -1) throw new Error(`${label} bulunamadi.`);
+  return index;
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const PUBLIC_FORBIDDEN_WORDS = ['AI', 'prompt', 'model', 'admin', 'denetim', 'onay kuyruğu', 'kalite kontrol', 'test verisi'];
+
+function publicForbiddenWordHits(content, options = {}) {
+  let scan = String(content || '');
+  if (options.allowRobotsAdminPath) {
+    scan = scan.replace(/^\s*(?:Disallow|Allow):\s*\/admin\/?\s*$/gmi, '');
+  }
+  return PUBLIC_FORBIDDEN_WORDS.filter(word => new RegExp(`(^|[^\\p{L}\\p{N}_])${escapeRegex(word)}([^\\p{L}\\p{N}_]|$)`, 'iu').test(scan));
+}
 
 if (!script) throw new Error('index.html içinde inline script bulunamadı.');
 new Function(script[1]);
@@ -11,6 +37,9 @@ new Function(script[1]);
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'));
 if (manifest.name !== 'Arşiv AI' || manifest.short_name !== 'Arşiv AI') {
   throw new Error('PWA uygulama adı Arşiv AI olmalı.');
+}
+if (manifest.id !== '/admin' || manifest.start_url !== '/admin' || manifest.scope !== '/') {
+  throw new Error('Ana ekrana eklenen PWA admin uygulamasi /admin kimligi/adresiyle baslamali ve root scope korunmali.');
 }
 function readPngSize(filePath) {
   const png = fs.readFileSync(filePath);
@@ -51,5 +80,289 @@ if (!html.includes('function friendlyAnalyzeError') || !html.includes('AI servis
 }
 if (!html.includes('Denetim tamamlanamadı. Metniniz korunuyor.')) {
   throw new Error('Denetim hatasında metnin korunduğu kullanıcıya belirtilmeli.');
+}
+if (!html.includes('LONG_TEXT_CHUNK_CHARS') || !html.includes('splitTextForLongAnalysis') || !html.includes('analyzeLongText')) {
+  throw new Error('Uzun metinler frontend tarafinda parcali denetime bagli olmali.');
+}
+if (!html.includes('LONG_TEXT_CHUNK_CHARS=8000') || !html.includes('LONG_TEXT_CONCURRENCY=2') || !html.includes('fallbackChunkCount')) {
+  throw new Error('Uzun metin modu 50k-100k konferans metinleri icin guvenli parca, eszamanlilik ve fallback davranisina sahip olmali.');
+}
+if (!html.includes('/api/extract-file-text') || !server.includes('/api/extract-file-text') || !server.includes('skipDuplicate')) {
+  throw new Error('Uzun dosya/metin denetimi icin metin cikarma ve parca denetimi altyapisi eksik.');
+}
+if (!server.includes("status = 'taslak'") || !server.includes('/api/history/submit-merged') || !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/submit'")) {
+  throw new Error('Denetim sonucunun once taslak kalip ayrica onaya gonderilmesini saglayan API akisi eksik.');
+}
+const noStoreHeader = (vercelConfig.headers || []).some(item =>
+  (item.headers || []).some(h => h.key === 'Cache-Control' && String(h.value || '').includes('no-store'))
+);
+const routeNoStoreHeader = (vercelConfig.routes || []).some(item =>
+  item.dest === '/index.html' &&
+  item.headers &&
+  String(item.headers['Cache-Control'] || '').includes('no-store')
+);
+if (!noStoreHeader || !routeNoStoreHeader) {
+  throw new Error('Canli HTML eski surumden calismasin diye Vercel no-store headeri top-level ve index route seviyesinde bulunmali.');
+}
+const rootFallback = "app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));";
+assert(server.includes(rootFallback), 'Root legacy SPA fallback aynen index.html dondurmeli.');
+for (const marker of [
+  "app.use('/icons', express.static(path.join(__dirname, 'icons')))",
+  "app.get('/favicon.ico'",
+  "app.get('/manifest.webmanifest'",
+  "app.get('/sw.js'"
+]) {
+  assert(server.includes(marker), `Static asset route korunmali: ${marker}`);
+}
+for (const marker of [
+  "app.post('/api/auth/login'",
+  "app.post('/api/auth/logout'",
+  "app.get('/api/auth/me'"
+]) {
+  assert(server.includes(marker), `Auth/session API route korunmali: ${marker}`);
+}
+assert(server.includes('const ADMIN_PARALLEL_ROUTE_ENABLED'), 'ADMIN_PARALLEL_ROUTE_ENABLED flag okunmali.');
+assert(server.includes('function sendAdminIndex'), 'Admin index helper bulunmali.');
+assert(server.includes("res.set('X-Robots-Tag', 'noindex, nofollow')"), '/admin HTML response noindex header almali.');
+assert(server.includes("app.get(['/admin', '/admin/'], sendAdminIndex)"), '/admin ve /admin/ explicit admin fallback olmali.');
+assert(server.includes("app.get('/admin/*', sendAdminIndex)"), '/admin/* deep link fallback olmali.');
+
+const lastApiRouteIndex = [...server.matchAll(/app\.(?:get|post|put|patch|delete)\('\/api\//g)].pop()?.index ?? -1;
+const adminRouteIndex = indexOfRequired(server, "app.get(['/admin', '/admin/'], sendAdminIndex)", 'Explicit /admin route');
+const publicArchiveDemoIndex = indexOfRequired(server, "if (process.env.PUBLIC_ARCHIVE_DEMO === '1')", 'Public archive demo gate');
+const publicArchiveDemoRequireIndex = indexOfRequired(server, "const { createPublicArchiveRouter } = require('./public-archive-demo');", 'Public archive demo lazy require');
+const errorHandlerIndex = indexOfRequired(server, 'app.use((err, req, res, next) => {', 'Express error handler');
+const rootFallbackIndex = indexOfRequired(server, rootFallback, 'Root legacy fallback');
+assert(lastApiRouteIndex > -1 && lastApiRouteIndex < adminRouteIndex, '/api route lari /admin fallback tarafindan yutulmamali.');
+assert(adminRouteIndex < publicArchiveDemoIndex, '/admin fallback public archive router dan once kayit edilmeli.');
+assert(publicArchiveDemoIndex < publicArchiveDemoRequireIndex, 'Public archive demo modulu yalniz PUBLIC_ARCHIVE_DEMO flag icinde yuklenmeli.');
+assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
+assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');
+
+const routes = vercelConfig.routes || [];
+const apiVercelIndex = routes.findIndex(route => route.src === '/api/(.*)' && route.dest === '/server.js');
+const finalIndexRouteIndex = routes.findIndex(route => route.src === '/(.*)' && route.dest === '/index.html');
+assert(apiVercelIndex !== -1 && finalIndexRouteIndex !== -1 && apiVercelIndex < finalIndexRouteIndex, 'Vercel /api route final index catch-all dan once kalmali.');
+const routeIndex = src => routes.findIndex(route => route.src === src);
+const routeBySrc = src => routes.find(route => route.src === src);
+const explicitRootRoutes = routes.filter(route => route.src === '/' || route.src === '/$');
+assert(explicitRootRoutes.length === 0, 'Root / icin explicit Vercel route eklenmemeli; legacy root final catch-all ile kalmali.');
+
+const adminVercelRoutes = routes.filter(route => route.src === '/admin');
+const adminDeepVercelRoutes = routes.filter(route => route.src === '/admin/(.*)');
+const adminLikeVercelRoutes = routes.filter(route => typeof route.src === 'string' && route.src.startsWith('/admin'));
+const unexpectedAdminVercelRoutes = adminLikeVercelRoutes.filter(route => route.src !== '/admin' && route.src !== '/admin/(.*)');
+assert(unexpectedAdminVercelRoutes.length === 0, 'Beklenmeyen Vercel admin route eklenmemeli; yalniz /admin ve /admin/(.*) desteklenir.');
+assert(adminVercelRoutes.length === 1 && adminDeepVercelRoutes.length === 1, 'Vercel admin route lari partial olmamali; /admin ve /admin/(.*) birlikte olmali.');
+
+const adminVercelRoute = adminVercelRoutes[0];
+const adminDeepVercelRoute = adminDeepVercelRoutes[0];
+const adminVercelIndex = routeIndex('/admin');
+const adminDeepVercelIndex = routeIndex('/admin/(.*)');
+const preAdminRoutes = [
+  ['/api/(.*)', '/server.js', '/api route'],
+  ['/manifest.webmanifest', '/manifest.webmanifest', 'manifest route'],
+  ['/sw.js', '/sw.js', 'service worker route'],
+  ['/icons/(.*)', '/icons/$1', 'icons route'],
+  ['/favicon.ico', '/icons/favicon.ico', 'favicon route']
+];
+
+for (const [src, dest, label] of preAdminRoutes) {
+  const route = routeBySrc(src);
+  const index = routeIndex(src);
+  assert(route && route.dest === dest, `${label} Vercel hedefi korunmali.`);
+  assert(index < adminVercelIndex && index < adminDeepVercelIndex, `${label} Vercel admin route larindan once kalmali.`);
+}
+
+assert(adminVercelIndex < adminDeepVercelIndex, '/admin Vercel route /admin/(.*) route undan once kalmali.');
+assert(adminVercelIndex < finalIndexRouteIndex, '/admin Vercel route final index catch-all dan once kalmali.');
+assert(adminDeepVercelIndex < finalIndexRouteIndex, '/admin/(.*) Vercel route final index catch-all dan once kalmali.');
+assert(adminVercelRoute.dest === '/index.html', '/admin Vercel route index.html dondurmeli.');
+assert(adminDeepVercelRoute.dest === '/index.html', '/admin/(.*) Vercel route index.html dondurmeli.');
+
+for (const [label, route] of [
+  ['/admin', adminVercelRoute],
+  ['/admin/(.*)', adminDeepVercelRoute]
+]) {
+  const headers = route.headers || {};
+  assert(headers['X-Robots-Tag'] === 'noindex, nofollow', `${label} Vercel route X-Robots-Tag noindex header almali.`);
+  const cacheControl = String(headers['Cache-Control'] || '');
+  for (const token of ['no-store', 'no-cache', 'must-revalidate', 'proxy-revalidate']) {
+    assert(cacheControl.includes(token), `${label} Vercel route Cache-Control ${token} icermeli.`);
+  }
+}
+
+const robotsWithAdminPath = 'User-agent: *\nDisallow: /admin\nDisallow: /admin/\n';
+assert(publicForbiddenWordHits(robotsWithAdminPath, { allowRobotsAdminPath: true }).length === 0, 'robots.txt teknik /admin path istisnasi public language guard icin false-positive olmamali.');
+assert(publicForbiddenWordHits('<main>admin</main>').includes('admin'), 'Public language guard normal HTML icinde admin kelimesini yakalamali.');
+if (
+  !server.includes('SUBMITTED_CORRECTED_HASH_PREFIX') ||
+  !server.includes('reserveSubmittedCorrectedHash') ||
+  !server.includes('submitted_corrected_hash:') ||
+  !server.includes('Bu düzeltilmiş metnin onaya gönderilmiş veya onaylanmış bir kaydı zaten var.')
+) {
+  throw new Error('Onaya gonderirken ayni duzeltilmis metnin ikinci kez bekliyor/onaylandi durumuna dusmesi hizli kilitle engellenmeli.');
+}
+if (/select\('id,corrected_text'\)[\s\S]{0,500}textHash\(row\.corrected_text\)/.test(server)) {
+  throw new Error('Onaya gonderim eski agir corrected_text taramasina donmemeli.');
+}
+if (!html.includes('submitApprovalInFlight') || !html.includes('Gönderim kontrol ediliyor') || !html.includes('api(method,url,body)')) {
+  throw new Error('Onaya gonderim UI bekleme/hata durumunu net yonetmeli.');
+}
+if (
+  !server.includes('/api/history/:id([0-9a-fA-F-]{36})/approval-status') ||
+  !server.includes('/api/history/:id([0-9a-fA-F-]{36})/withdraw') ||
+  !html.includes('verifyApprovalStatus') ||
+  !html.includes('Onay kuyruğu doğrulanıyor') ||
+  !html.includes('withdrawApprovalFromHistory') ||
+  !html.includes('Onaydan Geri Çek')
+) {
+  throw new Error('Onaya gonderim dogrulanmali ve kullanici bekleyen kaydi geri cekebilmelidir.');
+}
+const historyEndpoint = server.match(/app\.get\('\/api\/history'[\s\S]*?\n\}\);/);
+if (!historyEndpoint || !historyEndpoint[0].includes('fetchAllPages') || historyEndpoint[0].includes('.limit(200)')) {
+  throw new Error('Denetim gecmisi 200 kayitta kesilmemeli; tum ilgili kayitlar sayfali cekilmeli.');
+}
+if (!server.includes("ADMIN_HIDDEN_HISTORY_STATUSES = ['taslak'") || !server.includes('SUBMITTED_PART_STATUS') || !server.includes('isHiddenHistoryForRole')) {
+  throw new Error('Admin tarafinda taslak/parca kayitlarini gizleyen onay kuyrugu korumasi eksik.');
+}
+if (!server.includes("const CHUNK_DRAFT_STATUS = 'chunk_draft'") || !server.includes("function isChunkHistoryRow") || !server.includes('/api/history/merged-draft')) {
+  throw new Error('Uzun metin parcalari teknik chunk_draft olarak saklanmali ve tek birlesik taslak olusturulmali.');
+}
+if (!server.includes('Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.') || !html.includes('chunkPart:true') || !html.includes('saveMergedDraftResult')) {
+  throw new Error('Uzun metin parcalari tek basina onaya gonderilememeli; frontend parcalari teknik kayit olarak isaretlemeli.');
+}
+if (!html.includes('submitApprovalModal') || !html.includes('renderApprovalActionButton') || !html.includes('confirmSubmitApproval') || !html.includes('Sonuç hazırlandı')) {
+  throw new Error('Onaya Gonder son teyit penceresi ve taslak UX akisi eksik.');
+}
+const approvalSubmittedFn = html.match(/function approvalSubmitted\(d\)\{[\s\S]*?\n\}/)?.[0] || '';
+if (
+  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','onaylandi','reddedildi'])") ||
+  !approvalSubmittedFn.includes('SUBMITTED_APPROVAL_STATUSES.has(status)') ||
+  approvalSubmittedFn.includes('!status')
+) {
+  throw new Error('Bos veya eksik status onaya gonderilmis sayilmamali; sadece bekliyor/onaylandi/reddedildi pasiflestirmeli.');
+}
+if (
+  !html.includes('resetCurrentAnalysisStateForNewRun();') ||
+  !html.includes('function resetSubmitApprovalModalState') ||
+  !html.includes('if(restoredResult&&!approvalSubmitted(restoredResult))')
+) {
+  throw new Error('Onaydan sonra yeni denetim baslarken eski onay statei ve gonderilmis yerel taslak temizlenmeli.');
+}
+if (
+  !html.includes('<div class="screen active" id="bootScreen">') ||
+  !html.includes('<div class="screen" id="loginScreen">') ||
+  !html.includes('function showLoginScreen()') ||
+  !html.includes('showLoginScreen();') ||
+  !html.includes("el('bootScreen')?.classList.remove('active')")
+) {
+  throw new Error('Sayfa yenilenirken auth kontrolu bitmeden login formu ve autofill bilgileri gorunmemeli.');
+}
+const logoutFn = html.match(/async function doLogout\(\)\{[\s\S]*?\n\}/)?.[0] || '';
+if (
+  !logoutFn.includes("await api('POST','/api/auth/logout')") ||
+  !logoutFn.includes('clearAnalyze();') ||
+  !logoutFn.includes('clearWorkDraft();') ||
+  !logoutFn.includes('showLoginScreen();')
+) {
+  throw new Error('Cikis sonrasi cihazdaki calisma taslagi temizlenmeli ve login ekrani kontrollu acilmali.');
+}
+if (!html.includes('renderSubmittedWorkspace') || !html.includes('Onay kuyruğuna alındı') || !html.includes('resetInputAfterApprovalSubmit')) {
+  throw new Error('Onaya gonderim basarili olunca calisma kapanmali ve net basari ekrani gorunmeli.');
+}
+if (!html.includes("renderApprovalActionButton(d,'panel')") || !html.includes('corrected-body-wrap') || !html.includes('corrected-copy-btn')) {
+  throw new Error('Duzeltilmis metin bolumunde tek alt onay butonu ve kenarda modern kopyala butonu olmali.');
+}
+if (html.includes('corrected-btns') || html.includes('onclick="downloadPDF()"') || html.includes('${renderApprovalActionButton(d)}')) {
+  throw new Error('Duzeltilmis metin basliginda ikinci onay, PDF indir veya eski aksiyon satiri gorunmemeli.');
+}
+if (!html.includes('function setApprovalAction') || !html.includes("await loadOnay();") || !html.includes("approveItem('${h.id}',this)") || !html.includes("rejectItem('${h.id}',this)")) {
+  throw new Error('Is Panosu onay/red sonrasi paneli yenilemeli ve buton islemini gorunur sekilde kilitlemeli.');
+}
+if (!html.includes('openSubmitApprovalFromHistory') || !html.includes('value="taslak"')) {
+  throw new Error('Kullanici gecmisindeki taslaklari filtreleme ve onaya gonderme akisi eksik.');
+}
+if (
+  !server.includes("app.get('/api/correction-packages'") ||
+  !server.includes('content_correction_packages') ||
+  !server.includes('content_correction_log') ||
+  !server.includes('scanCorrectionPackage') ||
+  !server.includes('historyScope') ||
+  !server.includes('reportedHistoryIds') ||
+  !server.includes('fetchFeedbackHistoryIds') ||
+  !server.includes('resolution_group: resolutionGroup') ||
+  !server.includes("feedback_status: 'resolved'") ||
+  !html.includes('tabContent-corrections') ||
+  !html.includes('loadCorrectionPackages') ||
+  !html.includes('createCorrectionPackage') ||
+  !html.includes('previewCorrectionPackage') ||
+  !html.includes('correctionHistoryScopeFromForm') ||
+  !html.includes('correctionScopeReported') ||
+  !html.includes('correctionScopeAll') ||
+  !html.includes('Bildirilen metin')
+) {
+  throw new Error('Geri bildirim kaynakli gecmis icerik duzeltme kayitlari, bildirilen metin/tum gecmis kapsami ve etki taramasi korunmali.');
+}
+if (
+  !html.includes('Geçmiş Düzeltme Kontrolü') ||
+  !html.includes('Geçmiş Düzeltmeleri') ||
+  !html.includes('Yeni düzeltme kaydı') ||
+  !html.includes('.correction-option input[type="checkbox"]') ||
+  html.includes('Düzeltme Paketleri')
+) {
+  throw new Error('Gecmis duzeltme ekrani adminin anlayacagi isim ve mobil checkbox duzeniyle kalmali.');
+}
+if (
+  !html.includes('Onay Bekleyen Düzeltmeler') ||
+  !html.includes('Uygulanan Düzeltmeler') ||
+  !html.includes('correctionMetricsHtml') ||
+  !html.includes('correctionPackageCard') ||
+  !html.includes('correctionArchiveHtml') ||
+  !html.includes('.correction-toolbar') ||
+  !html.includes('.correction-card summary')
+) {
+  throw new Error('Gecmis duzeltme super admin paneli aktif kuyruk, uygulanan arsiv ve dropdown kart duzeniyle kalmali.');
+}
+if (
+  !server.includes('alreadyApplied') ||
+  !html.includes('correctionStateNote') ||
+  !html.includes('setCorrectionPackageBusy') ||
+  !html.includes('Düzeltme zaten uygulanmış') ||
+  !html.includes("cache:'no-store'")
+) {
+  throw new Error('Gecmis duzeltme uygulama sonrasi durum netlesmeli, zaten uygulanmis kayit ekrani duzeltmeli ve API cache kullanmamali.');
+}
+if (
+  !server.includes("status: existing?.status || 'pending_review'") ||
+  !server.includes("pkg.status !== 'ready'") ||
+  !server.includes('superAdminApproved') ||
+  !html.includes('Süper admin son kontrolü') ||
+  !html.includes('Süper admin onayı bekliyor') ||
+  !html.includes('Onayla ve Uygula')
+) {
+  throw new Error('Gecmis duzeltmeler super admin son kontrolu olmadan uygulanmamali.');
+}
+if (
+  !html.includes('adminRouteProbe') ||
+  !html.includes('super-admin-admin-route-only') ||
+  !html.includes('function isAdminRoute()') ||
+  !html.includes('function isStandaloneApp()') ||
+  !html.includes('function ensureStandaloneAdminRoute') ||
+  !html.includes("window.history.replaceState(null,document.title,'/admin')") ||
+  !html.includes("path==='/admin'||path.startsWith('/admin/')") ||
+  !html.includes('ensureStandaloneAdminRoute(user);') ||
+  !html.includes('refreshRouteScopedVisibility(user)') ||
+  !html.includes('updateAdminRouteProbeState')
+) {
+  throw new Error('/admin canli test alani yalniz super admin ve /admin route guard ile gorunmeli; PWA root acilisinda admin route a alinmali.');
+}
+if (
+  !html.includes('systemConfirmModal') ||
+  !html.includes('openSystemConfirm') ||
+  !html.includes('system-confirm-modal') ||
+  /\b(confirm|alert|prompt)\s*\(/.test(html)
+) {
+  throw new Error('Tarayici confirm/alert/prompt yerine tema uyumlu sistem ici onay penceresi kullanilmali.');
 }
 console.log('Frontend/PWA doğrulaması: başarılı');

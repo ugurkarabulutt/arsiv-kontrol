@@ -49,7 +49,7 @@ try{
   --bg:#f4f1eb;--bg2:#ebe5d8;--bg3:#ddd4c4;
   --surface:#fffdf8;--surface2:#faf7f0;--surface-strong:#ffffff;
   --ink:#181512;--ink2:#38312a;--ink3:#716658;
-  --gold:#9a7620;--gold-lt:#caa44a;--gold-bg:#fff7df;
+  --gold:#9a7620;--gold-rgb:154,118,32;--gold-lt:#caa44a;--gold-bg:#fff7df;
   --red:#9b2424;--red-bg:#fff0f0;
   --green:#1f6b3a;--grn-bg:#eef9f1;
   --blue:#27527e;--blue-bg:#eef5ff;
@@ -69,7 +69,7 @@ try{
   --bg:#121314;--bg2:#1b1c1e;--bg3:#27282b;
   --surface:#18191b;--surface2:#202124;--surface-strong:#17181a;
   --ink:#f6f1e9;--ink2:#ded6ca;--ink3:#aaa197;
-  --gold:#d8b866;--gold-lt:#ead28f;--gold-bg:#302719;
+  --gold:#d8b866;--gold-rgb:216,184,102;--gold-lt:#ead28f;--gold-bg:#302719;
   --red:#ee8585;--red-bg:#332020;
   --green:#82d59b;--grn-bg:#1d3023;
   --blue:#9bbce8;--blue-bg:#1e2938;
@@ -88,7 +88,7 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .mono{font-family:'JetBrains Mono',monospace;}
 .screen{display:none;min-height:100vh;}
 .screen.active{display:flex;}
-#loginScreen{align-items:center;justify-content:center;}
+#bootScreen,#loginScreen{align-items:center;justify-content:center;}
 .login-card{width:100%;max-width:400px;margin:20px;background:var(--white);border:1px solid var(--bord2);border-top:3px solid var(--gold);box-shadow:var(--shadow);}
 .login-head{padding:28px 28px 18px;border-bottom:1px solid var(--border);}
 .login-logo{font-size:22px;font-weight:700;margin-bottom:4px;}
@@ -96,6 +96,7 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .login-logo .ai-tag{color:var(--gold);font-size:13px;font-weight:400;font-family:'JetBrains Mono',monospace;}
 .login-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--ink3);text-transform:uppercase;}
 .login-body{padding:24px 28px 28px;}
+.boot-body{padding:24px 28px 28px;color:var(--ink2);font-size:14px;}
 .field{margin-bottom:16px;}
 .field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--ink3);text-transform:uppercase;margin-bottom:6px;}
 .field input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:16px;padding:12px 14px;outline:none;transition:border-color .2s;-webkit-appearance:none;border-radius:0;}
@@ -148,6 +149,19 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .page-title{font-size:24px;font-weight:800;letter-spacing:-.2px;margin-bottom:3px;}
 .page-sub{font-size:12px;color:var(--ink3);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
 .divider{height:1px;background:linear-gradient(90deg,var(--border),transparent);margin-bottom:20px;}
+.admin-route-probe{margin:-4px 0 18px;padding:14px 16px;border:1px solid rgba(var(--ai-rgb),.36);border-left:3px solid var(--ai);background:linear-gradient(135deg,rgba(var(--ai-rgb),.10),var(--surface));display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:var(--soft-shadow);}
+.admin-route-probe-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ai);font-weight:800;margin-bottom:3px;}
+.admin-route-probe-title{font-size:15px;font-weight:900;color:var(--ink);line-height:1.35;}
+.admin-route-probe-text{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:3px;}
+.admin-route-probe-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+.admin-route-probe-state{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);background:var(--grn-bg);border:1px solid rgba(31,122,69,.28);padding:5px 8px;border-radius:999px;white-space:nowrap;}
+.admin-route-probe-toggle{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:var(--ink2);cursor:pointer;white-space:nowrap;}
+.admin-route-probe-toggle input{position:absolute;opacity:0;pointer-events:none;}
+.admin-route-probe-toggle b{width:42px;height:22px;border-radius:999px;border:1px solid rgba(var(--ai-rgb),.45);background:var(--surface2);position:relative;display:inline-block;transition:all .18s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+.admin-route-probe-toggle b::after{content:"";position:absolute;top:3px;left:4px;width:14px;height:14px;border-radius:50%;background:var(--ink3);transition:all .18s;box-shadow:0 2px 7px rgba(0,0,0,.2);}
+.admin-route-probe-toggle input:checked+b{background:var(--ai);border-color:rgba(var(--ai-rgb),.75);}
+.admin-route-probe-toggle input:checked+b::after{left:22px;background:white;}
+@media(max-width:760px){.admin-route-probe{align-items:flex-start;flex-direction:column}.admin-route-probe-right{width:100%;justify-content:space-between}}
 .itabs{display:flex;margin-bottom:16px;border:1px solid var(--bord2);overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .itab{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg2);border:none;padding:10px 16px;cursor:pointer;color:var(--ink3);transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .itab.active{background:var(--ink);color:var(--bg);}
@@ -168,8 +182,8 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .btn-primary{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;background:linear-gradient(135deg,var(--ink),#33271c);color:var(--bg);border:1px solid rgba(255,255,255,.08);padding:12px 20px;cursor:pointer;transition:transform .16s,box-shadow .16s,filter .16s;display:inline-flex;align-items:center;gap:7px;border-radius:7px;-webkit-appearance:none;position:relative;overflow:hidden;box-shadow:var(--soft-shadow);}
 .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 14px 28px rgba(45,31,16,.18);}
 .btn-primary:active{transform:translateY(0) scale(.99);}
-.btn-primary::after,.btn-login::after,.btn-green::after,.btn-sec::after,.btn-mini::after,.btn-copy::after,.btn-pdf::after{content:"";position:absolute;inset:-40% auto -40% -60%;width:42%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.46),transparent);opacity:0;pointer-events:none;}
-.btn-primary:active::after,.btn-login:active::after,.btn-green:active::after,.btn-sec:active::after,.btn-mini:active::after,.btn-copy:active::after,.btn-pdf:active::after{animation:shine .55s ease;}
+.btn-primary::after,.btn-login::after,.btn-green::after,.btn-sec::after,.btn-mini::after,.btn-copy::after,.btn-submit-approval::after{content:"";position:absolute;inset:-40% auto -40% -60%;width:42%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.46),transparent);opacity:0;pointer-events:none;}
+.btn-primary:active::after,.btn-login:active::after,.btn-green:active::after,.btn-sec:active::after,.btn-mini:active::after,.btn-copy:active::after,.btn-submit-approval:active::after{animation:shine .55s ease;}
 @keyframes shine{0%{left:-60%;opacity:0}25%{opacity:.8}100%{left:125%;opacity:0}}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
 .btn-sec{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface);color:var(--ink2);border:1px solid var(--border);padding:10px 16px;cursor:pointer;transition:all .16s;border-radius:7px;position:relative;overflow:hidden;}
@@ -231,11 +245,29 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .corrected-panel{border:1px solid var(--bord2);border-top:2px solid var(--gold);background:var(--white);margin-bottom:2px;}
 .corrected-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
 .corrected-head h3{font-size:15px;font-weight:600;}
-.corrected-btns{display:flex;gap:6px;flex-wrap:wrap;}
 .btn-copy{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);color:var(--ink2);border:1px solid var(--border);padding:6px 12px;cursor:pointer;transition:all .2s;border-radius:6px;position:relative;overflow:hidden;}
 .btn-copy:hover{border-color:var(--gold);color:var(--gold);}
-.btn-pdf{font-family:'JetBrains Mono',monospace;font-size:10px;background:linear-gradient(135deg,var(--gold),#7d5c15);color:white;border:none;padding:6px 12px;cursor:pointer;border-radius:6px;position:relative;overflow:hidden;}
-.corrected-body{padding:18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
+.corrected-copy-btn{position:absolute;top:12px;right:12px;z-index:2;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:var(--soft-shadow);}
+body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
+.btn-submit-approval{font-family:'JetBrains Mono',monospace;font-size:10px;background:linear-gradient(135deg,#1f7a45,#0f4f2b);color:white;border:none;padding:7px 13px;cursor:pointer;border-radius:999px;position:relative;overflow:hidden;box-shadow:0 8px 18px rgba(31,122,69,.18);}
+.btn-submit-approval:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-submit-approval.sent{background:var(--grn-bg);color:var(--green);border:1px solid rgba(31,122,69,.35);box-shadow:none;cursor:default;}
+.btn-submit-approval[disabled]{opacity:.78;transform:none;}
+.approval-submit-panel{margin:12px 0 0;padding:13px 14px;border:1px solid rgba(31,122,69,.28);background:linear-gradient(135deg,rgba(31,122,69,.08),rgba(196,154,42,.08));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.approval-submit-panel.done{border-color:rgba(31,122,69,.45);background:var(--grn-bg);}
+.approval-submit-title{font-weight:800;font-size:13px;color:var(--ink);}
+.approval-submit-text{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;max-width:680px;}
+.approval-submit-panel .btn-submit-approval{min-width:150px;text-align:center;}
+.submit-success-card{border:1px solid rgba(31,122,69,.35);border-left:4px solid var(--green);background:linear-gradient(135deg,var(--grn-bg),var(--white));padding:18px;margin:0 0 16px;box-shadow:var(--soft-shadow);}
+.submit-success-title{font-size:18px;font-weight:900;color:var(--green);margin-bottom:6px;}
+.submit-success-text{font-size:14px;line-height:1.6;color:var(--ink2);max-width:760px;}
+.submit-success-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.submit-success-actions button{min-width:145px;}
+.submit-confirm-summary{border:1px solid var(--border);background:var(--surface2);padding:12px 14px;margin:12px 0;font-size:13px;line-height:1.6;color:var(--ink2);}
+.submit-confirm-summary strong{color:var(--ink);}
+.submit-confirm-warning{border-left:3px solid var(--gold);background:var(--grn-bg);padding:11px 13px;font-size:13px;line-height:1.6;color:var(--ink2);}
+.corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
+.corrected-body{padding:22px 128px 24px 18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
 .compare-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
 .compare-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -255,6 +287,7 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
 @media(max-width:760px){.compare-head{align-items:flex-start}.scroll-lock-control{width:100%;justify-content:space-between}}
+@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel{align-items:stretch}.approval-submit-panel>div:first-child{width:100%}.approval-submit-panel .btn-submit-approval{width:100%;padding:12px 14px;font-size:11px}}
 @media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
@@ -275,6 +308,7 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .sb-wait{background:var(--orange-bg);color:var(--orange);}
 .sb-ok{background:var(--grn-bg);color:var(--green);}
 .sb-no{background:var(--red-bg);color:var(--red);}
+.sb-draft{background:rgba(var(--ai-rgb),.12);color:var(--ai);}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
 .dot-on{background:var(--green);}
 .dot-off{background:var(--red);}
@@ -404,6 +438,72 @@ canvas{width:100%!important;}
 .feedback-root{display:inline-flex;align-items:center;gap:5px;margin:6px 0 4px;padding:4px 8px;border:1px solid var(--border);background:var(--surface2);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);}
 .feedback-root-match{margin:7px 0 4px;padding:8px 10px;border:1px solid rgba(var(--ai-rgb),.35);border-left:3px solid var(--ai);background:rgba(var(--ai-rgb),.08);font-size:12px;line-height:1.45;color:var(--ink2);}
 .feedback-root-match strong{color:var(--ink);}
+.correction-layout{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:14px;align-items:start;}
+.correction-form,.correction-card,.correction-queue-section{background:var(--white);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);}
+.correction-form-head{padding:13px 16px;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:800;color:var(--ink);}
+.correction-form-body,.correction-card-body{padding:14px 16px;}
+.correction-form input,.correction-form textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:14px;padding:10px 12px;outline:none;margin-bottom:9px;}
+.correction-form textarea{min-height:92px;resize:vertical;line-height:1.55;}
+.correction-options{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0 12px;font-size:12px;color:var(--ink2);}
+.correction-options-title{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:2px;}
+.correction-option{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);background:var(--surface2);padding:10px 11px;cursor:pointer;min-height:44px;}
+.correction-option input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;min-width:18px;margin:1px 0 0;border:1px solid var(--bord2);border-radius:5px;background:var(--bg);display:grid;place-items:center;padding:0;cursor:pointer;}
+.correction-option input[type="checkbox"]:checked{background:var(--gold);border-color:var(--gold);}
+.correction-option input[type="checkbox"]:checked::after{content:'✓';font-size:13px;line-height:1;color:#15110a;font-weight:900;}
+.correction-option span{display:block;font-weight:800;color:var(--ink);line-height:1.3;}
+.correction-option small{display:block;margin-top:2px;font-size:11px;line-height:1.35;color:var(--ink3);}
+.correction-toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.correction-metric{border:1px solid var(--border);background:var(--surface2);padding:10px 11px;min-height:66px;}
+.correction-metric strong{display:block;font-size:22px;line-height:1;color:var(--ink);}
+.correction-metric span{display:block;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--ink3);}
+.correction-queue-section{margin-bottom:12px;}
+.correction-queue-section>summary{list-style:none;cursor:pointer;}
+.correction-queue-section>summary::-webkit-details-marker{display:none;}
+.correction-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.correction-section-head strong{font-size:15px;color:var(--ink);}
+.correction-section-head span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.correction-list{display:grid;gap:9px;padding:10px;}
+.correction-card{border-left:3px solid var(--gold);overflow:hidden;}
+.correction-card.applied{border-left-color:var(--green);}
+.correction-card.reverted{border-left-color:var(--red);}
+.correction-card summary{list-style:none;cursor:pointer;}
+.correction-card summary::-webkit-details-marker{display:none;}
+.correction-card-head{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;background:var(--surface2);font-weight:800;color:var(--ink);}
+.correction-card-title{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.correction-card-title strong{font-size:14px;line-height:1.25;color:var(--ink);}
+.correction-card-title small{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.35;color:var(--ink3);word-break:break-word;}
+.correction-card-right{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+.correction-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg2);color:var(--ink2);padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;white-space:nowrap;}
+.correction-pill.ready{border-color:var(--gold);color:var(--gold);}
+.correction-pill.applied{border-color:var(--green);color:var(--green);background:var(--grn-bg);}
+.correction-pill.reverted{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+.correction-pill.warn{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+.correction-toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink3);transition:transform .18s ease;}
+.correction-card[open] .correction-toggle{transform:rotate(180deg);}
+.correction-card-body{border-top:1px solid var(--border);}
+.correction-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-top:4px;}
+.correction-state-note{margin-top:10px;padding:11px 12px;border:1px solid var(--border);border-left:3px solid var(--gold);background:var(--surface2);color:var(--ink2);font-size:13px;line-height:1.55;}
+.correction-state-note strong{color:var(--ink);}
+.correction-state-note.applied{border-left-color:var(--green);background:var(--grn-bg);}
+.correction-state-note.applied strong{color:var(--green);}
+.correction-state-note.reverted{border-left-color:var(--red);background:var(--red-bg);}
+.correction-state-note.reverted strong{color:var(--red);}
+.correction-map{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:10px;}
+.correction-old,.correction-new{border:1px solid var(--border);padding:9px 10px;word-break:break-word;background:var(--red-bg);color:var(--red);}
+.correction-new{background:var(--grn-bg);color:var(--green);}
+.correction-compact-map{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:7px;align-items:center;}
+.correction-compact-map span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.correction-compact-map .old{color:var(--red);}
+.correction-compact-map .new{color:var(--green);}
+.correction-scan{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--border);border-bottom:none;margin:10px 0;}
+.correction-scan div{padding:9px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);}
+.correction-scan div:last-child{border-right:0;}
+.correction-scan strong{display:block;font-size:20px;color:var(--ink);line-height:1.1;}
+.correction-scan span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--ink3);}
+.correction-sample{margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+.correction-sample-item{font-size:12px;line-height:1.5;color:var(--ink2);padding:8px 0;border-bottom:1px solid var(--border);}
+.correction-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.correction-actions button:disabled{opacity:.68;cursor:not-allowed;filter:saturate(.75);}
 .message-log-card{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);}
 .message-log-card:last-child{border-bottom:none;}
 .message-kind{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.8px;border:1px solid var(--gold);background:var(--gold-bg);color:var(--gold-dk,#8b6914);padding:4px 7px;height:max-content;}
@@ -411,7 +511,7 @@ canvas{width:100%!important;}
 .message-preview{margin-top:8px;white-space:pre-line;color:var(--ink2);line-height:1.55;}
 @media(max-width:900px){.ai-panel-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
-@media(max-width:760px){.report-summary-grid,.feedback-summary-grid,.msg-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.message-log-card{grid-template-columns:1fr}.message-kind{width:max-content}.report-card summary{flex-direction:column}.report-date-wrap input{width:100%}}
+@media(max-width:760px){.report-summary-grid,.feedback-summary-grid,.msg-summary-grid,.correction-scan,.correction-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.message-log-card{grid-template-columns:1fr}.message-kind{width:max-content}.report-card summary{flex-direction:column}.report-date-wrap input{width:100%}.correction-layout{grid-template-columns:1fr}.correction-map,.correction-compact-map{grid-template-columns:1fr}.correction-map span,.correction-compact-map b{text-align:center}.correction-card-head{grid-template-columns:1fr}.correction-card-right{justify-content:flex-start}}
 @media(max-width:640px){
   .modal-overlay{align-items:flex-end;padding:10px;}
   .feedback-modal{max-width:none;border-radius:26px 26px 18px 18px;max-height:88vh;}
@@ -468,6 +568,31 @@ canvas{width:100%!important;}
 .feedback-help{font-size:12px;line-height:1.55;color:var(--ink3);margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
 .feedback-modal .modal-foot{margin:18px -4px 0;justify-content:stretch;position:sticky;bottom:-28px;background:linear-gradient(to top,var(--white) 78%,rgba(255,255,255,0));padding:18px 4px 0;}
 .feedback-modal .modal-foot button{flex:1;border-radius:999px;padding:13px 16px;font-size:15px;}
+.system-confirm-modal{max-width:540px;border-radius:24px;background:var(--white);box-shadow:0 26px 90px rgba(0,0,0,.34),0 0 0 1px rgba(var(--gold-rgb),.10);border-top:1px solid var(--gold);}
+.system-confirm-modal .modal-head{justify-content:flex-start;padding:24px 70px 10px 26px;background:linear-gradient(135deg,var(--white),var(--surface2));}
+.system-confirm-modal .modal-head h3{text-align:left;font-size:21px;line-height:1.2;}
+.system-confirm-modal .modal-close{right:20px;top:18px;}
+.system-confirm-copy{font-size:16px;line-height:1.65;color:var(--ink);margin:2px 0 12px;}
+.system-confirm-detail{font-size:13px;line-height:1.55;color:var(--ink2);background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--gold);padding:12px 14px;margin-top:12px;}
+.system-confirm-badge{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--gold);border:1px solid rgba(var(--gold-rgb),.4);background:rgba(var(--gold-rgb),.08);padding:6px 9px;margin-bottom:12px;}
+.system-confirm-input-wrap{margin-top:12px;}
+.system-confirm-input{width:100%;min-height:132px;max-height:42vh;background:var(--surface2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:15px;line-height:1.58;padding:14px 15px;border-radius:16px;resize:vertical;outline:none;}
+.system-confirm-input:focus{border-color:var(--ai);box-shadow:0 0 0 3px rgba(var(--ai-rgb),.18);}
+.system-confirm-modal[data-tone="danger"]{border-top-color:var(--red);}
+.system-confirm-modal[data-tone="danger"] .system-confirm-badge{color:var(--red);border-color:rgba(168,34,47,.38);background:var(--red-bg);}
+.system-confirm-modal[data-tone="danger"] .system-confirm-detail{border-left-color:var(--red);}
+.system-confirm-modal[data-tone="success"]{border-top-color:var(--green);}
+.system-confirm-modal[data-tone="success"] .system-confirm-badge{color:var(--green);border-color:rgba(33,125,74,.38);background:var(--grn-bg);}
+.system-confirm-modal[data-tone="success"] .system-confirm-detail{border-left-color:var(--green);}
+.system-confirm-modal .modal-foot{position:relative;bottom:auto;background:none;padding-top:8px;}
+.system-confirm-modal .modal-foot button{min-height:46px;}
+@media(max-width:760px){
+  .system-confirm-modal{max-width:none;border-radius:24px;margin:0 2px;}
+  .system-confirm-modal .modal-head{padding:22px 62px 8px 22px;}
+  .system-confirm-modal .modal-head h3{font-size:20px;}
+  .system-confirm-modal .modal-body{padding:16px 22px 24px;}
+  .system-confirm-modal .modal-foot{gap:10px;}
+}
 .rules-editor{width:100%;min-height:400px;background:var(--white);border:1px solid var(--bord2);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;padding:14px;resize:vertical;outline:none;border-radius:0;}
 .rules-editor:focus{border-color:var(--gold);}
 .profile-card{max-width:440px;background:var(--white);border:1px solid var(--bord2);border-top:2px solid var(--gold);}
@@ -566,8 +691,19 @@ canvas{width:100%!important;}
 </head>
 <body>
 
+<!-- BOOT -->
+<div class="screen active" id="bootScreen">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-logo">Arşiv<span>.</span>Kontrol <span class="ai-tag">AI</span></div>
+      <div class="login-sub">Arşiv Denetim Sistemi</div>
+    </div>
+    <div class="boot-body">Oturum kontrol ediliyor...</div>
+  </div>
+</div>
+
 <!-- LOGIN -->
-<div class="screen active" id="loginScreen">
+<div class="screen" id="loginScreen">
   <div class="login-card">
     <div class="login-head">
       <div class="login-logo">Arşiv<span>.</span>Kontrol <span class="ai-tag">AI</span></div>
@@ -624,6 +760,7 @@ canvas{width:100%!important;}
       <button class="btn-mobile admin-only" onclick="mNav('ai')" style="display:none">AI Asistan</button>
       <button class="btn-mobile admin-only" id="mBtnOnay" onclick="mNav('onay')" style="display:none">Onaylar <span class="badge-m" id="mOnayBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('feedback')" style="display:none">Geri Bildirim Merkezi</button>
+      <button class="btn-mobile admin-only" onclick="mNav('corrections')" style="display:none">Geçmiş Düzeltmeleri</button>
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Sistem Uyarıları <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
@@ -648,6 +785,7 @@ canvas{width:100%!important;}
 
     <div class="side-section-label admin-only" style="display:none">Geri Bildirim</div>
     <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
+    <button class="side-link admin-only" data-tab="corrections" onclick="showTab('corrections')" style="display:none"><span>Geçmiş Düzeltmeleri</span></button>
     <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>&Ccedil;&ouml;z&uuml;m Takibi</span></button>
     <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kay&#305;tlar&#305;</span></button>
     <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyar&#305;lar&#305;</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
@@ -665,6 +803,21 @@ canvas{width:100%!important;}
       <div class="page-title">Metin Denetimi</div>
       <div class="page-sub">Arşiv standartlarına göre otomatik kontrol</div>
       <div class="divider"></div>
+      <div id="adminRouteProbe" class="admin-route-probe super-admin-admin-route-only" style="display:none">
+        <div>
+          <div class="admin-route-probe-kicker">/admin canli test</div>
+          <div class="admin-route-probe-title">S&uuml;per admin do&#287;rulama alan&#305;</div>
+          <div class="admin-route-probe-text">Bu alan sadece <span class="mono">/admin</span> adresinde s&uuml;per admin hesab&#305;na g&ouml;r&uuml;n&uuml;r.</div>
+        </div>
+        <div class="admin-route-probe-right">
+          <label class="admin-route-probe-toggle" for="adminRouteProbeToggle">
+            <span>Test anahtar&#305;</span>
+            <input id="adminRouteProbeToggle" type="checkbox" onchange="updateAdminRouteProbeState()">
+            <b aria-hidden="true"></b>
+          </label>
+          <span id="adminRouteProbeState" class="admin-route-probe-state">Haz&#305;r</span>
+        </div>
+      </div>
       <div class="itabs">
         <button class="itab active" onclick="switchInner('text')">Metin Yapıştır</button>
         <button class="itab" onclick="switchInner('file')">Dosya Yükle (.docx)</button>
@@ -707,7 +860,7 @@ canvas{width:100%!important;}
 
     <div class="tab-content" id="tabContent-gecmis">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
-        <div><div class="page-title">Denetim Geçmişi</div><div class="page-sub">Son denetimler</div></div>
+        <div><div class="page-title">Denetim Geçmişi</div><div class="page-sub">Tüm denetimleriniz</div></div>
         <button class="btn-sec admin-only" id="csvBtn" style="display:none" onclick="downloadCSV()">⬇ CSV İndir</button>
       </div>
       <div class="divider"></div>
@@ -715,6 +868,7 @@ canvas{width:100%!important;}
         <input id="histSearch" type="search" placeholder="Dosya veya kullanıcı ara..." oninput="setHistoryFilter()" style="min-width:220px;flex:1;max-width:340px">
         <select id="histStatusFilter" onchange="setHistoryFilter()" style="max-width:180px">
           <option value="all">Tüm kayıtlar</option>
+          <option value="taslak">Taslaklar</option>
           <option value="bekliyor">Bekleyen</option>
           <option value="onaylandi">Onaylanan</option>
           <option value="reddedildi">Reddedilen</option>
@@ -854,6 +1008,7 @@ canvas{width:100%!important;}
       <div class="page-title">İş Panosu</div>
       <div class="page-sub">Bekleyen, onaylanan ve reddedilen denetimler</div>
       <div class="divider"></div>
+      <div id="onayActionStatus" class="status-msg" style="margin-bottom:10px"></div>
       <div id="onayContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
@@ -909,6 +1064,50 @@ canvas{width:100%!important;}
       </div>
       <div class="divider"></div>
       <div id="feedbackContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <div class="tab-content" id="tabContent-corrections">
+      <div class="page-title">Geçmiş Düzeltme Kontrolü</div>
+      <div class="page-sub">Doğrulanan yazım kararlarını önce kontrol edin; uygun olanları geçmiş metinlere güvenle uygulayın</div>
+      <div class="divider"></div>
+      <div class="correction-layout">
+        <div class="correction-form">
+          <div class="correction-form-head">Yeni düzeltme kaydı</div>
+          <div class="correction-form-body">
+            <input id="correctionTitle" placeholder="Başlık">
+            <input id="correctionFrom" placeholder="Hatalı veya eski ifade">
+            <input id="correctionTo" placeholder="Doğru ifade">
+            <textarea id="correctionNote" placeholder="Kısa karar notu"></textarea>
+            <div class="correction-options">
+              <div class="correction-options-title">Nerede aransın?</div>
+              <label class="correction-option">
+                <input type="checkbox" id="correctionFieldCorrected" checked>
+                <span>Düzeltilmiş metin<small>Onaya gönderilen veya arşivlenen son metinlerde ara.</small></span>
+              </label>
+              <label class="correction-option">
+                <input type="checkbox" id="correctionFieldSummary">
+                <span>Sonuç özeti<small>Gerekirse denetim özetlerinde de kontrol et.</small></span>
+              </label>
+              <div class="correction-options-title">Kapsam</div>
+              <label class="correction-option">
+                <input type="radio" name="correctionHistoryScope" id="correctionScopeReported" value="reported" checked onchange="markCorrectionScopePicked()">
+                <span>Bildirilen metin<small>Seçili geri bildirimin bağlı olduğu denetim kaydını düzelt.</small></span>
+              </label>
+              <label class="correction-option">
+                <input type="radio" name="correctionHistoryScope" id="correctionScopeAll" value="all" onchange="markCorrectionScopePicked()">
+                <span>Tüm geçmiş<small>Aynı ifade geçmiş metinlerde de aranacak; uygulama için süper admin son kontrolü gerekir.</small></span>
+              </label>
+              <label class="correction-option">
+                <input type="checkbox" id="correctionNeedsReview" checked disabled>
+                <span>Süper admin son kontrolü<small>Geçmiş metne uygulama yapılmadan önce onay zorunludur.</small></span>
+              </label>
+            </div>
+            <div class="pref-sub" id="correctionSelectedInfo">Seçili geri bildirim yok.</div>
+            <button class="btn-primary" style="width:100%;margin-top:10px" onclick="createCorrectionPackage()">Düzeltme Kaydı Oluştur</button>
+          </div>
+        </div>
+        <div id="correctionPackagesContent"><div class="empty-state">Yükleniyor...</div></div>
+      </div>
     </div>
 
     <div class="tab-content" id="tabContent-msglog">
@@ -1024,15 +1223,52 @@ canvas{width:100%!important;}
   </div>
 </div>
 
+<div class="modal-overlay" id="submitApprovalModal">
+  <div class="modal feedback-modal">
+    <div class="modal-head"><h3>Onaya gönderilsin mi?</h3><button class="modal-close" onclick="closeSubmitApprovalModal()">×</button></div>
+    <div class="modal-body">
+      <div class="feedback-label">Son kontrol</div>
+      <div class="submit-confirm-warning">Sistem denetimi tamamladı. Onaya Gönder dediğinizde sonuç onay kuyruğuna iletilir.</div>
+      <div class="submit-confirm-summary" id="submitApprovalSummary"></div>
+      <div class="form-err" id="submitApprovalErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="systemConfirmModal">
+  <div class="modal feedback-modal system-confirm-modal" id="systemConfirmDialog" data-tone="default">
+    <div class="modal-head">
+      <h3 id="systemConfirmTitle">İşlem onayı</h3>
+      <button class="modal-close" onclick="closeSystemConfirm(false)">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="system-confirm-badge" id="systemConfirmBadge">Kontrol</div>
+      <div class="system-confirm-copy" id="systemConfirmMessage"></div>
+      <div class="system-confirm-detail" id="systemConfirmDetail" style="display:none"></div>
+      <div class="system-confirm-input-wrap" id="systemConfirmInputWrap" style="display:none">
+        <textarea class="system-confirm-input" id="systemConfirmInput"></textarea>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-sec" id="systemConfirmCancel" onclick="closeSystemConfirm(false)">Vazgeç</button>
+        <button class="btn-primary" id="systemConfirmOk" onclick="closeSystemConfirm(true)">Tamam</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true;
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]};
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=120000;
+const LONG_TEXT_CHUNK_CHARS=8000;
+const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
+const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','onaylandi','reddedildi']);
 const FONT_SCALE={small:.94,medium:1,large:1.14};
 let isRestoringDraft=false;
 
@@ -1068,6 +1304,108 @@ function setFontSizePreference(size){
   if(!isRestoringDraft)persistWorkDraft();
 }
 function cleanInputText(text){return String(text||'').normalize('NFC').replace(/\r\n?/g,'\n').trim();}
+function splitLongUnit(unit,max){
+  const parts=[];
+  let rest=String(unit||'').trim();
+  while(rest.length>max){
+    const windowText=rest.slice(0,max);
+    let cut=Math.max(
+      windowText.lastIndexOf('\n'),
+      windowText.lastIndexOf('. '),
+      windowText.lastIndexOf('? '),
+      windowText.lastIndexOf('! '),
+      windowText.lastIndexOf('; '),
+      windowText.lastIndexOf(' ')
+    );
+    if(cut<Math.floor(max*.55))cut=max;
+    parts.push(rest.slice(0,cut).trim());
+    rest=rest.slice(cut).trim();
+  }
+  if(rest)parts.push(rest);
+  return parts;
+}
+function splitTextForLongAnalysis(text,max=LONG_TEXT_CHUNK_CHARS){
+  const normalized=cleanInputText(text);
+  if(normalized.length<=max)return [normalized];
+  const tokens=normalized.split(/(\n\s*\n)/);
+  const chunks=[];
+  let current='';
+  tokens.forEach(token=>{
+    if(!token)return;
+    if(token.length>max){
+      if(current.trim()){chunks.push(current.trim());current='';}
+      chunks.push(...splitLongUnit(token,max));
+      return;
+    }
+    if((current+token).length>max){
+      if(current.trim())chunks.push(current.trim());
+      current=token;
+    }else{
+      current+=token;
+    }
+  });
+  if(current.trim())chunks.push(current.trim());
+  return chunks.filter(Boolean);
+}
+function mergeChunkResults(parts,originalText){
+  const categories={sozluk:{count:0,issues:[]},imla:{count:0,issues:[]},noktalama:{count:0,issues:[]},etiket:{count:0,issues:[]},yapi:{count:0,issues:[]}};
+  let totalLen=0,weightedScore=0,totalErrors=0,fallbackChunkCount=0;
+  const correctedParts=[];
+  parts.forEach((part,idx)=>{
+    const len=String(part.originalText||part.chunkText||'').length||1;
+    totalLen+=len;
+    weightedScore+=(Number(part.score)||0)*len;
+    totalErrors+=Number(part.totalErrors)||0;
+    Object.keys(categories).forEach(key=>{
+      const src=part.categories?.[key];
+      const issues=Array.isArray(src?.issues)?src.issues:[];
+      issues.forEach(issue=>categories[key].issues.push({...issue,historyId:part.id,chunkIndex:idx+1}));
+    });
+    if(part.correctedText)correctedParts.push(part.correctedText);
+    else{
+      fallbackChunkCount++;
+      correctedParts.push(part.chunkText||part.originalText||'');
+    }
+  });
+  Object.keys(categories).forEach(key=>{categories[key].count=categories[key].issues.length;});
+  const chunkCount=parts.length;
+  const score=totalLen?Math.round(weightedScore/totalLen):0;
+  return {
+    id:parts[0]?.id||null,
+    chunked:true,
+    chunkCount,
+    sourceIds:parts.map(part=>part.id).filter(Boolean),
+    score,
+    correctedText:correctedParts.join('\n\n'),
+    categories,
+    totalErrors,
+    summary:fallbackChunkCount
+      ?'Metin denetlendi. Hata yoğunluğu yüksek alanlarda metnin özgün hali korunarak bulgular gösterildi.'
+      :'Metin denetlendi ve sonuç hazırlandı.',
+    originalText,
+    analysisMeta:{chunked:true,chunkCount,fallbackChunkCount}
+  };
+}
+async function saveMergedDraftResult(merged, originalText){
+  const sourceIds=Array.isArray(merged.sourceIds)?merged.sourceIds:[];
+  if(!sourceIds.length)throw new Error('Sonuç kaydı hazırlanamadı. Lütfen denetimi yeniden başlatın.');
+  const r=await api('POST','/api/history/merged-draft',{
+    sourceIds,
+    originalText,
+    correctedText:merged.correctedText||'',
+    filename:merged.filename||'Metin Girişi',
+    score:merged.score||0,
+    totalErrors:merged.totalErrors||0,
+    categories:submitCategoryCounts(merged.categories||{}),
+    summary:merged.summary||'Metin denetlendi ve sonuç hazırlandı.',
+    analysisMeta:merged.analysisMeta||{}
+  });
+  if(r.error)throw new Error(r.error);
+  merged.id=r.id;
+  merged.status=r.status||'taslak';
+  merged.sourceIds=[];
+  return merged;
+}
 function handleTextInput(){
   const input=el('inputText');
   if(!input)return;
@@ -1094,7 +1432,7 @@ function updateHelperNudge(count,text){
   if(count===0){live.textContent='Hazır';out.textContent='Metni yapıştırınca AI raporu için hazır olur.';return;}
   if(count<MIN_TEXT_CHARS){live.textContent='Bağlam bekliyor';out.textContent='Metin kısa görünüyor. Birkaç cümle daha eklerseniz Denetim Yardımcısı daha sağlıklı hazırlık kontrolü yapabilir.';return;}
   if(count>MAX_TEXT_CHARS){live.textContent='Bölme önerisi var';out.textContent='Metin sistem sınırını aşıyor. Yardımcıdan metni nasıl bölmeniz gerektiği konusunda öneri alabilirsiniz.';return;}
-  if(count>18000){live.textContent='Uzun metin algılandı';out.textContent='Uzun metinlerde düzen ve kopyalama riski artar. AI Raporu ile parça/paragraf kontrolü alabilirsiniz.';return;}
+  if(count>18000){live.textContent='Uzun metin denetimine hazır';out.textContent='Uzun metinler güvenli şekilde denetlenir; işlem bittiğinde sonuç hazırlanır.';return;}
   if(/\t| {3,}/.test(text)){live.textContent='Düzen kontrolü önerilir';out.textContent='Metinde satır, boşluk veya tablo düzeni olabilir. Denetimden sonra metin düzenini kontrol etmeniz önerilir.';return;}
   live.textContent='AI hazır';
   out.textContent='Metin hazır görünüyor. AI raporu sonucu, şüpheli noktaları ve ekibe bildirim gerekip gerekmediğini tek yerde kontrol eder.';
@@ -1123,13 +1461,19 @@ function restoreWorkDraft(){
       el('inputText').value=draft.inputText;
       handleTextInput();
     }
-    if(draft.currentResult){
-      correctedText=draft.correctedText||draft.currentResult.correctedText||'';
+    const restoredResult=draft.currentResult;
+    if(restoredResult&&!approvalSubmitted(restoredResult)){
+      correctedText=draft.correctedText||restoredResult.correctedText||'';
       currentOriginalText=draft.currentOriginalText||draft.originalText||draft.inputText||'';
-      currentResult=draft.currentResult;
-      currentHistoryId=draft.currentResult.id||null;
+      currentResult=restoredResult;
+      currentHistoryId=restoredResult.id||null;
       const res=el('resultsArea');
-      if(res)renderResults(draft.currentResult,res);
+      if(res)renderResults(restoredResult,res);
+    }else if(restoredResult&&approvalSubmitted(restoredResult)){
+      correctedText='';
+      currentOriginalText='';
+      currentResult=null;
+      currentHistoryId=null;
     }
     const ds=el('draftStatus');
     if(ds&&draft.savedAt)ds.textContent='Aktif - son kayıt '+new Date(draft.savedAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -1141,7 +1485,19 @@ function clearWorkDraft(){try{localStorage.removeItem(DRAFT_KEY);}catch(_){}}
 applyTheme(document.documentElement.dataset.theme||'light');
 applyFontSize(localStorage.getItem('arsiv-font-size')||document.documentElement.dataset.fontSize||'medium');
 
-(async()=>{const r=await api('GET','/api/auth/me');if(r.loggedIn)enterApp(r);})();
+(async()=>{
+  try{
+    const r=await api('GET','/api/auth/me');
+    if(r.loggedIn){enterApp(r);return;}
+  }catch(_){}
+  showLoginScreen();
+})();
+
+function showLoginScreen(){
+  el('bootScreen')?.classList.remove('active');
+  el('appScreen')?.classList.remove('active');
+  el('loginScreen')?.classList.add('active');
+}
 
 async function doLogin(){
   const u=v('loginUser'),p=v('loginPass');
@@ -1154,11 +1510,15 @@ function enterApp(user){
   me=user;
   el('topName').textContent=user.name;
   el('mTopName').textContent=user.name;
+  el('bootScreen')?.classList.remove('active');
   el('loginScreen').classList.remove('active');
+  el('loginUser').value='';el('loginPass').value='';
   el('appScreen').classList.add('active');
   document.querySelectorAll('.admin-only,.super-admin-only').forEach(e=>e.style.display='none');
   if(hasAdminRole(user.role))document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
   if(hasSuperAdminRole(user.role))document.querySelectorAll('.super-admin-only').forEach(e=>e.style.display='');
+  ensureStandaloneAdminRoute(user);
+  refreshRouteScopedVisibility(user);
   el('pAvatar').textContent=user.name.charAt(0).toUpperCase();
   el('pName').textContent=user.name;
   el('pRole').textContent=roleLabel(user.role);
@@ -1170,14 +1530,40 @@ function enterApp(user){
 }
 function hasAdminRole(role){return role==='admin'||role==='super_admin';}
 function hasSuperAdminRole(role){return role==='super_admin';}
+function isAdminRoute(){const path=window.location.pathname;return path==='/admin'||path.startsWith('/admin/');}
+function isStandaloneApp(){
+  return Boolean(
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.navigator?.standalone === true
+  );
+}
+function ensureStandaloneAdminRoute(user=me){
+  if(!user||!hasAdminRole(user.role)||!isStandaloneApp()||isAdminRoute())return;
+  const path=window.location.pathname;
+  if(path==='/'||path===''||path==='/index.html'){
+    window.history.replaceState(null,document.title,'/admin');
+  }
+}
+function refreshRouteScopedVisibility(user=me){
+  const visible=Boolean(user&&hasSuperAdminRole(user.role)&&isAdminRoute());
+  document.querySelectorAll('.super-admin-admin-route-only').forEach(e=>e.style.display=visible?'':'none');
+  updateAdminRouteProbeState();
+}
+function updateAdminRouteProbeState(){
+  const toggle=el('adminRouteProbeToggle');
+  const state=el('adminRouteProbeState');
+  if(!toggle||!state)return;
+  state.textContent=toggle.checked?'Aktif':'Hazır';
+}
 function roleLabel(role){return role==='super_admin'?'Süper Yönetici':role==='admin'?'Yönetici':'Ekip Üyesi';}
 function rolePill(role){return role==='super_admin'?'rp-super':role==='admin'?'rp-admin':'rp-user';}
 function roleShortLabel(role){return role==='super_admin'?'Süper Admin':role==='admin'?'Admin':'Üye';}
 async function doLogout(){
   await api('POST','/api/auth/logout');
+  clearAnalyze();
+  clearWorkDraft();
   me=null;
-  el('appScreen').classList.remove('active');
-  el('loginScreen').classList.add('active');
+  showLoginScreen();
   el('loginUser').value='';el('loginPass').value='';
   closeMobileMenu();
 }
@@ -1198,6 +1584,7 @@ function showTab(name){
   if(name==='ai')loadAiReports();
   if(name==='onay')loadOnay();
   if(name==='feedback')loadFeedbackCenter();
+  if(name==='corrections')loadCorrectionPackages();
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
   if(name==='msglog')loadMessageLog();
   if(name==='resolution')loadResolutionResponses();
@@ -1243,7 +1630,7 @@ function friendlyAnalyzeError(message){
     return 'AI servisi geçici olarak yanıt veremedi. Metniniz kaybolmadı; birkaç dakika sonra tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
   }
   return text.length>180
-    ? 'Denetim tamamlanamadı. Metniniz kaybolmadı; lütfen tekrar deneyin. Devam ederse yöneticinize bildirin.'
+    ? 'Denetim tamamlanamadı. Metniniz kaybolmadı; lütfen tekrar deneyin. Devam ederse ekibe bildirin.'
     : text;
 }
 
@@ -1257,6 +1644,7 @@ async function analyze(){
     if(cleaned.length>MAX_TEXT_CHARS)return showInputError(res,'Metin çok uzun. Lütfen metni bölerek denetleyin.');
   }
   isAnalyzing=true;
+  resetCurrentAnalysisStateForNewRun();
   btn.disabled=true;
   btn.innerHTML='<span class="btn-spin"></span> Denetleniyor...';
   setStatus('','');
@@ -1267,21 +1655,32 @@ async function analyze(){
     else if(activeInner==='file'){
       if(!selectedFile)throw new Error('Lütfen bir dosya seçin.');
       const fd=new FormData();fd.append('file',selectedFile);
-      const r=await fetch('/api/analyze-file',{method:'POST',body:fd});
+      const r=await fetch('/api/extract-file-text',{method:'POST',body:fd});
       const data=await r.json();
       if(!r.ok)throw new Error(data.error||'Sunucu hatası');
-      if(data.duplicate){showDuplicate(res,data.message);}
-      else{
-        correctedText=data.correctedText||'';
-        currentOriginalText=data.originalText||'';
-        currentHistoryId=data.id||null;
-        renderResults(data,res);
-        persistWorkDraft();
-        setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
+      const text=cleanInputText(data.text);
+      const filename=selectedFile.name||data.filename||'Dosya';
+      if(text.length>LONG_TEXT_CHUNK_CHARS){
+        await analyzeLongText(text,res,filename);
+      }else{
+        const analyzed=await api('POST','/api/analyze',{text,filename});
+        if(analyzed.error)throw new Error(analyzed.error);
+        if(analyzed.duplicate){showDuplicate(res,analyzed.message);}
+        else{
+          correctedText=analyzed.correctedText||'';
+          currentOriginalText=analyzed.originalText||text;
+          currentHistoryId=analyzed.id||null;
+          renderResults(analyzed,res);
+          persistWorkDraft();
+          setStatus(`✓ Tamamlandı — ${analyzed.totalErrors||0} sorun bulundu`,'ok');
+        }
       }
     }else{
       const text=cleanInputText(v('inputText'));
       if(!text)throw new Error('Lütfen metin girin.');
+      if(text.length>LONG_TEXT_CHUNK_CHARS){
+        await analyzeLongText(text,res,'Metin Girişi');
+      }else{
       const data=await api('POST','/api/analyze',{text});
       if(data.error)throw new Error(data.error);
       if(data.duplicate){showDuplicate(res,data.message);}
@@ -1292,6 +1691,7 @@ async function analyze(){
         renderResults(data,res);
         persistWorkDraft();
         setStatus(`✓ Tamamlandı — ${data.totalErrors||0} sorun bulundu`,'ok');
+      }
       }
     }
     if(hasAdminRole(me?.role))refreshBadges();
@@ -1308,6 +1708,46 @@ async function analyze(){
 function showInputError(container,message){
   if(container)container.innerHTML=`<div class="loading-box" style="color:var(--red)">⚠ ${esc(message)}</div>`;
   setStatus(message,'err');
+}
+
+async function analyzeLongText(text,res,filename='Metin Girişi'){
+  const chunks=splitTextForLongAnalysis(text);
+  const parts=new Array(chunks.length);
+  let next=0,done=0;
+  const renderProgress=()=>{
+    res.innerHTML=`<div class="loading-box"><div class="spin"></div><p>Metin güvenli şekilde denetleniyor...</p><small class="mono">Lütfen bekleyin; sonuç hazırlanıyor.</small></div>`;
+  };
+  renderProgress();
+  async function worker(){
+    while(next<chunks.length){
+      const i=next++;
+      const chunk=chunks[i];
+      const data=await api('POST','/api/analyze',{
+        text:chunk,
+        filename,
+        skipDuplicate:true,
+        chunkPart:true
+      });
+      if(data.error)throw new Error(data.error);
+      if(data.duplicate)throw new Error(data.message||'Bu metin daha önce denetlenmiş.');
+      parts[i]={...data,chunkText:chunk};
+      done++;
+      renderProgress();
+    }
+  }
+  const workerCount=Math.min(LONG_TEXT_CONCURRENCY,chunks.length);
+  await Promise.all(Array.from({length:workerCount},()=>worker()));
+  const merged=mergeChunkResults(parts,text);
+  merged.filename=filename;
+  await saveMergedDraftResult(merged,text);
+  merged.status='taslak';
+  correctedText=merged.correctedText||'';
+  currentOriginalText=text;
+  currentHistoryId=merged.id||null;
+  currentResult=merged;
+  renderResults(merged,res);
+  persistWorkDraft();
+  setStatus(`✓ Denetim tamamlandı — ${merged.totalErrors||0} sorun bulundu`,'ok');
 }
 
 async function runBatch(res){
@@ -1371,7 +1811,7 @@ function buildLiveSteps(context='helper',task='prepare',text='',result=null,ques
   const longText=len>12000;
   const hasLayout=/\t| {3,}|\n.{0,80}\n.{0,80}\n/.test(String(text||''));
   const opening=[
-    longText?'Uzun metin parçalara ayrılarak okunuyor':'Metnin bağlamı okunuyor',
+    longText?'Uzun metnin bağlamı okunuyor':'Metnin bağlamı okunuyor',
     hasResult?'Son denetim sonucu belleğe alınıyor':'Denetim öncesi yapı taranıyor',
     task==='feedback'?'Geri bildirim niyeti ayrıştırılıyor':'İşlem amacı netleştiriliyor'
   ];
@@ -1381,7 +1821,7 @@ function buildLiveSteps(context='helper',task='prepare',text='',result=null,ques
     explain:[`Skor ${score}/100 üzerinden yorumlanıyor`,`${errors} bulgu önem sırasına alınıyor`,'Kullanıcının önce bakacağı noktalar ayrılıyor'],
     feedback:['Hatalı olabilecek bulgunun bağlamı toparlanıyor','Ekip için net teknik ifade hazırlanıyor','Yanlış pozitif ihtimali ayrıştırılıyor'],
     suspect:['Anlamı değiştirebilecek dönüşümler aranıyor','Sure, sözlük ve noktalama bulguları ayrılıyor','Şüpheli görünen noktalar önceliklendiriliyor'],
-    copycheck:['Kopyalanacak metin ve kaynak karşılaştırılıyor','Sonuç kaybı veya düzen bozulması riski kontrol ediliyor','Kopyalama/PDF için güvenli adımlar hazırlanıyor'],
+    copycheck:['Kopyalanacak metin ve kaynak karşılaştırılıyor','Sonuç kaybı veya düzen bozulması riski kontrol ediliyor','Kopyalama için güvenli adımlar hazırlanıyor'],
     ask:['Metin ve sonuç birlikte değerlendiriliyor','Kural sınırları korunarak yanıt hazırlanıyor','Uygulanabilir öneriler seçiliyor']
   };
   const closing=[
@@ -1467,6 +1907,256 @@ function applyAiReportGate(answer){
     : 'AI raporu bazı noktaların kontrol edilmesini önerdi. Gerekirse bu sonucu ekibe bildirebilirsiniz.';
   actions.style.display='';
 }
+function approvalSubmitted(d){
+  const status=String(d?.status||'');
+  return SUBMITTED_APPROVAL_STATUSES.has(status);
+}
+function approvalStatusText(d){
+  const status=String(d?.status||'taslak');
+  if(status==='bekliyor')return 'Onaya gönderildi';
+  if(status==='onaylandi')return 'Onaylandı';
+  if(status==='reddedildi')return 'Reddedildi';
+  return 'Onaya Gönder';
+}
+function resetSubmitApprovalModalState(){
+  pendingApprovalPayload=null;
+  submitApprovalInFlight=false;
+  el('submitApprovalModal')?.classList.remove('open');
+  if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
+  const btn=el('submitApprovalBtn');
+  if(btn){btn.disabled=false;btn.textContent='Onaya Gönder';}
+}
+function resetCurrentAnalysisStateForNewRun(){
+  correctedText='';
+  currentHistoryId=null;
+  currentResult=null;
+  currentOriginalText='';
+  currentAiReport=null;
+  resetSubmitApprovalModalState();
+}
+function renderApprovalActionButton(d, placement='main'){
+  if(!d?.id||!d.correctedText)return '';
+  const sent=approvalSubmitted(d);
+  const disabled=sent||Boolean(d.chunked&&!Array.isArray(d.sourceIds));
+  const cls=sent?' btn-submit-approval sent':' btn-submit-approval';
+  const idAttr=placement?` id="approvalSubmitResultBtn-${placement}"`:'';
+  return `<button class="${cls.trim()}"${idAttr} ${disabled?'disabled':''} onclick="openSubmitApprovalModal()">${sent?'✓ ':''}${approvalStatusText(d)}</button>`;
+}
+function renderApprovalSubmitPanel(d){
+  if(!d?.id||!d.correctedText)return '';
+  const sent=approvalSubmitted(d);
+  const title=sent?'Onay sürecinde':'Sonuç hazırlandı';
+  const text=sent
+    ?'Sonuç onay sürecine iletildi. Yeni bir metin denetlemeye başlayabilirsiniz.'
+    :'Denetim tamamlandı. Sonucu onay sürecine iletmek için Onaya Gönder’i kullanabilirsiniz.';
+  const extra='';
+  return `<div class="approval-submit-panel ${sent?'done':''}">
+    <div><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}${extra}</div></div>
+    ${renderApprovalActionButton(d,'panel')}
+  </div>`;
+}
+function submitCategoryCounts(categories){
+  const out={sozluk:{count:0},imla:{count:0},noktalama:{count:0},etiket:{count:0},yapi:{count:0}};
+  Object.keys(out).forEach(key=>{
+    const item=categories?.[key]||{};
+    out[key].count=Number.isFinite(Number(item.count))?Number(item.count):(Array.isArray(item.issues)?item.issues.length:0);
+  });
+  return out;
+}
+function openSubmitApprovalModal(){
+  const d=currentResult;
+  if(!d?.id||!d.correctedText){setStatus('Onaya gönderilecek düzeltilmiş metin bulunamadı.','err');return;}
+  if(approvalSubmitted(d)){setStatus('Bu kayıt zaten onay sürecine gönderilmiş.','ok');return;}
+  pendingApprovalPayload=d;
+  const summary=el('submitApprovalSummary');
+  if(summary)summary.innerHTML=`
+    <div><strong>Dosya/Metin:</strong> ${esc(d.filename||'Metin Girişi')}</div>
+    <div><strong>Skor:</strong> ${Number(d.score||0)}/100</div>
+    <div><strong>Bulgu:</strong> ${Number(d.totalErrors||0)} sorun</div>
+  `;
+  if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
+  el('submitApprovalModal')?.classList.add('open');
+}
+function closeSubmitApprovalModal(){
+  if(submitApprovalInFlight){
+    const err=el('submitApprovalErr');
+    if(err)err.textContent='Gönderim devam ediyor. Lütfen pencereyi kapatmadan sonucu bekleyin.';
+    return;
+  }
+  resetSubmitApprovalModalState();
+}
+function resetInputAfterApprovalSubmit(){
+  selectedFile=null;batchFiles=[];currentOriginalText='';currentAiReport=null;pendingApprovalPayload=null;submitApprovalInFlight=false;
+  const input=el('inputText');
+  if(input){input.value='';handleTextInput();}
+  const d=el('fileDrop');
+  if(d){
+    d.className='file-drop';
+    d.innerHTML='<div style="font-size:30px;margin-bottom:8px">📄</div><p>Dosyayı buraya sürükleyin veya tıklayın</p><small class="mono" style="color:var(--ink3)">.docx formatı desteklenir</small>';
+  }
+  const btn=el('analyzeBtn');
+  if(btn)btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Denetle &amp; Düzelt';
+  resetSubmitApprovalModalState();
+  clearWorkDraft();
+}
+function renderSubmittedWorkspace(d,container){
+  if(!container)return;
+  container.innerHTML=`<div class="submit-success-card">
+    <div class="submit-success-title">Onay kuyruğuna alındı</div>
+    <div class="submit-success-text">Sonuç onay sürecine iletildi. Yeni bir metin denetlemeye başlayabilirsiniz. Sayfayı kapatmanız işlemi iptal etmez.</div>
+    <div class="submit-success-actions">
+      <button class="btn-primary" onclick="startNewAnalysisAfterSubmit()">Yeni Denetime Başla</button>
+      <button class="btn-sec" onclick="copySubmittedCorrected()">Düzeltilmiş Metni Kopyala</button>
+      ${d?.id?`<button class="btn-sec" onclick="withdrawCurrentSubmittedApproval()">Onaydan Geri Çek</button>`:''}
+      <button class="btn-sec" onclick="showSubmittedHistory()">Geçmişte Gör</button>
+    </div>
+  </div>`;
+}
+function startNewAnalysisAfterSubmit(){
+  clearAnalyze();
+  showTab('analiz');
+  setStatus('Yeni denetime hazır.','ok');
+  setTimeout(()=>setStatus('',''),1800);
+}
+function copySubmittedCorrected(){
+  const text=currentResult?.correctedText||correctedText||'';
+  if(!text){setStatus('Kopyalanacak düzeltilmiş metin bulunamadı.','err');return;}
+  navigator.clipboard.writeText(text).then(()=>{setStatus('✓ Düzeltilmiş metin kopyalandı.','ok');setTimeout(()=>setStatus('',''),1800);}).catch(()=>setStatus('Kopyalama başarısız oldu.','err'));
+}
+function showSubmittedHistory(){
+  showTab('gecmis');
+}
+async function openSubmitApprovalFromHistory(id){
+  const row=historyRows.find(h=>h.id===id);
+  if(!row||row.status!=='taslak'){setStatus('Bu kayıt onaya gönderilecek taslak durumda değil.','err');return;}
+  if(isChunkHistoryRowUi(row)){setStatus('Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.','err');return;}
+  setStatus('Taslak hazırlanıyor...','');
+  const detail=await api('GET',`/api/history/${id}`);
+  if(detail.error){setStatus(detail.error,'err');return;}
+  currentResult={...row,...detail,status:'taslak',categories:detail.categories||row.categories||{}};
+  currentOriginalText=detail.originalText||row.originalText||'';
+  correctedText=detail.correctedText||row.correctedText||'';
+  currentHistoryId=id;
+  setStatus('','');
+  openSubmitApprovalModal();
+}
+
+async function withdrawApprovalById(id){
+  if(!id){setStatus('Geri çekilecek kayıt bulunamadı.','err');return false;}
+  const confirmed=await openSystemConfirm({
+    title:'Onaydan geri çekilsin mi?',
+    badge:'Taslak',
+    message:'Bu sonuç onay kuyruğundan kaldırılacak ve tekrar taslak olarak sizde kalacak.',
+    detail:'Hazır olduğunda Denetim Geçmişi üzerinden yeniden Onaya Gönder diyebilirsiniz.',
+    confirmText:'Geri Çek',
+    cancelText:'Vazgeç',
+    danger:false
+  });
+  if(!confirmed)return false;
+  setStatus('Kayıt geri çekiliyor...','');
+  const r=await api('POST',`/api/history/${id}/withdraw`);
+  if(r.error){setStatus(r.error,'err');return false;}
+  historyRows=historyRows.map(h=>h.id===id?{...h,status:'taslak'}:h);
+  if(currentResult?.id===id)currentResult.status='taslak';
+  renderHistory();
+  setStatus('✓ Kayıt onay kuyruğundan geri çekildi.','ok');
+  setTimeout(()=>setStatus('',''),2600);
+  return true;
+}
+
+async function withdrawApprovalFromHistory(id){
+  const ok=await withdrawApprovalById(id);
+  if(ok)await loadHistory();
+}
+
+async function withdrawCurrentSubmittedApproval(){
+  const id=currentResult?.id||currentHistoryId;
+  const ok=await withdrawApprovalById(id);
+  if(ok){
+    const res=el('resultsArea');
+    if(res)res.innerHTML='<div class="submit-success-card"><div class="submit-success-title">Taslağa alındı</div><div class="submit-success-text">Sonuç onay kuyruğundan geri çekildi. Gerekirse metni yeniden kontrol edip Denetim Geçmişi üzerinden tekrar gönderebilirsiniz.</div><div class="submit-success-actions"><button class="btn-primary" onclick="showSubmittedHistory()">Denetim Geçmişine Git</button><button class="btn-sec" onclick="startNewAnalysisAfterSubmit()">Yeni Denetime Başla</button></div></div>';
+  }
+}
+
+async function verifyApprovalStatus(id){
+  if(!id)return false;
+  for(let attempt=0;attempt<5;attempt++){
+    const r=await api('GET',`/api/history/${id}/approval-status`);
+    if(!r.error&&(r.status==='bekliyor'||r.status==='onaylandi'||r.submitted===true))return true;
+    await new Promise(resolve=>setTimeout(resolve, attempt<2?450:900));
+  }
+  return false;
+}
+
+async function confirmSubmitApproval(){
+  const d=pendingApprovalPayload;
+  const err=el('submitApprovalErr');
+  const btn=el('submitApprovalBtn');
+  if(!d?.id)return;
+  let submitted=false;
+  const waitTimers=[];
+  submitApprovalInFlight=true;
+  if(btn){btn.disabled=true;btn.textContent='Gönderiliyor...';}
+  if(err)err.textContent='';
+  const oldId=d.id;
+  const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
+  try{
+    waitTimers.push(setTimeout(()=>{if(err)err.textContent='Gönderim kontrol ediliyor. Lütfen pencereyi kapatmayın.';},4000));
+    waitTimers.push(setTimeout(()=>{if(err)err.textContent='İşlem normalden uzun sürdü. Metin korunuyor; sonucu bekleyin, sayfayı yenilemeyin.';},16000));
+    const isMerged=d.chunked&&sourceIds.length>0;
+    const endpoint=isMerged?'/api/history/submit-merged':`/api/history/${d.id}/submit`;
+    const body=isMerged?{
+      sourceIds,
+      originalText:currentOriginalText||d.originalText||'',
+      correctedText:d.correctedText||correctedText||'',
+      filename:d.filename||'Metin Girişi',
+      score:d.score||0,
+      totalErrors:d.totalErrors||0,
+      categories:submitCategoryCounts(d.categories||{}),
+      summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
+      analysisMeta:d.analysisMeta||{}
+    }:null;
+    const r=await api('POST',endpoint,body);
+    if(r.error){if(err)err.textContent=r.error;return;}
+    const newId=r.id||d.id;
+    if(err)err.textContent='Onay kuyruğu doğrulanıyor...';
+    const verified=await verifyApprovalStatus(newId);
+    if(!verified){
+      if(err)err.textContent='Gönderim tamamlandı mı doğrulanamadı. Lütfen sayfayı yenilemeden Denetim Geçmişi üzerinden durumu kontrol edin.';
+      return;
+    }
+    d.id=newId;
+    d.status='bekliyor';
+    submitted=true;
+    if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
+    if(isMerged)d.sourceIds=[];
+    currentResult=d;
+    currentHistoryId=newId;
+    correctedText=d.correctedText||correctedText;
+    historyRows=historyRows.map(h=>{
+      if(h.id===oldId)return {...h,id:newId,status:'bekliyor'};
+      if(sourceIds.includes(h.id))return {...h,status:'submitted_part'};
+      return h;
+    }).filter(h=>h.status!=='submitted_part'&&h.status!=='chunk_draft');
+    submitApprovalInFlight=false;
+    closeSubmitApprovalModal();
+    const res=el('resultsArea');
+    if(res&&res.innerHTML)renderSubmittedWorkspace(d,res);
+    resetInputAfterApprovalSubmit();
+    renderHistory();
+    persistWorkDraft();
+    clearWorkDraft();
+    setStatus('✓ Metin onay kuyruğuna gönderildi.','ok');
+    setTimeout(()=>setStatus('',''),2600);
+    if(hasAdminRole(me?.role))refreshBadges();
+  }catch(e){
+    if(err)err.textContent=e?.message||'Gönderim tamamlanamadı. Lütfen tekrar deneyin.';
+  }finally{
+    waitTimers.forEach(clearTimeout);
+    submitApprovalInFlight=false;
+    if(btn&&!submitted){btn.disabled=false;btn.textContent='Onaya Gönder';}
+  }
+}
 function renderResults(d,container){
   currentResult=d;
   currentAiReport=null;
@@ -1515,12 +2205,12 @@ function renderResults(d,container){
     ${d.correctedText?`<div class="corrected-panel">
       <div class="corrected-head">
         <h3>Düzeltilmiş Metin</h3>
-        <div class="corrected-btns">
-          <button class="btn-copy" id="copyBtn" onclick="copyFixed()">Kopyala</button>
-          <button class="btn-pdf" onclick="downloadPDF()">📄 PDF İndir</button>
-        </div>
       </div>
-      <div class="corrected-body">${esc(d.correctedText)}</div>
+      <div class="corrected-body-wrap">
+        <button class="btn-copy corrected-copy-btn" id="copyBtn" onclick="copyFixed()">Kopyala</button>
+        <div class="corrected-body">${esc(d.correctedText)}</div>
+      </div>
+      ${renderApprovalSubmitPanel(d)}
     </div>`:''}`;
   setTimeout(bindCompareScrollLock,0);
 }
@@ -1595,7 +2285,7 @@ async function downloadPDF(){
 }
 
 function clearAnalyze(){
-  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';currentAiReport=null;
+  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';currentAiReport=null;pendingApprovalPayload=null;
   el('inputText').value='';
   handleTextInput();
   el('resultsArea').innerHTML='';
@@ -1710,6 +2400,7 @@ async function sendResultFeedback(historyId,reason){
 async function sendIssueFeedback(historyId,category,index,reason){
   const issue=currentResult?.categories?.[category]?.issues?.[index];
   if(!issue){setStatus('Bulgu bulunamadı.','err');return;}
+  const targetHistoryId=issue.historyId||historyId;
   explainIssueBeforeFeedback(issue, reason);
   const defaultNote=reason==='nonexistent'
     ? `Metinde "${issue.original||''}" ifadesini bu bağlamda bulamadım. Lütfen kontrol edin.`
@@ -1720,10 +2411,11 @@ async function sendIssueFeedback(historyId,category,index,reason){
     context:`${issue.original||'-'} → ${issue.fixed||'-'} · ${issue.rule||'Belirtilmemiş'}`,
     defaultNote,
     payload:{
-      historyId,reason,category,
+      historyId:targetHistoryId,reason,category,
       original:issue.original||'',
       fixed:issue.fixed||'',
-      rule:issue.rule||''
+      rule:issue.rule||'',
+      chunkIndex:issue.chunkIndex||null
     }
   });
 }
@@ -1815,11 +2507,16 @@ function clearHistoryFilters(){
   renderHistory();
 }
 
+function isChunkHistoryRowUi(h){
+  return h?.status==='chunk_draft'||/\s-\sParça\s+\d+\/\d+$/u.test(String(h?.filename||'').trim());
+}
+
 function renderHistory(){
   const container=el('histContent');
   const isAdmin=hasAdminRole(me?.role);
   if(!historyRows.length){container.innerHTML='<div class="empty-state">Henüz denetim yapılmamış.</div>';el('scoreChartBox').style.display='none';return;}
   const filtered=historyRows.filter(h=>{
+    if(isChunkHistoryRowUi(h)||h.status==='submitted_part')return false;
     const status=h.status||'bekliyor';
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
@@ -1836,10 +2533,13 @@ function renderHistory(){
   container.innerHTML=`<div class="table-wrap"><table class="data-table">
     <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th><th>Metin</th>${isAdmin?'<th>Onay</th>':''}</tr></thead>
     <tbody>${filtered.map(h=>{
+      const status=h.status||'bekliyor';
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-      const stCls=h.status==='onaylandi'?'sb-ok':h.status==='reddedildi'?'sb-no':'sb-wait';
-      const stTxt=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':'Bekliyor';
+      const stCls=status==='onaylandi'?'sb-ok':status==='reddedildi'?'sb-no':status==='taslak'?'sb-draft':'sb-wait';
+      const statusText=status==='onaylandi'?'Onaylandı':status==='reddedildi'?'Reddedildi':status==='taslak'?'Taslak':'Bekliyor';
+      const draftAction=!isAdmin&&status==='taslak'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Onaya Gönder</button>`:'';
+      const withdrawAction=!isAdmin&&status==='bekliyor'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="withdrawApprovalFromHistory('${h.id}')">Geri Çek</button>`:'';
       if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<tr>
         <td class="mono" style="font-size:10px;white-space:nowrap">${dt}</td>
@@ -1847,10 +2547,10 @@ function renderHistory(){
         <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename)}">${esc(h.filename)}</td>
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
-        <td><span class="status-badge ${stCls}">${stTxt}</span></td>
+        <td><span class="status-badge ${stCls}">${statusText}</span>${draftAction}${withdrawAction}</td>
         <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
-          ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">✗</button>`:''}
+          ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">✗</button>`:''}
         </div></td>`:''}
       </tr>`;
     }).join('')}</tbody></table></div>`;
@@ -1922,8 +2622,30 @@ function copyDetail(){
     }
   });
 }
-async function approveItem(id){await api('POST',`/api/history/${id}/approve`);loadHistory();refreshBadges();}
-async function rejectItem(id){await api('POST',`/api/history/${id}/reject`);loadHistory();refreshBadges();}
+function setApprovalStatus(msg,type){
+  const s=el('onayActionStatus')||el('statusMsg');
+  if(!s)return;
+  s.textContent=msg;
+  s.className='status-msg'+(type?' '+type:'');
+  if(msg)setTimeout(()=>{s.textContent='';s.className='status-msg';},3200);
+}
+async function setApprovalAction(id,action,btn){
+  const oldText=btn?.textContent;
+  if(btn){btn.disabled=true;btn.textContent='İşleniyor...';}
+  try{
+    const r=await api('POST',`/api/history/${id}/${action}`);
+    if(r.error)throw new Error(r.error);
+    setApprovalStatus(action==='approve'?'✓ Kayıt onaylandı.':'✓ Kayıt reddedildi.','ok');
+    await loadOnay();
+    await loadHistory();
+    await refreshBadges();
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent=oldText;}
+    setApprovalStatus(`İşlem tamamlanamadı: ${e.message||'Lütfen tekrar deneyin.'}`,'err');
+  }
+}
+async function approveItem(id,btn){return setApprovalAction(id,'approve',btn);}
+async function rejectItem(id,btn){return setApprovalAction(id,'reject',btn);}
 function downloadCSV(){window.open('/api/history/csv','_blank');}
 
 async function loadDash(){
@@ -2244,8 +2966,8 @@ async function loadOnay(){
         <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
         <div class="work-actions">
           ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
-          ${h.status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}')">Onayla</button>`:''}
-          ${h.status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}')">Reddet</button>`:''}
+          ${h.status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
+          ${h.status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
         </div>
       </div>`;
   }
@@ -2336,6 +3058,7 @@ function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml='
       <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(true)">Görünenleri Seç</button>
       <button class="btn-mini" onclick="toggleVisibleFeedbackSelection(false)">Seçimi Temizle</button>
       <button class="btn-mini" onclick="downloadFeedbackWorkPackage()">PDF Paket</button>
+      <button class="btn-mini" onclick="showTab('corrections')">Geçmiş Düzeltme</button>
     </div>
     <button class="btn-green" style="padding:5px 10px;font-size:10px" onclick="resolveSelectedFeedback()">Seçilenleri Çözüldü Bildir (${selectedFeedbackIds.size})</button>
   </div>`;
@@ -2370,7 +3093,15 @@ function toggleVisibleFeedbackSelection(select){
 async function readAlert(id){await api('POST',`/api/alerts/${id}/read`);loadAlerts();refreshBadges();}
 async function readAllAlerts(){await api('POST','/api/alerts/read-all');loadAlerts();refreshBadges();}
 async function respondFeedback(id){
-  const note=prompt('Bu kullanıcıya çözümü nasıl bildirelim?');
+  const note=await openSystemPrompt({
+    title:'Çözüm bildirimi',
+    badge:'Geri bildirim',
+    message:'Bu kullanıcıya gönderilecek çözüm notunu yazın.',
+    inputPlaceholder:'Örn: Bildirdiğiniz konu kontrol edildi ve gerekli düzeltme sisteme işlendi.',
+    confirmText:'Gönder',
+    cancelText:'Vazgeç',
+    tone:'success'
+  });
   if(note===null)return;
   const clean=note.trim();
   if(!clean){setStatus('Çözüm notu boş olamaz.','err');return;}
@@ -2383,7 +3114,16 @@ async function respondFeedback(id){
 async function resolveSelectedFeedback(){
   const ids=[...selectedFeedbackIds];
   if(!ids.length){setStatus('Çözüldü bildirimi için en az bir geri bildirim seçin.','err');return;}
-  const note=prompt('Bu çözüm turunda kullanıcıya gidecek ortak çözüm notu nedir?');
+  const note=await openSystemPrompt({
+    title:'Toplu çözüm bildirimi',
+    badge:'Seçili geri bildirimler',
+    message:'Bu çözüm turunda kullanıcılara gidecek ortak notu yazın.',
+    detail:'Sistem, seçili geri bildirimleri kullanıcılarına göre gruplayıp kişisel bildirim olarak iletir.',
+    inputPlaceholder:'Örn: Bildirdiğiniz konular kontrol edildi ve gerekli düzeltmeler sisteme işlendi.',
+    confirmText:'Bildirim Gönder',
+    cancelText:'Vazgeç',
+    tone:'success'
+  });
   if(note===null)return;
   const clean=note.trim();
   if(!clean){setStatus('Çözüm notu boş olamaz.','err');return;}
@@ -2417,6 +3157,335 @@ async function downloadFeedbackWorkPackage(){
     setStatus(`✓ ${items.length} geri bildirimlik PDF paket indirildi.`,'ok');
     setTimeout(()=>setStatus('',''),3000);
   }catch(e){setStatus(e.message,'err');}
+}
+
+function updateCorrectionSelectedInfo(){
+  const info=el('correctionSelectedInfo');
+  if(info)info.textContent=selectedFeedbackIds.size
+    ?`${selectedFeedbackIds.size} geri bildirim bağlanacak. Varsayılan kapsam: bildirilen metin.`
+    :'Seçili geri bildirim yok.';
+  const reported=el('correctionScopeReported');
+  const all=el('correctionScopeAll');
+  if(reported&&all&&!selectedFeedbackIds.size&&reported.checked){
+    all.checked=true;
+  }
+  if(reported&&all&&selectedFeedbackIds.size&&!all.dataset.userPicked){
+    reported.checked=true;
+  }
+}
+
+function correctionFieldsFromForm(){
+  const fields=[];
+  if(el('correctionFieldCorrected')?.checked)fields.push('corrected_text');
+  if(el('correctionFieldSummary')?.checked)fields.push('summary');
+  return fields.length?fields:['corrected_text'];
+}
+
+function markCorrectionScopePicked(){
+  const reported=el('correctionScopeReported');
+  const all=el('correctionScopeAll');
+  if(reported)reported.dataset.userPicked='1';
+  if(all)all.dataset.userPicked='1';
+}
+
+function correctionHistoryScopeFromForm(){
+  const selected=document.querySelector('input[name="correctionHistoryScope"]:checked')?.value;
+  return selected==='all'?'all':'reported';
+}
+
+async function loadCorrectionPackages(){
+  updateCorrectionSelectedInfo();
+  const container=el('correctionPackagesContent');
+  if(!container)return;
+  container.innerHTML='<div class="empty-state">Yükleniyor...</div>';
+  const data=await api('GET','/api/correction-packages');
+  if(data.error){container.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;return;}
+  correctionPackagesState={logReady:Boolean(data.logReady),packages:Array.isArray(data.packages)?data.packages:[]};
+  renderCorrectionPackages();
+}
+
+async function createCorrectionPackage(){
+  const title=v('correctionTitle');
+  const from=v('correctionFrom');
+  const to=v('correctionTo');
+  const note=v('correctionNote');
+  if(!from||!to){setStatus('Düzeltme kaydı için hatalı/eski ifade ve doğru ifade gerekli.','err');return;}
+  const data=await api('POST','/api/correction-packages',{
+    title,
+    from,
+    to,
+    note,
+    fields:correctionFieldsFromForm(),
+    historyScope:correctionHistoryScopeFromForm(),
+    feedbackIds:[...selectedFeedbackIds],
+    requiresReview:Boolean(el('correctionNeedsReview')?.checked)
+  });
+  if(data.error){setStatus(data.error,'err');return;}
+  ['correctionTitle','correctionFrom','correctionTo','correctionNote'].forEach(id=>{if(el(id))el(id).value='';});
+  if(el('correctionFieldSummary'))el('correctionFieldSummary').checked=false;
+  if(el('correctionNeedsReview'))el('correctionNeedsReview').checked=true;
+  if(el('correctionScopeReported'))el('correctionScopeReported').dataset.userPicked='';
+  if(el('correctionScopeAll'))el('correctionScopeAll').dataset.userPicked='';
+  selectedFeedbackIds.clear();
+  setStatus('✓ Süper admin son kontrolü bekleyen düzeltme kaydı oluşturuldu. Önce etki taraması yapabilirsiniz.','ok');
+  await loadCorrectionPackages();
+}
+
+function correctionStatusLabel(status){
+  return status==='applied'?'Uygulandı':status==='reverted'?'Geri alındı':status==='ready'?'Son kontrol hazır':status==='pending_review'?'Süper admin onayı bekliyor':'Taslak';
+}
+
+function correctionPackageDate(value){
+  const date=value?new Date(value):null;
+  if(!date||!Number.isFinite(date.getTime()))return '';
+  return date.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+function updateCorrectionPackageState(pkg){
+  if(!pkg?.id)return;
+  const packages=correctionPackagesState.packages||[];
+  const index=packages.findIndex(item=>item.id===pkg.id);
+  if(index>=0)packages[index]=pkg;
+  else packages.unshift(pkg);
+  correctionPackagesState.packages=packages;
+  renderCorrectionPackages();
+}
+
+function setCorrectionPackageBusy(id,busy){
+  const packages=correctionPackagesState.packages||[];
+  const index=packages.findIndex(item=>item.id===id);
+  if(index<0)return;
+  correctionPackagesState.packages[index]={...packages[index],_busy:busy};
+  renderCorrectionPackages();
+}
+
+function correctionStateNote(pkg,status,scan){
+  const affected=Number(scan?.affectedRecords||0);
+  const replacements=Number(scan?.replacementCount||0);
+  if(status==='applied'){
+    const when=correctionPackageDate(pkg.appliedAt);
+    return `<div class="correction-state-note applied"><strong>Uygulandı.</strong> ${affected} kayıt içinde ${replacements} düzeltme işlendi${when?` · ${esc(when)}`:''}. Gerekirse bu kayıt defterinden geri alınabilir.</div>`;
+  }
+  if(status==='reverted'){
+    const when=correctionPackageDate(pkg.revertedAt);
+    return `<div class="correction-state-note reverted"><strong>Geri alındı.</strong> Bu düzeltmeyle yapılan geçmiş değişiklikler eski haline döndürüldü${when?` · ${esc(when)}`:''}.</div>`;
+  }
+  if(status==='ready'){
+    return `<div class="correction-state-note"><strong>Son kontrol hazır.</strong> Etki taramasında ${affected} kayıt ve ${replacements} düzeltme görünüyor. Süper admin örnekleri kontrol edip onaylarsa geçmiş metinlere uygulanır.</div>`;
+  }
+  if(status==='pending_review'){
+    return `<div class="correction-state-note"><strong>Süper admin onayı bekliyor.</strong> Geçmiş metne uygulama yapılmadan önce etki taraması ve son kontrol gerekir.</div>`;
+  }
+  return '';
+}
+
+function correctionFieldLabel(field){
+  return field==='summary'?'Özet':'Düzeltilmiş metin';
+}
+
+function correctionScopeLabel(scope){
+  return scope==='reported'?'Bildirilen metin':'Tüm geçmiş';
+}
+
+function correctionScanHtml(scan){
+  if(!scan)return '<div class="empty-state" style="padding:14px">Henüz tarama yapılmadı.</div>';
+  const byStatus=scan.byStatus||{};
+  return `<div class="pref-sub" style="margin:10px 0 6px">Tarama kapsamı: ${esc(correctionScopeLabel(scan.historyScope))}${scan.reportedHistoryCount?` · bağlı denetim kaydı: ${Number(scan.reportedHistoryCount||0)}`:''}</div>
+  <div class="correction-scan">
+    <div><strong>${Number(scan.affectedRecords||0)}</strong><span>kayıt</span></div>
+    <div><strong>${Number(scan.replacementCount||0)}</strong><span>düzeltme</span></div>
+    <div><strong>${Number(byStatus.bekliyor||0)}</strong><span>bekleyen</span></div>
+    <div><strong>${Number(byStatus.onaylandi||0)}</strong><span>onaylı</span></div>
+  </div>
+  ${(scan.sample||[]).length?`<div class="correction-sample">${scan.sample.map(item=>`
+    <div class="correction-sample-item">
+      <strong>${esc(item.userName||'Kullanıcı')}</strong> · ${esc(item.filename||'Metin')} · ${esc(correctionFieldLabel(item.field))}
+      <div class="mono" style="font-size:10px;color:var(--ink3);margin-top:4px">${esc(item.status||'bekliyor')} · ${Number(item.count||0)} geçiş</div>
+      <div style="margin-top:5px">${esc(item.excerpt||'')}</div>
+    </div>`).join('')}</div>`:''}`;
+}
+
+function correctionImpact(pkg){
+  const scan=pkg?.lastScan||{};
+  const affected=Number(scan.affectedRecords||0);
+  const replacements=Number(scan.replacementCount||0);
+  return {
+    affected,
+    replacements,
+    broad: affected>=25 || replacements>=25
+  };
+}
+
+function correctionStatusClass(status){
+  return status==='applied'?'applied':status==='reverted'?'reverted':status==='ready'?'ready':'';
+}
+
+function correctionPackageSort(a,b){
+  const order={ready:0,pending_review:1,draft:2,reverted:3,applied:4};
+  const as=String(a.status||'draft');
+  const bs=String(b.status||'draft');
+  const statusDiff=(order[as]??9)-(order[bs]??9);
+  if(statusDiff)return statusDiff;
+  return correctionImpact(b).replacements-correctionImpact(a).replacements
+    || correctionImpact(b).affected-correctionImpact(a).affected
+    || new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0);
+}
+
+function correctionMetricsHtml(packages){
+  const pending=packages.filter(pkg=>!['applied','reverted'].includes(String(pkg.status||'draft'))).length;
+  const ready=packages.filter(pkg=>pkg.status==='ready').length;
+  const broad=packages.filter(pkg=>correctionImpact(pkg).broad && pkg.status!=='applied').length;
+  const applied=packages.filter(pkg=>pkg.status==='applied').length;
+  const reverted=packages.filter(pkg=>pkg.status==='reverted').length;
+  return `<div class="correction-toolbar">
+    <div class="correction-metric"><strong>${pending}</strong><span>onay bekleyen</span></div>
+    <div class="correction-metric"><strong>${ready}</strong><span>kontrole hazır</span></div>
+    <div class="correction-metric"><strong>${broad}</strong><span>geniş etkili</span></div>
+    <div class="correction-metric"><strong>${applied}</strong><span>uygulanan</span></div>
+    <div class="correction-metric"><strong>${reverted}</strong><span>geri alınan</span></div>
+  </div>`;
+}
+
+function correctionPackageCard(pkg){
+  const scan=pkg.lastScan;
+  const status=String(pkg.status||'draft');
+  const busy=pkg._busy||'';
+  const impact=correctionImpact(pkg);
+  const canApply=hasSuperAdminRole(me?.role)&&correctionPackagesState.logReady;
+  const applyDisabled=!canApply||status!=='ready'||Boolean(busy);
+  const revertDisabled=!canApply||status!=='applied'||Boolean(busy);
+  const applyLabel=busy==='apply'?'Uygulanıyor...':status==='applied'?'Uygulandı':'Onayla ve Uygula';
+  const revertLabel=busy==='revert'?'Geri alınıyor...':'Geri Al';
+  const fieldLabel=(pkg.fields||[]).map(correctionFieldLabel).join(', ')||'Düzeltilmiş metin';
+  const scopeLabel=correctionScopeLabel(pkg.historyScope);
+  return `<details class="correction-card ${esc(status)}">
+    <summary class="correction-card-head">
+      <div class="correction-card-title">
+        <strong>${esc(pkg.title||'Geçmiş düzeltme kaydı')}</strong>
+        <small class="correction-compact-map"><span class="old">${esc(pkg.from||'')}</span><b>→</b><span class="new">${esc(pkg.to||'')}</span></small>
+      </div>
+      <div class="correction-card-right">
+        <span class="correction-pill ${esc(correctionStatusClass(status))}">${esc(correctionStatusLabel(status))}</span>
+        ${impact.broad?'<span class="correction-pill warn">Geniş etki</span>':''}
+        <span class="correction-pill">${impact.affected} kayıt</span>
+        <span class="correction-toggle">⌄</span>
+      </div>
+    </summary>
+    <div class="correction-card-body">
+      <div class="correction-meta">${esc(fieldLabel)} · Kapsam: ${esc(scopeLabel)}${pkg.feedbackIds?.length?` · ${pkg.feedbackIds.length} geri bildirimle bağlı`:''}${pkg.reportedHistoryIds?.length?` · ${pkg.reportedHistoryIds.length} denetim kaydı`:''}</div>
+      <div class="correction-map">
+        <div class="correction-old">${esc(pkg.from||'')}</div>
+        <span class="mono">→</span>
+        <div class="correction-new">${esc(pkg.to||'')}</div>
+      </div>
+      ${pkg.note?`<div class="feedback-root-match"><strong>Karar notu:</strong> ${esc(pkg.note)}</div>`:''}
+      ${impact.broad?`<div class="warn-box" style="margin-top:10px">Bu kayıt geniş etkili görünüyor. Uygulamadan önce örnekleri özellikle kontrol edin.</div>`:''}
+      ${correctionStateNote(pkg,status,scan)}
+      ${correctionScanHtml(scan)}
+      <div class="correction-actions">
+        <button class="btn-mini" ${busy?'disabled':''} onclick="previewCorrectionPackage('${pkg.id}')">${status==='applied'?'Son Etkiyi Gör':'Etkiyi Tara'}</button>
+        <button class="btn-green" style="padding:5px 10px;font-size:10px" ${applyDisabled?'disabled':''} onclick="applyCorrectionPackage('${pkg.id}')">${applyLabel}</button>
+        <button class="btn-sec" style="padding:5px 10px;font-size:10px" ${revertDisabled?'disabled':''} onclick="revertCorrectionPackage('${pkg.id}')">${revertLabel}</button>
+      </div>
+    </div>
+  </details>`;
+}
+
+function correctionSectionHtml(title,subtitle,items,emptyText){
+  return `<div class="correction-queue-section">
+    <div class="correction-section-head"><strong>${esc(title)}</strong><span>${items.length} kayıt</span></div>
+    <div class="correction-list">${items.length?items.map(correctionPackageCard).join(''):`<div class="empty-state">${esc(emptyText)}</div>`}</div>
+  </div>`;
+}
+
+function correctionArchiveHtml(title,subtitle,items){
+  if(!items.length)return '';
+  return `<details class="correction-queue-section">
+    <summary class="correction-section-head"><strong>${esc(title)}</strong><span>${items.length} kayıt · aç/kapat</span></summary>
+    <div class="correction-list">${items.map(correctionPackageCard).join('')}</div>
+  </details>`;
+}
+
+function renderCorrectionPackages(){
+  const container=el('correctionPackagesContent');
+  if(!container)return;
+  const packages=correctionPackagesState.packages||[];
+  const logWarning=correctionPackagesState.logReady?'':`<div class="warn-box">Geçmiş içeriklere uygulama için kayıt defteri henüz hazır değil. Bu aşamada düzeltme kaydı oluşturup etki taraması yapabilirsiniz; uygulama için schema.sql içindeki content_correction_log bölümü Supabase’de çalıştırılmalı.</div>`;
+  if(!packages.length){container.innerHTML=logWarning+'<div class="empty-state">Henüz geçmiş düzeltme kaydı yok.</div>';return;}
+  const active=packages
+    .filter(pkg=>!['applied','reverted'].includes(String(pkg.status||'draft')))
+    .sort(correctionPackageSort);
+  const applied=packages
+    .filter(pkg=>pkg.status==='applied')
+    .sort(correctionPackageSort);
+  const reverted=packages
+    .filter(pkg=>pkg.status==='reverted')
+    .sort(correctionPackageSort);
+  container.innerHTML=logWarning
+    +correctionMetricsHtml(packages)
+    +correctionSectionHtml('Onay Bekleyen Düzeltmeler','Süper admin kontrolünden geçecek kayıtlar',active,'Onay bekleyen geçmiş düzeltme kaydı yok.')
+    +correctionArchiveHtml('Uygulanan Düzeltmeler','Geçmişe taşınmış kayıtlar',applied)
+    +correctionArchiveHtml('Geri Alınan Düzeltmeler','Eski haline döndürülen kayıtlar',reverted);
+}
+
+async function previewCorrectionPackage(id){
+  setStatus('Etki taranıyor...','');
+  setCorrectionPackageBusy(id,'preview');
+  const data=await api('POST',`/api/correction-packages/${id}/preview`,{});
+  if(data.error){setCorrectionPackageBusy(id,'');setStatus(data.error,'err');return;}
+  if(data.package)updateCorrectionPackageState(data.package);
+  setStatus(`✓ ${data.scan?.affectedRecords||0} kayıt, ${data.scan?.replacementCount||0} düzeltme bulundu.`,'ok');
+  await loadCorrectionPackages();
+}
+
+async function applyCorrectionPackage(id){
+  if(!hasSuperAdminRole(me?.role)){setStatus('Bu işlem için süper admin yetkisi gerekli.','err');return;}
+  if(!correctionPackagesState.logReady){setStatus('Kayıt defteri hazır olmadığı için geçmiş içeriklere uygulama yapılamaz.','err');return;}
+  const pkg=(correctionPackagesState.packages||[]).find(item=>item.id===id)||{};
+  const scopeText=pkg.historyScope==='reported'?'bildirilen denetim kaydına':'son kontrolde görünen geçmiş denetim kayıtlarına';
+  const ok=await openSystemConfirm({
+    title:'Geçmiş düzeltme onaylansın mı?',
+    badge:'Süper admin onayı',
+    message:`Bu düzeltme ${scopeText} uygulanacak.`,
+    detail:'Onay verdiğinizde sistem metni günceller, işlemi kayıt altına alır ve gerekirse geri alınabilir şekilde saklar.',
+    confirmText:'Onayla ve Uygula',
+    cancelText:'Vazgeç',
+    tone:'success'
+  });
+  if(!ok)return;
+  setCorrectionPackageBusy(id,'apply');
+  const data=await api('POST',`/api/correction-packages/${id}/apply`,{confirmReview:true,superAdminApproved:true});
+  if(data.error){setCorrectionPackageBusy(id,'');setStatus(data.error,'err');return;}
+  if(data.package)updateCorrectionPackageState(data.package);
+  const appliedCount=Number(data.applied||data.scan?.affectedRecords||0);
+  const changeCount=Number(data.changes||data.scan?.replacementCount||0);
+  const message=data.alreadyApplied
+    ? 'Bu düzeltme daha önce uygulanmış. Ekran güncel duruma getirildi.'
+    : `${appliedCount} kayıt içinde ${changeCount} düzeltme işlendi. Gerekirse aynı kayıttan Geri Al kullanılabilir.`;
+  setStatus(data.alreadyApplied?'✓ Düzeltme zaten uygulanmış.':'✓ Düzeltme uygulandı.','ok');
+  await showSystemAlert(data.alreadyApplied?'Düzeltme zaten uygulanmış':'Düzeltme uygulandı',message,'success');
+  await loadCorrectionPackages();
+}
+
+async function revertCorrectionPackage(id){
+  if(!hasSuperAdminRole(me?.role)){setStatus('Bu işlem için süper admin yetkisi gerekli.','err');return;}
+  const ok=await openSystemConfirm({
+    title:'Düzeltme geri alınsın mı?',
+    badge:'Geri alma',
+    message:'Bu düzeltme kaydıyla yapılan geçmiş metin değişiklikleri geri alınacak.',
+    detail:'Sistem kayıt defterindeki eski değerlere döner. Bu işlemden önce gerçekten doğru düzeltme kaydını seçtiğinizden emin olun.',
+    confirmText:'Geri Al',
+    cancelText:'Vazgeç',
+    tone:'danger'
+  });
+  if(!ok)return;
+  setCorrectionPackageBusy(id,'revert');
+  const data=await api('POST',`/api/correction-packages/${id}/revert`,{});
+  if(data.error){setCorrectionPackageBusy(id,'');setStatus(data.error,'err');return;}
+  if(data.package)updateCorrectionPackageState(data.package);
+  setStatus(`✓ Düzeltme geri alındı: ${data.reverted||0} kayıt eski haline döndü.`,'ok');
+  await showSystemAlert('Düzeltme geri alındı',`${Number(data.reverted||0)} kayıt eski haline döndürüldü.`,'success');
+  await loadCorrectionPackages();
 }
 
 async function loadMessageLog(){
@@ -2875,7 +3944,7 @@ async function loadUsers(){
     </tr>`;}).join('')}</tbody></table></div>`;
 }
 function openAddUser(){
-  if(!hasSuperAdminRole(me?.role)){alert('Yeni kullanıcı eklemek için süper admin yetkisi gerekir.');return;}
+  if(!hasSuperAdminRole(me?.role)){showSystemAlert('Yetki gerekli','Yeni kullanıcı eklemek için süper admin yetkisi gerekir.','danger');return;}
   ['nuName','nuUsername','nuPassword','nuPassword2'].forEach(id=>el(id).value='');
   el('nuRole').value='user';el('nuErr').textContent='';
   el('addUserModal').classList.add('open');
@@ -2933,10 +4002,19 @@ async function refreshMe(){
   el('pRole').textContent=roleLabel(r.role);
 }
 async function deleteUser(id,name){
-  if(!hasSuperAdminRole(me?.role)){alert('Kullanıcı silmek için süper admin yetkisi gerekir.');return;}
-  if(!confirm(`"${name}" silinsin mi?`))return;
+  if(!hasSuperAdminRole(me?.role)){showSystemAlert('Yetki gerekli','Kullanıcı silmek için süper admin yetkisi gerekir.','danger');return;}
+  const ok=await openSystemConfirm({
+    title:'Kullanıcı silinsin mi?',
+    badge:'Kullanıcı yönetimi',
+    message:`${name} adlı kullanıcı silinecek.`,
+    detail:'Bu işlem kullanıcı yönetimi üzerinde kalıcı etki oluşturur. Devam etmeden önce doğru kullanıcıyı seçtiğinizden emin olun.',
+    confirmText:'Sil',
+    cancelText:'Vazgeç',
+    tone:'danger'
+  });
+  if(!ok)return;
   const r=await api('DELETE',`/api/users/${id}`);
-  if(r.error){alert(r.error);return;}loadUsers();
+  if(r.error){showSystemAlert('İşlem tamamlanamadı',r.error,'danger');return;}loadUsers();
 }
 
 async function loadRules(){const r=await api('GET','/api/rules');el('rulesEditor').value=r.rules||'';}
@@ -2949,7 +4027,16 @@ async function saveRules(){
   setTimeout(()=>{s.textContent='';s.className='status-msg';},3000);
 }
 async function resetRules(){
-  if(!confirm('Varsayılana döndürülsün mü?'))return;
+  const ok=await openSystemConfirm({
+    title:'Kurallar varsayılana dönsün mü?',
+    badge:'Kurallar',
+    message:'Mevcut kural metni varsayılan sistem kurallarıyla değiştirilecek.',
+    detail:'Özel eklediğiniz kural metinleri varsa devam etmeden önce kontrol edin.',
+    confirmText:'Varsayılana Dön',
+    cancelText:'Vazgeç',
+    tone:'danger'
+  });
+  if(!ok)return;
   const r=await api('POST','/api/rules/reset');
   if(r.rules)el('rulesEditor').value=r.rules;
   const s=el('ruleStatus');s.textContent='✓ Döndürüldü.';s.className='status-msg ok';
@@ -2971,14 +4058,89 @@ async function changePassword(){
 }
 
 async function api(method,url,body){
-  const opts={method,headers:{'Content-Type':'application/json'}};
+  const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store'};
   if(body)opts.body=JSON.stringify(body);
-  const r=await fetch(url,opts);return r.json();
+  try{
+    const r=await fetch(url,opts);
+    const text=await r.text();
+    let data={};
+    if(text){
+      try{data=JSON.parse(text);}
+      catch{data={error:'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.'};}
+    }
+    if(!r.ok)return {error:data.error||'İşlem tamamlanamadı. Lütfen tekrar deneyin.'};
+    return data;
+  }catch(e){
+    return {error:'Bağlantı tamamlanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.'};
+  }
 }
 const el=id=>document.getElementById(id);
 const v=id=>el(id).value.trim();
 function openModal(id){el(id).classList.add('open');}
 function closeModal(id){el(id).classList.remove('open');}
+function openSystemConfirm(options={}){
+  const opts={
+    title:'İşlem onayı',
+    badge:'Kontrol',
+    message:'Bu işlemi yapmak istediğinizden emin misiniz?',
+    detail:'',
+    confirmText:'Tamam',
+    cancelText:'Vazgeç',
+    tone:'default',
+    showCancel:true,
+    input:false,
+    inputPlaceholder:'',
+    inputValue:'',
+    inputMaxLength:1200,
+    ...options
+  };
+  return new Promise(resolve=>{
+    systemConfirmResolver=resolve;
+    const modal=el('systemConfirmModal');
+    const dialog=el('systemConfirmDialog');
+    dialog.dataset.tone=opts.tone||'default';
+    el('systemConfirmTitle').textContent=opts.title;
+    el('systemConfirmBadge').textContent=opts.badge;
+    el('systemConfirmMessage').textContent=opts.message;
+    const detail=el('systemConfirmDetail');
+    detail.textContent=opts.detail||'';
+    detail.style.display=opts.detail?'block':'none';
+    const inputWrap=el('systemConfirmInputWrap');
+    const input=el('systemConfirmInput');
+    if(inputWrap&&input){
+      inputWrap.style.display=opts.input?'block':'none';
+      input.value=opts.inputValue||'';
+      input.placeholder=opts.inputPlaceholder||'';
+      input.maxLength=Number(opts.inputMaxLength||1200);
+    }
+    const cancel=el('systemConfirmCancel');
+    cancel.textContent=opts.cancelText||'Vazgeç';
+    cancel.style.display=opts.showCancel===false?'none':'';
+    const ok=el('systemConfirmOk');
+    ok.textContent=opts.confirmText||'Tamam';
+    ok.className=opts.tone==='danger'?'btn-danger':'btn-primary';
+    modal.classList.add('open');
+    setTimeout(()=>opts.input?input?.focus():ok.focus(),30);
+  });
+}
+function closeSystemConfirm(result){
+  const modal=el('systemConfirmModal');
+  if(modal)modal.classList.remove('open');
+  const resolve=systemConfirmResolver;
+  systemConfirmResolver=null;
+  const inputWrap=el('systemConfirmInputWrap');
+  const input=el('systemConfirmInput');
+  const hasInput=inputWrap&&input&&inputWrap.style.display!=='none';
+  if(resolve)resolve(result&&hasInput?input.value:Boolean(result));
+}
+function showSystemAlert(title,message,tone='default'){
+  return openSystemConfirm({title,badge:'Bilgilendirme',message,confirmText:'Tamam',showCancel:false,tone});
+}
+async function openSystemPrompt(options={}){
+  const result=await openSystemConfirm({...options,input:true});
+  if(result===false)return null;
+  return String(result||'');
+}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function attrJson(value){
   return JSON.stringify(String(value??''))

@@ -1,7 +1,381 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-03 Codex Güncel Durum
+
+- Repo/GitHub hijyen çalışması başlatıldı. Amaç dirty workspace'i temiz commitlere ayırıp
+  GitHub'ı kaynak gerçekliği yapmak ve yeni cihaz geçişini temiz `git clone` üzerinden
+  yürütmektir. Snapshot `tmp/repo-cleanup-snapshot-*` altında alındı; `tmp/` ve
+  `demo-public-preview/` Git dışı geçici çıktı olarak ignore edildi.
+- Public arşiv demo dosyaları production admin akışından ayrıldı: `server.js` artık
+  `public-archive-demo` modülünü yalnız `PUBLIC_ARCHIVE_DEMO=1` açıkken lazy-load eder.
+  Böylece temiz klonda demo dosyası veya seed datası kaynak olarak eksikse bile normal
+  admin production startup'ı etkilenmez. `scripts/check-frontend.js` bu lazy-load guard'ını
+  regresyon olarak kontrol eder.
+- Root `/` için public arşiv cutover yapılmadı. Admin geliştirmeleri `/admin` hedefiyle
+  yürür; root kısa süre daha legacy admin olarak korunur.
+- PWA ana ekran uygulaması için ikinci koruma eklendi. Manifest `start_url=/admin` tek başına
+  bazı iOS ana ekran senaryolarında yeterli olmadığı için, standalone/PWA modunda oturum açmış
+  admin veya süper admin root `/` adresinden açılırsa frontend `history.replaceState` ile
+  rotayı `/admin`e taşır. Manifest `id` değeri `/admin` yapıldı. Normal tarayıcı root davranışı
+  ve ilerideki public root cutover korunur. Doğrulama: `npm.cmd run check` başarılı; 84/84 test
+  geçti. Production deploy `dpl_FGrVj7yYGew5dJgiyyaT2WEjiXhV`; canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health` `ok`, `/admin` HTTP 200 ve noindex/
+  no-store, root `/` HTTP 200, manifest `id=/admin`, `start_url=/admin`, canlı HTML'de
+  `ensureStandaloneAdminRoute` ve `adminRouteProbe` mevcut.
+- Kullanıcının yeni kapanış yöntemi kabul edildi: feedbackte bildirilen bir kelime/düzeltme
+  önce o feedback'in bağlı olduğu denetim metninde ele alınır; bağlamsal/anlık bir model hatası
+  kör biçimde tüm geçmişe uygulanmaz. Süper admin gerekli görürse `Tüm geçmiş` kapsamını ayrıca
+  seçebilir.
+- Kod değişiklikleri: `analysis-core.js`, `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `test/analysis-core.test.js`. Yeni korumalar:
+  `ahlaki -> ahlakı`, `Allah (cc.) -> Allah (A.S)`, `hayydırlar -> diridirler`,
+  `Sebîlel -> Sebîli`, `Tabi ki -> Tabiatıyla`, `Cinn -> CİN`, `ardarda -> ard arda`,
+  `aciz -> âciz`, `dini -> dinî`, `sure de -> surede`, çift virgül, kaynakta olmayan
+  `Kur'ân'da` ekleme, `Allah’a ulaşmayı dilemek ve zikir yok. -> yoksa.`, dörtlük satır
+  başı büyük harfleri.
+- Geçmiş Düzeltme Kontrolü formuna kapsam seçimi eklendi: `Bildirilen metin` varsayılan,
+  `Tüm geçmiş` manuel seçimdir. Paketler `historyScope` ve `reportedHistoryIds` taşır;
+  reported kapsamda teknik uzun metin parça kayıtları da sadece bağlı feedback için taranabilir.
+- Uygulama sonrası kapanış eklendi: süper admin bir düzeltme kaydını `Onayla ve Uygula` ile
+  uygularsa pakete bağlı feedbackler `content-correction-{packageId}` çözüm grubuyla
+  `resolved` yapılır ve `resolution_note` doldurulur.
+- Canlı açık feedback sayısı işlem öncesi/sonrası `34`. Bu sayı bilinçli olarak değişmedi;
+  çünkü metin düzeltmeleri henüz uygulanmadı. Canlı `settings.content_correction_packages`
+  içine 17 yeni `reported` kapsamlı, `ready` durumunda düzeltme kaydı yazıldı. Son doğrulama:
+  toplam paket `38`, `ready=37`, `applied=1`, `reported=17`.
+- Kuru taramada 3 konuya içerik düzeltme paketi açılmadı: bozuk alıntı ve `Tabiatıyla` vakasında
+  bağlı corrected_text içinde aranacak yanlış ifade kalmamıştı; `Âl-i İmrân -> Âli İmrân`
+  paketi de mevcut bağlı metinde eşleşmedi. `Al-i İmran -> Âli İmrân` feedback'i sure standardına
+  göre kullanıcı kararı gerektirir; kör ters düzeltme yapılmadı.
+- Doğrulama: `npm.cmd run check` başarılı; 84/84 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi.
+- Production deploy alındı: `https://arsiv-kontrol-3uh7o5s4j-ugurkarabulutts-projects.vercel.app`,
+  alias `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  cache `no-store, no-cache, must-revalidate, proxy-revalidate`, HTML'de
+  `correctionHistoryScopeFromForm` ve `Bildirilen metin` mevcut.
+- Sıradaki doğru işlem: süper admin `Geçmiş Düzeltme Kontrolü` ekranında `ready` kayıtları
+  örnekleriyle kontrol edip uygun olanları `Onayla ve Uygula` ile uygular. Uygulanan paketlere
+  bağlı feedbackler otomatik kapanır; sonrasında kullanıcılara kişisel çözüm bildirimi
+  hazırlanmalıdır.
+
+## 2026-08-02 Codex Güncel Durum
+
+- Birgül Nursoy ve Nilgün Kabadayı'nın bildirdiği `her denetimden sonra Ctrl+Shift+R yapmadan
+  Onaya Gönder aktif olmuyor` akışı düzeltildi ve canlıya alındı. Kök sebep backend onay
+  kuyruğu değil, frontend state temizliğiydi: boş/eksik `status` gönderilmiş kabul edilebiliyor,
+  yeni denetim başlangıcında eski onay modalı/payload state'i temizlenmiyor ve gönderilmiş yerel
+  taslak tekrar yüklenebiliyordu.
+- Uygulanan çözüm: yalnız `bekliyor`, `onaylandi`, `reddedildi` statüleri gönderilmiş sayılır;
+  yeni denetim başlarken eski onay state'i `resetCurrentAnalysisStateForNewRun` ile temizlenir;
+  onay modalı `resetSubmitApprovalModalState` ile sıfırlanır; localStorage içindeki gönderilmiş
+  sonuç çalışma taslağı gibi geri yüklenmez. `scripts/check-frontend.js` bu gerçek kullanıcı
+  senaryosunu regresyon olarak kontrol ediyor.
+- Doğrulama: `npm.cmd run check` başarılı; 83/83 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi. Production deploy:
+  `https://arsiv-kontrol-l58ww5ptk-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200, cache
+  `no-store, no-cache, must-revalidate, proxy-revalidate`; canlı HTML'de
+  `SUBMITTED_APPROVAL_STATUSES`, `resetCurrentAnalysisStateForNewRun`,
+  `resetSubmitApprovalModalState` ve gönderilmiş local draft guard mevcut.
+- Süper admin `Geçmiş Düzeltme Kontrolü` ekranı sadeleştirildi ve canlıya alındı. Uzun alt alta
+  liste yerine üstte sayaçlar, ana bölümde yalnız `Onay Bekleyen Düzeltmeler`, kapalı
+  açılır-kapanır kayıt kartları ve ayrı `Uygulanan Düzeltmeler` / `Geri Alınan Düzeltmeler`
+  arşivleri var. Uygulanan kayıtlar ana bekleyen listeden ayrışır; geri alınanlar da ayrı
+  bölümde görünür. Geniş etki üreten kayıtlar dikkat etiketiyle işaretlenir.
+- Bu UX değişikliğinde geçmiş `history` içeriklerine uygulama yapılmadı, `alerts` feedbackleri
+  kapatılmadı ve kullanıcı bildirimi gönderilmedi. Doğrulama: `npm.cmd run check` başarılı;
+  83/83 test geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi. Canlı doğrulama:
+  `https://arsiv.ibrahimlive.ai/health` `ok`, ana sayfa HTTP 200, cache `no-store, no-cache,
+  must-revalidate, proxy-revalidate`; canlı HTML'de `Geçmiş Düzeltme Kontrolü`,
+  `Onay Bekleyen Düzeltmeler`, `Uygulanan Düzeltmeler`, `Geri Alınan Düzeltmeler`,
+  `correctionMetricsHtml` ve açılır kart CSS'i mevcut.
+- Geçmiş düzeltmeler için süper admin son kontrol şartı canlıya alındı. Yeni akışta geçmiş
+  metne uygulama yapılmadan önce etki taraması zorunlu; apply API'si `lastScan`, `status='ready'`,
+  `confirmReview:true` ve `superAdminApproved:true` olmadan `history` güncellemez. Arayüzde
+  uygulama aksiyonu `Onayla ve Uygula` olarak görünür. Doğrulama: `npm.cmd run check` başarılı;
+  83/83 test geçti. Production deploy:
+  `https://arsiv-kontrol-dmg6ic71w-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`; canlı `/health` `ok`, ana sayfa HTTP 200, cache `no-store`.
+- Canlı açık feedback sayısı yeniden okundu: `22`. Yeni gelen kayıt `aciz -> âciz` yanlış
+  düzeltmesiydi. Açık feedbacklerden geçmişe taşınması gereken kararlar için
+  `settings.content_correction_packages` içine `20` yeni düzeltme kaydı eklendi ve hepsi
+  süper admin son kontrolü için `ready` durumunda bırakıldı. Daha önce uygulanmış
+  `Tevbe 69 sure referansı düzeltmesi` kaydına ilgili `2` feedback id'si bağlandı. Canlı
+  doğrulama: toplam paket `21`, `ready=20`, `applied=1`, açık feedback hâlâ `22`.
+- Bu adımda geçmiş `history` içeriklerine uygulama yapılmadı, `alerts` feedbackleri
+  kapatılmadı, kullanıcı bildirimi gönderilmedi. Sıradaki doğru adım: süper admin
+  `Geçmiş Düzeltmeleri` ekranında her kaydın örneklerini kontrol edip uygun olanları
+  `Onayla ve Uygula` ile uygulamalı; sonra etkilenen feedbackler kapatılıp kişisel
+  çözüm bildirimleri hazırlanmalı.
+- Canlı açık feedbackler tekrar kontrol edildi; toplam açık kayıt `21`. İlk 20 kayıt önceki
+  kalite turunda ele alınan köklerle aynıydı, yeni gelen kayıt `Mumtehine -> Mumtehıne`
+  sure adı bozulmasıydı.
+- `analysis-core.js`, `server.js` ve `test/analysis-core.test.js` güncellendi. Kapatılan
+  kalite kökleri: `faziletler -> fazlalar`, `fazılla -> fazl ile`, `yakîn -> yakın`,
+  `sure de -> surede`, `dini -> dinî`, `Tabiatıyla -> Tabiî ki`, `lâzımgelen -> lâzım gelen`,
+  kaynakta olmayan `Kur'ân'da` ekleme, mevcut noktalama üzerine ikinci noktalama ekleme,
+  referans sonundaki iki noktayı silme, bozuk `." diyor."` tırnak yerleşimi, `Tevbe 69`
+  referansının `Tövbe 69` yapılması, `Yunus 7, 8’de` gevşek sure referansı ve dörtlük satır
+  başı büyük harfleri.
+- `Mumtehine` doğru sure adı olarak korumaya alındı; bozuk `Mumtehıne` varyantı kaynakta
+  görülürse `Mumtehine` yapılır, doğru `Mumtehine` ise noktasız-ı varyantına çevrilmez.
+- Doğrulama: `npm.cmd run check` başarılı; 83/83 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi. Production deploy:
+  `https://arsiv-kontrol-a7ijgc047-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  cache `no-store, no-cache, must-revalidate, proxy-revalidate`, canlı HTML'de
+  `/approval-status` ve `/withdraw` mevcut.
+- Bu adımda canlı DB'de feedback kapatma veya kullanıcı bildirimi gönderme yapılmadı. Sonraki
+  adım: kullanıcı onayıyla açık feedbackleri çözüm grubuyla kapatmak ve her kullanıcıya kendi
+  bildirdiği konuları özetleyen kişisel çözüm bildirimi göndermek.
+- 2026-08-02 itibarıyla yeni kalıcı kapanış kuralı: Bir feedback kelime, sure adı, imlâ
+  standardı veya noktalama kararını değiştiriyorsa sadece kod/prompt düzeltmesi ve feedback
+  kapatma yeterli değildir. Önce canlı geçmişte etki taraması yapılmalı; `taslak`, `bekliyor`,
+  `onaylandı` ve ileride yayınlanmış içeriklerde aynı yanlış ifade varsa `Geçmiş Düzeltme
+  Merkezi` üzerinden loglu/geri alınabilir biçimde düzeltilmelidir. Ancak bundan sonra
+  feedback kapatılıp kullanıcıya çözüm bildirimi gönderilir.
+- Bu nedenle mevcut 21 açık feedback için sıradaki doğru adım: çözüm köklerini geçmiş taramasına
+  çevirmek, kaç kayıt etkilendiğini çıkarmak, kullanıcı onayıyla geçmiş uygulamasını yapmak,
+  sonra feedbackleri kapatıp kişisel bildirimleri göndermek.
+
+## 2026-08-01 Codex Güncel Durum
+
+- Kullanıcı raporuyla gelen iki kritik akış düzeltildi ve canlıya alındı: `Onaya Gönder`
+  sonrası kayıt gerçekten onay kuyruğuna girdi mi diye artık `/api/history/:id/approval-status`
+  ile doğrulanıyor; doğrulama olmadan başarı ekranına geçilmiyor. Kullanıcı kendi `bekliyor`
+  kayıtlarını admin işleminden önce `Onaydan Geri Çek` ile tekrar `taslak` durumuna alabiliyor.
+  Backend route'ları: `/api/history/:id/approval-status`, `/api/history/:id/withdraw`.
+  Frontend kontrolleri: `verifyApprovalStatus`, `withdrawApprovalFromHistory`,
+  `withdrawCurrentSubmittedApproval`.
+- `Âdem (A.S)'ın sureti` / `Adem(A.S)'ın sureti` dar bağlamı deterministik standartla
+  `Âdem (A.S)'ın zürriyeti` yönünde düzeltiliyor. Genel `sureti` kelimesine dokunulmaz.
+  `nefret -> nefs` dönüşümü hâlâ yasak/korumalıdır; `kin ve nefret` korunur.
+- Doğrulama: `npm.cmd run check` başarılı; 81/81 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi. Production deploy:
+  `https://arsiv-kontrol-1xhjjg4ar-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  canlı HTML'de `/approval-status`, `/withdraw`, `verifyApprovalStatus` ve `Onaydan Geri Çek`
+  mevcut. Vercel inspect: `dpl_93QTaN4Pv9AtFcWE19spudt2gHP2` Ready.
+- Canlı kayıt kontrolünde `Tevbe 69 sure referansı düzeltmesi` gerçekten uygulanmış görünüyor:
+  paket `applied`, 2 kayıt güncellenmiş, `content_correction_log` içinde 2 uygulama logu var.
+  Ekranın işlem sonrası hâlâ `Taslak / Uygula` gibi kalması kafa karıştırdığı için UI düzeltildi:
+  uygulandı durumunda kart yeşil başarı bandı gösterir, `Uygula` butonu `Uygulandı` olarak
+  pasifleşir, `Geri Al` tek aktif ana aksiyon kalır. Stale sayfadan yeniden uygulama isteği
+  gelirse API `alreadyApplied` ile ekranı güncel duruma çeker. API çağrılarına `cache:'no-store'`
+  eklendi. Doğrulama: `npm.cmd run check` başarılı; 80/80 test geçti. Production deploy:
+  `https://arsiv-kontrol-qlj2go3bq-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  `correctionStateNote`, `alreadyApplied`, `cache:'no-store'` ve `Düzeltme zaten uygulanmış`
+  canlı HTML'de mevcut.
+- Geçmiş düzeltme uygulama sırasında çıkan tarayıcıya ait beyaz onay penceresi kaldırıldı.
+  Kritik onay/uyarı akışları artık uygulamanın açık/koyu tema yapısına uygun özel sistem içi
+  modal ile gösterilir. Kapsanan akışlar: geçmiş düzeltme uygula, geri al, kullanıcı sil,
+  kural sıfırla, yetki uyarıları ve çözüm notu yazma. `scripts/check-frontend.js` içine eski
+  `confirm(`/`alert(`/`prompt(` kullanımını yakalayan kontrol eklendi.
+- Doğrulama: `npm.cmd run check` başarılı; 80/80 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi. Production deploy:
+  `https://arsiv-kontrol-opyvthnvq-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  `systemConfirmModal`, `systemConfirmInputWrap` ve `openSystemConfirm` mevcut; native
+  `confirm/alert/prompt` çağrısı yok.
+- Geri bildirimlerden doğan kabul edilmiş standart/düzeltme kararlarını geçmiş denetim
+  kayıtlarına kontrollü uygulamak için ilk altyapı kuruldu. Yeni admin alanı:
+  `Geçmiş Düzeltmeleri` / `Geçmiş Düzeltme Merkezi`.
+- Akış: yanlış ifade + doğru ifade + karar notu girilir, seçili feedback id'leri
+  düzeltme kaydına bağlanabilir, önce etki taraması yapılır. Tarama `history.corrected_text`
+  alanını varsayılan hedef alır; istenirse `summary` de seçilebilir. Teknik uzun metin
+  parça kayıtları (`chunk_draft`, `submitted_part`) hariç tutulur.
+- Geçmiş kayıtlara uygulama yalnız süper admin ile çalışır ve canlı DB'de
+  `content_correction_log` tablosu bulunmazsa kapalı kalır. `schema.sql` içine bu tablo
+  eklendi. Tablo uygulanmadan sistem sadece paket oluşturur ve etki taraması yapar.
+- Uygulamada eski/yeni metin, alan adı, kayıt id'si ve hash bilgisi `content_correction_log`
+  içine yazılır; paket uygulanmışsa `Geri Al` aksiyonu aynı kayıt defterinden eski değerlere
+  döner.
+- Yan sağlık düzeltmeleri: tekil çözüm bildirimi route'undaki eksik `internalResolutionNote`
+  tanımı düzeltildi; tekil kullanıcı duyurusu route'unda hatalı kopuk satır kaldırıldı;
+  onay/red sonrası düzeltilmiş metin duplicate kilidi doğru `setApproval` akışına taşındı.
+- Doğrulama: `npm.cmd run check` başarılı; 80/80 test geçti. `git diff --check` yalnız
+  mevcut CRLF uyarılarını verdi. Canlı deploy, canlı DB yazımı, paket uygulama, feedback
+  kapatma veya kullanıcı bildirimi yapılmadı.
+- Kullanıcı Supabase SQL Editor'da `content_correction_log` tablosu ve indexlerini uyguladı.
+  Salt-okunur Supabase kontrolünde tablo `status=200`, `contentRange=*/0` döndü.
+- Production deploy alındı:
+  `https://arsiv-kontrol-2ymt7zpi6-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  cache `no-store, no-cache, must-revalidate, proxy-revalidate`, canlı HTML'de
+  `tabContent-corrections` ve `loadCorrectionPackages` mevcut. `/api/correction-packages`
+  yetkisiz erişimde 401 döndü; route yayında ve korumalı.
+- Mobil ekranda eski `Düzeltme Paketleri` adı adminin anlayacağı şekilde
+  `Geçmiş Düzeltme Merkezi` olarak değiştirildi. Form başlığı `Yeni düzeltme kaydı` oldu;
+  checkboxlar metin alanı stilinden ayrıldı ve mobilde taşmayacak özel ayar satırlarına
+  çevrildi.
+- Bu mobil UX düzeltmesi production'a deploy edildi:
+  `https://arsiv-kontrol-m2fznzdjd-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  `Geçmiş Düzeltme Merkezi` ve `Geçmiş Düzeltmeleri` mevcut, eski `Düzeltme Paketleri`
+  adı yok, yeni checkbox CSS'i canlıda var. `npm.cmd run check` başarılı; 80/80 test geçti.
+- Bu adımda düzeltme kaydı uygulanmadı, feedback kapatılmadı ve kullanıcı bildirimi
+  gönderilmedi. Sonraki güvenli adım: açık feedbackler paket sistemiyle taranıp, etki
+  önizlemesi kullanıcıya gösterildikten sonra uygulanmalı.
+
+## 2026-07-31 Codex Güncel Durum
+
+- Canlıdan daha önce çekilen 29 açık feedback kökü için yerel kod + prompt çözüm turu yapıldı.
+  Çözülen ana sınıflar: `Yunus` kişi adı ile `Yûnus` sure adı ayrımı, âyet/transliterasyon
+  satırlarında çıplak `İsa`, `mustekîm` ve `dîn/dînekum` koruması, `Resûlullah'ın (S.A.V)`
+  yanlış yerleşimi, `Sebîlel gayy/rüşd -> Sebîli gayy/rüşd`, `şer/şerr/şeriat` kelime sınırı,
+  `AFETİ` şapkasız koruması, `vücud/vücut` bağımsız kelime ayrımı, `Nefret -> nefs` reddi,
+  gereksiz virgül/iki nokta ve `var ya` silme korumaları.
+- Kabul edilen bulguların metne uygulanması artık ham substring replace kullanmıyor; kelime
+  sınırı ve esnek apostrof/boşluk eşleşmesiyle yapılıyor. Bu değişiklik `şer` gibi kısa köklerin
+  `ŞERİAT` içine girmesini ve `vücud` kökünün ekli kelimeleri bozmasını engeller.
+- `tevbe` normal metinde bütün tekrarlarıyla `tövbe` yapılır; `TEVBE` sure adı/referansı korunur.
+  `Yunus Emre`, `Yunus diyor`, `Yunus ne diyor` korunur; `10/Yunus-7` gibi referanslar
+  `10/Yûnus-7` olur.
+- `server.js` sistem prompt'una aynı kararlar eklendi; model baştan daha muhafazakâr davranmalı.
+  `test/analysis-core.test.js` içine 29 Temmuz feedback kök regresyonu eklendi.
+- Doğrulama: `npm.cmd run check` başarılı; 80/80 test geçti. Bu adımda canlı deploy, DB yazımı,
+  feedback kapatma veya kullanıcı bildirimi yapılmadı.
+- Sonrasında yerel çözüm production'a deploy edildi:
+  `https://arsiv-kontrol-hqqgl4qo4-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  cache başlığı `no-store, no-cache, must-revalidate, proxy-revalidate`.
+- Canlıdaki 29 açık feedback `feedback-fix-2026-07-31-root-quality-1785452209555` çözüm
+  grubuyla kapatıldı. Tuba Aydın, Birgül Nursoy, Elçin Akay, Nuray Ardagümüşoğlu ve Nazlı
+  Özkaplan'a kendi bildirdikleri başlıklara göre 5 kişisel `feedback_resolution` bildirimi
+  gönderildi. Bildirim başlıkları UTF-8 olarak doğrulandı; son canlı kontrolde açık feedback `0`.
+- Uzun metin denetimi ve onaya gönderme ekranındaki kullanıcı metinleri sadeleştirildi.
+  Kullanıcıya artık `parça`, `tek kayıt`, `birleşik sonuç` veya yoğun `yönetici` dili
+  gösterilmez. Teknik parçalı işleme arka planda korunur; görünen dil `Metin güvenli şekilde
+  denetleniyor`, `Sonuç hazırlandı`, `Onaya Gönder dediğinizde sonuç onay kuyruğuna iletilir`
+  ve `Sonuç onay sürecine iletildi` çizgisine çekildi. `npm.cmd run check` başarılı; 80/80
+  test geçti. Production deploy:
+  `https://arsiv-kontrol-dq2j1stxh-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  canlı HTML'de yeni kopyalar mevcut; eski `parça tek kayıt`, `parça halinde tamamlandı`,
+  `Birleşik Sonuç` ve `yöneticilerin onay kuyruğu` kopyaları yok.
+
+## 2026-07-30 Codex Güncel Durum
+
+- Elçin Akay ve Nuray Ardagümüşoğlu'nun uzun metin onaya gönderim denemeleri canlı kayıtlardan
+  incelendi. Telegram'da görülen `Gönderiliyor...` takılmasının en az bazı denemelerde DB'ye
+  hiç düşmediği doğrulandı. Kök risk, onaya gönderirken aynı düzeltilmiş metni engelleyen eski
+  kontrolün kullanıcının tüm eski `corrected_text` kayıtlarını taramasıydı; uzun metin ve yoğun
+  kayıtlı kullanıcılarda bu istek uzayabiliyordu.
+- Çözüm: düzeltilmiş metin duplicate kontrolü `settings` tablosunda
+  `submitted_corrected_hash:{userId}:{hash}` hızlı kilidine taşındı. Eşzamanlı çift gönderim
+  engellenir; 20 dakikadan eski yarım kalmış `pending` kilitler temizlenir; onaylanınca kilit
+  kalır, reddedilince kilit kaldırılır. Birleşik uzun metin gönderiminde parça gizleme hatası
+  ana onay kaydını başarısız göstermeyecek şekilde kritik yoldan çıkarıldı.
+- Frontend onay modalı gönderim sırasında kapanmaz, kullanıcıya `Gönderim kontrol ediliyor`
+  bekleme mesajı verir ve ağ/HTML hata yanıtlarını kontrollü Türkçe mesaja çevirir. Vercel
+  route header'ları `no-store` yapıldı; eski JS/HTML için Ctrl+Shift+R ihtiyacı azaltıldı.
+- Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi. Production deploy:
+  `https://arsiv-kontrol-puoqfpte2-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  canlı HTML'de `submitApprovalInFlight` ve `Gönderim kontrol ediliyor` mevcut; ana sayfa ve
+  `sw.js` cache başlığı `no-store, no-cache, must-revalidate, proxy-revalidate`.
+- Denetim Geçmişi'nde 200 kayıt sınırı kaldırıldı. Kök sebep `/api/history` endpoint'inin
+  `.limit(200)` kullanmasıydı; toplamı 400+ olan kullanıcılar yalnız ilk 200 kaydı görüyordu.
+  Endpoint artık `fetchAllPages` ile tüm ilgili kayıtları sayfalı çekiyor. UI alt başlığı
+  `Tüm denetimleriniz` oldu. `scripts/check-frontend.js` aynı limit geri gelirse test fail
+  edecek. Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. Production deploy:
+  `https://arsiv-kontrol-hd6t9ay6c-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  canlı HTML'de `Tüm denetimleriniz` ve `/api/history` mevcut.
+- Uzun metinlerde parça kayıtlarının kullanıcı geçmişinde ayrı ayrı onaya gönderilebilir
+  görünmesi kapatıldı. `/api/analyze` uzun metin parçalarını artık `chunk_draft` teknik
+  statüsüyle saklar; `/api/history`, admin onay listeleri, istatistik/rapor akışları
+  `chunk_draft` ve `submitted_part` kayıtlarını gizler.
+- Uzun metin denetimi bittiğinde frontend `/api/history/merged-draft` ile tek birleşik
+  `taslak` kaydı oluşturur. Parça kayıtları `submitted_part` yapılır. Kullanıcı geçmişinde
+  ve sonuç ekranında yalnız birleşik taslak onaya gönderilebilir. Parçalar tek başına
+  `/api/history/:id/submit` ile gönderilmeye çalışılırsa backend bunu açık hata mesajıyla
+  reddeder.
+- `Onaya Gönder` başarıyla tamamlanınca modal kapanır, işlem butonu yeniden aktif kalmaz,
+  giriş alanı temizlenir ve sonuç alanında `Onay kuyruğuna alındı` başarı kartı gösterilir.
+  Kartta `Yeni Denetime Başla`, `Düzeltilmiş Metni Kopyala` ve `Geçmişte Gör` aksiyonları
+  vardır. Sayfayı kapatmanın onay işlemini iptal etmeyeceği metinle belirtilir.
+- Geri bildirim modalı ile onaya gönder modalının iç içe görünmesine neden olan HTML kapanış
+  hatası düzeltildi. Eski ikinci `/api/history/submit-merged` route'u kaldırıldı; birleşik
+  onay artık tek doğrulamalı backend rotasından geçer.
+- Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. `git diff --check` yalnız
+  Windows CRLF uyarıları verdi, whitespace hatası yok. Production deploy:
+  `https://arsiv-kontrol-mqnb8trkq-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  canlı HTML'de `Onay kuyruğuna alındı`, `chunk_draft`, `/api/history/merged-draft` var ve
+  `submit-merged` tek kez görünüyor. Push yapılmadı.
+- Canlı 2000+ bekleyen onay kuyruğu analiz edilip kullanıcı onayıyla güvenli temizlendi.
+  Silme yapılmadı; 12 test kaydı, 180 düzeltilmiş metni olmayan kayıt ve 72 aynı kullanıcıya
+  ait mükerrer düzeltilmiş metin kaydı `reddedildi` statüsüne alındı. `approved_by` alanları
+  ASCII sebep notlarıyla işaretlendi. İşlem sırasında bir yeni kayıt geldiği için kuyruk
+  2398'den 2134'e indi. Son kontrolde bekleyen kuyrukta kalan test, boş düzeltilmiş metin
+  veya aynı kullanıcı mükerreri `0`.
+
+## 2026-07-29 Codex Güncel Durum
+
+- Onaya gönderimde ikinci güvenlik katmanı eklendi. Önceki `Onaya Gönder` akışı aynı kaynak
+  metnin ikinci kez onaya düşmesini `text_hash` ile engelliyordu; ancak kaynak metin küçük
+  değişmiş olsa bile aynı düzeltilmiş metin üretilebilirdi. Artık tekil ve uzun/birleşik
+  onaya gönderme endpointleri, aynı kullanıcı için `bekliyor`, `onaylandi` veya eski boş
+  statüde aynı normalize edilmiş `corrected_text` varsa ikinci gönderimi reddeder. `reddedildi`
+  kayıtlar yeniden çalışma ihtimaline karşı engel sayılmaz. `scripts/check-frontend.js` bu
+  kuralı regresyon kontrolüne aldı. Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti.
+  Production deploy: `https://arsiv-kontrol-6neioe0k0-ugurkarabulutts-projects.vercel.app`,
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa HTTP 200. Eski 2000+
+  bekleyen kayıt üzerinde temizlik/silme yapılmadı; bu ayrıca raporlu ve onaylı yapılmalı.
+- İş Panosu onay/red etkileşimi düzeltildi. Önceki akışta `Onayla` veya `Reddet`
+  tıklandıktan sonra API kaydı güncelleyebiliyor, ancak İş Panosu kendi listesini yeniden
+  yüklemediği için kart bekleyen kolonda kalmış gibi görünüyordu. `approveItem/rejectItem`
+  ortak `setApprovalAction` akışına alındı; buton işlem sırasında kilitlenir, hata varsa
+  görünür mesaj verir, başarıda `loadOnay()`, `loadHistory()` ve badge yenilemesi çalışır.
+  `scripts/check-frontend.js` bu yenileme davranışını regresyon kontrolüne aldı.
+  Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. Production deploy:
+  `https://arsiv-kontrol-h0sjen9om-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa HTTP 200; canlı HTML'de
+  `setApprovalAction`, `await loadOnay();` ve `İşleniyor...` akışı mevcut. Push yapılmadı.
+- Düzeltilmiş metin sonuç UX'i sadeleştirildi. Başlık satırındaki ikinci `Onaya Gönder`
+  kaldırıldı; sonuç PDF indirme butonu kaldırıldı. Kopyalama artık düzeltilmiş metin
+  kutusunun sağ üst kenarındaki modern tek `Kopyala` butonuyla yapılır. `Onaya Gönder`
+  yalnızca metnin altındaki taslak/onay panelinde kalır. `scripts/check-frontend.js` eski
+  aksiyon satırı, ikinci onay ve sonuç PDF butonu geri gelirse hata verecek şekilde
+  güncellendi. Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. Production deploy:
+  `https://arsiv-kontrol-bgweehvog-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`; canlı HTML'de `corrected-copy-btn`
+  ve alt panel onayı var, `corrected-btns` ve `downloadPDF()` aksiyonu yok. Push yapılmadı.
+- Konferans tam metinleri için 50.000-100.000 karakter uzun metin modu güçlendirildi.
+  Parça boyutu 16.000'den 8.000 karaktere indirildi, en fazla iki parça eşzamanlı
+  denetlenecek şekilde hızlandırıldı. Bir parça düşük skor nedeniyle düzeltilmiş metin
+  üretmezse artık tüm birleşik çıktı boşaltılmıyor; o parça kaynak haliyle korunup diğer
+  düzeltilmiş parçalarla tek tam metin olarak gösteriliyor. `scripts/check-frontend.js`
+  bu davranış için kontrol içeriyor. Doğrulama: `npm.cmd run check` başarılı; 79/79 test
+  geçti. Deploy/push yapılmadı.
+- Onaya gönderme akışı ayrıldı. Yeni denetimler önce `taslak` olarak kullanıcının kendi
+  geçmişinde kalır; admin onay kuyruğu, istatistikler ve CSV taslakları görmez. Kullanıcı
+  sonuç ekranındaki veya kendi geçmişindeki `Onaya Gönder` butonuna bastığında son teyit
+  penceresi açılır; onaydan sonra kayıt `bekliyor` olur. Uzun metinlerde parça taslakları
+  admin tarafında görünmez; onaydan sonra tek birleşik kayıt oluşturulur ve parça kayıtları
+  `submitted_part` olarak gizlenir. Vercel production deploy tamamlandı:
+  `https://arsiv-kontrol-ncrgetvkj-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health` `ok`, ana sayfa HTTP 200,
+  canlı HTML içinde `Onaya Gönder` ve `Taslak olarak kaydedildi` akışı mevcut. Push yapılmadı.
+- Mobil görünürlük düzeltmesi: `Onaya Gönder` butonu sadece düzeltilmiş metin üst aksiyon
+  satırında değil, taslak/onay panelinin içinde de gösteriliyor. Mobilde aksiyon satırı iki
+  kolonlu düzene geçti; `Onaya Gönder` tam genişlikte görünür. Doğrulama: `npm.cmd run check`
+  başarılı; 79/79 test geçti. Production deploy:
+  `https://arsiv-kontrol-38klecuop-ugurkarabulutts-projects.vercel.app`, alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa HTTP 200; canlı HTML’de panel
+  butonu ve mobil grid düzeni mevcut. Push yapılmadı.
+
 ## 2026-07-28 Codex Güncel Durum
 
+- Uzun metinlerde görülen `Denetim tamamlanmadı` hatası için dayanıklı analiz akışı eklendi.
+  16.000 karakter üstü metinler frontend'de güvenli parçalara ayrılır, parçalar ayrı
+  `/api/analyze` istekleriyle denetlenir ve sonuç tek raporda birleştirilir. `.docx`
+  yüklemeleri için `/api/extract-file-text` endpoint'i eklendi; uzun dosyalar da parçalı
+  akıştan geçer. Parçalı sonuç geri bildirimleri doğru parça geçmiş kaydına bağlanır.
+  Doğrulama: `npm.cmd run check` başarılı; 79/79 test geçti. Deploy/push yapılmadı.
 - Onay sayaçları düzeltildi. Canlı salt-okunur sayımda gerçek durum `history_total=2076`,
   `bekliyor=2073`, `onaylandi=2`, `reddedildi=1` iken uygulama benzeri sınırsız olmayan
   sorguda yalnız 1000 satır dönüyor ve bunun içinde `bekliyor=997` göründüğü doğrulandı.

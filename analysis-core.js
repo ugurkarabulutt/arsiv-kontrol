@@ -89,6 +89,7 @@ const SURA_VARIANT_STANDARDS = [
   { title: 'Hûd', keys: ['hud', 'hûd'] },
   { title: 'Fâtır', keys: ['fatir', 'fâtır'] },
   { title: 'Hacc', keys: ['hac', 'hacc'] },
+  { title: 'Mumtehine', keys: ['mumtehine'] },
   { title: "A'râf", keys: ['araf', "a'raf", 'a râf'] }
 ];
 const FORBIDDEN_TRANSFORMS = [
@@ -225,6 +226,18 @@ function suraVariantFixed(original) {
 function isAllowedSuraStandardChange(original, fixed) {
   const expected = suraVariantFixed(original);
   return !!expected && canonicalText(expected) === canonicalText(fixed);
+}
+
+function isSuraVariantWorsening(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  const expectedFrom = suraVariantFixed(from);
+  const expectedTo = suraVariantFixed(to);
+  return !!expectedFrom
+    && !!expectedTo
+    && canonicalText(expectedFrom) === from
+    && canonicalText(expectedTo) === from
+    && from !== to;
 }
 
 function isBareHacToHaccRewrite(original, fixed) {
@@ -413,6 +426,8 @@ function isAllowedCaseNormalization(original, fixed) {
   if (/^Her\s+Resûl$/u.test(from) && to === 'Her resûl') return true;
   if (/^gayy\s+yolu$/iu.test(from) && /^(?:Gayy yolu|GAYY YOLU)$/u.test(to)) return true;
   if (from === 'âyetTE' && to === 'ÂYETTE') return true;
+  if (/^nice\s+aşıkların$/iu.test(from) && /^Nice\s+aşıkların$/u.test(to)) return true;
+  if (/^bir\s+kâmil\s+mürşide$/iu.test(from) && /^Bir\s+kâmil\s+mürşide$/u.test(to)) return true;
   return false;
 }
 
@@ -429,6 +444,196 @@ function sourceProtectsMaideNefislerinin(sourceText, original, fixed) {
   const to = foldText(fixed);
   if (from !== 'nefislerinin' || to !== 'nefslerinin') return false;
   return /\bmaide\s*-\s*80\b/u.test(asciiFold(sourceText));
+}
+
+function isBareYunusPersonRewrite(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  return /^Yunus$/iu.test(from)
+    && /^Yûnus$/iu.test(to)
+    && from !== to;
+}
+
+function isBareIsaSavAddition(original, fixed) {
+  const from = asciiFold(original);
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return from === 'isa' && /^isa\s*\(\s*a\.s\.?\s*\)$/u.test(to);
+}
+
+function isNefretToNefsRewrite(original, fixed) {
+  return /^nefret[\p{L}\p{N}_]*/u.test(foldText(original))
+    && /^nefs[\p{L}\p{N}_]*/u.test(foldText(fixed));
+}
+
+function isVarYaDeletion(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
+  return /\bvar ya\b/u.test(from) && !/\bvar ya\b/u.test(to);
+}
+
+function isSimplePunctuationAddition(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  const lowered = from.toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+  return lowered === 'şeriat kitabı' && to === `${from},`;
+}
+
+function isFazlFamilyFalsePositive(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return (/^fazilet[\p{L}\p{N}_]*$/u.test(from) && /^fazl/u.test(to))
+    || (/^fazilla$/u.test(from) && /^fazl\s+ile$/u.test(to));
+}
+
+function isAhlakiPossessiveRewrite(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  return from === 'ahlaki' && to === 'ahlakı';
+}
+
+function isArdardaSplit(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, '').trim();
+  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
+  return from === 'ardarda' && to === 'ard arda';
+}
+
+function isAcizCircumflexInsertion(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  return /^aciz[\p{L}\p{N}_]*$/u.test(from) && /^âciz[\p{L}\p{N}_]*$/u.test(to);
+}
+
+function isYakinCircumflexDrop(original, fixed) {
+  return /^yakîn$/iu.test(canonicalText(original))
+    && /^yakın$/iu.test(canonicalText(fixed));
+}
+
+function isDinCircumflexInsertion(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  return /^dini$/iu.test(from) && /^dinî$/iu.test(to);
+}
+
+function isSureDeCompaction(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, '').trim();
+  return from === 'sure de' && to === 'surede';
+}
+
+function isTabiatiylaRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return from === 'tabiatiyla' && to === 'tabii ki';
+}
+
+function isTabiKiToTabiatiylaRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return /^(?:tabi|tabii|tabiî)\s+ki$/u.test(from) && to === 'tabiatiyla';
+}
+
+function isLazimGelenSplitInPhrase(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return from.includes('lazimgelen') && to.includes('lazim gelen');
+}
+
+function isAllahCcToAsRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return /^allah\s*\(\s*c\.?c\.?\s*\)$/u.test(from)
+    && /^allah\s*\(\s*a\.?s\.?\s*\)$/u.test(to);
+}
+
+function isHayySemanticRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return /^hayy[\p{L}\p{N}_]*$/u.test(from)
+    && /^(?:diri|diridir|hayat|hayatta)[\p{L}\p{N}_]*$/u.test(to);
+}
+
+function isSebilelToSebiliRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  return /^sebilel\s+(?:gayy|rusd)/u.test(from)
+    && /^sebili\s+(?:gayy|rusd)/u.test(to);
+}
+
+function isYokToYoksaRewrite(original, fixed) {
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
+  return /\byok\.$/u.test(from) && /\byoksa\.$/u.test(to);
+}
+
+function isQuranContentAddition(original, fixed) {
+  const from = asciiFold(original);
+  const to = asciiFold(fixed);
+  return !/\bkur'?an\b/u.test(from) && /\bkur'?an\b/u.test(to);
+}
+
+function isReferenceColonInsertion(original, fixed) {
+  const from = canonicalText(original).replace(/[–—]/gu, '-');
+  const to = canonicalText(fixed).replace(/[–—]/gu, '-');
+  return /^(?:\d+\s*\/\s*)?[A-ZÇĞİÖŞÜÂÎÛ' ]+\s*-\s*\d+\s+De ki:$/u.test(from)
+    && to === from.replace(/\s+De ki:$/u, ': De ki:');
+}
+
+function isReferenceColonDeletion(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!from.endsWith(':') || to !== from.slice(0, -1)) return false;
+  return /(?:\d+\s*\/\s*)?[\p{L}'’ÂÎÛâîû]+\s*[-–]\s*\d+/iu.test(from);
+}
+
+function isMalformedQuoteDiyorRewrite(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  return /\bdiyor\.$/iu.test(from) && /\bdiyor\."$/iu.test(to);
+}
+
+function sourceProtectsTevbeSuraReference(sourceText, original, fixed) {
+  const from = foldText(original);
+  const to = foldText(fixed);
+  if (from !== 'tevbe' || to !== 'tovbe') return false;
+  return /\btevbe\s+\d+/u.test(asciiFold(sourceWindow(sourceText, original)));
+}
+
+function isBibliographySourceTitleRewrite(original, fixed) {
+  const from = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  if (/^fezailul\b/u.test(from) && /^fezailu'?l\b/u.test(to)) return true;
+  if (/^alamet-il\b/u.test(from) && /^alamet-i'?l\b/u.test(to)) return true;
+  return false;
+}
+
+function sourceWindow(sourceText, original) {
+  const source = canonicalText(sourceText);
+  const needle = canonicalText(original);
+  if (!source || !needle) return '';
+  const index = source.toLocaleLowerCase('tr-TR').indexOf(needle.toLocaleLowerCase('tr-TR'));
+  if (index < 0) return '';
+  return source.slice(Math.max(0, index - 220), Math.min(source.length, index + needle.length + 220));
+}
+
+function sourceProtectsBareYunusPerson(sourceText, original, fixed) {
+  if (!isBareYunusPersonRewrite(original, fixed)) return false;
+  const window = asciiFold(sourceWindow(sourceText, original));
+  return /\byunus\s+(?:emre|diyor|ne\s+diyor)\b/u.test(window);
+}
+
+function sourceProtectsArabicDinLine(sourceText, original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!/^dîn[\p{L}\p{N}_]*$/iu.test(from) || !/^din[\p{L}\p{N}_]*$/iu.test(to)) return false;
+  const window = asciiFold(sourceWindow(sourceText, original));
+  return /\d+\s*\/\s*[\p{L}' ]+\s*-\s*\d+/u.test(window)
+    || /\b(?:tebia|dinekum|dinikum|siratin|siratekel|mustekim|mustekimin|agveyteni|akudenne)\b/u.test(window);
+}
+
+function sourceProtectsBibliographyLine(sourceText, original, fixed) {
+  if (!isBibliographySourceTitleRewrite(original, fixed)) return false;
+  const window = asciiFold(sourceWindow(sourceText, original));
+  return /\b(?:kaynak|buhari|muslim|tirmizi|kitab|hadis|hadis-i|hadis)\b/u.test(window);
 }
 
 function isAllowedReferencePunctuation(original, fixed) {
@@ -503,6 +708,7 @@ function sourceProtectsArabicTransliteration(sourceText, original, fixed) {
   if (!isArabicTransliterationMustekimRewrite(original, fixed)) return false;
   const source = asciiFold(sourceText);
   return /siratekel\s+mustekim(?:\s*\(\s*mustekime\s*\))?/u.test(source)
+    || /siratin\s+mustekim(?:\s*\(\s*mustekimin\s*\))?/u.test(source)
     || (/\b(?:kale\s+fe\s+bima|agveyteni|ak'?udenne|lehum)\b/u.test(source) && /\bmustekim(?:e)?\b/u.test(source));
 }
 
@@ -529,6 +735,10 @@ function isSourceContextProtectedIssue(sourceText, original, fixed) {
   return sourceProtectsAllahArasindadir(sourceText, original, fixed)
     || sourceProtectsArabicTransliteration(sourceText, original, fixed)
     || sourceAlreadyHasSavAfterIssue(sourceText, original, fixed)
+    || sourceProtectsBareYunusPerson(sourceText, original, fixed)
+    || sourceProtectsTevbeSuraReference(sourceText, original, fixed)
+    || sourceProtectsArabicDinLine(sourceText, original, fixed)
+    || sourceProtectsBibliographyLine(sourceText, original, fixed)
     || sourceProtectsBookTitleDin(sourceText, original, fixed)
     || sourceProtectsMaideNefislerinin(sourceText, original, fixed);
 }
@@ -677,7 +887,7 @@ function sourceAlreadyHasFixedPunctuation(sourceText, original, fixed) {
   const from = canonicalText(original);
   const to = canonicalText(fixed);
   if (!source || !from || !to) return false;
-  if (!new RegExp(`^${escapeRegExp(from)}[.!?]$`, 'iu').test(to)) return false;
+  if (!new RegExp(`^${escapeRegExp(from)}[,;:.!?]$`, 'iu').test(to)) return false;
   return sourceContainsIssue(source, to);
 }
 
@@ -724,7 +934,32 @@ function isProtectedChange(original, fixed) {
   if (isAllowedCaseNormalization(original, fixed)) return false;
   if (isAllowedReferencePunctuation(original, fixed)) return false;
   if (isBareHacToHaccRewrite(original, fixed)) return true;
+  if (isBareYunusPersonRewrite(original, fixed)) return true;
+  if (isBareIsaSavAddition(original, fixed)) return true;
+  if (isNefretToNefsRewrite(original, fixed)) return true;
+  if (isVarYaDeletion(original, fixed)) return true;
+  if (isSimplePunctuationAddition(original, fixed)) return true;
+  if (isFazlFamilyFalsePositive(original, fixed)) return true;
+  if (isAhlakiPossessiveRewrite(original, fixed)) return true;
+  if (isArdardaSplit(original, fixed)) return true;
+  if (isAcizCircumflexInsertion(original, fixed)) return true;
+  if (isYakinCircumflexDrop(original, fixed)) return true;
+  if (isDinCircumflexInsertion(original, fixed)) return true;
+  if (isSureDeCompaction(original, fixed)) return true;
+  if (isTabiatiylaRewrite(original, fixed)) return true;
+  if (isTabiKiToTabiatiylaRewrite(original, fixed)) return true;
+  if (isLazimGelenSplitInPhrase(original, fixed)) return true;
+  if (isAllahCcToAsRewrite(original, fixed)) return true;
+  if (isHayySemanticRewrite(original, fixed)) return true;
+  if (isSebilelToSebiliRewrite(original, fixed)) return true;
+  if (isYokToYoksaRewrite(original, fixed)) return true;
+  if (isQuranContentAddition(original, fixed)) return true;
+  if (isReferenceColonInsertion(original, fixed)) return true;
+  if (isReferenceColonDeletion(original, fixed)) return true;
+  if (isMalformedQuoteDiyorRewrite(original, fixed)) return true;
+  if (isBibliographySourceTitleRewrite(original, fixed)) return true;
   if (isAllowedSuraStandardChange(original, fixed)) return false;
+  if (isSuraVariantWorsening(original, fixed)) return true;
   if (isCaseOnlyChange(original, fixed) && !isAllowedCaseNormalization(original, fixed)) return true;
   if (isSuraCaseOnlyChange(original, fixed)) return true;
   if (isSourceDiacriticProtected(original, fixed)) return true;
@@ -769,12 +1004,24 @@ function caseLike(original, fixed) {
   return replacement;
 }
 
+function fixAdemSuretiPhrase(original) {
+  return String(original || '')
+    .replace(/\(\s*A\.S\.?\s*\)/iu, '(A.S)')
+    .replace(/sureti/iu, 'z\u00fcrriyeti');
+}
+
 function deterministicFixed(original) {
+  const rawText = normalizeText(original);
   const text = canonicalText(original);
   if (!text) return '';
 
   const suraFixed = suraVariantFixed(text);
   if (suraFixed && suraFixed !== text) return suraFixed;
+  if (/^tevbe[\p{L}\p{N}_]*$/iu.test(text)) {
+    if (text === text.toLocaleUpperCase('tr-TR') && /^TEVBE$/u.test(text)) return '';
+    return caseLike(original, text.replace(/^tevbe/iu, 'tövbe'));
+  }
+  if (/^sebîlel\s+(?:gayy|rüşd)/iu.test(text)) return '';
   if (/^dîn[\p{L}\p{N}_]*$/iu.test(text)) {
     if (/^dîn(?:ehum|ekum|ihim|ikum|ihi|ehu)$/iu.test(text)) return '';
     return caseLike(original, text.replace(/^dîn/iu, 'din'));
@@ -813,6 +1060,9 @@ function deterministicFixed(original) {
   if (/^veli$/iu.test(text)) return caseLike(original, 'velî');
   if (/^\(\s*S\.AV\.?\s*\)$/iu.test(text)) return '(S.A.V)';
   if (/^Her\s+Resûl$/u.test(text)) return 'Her resûl';
+  if (/^(?:\u00c2dem|Adem)\s*\(\s*A\.S\.?\s*\)\s*['\u2019]?\s*(?:\u0131n|in|un|\u00fcn|n\u0131n|nin|nun|n\u00fcn)?\s+sureti$/iu.test(text)) {
+    return fixAdemSuretiPhrase(original);
+  }
   if (/^\(Araf\s+175\.\.$/iu.test(text)) return '(Araf 175)';
   if (/^\(Bakara\s+129\.151,\s*Âli\s+İmran\s+164,\s*Cuma\s+2\.$/iu.test(text)) return '(Bakara 129.151, Âli İmrân 164, Cuma 2)';
   if (/^2\.?\s*Gay\s+yolu$/u.test(text)) return '2. Gayy yolu';
@@ -820,6 +1070,24 @@ function deterministicFixed(original) {
   if (/^gayy\s+YOLU$/u.test(text)) return 'GAYY YOLU';
   if (text === 'âyetTE') return 'ÂYETTE';
   return '';
+}
+
+function isTevbeSuraContext(sourceText, index, length) {
+  const text = String(sourceText || '');
+  const original = text.slice(index, index + length);
+  const before = text.slice(Math.max(0, index - 20), index);
+  const after = text.slice(index + length, index + length + 40);
+  return /^TEVBE$/u.test(original)
+    || /(?:\/|\d+\s*\/)\s*$/u.test(before)
+    || /^\s*(?:[-–]\s*\d+|\d+(?:\s*,\s*\d+)?(?:['’]?[a-zçğıöşü]+)?|\bSuresi(?:nin|ni|nde|nden|ne)?\b)/iu.test(after);
+}
+
+function isBareYunusSureContext(sourceText, index, length) {
+  const text = String(sourceText || '');
+  const before = text.slice(Math.max(0, index - 20), index);
+  const after = text.slice(index + length, index + length + 40);
+  return /(?:\/|\d+\s*\/)\s*$/u.test(before)
+    || /^\s*(?:[-–]\s*\d+|\d+(?:\s*,\s*\d+)?(?:['’]?[a-zçğıöşü]+)?|\bSuresi(?:nin|ni|nde|nden|ne)?\b)/iu.test(after);
 }
 
 function addDeterministicIssue(cats, seen, original, fixed, rule) {
@@ -845,9 +1113,10 @@ function applyDeterministicStandards(cats, sourceText) {
     });
   });
 
-  const tokenRe = /(?<![\p{L}\p{N}_])(?:dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIı][Ss]-[İiIı]\s+[Şş][Ee][Rr][İiIı][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
+  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIı][Ss]-[İiIı]\s+[Şş][Ee][Rr][İiIı][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(tokenRe)) {
     const original = match[0];
+    if (/^tevbe[\p{L}\p{N}_]*$/iu.test(original) && isTevbeSuraContext(text, match.index, original.length)) continue;
     addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin arşiv standardı');
   }
 
@@ -878,11 +1147,33 @@ function applyDeterministicStandards(cats, sourceText) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sure adi standardi');
   }
 
-  const suraVariantRe = /(?<![\p{L}\p{N}_])(?:Ali|Âli|Âl-i|Al-i)[-\s]+(?:İmran|İmrân|Imran|Imrân)(?:\s+Suresi(?:nin|ni|nde|nden|ne)?)?|(?<![\p{L}\p{N}_])(?:Casiye|Yunus|Hud|Fatir|Araf|A'raf)(?:\s+Suresi(?:nin|ni|nde|nden|ne)?)?(?![\p{L}\p{N}_])/giu;
+  const yunusRefRe = /(?<![\p{L}\p{N}_])((?:\d+\s*[\/.]\s*)?)Yunus(\s*[-–]\s*\d+)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(yunusRefRe)) {
+    const title = caseSuraTitleLike(match[0], 'Yûnus');
+    addDeterministicIssue(cats, seen, match[0], `${match[1]}${title}${match[2]}`, 'Sure adi standardi');
+  }
+
+  const yunusLooseRefRe = /(?<![\p{L}\p{N}_])Yunus(\s+\d+(?:\s*,\s*\d+)?(?:['’]?[a-zçğıöşü]+)?)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(yunusLooseRefRe)) {
+    addDeterministicIssue(cats, seen, match[0], `Yûnus${match[1]}`, 'Sure adi standardi');
+  }
+
+  const tovbeRefRe = /(?<![\p{L}\p{N}_])Tövbe(\s+\d+(?:\s*,\s*\d+)?(?:['’]?[a-zçğıöşü]+)?)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(tovbeRefRe)) {
+    addDeterministicIssue(cats, seen, match[0], `Tevbe${match[1]}`, 'Sure referansi standardi');
+  }
+
+  const suraVariantRe = /(?<![\p{L}\p{N}_])(?:Ali|Âli|Âl-i|Al-i)[-\s]+(?:İmran|İmrân|Imran|Imrân)(?:\s+Suresi(?:nin|ni|nde|nden|ne)?)?|(?<![\p{L}\p{N}_])(?:Casiye|Yunus|Hud|Fatir|Araf|A'raf|Mumtehıne)(?:\s+Suresi(?:nin|ni|nde|nden|ne)?)?(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(suraVariantRe)) {
     if (/^A'?raf$/iu.test(match[0]) && /^\s+\d/u.test(text.slice(match.index + match[0].length))) continue;
+    if (/^Yunus$/iu.test(match[0]) && !isBareYunusSureContext(text, match.index, match[0].length)) continue;
     const fixed = deterministicFixed(match[0]);
     if (fixed) addDeterministicIssue(cats, seen, match[0], fixed, 'Sure adi standardi');
+  }
+
+  const sebilelRe = /(?<![\p{L}\p{N}_])sebîlel\s+(?:gayy|rüşd)[\p{L}\p{N}_'’]*(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(sebilelRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sebîli standardı');
   }
 
   const hacRefRe = /(?<![\p{L}\p{N}_])(\d+\s*\/\s*)Hac(\s*[-–]?\s*\d+)/gu;
@@ -956,6 +1247,11 @@ function applyDeterministicStandards(cats, sourceText) {
     addDeterministicIssue(cats, seen, match[0], `${match[0]} (A.S)`, 'Nebî isimleri standardı');
   }
 
+  const ademSuretiRe = /(?<![\p{L}\p{N}_])(?:\u00c2dem|Adem)\s*\(\s*A\.S\.?\s*\)\s*['\u2019]?\s*(?:\u0131n|in|un|\u00fcn|n\u0131n|nin|nun|n\u00fcn)?\s+sureti(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(ademSuretiRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Âdem (A.S) zürriyet standardı');
+  }
+
   const herResulRe = /(?<![\p{L}\p{N}_])Her\s+Resûl(?![\p{L}\p{N}_])/gu;
   for (const match of text.matchAll(herResulRe)) {
     addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Resûl yazim standardi');
@@ -994,6 +1290,22 @@ function applyDeterministicStandards(cats, sourceText) {
   const standardLazimRe = /(?<![\p{L}\p{N}_])([\p{L}\p{N}_]+)l\u00e2z\u0131m(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(standardLazimRe)) {
     addDeterministicIssue(cats, seen, match[0], `${match[1]} l\u00e2z\u0131m`, 'Biti\u015fik yaz\u0131m d\u00fczeni');
+  }
+
+  const malformedQuoteDiyorRe = /([.!?])[”"]diyor\./giu;
+  for (const match of text.matchAll(malformedQuoteDiyorRe)) {
+    addDeterministicIssue(cats, seen, match[0], `${match[1]}" diyor.`, 'Alinti sonrasi konusma duzeni');
+  }
+
+  const hzMusaHizirDediRe = /Hz\.\s*Musa['’]ya\s+Hızır['’]a\s+var\s+dedi;/gu;
+  for (const match of text.matchAll(hzMusaHizirDediRe)) {
+    addDeterministicIssue(cats, seen, match[0], match[0].replace(/;$/u, ','), 'Konusma noktalama standardi');
+  }
+
+  const stanzaLowerLineRe = /(^|\n)(nice\s+aşıkların|bir\s+kâmil\s+mürşide)(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(stanzaLowerLineRe)) {
+    const fixedLine = match[2][0].toLocaleUpperCase('tr-TR') + match[2].slice(1);
+    addDeterministicIssue(cats, seen, match[2], fixedLine, 'Dortluk satir basi standardi');
   }
 
   const standardSentenceSpaceRe = /([\p{L}\p{N}_][\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db])/gu;
@@ -1064,7 +1376,8 @@ function normalizeRepeatedSav(text) {
 }
 
 function flexibleIssuePattern(original) {
-  const chars = [...String(original || '')];
+  const needle = canonicalText(original);
+  const chars = [...needle];
   let pattern = '';
   for (const ch of chars) {
     if (/\s/u.test(ch)) pattern += '\\s+';
@@ -1073,7 +1386,36 @@ function flexibleIssuePattern(original) {
     else if (ch === '…') pattern += '(?:…|\\.\\.\\.)';
     else pattern += escapeRegExp(ch);
   }
-  return new RegExp(pattern, 'iu');
+  const left = needsWordBoundary(needle[0]) ? '(?<![\\p{L}\\p{N}_])' : '';
+  const right = needsWordBoundary(needle[needle.length - 1]) ? '(?![\\p{L}\\p{N}_])' : '';
+  return new RegExp(`${left}${pattern}${right}`, 'iu');
+}
+
+function exactIssuePattern(original, flags = 'iu') {
+  const needle = canonicalText(original);
+  if (!needle) return null;
+  const left = needsWordBoundary(needle[0]) ? '(?<![\\p{L}\\p{N}_])' : '';
+  const right = needsWordBoundary(needle[needle.length - 1]) ? '(?![\\p{L}\\p{N}_])' : '';
+  return new RegExp(`${left}${escapeRegExp(needle)}${right}`, flags);
+}
+
+function replaceAcceptedIssue(text, original, fixed) {
+  const exactSensitive = exactIssuePattern(original, 'u');
+  if (exactSensitive?.test(text)) {
+    return text.replace(exactSensitive, match => caseLike(match, fixed));
+  }
+
+  const exactInsensitive = exactIssuePattern(original, 'iu');
+  if (exactInsensitive?.test(text)) {
+    return text.replace(exactInsensitive, match => caseLike(match, fixed));
+  }
+
+  const flexible = flexibleIssuePattern(original);
+  if (flexible.test(text)) {
+    return text.replace(flexible, match => caseLike(match, fixed));
+  }
+
+  return text;
 }
 
 function applyAcceptedIssues(sourceText, issues) {
@@ -1082,12 +1424,7 @@ function applyAcceptedIssues(sourceText, issues) {
     const original = String(issue?.original || '');
     const fixed = String(issue?.fixed || '');
     if (!original || !fixed) return text;
-    if (text.includes(original)) return text.replace(original, fixed);
-    const exact = new RegExp(escapeRegExp(original), 'iu');
-    if (exact.test(text)) return text.replace(exact, fixed);
-    const flexible = flexibleIssuePattern(original);
-    if (flexible.test(text)) return text.replace(flexible, fixed);
-    return text;
+    return replaceAcceptedIssue(text, original, fixed);
   }, sourceText);
 }
 
@@ -1112,9 +1449,20 @@ function normalizeSavFixed(fixed) {
   return String(fixed || '').replace(/\(\s*S\.AV\.?\s*\)/giu, '(S.A.V)');
 }
 
+function normalizeSavPossessiveFixed(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!/^Resûlullah['’](?:ın|in|un|ün)$/iu.test(from)) return fixed;
+  if (!/\(\s*S\.A\.V\.?\s*\)/iu.test(to)) return fixed;
+  return 'Resûlullah (S.A.V)\'in';
+}
+
 function normalizeIssueForStandards(issue) {
   if (!issue || typeof issue !== 'object') return issue;
-  const fixed = normalizeSavFixed(normalizeSuraFixedCase(issue.original, normalizeHaccCase(issue.original, issue.fixed)));
+  const fixed = normalizeSavPossessiveFixed(
+    issue.original,
+    normalizeSavFixed(normalizeSuraFixedCase(issue.original, normalizeHaccCase(issue.original, issue.fixed)))
+  );
   return fixed === issue.fixed ? issue : { ...issue, fixed };
 }
 

@@ -87,6 +87,23 @@ create table if not exists public.issue_resolution_log (
 );
 create index if not exists issue_resolution_log_created_at_idx on public.issue_resolution_log (created_at desc);
 
+-- content_correction_log
+create table if not exists public.content_correction_log (
+  id uuid primary key default gen_random_uuid(),
+  package_id text not null,
+  history_id uuid references public.history(id) on delete cascade,
+  field_name text not null,
+  old_value text,
+  new_value text,
+  old_hash text,
+  new_hash text,
+  status text not null default 'applied',
+  created_by text,
+  created_at timestamptz not null default now()
+);
+create index if not exists content_correction_log_package_idx on public.content_correction_log (package_id, created_at desc);
+create index if not exists content_correction_log_history_idx on public.content_correction_log (history_id);
+
 -- ai_reports
 create table if not exists public.ai_reports (
   id uuid primary key default gen_random_uuid(),

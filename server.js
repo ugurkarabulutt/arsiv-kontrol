@@ -32,9 +32,10 @@ const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 70000);
 const OPENAI_RETRY_DELAYS_MS = [800, 1800];
 const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
+const ADMIN_PARALLEL_ROUTE_ENABLED = process.env.ADMIN_PARALLEL_ROUTE_ENABLED !== '0';
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
-const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen yöneticiye bildirin.';
-const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Metni kısaltıp parçalara bölerek tekrar deneyin veya yöneticiden destek isteyin.';
+const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
+const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
 
 if (process.env.VERCEL && !process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
@@ -70,7 +71,7 @@ function openaiUserMessage(status) {
   if (status === 401 || status === 403) return AI_CONFIG_ERROR_MSG;
   if (status === 400 || status === 413) return AI_REQUEST_REJECTED_MSG;
   if (OPENAI_RETRYABLE_STATUS.has(status)) return AI_TEMPORARY_UNAVAILABLE_MSG;
-  return 'AI servisi şu anda beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin; devam ederse yöneticinize bildirin.';
+  return 'AI servisi şu anda beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin; devam ederse ekibe bildirin.';
 }
 
 async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
@@ -119,7 +120,7 @@ async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
 
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.set('trust proxy', 1);
 app.use(cookieSession({
   name: 'arsiv_session',
@@ -415,6 +416,12 @@ KORUNACAK BAĞLAMLAR:
 - "(S.A.V:" gibi kapanmamış parantezleri gerçek noktalama hatası say; parantezi kapatıp "(S.A.V):" olarak düzelt. S.A.V kısaltmasının harflerini veya nokta yapısını bozma.
 - "tavsiye" kelimesini "tâbî" veya başka bir kelimeye dönüştürme.
 - "hayy" kökünden gelen ifadeleri "hayat/hayatta" diye sadeleştirme; hayydırlar gibi kullanımları koru.
+- "hayydırlar" gibi ifadeleri "diridirler" diye Türkçe açıklamaya çevirme.
+- "Allah (cc.)" ifadesini "Allah (A.S)" yapma.
+- "ahlaki" sıfatını "ahlakı" diye değiştirme.
+- "ardarda" ve "aciz" kullanımları bu bağlamlarda korunur; otomatik "ard arda" veya "âciz" yapma.
+- "Sebîlel gayy" ve "Sebîlel rüşd" ifadelerini "Sebîli gayy" / "Sebîli rüşd" yapma.
+- "Tabi ki" / "Tabii ki" ifadesini "Tabiatıyla" diye değiştirme.
 - "Hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
 - Metnin başındaki veya cümle içindeki "ve, veya, ama, fakat, çünkü" gibi bağlaçları imlâ gerekçesiyle silme.
 - "nefsi", "nefsin" ve "Nefs-i Mutmainne/Mülhime/Levvame/Emmare" kullanımlarını eklerinden koparma.
@@ -507,6 +514,38 @@ const mapAlert   = a => ({
   createdAt: a.created_at
 });
 
+function historyStatusLabel(status) {
+  return status === 'taslak' ? 'Taslak'
+    : status === 'onaylandi' ? 'Onaylandı'
+    : status === 'reddedildi' ? 'Reddedildi'
+    : 'Bekliyor';
+}
+
+function historyStatusForApproval(status) {
+  return !status || status === 'bekliyor';
+}
+
+const CHUNK_DRAFT_STATUS = 'chunk_draft';
+const SUBMITTED_PART_STATUS = 'submitted_part';
+const SUBMITTED_CORRECTED_HASH_PREFIX = 'submitted_corrected_hash:';
+const HIDDEN_HISTORY_STATUSES = [CHUNK_DRAFT_STATUS, SUBMITTED_PART_STATUS];
+const ADMIN_HIDDEN_HISTORY_STATUSES = ['taslak', ...HIDDEN_HISTORY_STATUSES];
+
+function isChunkFilename(filename = '') {
+  return /\s-\sParça\s+\d+\/\d+$/u.test(String(filename || '').trim());
+}
+
+function isChunkHistoryRow(row = {}) {
+  return row.status === CHUNK_DRAFT_STATUS || isChunkFilename(row.filename);
+}
+
+function isHiddenHistoryForRole(row = {}, role = ROLES.USER) {
+  const status = row.status || 'bekliyor';
+  if (isChunkHistoryRow(row)) return true;
+  if (HIDDEN_HISTORY_STATUSES.includes(status)) return true;
+  return isAdminRole(role) && status === 'taslak';
+}
+
 async function fetchAllPages(makeQuery, pageSize = 1000) {
   const rows = [];
   for (let from = 0; ; from += pageSize) {
@@ -534,6 +573,12 @@ async function loadApprovalGroup(filterQuery) {
 }
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
+const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
+const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
+const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
+const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
+const CORRECTION_ALLOWED_STATUSES = ['taslak', 'bekliyor', 'onaylandi', 'reddedildi'];
+const CORRECTION_ALLOWED_SCOPES = ['reported', 'all'];
 const USER_LAST_SEEN_LEGACY_KEY = 'user_last_seen';
 const USER_LAST_SEEN_KEY_PREFIX = 'user_last_seen:';
 const DEFAULT_STANDARDS = [
@@ -590,6 +635,246 @@ function normalizeIsoDate(value) {
   if (!value) return null;
   const date = new Date(value);
   return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+}
+
+function escapeRegExpServer(value = '') {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function correctionPackageId() {
+  return `cp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function loadCorrectionPackagesFromValue(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+async function loadCorrectionPackages() {
+  return loadCorrectionPackagesFromValue(await loadJsonSetting(CORRECTION_PACKAGE_SETTING_KEY, []));
+}
+
+async function saveCorrectionPackages(packages) {
+  await saveJsonSetting(CORRECTION_PACKAGE_SETTING_KEY, loadCorrectionPackagesFromValue(packages));
+}
+
+function normalizeCorrectionFields(fields) {
+  const list = Array.isArray(fields) ? fields : CORRECTION_DEFAULT_FIELDS;
+  const clean = [...new Set(list.map(String).filter(field => CORRECTION_ALLOWED_FIELDS.includes(field)))];
+  return clean.length ? clean : [...CORRECTION_DEFAULT_FIELDS];
+}
+
+function normalizeCorrectionStatuses(statuses) {
+  const list = Array.isArray(statuses) ? statuses : CORRECTION_DEFAULT_STATUSES;
+  const clean = [...new Set(list.map(String).filter(status => CORRECTION_ALLOWED_STATUSES.includes(status)))];
+  return clean.length ? clean : [...CORRECTION_DEFAULT_STATUSES];
+}
+
+function normalizeCorrectionHistoryScope(scope, hasLinkedFeedback = false) {
+  if (CORRECTION_ALLOWED_SCOPES.includes(scope)) return scope;
+  return hasLinkedFeedback ? 'reported' : 'all';
+}
+
+function normalizeUuidList(values) {
+  return Array.isArray(values)
+    ? [...new Set(values.map(String).filter(id => /^[0-9a-fA-F-]{36}$/.test(id))).values()]
+    : [];
+}
+
+function normalizeCorrectionPackageInput(body = {}, existing = null) {
+  const from = String(body.from ?? existing?.from ?? '').trim();
+  const to = String(body.to ?? existing?.to ?? '').trim();
+  const title = String(body.title ?? existing?.title ?? '').trim().slice(0, 160);
+  const note = String(body.note ?? existing?.note ?? '').trim().slice(0, 1200);
+  if (!from) {
+    const err = new Error('Duzeltilecek ifade gerekli.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (!to) {
+    const err = new Error('Dogru ifade gerekli.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (from === to) {
+    const err = new Error('Yanlis ve dogru ifade ayni olamaz.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const feedbackIds = Array.isArray(body.feedbackIds)
+    ? normalizeUuidList(body.feedbackIds).slice(0, 100)
+    : (existing?.feedbackIds || []);
+  const reportedHistoryIds = normalizeUuidList(body.reportedHistoryIds ?? existing?.reportedHistoryIds);
+  const historyScope = normalizeCorrectionHistoryScope(body.historyScope ?? existing?.historyScope, feedbackIds.length > 0 || reportedHistoryIds.length > 0);
+  return {
+    ...(existing || {}),
+    id: existing?.id || correctionPackageId(),
+    title: title || `${from} -> ${to}`,
+    from,
+    to,
+    note,
+    fields: normalizeCorrectionFields(body.fields ?? existing?.fields),
+    statuses: normalizeCorrectionStatuses(body.statuses ?? existing?.statuses),
+    matchMode: body.matchMode === 'regex' ? 'regex' : 'literal',
+    requiresReview: Boolean(body.requiresReview ?? existing?.requiresReview ?? true),
+    feedbackIds,
+    reportedHistoryIds,
+    historyScope,
+    status: existing?.status || 'pending_review',
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function correctionRegex(pkg) {
+  const flags = pkg.caseInsensitive ? 'giu' : 'gu';
+  if (pkg.matchMode === 'regex') return new RegExp(pkg.from, flags);
+  return new RegExp(escapeRegExpServer(pkg.from), flags);
+}
+
+function applyCorrectionRuleToText(text, pkg) {
+  const oldValue = String(text ?? '');
+  if (!oldValue || !pkg?.from) return { changed: false, count: 0, oldValue, newValue: oldValue };
+  const re = correctionRegex(pkg);
+  let count = 0;
+  const newValue = oldValue.replace(re, () => {
+    count++;
+    return pkg.to;
+  });
+  return { changed: count > 0, count, oldValue, newValue };
+}
+
+function correctionExcerpt(text, pkg) {
+  const source = String(text || '');
+  if (!source) return '';
+  let index = -1;
+  if (pkg.matchMode === 'regex') {
+    const match = source.match(correctionRegex(pkg));
+    if (match?.[0]) index = source.indexOf(match[0]);
+  } else {
+    index = source.indexOf(pkg.from);
+  }
+  if (index < 0) return source.slice(0, 180);
+  const start = Math.max(0, index - 70);
+  const end = Math.min(source.length, index + String(pkg.from).length + 90);
+  return `${start > 0 ? '...' : ''}${source.slice(start, end)}${end < source.length ? '...' : ''}`;
+}
+
+function correctionHistoryStatus(row = {}) {
+  return row.status || 'bekliyor';
+}
+
+function isCorrectionCandidateRow(row = {}, pkg = {}, options = {}) {
+  const status = correctionHistoryStatus(row);
+  if (HIDDEN_HISTORY_STATUSES.includes(status) || isChunkHistoryRow(row)) {
+    return Boolean(options.includeHiddenReported);
+  }
+  return (pkg.statuses || CORRECTION_DEFAULT_STATUSES).includes(status);
+}
+
+async function fetchFeedbackHistoryIds(feedbackIds = []) {
+  const ids = normalizeUuidList(feedbackIds);
+  if (!ids.length) return [];
+  const { data, error } = await supabase.from('alerts')
+    .select('id,history_id')
+    .eq('type', 'feedback')
+    .in('id', ids);
+  if (error) throw new Error(error.message);
+  return normalizeUuidList((data || []).map(row => row.history_id).filter(Boolean));
+}
+
+async function fetchCorrectionHistoryRows(pkg = {}) {
+  const reportedIds = normalizeUuidList(pkg.reportedHistoryIds);
+  const useReportedOnly = pkg.historyScope === 'reported';
+  if (useReportedOnly && !reportedIds.length) return [];
+  const rows = useReportedOnly
+    ? await fetchAllPages(() => supabase.from('history')
+      .select('id,user_id,username,name,filename,score,total_errors,status,summary,corrected_text,created_at')
+      .in('id', reportedIds)
+      .order('created_at', { ascending: false }))
+    : await fetchAllPages(() => supabase.from('history')
+      .select('id,user_id,username,name,filename,score,total_errors,status,summary,corrected_text,created_at')
+      .order('created_at', { ascending: false }));
+  return (rows || []).filter(row => isCorrectionCandidateRow(row, pkg, { includeHiddenReported: useReportedOnly }));
+}
+
+async function scanCorrectionPackage(pkg = {}, options = {}) {
+  const includeValues = Boolean(options.includeValues);
+  const rows = await fetchCorrectionHistoryRows(pkg);
+  const fields = normalizeCorrectionFields(pkg.fields);
+  const changes = [];
+  const byStatus = {};
+  const byField = {};
+  for (const row of rows) {
+    const status = correctionHistoryStatus(row);
+    for (const field of fields) {
+      const result = applyCorrectionRuleToText(row[field], pkg);
+      if (!result.changed) continue;
+      byStatus[status] = (byStatus[status] || 0) + 1;
+      byField[field] = (byField[field] || 0) + 1;
+      changes.push({
+        historyId: row.id,
+        userId: row.user_id,
+        field,
+        count: result.count,
+        status,
+        filename: row.filename || 'Metin',
+        userName: row.name || row.username || '',
+        createdAt: row.created_at,
+        score: row.score,
+        totalErrors: row.total_errors,
+        excerpt: correctionExcerpt(result.oldValue, pkg),
+        ...(includeValues ? { oldValue: result.oldValue, newValue: result.newValue } : {})
+      });
+    }
+  }
+  const affectedRecords = new Set(changes.map(change => change.historyId)).size;
+  return {
+    packageId: pkg.id,
+    historyScope: pkg.historyScope || 'all',
+    reportedHistoryCount: normalizeUuidList(pkg.reportedHistoryIds).length,
+    affectedRecords,
+    changeCount: changes.length,
+    replacementCount: changes.reduce((sum, change) => sum + Number(change.count || 0), 0),
+    byStatus,
+    byField,
+    needsReview: pkg.requiresReview ? affectedRecords : 0,
+    sample: changes.slice(0, 12),
+    changes
+  };
+}
+
+function publicCorrectionPackage(pkg, scan = null) {
+  return {
+    ...pkg,
+    lastScan: scan || pkg.lastScan || null,
+    canApply: HAS_CONTENT_CORRECTION_LOG && pkg.status === 'ready',
+    canRevert: HAS_CONTENT_CORRECTION_LOG && pkg.status === 'applied'
+  };
+}
+
+function sanitizeCorrectionScan(scan = {}) {
+  const { changes, ...rest } = scan;
+  return rest;
+}
+
+async function insertCorrectionLogs(logs) {
+  for (let i = 0; i < logs.length; i += 500) {
+    const { error } = await supabase.from('content_correction_log').insert(logs.slice(i, i + 500));
+    if (error) throw new Error(error.message);
+  }
+}
+
+async function updateCorrectionPackage(id, patch) {
+  const packages = await loadCorrectionPackages();
+  const index = packages.findIndex(pkg => pkg.id === id);
+  if (index < 0) {
+    const err = new Error('Duzeltme paketi bulunamadi.');
+    err.statusCode = 404;
+    throw err;
+  }
+  packages[index] = { ...packages[index], ...patch, updatedAt: new Date().toISOString() };
+  await saveCorrectionPackages(packages);
+  return packages[index];
 }
 
 function latestActivity(...items) {
@@ -899,6 +1184,10 @@ async function seed() {
   HAS_ISSUE_RESOLUTION_LOG = !resolutionLogErr;
   if (!HAS_ISSUE_RESOLUTION_LOG) console.warn('⚠ issue_resolution_log tablosu yok — çözüm kayıt defteri pasif.');
 
+  const { error: contentCorrectionLogErr } = await supabase.from('content_correction_log').select('id').limit(1);
+  HAS_CONTENT_CORRECTION_LOG = !contentCorrectionLogErr;
+  if (!HAS_CONTENT_CORRECTION_LOG) console.warn('⚠ content_correction_log tablosu yok — geçmiş içerik düzeltme uygulaması pasif.');
+
   const { error: aiReportsErr } = await supabase.from('ai_reports').select('id').limit(1);
   HAS_AI_REPORTS = !aiReportsErr;
   if (!HAS_AI_REPORTS) console.warn('⚠ ai_reports tablosu yok — AI rapor kayıtları pasif.');
@@ -1091,7 +1380,6 @@ app.post('/api/users/:id/notify', auth, admin, async (req, res) => {
     if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     if (!target.active) return res.status(400).json({ error: 'Pasif kullanıcıya bildirim gönderilemez.' });
 
-    const internalResolutionNote = appendRootCategoryNote(cleanNote, [alert]);
     const message = [
       `Başlık: ${cleanTitle}`,
       `Mesaj: ${cleanMessage}`,
@@ -1222,13 +1510,214 @@ app.post('/api/standards', auth, admin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── CONTENT CORRECTION PACKAGES ────────────────────────────────────────────
+app.get('/api/correction-packages', auth, admin, async (req, res) => {
+  try {
+    const packages = await loadCorrectionPackages();
+    res.json({
+      logReady: HAS_CONTENT_CORRECTION_LOG,
+      packages: packages.map(pkg => publicCorrectionPackage(pkg))
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/correction-packages', auth, admin, async (req, res) => {
+  try {
+    const packages = await loadCorrectionPackages();
+    const pkg = normalizeCorrectionPackageInput(req.body || {});
+    if (pkg.feedbackIds?.length) {
+      const linkedHistoryIds = await fetchFeedbackHistoryIds(pkg.feedbackIds);
+      pkg.reportedHistoryIds = normalizeUuidList([...(pkg.reportedHistoryIds || []), ...linkedHistoryIds]);
+      pkg.historyScope = normalizeCorrectionHistoryScope(req.body?.historyScope, pkg.reportedHistoryIds.length > 0);
+    }
+    pkg.createdBy = req.session.name || req.session.username;
+    packages.unshift(pkg);
+    await saveCorrectionPackages(packages);
+    res.json({ success: true, package: publicCorrectionPackage(pkg) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/correction-packages/:id/preview', auth, admin, async (req, res) => {
+  try {
+    const packages = await loadCorrectionPackages();
+    const pkg = packages.find(item => item.id === req.params.id);
+    if (!pkg) return res.status(404).json({ error: 'Düzeltme paketi bulunamadı.' });
+    const scan = sanitizeCorrectionScan(await scanCorrectionPackage(pkg));
+    const nextStatus = pkg.status === 'applied' || pkg.status === 'reverted'
+      ? pkg.status
+      : 'ready';
+    const updated = await updateCorrectionPackage(pkg.id, { lastScan: scan, status: nextStatus });
+    res.json({ success: true, logReady: HAS_CONTENT_CORRECTION_LOG, package: publicCorrectionPackage(updated, scan), scan });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!HAS_CONTENT_CORRECTION_LOG) {
+      return res.status(400).json({
+        error: 'Geçmiş içerik düzeltme kayıt defteri hazır değil. schema.sql içindeki content_correction_log bölümünü Supabase SQL Editor’de çalıştırın.'
+      });
+    }
+    const packages = await loadCorrectionPackages();
+    const pkg = packages.find(item => item.id === req.params.id);
+    if (!pkg) return res.status(404).json({ error: 'Düzeltme paketi bulunamadı.' });
+    if (pkg.status === 'applied') {
+      return res.json({
+        success: true,
+        package: publicCorrectionPackage(pkg, pkg.lastScan || null),
+        scan: pkg.lastScan || null,
+        applied: 0,
+        changes: 0,
+        alreadyApplied: true
+      });
+    }
+    if (!pkg.lastScan) {
+      return res.status(400).json({ error: 'Geçmiş içeriklere uygulamadan önce etki taraması yapılmalı ve örnek kayıtlar kontrol edilmelidir.' });
+    }
+    if (pkg.status !== 'ready') {
+      return res.status(400).json({ error: 'Bu düzeltme henüz son kontrol için hazır değil. Önce etki taraması yapın.' });
+    }
+    if (req.body?.superAdminApproved !== true) {
+      return res.status(400).json({ error: 'Geçmiş düzeltme için süper admin son kontrol onayı gereklidir.' });
+    }
+    if (pkg.requiresReview && req.body?.confirmReview !== true) {
+      return res.status(400).json({ error: 'Bu paket şüpheli durum içeriyor. Uygulamak için ayrıca gözden geçirme onayı gerekir.' });
+    }
+
+    const scanWithValues = await scanCorrectionPackage(pkg, { includeValues: true });
+    if (!scanWithValues.changes.length) {
+      const scan = sanitizeCorrectionScan(scanWithValues);
+      const updated = await updateCorrectionPackage(pkg.id, { lastScan: scan, status: 'ready' });
+      return res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: 0 });
+    }
+
+    const updatesByHistory = new Map();
+    const logsByHistory = new Map();
+    for (const change of scanWithValues.changes) {
+      if (!updatesByHistory.has(change.historyId)) updatesByHistory.set(change.historyId, {});
+      updatesByHistory.get(change.historyId)[change.field] = change.newValue;
+      if (!logsByHistory.has(change.historyId)) logsByHistory.set(change.historyId, []);
+      logsByHistory.get(change.historyId).push({
+        package_id: pkg.id,
+        history_id: change.historyId,
+        field_name: change.field,
+        old_value: change.oldValue,
+        new_value: change.newValue,
+        old_hash: textHash(change.oldValue || ''),
+        new_hash: textHash(change.newValue || ''),
+        status: 'applied',
+        created_by: req.session.name || req.session.username
+      });
+    }
+
+    let appliedRecords = 0;
+    let appliedChanges = 0;
+    for (const [historyId, update] of updatesByHistory.entries()) {
+      const { error: updateError } = await supabase.from('history').update(update).eq('id', historyId);
+      if (updateError) throw new Error(updateError.message);
+      const logs = logsByHistory.get(historyId) || [];
+      await insertCorrectionLogs(logs);
+      const sample = scanWithValues.changes.find(change => change.historyId === historyId);
+      if (update.corrected_text !== undefined && sample?.userId && ['bekliyor', 'onaylandi'].includes(correctionHistoryStatus(sample))) {
+        await markSubmittedCorrectedHash(sample.userId, update.corrected_text || '', historyId, correctionHistoryStatus(sample));
+      }
+      appliedRecords++;
+      appliedChanges += logs.length;
+    }
+
+    const scan = sanitizeCorrectionScan(scanWithValues);
+    const updated = await updateCorrectionPackage(pkg.id, {
+      lastScan: scan,
+      status: 'applied',
+      appliedAt: new Date().toISOString(),
+      appliedBy: req.session.name || req.session.username
+    });
+
+    const resolutionGroup = `content-correction-${pkg.id}`;
+    const resolutionNote = [
+      pkg.note || `${pkg.from} -> ${pkg.to}`,
+      `Bildirilen metinlerde uygulanan kayit: ${appliedRecords}`,
+      `Duzeltme sayisi: ${appliedChanges}`
+    ].join('\n');
+
+    if (HAS_ALERT_FEEDBACK_META && Array.isArray(pkg.feedbackIds) && pkg.feedbackIds.length) {
+      await supabase.from('alerts').update({
+        feedback_status: 'resolved',
+        resolved_at: new Date().toISOString(),
+        resolved_by: req.session.name || req.session.username,
+        resolution_group: resolutionGroup,
+        resolution_note: resolutionNote
+      }).eq('type', 'feedback').in('id', pkg.feedbackIds);
+    }
+
+    if (HAS_ISSUE_RESOLUTION_LOG) {
+      await supabase.from('issue_resolution_log').insert({
+        resolution_group: resolutionGroup,
+        title: pkg.title,
+        summary: [
+          pkg.note || `${pkg.from} -> ${pkg.to}`,
+          `Etkilenen kayıt: ${appliedRecords}`,
+          `Değişim: ${appliedChanges}`
+        ].join('\n'),
+        status: 'applied',
+        feedback_count: Array.isArray(pkg.feedbackIds) ? pkg.feedbackIds.length : 0,
+        user_count: 0,
+        created_by: req.session.name || req.session.username
+      });
+    }
+
+    res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: appliedRecords, changes: appliedChanges });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!HAS_CONTENT_CORRECTION_LOG) {
+      return res.status(400).json({ error: 'Geçmiş içerik düzeltme kayıt defteri hazır değil.' });
+    }
+    const packages = await loadCorrectionPackages();
+    const pkg = packages.find(item => item.id === req.params.id);
+    if (!pkg) return res.status(404).json({ error: 'Düzeltme paketi bulunamadı.' });
+
+    const logs = await fetchAllPages(() => supabase.from('content_correction_log')
+      .select('*')
+      .eq('package_id', pkg.id)
+      .eq('status', 'applied')
+      .order('created_at', { ascending: false }));
+    if (!logs.length) return res.status(400).json({ error: 'Geri alınacak uygulanmış kayıt bulunamadı.' });
+
+    const updatesByHistory = new Map();
+    logs.forEach(log => {
+      if (!updatesByHistory.has(log.history_id)) updatesByHistory.set(log.history_id, {});
+      updatesByHistory.get(log.history_id)[log.field_name] = log.old_value || '';
+    });
+    for (const [historyId, update] of updatesByHistory.entries()) {
+      const { error: updateError } = await supabase.from('history').update(update).eq('id', historyId);
+      if (updateError) throw new Error(updateError.message);
+    }
+    const { error: logUpdateError } = await supabase.from('content_correction_log')
+      .update({ status: 'reverted' })
+      .in('id', logs.map(log => log.id));
+    if (logUpdateError) throw new Error(logUpdateError.message);
+
+    const updated = await updateCorrectionPackage(pkg.id, {
+      status: 'reverted',
+      revertedAt: new Date().toISOString(),
+      revertedBy: req.session.name || req.session.username
+    });
+    res.json({ success: true, package: publicCorrectionPackage(updated), reverted: updatesByHistory.size });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
 app.get('/api/history', auth, async (req, res) => {
   try {
-    let q = supabase.from('history').select('*').order('created_at', { ascending: false }).limit(200);
-    if (!isAdminRole(req.session.role)) q = q.eq('user_id', req.session.userId);
-    const { data, error } = await q;
-    if (error) throw new Error(error.message);
-    res.json((data || []).map(mapHistory));
+    const data = await fetchAllPages(() => {
+      let q = supabase.from('history').select('*').order('created_at', { ascending: false });
+      if (isAdminRole(req.session.role)) q = q.or(`status.is.null,status.not.in.(taslak,${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
+      else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
+      return q;
+    });
+    res.json((data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, req.session.role)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1256,7 +1745,33 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-    res.json(mapHistory(data));
+    const mapped = mapHistory(data);
+    if (data.user_id !== req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    if (data.user_id === req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    res.json(mapped);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history/:id([0-9a-fA-F-]{36})/approval-status', auth, async (req, res) => {
+  try {
+    let query = supabase.from('history')
+      .select('id,user_id,status,approved_by,approved_at')
+      .eq('id', req.params.id);
+    if (!isAdminRole(req.session.role)) query = query.eq('user_id', req.session.userId);
+    const { data, error } = await query.maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    res.json({
+      id: data.id,
+      status: data.status || 'bekliyor',
+      submitted: historyStatusForApproval(data.status) || data.status === 'onaylandi',
+      approvedBy: data.approved_by,
+      approvedAt: data.approved_at
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1299,6 +1814,319 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/feedback', auth, async (req, res) =
     if (error) throw new Error(error.message);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+function safeUuidList(values, limit = 80) {
+  const uuidRe = /^[0-9a-fA-F-]{36}$/;
+  return [...new Set((Array.isArray(values) ? values : []).map(String).filter(id => uuidRe.test(id)).slice(0, limit))];
+}
+
+function countsFromSubmittedCategories(categories) {
+  const out = { sozluk: 0, imla: 0, noktalama: 0, etiket: 0, yapi: 0 };
+  Object.keys(out).forEach(key => {
+    const item = categories?.[key];
+    const count = Number.isFinite(Number(item?.count)) ? Number(item.count) : Array.isArray(item?.issues) ? item.issues.length : 0;
+    out[key] = Math.max(0, Math.min(5000, Math.round(count)));
+  });
+  return out;
+}
+
+function httpError(message, statusCode = 400) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  return err;
+}
+
+function mergedHistoryPayloadFromBody(req, fallbackSummary) {
+  const originalText = prepareAnalysisText(req.body?.originalText || '');
+  const correctedText = String(req.body?.correctedText || '').normalize('NFC').replace(/\r\n?/g, '\n').trim();
+  if (!correctedText) throw httpError('Onaya gönderilecek düzeltilmiş metin bulunamadı.');
+
+  const filename = String(req.body?.filename || 'Metin Girişi').trim().slice(0, 160) || 'Metin Girişi';
+  const score = Math.max(0, Math.min(100, Math.round(Number(req.body?.score) || 0)));
+  const totalErrors = Math.max(0, Math.min(100000, Math.round(Number(req.body?.totalErrors) || 0)));
+  const categories = countsFromSubmittedCategories(req.body?.categories || {});
+  const summary = String(req.body?.summary || fallbackSummary).trim().slice(0, 2000);
+  const analysisMeta = req.body?.analysisMeta || {};
+  const hash = textHash(originalText);
+
+  return { originalText, correctedText, filename, score, totalErrors, categories, summary, analysisMeta, hash };
+}
+
+async function loadValidChunkSources(req, sourceIds) {
+  if (!sourceIds.length) throw httpError('Sonuç kaydı hazırlanamadı. Lütfen denetimi yeniden başlatın.');
+  const { data: sources, error: sourceError } = await supabase.from('history')
+    .select('id,user_id,status,filename')
+    .eq('user_id', req.session.userId)
+    .in('id', sourceIds);
+  if (sourceError) throw new Error(sourceError.message);
+  if ((sources || []).length !== sourceIds.length) throw httpError('Sonuç kaydı eksik görünüyor. Lütfen denetimi yeniden başlatın.', 404);
+  const validSourceStatuses = ['taslak', CHUNK_DRAFT_STATUS];
+  if ((sources || []).some(item => !validSourceStatuses.includes(item.status) || !isChunkHistoryRow(item))) {
+    throw httpError('Bu sonuç daha önce onaya gönderilmiş olabilir.');
+  }
+  return sources;
+}
+
+async function submittedDuplicateExists(req, hash, excludeId = '') {
+  if (!HAS_TEXT_HASH || !hash) return false;
+  let q = supabase.from('history')
+    .select('id')
+    .eq('user_id', req.session.userId)
+    .eq('text_hash', hash)
+    .or('status.is.null,status.in.(bekliyor,onaylandi)')
+    .limit(1);
+  if (excludeId) q = q.neq('id', excludeId);
+  const { data, error } = await q;
+  if (error) { console.warn('Onay tekrar kontrolü uyarısı:', error.message); return false; }
+  return !!data?.length;
+}
+
+function submittedCorrectedHashKey(userId, correctedText) {
+  if (!userId || !normalizeText(correctedText)) return '';
+  return `${SUBMITTED_CORRECTED_HASH_PREFIX}${userId}:${textHash(correctedText)}`;
+}
+
+function parseSettingJson(value) {
+  try { return JSON.parse(value || '{}'); }
+  catch { return {}; }
+}
+
+function isDuplicateKeyError(error) {
+  return error && (error.code === '23505' || /duplicate key/i.test(error.message || ''));
+}
+
+function stalePendingCorrectedHash(value = {}) {
+  if (value.status !== 'pending' || !value.createdAt) return false;
+  const created = Date.parse(value.createdAt);
+  return Number.isFinite(created) && Date.now() - created > 20 * 60 * 1000;
+}
+
+async function readSubmittedCorrectedHash(userId, correctedText) {
+  const key = submittedCorrectedHashKey(userId, correctedText);
+  if (!key) return null;
+  const { data, error } = await supabase.from('settings').select('key,value').eq('key', key).maybeSingle();
+  if (error) {
+    console.warn('Duzeltilmis metin kilidi okunamadi:', error.message);
+    return null;
+  }
+  return data ? { key, value: parseSettingJson(data.value) } : null;
+}
+
+async function submittedCorrectedDuplicateExists(req, correctedText, excludeId = '') {
+  const existing = await readSubmittedCorrectedHash(req.session.userId, correctedText);
+  if (!existing) return false;
+  const historyId = existing.value?.historyId || '';
+  const status = existing.value?.status || 'bekliyor';
+  if (stalePendingCorrectedHash(existing.value)) {
+    const { error } = await supabase.from('settings').delete().eq('key', existing.key);
+    if (error) console.warn('Eski duzeltilmis metin kilidi temizlenemedi:', error.message);
+    return false;
+  }
+  if (excludeId && historyId === excludeId) return false;
+  return status !== 'reddedildi';
+}
+
+async function reserveSubmittedCorrectedHash(req, correctedText, historyId = '') {
+  const key = submittedCorrectedHashKey(req.session.userId, correctedText);
+  if (!key) return { reserved: false, duplicate: false, key: '' };
+  if (await submittedCorrectedDuplicateExists(req, correctedText, historyId)) {
+    return { reserved: false, duplicate: true, key };
+  }
+  const value = JSON.stringify({
+    userId: req.session.userId,
+    historyId: historyId || null,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  });
+  const { error } = await supabase.from('settings').insert({ key, value });
+  if (isDuplicateKeyError(error)) {
+    const existing = await readSubmittedCorrectedHash(req.session.userId, correctedText);
+    const sameHistory = historyId && existing?.value?.historyId === historyId;
+    const reusable = sameHistory || existing?.value?.status === 'reddedildi' || stalePendingCorrectedHash(existing?.value || {});
+    if (reusable) {
+      await supabase.from('settings').delete().eq('key', key);
+      const retry = await supabase.from('settings').insert({ key, value });
+      if (!retry.error) return { reserved: true, duplicate: false, key };
+      if (!isDuplicateKeyError(retry.error)) {
+        console.warn('Duzeltilmis metin kilidi tekrar olusturulamadi:', retry.error.message);
+        return { reserved: false, duplicate: false, key: '' };
+      }
+    }
+    return { reserved: false, duplicate: true, key };
+  }
+  if (error) {
+    console.warn('Duzeltilmis metin kilidi olusturulamadi:', error.message);
+    return { reserved: false, duplicate: false, key: '' };
+  }
+  return { reserved: true, duplicate: false, key };
+}
+
+async function markSubmittedCorrectedHash(userId, correctedText, historyId, status = 'bekliyor') {
+  const key = submittedCorrectedHashKey(userId, correctedText);
+  if (!key) return;
+  const value = JSON.stringify({ userId, historyId, status, updatedAt: new Date().toISOString() });
+  const { error } = await supabase.from('settings').upsert({ key, value });
+  if (error) console.warn('Duzeltilmis metin kilidi guncellenemedi:', error.message);
+}
+
+async function releaseSubmittedCorrectedHash(userId, correctedText, historyId = '') {
+  const existing = await readSubmittedCorrectedHash(userId, correctedText);
+  if (!existing) return;
+  if (historyId && existing.value?.historyId && existing.value.historyId !== historyId) return;
+  const { error } = await supabase.from('settings').delete().eq('key', existing.key);
+  if (error) console.warn('Duzeltilmis metin kilidi kaldirilamadi:', error.message);
+}
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => {
+  let correctedReservation = null;
+  let reservationText = '';
+  try {
+    const { data: history, error } = await supabase.from('history')
+      .select('id,user_id,filename,score,status,text_hash,corrected_text')
+      .eq('id', req.params.id)
+      .eq('user_id', req.session.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!history) return res.status(404).json({ error: 'Taslak kayıt bulunamadı.' });
+    if (isChunkHistoryRow(history)) {
+      return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.' });
+    }
+    if (history.status === 'onaylandi' || history.status === 'reddedildi') {
+      return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
+    }
+    if (historyStatusForApproval(history.status)) {
+      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true });
+    }
+    if (history.status !== 'taslak') return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
+    if (await submittedDuplicateExists(req, history.text_hash, history.id)) {
+      return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
+    }
+    reservationText = history.corrected_text || '';
+    correctedReservation = await reserveSubmittedCorrectedHash(req, reservationText, history.id);
+    if (correctedReservation.duplicate) {
+      return res.status(400).json({ error: 'Bu düzeltilmiş metnin onaya gönderilmiş veya onaylanmış bir kaydı zaten var.' });
+    }
+    const { data, error: updateError } = await supabase.from('history')
+      .update({ status: 'bekliyor', approved_by: null, approved_at: null })
+      .eq('id', history.id)
+      .eq('user_id', req.session.userId)
+      .eq('status', 'taslak')
+      .select('id,status')
+      .single();
+    if (updateError) throw new Error(updateError.message);
+    await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
+    await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
+    res.json({ success: true, id: data.id, status: data.status });
+  } catch (e) {
+    if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/withdraw', auth, async (req, res) => {
+  try {
+    const { data: history, error } = await supabase.from('history')
+      .select('id,user_id,status,corrected_text')
+      .eq('id', req.params.id)
+      .eq('user_id', req.session.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!history || isChunkHistoryRow(history)) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    if (history.status === 'onaylandi' || history.status === 'reddedildi') {
+      return res.status(400).json({ error: 'Bu kayıt artık sonuçlanmış; geri çekilemez.' });
+    }
+    if (!historyStatusForApproval(history.status)) {
+      return res.json({ success: true, id: history.id, status: history.status || 'taslak', alreadyWithdrawn: true });
+    }
+    const { data, error: updateError } = await supabase.from('history')
+      .update({ status: 'taslak', approved_by: null, approved_at: null })
+      .eq('id', history.id)
+      .eq('user_id', req.session.userId)
+      .or('status.is.null,status.eq.bekliyor')
+      .select('id,status')
+      .single();
+    if (updateError) throw new Error(updateError.message);
+    await releaseSubmittedCorrectedHash(req.session.userId, history.corrected_text || '', history.id);
+    res.json({ success: true, id: data.id, status: data.status });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history/merged-draft', auth, async (req, res) => {
+  try {
+    const sourceIds = safeUuidList(req.body?.sourceIds);
+    await loadValidChunkSources(req, sourceIds);
+    const payload = mergedHistoryPayloadFromBody(req, 'Metin denetlendi ve sonuç hazırlandı.');
+
+    const result = {
+      score: payload.score,
+      totalErrors: payload.totalErrors,
+      categories: payload.categories,
+      summary: payload.summary,
+      correctedText: payload.correctedText,
+      analysisMeta: payload.analysisMeta
+    };
+    const id = await saveHistory(req, result, payload.filename, payload.hash, payload.originalText, 'taslak');
+    const { error: hideError } = await supabase.from('history')
+      .update({ status: SUBMITTED_PART_STATUS })
+      .eq('user_id', req.session.userId)
+      .in('id', sourceIds)
+      .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
+    if (hideError) throw new Error(hideError.message);
+    res.json({ success: true, id, status: 'taslak' });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history/submit-merged', auth, async (req, res) => {
+  let correctedReservation = null;
+  let reservationText = '';
+  try {
+    const sourceIds = safeUuidList(req.body?.sourceIds);
+    await loadValidChunkSources(req, sourceIds);
+    const payload = mergedHistoryPayloadFromBody(req, 'Metin denetlendi ve sonuç onay sürecine iletildi.');
+    if (await submittedDuplicateExists(req, payload.hash)) {
+      return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
+    }
+    reservationText = payload.correctedText || '';
+    correctedReservation = await reserveSubmittedCorrectedHash(req, reservationText);
+    if (correctedReservation.duplicate) {
+      return res.status(400).json({ error: 'Bu düzeltilmiş metnin onaya gönderilmiş veya onaylanmış bir kaydı zaten var.' });
+    }
+
+    const mergedRow = {
+      user_id: req.session.userId,
+      username: req.session.username,
+      name: req.session.name,
+      filename: payload.filename,
+      score: payload.score,
+      total_errors: payload.totalErrors,
+      cat_counts: payload.categories,
+      summary: payload.summary,
+      corrected_text: payload.correctedText,
+      status: 'bekliyor'
+    };
+    if (HAS_ORIGINAL_TEXT) mergedRow.original_text = payload.originalText;
+    if (HAS_TEXT_HASH) mergedRow.text_hash = payload.hash;
+    if (HAS_ANALYSIS_META) {
+      mergedRow.prompt_version = payload.analysisMeta?.promptVersion || PROMPT_VERSION;
+      mergedRow.rules_hash = payload.analysisMeta?.rulesHash || null;
+    }
+
+    const { data, error: insertError } = await supabase.from('history').insert(mergedRow).select('id,status').single();
+    if (insertError) throw new Error(insertError.message);
+    await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
+    const { error: hideError } = await supabase.from('history')
+      .update({ status: SUBMITTED_PART_STATUS })
+      .eq('user_id', req.session.userId)
+      .in('id', sourceIds)
+      .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
+    if (hideError) console.warn('Birlesik onay sonrasi parca gizleme uyarisi:', hideError.message);
+    await maybeCreateLowScoreAlert(req, data.id, payload.score, payload.filename);
+    res.json({ success: true, id: data.id, status: data.status });
+  } catch (e) {
+    if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);
+    res.status(e.statusCode || 500).json({ error: e.message });
+  }
 });
 
 app.post('/api/pdf', auth, async (req, res) => {
@@ -1401,7 +2229,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
   const { data, error } = await supabase.from('history').select('*').order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan', 'Prompt Sürümü', 'Kural Hash']];
-  (data || []).map(mapHistory).forEach(h => {
+  (data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, ROLES.ADMIN)).forEach(h => {
     rows.push([
       new Date(h.createdAt).toLocaleString('tr-TR'),
       h.name || '', h.filename || '',
@@ -1422,11 +2250,21 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
 // ── APPROVAL ──────────────────────────────────────────────────────────────
 async function setApproval(req, res, status) {
   try {
+    const { data: current, error: currentError } = await supabase.from('history')
+      .select('id,user_id,status,filename,corrected_text')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
     const { data, error } = await supabase.from('history').update({
       status, approved_by: req.session.name, approved_at: new Date().toISOString()
     }).eq('id', req.params.id).select('id');
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
+    if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
@@ -1576,6 +2414,7 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
       alert.message ? `İlgili kayıt: ${String(alert.message).split(' | ')[1] || 'Denetim sonucu'}` : ''
     ].filter(Boolean).join(' | ');
 
+    const internalResolutionNote = appendRootCategoryNote(cleanNote, [alert]);
     const { error: insertError } = await supabase.from('alerts').insert({
       type: 'feedback_resolution',
       message,
@@ -1825,7 +2664,7 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     if (uErr) throw new Error(uErr.message);
     if (resolutionLogResult.error) throw new Error(resolutionLogResult.error.message);
 
-    const hist = (histRows || []).map(mapHistory);
+    const hist = (histRows || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, ROLES.ADMIN));
     const users = (userRows || []).filter(u => u.active);
 
     const now = Date.now();
@@ -2012,7 +2851,7 @@ async function collectOperationalSnapshot(period = 'daily') {
   if (aErr) throw new Error(aErr.message);
   if (logResult.error) throw new Error(logResult.error.message);
 
-  const hist = (histRows || []).map(mapHistory);
+  const hist = (histRows || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, ROLES.ADMIN));
   const alerts = alertRows || [];
   const usersById = new Map((userRows || []).map(u => [u.id, u]));
   const feedback = alerts.filter(a => a.type === 'feedback');
@@ -2254,7 +3093,7 @@ function fallbackHelperResponse(task, text, result, question) {
   const cats = result?.categories || {};
   const suggestions = [];
   if (len && len < MIN_ANALYSIS_TEXT_CHARS) suggestions.push('Metin çok kısa; daha sağlıklı kontrol için birkaç cümlelik bağlam ekleyin.');
-  if (len > 18000) suggestions.push('Metin uzun görünüyor; parça parça denetlemek daha güvenilir sonuç verir.');
+  if (len > 18000) suggestions.push('Metin uzun görünüyor; denetim biraz daha uzun sürebilir.');
   if (String(text || '').includes('\t')) suggestions.push('Tablo veya sütun düzeni olabilir; denetim sonrası düzen karşılaştırmasını mutlaka kontrol edin.');
   if (/^\s*\d{1,3}\./m.test(String(text || ''))) suggestions.push('Numaralı satırlar var; sıra numaralarının metin standardıyla karışmadığını kontrol edin.');
   if (String(text || '').split('\n').filter(Boolean).length > 18) suggestions.push('Çok satırlı bir yapı var; paragraf, slayt veya tablo düzeni denetim sonrası karşılaştırılmalı.');
@@ -2355,7 +3194,18 @@ async function buildSystemPrompt(rulesText) {
 GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "din" doğru yazımdır; "din" kelimesini "dîn" olarak düzeltme. Metinde "dîn" varsa "din" olarak düzelt.
 - "din" ailesi şapkasızdır: din, dinde, dinimizin, dinsiz gibi kullanımları dîn/dînde/dînimizin/dînsiz yapma.
+- "dini" kelimesi din + i eki olarak geçiyorsa "dinî" yapma; şapka anlamı değiştirebilir.
 - Özel kaynak/kitap adlarında özgün yazımı koru: "İhyâ’u Ulûmi’d-dîn" veya "İhya’u Ulumi’d-dîn" içindeki "dîn" kelimesini "din" yapma.
+- "yakîn" Efendimizin sözlüğündeki özel kullanımdır; bunu "yakın" yapma.
+- "faziletler" kelimesini "fazlalar" yapma. "fazılla" kullanımı bağlamında "fazl ile" diye bölme.
+- "sure de" bağlaç olan de ise "surede" yapma.
+- "Tabiatıyla" kelimesini "Tabiî ki" diye değiştirme.
+- "Tabi ki" / "Tabii ki" ifadesini "Tabiatıyla" diye değiştirme.
+- "Allah (cc.)" ifadesini "Allah (A.S)" yapma; (A.S) peygamber isimleri içindir.
+- "ahlaki" sıfatını "ahlakı" diye değiştirme.
+- "ardarda" ve "aciz" kullanımları geri bildirim kararına göre bu bağlamlarda korunur.
+- "hayydırlar" gibi hayy köklü ifadeleri "diridirler" veya benzeri Türkçe açıklamaya çevirme.
+- "lâzımgelen" arşiv kullanımında bitişik geçebilir; bunu otomatik "lâzım gelen" yapma.
 - "herşey" doğru yazımdır; ekli biçimleri de birleşik kalır: herşey, herşeye, herşeydir. Metinde "her şey" varsa "herşey" olarak düzelt.
 - "birşey" ile "herşey" anlamca farklıdır; birini diğerine dönüştürme.
 - "bir şey" ayrı yazılır; bunu "birşey" yapma. Özel birleşik yazım kararı sadece "her şey" → "herşey" içindir.
@@ -2371,7 +3221,11 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "vücut" doğru yazımdır; "vücud" veya "vücût" görürsen "vücut" olarak düzelt. "vücut/vücuttan" gibi doğru kullanımları "vücud/vücuddan" yapma.
 - "Hadîs-i Şerif" standardında Hadîs kelimesinde î vardır, Şerif kelimesindeki i şapkasızdır. "HADİS-İ ŞERİF" varsa "HADÎS-İ ŞERİF" yap; "ŞERÎF" yapma.
 - "Hazreti İsa" ifadesi her zaman "Hazreti İsa (A.S)" olmalıdır.
+- Çıplak "İsa" kelimesine otomatik "(A.S)" ekleme. Özellikle âyet, meal, Arapça okunuş/transliterasyon veya referans satırlarında "İsa" kaynakta nasılsa korunur. "(A.S)" standardı sadece açık "Hazreti İsa" ifadesi içindir.
+- "Resûlullah'ın" gibi ekli kullanıma (S.A.V) eklenecekse kısaltma isimden sonra gelir: "Resûlullah (S.A.V)'in". "Resûlullah'ın (S.A.V)" yazma.
 - "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "şer", "ârif" veya "câhiliye" biçimine çevirme.
+- "şer" yalnız bağımsız kelimeyse "şerr" yapılır. "şeriat", "ŞERİAT" veya zaten "şerr" olan kelimelerin içine girme; "şerrr" üretme.
+- "Nefret" kelimesini hiçbir bağlamda "nefs" yapma.
 - "beka" ve "Mehdi" doğru arşiv yazımıdır; bunları "bekâ" veya "mehdî" yapma.
 - "ilim" kelimesini kendi başına "Kur'ân ilmi" diye genişletme; kaynakta yalnız "ilim" varsa yalnız "ilim" kalmalıdır.
 - "münezzehtir" ifadesini "Sûbhân'dır/Sübhan'dır" diye değiştirme; anlam açıklaması veya çeviri ekleme.
@@ -2386,7 +3240,11 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "Kur'an/Kur’an" yazımı "Kur'ân" olarak düzeltilir; metnin başında veya başlıkta büyük harf düzeni korunur.
 - "Şura suresinin" gibi kullanımlarda doğru yazım "Şûrâ Suresinin" olmalıdır; Suresinin/Suresini kelimelerini apostrofla "Suresi'nin/Suresi'ni" yapma.
 - "Âli İmrân" doğru yazımdır; "Âlî", "Âl-i" veya "Ali-İmran" yapma. Câsiye, Yûnus, Hûd, Fâtır, Hacc ve A'râf sure adlarında şapka/apostrof standardını uygula.
+- "Yunus Emre", "Yunus diyor", "Yunus ne diyor" gibi kişi adı veya konuşma bağlamlarını "Yûnus" sure adı gibi düzeltme. Sadece "Yunus Suresi", "10/Yunus-7", "Yunus-7", "Yunus 7, 8’de" gibi açık sure/referans bağlamlarında "Yûnus" standardını uygula.
+- "Mumtehine" sure adında i harfi noktalıdır; bunu "Mumtehıne" veya benzeri noktasız ı varyantına çevirme.
 - "şer" kelimesi arşiv standardında "şerr" olarak düzeltilir; "şerr" kelimesindeki çift r korunur.
+- "tevbe" kelimesi normal metinde "tövbe" olarak düzeltilir ve aynı metindeki tüm tekrarlar uygulanır. Fakat "TEVBE" sure adı, "TEVBE-..." referansı veya "Tevbe 69" gibi sure/âyet referansıysa sure adı korunur.
+- "Sebîlel gayy" ve "Sebîlel rüşd" ifadeleri bu şekilde korunur; bunları "Sebîli gayy" / "Sebîli rüşd" yapma.
 - "MUSIBET/MUSİBET/musibet" yazımı "MUSÎBET/musîbet" olmalıdır. "VELI" başlığı "VELÎ" olur. "zahit" yazımı "zahid" olmalıdır.
 - "(S.AV.)" veya "(S.A.V.)" gibi bozuk kısaltmaları "(S.A.V)" standardına getir.
 - Kaynak referans parantezlerinde eksik kapanış varsa kapat; örnek: "(Araf 175.." → "(Araf 175)".
@@ -2394,7 +3252,12 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "hayy/hayydırlar" gibi kullanımları "hayat/hayattadırlar" diye sadeleştirme.
 - "hidayet" kelimesine kaynakta olmayan ek ekleme; "hidayet" kelimesini "hidayete" gibi genişletme. Kaynakta "hidayete/hidayeti/hidayetten" gibi ekli kullanım varsa eki düşürme.
 - "hadis no." gibi kaynak/numara ifadelerinde "hadis" kelimesini "hadîs" yapma.
+- "Kaynak:", hadis ve bibliyografya satırlarında muhafazakâr davran. Kaynak/kitap adı olabilecek "Fezailül", "Alamet-il" gibi ifadeleri emin olmadan şapka ve apostrofla yeniden yazma.
 - "ve, veya, ama, fakat, çünkü" gibi bağlaçları imlâ gerekçesiyle silme.
+- Konuşma dilindeki "var ya" ifadesini silme. Sırf biçimsel görünüm için "şeriat kitabı,", "tarikat yoldur varana;", "BAKARA – 139: De ki:" gibi kaynakta olmayan virgül/noktalı virgül/iki nokta ekleme.
+- "Yâsîn-60, 61’de:" gibi ardından âyet açıklaması gelen referanslarda iki nokta korunabilir; bunu otomatik silme.
+- Kaynakta "Kur'ân'da" geçmiyorsa cümleye "Kur'ân'da" ekleme. Metinde yalnız "Tevrat, İncil’de" deniyorsa Kur'ân'ı açıklama olarak ekleme.
+- Alıntı sonrası konuşma fiillerinde tırnak dengesini bozma: doğru biçim örnek olarak "\"Müslümanın dîni ayrı.\" diyor." şeklindedir; sona fazladan tırnak ekleme.
 - Bu kararlar mevcut kural metninde ters yönde bir ifade görsen bile daha önceliklidir.
 
 SURE ADLARI ÜST ÖNCELİKLİ STANDARDI:
@@ -2577,6 +3440,7 @@ let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_versi
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
+let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş içerik düzeltme kayıt defteri)
 let HAS_AI_REPORTS = false; // startup'ta tespit edilir (AI rapor kayıtları)
 let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at kolonu)
 let startupReady = Promise.resolve();
@@ -2591,7 +3455,19 @@ async function isDuplicate(req, text) {
   return !!(data && data.length);
 }
 
-async function saveHistory(req, result, filename, hash, sourceText = '') {
+async function maybeCreateLowScoreAlert(req, historyId, score, filename) {
+  if ((score || 0) >= LOW_SCORE_THRESHOLD) return;
+  await supabase.from('alerts').insert({
+    type: 'low_score',
+    message: `${req.session.name} tarafından düşük skorlu metin (${score}/100): "${filename || 'Metin Girişi'}"`,
+    user_id: req.session.userId,
+    history_id: historyId,
+    score,
+    read: false
+  });
+}
+
+async function saveHistory(req, result, filename, hash, sourceText = '', status = 'taslak') {
   const catCounts = {};
   if (result.categories) Object.keys(result.categories).forEach(k => catCounts[k] = result.categories[k].count || 0);
   const analysisMeta = result.analysisMeta || {};
@@ -2603,7 +3479,7 @@ async function saveHistory(req, result, filename, hash, sourceText = '') {
     score: result.score || 0, total_errors: result.totalErrors || 0,
     cat_counts: catCounts, summary: result.summary || '',
     corrected_text: result.correctedText || '',
-    status: 'bekliyor'
+    status
   };
   if (HAS_ORIGINAL_TEXT) row.original_text = sourceText;
   if (HAS_TEXT_HASH && hash) row.text_hash = hash;
@@ -2616,14 +3492,7 @@ async function saveHistory(req, result, filename, hash, sourceText = '') {
   if (error) throw new Error(error.message);
   const entryId = data.id;
 
-  if ((result.score || 0) < LOW_SCORE_THRESHOLD) {
-    await supabase.from('alerts').insert({
-      type: 'low_score',
-      message: `${req.session.name} tarafından düşük skorlu metin (${result.score}/100): "${filename || 'Metin Girişi'}"`,
-      user_id: req.session.userId, history_id: entryId,
-      score: result.score, read: false
-    });
-  }
+  if (historyStatusForApproval(status)) await maybeCreateLowScoreAlert(req, entryId, result.score, filename);
 
   return entryId;
 }
@@ -2634,10 +3503,22 @@ app.post('/api/analyze', auth, async (req, res) => {
     await startupReady;
     const text = prepareAnalysisText(req.body?.text);
     const hash = textHash(text);
-    if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    const filename = String(req.body?.filename || 'Metin Girisi').trim().slice(0, 160) || 'Metin Girisi';
+    const skipDuplicate = req.body?.skipDuplicate === true;
+    if (!skipDuplicate && await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
-    const id = await saveHistory(req, result, 'Metin Girişi', hash, text);
-    res.json({ ...result, id, originalText: text });
+    const status = req.body?.chunkPart === true ? CHUNK_DRAFT_STATUS : 'taslak';
+    const id = await saveHistory(req, result, filename, hash, text, status);
+    res.json({ ...result, id, originalText: text, filename, status });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/extract-file-text', auth, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
+  try {
+    await startupReady;
+    const text = prepareAnalysisText(await extractText(req.file.buffer));
+    res.json({ text, filename: req.file.originalname, length: text.length });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
@@ -2651,7 +3532,7 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
     if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
     const result = await openaiText(text);
     const id = await saveHistory(req, result, req.file.originalname, hash, text);
-    res.json({ ...result, id, originalText: text });
+    res.json({ ...result, id, originalText: text, filename: req.file.originalname, status: 'taslak' });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
@@ -2670,13 +3551,31 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
       }
       const result = await openaiText(text);
       const id = await saveHistory(req, result, file.originalname, hash, text);
-      results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id });
+      results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id, status: 'taslak' });
     } catch (e) {
       results.push({ filename: file.originalname, success: false, error: e.message });
     }
   }
   res.json({ results });
 });
+
+function sendAdminIndex(req, res) {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(__dirname, 'index.html'));
+}
+
+if (ADMIN_PARALLEL_ROUTE_ENABLED) {
+  app.get(['/admin', '/admin/'], sendAdminIndex);
+  app.get('/admin/*', sendAdminIndex);
+}
+
+if (process.env.PUBLIC_ARCHIVE_DEMO === '1') {
+  const { createPublicArchiveRouter } = require('./public-archive-demo');
+  app.use(createPublicArchiveRouter({
+    adminFile: path.join(__dirname, 'index.html'),
+    cssFile: path.join(__dirname, 'archive-public.css')
+  }));
+}
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
@@ -2689,7 +3588,9 @@ app.use((err, req, res, next) => {
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-startupReady = seed().catch(e => console.error('Seed hatası:', e.message));
+startupReady = process.env.PUBLIC_ARCHIVE_DEMO === '1'
+  ? Promise.resolve()
+  : seed().catch(e => console.error('Seed hatası:', e.message));
 
 if (require.main === module) {
   app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`));

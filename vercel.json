@@ -36,10 +36,16 @@
     },
     {
       "src": "/manifest.webmanifest",
+      "headers": {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
       "dest": "/manifest.webmanifest"
     },
     {
       "src": "/sw.js",
+      "headers": {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
       "dest": "/sw.js"
     },
     {
@@ -51,8 +57,38 @@
       "dest": "/icons/favicon.ico"
     },
     {
-      "src": "/(.*)",
+      "src": "/admin",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
       "dest": "/index.html"
+    },
+    {
+      "src": "/admin/(.*)",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "headers": {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+        }
+      ]
     }
   ],
   "crons": [
