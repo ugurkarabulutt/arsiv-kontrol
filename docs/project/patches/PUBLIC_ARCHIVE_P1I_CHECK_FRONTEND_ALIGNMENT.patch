@@ -1,0 +1,63 @@
+diff --git a/scripts/check-frontend.js b/scripts/check-frontend.js
+--- a/scripts/check-frontend.js
++++ b/scripts/check-frontend.js
+@@ -112,7 +112,57 @@ const routes = vercelConfig.routes || [];
+ const apiVercelIndex = routes.findIndex(route => route.src === '/api/(.*)' && route.dest === '/server.js');
+ const finalIndexRouteIndex = routes.findIndex(route => route.src === '/(.*)' && route.dest === '/index.html');
+ assert(apiVercelIndex !== -1 && finalIndexRouteIndex !== -1 && apiVercelIndex < finalIndexRouteIndex, 'Vercel /api route final index catch-all dan once kalmali.');
+-assert(!routes.some(route => route.src === '/admin' || route.src === '/admin/(.*)'), 'P1B vercel.json icinde explicit /admin route eklememeli; bu ayri P1C adimidir.');
+-
++const routeIndex = src => routes.findIndex(route => route.src === src);
++const routeBySrc = src => routes.find(route => route.src === src);
++const explicitRootRoutes = routes.filter(route => route.src === '/' || route.src === '/$');
++assert(explicitRootRoutes.length === 0, 'Root / icin explicit Vercel route eklenmemeli; legacy root final catch-all ile kalmali.');
++
++const adminVercelRoutes = routes.filter(route => route.src === '/admin');
++const adminDeepVercelRoutes = routes.filter(route => route.src === '/admin/(.*)');
++const adminLikeVercelRoutes = routes.filter(route => typeof route.src === 'string' && route.src.startsWith('/admin'));
++const unexpectedAdminVercelRoutes = adminLikeVercelRoutes.filter(route => route.src !== '/admin' && route.src !== '/admin/(.*)');
++assert(unexpectedAdminVercelRoutes.length === 0, 'Beklenmeyen Vercel admin route eklenmemeli; yalniz /admin ve /admin/(.*) desteklenir.');
++
++if (adminLikeVercelRoutes.length > 0) {
++  assert(adminVercelRoutes.length === 1 && adminDeepVercelRoutes.length === 1, 'Vercel admin route lari partial olmamali; /admin ve /admin/(.*) birlikte olmali.');
++
++  const adminVercelRoute = adminVercelRoutes[0];
++  const adminDeepVercelRoute = adminDeepVercelRoutes[0];
++  const adminVercelIndex = routeIndex('/admin');
++  const adminDeepVercelIndex = routeIndex('/admin/(.*)');
++  const preAdminRoutes = [
++    ['/api/(.*)', '/server.js', '/api route'],
++    ['/manifest.webmanifest', '/manifest.webmanifest', 'manifest route'],
++    ['/sw.js', '/sw.js', 'service worker route'],
++    ['/icons/(.*)', '/icons/$1', 'icons route'],
++    ['/favicon.ico', '/icons/favicon.ico', 'favicon route']
++  ];
++
++  for (const [src, dest, label] of preAdminRoutes) {
++    const route = routeBySrc(src);
++    const index = routeIndex(src);
++    assert(route && route.dest === dest, `${label} Vercel hedefi korunmali.`);
++    assert(index < adminVercelIndex && index < adminDeepVercelIndex, `${label} Vercel admin route larindan once kalmali.`);
++  }
++
++  assert(adminVercelIndex < adminDeepVercelIndex, '/admin Vercel route /admin/(.*) route undan once kalmali.');
++  assert(adminVercelIndex < finalIndexRouteIndex, '/admin Vercel route final index catch-all dan once kalmali.');
++  assert(adminDeepVercelIndex < finalIndexRouteIndex, '/admin/(.*) Vercel route final index catch-all dan once kalmali.');
++  assert(adminVercelRoute.dest === '/index.html', '/admin Vercel route index.html dondurmeli.');
++  assert(adminDeepVercelRoute.dest === '/index.html', '/admin/(.*) Vercel route index.html dondurmeli.');
++
++  for (const [label, route] of [
++    ['/admin', adminVercelRoute],
++    ['/admin/(.*)', adminDeepVercelRoute]
++  ]) {
++    const headers = route.headers || {};
++    assert(headers['X-Robots-Tag'] === 'noindex, nofollow', `${label} Vercel route X-Robots-Tag noindex header almali.`);
++    const cacheControl = String(headers['Cache-Control'] || '');
++    for (const token of ['no-store', 'no-cache', 'must-revalidate', 'proxy-revalidate']) {
++      assert(cacheControl.includes(token), `${label} Vercel route Cache-Control ${token} icermeli.`);
++    }
++  }
++}
++
+ const robotsWithAdminPath = 'User-agent: *\nDisallow: /admin\nDisallow: /admin/\n';
+ assert(publicForbiddenWordHits(robotsWithAdminPath, { allowRobotsAdminPath: true }).length === 0, 'robots.txt teknik /admin path istisnasi public language guard icin false-positive olmamali.');

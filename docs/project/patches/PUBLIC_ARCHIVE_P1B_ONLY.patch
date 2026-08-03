@@ -1,0 +1,115 @@
+﻿diff --git a/server.js b/server.js
+--- a/server.js
++++ b/server.js
+@@ -32,6 +32,7 @@ const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
+ const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 70000);
+ const OPENAI_RETRY_DELAYS_MS = [800, 1800];
+ const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
++const ADMIN_PARALLEL_ROUTE_ENABLED = process.env.ADMIN_PARALLEL_ROUTE_ENABLED !== '0';
+ const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geÃ§ici olarak yanÄ±t veremedi. LÃ¼tfen birkaÃ§ dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & DÃ¼zelt dÃ¼ÄŸmesine basabilirsiniz.';
+ const AI_CONFIG_ERROR_MSG = 'AI baÄŸlantÄ±sÄ± ÅŸu anda yapÄ±landÄ±rma nedeniyle Ã§alÄ±ÅŸmÄ±yor. LÃ¼tfen yÃ¶neticiye bildirin.';
+ const AI_REQUEST_REJECTED_MSG = 'AI isteÄŸi iÅŸlenemedi. Metni kÄ±saltÄ±p parÃ§alara bÃ¶lerek tekrar deneyin veya yÃ¶neticiden destek isteyin.';
+@@ -2678,6 +2679,16 @@ app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res)
+   res.json({ results });
+ });
+
++function sendAdminIndex(req, res) {
++  res.set('X-Robots-Tag', 'noindex, nofollow');
++  res.sendFile(path.join(__dirname, 'index.html'));
++}
++
++if (ADMIN_PARALLEL_ROUTE_ENABLED) {
++  app.get(['/admin', '/admin/'], sendAdminIndex);
++  app.get('/admin/*', sendAdminIndex);
++}
++
+ app.use((err, req, res, next) => {
+   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+     return res.status(413).json({ error: 'Dosya en fazla 4 MB olabilir.' });
+diff --git a/scripts/check-frontend.js b/scripts/check-frontend.js
+--- a/scripts/check-frontend.js
++++ b/scripts/check-frontend.js
+@@ -2,9 +2,35 @@ const fs = require('fs');
+ const path = require('path');
+
+ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
++const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
++const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
+ const script = html.match(/<script>([\s\S]*?)<\/script>/);
+ const root = path.join(__dirname, '..');
+
++function assert(condition, message) {
++  if (!condition) throw new Error(message);
++}
++
++function indexOfRequired(source, needle, label) {
++  const index = source.indexOf(needle);
++  if (index === -1) throw new Error(`${label} bulunamadi.`);
++  return index;
++}
++
++function escapeRegex(value) {
++  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++}
++
++const PUBLIC_FORBIDDEN_WORDS = ['AI', 'prompt', 'model', 'admin', 'denetim', 'onay kuyruÄŸu', 'kalite kontrol', 'test verisi'];
++
++function publicForbiddenWordHits(content, options = {}) {
++  let scan = String(content || '');
++  if (options.allowRobotsAdminPath) {
++    scan = scan.replace(/^\s*(?:Disallow|Allow):\s*\/admin\/?\s*$/gmi, '');
++  }
++  return PUBLIC_FORBIDDEN_WORDS.filter(word => new RegExp(`(^|[^\\p{L}\\p{N}_])${escapeRegex(word)}([^\\p{L}\\p{N}_]|$)`, 'iu').test(scan));
++}
++
+ if (!script) throw new Error('index.html iÃ§inde inline script bulunamadÄ±.');
+ new Function(script[1]);
+
+@@ -52,7 +78,47 @@ if (!html.includes('function friendlyAnalyzeError') || !html.includes('AI servis
+ if (!html.includes('function friendlyAnalyzeError') || !html.includes('AI servisi geÃ§ici olarak yanÄ±t veremedi')) {
+   throw new Error('Denetim hata mesajlarÄ± kullanÄ±cÄ± dostu TÃ¼rkÃ§e metne baÄŸlanmalÄ±.');
+ }
+ if (!html.includes('Denetim tamamlanamadÄ±. Metniniz korunuyor.')) {
+   throw new Error('Denetim hatasÄ±nda metnin korunduÄŸu kullanÄ±cÄ±ya belirtilmeli.');
+ }
++const rootFallback = "app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));";
++assert(server.includes(rootFallback), 'Root legacy SPA fallback aynen index.html dondurmeli.');
++for (const marker of [
++  "app.use('/icons', express.static(path.join(__dirname, 'icons')))",
++  "app.get('/favicon.ico'",
++  "app.get('/manifest.webmanifest'",
++  "app.get('/sw.js'"
++]) {
++  assert(server.includes(marker), `Static asset route korunmali: ${marker}`);
++}
++for (const marker of [
++  "app.post('/api/auth/login'",
++  "app.post('/api/auth/logout'",
++  "app.get('/api/auth/me'"
++]) {
++  assert(server.includes(marker), `Auth/session API route korunmali: ${marker}`);
++}
++assert(server.includes('const ADMIN_PARALLEL_ROUTE_ENABLED'), 'ADMIN_PARALLEL_ROUTE_ENABLED flag okunmali.');
++assert(server.includes('function sendAdminIndex'), 'Admin index helper bulunmali.');
++assert(server.includes("res.set('X-Robots-Tag', 'noindex, nofollow')"), '/admin HTML response noindex header almali.');
++assert(server.includes("app.get(['/admin', '/admin/'], sendAdminIndex)"), '/admin ve /admin/ explicit admin fallback olmali.');
++assert(server.includes("app.get('/admin/*', sendAdminIndex)"), '/admin/* deep link fallback olmali.');
++
++const lastApiRouteIndex = [...server.matchAll(/app\.(?:get|post|put|patch|delete)\('\/api\//g)].pop()?.index ?? -1;
++const adminRouteIndex = indexOfRequired(server, "app.get(['/admin', '/admin/'], sendAdminIndex)", 'Explicit /admin route');
++const errorHandlerIndex = indexOfRequired(server, 'app.use((err, req, res, next) => {', 'Express error handler');
++const rootFallbackIndex = indexOfRequired(server, rootFallback, 'Root legacy fallback');
++assert(lastApiRouteIndex > -1 && lastApiRouteIndex < adminRouteIndex, '/api route lari /admin fallback tarafindan yutulmamali.');
++assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
++assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');
++
++const routes = vercelConfig.routes || [];
++const apiVercelIndex = routes.findIndex(route => route.src === '/api/(.*)' && route.dest === '/server.js');
++const finalIndexRouteIndex = routes.findIndex(route => route.src === '/(.*)' && route.dest === '/index.html');
++assert(apiVercelIndex !== -1 && finalIndexRouteIndex !== -1 && apiVercelIndex < finalIndexRouteIndex, 'Vercel /api route final index catch-all dan once kalmali.');
++assert(!routes.some(route => route.src === '/admin' || route.src === '/admin/(.*)'), 'P1B vercel.json icinde explicit /admin route eklememeli; bu ayri P1C adimidir.');
++
++const robotsWithAdminPath = 'User-agent: *\nDisallow: /admin\nDisallow: /admin/\n';
++assert(publicForbiddenWordHits(robotsWithAdminPath, { allowRobotsAdminPath: true }).length === 0, 'robots.txt teknik /admin path istisnasi public language guard icin false-positive olmamali.');
++assert(publicForbiddenWordHits('<main>admin</main>').includes('admin'), 'Public language guard normal HTML icinde admin kelimesini yakalamali.');
+ console.log('Frontend/PWA doÄŸrulamasÄ±: baÅŸarÄ±lÄ±');
