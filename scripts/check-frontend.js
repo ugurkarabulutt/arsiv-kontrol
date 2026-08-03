@@ -344,18 +344,24 @@ if (
   throw new Error('Gecmis duzeltmeler super admin son kontrolu olmadan uygulanmamali.');
 }
 if (
-  !html.includes('adminRouteProbe') ||
-  !html.includes('super-admin-admin-route-only') ||
   !html.includes('function isAdminRoute()') ||
   !html.includes('function isStandaloneApp()') ||
   !html.includes('function ensureStandaloneAdminRoute') ||
   !html.includes("window.history.replaceState(null,document.title,'/admin')") ||
   !html.includes("path==='/admin'||path.startsWith('/admin/')") ||
   !html.includes('ensureStandaloneAdminRoute(user);') ||
-  !html.includes('refreshRouteScopedVisibility(user)') ||
-  !html.includes('updateAdminRouteProbeState')
+  !html.includes('refreshRouteScopedVisibility(user)')
 ) {
-  throw new Error('/admin canli test alani yalniz super admin ve /admin route guard ile gorunmeli; PWA root acilisinda admin route a alinmali.');
+  throw new Error('/admin route guard ve PWA root acilisinda admin route a alma korumasi bozulmamali.');
+}
+if (
+  html.includes('adminRouteProbe') ||
+  html.includes('super-admin-admin-route-only') ||
+  html.includes('updateAdminRouteProbeState') ||
+  html.includes('/admin canli test') ||
+  html.includes('Test anahtar')
+) {
+  throw new Error('/admin gecici canli test alani kaldirilmis kalmali.');
 }
 if (
   !html.includes('systemConfirmModal') ||

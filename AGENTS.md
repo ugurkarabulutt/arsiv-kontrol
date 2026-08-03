@@ -120,6 +120,12 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-04
+- **/admin geçici test alanı kaldırıldı:** Süper admin için eklenen `/admin canlı test`
+  doğrulama kartı görevini tamamladıktan sonra `index.html` içinden kaldırıldı.
+  PWA/root guard mantığı korunur; `scripts/check-frontend.js` artık guard'ı doğrularken
+  geçici test alanının geri eklenmemesini regresyon olarak kontrol eder.
+
 ### 2026-08-03
 - **Repo/GitHub hijyen kararı:** Proje kaynağı bundan sonra GitHub branch'i üzerinden
   taşınır; yeni cihaza geçiş temiz `git clone` ile yapılır. `.env`, Vercel/Supabase/OpenAI

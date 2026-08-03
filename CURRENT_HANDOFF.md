@@ -1,5 +1,14 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-04 Codex Güncel Durum
+
+- Kullanıcı `/admin` süper admin doğrulama alanını canlıda gördü ve sorunsuz çalıştığını
+  teyit etti. Bu nedenle geçici test kartı kaldırıldı. PWA/root `/admin` guard mantığı
+  korunacak; yalnız doğrulama kartı ve `adminRouteProbe` state kodu artık bulunmayacak.
+- Bu değişikliğin doğrulaması `npm.cmd run check`, `git diff --check` ve canlı `/admin`
+  smoke ile yapılmalı. Production deploy sonrası canlı HTML'de `adminRouteProbe` ve
+  `updateAdminRouteProbeState` bulunmamalı; `ensureStandaloneAdminRoute` kalmalıdır.
+
 ## 2026-08-03 Codex Güncel Durum
 
 - Repo/GitHub hijyen çalışması başlatıldı. Amaç dirty workspace'i temiz commitlere ayırıp

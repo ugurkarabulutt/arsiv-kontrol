@@ -149,19 +149,6 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .page-title{font-size:24px;font-weight:800;letter-spacing:-.2px;margin-bottom:3px;}
 .page-sub{font-size:12px;color:var(--ink3);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
 .divider{height:1px;background:linear-gradient(90deg,var(--border),transparent);margin-bottom:20px;}
-.admin-route-probe{margin:-4px 0 18px;padding:14px 16px;border:1px solid rgba(var(--ai-rgb),.36);border-left:3px solid var(--ai);background:linear-gradient(135deg,rgba(var(--ai-rgb),.10),var(--surface));display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:var(--soft-shadow);}
-.admin-route-probe-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ai);font-weight:800;margin-bottom:3px;}
-.admin-route-probe-title{font-size:15px;font-weight:900;color:var(--ink);line-height:1.35;}
-.admin-route-probe-text{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:3px;}
-.admin-route-probe-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
-.admin-route-probe-state{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);background:var(--grn-bg);border:1px solid rgba(31,122,69,.28);padding:5px 8px;border-radius:999px;white-space:nowrap;}
-.admin-route-probe-toggle{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:var(--ink2);cursor:pointer;white-space:nowrap;}
-.admin-route-probe-toggle input{position:absolute;opacity:0;pointer-events:none;}
-.admin-route-probe-toggle b{width:42px;height:22px;border-radius:999px;border:1px solid rgba(var(--ai-rgb),.45);background:var(--surface2);position:relative;display:inline-block;transition:all .18s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
-.admin-route-probe-toggle b::after{content:"";position:absolute;top:3px;left:4px;width:14px;height:14px;border-radius:50%;background:var(--ink3);transition:all .18s;box-shadow:0 2px 7px rgba(0,0,0,.2);}
-.admin-route-probe-toggle input:checked+b{background:var(--ai);border-color:rgba(var(--ai-rgb),.75);}
-.admin-route-probe-toggle input:checked+b::after{left:22px;background:white;}
-@media(max-width:760px){.admin-route-probe{align-items:flex-start;flex-direction:column}.admin-route-probe-right{width:100%;justify-content:space-between}}
 .itabs{display:flex;margin-bottom:16px;border:1px solid var(--bord2);overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .itab{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg2);border:none;padding:10px 16px;cursor:pointer;color:var(--ink3);transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .itab.active{background:var(--ink);color:var(--bg);}
@@ -803,21 +790,6 @@ canvas{width:100%!important;}
       <div class="page-title">Metin Denetimi</div>
       <div class="page-sub">Arşiv standartlarına göre otomatik kontrol</div>
       <div class="divider"></div>
-      <div id="adminRouteProbe" class="admin-route-probe super-admin-admin-route-only" style="display:none">
-        <div>
-          <div class="admin-route-probe-kicker">/admin canli test</div>
-          <div class="admin-route-probe-title">S&uuml;per admin do&#287;rulama alan&#305;</div>
-          <div class="admin-route-probe-text">Bu alan sadece <span class="mono">/admin</span> adresinde s&uuml;per admin hesab&#305;na g&ouml;r&uuml;n&uuml;r.</div>
-        </div>
-        <div class="admin-route-probe-right">
-          <label class="admin-route-probe-toggle" for="adminRouteProbeToggle">
-            <span>Test anahtar&#305;</span>
-            <input id="adminRouteProbeToggle" type="checkbox" onchange="updateAdminRouteProbeState()">
-            <b aria-hidden="true"></b>
-          </label>
-          <span id="adminRouteProbeState" class="admin-route-probe-state">Haz&#305;r</span>
-        </div>
-      </div>
       <div class="itabs">
         <button class="itab active" onclick="switchInner('text')">Metin Yapıştır</button>
         <button class="itab" onclick="switchInner('file')">Dosya Yükle (.docx)</button>
@@ -1545,15 +1517,7 @@ function ensureStandaloneAdminRoute(user=me){
   }
 }
 function refreshRouteScopedVisibility(user=me){
-  const visible=Boolean(user&&hasSuperAdminRole(user.role)&&isAdminRoute());
-  document.querySelectorAll('.super-admin-admin-route-only').forEach(e=>e.style.display=visible?'':'none');
-  updateAdminRouteProbeState();
-}
-function updateAdminRouteProbeState(){
-  const toggle=el('adminRouteProbeToggle');
-  const state=el('adminRouteProbeState');
-  if(!toggle||!state)return;
-  state.textContent=toggle.checked?'Aktif':'Hazır';
+  return Boolean(user&&hasSuperAdminRole(user.role)&&isAdminRoute());
 }
 function roleLabel(role){return role==='super_admin'?'Süper Yönetici':role==='admin'?'Yönetici':'Ekip Üyesi';}
 function rolePill(role){return role==='super_admin'?'rp-super':role==='admin'?'rp-admin':'rp-user';}
