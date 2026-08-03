@@ -124,7 +124,12 @@ tespit edilir).
 - **/admin geçici test alanı kaldırıldı:** Süper admin için eklenen `/admin canlı test`
   doğrulama kartı görevini tamamladıktan sonra `index.html` içinden kaldırıldı.
   PWA/root guard mantığı korunur; `scripts/check-frontend.js` artık guard'ı doğrularken
-  geçici test alanının geri eklenmemesini regresyon olarak kontrol eder.
+  geçici test alanının geri eklenmemesini regresyon olarak kontrol eder. Doğrulama:
+  `npm.cmd run check` başarılı, 84/84 test geçti. Production deploy
+  `dpl_3B2som8JBoAVZKhqHhtBoubcJ7R4`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health` `ok`, `/admin` HTTP 200 ve noindex/no-store, root `/` HTTP 200,
+  manifest `id=/admin`, `start_url=/admin`, canlı HTML'de `adminRouteProbe` ve
+  `updateAdminRouteProbeState` yok; `ensureStandaloneAdminRoute` mevcut.
 
 ### 2026-08-03
 - **Repo/GitHub hijyen kararı:** Proje kaynağı bundan sonra GitHub branch'i üzerinden

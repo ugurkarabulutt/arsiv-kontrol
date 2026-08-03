@@ -5,9 +5,12 @@
 - Kullanıcı `/admin` süper admin doğrulama alanını canlıda gördü ve sorunsuz çalıştığını
   teyit etti. Bu nedenle geçici test kartı kaldırıldı. PWA/root `/admin` guard mantığı
   korunacak; yalnız doğrulama kartı ve `adminRouteProbe` state kodu artık bulunmayacak.
-- Bu değişikliğin doğrulaması `npm.cmd run check`, `git diff --check` ve canlı `/admin`
-  smoke ile yapılmalı. Production deploy sonrası canlı HTML'de `adminRouteProbe` ve
-  `updateAdminRouteProbeState` bulunmamalı; `ensureStandaloneAdminRoute` kalmalıdır.
+- Doğrulama: `npm.cmd run check` başarılı, 84/84 test geçti. `git diff --check`
+  yalnız mevcut CRLF uyarılarını verdi. Production deploy
+  `dpl_3B2som8JBoAVZKhqHhtBoubcJ7R4`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health` `ok`, `/admin` HTTP 200 ve noindex/no-store, root `/` HTTP 200,
+  manifest `id=/admin`, `start_url=/admin`, canlı HTML'de `adminRouteProbe` ve
+  `updateAdminRouteProbeState` yok; `ensureStandaloneAdminRoute` mevcut.
 
 ## 2026-08-03 Codex Güncel Durum
 
