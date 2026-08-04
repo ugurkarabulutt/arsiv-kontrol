@@ -229,6 +229,16 @@ test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
   assert.equal(result.correctedText, source);
 });
 
+test('hadis-i serif basligi bozuk serif varyantinda 100 puanda kacmaz', () => {
+  const source = 'HADÎS-İ şerrİF\nKaynak: Sahih-i Müslim.';
+  const result = finalizeResult({ correctedText: source, categories: {} }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.ok(result.correctedText.includes('HADÎS-İ ŞERİF'));
+  assert.equal(result.correctedText.includes('şerrİF'), false);
+});
+
 test('apostroflu terkip ve kaynakta mevcut cok kelimeli nokta tekrar hata sayilmaz', () => {
   const source = 'Efendimizin sözlüğünde fazl’ıl azîm şeklinde geçer. Hedef Allah’ın Zat’ı. Sonra devam eder.';
   const result = finalizeResult({

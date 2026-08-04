@@ -210,6 +210,26 @@ function caseSuraTitleLike(original, title) {
   return isAllCapsLike(original) ? title.toLocaleUpperCase('tr-TR') : title;
 }
 
+function normalizeHadisSerifHeading(value) {
+  return canonicalText(value)
+    .replace(/[‐‑‒–—]/gu, '-')
+    .replace(/\s*-\s*/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isHadisSerifHeading(value) {
+  return /^[Hh][Aa][Dd][İiIıÎî][Ss]-[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]$/u.test(normalizeHadisSerifHeading(value));
+}
+
+function isStandardHadisSerifHeading(value) {
+  return /^[Hh][Aa][Dd][İiIıÎî][Ss]-[İiIı]\s+[ŞşSs][Ee][Rr][İiIı][Ff]$/u.test(normalizeHadisSerifHeading(value));
+}
+
+function isHadisSerifStandardChange(original, fixed) {
+  return isHadisSerifHeading(original) && isStandardHadisSerifHeading(fixed);
+}
+
 function suraVariantFixed(original) {
   const value = canonicalText(original);
   if (!value) return '';
@@ -931,6 +951,7 @@ function isProtectedChange(original, fixed) {
   if (!from || !to || from === to) return false;
 
   if (to === `${from}:`) return true;
+  if (isHadisSerifStandardChange(original, fixed)) return false;
   if (isAllowedCaseNormalization(original, fixed)) return false;
   if (isAllowedReferencePunctuation(original, fixed)) return false;
   if (isBareHacToHaccRewrite(original, fixed)) return true;
@@ -1004,6 +1025,11 @@ function caseLike(original, fixed) {
   return replacement;
 }
 
+function hadisSerifStandardFixed(original) {
+  const firstSegment = String(original || '').trim().split(/\s+/u)[0] || '';
+  return isAllCapsLike(firstSegment) ? 'HADÎS-İ ŞERİF' : caseLike(original, 'Hadîs-i Şerif');
+}
+
 function fixAdemSuretiPhrase(original) {
   return String(original || '')
     .replace(/\(\s*A\.S\.?\s*\)/iu, '(A.S)')
@@ -1048,7 +1074,7 @@ function deterministicFixed(original) {
   if (/^ş(?:u|û)ra\s+suresi$/iu.test(text)) return caseLike(original, 'Şûrâ Suresi');
   if (/^19 tane haslet ruhun$/iu.test(text)) return 'Ruhta 19 tane haslet';
   if (/^bir\s+araya$/iu.test(text)) return 'biraraya';
-  if (asciiFold(text) === 'hadis-i serif') return caseLike(original, 'Hadîs-i Şerif');
+  if (isHadisSerifHeading(text)) return hadisSerifStandardFixed(original);
   if (/^nefisler[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^nefisler/iu, 'nefsler'));
   if (/^fedakarlık[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^fedakarlık/iu, 'fedakârlık'));
   if (/^kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?$/iu.test(text)) {
@@ -1113,7 +1139,7 @@ function applyDeterministicStandards(cats, sourceText) {
     });
   });
 
-  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIı][Ss]-[İiIı]\s+[Şş][Ee][Rr][İiIı][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
+  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(tokenRe)) {
     const original = match[0];
     if (/^tevbe[\p{L}\p{N}_]*$/iu.test(original) && isTevbeSuraContext(text, match.index, original.length)) continue;

@@ -129,6 +129,15 @@ tespit edilir).
   sınırı ve `metni bölerek denetleyin` engeli ilgili kontrol akışından kaldırıldı.
   `scripts/check-frontend.js` bu sınırı regresyon olarak doğrular. Doğrulama:
   `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda production deploy yapılmadı.
+- **HADÎS-İ ŞERİF başlık standardı ve 100 puan feedback akışı:** Kullanıcı raporuyla
+  `HADÎS-İ şerrİF` gibi bozuk başlıkların 100 puanla kaçabildiği görüldü. Denetim motoruna
+  yalnız `hadîs-i şerif` başlığı bağlamında çalışan dar deterministik standart eklendi:
+  `HADİS-İ ŞERİF`, `HADÎS-İ ŞERÎF`, `HADÎS-İ şerrİF` ve benzeri varyantlar
+  `HADÎS-İ ŞERİF` / `Hadîs-i Şerif` standardına alınır; genel `şerr -> şer` koruması
+  bozulmaz. Temiz/100 puanlı sonuçlarda geri bildirim panelinin kapanması kaldırıldı; kullanıcı
+  artık sonuç temiz görünse bile `Eksik hata`, `Düzen bozuldu`, `Skor yanlış` veya `Diğer`
+  olarak geri bildirim gönderebilir. Doğrulama: doğrudan motor senaryosunda skor `96`, bulgu
+  `1`; `npm.cmd run check` başarılı, 85/85 test geçti. Bu adımda production deploy yapılmadı.
 - **Geçmiş düzeltme akışı feedback merkezli hale getirildi:** `Geçmiş Düzeltme Kontrolü`
   artık global kelime paketi gibi davranmaz. Etki taramasında `Bildirilen doküman` ve
   `Benzer geçmiş kayıtlar` ayrı gösterilir; her hedef `historyId:field` kimliğiyle tek tek

@@ -9,6 +9,14 @@
   kontrol akışından kaldırıldı. `scripts/check-frontend.js` bu sınırı regresyon olarak
   doğrular. Doğrulama: `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda
   production deploy yapılmadı.
+- Kullanıcı raporuyla `HADÎS-İ ŞERİF` başlığında sessiz kaçak tespit edildi: `HADÎS-İ şerrİF`
+  gibi bozuk varyantlar 100 puanla geçebiliyordu. `analysis-core.js` içine yalnız bu başlık
+  bağlamında çalışan dar deterministik standart eklendi; bozuk varyantlar `HADÎS-İ ŞERİF`
+  / `Hadîs-i Şerif` standardına alınır, genel `şerr` koruması korunur. Ayrıca 100 puanlı veya
+  temiz görünen sonuçlarda geri bildirim panelinin kapanması kaldırıldı; kullanıcı sonuç temiz
+  görünse bile eksik/hatalı/kaçan noktayı ekibe bildirebilir. Doğrulama: hedef motor senaryosu
+  `score=96`, `totalErrors=1`, `correctedText=HADÎS-İ ŞERİF`; `npm.cmd run check` başarılı,
+  85/85 test geçti. Bu adımda production deploy yapılmadı.
 - Geçmiş düzeltme akışı feedback merkezli hale getirildi. Süper admin artık düzeltme kaydında
   önce `Bildirilen doküman` bölümünü görür; bu bölüm geri bildirimin bağlı olduğu asıl
   denetim kaydını gösterir. `Benzer geçmiş kayıtlar` ayrı bölümde listelenir. Her hedef

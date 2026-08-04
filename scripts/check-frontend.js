@@ -290,6 +290,14 @@ if (!html.includes('openSubmitApprovalFromHistory') || !html.includes('value="ta
   throw new Error('Kullanici gecmisindeki taslaklari filtreleme ve onaya gonderme akisi eksik.');
 }
 if (
+  html.includes('ekibe bildirim kapalı') ||
+  html.includes("actions.style.display='none'") ||
+  !html.includes('kaçan bir nokta olduğunu düşünüyorsanız ekibe bildirebilirsiniz') ||
+  !html.includes('<div class="feedback-actions" id="resultFeedbackActions">')
+) {
+  throw new Error('100 puanli veya temiz gorunen denetimlerde de kullanici geri bildirim gonderebilmeli.');
+}
+if (
   !server.includes("app.get('/api/correction-packages'") ||
   !server.includes('content_correction_packages') ||
   !server.includes('content_correction_log') ||
