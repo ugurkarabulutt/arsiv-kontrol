@@ -1256,7 +1256,7 @@ if('serviceWorker' in navigator){
 let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]};
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
-const MAX_TEXT_CHARS=120000;
+const MAX_TEXT_CHARS=200000;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
@@ -1411,7 +1411,7 @@ function handleTextInput(){
   let cls='';
   if(count===0){hint='Denetlenecek metni yapıştırın.';}
   else if(count<MIN_TEXT_CHARS){hint='Metin çok kısa; doğru denetim için birkaç cümle girin.';cls='warn';}
-  else if(count>MAX_TEXT_CHARS){hint='Metin çok uzun; bölerek denetlemek daha güvenli.';cls='err';}
+  else if(count>MAX_TEXT_CHARS){hint='Metin 200.000 karakter sınırını aşıyor.';cls='err';}
   if(el('textHint'))el('textHint').textContent=hint;
   if(box)box.className=`text-health${cls?' '+cls:''}`;
   updateHelperNudge(count, cleaned);
@@ -1423,7 +1423,7 @@ function updateHelperNudge(count,text){
   if(!live||!out||currentResult)return;
   if(count===0){live.textContent='Hazır';out.textContent='Metni yapıştırınca AI raporu için hazır olur.';return;}
   if(count<MIN_TEXT_CHARS){live.textContent='Bağlam bekliyor';out.textContent='Metin kısa görünüyor. Birkaç cümle daha eklerseniz Denetim Yardımcısı daha sağlıklı hazırlık kontrolü yapabilir.';return;}
-  if(count>MAX_TEXT_CHARS){live.textContent='Bölme önerisi var';out.textContent='Metin sistem sınırını aşıyor. Yardımcıdan metni nasıl bölmeniz gerektiği konusunda öneri alabilirsiniz.';return;}
+  if(count>MAX_TEXT_CHARS){live.textContent='Sınır aşıldı';out.textContent='Metin 200.000 karakter sınırını aşıyor. Lütfen metni kısaltıp tekrar deneyin.';return;}
   if(count>18000){live.textContent='Uzun metin denetimine hazır';out.textContent='Uzun metinler güvenli şekilde denetlenir; işlem bittiğinde sonuç hazırlanır.';return;}
   if(/\t| {3,}/.test(text)){live.textContent='Düzen kontrolü önerilir';out.textContent='Metinde satır, boşluk veya tablo düzeni olabilir. Denetimden sonra metin düzenini kontrol etmeniz önerilir.';return;}
   live.textContent='AI hazır';
@@ -1625,7 +1625,7 @@ async function analyze(){
     const cleaned=cleanInputText(v('inputText'));
     if(!cleaned)return showInputError(res,'Lütfen metin girin.');
     if(cleaned.length<MIN_TEXT_CHARS)return showInputError(res,'Metin çok kısa. Sağlıklı denetim için birkaç cümle girin.');
-    if(cleaned.length>MAX_TEXT_CHARS)return showInputError(res,'Metin çok uzun. Lütfen metni bölerek denetleyin.');
+    if(cleaned.length>MAX_TEXT_CHARS)return showInputError(res,'Metin 200.000 karakter sınırını aşıyor. Lütfen metni kısaltıp tekrar deneyin.');
   }
   isAnalyzing=true;
   resetCurrentAnalysisStateForNewRun();

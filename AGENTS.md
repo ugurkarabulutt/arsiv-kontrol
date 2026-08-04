@@ -121,6 +121,14 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-04
+- **Metin denetimi üst sınırı 200.000 karaktere çıkarıldı:** Kullanıcıların uzun konferans
+  ve soru-cevap metinlerinde gördüğü eski karakter sınırı engeli kaldırıldı. Frontend
+  `MAX_TEXT_CHARS` ve backend `MAX_ANALYSIS_TEXT_CHARS` sınırları `200000` olarak
+  hizalandı. 200.000 karaktere kadar metinler mevcut uzun metin parçalara ayırma akışıyla
+  denetlenir; 200.000 üstü için kullanıcıya net sınır mesajı gösterilir. Eski `120000`
+  sınırı ve `metni bölerek denetleyin` engeli ilgili kontrol akışından kaldırıldı.
+  `scripts/check-frontend.js` bu sınırı regresyon olarak doğrular. Doğrulama:
+  `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda production deploy yapılmadı.
 - **Geçmiş düzeltme akışı feedback merkezli hale getirildi:** `Geçmiş Düzeltme Kontrolü`
   artık global kelime paketi gibi davranmaz. Etki taramasında `Bildirilen doküman` ve
   `Benzer geçmiş kayıtlar` ayrı gösterilir; her hedef `historyId:field` kimliğiyle tek tek

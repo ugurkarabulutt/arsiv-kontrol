@@ -2,6 +2,13 @@
 
 ## 2026-08-04 Codex Güncel Durum
 
+- Metin denetimi üst sınırı 200.000 karaktere çıkarıldı. Frontend `MAX_TEXT_CHARS` ve
+  backend `MAX_ANALYSIS_TEXT_CHARS` artık `200000`; 200.000 karaktere kadar metinler
+  mevcut uzun metin parçalı denetim akışıyla kabul edilir. 200.000 üstü için net sınır
+  mesajı verilir. Eski `120000` sınırı ve `metni bölerek denetleyin` engeli ilgili
+  kontrol akışından kaldırıldı. `scripts/check-frontend.js` bu sınırı regresyon olarak
+  doğrular. Doğrulama: `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda
+  production deploy yapılmadı.
 - Geçmiş düzeltme akışı feedback merkezli hale getirildi. Süper admin artık düzeltme kaydında
   önce `Bildirilen doküman` bölümünü görür; bu bölüm geri bildirimin bağlı olduğu asıl
   denetim kaydını gösterir. `Benzer geçmiş kayıtlar` ayrı bölümde listelenir. Her hedef

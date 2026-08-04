@@ -85,7 +85,13 @@ if (!html.includes('LONG_TEXT_CHUNK_CHARS') || !html.includes('splitTextForLongA
   throw new Error('Uzun metinler frontend tarafinda parcali denetime bagli olmali.');
 }
 if (!html.includes('LONG_TEXT_CHUNK_CHARS=8000') || !html.includes('LONG_TEXT_CONCURRENCY=2') || !html.includes('fallbackChunkCount')) {
-  throw new Error('Uzun metin modu 50k-100k konferans metinleri icin guvenli parca, eszamanlilik ve fallback davranisina sahip olmali.');
+  throw new Error('Uzun metin modu 50k-200k konferans metinleri icin guvenli parca, eszamanlilik ve fallback davranisina sahip olmali.');
+}
+if (!html.includes('const MAX_TEXT_CHARS=200000') || !server.includes('const MAX_ANALYSIS_TEXT_CHARS = 200000')) {
+  throw new Error('Metin denetimi 200.000 karaktere kadar kabul edecek sekilde frontend ve backend sinirlariyla hizalanmali.');
+}
+if (!html.includes('Metin 200.000 karakter sınırını aşıyor') || !server.includes('Metin 200.000 karakter sınırını aşıyor')) {
+  throw new Error('200.000 karakter ustu icin kullaniciya net sinir mesaji gosterilmeli.');
 }
 if (!html.includes('/api/extract-file-text') || !server.includes('/api/extract-file-text') || !server.includes('skipDuplicate')) {
   throw new Error('Uzun dosya/metin denetimi icin metin cikarma ve parca denetimi altyapisi eksik.');

@@ -27,7 +27,7 @@ const SUPABASE_KEY      = process.env.SUPABASE_KEY;
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
-const MAX_ANALYSIS_TEXT_CHARS = 120000;
+const MAX_ANALYSIS_TEXT_CHARS = 200000;
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 70000);
 const OPENAI_RETRY_DELAYS_MS = [800, 1800];
@@ -1261,7 +1261,7 @@ function prepareAnalysisText(text) {
     throw err;
   }
   if (cleaned.length > MAX_ANALYSIS_TEXT_CHARS) {
-    const err = new Error('Metin çok uzun. Lütfen metni bölerek denetleyin.');
+    const err = new Error('Metin 200.000 karakter sınırını aşıyor. Lütfen metni kısaltıp tekrar deneyin.');
     err.statusCode = 413;
     throw err;
   }
