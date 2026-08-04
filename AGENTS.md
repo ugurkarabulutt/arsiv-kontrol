@@ -128,8 +128,15 @@ tespit edilir).
   önizlemesini görür, yalnız seçili kayıtları uygulayabilir. Kısmi uygulamalar
   `appliedTargets` ile kayıt altında tutulur; paket tamamen bitmeden de hangi hedeflerin
   işlendiği pasif görünür ve gerekirse `content_correction_log` üzerinden geri alınabilir.
-  Doğrulama: `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda production deploy
-  yapılmadı.
+  Doğrulama: `npm.cmd run check` başarılı, 84/84 test geçti. Commit `697cc3f` GitHub'a
+  push edildi. Production deploy `dpl_AsqGc9m5YUHj38ziadSV5c6Dnq7Q`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health` `ok`, root `/` HTTP 200,
+  `/admin`, `/admin/` ve `/admin/smoke-test` HTTP 200, `/api/auth/me`
+  `{"loggedIn":false}`, manifest, `sw.js` ve favicon HTTP 200. `/admin` header'ları
+  `X-Robots-Tag: noindex, nofollow` ve `Cache-Control: no-store, no-cache,
+  must-revalidate, proxy-revalidate`. Canlı HTML'de `Bildirilen doküman`,
+  `Benzer geçmiş kayıtlar`, `selectedChangeIds`, `Dokümanı Aç`, `Bu Kaydı Uygula`
+  mevcut; eski `adminRouteProbe` yok.
 - **/admin geçici test alanı kaldırıldı:** Süper admin için eklenen `/admin canlı test`
   doğrulama kartı görevini tamamladıktan sonra `index.html` içinden kaldırıldı.
   PWA/root guard mantığı korunur; `scripts/check-frontend.js` artık guard'ı doğrularken
