@@ -2,6 +2,15 @@
 
 ## 2026-08-04 Codex Güncel Durum
 
+- Geçmiş düzeltme akışı feedback merkezli hale getirildi. Süper admin artık düzeltme kaydında
+  önce `Bildirilen doküman` bölümünü görür; bu bölüm geri bildirimin bağlı olduğu asıl
+  denetim kaydını gösterir. `Benzer geçmiş kayıtlar` ayrı bölümde listelenir. Her hedef
+  `historyId:field` kimliğiyle seçilebilir; kırmızı/eski ve yeşil/yeni bağlam önizlemesi
+  gösterilir; `Dokümanı Aç`, `Bu Kaydı Uygula` ve `Seçilenleri Uygula` aksiyonları vardır.
+  Backend `/api/correction-packages/:id/apply` artık `selectedChangeIds` kabul eder; seçili
+  hedef gelirse yalnız o kayıtlar güncellenir. Kısmi uygulamalar `appliedTargets` ile
+  saklanır ve geri alma defteri `content_correction_log` korunur. Doğrulama:
+  `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda production deploy yapılmadı.
 - Kullanıcı `/admin` süper admin doğrulama alanını canlıda gördü ve sorunsuz çalıştığını
   teyit etti. Bu nedenle geçici test kartı kaldırıldı. PWA/root `/admin` guard mantığı
   korunacak; yalnız doğrulama kartı ve `adminRouteProbe` state kodu artık bulunmayacak.

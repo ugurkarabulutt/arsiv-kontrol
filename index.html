@@ -434,10 +434,12 @@ canvas{width:100%!important;}
 .correction-options{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0 12px;font-size:12px;color:var(--ink2);}
 .correction-options-title{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:2px;}
 .correction-option{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);background:var(--surface2);padding:10px 11px;cursor:pointer;min-height:44px;}
-.correction-option input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;min-width:18px;margin:1px 0 0;border:1px solid var(--bord2);border-radius:5px;background:var(--bg);display:grid;place-items:center;padding:0;cursor:pointer;}
-.correction-option input[type="checkbox"]:checked{background:var(--gold);border-color:var(--gold);}
+.correction-option input[type="checkbox"],.correction-option input[type="radio"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;min-width:18px;margin:1px 0 0;border:1px solid var(--bord2);border-radius:5px;background:var(--bg);display:grid;place-items:center;padding:0;cursor:pointer;}
+.correction-option input[type="radio"]{border-radius:50%;}
+.correction-option input[type="checkbox"]:checked,.correction-option input[type="radio"]:checked{background:var(--gold);border-color:var(--gold);}
 .correction-option input[type="checkbox"]:checked::after{content:'✓';font-size:13px;line-height:1;color:#15110a;font-weight:900;}
-.correction-option span{display:block;font-weight:800;color:var(--ink);line-height:1.3;}
+.correction-option input[type="radio"]:checked::after{content:'';width:8px;height:8px;border-radius:50%;background:#15110a;}
+.correction-option span{display:block;font-weight:800;color:var(--ink);line-height:1.3;min-width:0;}
 .correction-option small{display:block;margin-top:2px;font-size:11px;line-height:1.35;color:var(--ink3);}
 .correction-toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:12px;}
 .correction-metric{border:1px solid var(--border);background:var(--surface2);padding:10px 11px;min-height:66px;}
@@ -489,6 +491,24 @@ canvas{width:100%!important;}
 .correction-scan span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--ink3);}
 .correction-sample{margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
 .correction-sample-item{font-size:12px;line-height:1.5;color:var(--ink2);padding:8px 0;border-bottom:1px solid var(--border);}
+.correction-target-section{margin-top:12px;border:1px solid var(--border);background:var(--surface2);}
+.correction-target-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);}
+.correction-target-head strong{font-size:14px;color:var(--ink);}
+.correction-target-head span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.correction-target-list{display:grid;gap:8px;padding:9px;}
+.correction-target-card{border:1px solid var(--border);background:var(--white);padding:10px 11px;}
+.correction-target-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;}
+.correction-target-check{appearance:none;-webkit-appearance:none;width:18px;height:18px;min-width:18px;margin-top:2px;border:1px solid var(--bord2);border-radius:5px;background:var(--bg);display:grid;place-items:center;cursor:pointer;}
+.correction-target-check:checked{background:var(--gold);border-color:var(--gold);}
+.correction-target-check:checked::after{content:'✓';font-size:13px;color:#15110a;font-weight:900;}
+.correction-target-main{min-width:0;flex:1;}
+.correction-target-title{font-weight:800;color:var(--ink);font-size:13px;line-height:1.35;}
+.correction-target-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-top:3px;line-height:1.45;}
+.correction-preview{display:grid;grid-template-columns:1fr;gap:6px;margin:8px 0;}
+.correction-preview-line{padding:8px 9px;border:1px solid var(--border);background:var(--bg2);font-size:12px;line-height:1.55;color:var(--ink2);word-break:break-word;}
+.correction-preview-line .old{background:var(--red-bg);color:var(--red);text-decoration:line-through;text-decoration-thickness:1px;padding:1px 2px;}
+.correction-preview-line .new{background:var(--grn-bg);color:var(--green);font-weight:800;padding:1px 2px;}
+.correction-target-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
 .correction-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .correction-actions button:disabled{opacity:.68;cursor:not-allowed;filter:saturate(.75);}
 .message-log-card{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);}
@@ -1060,14 +1080,14 @@ canvas{width:100%!important;}
                 <input type="checkbox" id="correctionFieldSummary">
                 <span>Sonuç özeti<small>Gerekirse denetim özetlerinde de kontrol et.</small></span>
               </label>
-              <div class="correction-options-title">Kapsam</div>
+              <div class="correction-options-title">Öncelik</div>
               <label class="correction-option">
                 <input type="radio" name="correctionHistoryScope" id="correctionScopeReported" value="reported" checked onchange="markCorrectionScopePicked()">
-                <span>Bildirilen metin<small>Seçili geri bildirimin bağlı olduğu denetim kaydını düzelt.</small></span>
+                <span>Bildirilen doküman<small>Seçili geri bildirimin bağlı olduğu denetim kaydını önce düzelt.</small></span>
               </label>
               <label class="correction-option">
                 <input type="radio" name="correctionHistoryScope" id="correctionScopeAll" value="all" onchange="markCorrectionScopePicked()">
-                <span>Tüm geçmiş<small>Aynı ifade geçmiş metinlerde de aranacak; uygulama için süper admin son kontrolü gerekir.</small></span>
+                <span>Benzer geçmiş kayıtlar<small>Aynı ifade geçmiş metinlerde de aranır; uygulama tek tek seçilen kayıtlara yapılır.</small></span>
               </label>
               <label class="correction-option">
                 <input type="checkbox" id="correctionNeedsReview" checked disabled>
@@ -1169,7 +1189,7 @@ canvas{width:100%!important;}
 
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:640px">
-    <div class="modal-head"><h3>Düzeltilmiş Metin</h3><button class="modal-close" onclick="closeModal('detailModal')">×</button></div>
+    <div class="modal-head"><h3>Denetim Kaydı</h3><button class="modal-close" onclick="closeModal('detailModal')">×</button></div>
     <div class="modal-body">
       <div id="detailBody" style="white-space:pre-wrap;font-size:15px;line-height:1.8;color:var(--ink2);max-height:55vh;overflow-y:auto;background:var(--bg2);padding:14px;"></div>
       <div class="modal-foot" style="margin-top:12px">
@@ -3126,7 +3146,7 @@ async function downloadFeedbackWorkPackage(){
 function updateCorrectionSelectedInfo(){
   const info=el('correctionSelectedInfo');
   if(info)info.textContent=selectedFeedbackIds.size
-    ?`${selectedFeedbackIds.size} geri bildirim bağlanacak. Varsayılan kapsam: bildirilen metin.`
+    ?`${selectedFeedbackIds.size} geri bildirim bağlanacak. Varsayılan kapsam: bildirilen doküman.`
     :'Seçili geri bildirim yok.';
   const reported=el('correctionScopeReported');
   const all=el('correctionScopeAll');
@@ -3226,6 +3246,7 @@ function setCorrectionPackageBusy(id,busy){
 function correctionStateNote(pkg,status,scan){
   const affected=Number(scan?.affectedRecords||0);
   const replacements=Number(scan?.replacementCount||0);
+  const appliedTargets=Array.isArray(pkg?.appliedTargets)?pkg.appliedTargets.length:0;
   if(status==='applied'){
     const when=correctionPackageDate(pkg.appliedAt);
     return `<div class="correction-state-note applied"><strong>Uygulandı.</strong> ${affected} kayıt içinde ${replacements} düzeltme işlendi${when?` · ${esc(when)}`:''}. Gerekirse bu kayıt defterinden geri alınabilir.</div>`;
@@ -3235,6 +3256,9 @@ function correctionStateNote(pkg,status,scan){
     return `<div class="correction-state-note reverted"><strong>Geri alındı.</strong> Bu düzeltmeyle yapılan geçmiş değişiklikler eski haline döndürüldü${when?` · ${esc(when)}`:''}.</div>`;
   }
   if(status==='ready'){
+    if(appliedTargets){
+      return `<div class="correction-state-note applied"><strong>Kısmen uygulandı.</strong> ${appliedTargets} hedef kayıt defterine işlendi. Kalan hedefleri tek tek seçip uygulayabilir veya gerekirse Geri Al kullanabilirsiniz.</div>`;
+    }
     return `<div class="correction-state-note"><strong>Son kontrol hazır.</strong> Etki taramasında ${affected} kayıt ve ${replacements} düzeltme görünüyor. Süper admin örnekleri kontrol edip onaylarsa geçmiş metinlere uygulanır.</div>`;
   }
   if(status==='pending_review'){
@@ -3248,12 +3272,68 @@ function correctionFieldLabel(field){
 }
 
 function correctionScopeLabel(scope){
-  return scope==='reported'?'Bildirilen metin':'Tüm geçmiş';
+  return scope==='reported'?'Bildirilen doküman':'Benzer geçmiş kayıtlar';
 }
 
-function correctionScanHtml(scan){
+function correctionEscapeRegExp(value){
+  return String(value||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+}
+
+function correctionHighlightText(text,needle,cls){
+  const source=String(text||'');
+  const target=String(needle||'');
+  if(!source||!target)return esc(source);
+  const index=source.toLocaleLowerCase('tr-TR').indexOf(target.toLocaleLowerCase('tr-TR'));
+  if(index<0)return esc(source);
+  return `${esc(source.slice(0,index))}<span class="${cls}">${esc(source.slice(index,index+target.length))}</span>${esc(source.slice(index+target.length))}`;
+}
+
+function correctionTargetHtml(item,pkg,scope){
+  const appliedIds=new Set((pkg.appliedTargets||[]).map(target=>target?.changeId||target));
+  const alreadyApplied=item.alreadyApplied||appliedIds.has(item.changeId);
+  const disabled=alreadyApplied?'disabled':'';
+  const checked=item.reported&&!alreadyApplied?'checked':'';
+  const title=`${item.userName||'Kullanıcı'} · ${item.filename||'Metin'}`;
+  const date=correctionPackageDate(item.createdAt);
+  return `<div class="correction-target-card ${alreadyApplied?'applied':''}">
+    <div class="correction-target-top">
+      <input class="correction-target-check" type="checkbox" ${checked} ${disabled}
+        data-correction-package="${esc(pkg.id)}"
+        data-correction-scope="${esc(scope)}"
+        data-correction-change="${esc(item.changeId)}">
+      <div class="correction-target-main">
+        <div class="correction-target-title">${esc(title)}</div>
+        <div class="correction-target-meta">${esc(correctionFieldLabel(item.field))} · ${esc(item.status||'bekliyor')} · ${Number(item.count||0)} geçiş${date?` · ${esc(date)}`:''}${item.score!=null?` · Skor ${Number(item.score||0)}`:''}</div>
+      </div>
+    </div>
+    <div class="correction-preview">
+      <div class="correction-preview-line">${correctionHighlightText(item.beforePreview||item.excerpt||'',pkg.from,'old')}</div>
+      <div class="correction-preview-line">${correctionHighlightText(item.afterPreview||'',pkg.to,'new')}</div>
+    </div>
+    <div class="correction-target-actions">
+      <button class="btn-mini" onclick="showDetail('${item.historyId}')">Dokümanı Aç</button>
+      <button class="btn-green" style="padding:5px 10px;font-size:10px" ${alreadyApplied?'disabled':''} onclick="applyCorrectionPackage(${attrJson(pkg.id)},'single',${attrJson(item.changeId)})">${alreadyApplied?'Uygulandı':'Bu Kaydı Uygula'}</button>
+    </div>
+  </div>`;
+}
+
+function correctionTargetSectionHtml(title,subtitle,items,pkg,scope){
+  if(!items.length)return `<div class="correction-target-section"><div class="correction-target-head"><strong>${esc(title)}</strong><span>0 kayıt</span></div><div class="empty-state" style="padding:12px">${esc(subtitle)}</div></div>`;
+  return `<div class="correction-target-section">
+    <div class="correction-target-head">
+      <div><strong>${esc(title)}</strong><div class="pref-sub" style="margin-top:2px">${esc(subtitle)}</div></div>
+      <span>${items.length} kayıt</span>
+    </div>
+    <div class="correction-target-list">${items.map(item=>correctionTargetHtml(item,pkg,scope)).join('')}</div>
+  </div>`;
+}
+
+function correctionScanHtml(scan,pkg={}){
   if(!scan)return '<div class="empty-state" style="padding:14px">Henüz tarama yapılmadı.</div>';
   const byStatus=scan.byStatus||{};
+  const reported=scan.reportedTargets||[];
+  const history=scan.historyTargets||[];
+  const trunc=scan.targetTruncated?`<div class="warn-box" style="margin-top:10px">Çok fazla eşleşme bulundu. İlk ${Number(scan.targetLimit||0)} hedef gösteriliyor; daha dar bir ifade veya bildirilen kayıt kapsamı kullanın.</div>`:'';
   return `<div class="pref-sub" style="margin:10px 0 6px">Tarama kapsamı: ${esc(correctionScopeLabel(scan.historyScope))}${scan.reportedHistoryCount?` · bağlı denetim kaydı: ${Number(scan.reportedHistoryCount||0)}`:''}</div>
   <div class="correction-scan">
     <div><strong>${Number(scan.affectedRecords||0)}</strong><span>kayıt</span></div>
@@ -3261,12 +3341,16 @@ function correctionScanHtml(scan){
     <div><strong>${Number(byStatus.bekliyor||0)}</strong><span>bekleyen</span></div>
     <div><strong>${Number(byStatus.onaylandi||0)}</strong><span>onaylı</span></div>
   </div>
-  ${(scan.sample||[]).length?`<div class="correction-sample">${scan.sample.map(item=>`
-    <div class="correction-sample-item">
-      <strong>${esc(item.userName||'Kullanıcı')}</strong> · ${esc(item.filename||'Metin')} · ${esc(correctionFieldLabel(item.field))}
-      <div class="mono" style="font-size:10px;color:var(--ink3);margin-top:4px">${esc(item.status||'bekliyor')} · ${Number(item.count||0)} geçiş</div>
-      <div style="margin-top:5px">${esc(item.excerpt||'')}</div>
-    </div>`).join('')}</div>`:''}`;
+  ${correctionTargetSectionHtml('Bildirilen doküman','Geri bildirimin bağlı olduğu asıl kayıt önce burada düzeltilir.',reported,pkg,'reported')}
+  ${correctionTargetSectionHtml('Benzer geçmiş kayıtlar','Aynı ifade geçmişte geçiyorsa burada tek tek seçilip uygulanabilir.',history,pkg,'history')}
+  ${trunc}`;
+}
+
+function selectedCorrectionChangeIds(pkgId){
+  const safe=window.CSS&&CSS.escape?CSS.escape(pkgId):String(pkgId).replace(/"/g,'\\"');
+  return Array.from(document.querySelectorAll(`.correction-target-check[data-correction-package="${safe}"]:checked:not(:disabled)`))
+    .map(input=>input.dataset.correctionChange)
+    .filter(Boolean);
 }
 
 function correctionImpact(pkg){
@@ -3316,9 +3400,10 @@ function correctionPackageCard(pkg){
   const busy=pkg._busy||'';
   const impact=correctionImpact(pkg);
   const canApply=hasSuperAdminRole(me?.role)&&correctionPackagesState.logReady;
+  const hasAppliedTargets=Array.isArray(pkg.appliedTargets)&&pkg.appliedTargets.length>0;
   const applyDisabled=!canApply||status!=='ready'||Boolean(busy);
-  const revertDisabled=!canApply||status!=='applied'||Boolean(busy);
-  const applyLabel=busy==='apply'?'Uygulanıyor...':status==='applied'?'Uygulandı':'Onayla ve Uygula';
+  const revertDisabled=!canApply||(!hasAppliedTargets&&status!=='applied')||Boolean(busy);
+  const applyLabel=busy==='apply'?'Uygulanıyor...':status==='applied'?'Uygulandı':'Seçilenleri Uygula';
   const revertLabel=busy==='revert'?'Geri alınıyor...':'Geri Al';
   const fieldLabel=(pkg.fields||[]).map(correctionFieldLabel).join(', ')||'Düzeltilmiş metin';
   const scopeLabel=correctionScopeLabel(pkg.historyScope);
@@ -3345,10 +3430,10 @@ function correctionPackageCard(pkg){
       ${pkg.note?`<div class="feedback-root-match"><strong>Karar notu:</strong> ${esc(pkg.note)}</div>`:''}
       ${impact.broad?`<div class="warn-box" style="margin-top:10px">Bu kayıt geniş etkili görünüyor. Uygulamadan önce örnekleri özellikle kontrol edin.</div>`:''}
       ${correctionStateNote(pkg,status,scan)}
-      ${correctionScanHtml(scan)}
+      ${correctionScanHtml(scan,pkg)}
       <div class="correction-actions">
         <button class="btn-mini" ${busy?'disabled':''} onclick="previewCorrectionPackage('${pkg.id}')">${status==='applied'?'Son Etkiyi Gör':'Etkiyi Tara'}</button>
-        <button class="btn-green" style="padding:5px 10px;font-size:10px" ${applyDisabled?'disabled':''} onclick="applyCorrectionPackage('${pkg.id}')">${applyLabel}</button>
+        <button class="btn-green" style="padding:5px 10px;font-size:10px" ${applyDisabled?'disabled':''} onclick="applyCorrectionPackage('${pkg.id}','selected')">${applyLabel}</button>
         <button class="btn-sec" style="padding:5px 10px;font-size:10px" ${revertDisabled?'disabled':''} onclick="revertCorrectionPackage('${pkg.id}')">${revertLabel}</button>
       </div>
     </div>
@@ -3402,30 +3487,32 @@ async function previewCorrectionPackage(id){
   await loadCorrectionPackages();
 }
 
-async function applyCorrectionPackage(id){
+async function applyCorrectionPackage(id,mode='selected',changeId=null){
   if(!hasSuperAdminRole(me?.role)){setStatus('Bu işlem için süper admin yetkisi gerekli.','err');return;}
   if(!correctionPackagesState.logReady){setStatus('Kayıt defteri hazır olmadığı için geçmiş içeriklere uygulama yapılamaz.','err');return;}
   const pkg=(correctionPackagesState.packages||[]).find(item=>item.id===id)||{};
-  const scopeText=pkg.historyScope==='reported'?'bildirilen denetim kaydına':'son kontrolde görünen geçmiş denetim kayıtlarına';
+  const selectedIds=mode==='single'&&changeId?[changeId]:selectedCorrectionChangeIds(id);
+  if(!selectedIds.length){setStatus('Uygulanacak kayıt seçin. Bildirilen doküman veya benzer geçmiş kayıtlar içinden seçim yapabilirsiniz.','err');return;}
+  const scopeText=selectedIds.length===1?'seçtiğiniz tek kayda':`${selectedIds.length} seçili kayda`;
   const ok=await openSystemConfirm({
     title:'Geçmiş düzeltme onaylansın mı?',
     badge:'Süper admin onayı',
     message:`Bu düzeltme ${scopeText} uygulanacak.`,
-    detail:'Onay verdiğinizde sistem metni günceller, işlemi kayıt altına alır ve gerekirse geri alınabilir şekilde saklar.',
-    confirmText:'Onayla ve Uygula',
+    detail:'Onay verdiğinizde yalnız seçilen kayıtlar güncellenir, işlem kayıt altına alınır ve gerekirse geri alınabilir şekilde saklanır.',
+    confirmText:selectedIds.length===1?'Bu Kaydı Uygula':'Seçilenleri Uygula',
     cancelText:'Vazgeç',
     tone:'success'
   });
   if(!ok)return;
   setCorrectionPackageBusy(id,'apply');
-  const data=await api('POST',`/api/correction-packages/${id}/apply`,{confirmReview:true,superAdminApproved:true});
+  const data=await api('POST',`/api/correction-packages/${id}/apply`,{confirmReview:true,superAdminApproved:true,selectedChangeIds:selectedIds});
   if(data.error){setCorrectionPackageBusy(id,'');setStatus(data.error,'err');return;}
   if(data.package)updateCorrectionPackageState(data.package);
   const appliedCount=Number(data.applied||data.scan?.affectedRecords||0);
   const changeCount=Number(data.changes||data.scan?.replacementCount||0);
   const message=data.alreadyApplied
     ? 'Bu düzeltme daha önce uygulanmış. Ekran güncel duruma getirildi.'
-    : `${appliedCount} kayıt içinde ${changeCount} düzeltme işlendi. Gerekirse aynı kayıttan Geri Al kullanılabilir.`;
+    : `${appliedCount} kayıt içinde ${changeCount} düzeltme işlendi. ${data.partial?'Kalan hedefler ayrıca seçilip uygulanabilir.':'Bu düzeltme kaydı tamamlandı.'} Gerekirse aynı kayıttan Geri Al kullanılabilir.`;
   setStatus(data.alreadyApplied?'✓ Düzeltme zaten uygulanmış.':'✓ Düzeltme uygulandı.','ok');
   await showSystemAlert(data.alreadyApplied?'Düzeltme zaten uygulanmış':'Düzeltme uygulandı',message,'success');
   await loadCorrectionPackages();

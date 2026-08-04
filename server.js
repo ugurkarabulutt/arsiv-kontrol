@@ -579,6 +579,7 @@ const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
 const CORRECTION_ALLOWED_STATUSES = ['taslak', 'bekliyor', 'onaylandi', 'reddedildi'];
 const CORRECTION_ALLOWED_SCOPES = ['reported', 'all'];
+const CORRECTION_SCAN_TARGET_LIMIT = 500;
 const USER_LAST_SEEN_LEGACY_KEY = 'user_last_seen';
 const USER_LAST_SEEN_KEY_PREFIX = 'user_last_seen:';
 const DEFAULT_STANDARDS = [
@@ -680,6 +681,20 @@ function normalizeUuidList(values) {
     : [];
 }
 
+function correctionChangeId(historyId, field) {
+  return `${historyId}:${field}`;
+}
+
+function normalizeCorrectionChangeIds(values) {
+  return Array.isArray(values)
+    ? [...new Set(values.map(String).filter(id => /^[0-9a-fA-F-]{36}:(corrected_text|summary)$/.test(id))).values()]
+    : [];
+}
+
+function correctionAppliedTargetIds(pkg = {}) {
+  return normalizeCorrectionChangeIds((pkg.appliedTargets || []).map(target => target?.changeId || target));
+}
+
 function normalizeCorrectionPackageInput(body = {}, existing = null) {
   const from = String(body.from ?? existing?.from ?? '').trim();
   const to = String(body.to ?? existing?.to ?? '').trim();
@@ -759,6 +774,17 @@ function correctionExcerpt(text, pkg) {
   return `${start > 0 ? '...' : ''}${source.slice(start, end)}${end < source.length ? '...' : ''}`;
 }
 
+function correctionPreviewSnippet(text, needle) {
+  const source = String(text || '');
+  if (!source) return '';
+  const search = String(needle || '');
+  let index = search ? source.indexOf(search) : -1;
+  if (index < 0) index = 0;
+  const start = Math.max(0, index - 90);
+  const end = Math.min(source.length, index + Math.max(search.length, 1) + 120);
+  return `${start > 0 ? '...' : ''}${source.slice(start, end)}${end < source.length ? '...' : ''}`;
+}
+
 function correctionHistoryStatus(row = {}) {
   return row.status || 'bekliyor';
 }
@@ -801,6 +827,8 @@ async function scanCorrectionPackage(pkg = {}, options = {}) {
   const includeValues = Boolean(options.includeValues);
   const rows = await fetchCorrectionHistoryRows(pkg);
   const fields = normalizeCorrectionFields(pkg.fields);
+  const reportedIds = new Set(normalizeUuidList(pkg.reportedHistoryIds));
+  const appliedIds = new Set(correctionAppliedTargetIds(pkg));
   const changes = [];
   const byStatus = {};
   const byField = {};
@@ -809,20 +837,26 @@ async function scanCorrectionPackage(pkg = {}, options = {}) {
     for (const field of fields) {
       const result = applyCorrectionRuleToText(row[field], pkg);
       if (!result.changed) continue;
+      const changeId = correctionChangeId(row.id, field);
       byStatus[status] = (byStatus[status] || 0) + 1;
       byField[field] = (byField[field] || 0) + 1;
       changes.push({
+        changeId,
         historyId: row.id,
         userId: row.user_id,
         field,
         count: result.count,
         status,
+        reported: reportedIds.has(row.id),
+        alreadyApplied: appliedIds.has(changeId),
         filename: row.filename || 'Metin',
         userName: row.name || row.username || '',
         createdAt: row.created_at,
         score: row.score,
         totalErrors: row.total_errors,
         excerpt: correctionExcerpt(result.oldValue, pkg),
+        beforePreview: correctionPreviewSnippet(result.oldValue, pkg.from),
+        afterPreview: correctionPreviewSnippet(result.newValue, pkg.to),
         ...(includeValues ? { oldValue: result.oldValue, newValue: result.newValue } : {})
       });
     }
@@ -844,17 +878,29 @@ async function scanCorrectionPackage(pkg = {}, options = {}) {
 }
 
 function publicCorrectionPackage(pkg, scan = null) {
+  const hasAppliedTargets = Array.isArray(pkg.appliedTargets) && pkg.appliedTargets.length > 0;
   return {
     ...pkg,
     lastScan: scan || pkg.lastScan || null,
     canApply: HAS_CONTENT_CORRECTION_LOG && pkg.status === 'ready',
-    canRevert: HAS_CONTENT_CORRECTION_LOG && pkg.status === 'applied'
+    canRevert: HAS_CONTENT_CORRECTION_LOG && (pkg.status === 'applied' || hasAppliedTargets)
   };
 }
 
 function sanitizeCorrectionScan(scan = {}) {
-  const { changes, ...rest } = scan;
-  return rest;
+  const { changes = [], ...rest } = scan;
+  const safeChanges = changes.slice(0, CORRECTION_SCAN_TARGET_LIMIT).map(change => {
+    const { oldValue, newValue, ...safe } = change;
+    return safe;
+  });
+  return {
+    ...rest,
+    sample: safeChanges.slice(0, 12),
+    reportedTargets: safeChanges.filter(change => change.reported),
+    historyTargets: safeChanges.filter(change => !change.reported),
+    targetLimit: CORRECTION_SCAN_TARGET_LIMIT,
+    targetTruncated: changes.length > safeChanges.length
+  };
 }
 
 async function insertCorrectionLogs(logs) {
@@ -1585,7 +1631,13 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
     }
 
     const scanWithValues = await scanCorrectionPackage(pkg, { includeValues: true });
-    if (!scanWithValues.changes.length) {
+    const selectedChangeIds = normalizeCorrectionChangeIds(req.body?.selectedChangeIds);
+    const selectedChangeSet = new Set(selectedChangeIds);
+    const remainingChanges = scanWithValues.changes.filter(change => !change.alreadyApplied);
+    const changesToApply = selectedChangeIds.length
+      ? remainingChanges.filter(change => selectedChangeSet.has(change.changeId))
+      : remainingChanges;
+    if (!scanWithValues.changes.length || !changesToApply.length) {
       const scan = sanitizeCorrectionScan(scanWithValues);
       const updated = await updateCorrectionPackage(pkg.id, { lastScan: scan, status: 'ready' });
       return res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: 0 });
@@ -1593,7 +1645,7 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
 
     const updatesByHistory = new Map();
     const logsByHistory = new Map();
-    for (const change of scanWithValues.changes) {
+    for (const change of changesToApply) {
       if (!updatesByHistory.has(change.historyId)) updatesByHistory.set(change.historyId, {});
       updatesByHistory.get(change.historyId)[change.field] = change.newValue;
       if (!logsByHistory.has(change.historyId)) logsByHistory.set(change.historyId, []);
@@ -1626,11 +1678,23 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
     }
 
     const scan = sanitizeCorrectionScan(scanWithValues);
+    const appliedAtNow = new Date().toISOString();
+    const appliedByNow = req.session.name || req.session.username;
+    const appliedTargetIds = new Set([...correctionAppliedTargetIds(pkg), ...changesToApply.map(change => change.changeId)]);
+    const remainingAfterApply = remainingChanges.filter(change => !appliedTargetIds.has(change.changeId)).length;
+    const fullyApplied = remainingAfterApply === 0;
     const updated = await updateCorrectionPackage(pkg.id, {
       lastScan: scan,
-      status: 'applied',
-      appliedAt: new Date().toISOString(),
-      appliedBy: req.session.name || req.session.username
+      status: fullyApplied ? 'applied' : 'ready',
+      appliedTargets: [...appliedTargetIds].map(changeId => ({
+        changeId,
+        appliedAt: appliedAtNow,
+        appliedBy: appliedByNow
+      })),
+      appliedAt: fullyApplied ? appliedAtNow : pkg.appliedAt,
+      appliedBy: fullyApplied ? appliedByNow : pkg.appliedBy,
+      partialAppliedAt: fullyApplied ? pkg.partialAppliedAt : appliedAtNow,
+      partialAppliedBy: fullyApplied ? pkg.partialAppliedBy : appliedByNow
     });
 
     const resolutionGroup = `content-correction-${pkg.id}`;
@@ -1640,7 +1704,14 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
       `Duzeltme sayisi: ${appliedChanges}`
     ].join('\n');
 
-    if (HAS_ALERT_FEEDBACK_META && Array.isArray(pkg.feedbackIds) && pkg.feedbackIds.length) {
+    const appliedHistoryIds = new Set(changesToApply.map(change => change.historyId));
+    const reportedIds = normalizeUuidList(pkg.reportedHistoryIds);
+    const reportedWithMatches = new Set(scanWithValues.changes.filter(change => reportedIds.includes(change.historyId)).map(change => change.historyId));
+    const reportedResolved = reportedIds.length > 0
+      ? reportedWithMatches.size > 0 && [...reportedWithMatches].every(historyId => appliedHistoryIds.has(historyId))
+      : fullyApplied;
+
+    if (HAS_ALERT_FEEDBACK_META && Array.isArray(pkg.feedbackIds) && pkg.feedbackIds.length && reportedResolved) {
       await supabase.from('alerts').update({
         feedback_status: 'resolved',
         resolved_at: new Date().toISOString(),
@@ -1659,14 +1730,14 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
           `Etkilenen kayıt: ${appliedRecords}`,
           `Değişim: ${appliedChanges}`
         ].join('\n'),
-        status: 'applied',
+        status: fullyApplied ? 'applied' : 'partially_applied',
         feedback_count: Array.isArray(pkg.feedbackIds) ? pkg.feedbackIds.length : 0,
         user_count: 0,
         created_by: req.session.name || req.session.username
       });
     }
 
-    res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: appliedRecords, changes: appliedChanges });
+    res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: appliedRecords, changes: appliedChanges, partial: !fullyApplied });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 

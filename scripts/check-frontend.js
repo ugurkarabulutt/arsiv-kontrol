@@ -300,18 +300,33 @@ if (
   !html.includes('correctionHistoryScopeFromForm') ||
   !html.includes('correctionScopeReported') ||
   !html.includes('correctionScopeAll') ||
-  !html.includes('Bildirilen metin')
+  !html.includes('Bildirilen doküman')
 ) {
-  throw new Error('Geri bildirim kaynakli gecmis icerik duzeltme kayitlari, bildirilen metin/tum gecmis kapsami ve etki taramasi korunmali.');
+  throw new Error('Geri bildirim kaynakli gecmis icerik duzeltme kayitlari, bildirilen dokuman/benzer gecmis kapsami ve etki taramasi korunmali.');
 }
 if (
   !html.includes('Geçmiş Düzeltme Kontrolü') ||
   !html.includes('Geçmiş Düzeltmeleri') ||
   !html.includes('Yeni düzeltme kaydı') ||
   !html.includes('.correction-option input[type="checkbox"]') ||
+  !html.includes('.correction-option input[type="radio"]') ||
   html.includes('Düzeltme Paketleri')
 ) {
   throw new Error('Gecmis duzeltme ekrani adminin anlayacagi isim ve mobil checkbox duzeniyle kalmali.');
+}
+if (
+  !server.includes('selectedChangeIds') ||
+  !server.includes('correctionChangeId') ||
+  !server.includes('appliedTargets') ||
+  !html.includes('Bildirilen doküman') ||
+  !html.includes('Benzer geçmiş kayıtlar') ||
+  !html.includes('correctionTargetSectionHtml') ||
+  !html.includes('selectedCorrectionChangeIds') ||
+  !html.includes('Bu Kaydı Uygula') ||
+  !html.includes('Dokümanı Aç') ||
+  !html.includes('.correction-target-check')
+) {
+  throw new Error('Gecmis duzeltme akisi bildirilen dokuman ve secilebilir gecmis hedefler uzerinden calismali.');
 }
 if (
   !html.includes('Onay Bekleyen Düzeltmeler') ||
@@ -339,7 +354,7 @@ if (
   !server.includes('superAdminApproved') ||
   !html.includes('Süper admin son kontrolü') ||
   !html.includes('Süper admin onayı bekliyor') ||
-  !html.includes('Onayla ve Uygula')
+  !html.includes('Seçilenleri Uygula')
 ) {
   throw new Error('Gecmis duzeltmeler super admin son kontrolu olmadan uygulanmamali.');
 }

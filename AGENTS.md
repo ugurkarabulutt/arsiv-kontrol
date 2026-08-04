@@ -121,6 +121,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-04
+- **Geçmiş düzeltme akışı feedback merkezli hale getirildi:** `Geçmiş Düzeltme Kontrolü`
+  artık global kelime paketi gibi davranmaz. Etki taramasında `Bildirilen doküman` ve
+  `Benzer geçmiş kayıtlar` ayrı gösterilir; her hedef `historyId:field` kimliğiyle tek tek
+  seçilebilir. Süper admin bildirilen dokümanı açıp kırmızı/eski ve yeşil/yeni bağlam
+  önizlemesini görür, yalnız seçili kayıtları uygulayabilir. Kısmi uygulamalar
+  `appliedTargets` ile kayıt altında tutulur; paket tamamen bitmeden de hangi hedeflerin
+  işlendiği pasif görünür ve gerekirse `content_correction_log` üzerinden geri alınabilir.
+  Doğrulama: `npm.cmd run check` başarılı, 84/84 test geçti. Bu adımda production deploy
+  yapılmadı.
 - **/admin geçici test alanı kaldırıldı:** Süper admin için eklenen `/admin canlı test`
   doğrulama kartı görevini tamamladıktan sonra `index.html` içinden kaldırıldı.
   PWA/root guard mantığı korunur; `scripts/check-frontend.js` artık guard'ı doğrularken
