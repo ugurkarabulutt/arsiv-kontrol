@@ -395,10 +395,12 @@ if (
   !html.includes('Kaynak Kayıt Sistemi') ||
   !html.includes('archiveSourceText') ||
   !html.includes('function loadArchiveOpsSources') ||
-  !html.includes('function saveArchiveSource(forceSave=false)') ||
+  !html.includes('function saveArchiveSource(forceSave=false,changeConfirmed=false)') ||
   !html.includes("if(name==='archiveOps')loadArchiveOpsSources()") ||
   !html.includes('Benzer kaynak bulundu') ||
   !html.includes('archiveSourceConflictDetail') ||
+  !html.includes('archiveSourceChangeSummary') ||
+  !html.includes('Kaynak kaydı güncellensin mi?') ||
   !html.includes('sourceSubmitInFlight') ||
   !html.includes("return {...data,error:data.error||") ||
   !server.includes('ARCHIVE_OPS_SOURCES_KEY') ||

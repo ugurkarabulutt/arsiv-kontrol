@@ -4388,6 +4388,33 @@ function archiveSourceConflictDetail(conflicts=[]){
     return `${index+1}. ${title}\n   ${type} · ${status} · ${length} karakter\n   ${item.reason||'Benzer kayıt olabilir.'}`;
   }).join('\n\n');
 }
+function archiveSourceTagsText(value){
+  return Array.isArray(value)?value.join(', '):String(value||'').trim();
+}
+function archiveSourceChangeSummary(payload={},source={}){
+  const fields=[
+    ['title','Başlık'],
+    ['sourceType','Tür'],
+    ['status','Durum'],
+    ['category','Kategori'],
+    ['sourceDate','Tarih'],
+    ['sourceUrl','Kaynak linki'],
+    ['note','Not']
+  ];
+  const changes=[];
+  for(const [key,label] of fields){
+    const before=String(source[key]||'').trim();
+    const after=String(payload[key]||'').trim();
+    if(before!==after)changes.push(`${label}: değişecek`);
+  }
+  if(archiveSourceTagsText(source.tags)!==archiveSourceTagsText(payload.tags))changes.push('Etiketler: değişecek');
+  const beforeText=String(source.sourceText||'').trim();
+  const afterText=String(payload.sourceText||'').trim();
+  if(beforeText!==afterText){
+    changes.push(`Kaynak metni: ${beforeText.length.toLocaleString('tr-TR')} karakterden ${afterText.length.toLocaleString('tr-TR')} karaktere değişecek`);
+  }
+  return changes;
+}
 function archiveSourceCardHtml(source){
   const active=archiveOpsState.activeSource?.id===source.id?' active':'';
   const warning=source.duplicateWarning?' warning':'';
@@ -4503,7 +4530,7 @@ async function copyArchiveSourceText(){
     await showSystemAlert('Kopyalama yapılamadı','Tarayıcı kopyalama izni vermedi. Metni manuel seçebilirsiniz.','danger');
   }
 }
-async function saveArchiveSource(forceSave=false){
+async function saveArchiveSource(forceSave=false,changeConfirmed=false){
   if(!canUseArchiveOps())return;
   if(archiveOpsState.sourceSubmitInFlight)return;
   const sourceText=el('archiveSourceText')?.value.trim()||'';
@@ -4522,8 +4549,23 @@ async function saveArchiveSource(forceSave=false){
   if(!payload.title){setArchiveOpsStatus('Başlık gerekli.','err');return;}
   if(!sourceText){setArchiveOpsStatus('Kaynak metni gerekli.','err');return;}
   if(sourceText.length>200000){setArchiveOpsStatus('Kaynak metni 200.000 karakter sınırını aşıyor.','err');return;}
-  setArchiveOpsStatus(forceSave?'Benzer kaynak uyarısı onaylandı, kayıt saklanıyor...':'Kaynak kaydediliyor...');
   const editingId=archiveOpsState.activeSource?.id;
+  if(editingId&&!forceSave&&!changeConfirmed){
+    const changes=archiveSourceChangeSummary(payload,archiveOpsState.activeSource);
+    if(changes.length){
+      const ok=await openSystemConfirm({
+        title:'Kaynak kaydı güncellensin mi?',
+        badge:'Son kontrol',
+        message:'Bu işlem mevcut kaynak kaydını değiştirecek. Devam etmeden önce değişen alanları kontrol edin.',
+        detail:changes.slice(0,8).join('\n'),
+        confirmText:'Güncelle',
+        cancelText:'Vazgeç'
+      });
+      if(!ok){setArchiveOpsStatus('Güncelleme yapılmadı.','err');return;}
+      return saveArchiveSource(false,true);
+    }
+  }
+  setArchiveOpsStatus(forceSave?'Benzer kaynak uyarısı onaylandı, kayıt saklanıyor...':'Kaynak kaydediliyor...');
   let retryAfterConfirm=false;
   archiveOpsState.sourceSubmitInFlight=true;
   try{
