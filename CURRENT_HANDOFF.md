@@ -9,8 +9,14 @@
 - Kapsam dar tutuldu: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md` ve
   `CURRENT_HANDOFF.md` değişti. DB/schema migration yok, kaynak içe aktarımı yok, root `/`
   public cutover yok. Public frontend untracked dokümanlarına dokunulmadı.
-- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Commit/deploy durumu bu bloğun
-  devamında güncellenecek.
+- Runtime commit `f6f7ef1` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-docn1eixr-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Canlı smoke geçti:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  `manifest.webmanifest`, `sw.js`, `favicon.ico`. `/admin` noindex/no-store header'ları
+  doğru. Canlı HTML'de `Benzer kaynak bulundu`, `saveArchiveSource(forceSave=false)`,
+  `duplicateWarning` ve API hata detay koruması mevcut; eski geçici `adminRouteProbe` yok.
 
 - `/admin` içindeki Arşiv Operasyon Merkezi için ilk gerçek kaynak kayıt akışı production'a
   alındı. Bu alan hâlâ yalnız süper admin ve yalnız `/admin` hedefli pilot alandır; root `/`

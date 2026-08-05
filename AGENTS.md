@@ -128,7 +128,14 @@ tespit edilir).
   isterse `Yine de Kaydet` ile bilinçli şekilde saklayabilir. Bu karar kayıtta
   `conflictAcceptedAt/conflictAcceptedBy` bilgisiyle tutulur ve listede/detayda görünür.
   Bu adım DB/schema migration yapmaz, root `/` public cutover yapmaz, kaynak verisi içe
-  aktarmaz. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  aktarmaz. Runtime commit `f6f7ef1` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-docn1eixr-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı,
+  86/86 test geçti. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru. Canlı HTML'de `Benzer kaynak bulundu`,
+  `saveArchiveSource(forceSave=false)`, `duplicateWarning` ve API hata detay koruması mevcut;
+  eski geçici `adminRouteProbe` yok.
 - **Süper admin Kaynak Kayıt Sistemi production'a alındı:** `/admin` içindeki Arşiv
   Operasyon Merkezi artık yalnız plan kabuğu değil, ilk gerçek kaynak kayıt akışını içerir.
   Süper admin transkript, hadis, slayt, doküman, standart ve not türünde kaynak metni
