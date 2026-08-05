@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Kaynak kaydı güncelleme son kontrolü eklendi:** Süper admin bir kaynak kaydını forma alıp
+  güncellediğinde sistem artık doğrudan üzerine yazmaz; başlık, tür, durum, kategori, tarih,
+  kaynak linki, etiket, not veya metin değiştiyse sistem temalı `Kaynak kaydı güncellensin mi?`
+  onay penceresi açar ve değişecek alanları özetler. Bu tam versiyon geçmişi değildir; çünkü
+  pilot kaynaklar şimdilik `settings` JSON içinde tutulduğu için 200.000 karakterlik metinlerin
+  tam sürüm geçmişini aynı satıra yazmak ölçek açısından doğru değildir. Tam geri alma/versiyon
+  geçmişi ayrı kaynak tabloları fazında ele alınmalıdır. Runtime commit `11c0b2e` GitHub'a
+  push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-3d50bqrz2-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  Canlı smoke ve `/admin` HTML marker kontrolü başarılı; eski geçici `adminRouteProbe` yok.
 - **Kaynak kayıtlarında çakışma kontrolü eklendi:** Süper admin `/admin` Arşiv Operasyon
   Merkezi kaynak kayıt sistemi artık aynı metin, aynı kaynak linki veya aynı başlık+tür
   kombinasyonunu kayıt öncesinde yakalar. Çakışma varsa API `409` döner ve frontend sistem

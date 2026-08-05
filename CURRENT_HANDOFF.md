@@ -2,6 +2,16 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi kaynak kayıtlarında güncelleme son kontrolü eklendi. Bir
+  kaynak forma alınıp değiştirildiğinde sistem artık değişen alanları özetleyen
+  `Kaynak kaydı güncellensin mi?` onay penceresi açar; onay verilmeden mevcut kayıt üzerine
+  yazılmaz. Tam metin versiyon geçmişi bu pilot JSON depolama aşamasında bilerek eklenmedi;
+  büyük metinlerde ölçekli versiyon/geri alma ayrı kaynak tabloları fazında yapılmalı.
+- Runtime commit `11c0b2e` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-3d50bqrz2-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  Canlı smoke ve `/admin` HTML marker kontrolü başarılı.
+
 - `/admin` Arşiv Operasyon Merkezi kaynak kayıtlarına çakışma kontrolü eklendi. Sistem artık
   aynı normalize kaynak metni, aynı kaynak linki veya aynı başlık+tür kombinasyonunu kayıt
   öncesinde yakalar. Uyarı alan süper admin kayıtları kontrol edip isterse `Yine de Kaydet`
