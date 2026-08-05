@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-05 Codex Güncel Durum
+
+- Son iki runtime düzeltmesi GitHub'a push edildi ve production'a alındı:
+  `4f7b6c6 feat: allow 200k character analysis` ve
+  `b08c80e fix: catch hadis serif heading feedback`.
+- Kullanıcılar artık 200.000 karaktere kadar metin denetleyebilir. Frontend ve backend
+  sınırları canlıda `200000` ile hizalıdır; eski 50.000/120.000 kaynaklı engel canlıda yok.
+- `HADÎS-İ ŞERİF` başlığının bozuk varyantları artık 100 puanla sessiz geçmez. Hedef motor
+  testi `HADÎS-İ şerrİF` varyantını 1 bulgu ve `score=96` ile yakaladı.
+- Temiz/100 puanlı sonuçlarda geri bildirim alanı açık kalır; kullanıcı kaçan bir nokta
+  gördüğünde yine ekibe bildirim gönderebilir.
+- Doğrulama: `npm.cmd run check` başarılı, 85/85 test geçti.
+- Production deploy: `https://arsiv-kontrol-bvbv3hjqo-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health` `ok`, root `/` HTTP 200, `/admin`, `/admin/` ve
+  `/admin/smoke-test` HTTP 200, `/api/auth/me` `{"loggedIn":false}`, manifest,
+  `sw.js` ve favicon HTTP 200. `/admin` header'ları noindex/no-store doğru. Canlı HTML'de
+  200.000 karakter sınırı ve 100 puanlı feedback açıklaması mevcut; eski
+  `ekibe bildirim kapalı` metni yok.
+
 ## 2026-08-04 Codex Güncel Durum
 
 - Metin denetimi üst sınırı 200.000 karaktere çıkarıldı. Frontend `MAX_TEXT_CHARS` ve

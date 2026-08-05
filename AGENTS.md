@@ -120,6 +120,21 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-05
+- **Son sorunlar production'a alındı:** 200.000 karakter metin denetimi sınırı ve
+  `HADÎS-İ ŞERİF` başlık standardı / 100 puanlı sonuçlarda geri bildirim açılması
+  düzeltmeleri GitHub'a push edildi ve Vercel production'a deploy edildi. Runtime
+  commitleri: `4f7b6c6` ve `b08c80e`. Doğrulama: `npm.cmd run check` başarılı,
+  85/85 test geçti. Production deploy:
+  `https://arsiv-kontrol-bvbv3hjqo-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health` `ok`, root `/` HTTP 200,
+  `/admin`, `/admin/` ve `/admin/smoke-test` HTTP 200, `/api/auth/me`
+  `{"loggedIn":false}`, manifest, `sw.js` ve favicon HTTP 200. `/admin` header'ları
+  `X-Robots-Tag: noindex, nofollow` ve `Cache-Control: no-store, no-cache,
+  must-revalidate, proxy-revalidate`. Canlı HTML'de 200.000 karakter frontend sınırı ve
+  100 puanlı sonuçta geri bildirim açıklaması doğrulandı; eski `ekibe bildirim kapalı`
+  metni yok.
+
 ### 2026-08-04
 - **Metin denetimi üst sınırı 200.000 karaktere çıkarıldı:** Kullanıcıların uzun konferans
   ve soru-cevap metinlerinde gördüğü eski karakter sınırı engeli kaldırıldı. Frontend
