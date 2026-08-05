@@ -369,7 +369,7 @@ fedakarlık → fedakârlık
 Âli İmrân doğru yazımdır; "Âlî", "Âl-i" veya "Ali-İmran" yapma.
 Câsiye, Yûnus, Hûd, Fâtır, Hacc ve A'râf sure adlarında şapka/apostrof standardını uygula; Felak kelimesine şapka ekleme.
 derecat ve afet ailelerinde "a" harfini şapkalama; derecata/derecatı ve AFETİ/afetleri şapkasız kalır.
-şer kelimesi arşiv standardında şerr olarak düzeltilir; şerr kelimesindeki çift r korunur.
+şer kelimesi arşiv standardında şerr olarak düzeltilir; şerr kelimesindeki çift r korunur. Bu standart yalnız bağımsız şer kelimesi içindir; ŞERİF, şeriat ve şerh gibi kelimelerin içine girmez.
 MUSİBET/musibet yazımı musîbet/MUSÎBET olarak düzeltilir; VELI başlığı VELÎ olur; zahit yazımı zahid olmalıdır.
 (S.AV.) veya (S.A.V.) gibi bozuk kısaltmaları (S.A.V) standardına getir.
 Sayı alternatifi içeren ifadeleri anlam ekleyerek değiştirme; örnek: "6 tane, 7 tane âyet-i kerime var." cümlesi aynen korunur, "6 tane âyet-i kerime âyet-i kerime var" yapılmaz.
@@ -3295,7 +3295,7 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - Çıplak "İsa" kelimesine otomatik "(A.S)" ekleme. Özellikle âyet, meal, Arapça okunuş/transliterasyon veya referans satırlarında "İsa" kaynakta nasılsa korunur. "(A.S)" standardı sadece açık "Hazreti İsa" ifadesi içindir.
 - "Resûlullah'ın" gibi ekli kullanıma (S.A.V) eklenecekse kısaltma isimden sonra gelir: "Resûlullah (S.A.V)'in". "Resûlullah'ın (S.A.V)" yazma.
 - "şerr", "arif" ve "cahiliye" yazımları doğru kabul edilir; bunları "şer", "ârif" veya "câhiliye" biçimine çevirme.
-- "şer" yalnız bağımsız kelimeyse "şerr" yapılır. "şeriat", "ŞERİAT" veya zaten "şerr" olan kelimelerin içine girme; "şerrr" üretme.
+- "şer" yalnız bağımsız kelimeyse "şerr" yapılır. "şeriat", "ŞERİAT", "şerh", "ŞERH", "Şerif", "HADÎS-İ ŞERİF" veya zaten "şerr" olan kelimelerin içine girme; "şerrr" üretme.
 - "Nefret" kelimesini hiçbir bağlamda "nefs" yapma.
 - "beka" ve "Mehdi" doğru arşiv yazımıdır; bunları "bekâ" veya "mehdî" yapma.
 - "ilim" kelimesini kendi başına "Kur'ân ilmi" diye genişletme; kaynakta yalnız "ilim" varsa yalnız "ilim" kalmalıdır.
@@ -3313,7 +3313,7 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "Âli İmrân" doğru yazımdır; "Âlî", "Âl-i" veya "Ali-İmran" yapma. Câsiye, Yûnus, Hûd, Fâtır, Hacc ve A'râf sure adlarında şapka/apostrof standardını uygula.
 - "Yunus Emre", "Yunus diyor", "Yunus ne diyor" gibi kişi adı veya konuşma bağlamlarını "Yûnus" sure adı gibi düzeltme. Sadece "Yunus Suresi", "10/Yunus-7", "Yunus-7", "Yunus 7, 8’de" gibi açık sure/referans bağlamlarında "Yûnus" standardını uygula.
 - "Mumtehine" sure adında i harfi noktalıdır; bunu "Mumtehıne" veya benzeri noktasız ı varyantına çevirme.
-- "şer" kelimesi arşiv standardında "şerr" olarak düzeltilir; "şerr" kelimesindeki çift r korunur.
+- "şer" kelimesi arşiv standardında "şerr" olarak düzeltilir; "şerr" kelimesindeki çift r korunur. Bu kural kelime içindeki harf dizisine uygulanmaz; "ŞERİF", "şeriat" ve "şerh" gibi kelimeler bu sebeple değiştirilmez.
 - "tevbe" kelimesi normal metinde "tövbe" olarak düzeltilir ve aynı metindeki tüm tekrarlar uygulanır. Fakat "TEVBE" sure adı, "TEVBE-..." referansı veya "Tevbe 69" gibi sure/âyet referansıysa sure adı korunur.
 - "Sebîlel gayy" ve "Sebîlel rüşd" ifadeleri bu şekilde korunur; bunları "Sebîli gayy" / "Sebîli rüşd" yapma.
 - "MUSIBET/MUSİBET/musibet" yazımı "MUSÎBET/musîbet" olmalıdır. "VELI" başlığı "VELÎ" olur. "zahit" yazımı "zahid" olmalıdır.

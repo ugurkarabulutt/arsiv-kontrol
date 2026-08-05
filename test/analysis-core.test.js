@@ -179,6 +179,11 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('şerr', 'şer'), true);
   assert.equal(isProtectedChange('şerrdir', 'şerdir'), true);
   assert.equal(isProtectedChange('şerrle', 'şerle'), true);
+  assert.equal(isProtectedChange('ŞERİF', 'ŞERRİF'), true);
+  assert.equal(isProtectedChange('şeriat', 'şerriat'), true);
+  assert.equal(isProtectedChange('şerh', 'şerrh'), true);
+  assert.equal(isProtectedChange('şer', 'şerr'), false);
+  assert.equal(isProtectedChange('şerr', 'şerrr'), true);
   assert.equal(isProtectedChange('dinde', 'dînde'), true);
   assert.equal(isProtectedChange('arif', 'ârif'), true);
   assert.equal(isProtectedChange('cahiliye', 'câhiliye'), true);
@@ -227,6 +232,41 @@ test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
   assert.equal(result.totalErrors, 0);
   assert.equal(result.score, 100);
   assert.equal(result.correctedText, source);
+});
+
+test('ser koklu standart kelime icine girmez ama bagimsiz ser duzeltilir', () => {
+  const source = [
+    'HADÎS-İ ŞERİF başlığı korunur.',
+    'ŞERİAT kitabı ve şerh bahsi geçer.',
+    'Bağımsız şer kelimesi düzeltilmelidir.'
+  ].join('\n');
+  const result = finalizeResult({
+    correctedText: [
+      'HADÎS-İ ŞERRİF başlığı korunur.',
+      'ŞERRİAT kitabı ve şerrh bahsi geçer.',
+      'Bağımsız şerr kelimesi düzeltilmelidir.'
+    ].join('\n'),
+    categories: {
+      imla: {
+        issues: [
+          { original: 'ŞERİF', fixed: 'ŞERRİF', rule: 'Efendimizin sözlüğü standardı' },
+          { original: 'ŞERİAT', fixed: 'ŞERRİAT', rule: 'Efendimizin sözlüğü standardı' },
+          { original: 'şerh', fixed: 'şerrh', rule: 'Efendimizin sözlüğü standardı' },
+          { original: 'şer', fixed: 'şerr', rule: 'Efendimizin sözlüğü standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.ok(result.correctedText.includes('HADÎS-İ ŞERİF başlığı korunur.'));
+  assert.ok(result.correctedText.includes('ŞERİAT kitabı ve şerh bahsi geçer.'));
+  assert.ok(result.correctedText.includes('Bağımsız şerr kelimesi düzeltilmelidir.'));
+  assert.equal(result.correctedText.includes('ŞERRİF'), false);
+  assert.equal(result.correctedText.includes('ŞERRİAT'), false);
+  assert.equal(result.correctedText.includes('şerrh'), false);
+  assert.equal(result.correctedText.includes('şerrr'), false);
 });
 
 test('hadis-i serif basligi bozuk serif varyantinda 100 puanda kacmaz', () => {

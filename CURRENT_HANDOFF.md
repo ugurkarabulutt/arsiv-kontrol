@@ -2,6 +2,14 @@
 
 ## 2026-08-05 Codex Güncel Durum
 
+- Ekip yöneticisinin `Efendimizin sözlüğü` önceliğiyle kelime içi yanlış uygulama olabileceği
+  tespiti üzerine `şer` kökü backend seviyesinde sıkılaştırıldı. `şer -> şerr` yalnız bağımsız
+  kelime/kök kullanımlarında kabul edilir; `ŞERİF`, `HADÎS-İ ŞERİF`, `şeriat`, `ŞERİAT`,
+  `şerh` gibi kelimelerin içine giren `ŞERRİF/şerriat/şerrh` önerileri artık skor dışı kalır
+  ve düzeltilmiş metne uygulanmaz. `şerr -> şerrr` üçleme hatası da korumaya alındı.
+- Prompt tarafındaki kural metni aynı yönde netleştirildi. Doğrulama: `npm.cmd run check`
+  başarılı, 86/86 test geçti. Bu düzeltme şu anda yerel çalışma ağacında; production deploy
+  henüz yapılmadı.
 - Son iki runtime düzeltmesi GitHub'a push edildi ve production'a alındı:
   `4f7b6c6 feat: allow 200k character analysis` ve
   `b08c80e fix: catch hadis serif heading feedback`.

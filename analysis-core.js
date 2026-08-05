@@ -778,6 +778,30 @@ function isSalihCircumflexRewrite(original, fixed) {
     && hasCircumflex(fixed);
 }
 
+function foldedWordTokens(value) {
+  return foldText(value)
+    .split(/[^\p{L}\p{N}_]+/u)
+    .filter(Boolean);
+}
+
+function isAllowedIndependentSerRoot(token) {
+  return /^ser(?:dir|le|den|de|in|i|e)?$/u.test(token);
+}
+
+function isSerRootInsideWordRewrite(original, fixed) {
+  const fromTokens = foldedWordTokens(original);
+  const toTokens = foldedWordTokens(fixed);
+
+  return fromTokens.some((fromToken, index) => {
+    const toToken = toTokens[index] || '';
+    if (!fromToken || !toToken || fromToken === toToken) return false;
+    if (/^serr/u.test(fromToken) && /^serrr/u.test(toToken)) return true;
+    return /^ser[\p{L}\p{N}_]*/u.test(fromToken)
+      && /^serr[\p{L}\p{N}_]*/u.test(toToken)
+      && !isAllowedIndependentSerRoot(fromToken);
+  });
+}
+
 function isDecisionProtectedTransform(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -851,6 +875,7 @@ function isDecisionProtectedTransform(original, fixed) {
   if (foldedFrom === 'tabii' && foldedTo === 'tabi') return true;
   if (foldedFrom.startsWith('hayy') && foldedTo.startsWith('hayat')) return true;
   if (foldedFrom === 'hidayet' && foldedTo.startsWith('hidayet') && foldedTo !== 'hidayet') return true;
+  if (isSerRootInsideWordRewrite(original, fixed)) return true;
   if (from.includes('şerif') && to.includes('şerîf')) return true;
   if (isSuretteRewrite(original, fixed)) return true;
   if (isSuretiyleToSurette(original, fixed)) return true;
