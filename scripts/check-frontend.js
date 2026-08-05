@@ -387,6 +387,18 @@ if (
   throw new Error('/admin route guard ve PWA root acilisinda admin route a alma korumasi bozulmamali.');
 }
 if (
+  !html.includes('Arşiv Operasyon Merkezi') ||
+  !html.includes('tabContent-archiveOps') ||
+  !html.includes('admin-route-only') ||
+  !html.includes('function canUseArchiveOps') ||
+  !html.includes("if(name==='archiveOps'&&!canUseArchiveOps())name='analiz'") ||
+  !html.includes('Kaynak, yayın linki, soru, hadis, slayt veya kullanıcı ara') ||
+  !html.includes('Hadis ve Slayt Metinleri') ||
+  !html.includes('Bu ilk kabuk veri yazmaz')
+) {
+  throw new Error('Arsiv Operasyon Merkezi yalniz super admin /admin pilot kabugu olarak korunmali.');
+}
+if (
   html.includes('adminRouteProbe') ||
   html.includes('super-admin-admin-route-only') ||
   html.includes('updateAdminRouteProbeState') ||
