@@ -6,17 +6,23 @@
   görememesi sorunu incelendi. Kök sebep session cache: `cookie-session` içinde eski `role`
   kalıyor, `/api/auth/me` DB'deki güncel kullanıcı rolünü yeniden okumuyordu. Auth middleware
   ve `/api/auth/me` artık `users` tablosundan kullanıcıyı yeniden okur, `effectiveRole` ile
-  session'ı günceller, pasif/silinmiş kullanıcıyı oturumdan düşürür. Doğrulama:
-  `npm.cmd run check` başarılı, 86/86 test geçti. Bu düzeltme yerelde; production deploy
-  henüz yapılmadı.
+  session'ı günceller, pasif/silinmiş kullanıcıyı oturumdan düşürür. Runtime commit
+  `0c51903` GitHub'a push edildi ve production'a alındı. Doğrulama:
+  `npm.cmd run check` başarılı, 86/86 test geçti.
 - Ekip yöneticisinin `Efendimizin sözlüğü` önceliğiyle kelime içi yanlış uygulama olabileceği
   tespiti üzerine `şer` kökü backend seviyesinde sıkılaştırıldı. `şer -> şerr` yalnız bağımsız
   kelime/kök kullanımlarında kabul edilir; `ŞERİF`, `HADÎS-İ ŞERİF`, `şeriat`, `ŞERİAT`,
   `şerh` gibi kelimelerin içine giren `ŞERRİF/şerriat/şerrh` önerileri artık skor dışı kalır
   ve düzeltilmiş metne uygulanmaz. `şerr -> şerrr` üçleme hatası da korumaya alındı.
-- Prompt tarafındaki kural metni aynı yönde netleştirildi. Doğrulama: `npm.cmd run check`
-  başarılı, 86/86 test geçti. Bu düzeltme şu anda yerel çalışma ağacında; production deploy
-  henüz yapılmadı.
+- Prompt tarafındaki kural metni aynı yönde netleştirildi. Runtime commit `8c981df`
+  GitHub'a push edildi ve production'a alındı. Doğrulama: `npm.cmd run check`
+  başarılı, 86/86 test geçti. Production deploy:
+  `https://arsiv-kontrol-qcncicc6u-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_8emRJVhG58M8t4Mvb3jxkRSQ5hDJ`, canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health` `ok`, root `/` HTTP 200, `/admin`, `/admin/` ve
+  `/admin/smoke-test` HTTP 200, `/api/auth/me` `{"loggedIn":false}`, manifest,
+  `sw.js` ve favicon HTTP 200. `/admin` header'ları noindex/no-store doğru. Canlı HTML'de
+  geçici `adminRouteProbe` test alanı yok; `ensureStandaloneAdminRoute` mevcut.
 - Son iki runtime düzeltmesi GitHub'a push edildi ve production'a alındı:
   `4f7b6c6 feat: allow 200k character analysis` ve
   `b08c80e fix: catch hadis serif heading feedback`.

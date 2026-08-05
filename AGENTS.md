@@ -128,8 +128,9 @@ tespit edilir).
   middleware ve `/api/auth/me` artık her oturum kontrolünde `users` tablosundan kullanıcıyı
   tekrar okur, `effectiveRole` ile güncel rolü session'a yazar, pasif/silinmiş kullanıcıyı
   oturumdan düşürür. Böylece admin yapılan kullanıcı sayfayı yenilediğinde veya yeni API
-  isteği attığında admin menüsü güncel rolüne göre açılır. Doğrulama: `npm.cmd run check`
-  başarılı, 86/86 test geçti. Bu adımda production deploy yapılmadı.
+  isteği attığında admin menüsü güncel rolüne göre açılır. Runtime commit `0c51903`
+  GitHub'a push edildi ve production'a alındı. Doğrulama: `npm.cmd run check`
+  başarılı, 86/86 test geçti.
 - **Kelime içi `şer` yanlış pozitif kökü kapatıldı:** Ekip yöneticisinin işaret ettiği
   `Efendimizin sözlüğü` önceliğiyle kısa kökün kelime içindeki harf dizisine uygulanması
   riski backend seviyesinde kapatıldı. `şer -> şerr` standardı yalnız bağımsız `şer`,
@@ -137,8 +138,15 @@ tespit edilir).
   `ŞERİF`, `HADÎS-İ ŞERİF`, `şeriat`, `ŞERİAT`, `şerh` gibi kelimelerin içine giren
   `ŞERİF -> ŞERRİF`, `şeriat -> şerriat`, `şerh -> şerrh` ve `şerr -> şerrr` önerileri
   skor dışı bırakılır ve düzeltilmiş metne uygulanmaz. Prompt kuralı da aynı yönde
-  sıkılaştırıldı. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Bu adımda
-  production deploy yapılmadı.
+  sıkılaştırıldı. Runtime commit `8c981df` GitHub'a push edildi ve production'a alındı.
+  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Production deploy:
+  `https://arsiv-kontrol-qcncicc6u-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_8emRJVhG58M8t4Mvb3jxkRSQ5hDJ`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health` `ok`, root `/` HTTP 200, `/admin`, `/admin/` ve
+  `/admin/smoke-test` HTTP 200, `/api/auth/me` `{"loggedIn":false}`, manifest, `sw.js`
+  ve favicon HTTP 200. `/admin` header'ları `X-Robots-Tag: noindex, nofollow` ve
+  `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate`. Canlı HTML'de
+  geçici `adminRouteProbe` test alanı yok; PWA `/admin` guard'ı mevcut.
 - **Son sorunlar production'a alındı:** 200.000 karakter metin denetimi sınırı ve
   `HADÎS-İ ŞERİF` başlık standardı / 100 puanlı sonuçlarda geri bildirim açılması
   düzeltmeleri GitHub'a push edildi ve Vercel production'a deploy edildi. Runtime
