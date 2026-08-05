@@ -676,6 +676,67 @@ function normalizeArchiveTags(value) {
     .map(item => item.slice(0, 48));
 }
 
+function archiveComparableText(value = '') {
+  return normalizeText(value).replace(/\s+/g, ' ').toLocaleLowerCase('tr-TR');
+}
+
+function archiveSourceFingerprint(value = '') {
+  const comparable = archiveComparableText(value);
+  return comparable ? textHash(comparable) : '';
+}
+
+function archiveSourceTitleKey(value = '') {
+  return archiveComparableText(value).slice(0, 220);
+}
+
+function archiveSourceUrlKey(value = '') {
+  return String(value || '').trim().replace(/\/+$/, '').toLocaleLowerCase('tr-TR').slice(0, 700);
+}
+
+function archiveSourceConflictSummary(source = {}, reason = '', matchType = '') {
+  const text = String(source.sourceText || '');
+  return {
+    id: source.id,
+    title: source.title || 'Başlıksız kaynak',
+    sourceType: source.sourceType || 'dokuman',
+    status: source.status || 'kaynak',
+    textLength: text.length,
+    updatedAt: source.updatedAt || source.createdAt || null,
+    reason,
+    matchType
+  };
+}
+
+function findArchiveSourceConflicts(sources = [], candidate = {}, currentId = '') {
+  const candidateTextHash = candidate.sourceTextHash || archiveSourceFingerprint(candidate.sourceText);
+  const candidateUrlKey = candidate.sourceUrlKey || archiveSourceUrlKey(candidate.sourceUrl);
+  const candidateTitleKey = candidate.titleKey || archiveSourceTitleKey(candidate.title);
+  const candidateType = candidate.sourceType || 'dokuman';
+  const conflicts = [];
+
+  for (const source of sources) {
+    if (!source || source.id === currentId) continue;
+    const existingTextHash = source.sourceTextHash || archiveSourceFingerprint(source.sourceText);
+    const existingUrlKey = source.sourceUrlKey || archiveSourceUrlKey(source.sourceUrl);
+    const existingTitleKey = source.titleKey || archiveSourceTitleKey(source.title);
+    const existingType = source.sourceType || 'dokuman';
+
+    if (candidateTextHash && existingTextHash && candidateTextHash === existingTextHash) {
+      conflicts.push(archiveSourceConflictSummary(source, 'Aynı kaynak metni daha önce kaydedilmiş.', 'same_text'));
+      continue;
+    }
+    if (candidateUrlKey && existingUrlKey && candidateUrlKey === existingUrlKey) {
+      conflicts.push(archiveSourceConflictSummary(source, 'Aynı kaynak linkiyle daha önce kayıt açılmış.', 'same_url'));
+      continue;
+    }
+    if (candidateTitleKey && existingTitleKey && candidateTitleKey === existingTitleKey && candidateType === existingType) {
+      conflicts.push(archiveSourceConflictSummary(source, 'Aynı başlık ve kaynak türüyle benzer kayıt var.', 'same_title_type'));
+    }
+  }
+
+  return conflicts.slice(0, 8);
+}
+
 function normalizeArchiveSourceInput(input = {}, existing = {}) {
   const title = String(input.title ?? existing.title ?? '').trim().slice(0, 180);
   const sourceText = String(input.sourceText ?? input.text ?? existing.sourceText ?? '').trim();
@@ -694,7 +755,10 @@ function normalizeArchiveSourceInput(input = {}, existing = {}) {
     sourceUrl: String(input.sourceUrl ?? existing.sourceUrl ?? '').trim().slice(0, 700),
     tags: normalizeArchiveTags(input.tags ?? existing.tags),
     note: String(input.note ?? existing.note ?? '').trim().slice(0, 2000),
-    sourceText
+    sourceText,
+    sourceTextHash: archiveSourceFingerprint(sourceText),
+    titleKey: archiveSourceTitleKey(title),
+    sourceUrlKey: archiveSourceUrlKey(input.sourceUrl ?? existing.sourceUrl)
   };
 }
 
@@ -715,7 +779,10 @@ function publicArchiveSource(source = {}, options = {}) {
     createdAt: source.createdAt,
     updatedAt: source.updatedAt,
     createdBy: source.createdBy || '',
-    updatedBy: source.updatedBy || ''
+    updatedBy: source.updatedBy || '',
+    duplicateWarning: Boolean(source.conflictAcceptedAt),
+    conflictAcceptedAt: source.conflictAcceptedAt || null,
+    conflictAcceptedBy: source.conflictAcceptedBy || ''
   };
   if (options.full) base.sourceText = text;
   return base;
@@ -1711,14 +1778,28 @@ app.post('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) =
   try {
     const sources = await loadArchiveOpsSources();
     const now = new Date().toISOString();
+    const input = req.body || {};
+    const actor = req.session.name || req.session.username || 'Sistem';
     const source = {
       id: archiveSourceId(),
-      ...normalizeArchiveSourceInput(req.body || {}),
+      ...normalizeArchiveSourceInput(input),
       createdAt: now,
       updatedAt: now,
-      createdBy: req.session.name || req.session.username || 'Sistem',
-      updatedBy: req.session.name || req.session.username || 'Sistem'
+      createdBy: actor,
+      updatedBy: actor
     };
+    const conflicts = findArchiveSourceConflicts(sources, source);
+    if (conflicts.length && input.forceSave !== true) {
+      return res.status(409).json({
+        error: 'Benzer kaynak bulundu. Kaydetmeden önce mevcut kaydı kontrol edin.',
+        conflicts
+      });
+    }
+    if (conflicts.length) {
+      source.conflictAcceptedAt = now;
+      source.conflictAcceptedBy = actor;
+      source.conflictAcceptedConflicts = conflicts;
+    }
     await saveArchiveOpsSources([source, ...sources]);
     res.json({ success: true, source: publicArchiveSource(source, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
@@ -1738,14 +1819,32 @@ app.put('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res
     const sources = await loadArchiveOpsSources();
     const index = sources.findIndex(item => item.id === req.params.id);
     if (index < 0) return res.status(404).json({ error: 'Kaynak kaydı bulunamadı.' });
+    const input = req.body || {};
+    const actor = req.session.name || req.session.username || 'Sistem';
     const updated = {
-      ...normalizeArchiveSourceInput(req.body || {}, sources[index]),
+      ...normalizeArchiveSourceInput(input, sources[index]),
       id: sources[index].id,
       createdAt: sources[index].createdAt,
       createdBy: sources[index].createdBy,
       updatedAt: new Date().toISOString(),
-      updatedBy: req.session.name || req.session.username || 'Sistem'
+      updatedBy: actor
     };
+    const conflicts = findArchiveSourceConflicts(sources, updated, req.params.id);
+    if (conflicts.length && input.forceSave !== true) {
+      return res.status(409).json({
+        error: 'Benzer kaynak bulundu. Kaydetmeden önce mevcut kaydı kontrol edin.',
+        conflicts
+      });
+    }
+    if (conflicts.length) {
+      updated.conflictAcceptedAt = updated.updatedAt;
+      updated.conflictAcceptedBy = actor;
+      updated.conflictAcceptedConflicts = conflicts;
+    } else {
+      delete updated.conflictAcceptedAt;
+      delete updated.conflictAcceptedBy;
+      delete updated.conflictAcceptedConflicts;
+    }
     sources[index] = updated;
     await saveArchiveOpsSources(sources);
     res.json({ success: true, source: publicArchiveSource(updated, { full: true }) });

@@ -2,6 +2,16 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi kaynak kayıtlarına çakışma kontrolü eklendi. Sistem artık
+  aynı normalize kaynak metni, aynı kaynak linki veya aynı başlık+tür kombinasyonunu kayıt
+  öncesinde yakalar. Uyarı alan süper admin kayıtları kontrol edip isterse `Yine de Kaydet`
+  ile bilinçli şekilde saklayabilir; bu karar kaydın üstünde görünür.
+- Kapsam dar tutuldu: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md` ve
+  `CURRENT_HANDOFF.md` değişti. DB/schema migration yok, kaynak içe aktarımı yok, root `/`
+  public cutover yok. Public frontend untracked dokümanlarına dokunulmadı.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Commit/deploy durumu bu bloğun
+  devamında güncellenecek.
+
 - `/admin` içindeki Arşiv Operasyon Merkezi için ilk gerçek kaynak kayıt akışı production'a
   alındı. Bu alan hâlâ yalnız süper admin ve yalnız `/admin` hedefli pilot alandır; root `/`
   public arşiv için korunur ve public cutover yapılmadı.

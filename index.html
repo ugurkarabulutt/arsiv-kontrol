@@ -352,6 +352,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-source-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}
 .ops-source-item{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;width:100%;cursor:pointer;color:var(--ink);}
 .ops-source-item:hover,.ops-source-item.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.ops-source-item.warning{border-left:3px solid var(--ai);}
 .ops-source-title{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;}
 .ops-source-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
 .ops-source-preview{font-size:12px;color:var(--ink2);line-height:1.5;}
@@ -636,7 +637,7 @@ canvas{width:100%!important;}
 .system-confirm-modal .modal-head h3{text-align:left;font-size:21px;line-height:1.2;}
 .system-confirm-modal .modal-close{right:20px;top:18px;}
 .system-confirm-copy{font-size:16px;line-height:1.65;color:var(--ink);margin:2px 0 12px;}
-.system-confirm-detail{font-size:13px;line-height:1.55;color:var(--ink2);background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--gold);padding:12px 14px;margin-top:12px;}
+.system-confirm-detail{font-size:13px;line-height:1.55;color:var(--ink2);background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--gold);padding:12px 14px;margin-top:12px;white-space:pre-line;}
 .system-confirm-badge{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--gold);border:1px solid rgba(var(--gold-rgb),.4);background:rgba(var(--gold-rgb),.08);padding:6px 9px;margin-bottom:12px;}
 .system-confirm-input-wrap{margin-top:12px;}
 .system-confirm-input{width:100%;min-height:132px;max-height:42vh;background:var(--surface2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:15px;line-height:1.58;padding:14px 15px;border-radius:16px;resize:vertical;outline:none;}
@@ -1454,7 +1455,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:''};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',sourceSubmitInFlight:false};
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=200000;
@@ -4377,16 +4378,28 @@ function archiveSourceStatsHtml(counts={}){
     <div class="ops-stat"><strong>${byStatus.arsiv_adayi||0}</strong><span>Arşiv adayı</span></div>
   `;
 }
+function archiveSourceConflictDetail(conflicts=[]){
+  if(!Array.isArray(conflicts)||!conflicts.length)return 'Benzer kayıt bulundu.';
+  return conflicts.slice(0,5).map((item,index)=>{
+    const title=item.title||'Başlıksız kaynak';
+    const type=archiveSourceTypeLabel(item.sourceType);
+    const status=archiveSourceStatusLabel(item.status);
+    const length=Number(item.textLength||0).toLocaleString('tr-TR');
+    return `${index+1}. ${title}\n   ${type} · ${status} · ${length} karakter\n   ${item.reason||'Benzer kayıt olabilir.'}`;
+  }).join('\n\n');
+}
 function archiveSourceCardHtml(source){
   const active=archiveOpsState.activeSource?.id===source.id?' active':'';
+  const warning=source.duplicateWarning?' warning':'';
   const tags=(source.tags||[]).slice(0,4).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
   return `
-    <button class="ops-source-item${active}" onclick="openArchiveSource(${attrJson(source.id)})">
+    <button class="ops-source-item${active}${warning}" onclick="openArchiveSource(${attrJson(source.id)})">
       <div class="ops-source-title">${esc(source.title)}</div>
       <div class="ops-source-meta">
         <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
         <span>${esc(archiveSourceStatusLabel(source.status))}</span>
         <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
+        ${source.duplicateWarning?'<span>Benzer kayıt onayı</span>':''}
       </div>
       <div class="ops-source-preview">${esc(source.textPreview||'Ön izleme yok.')}</div>
       ${tags?`<div class="ops-tags">${tags}</div>`:''}
@@ -4429,6 +4442,7 @@ function renderArchiveSourceDetail(source){
       ${source.category?`<p><strong>Kategori:</strong> ${esc(source.category)}</p>`:''}
       ${source.sourceUrl?`<p><strong>Kaynak linki:</strong> ${esc(source.sourceUrl)}</p>`:''}
       ${source.note?`<p><strong>Not:</strong> ${esc(source.note)}</p>`:''}
+      ${source.duplicateWarning?`<p><strong>Çakışma notu:</strong> Benzer kaynak uyarısı görülerek kaydedildi. ${source.conflictAcceptedBy?esc(source.conflictAcceptedBy):'Süper admin'} tarafından onaylandı.</p>`:''}
       ${tags?`<div class="ops-tags">${tags}</div>`:''}
       <div class="ops-source-actions">
         <button class="btn-sec" onclick="copyArchiveSourceText()">Metni Kopyala</button>
@@ -4489,8 +4503,9 @@ async function copyArchiveSourceText(){
     await showSystemAlert('Kopyalama yapılamadı','Tarayıcı kopyalama izni vermedi. Metni manuel seçebilirsiniz.','danger');
   }
 }
-async function saveArchiveSource(){
+async function saveArchiveSource(forceSave=false){
   if(!canUseArchiveOps())return;
+  if(archiveOpsState.sourceSubmitInFlight)return;
   const sourceText=el('archiveSourceText')?.value.trim()||'';
   const payload={
     title:v('archiveSourceTitle'),
@@ -4501,19 +4516,42 @@ async function saveArchiveSource(){
     sourceUrl:v('archiveSourceUrl'),
     tags:v('archiveSourceTags'),
     note:v('archiveSourceNote'),
-    sourceText
+    sourceText,
+    forceSave:Boolean(forceSave)
   };
   if(!payload.title){setArchiveOpsStatus('Başlık gerekli.','err');return;}
   if(!sourceText){setArchiveOpsStatus('Kaynak metni gerekli.','err');return;}
   if(sourceText.length>200000){setArchiveOpsStatus('Kaynak metni 200.000 karakter sınırını aşıyor.','err');return;}
-  setArchiveOpsStatus('Kaynak kaydediliyor...');
+  setArchiveOpsStatus(forceSave?'Benzer kaynak uyarısı onaylandı, kayıt saklanıyor...':'Kaynak kaydediliyor...');
   const editingId=archiveOpsState.activeSource?.id;
-  const data=await api(editingId?'PUT':'POST',editingId?`/api/archive-ops/sources/${encodeURIComponent(editingId)}`:'/api/archive-ops/sources',payload);
-  if(data.error){setArchiveOpsStatus(data.error,'err');return;}
-  archiveOpsState.activeSource=data.source;
-  setArchiveOpsStatus(editingId?'Kaynak kaydı güncellendi.':'Kaynak kaydı saklandı.','ok');
-  renderArchiveSourceDetail(data.source);
-  await loadArchiveOpsSources();
+  let retryAfterConfirm=false;
+  archiveOpsState.sourceSubmitInFlight=true;
+  try{
+    const data=await api(editingId?'PUT':'POST',editingId?`/api/archive-ops/sources/${encodeURIComponent(editingId)}`:'/api/archive-ops/sources',payload);
+    if(data.error&&Array.isArray(data.conflicts)&&data.conflicts.length){
+      const ok=await openSystemConfirm({
+        title:'Benzer kaynak bulundu',
+        badge:'Çakışma kontrolü',
+        message:'Bu kayıt daha önce eklenmiş olabilir. Kaydetmeden önce aşağıdaki benzer kayıtları kontrol edin.',
+        detail:archiveSourceConflictDetail(data.conflicts),
+        confirmText:'Yine de Kaydet',
+        cancelText:'Kontrol Et',
+        tone:'danger'
+      });
+      if(ok)retryAfterConfirm=true;
+      else setArchiveOpsStatus('Kayıt saklanmadı. Benzer kaydı kontrol edebilirsiniz.','err');
+    }else if(data.error){
+      setArchiveOpsStatus(data.error,'err');
+    }else{
+      archiveOpsState.activeSource=data.source;
+      setArchiveOpsStatus(editingId?'Kaynak kaydı güncellendi.':'Kaynak kaydı saklandı.','ok');
+      renderArchiveSourceDetail(data.source);
+      await loadArchiveOpsSources();
+    }
+  }finally{
+    archiveOpsState.sourceSubmitInFlight=false;
+  }
+  if(retryAfterConfirm)await saveArchiveSource(true);
 }
 
 async function api(method,url,body){
@@ -4527,7 +4565,7 @@ async function api(method,url,body){
       try{data=JSON.parse(text);}
       catch{data={error:'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.'};}
     }
-    if(!r.ok)return {error:data.error||'İşlem tamamlanamadı. Lütfen tekrar deneyin.'};
+    if(!r.ok)return {...data,error:data.error||'İşlem tamamlanamadı. Lütfen tekrar deneyin.'};
     return data;
   }catch(e){
     return {error:'Bağlantı tamamlanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.'};

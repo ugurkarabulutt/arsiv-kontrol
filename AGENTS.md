@@ -121,6 +121,14 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Kaynak kayıtlarında çakışma kontrolü eklendi:** Süper admin `/admin` Arşiv Operasyon
+  Merkezi kaynak kayıt sistemi artık aynı metin, aynı kaynak linki veya aynı başlık+tür
+  kombinasyonunu kayıt öncesinde yakalar. Çakışma varsa API `409` döner ve frontend sistem
+  temalı `Benzer kaynak bulundu` penceresi açar; süper admin kayıtları kontrol edip
+  isterse `Yine de Kaydet` ile bilinçli şekilde saklayabilir. Bu karar kayıtta
+  `conflictAcceptedAt/conflictAcceptedBy` bilgisiyle tutulur ve listede/detayda görünür.
+  Bu adım DB/schema migration yapmaz, root `/` public cutover yapmaz, kaynak verisi içe
+  aktarmaz. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
 - **Süper admin Kaynak Kayıt Sistemi production'a alındı:** `/admin` içindeki Arşiv
   Operasyon Merkezi artık yalnız plan kabuğu değil, ilk gerçek kaynak kayıt akışını içerir.
   Süper admin transkript, hadis, slayt, doküman, standart ve not türünde kaynak metni

@@ -395,9 +395,16 @@ if (
   !html.includes('Kaynak Kayıt Sistemi') ||
   !html.includes('archiveSourceText') ||
   !html.includes('function loadArchiveOpsSources') ||
-  !html.includes('function saveArchiveSource') ||
+  !html.includes('function saveArchiveSource(forceSave=false)') ||
   !html.includes("if(name==='archiveOps')loadArchiveOpsSources()") ||
+  !html.includes('Benzer kaynak bulundu') ||
+  !html.includes('archiveSourceConflictDetail') ||
+  !html.includes('sourceSubmitInFlight') ||
+  !html.includes("return {...data,error:data.error||") ||
   !server.includes('ARCHIVE_OPS_SOURCES_KEY') ||
+  !server.includes('findArchiveSourceConflicts') ||
+  !server.includes('archiveSourceFingerprint') ||
+  !server.includes('input.forceSave !== true') ||
   !server.includes("app.get('/api/archive-ops/sources'") ||
   !server.includes("app.post('/api/archive-ops/sources'") ||
   !server.includes("app.put('/api/archive-ops/sources/:id'") ||
