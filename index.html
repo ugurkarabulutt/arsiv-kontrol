@@ -332,8 +332,43 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-step strong{display:block;font-size:14px;color:var(--ink);line-height:1.3;margin-bottom:5px;}
 .ops-step span{display:block;font-size:12px;line-height:1.45;color:var(--ink3);}
 .ops-note{border:1px solid rgba(var(--ai-rgb),.32);border-left:3px solid var(--ai);background:rgba(var(--ai-rgb),.08);padding:12px 14px;font-size:13px;line-height:1.6;color:var(--ink2);margin-bottom:14px;}
+.ops-panel{background:var(--surface);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);margin-bottom:14px;}
+.ops-panel-head{padding:13px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.ops-panel-title{font-size:16px;font-weight:900;color:var(--ink);line-height:1.3;}
+.ops-panel-sub{font-size:12px;color:var(--ink3);line-height:1.45;margin-top:2px;}
+.ops-panel-body{padding:16px;}
+.ops-form-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+.ops-form-grid.two{grid-template-columns:1fr 1fr;}
+.ops-field{width:100%;border:1px solid var(--bord2);background:var(--surface-strong);color:var(--ink);font-family:inherit;font-size:14px;padding:12px;outline:none;}
+.ops-field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(var(--gold-rgb),.12);}
+.ops-source-text{min-height:220px;resize:vertical;line-height:1.55;}
+.ops-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;}
+.ops-filter-row{display:grid;grid-template-columns:1.7fr .8fr .8fr;gap:8px;width:100%;margin-bottom:12px;}
+.ops-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:12px;}
+.ops-stat{background:var(--surface);padding:12px;}
+.ops-stat strong{display:block;font-size:22px;color:var(--ink);line-height:1;}
+.ops-stat span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);}
+.ops-source-layout{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:12px;}
+.ops-source-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}
+.ops-source-item{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;width:100%;cursor:pointer;color:var(--ink);}
+.ops-source-item:hover,.ops-source-item.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.ops-source-title{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;}
+.ops-source-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
+.ops-source-preview{font-size:12px;color:var(--ink2);line-height:1.5;}
+.ops-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.ops-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.3);padding:3px 6px;}
+.ops-detail{border:1px solid var(--bord2);background:var(--surface-strong);min-height:360px;}
+.ops-detail-head{padding:13px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.ops-detail-title{font-size:17px;font-weight:900;color:var(--ink);line-height:1.35;}
+.ops-detail-body{padding:14px;}
+.ops-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:14px;line-height:1.65;max-height:520px;overflow:auto;color:var(--ink2);}
+.ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.ops-status{font-size:13px;color:var(--ink3);}
+.ops-status.ok{color:var(--green);}
+.ops-status.err{color:var(--red);}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}}
+@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout{grid-template-columns:1fr}.ops-stats{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1028,20 +1063,104 @@ canvas{width:100%!important;}
 
       <div class="ops-hero">
         <div class="ops-kicker">Süper admin pilot alanı</div>
-        <div class="ops-title">Kaynak, görev, çalışma kaydı ve onay süreci tek merkezde toplanacak.</div>
+        <div class="ops-title">Kaynak kayıtları artık sistem içinde metin olarak tutulmaya başlıyor.</div>
         <div class="ops-copy">
-          Bu ilk kabuk veri yazmaz. Amaç, manuel Google Drive / E-Tablo / Doküman işleyişinin sistem içindeki karşılığını netleştirmek ve sonraki veri modeli adımlarını kontrollü ilerletmektir.
+          Bu alan Drive, e-tablo ve dokümanlarda yürüyen kaynak toplama işini adım adım online hale getirmek için açıldı. Şimdilik yalnız süper admin görür; kullanıcı ekranlarına ve public arşive açılmaz.
         </div>
         <div class="ops-search">
           <span>⌕</span>
-          <input disabled placeholder="Kaynak, yayın linki, soru, hadis, slayt veya kullanıcı ara...">
+          <input id="archiveSourceSearch" placeholder="Kaynak, yayın linki, hadis, slayt, kategori veya not ara..." oninput="setArchiveSourceSearch()">
+        </div>
+      </div>
+
+      <div class="ops-panel">
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Kaynak Kayıt Sistemi</div>
+            <div class="ops-panel-sub">Transkript, hadis, slayt ve doküman metinlerini burada kaydedip arayabiliriz.</div>
+          </div>
+          <button class="btn-sec" onclick="clearArchiveSourceForm()">Yeni Kayıt</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="ops-form-grid">
+            <input class="ops-field" id="archiveSourceTitle" placeholder="Başlık">
+            <select class="ops-field" id="archiveSourceType">
+              <option value="transkript">Transkript</option>
+              <option value="hadis">Hadis</option>
+              <option value="slayt">Slayt</option>
+              <option value="dokuman">Doküman</option>
+              <option value="standart">Standart</option>
+              <option value="not">Not</option>
+            </select>
+            <select class="ops-field" id="archiveSourceStatus">
+              <option value="kaynak">Kaynak</option>
+              <option value="hazirlaniyor">Hazırlanıyor</option>
+              <option value="kontrol">Kontrol</option>
+              <option value="arsiv_adayi">Arşiv adayı</option>
+            </select>
+          </div>
+          <div class="ops-form-grid two">
+            <input class="ops-field" id="archiveSourceCategory" placeholder="Kategori veya çalışma alanı">
+            <input class="ops-field" id="archiveSourceDate" type="date" aria-label="Kaynak tarihi">
+          </div>
+          <div class="ops-form-grid two">
+            <input class="ops-field" id="archiveSourceUrl" placeholder="Kaynak linki veya Drive bağlantısı">
+            <input class="ops-field" id="archiveSourceTags" placeholder="Kavramlar / etiketler, virgülle ayırın">
+          </div>
+          <textarea class="ops-field ops-source-text" id="archiveSourceText" placeholder="Kaynak metnini buraya ekleyin. Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı." oninput="updateArchiveSourceCount()"></textarea>
+          <textarea class="ops-field" id="archiveSourceNote" placeholder="Kısa not, karar veya kullanım açıklaması" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
+          <div class="ops-toolbar">
+            <div class="ops-status" id="archiveSourceTextCount">0 / 200.000 karakter</div>
+            <div class="ops-source-actions">
+              <button class="btn-sec" onclick="clearArchiveSourceForm()">Temizle</button>
+              <button class="btn-primary" onclick="saveArchiveSource()">Kaynak Kaydını Sakla</button>
+            </div>
+          </div>
+          <div class="ops-status" id="archiveOpsStatus" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div class="ops-panel">
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Kaynak Havuzu</div>
+            <div class="ops-panel-sub">Kayıtlar başlık, metin, kategori, link, not ve kavramlara göre aranır.</div>
+          </div>
+        </div>
+        <div class="ops-panel-body">
+          <div class="ops-filter-row">
+            <input class="ops-field" id="archiveSourceListSearch" placeholder="Listede ara..." oninput="setArchiveSourceSearch(this.value)">
+            <select class="ops-field" id="archiveSourceTypeFilter" onchange="setArchiveSourceFilter()">
+              <option value="">Tüm türler</option>
+              <option value="transkript">Transkript</option>
+              <option value="hadis">Hadis</option>
+              <option value="slayt">Slayt</option>
+              <option value="dokuman">Doküman</option>
+              <option value="standart">Standart</option>
+              <option value="not">Not</option>
+            </select>
+            <select class="ops-field" id="archiveSourceStatusFilter" onchange="setArchiveSourceFilter()">
+              <option value="">Tüm durumlar</option>
+              <option value="kaynak">Kaynak</option>
+              <option value="hazirlaniyor">Hazırlanıyor</option>
+              <option value="kontrol">Kontrol</option>
+              <option value="arsiv_adayi">Arşiv adayı</option>
+            </select>
+          </div>
+          <div class="ops-stats" id="archiveSourceStats"></div>
+          <div class="ops-source-layout">
+            <div class="ops-source-list" id="archiveSourceList"><div class="empty-state">Kaynaklar yükleniyor...</div></div>
+            <div class="ops-detail" id="archiveSourceDetail">
+              <div class="empty-state">Bir kaynak seçildiğinde tam metin ve kayıt bilgileri burada açılır.</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="ops-grid">
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Kaynak Havuzu</div><span class="ops-pill">Planlandı</span></div>
-          <p>YouTube dökümleri, hadis metinleri, slayt metinleri ve standart dokümanları metin olarak aranabilir hale gelecek.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Kaynak Havuzu</div><span class="ops-pill">Başladı</span></div>
+          <p>YouTube dökümleri, hadis metinleri, slayt metinleri ve standart dokümanları metin olarak kaydedilip aranabilir hale geliyor.</p>
         </div>
         <div class="ops-card">
           <div class="ops-card-head"><div class="ops-card-title">Yayın Görevleri</div><span class="ops-pill">Planlandı</span></div>
@@ -1074,7 +1193,7 @@ canvas{width:100%!important;}
       </div>
 
       <div class="ops-note">
-        Bu alan yalnız süper admin tarafından test edilecek ilk plan kabuğudur. Kullanıcı ekranlarına açılmadan önce veri modeli, import ön izlemesi, arama, yetki ve denetim bağlantıları ayrı ayrı test edilecektir.
+        Bu alan yalnız süper admin tarafından test edilir. Şimdilik kayıtlar sistem içinde pilot kaynak havuzu olarak tutulur; root public arşiv açılmaz, kullanıcı ekranları değişmez, Google Drive otomatik importu sonraki ayrı adımdır.
       </div>
     </div>
 
@@ -1335,7 +1454,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:''};
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=200000;
@@ -1656,6 +1775,7 @@ function showTab(name){
   if(name==='onay')loadOnay();
   if(name==='feedback')loadFeedbackCenter();
   if(name==='corrections')loadCorrectionPackages();
+  if(name==='archiveOps')loadArchiveOpsSources();
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
   if(name==='msglog')loadMessageLog();
   if(name==='resolution')loadResolutionResponses();
@@ -4188,6 +4308,212 @@ async function changePassword(){
   errEl.style.color='var(--green)';errEl.textContent='✓ Şifre güncellendi.';
   ['oldPass','newPass','newPass2'].forEach(id=>el(id).value='');
   setTimeout(()=>{errEl.textContent='';errEl.style.color='';},3000);
+}
+
+function archiveSourceTypeLabel(type){
+  return {
+    transkript:'Transkript',
+    hadis:'Hadis',
+    slayt:'Slayt',
+    dokuman:'Doküman',
+    standart:'Standart',
+    not:'Not'
+  }[type]||'Doküman';
+}
+function archiveSourceStatusLabel(status){
+  return {
+    kaynak:'Kaynak',
+    hazirlaniyor:'Hazırlanıyor',
+    kontrol:'Kontrol',
+    arsiv_adayi:'Arşiv adayı'
+  }[status]||'Kaynak';
+}
+function archiveSourceDate(value){
+  if(!value)return 'Tarih yok';
+  const d=new Date(value);
+  return Number.isFinite(d.getTime())?d.toLocaleDateString('tr-TR'):'Tarih yok';
+}
+function setArchiveOpsStatus(message='',kind=''){
+  const box=el('archiveOpsStatus');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function updateArchiveSourceCount(){
+  const text=el('archiveSourceText')?.value||'';
+  const count=el('archiveSourceTextCount');
+  if(!count)return;
+  count.textContent=`${text.length.toLocaleString('tr-TR')} / 200.000 karakter`;
+  count.className=text.length>200000?'ops-status err':'ops-status';
+}
+function clearArchiveSourceForm(){
+  ['archiveSourceTitle','archiveSourceCategory','archiveSourceDate','archiveSourceUrl','archiveSourceTags','archiveSourceText','archiveSourceNote'].forEach(id=>{const node=el(id);if(node)node.value='';});
+  const type=el('archiveSourceType');if(type)type.value='transkript';
+  const status=el('archiveSourceStatus');if(status)status.value='kaynak';
+  archiveOpsState.activeSource=null;
+  updateArchiveSourceCount();
+  setArchiveOpsStatus('');
+}
+function setArchiveSourceSearch(value){
+  const query=typeof value==='string'?value:(el('archiveSourceSearch')?.value||'');
+  archiveOpsState.query=query;
+  const hero=el('archiveSourceSearch');
+  const list=el('archiveSourceListSearch');
+  if(hero&&hero.value!==query)hero.value=query;
+  if(list&&list.value!==query)list.value=query;
+  loadArchiveOpsSources();
+}
+function setArchiveSourceFilter(){
+  archiveOpsState.type=el('archiveSourceTypeFilter')?.value||'';
+  archiveOpsState.status=el('archiveSourceStatusFilter')?.value||'';
+  loadArchiveOpsSources();
+}
+function archiveSourceStatsHtml(counts={}){
+  const byStatus=counts.byStatus||{};
+  return `
+    <div class="ops-stat"><strong>${counts.total||0}</strong><span>Toplam kaynak</span></div>
+    <div class="ops-stat"><strong>${counts.filtered||0}</strong><span>Görünen kayıt</span></div>
+    <div class="ops-stat"><strong>${byStatus.kontrol||0}</strong><span>Kontrolde</span></div>
+    <div class="ops-stat"><strong>${byStatus.arsiv_adayi||0}</strong><span>Arşiv adayı</span></div>
+  `;
+}
+function archiveSourceCardHtml(source){
+  const active=archiveOpsState.activeSource?.id===source.id?' active':'';
+  const tags=(source.tags||[]).slice(0,4).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
+  return `
+    <button class="ops-source-item${active}" onclick="openArchiveSource(${attrJson(source.id)})">
+      <div class="ops-source-title">${esc(source.title)}</div>
+      <div class="ops-source-meta">
+        <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
+        <span>${esc(archiveSourceStatusLabel(source.status))}</span>
+        <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
+      </div>
+      <div class="ops-source-preview">${esc(source.textPreview||'Ön izleme yok.')}</div>
+      ${tags?`<div class="ops-tags">${tags}</div>`:''}
+    </button>
+  `;
+}
+function renderArchiveSourceList(){
+  const stats=el('archiveSourceStats');
+  if(stats)stats.innerHTML=archiveSourceStatsHtml(archiveOpsState.counts||{});
+  const list=el('archiveSourceList');
+  if(!list)return;
+  if(!archiveOpsState.sources.length){
+    list.innerHTML='<div class="empty-state">Bu filtreye uygun kaynak kaydı yok.</div>';
+    return;
+  }
+  list.innerHTML=archiveOpsState.sources.map(archiveSourceCardHtml).join('');
+}
+function renderArchiveSourceDetail(source){
+  const box=el('archiveSourceDetail');
+  if(!box)return;
+  if(!source){
+    box.innerHTML='<div class="empty-state">Bir kaynak seçildiğinde tam metin ve kayıt bilgileri burada açılır.</div>';
+    return;
+  }
+  const tags=(source.tags||[]).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
+  box.innerHTML=`
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(source.title)}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
+          <span>${esc(archiveSourceStatusLabel(source.status))}</span>
+          <span>${archiveSourceDate(source.sourceDate)}</span>
+          <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="editArchiveSource(${attrJson(source.id)})">Forma Al</button>
+    </div>
+    <div class="ops-detail-body">
+      ${source.category?`<p><strong>Kategori:</strong> ${esc(source.category)}</p>`:''}
+      ${source.sourceUrl?`<p><strong>Kaynak linki:</strong> ${esc(source.sourceUrl)}</p>`:''}
+      ${source.note?`<p><strong>Not:</strong> ${esc(source.note)}</p>`:''}
+      ${tags?`<div class="ops-tags">${tags}</div>`:''}
+      <div class="ops-source-actions">
+        <button class="btn-sec" onclick="copyArchiveSourceText()">Metni Kopyala</button>
+        <button class="btn-sec" onclick="editArchiveSource(${attrJson(source.id)})">Düzenle</button>
+      </div>
+      <div class="ops-preview-text" style="margin-top:12px">${esc(source.sourceText||'')}</div>
+    </div>
+  `;
+}
+async function loadArchiveOpsSources(){
+  if(!canUseArchiveOps())return;
+  const params=new URLSearchParams();
+  if(archiveOpsState.query)params.set('q',archiveOpsState.query);
+  if(archiveOpsState.type)params.set('type',archiveOpsState.type);
+  if(archiveOpsState.status)params.set('status',archiveOpsState.status);
+  const list=el('archiveSourceList');
+  if(list&&!archiveOpsState.sources.length)list.innerHTML='<div class="empty-state">Kaynaklar yükleniyor...</div>';
+  const data=await api('GET',`/api/archive-ops/sources${params.toString()?`?${params}`:''}`);
+  if(data.error){
+    if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+    return;
+  }
+  archiveOpsState.sources=data.sources||[];
+  archiveOpsState.counts=data.counts||null;
+  renderArchiveSourceList();
+}
+async function openArchiveSource(id){
+  const data=await api('GET',`/api/archive-ops/sources/${encodeURIComponent(id)}`);
+  if(data.error){await showSystemAlert('Kaynak açılamadı',data.error,'danger');return;}
+  archiveOpsState.activeSource=data.source;
+  renderArchiveSourceList();
+  renderArchiveSourceDetail(data.source);
+}
+function editArchiveSource(id){
+  const source=archiveOpsState.activeSource?.id===id?archiveOpsState.activeSource:archiveOpsState.sources.find(item=>item.id===id);
+  if(!source)return;
+  archiveOpsState.activeSource=source;
+  el('archiveSourceTitle').value=source.title||'';
+  el('archiveSourceType').value=source.sourceType||'dokuman';
+  el('archiveSourceStatus').value=source.status||'kaynak';
+  el('archiveSourceCategory').value=source.category||'';
+  el('archiveSourceDate').value=source.sourceDate?String(source.sourceDate).slice(0,10):'';
+  el('archiveSourceUrl').value=source.sourceUrl||'';
+  el('archiveSourceTags').value=(source.tags||[]).join(', ');
+  el('archiveSourceText').value=source.sourceText||source.textPreview||'';
+  el('archiveSourceNote').value=source.note||'';
+  updateArchiveSourceCount();
+  setArchiveOpsStatus('Kayıt forma alındı. Değişiklikleri saklayabilirsiniz.','ok');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function copyArchiveSourceText(){
+  const text=archiveOpsState.activeSource?.sourceText||'';
+  if(!text)return;
+  try{
+    await navigator.clipboard.writeText(text);
+    setArchiveOpsStatus('Kaynak metni kopyalandı.','ok');
+  }catch(_){
+    await showSystemAlert('Kopyalama yapılamadı','Tarayıcı kopyalama izni vermedi. Metni manuel seçebilirsiniz.','danger');
+  }
+}
+async function saveArchiveSource(){
+  if(!canUseArchiveOps())return;
+  const sourceText=el('archiveSourceText')?.value.trim()||'';
+  const payload={
+    title:v('archiveSourceTitle'),
+    sourceType:el('archiveSourceType')?.value||'dokuman',
+    status:el('archiveSourceStatus')?.value||'kaynak',
+    category:v('archiveSourceCategory'),
+    sourceDate:el('archiveSourceDate')?.value||'',
+    sourceUrl:v('archiveSourceUrl'),
+    tags:v('archiveSourceTags'),
+    note:v('archiveSourceNote'),
+    sourceText
+  };
+  if(!payload.title){setArchiveOpsStatus('Başlık gerekli.','err');return;}
+  if(!sourceText){setArchiveOpsStatus('Kaynak metni gerekli.','err');return;}
+  if(sourceText.length>200000){setArchiveOpsStatus('Kaynak metni 200.000 karakter sınırını aşıyor.','err');return;}
+  setArchiveOpsStatus('Kaynak kaydediliyor...');
+  const editingId=archiveOpsState.activeSource?.id;
+  const data=await api(editingId?'PUT':'POST',editingId?`/api/archive-ops/sources/${encodeURIComponent(editingId)}`:'/api/archive-ops/sources',payload);
+  if(data.error){setArchiveOpsStatus(data.error,'err');return;}
+  archiveOpsState.activeSource=data.source;
+  setArchiveOpsStatus(editingId?'Kaynak kaydı güncellendi.':'Kaynak kaydı saklandı.','ok');
+  renderArchiveSourceDetail(data.source);
+  await loadArchiveOpsSources();
 }
 
 async function api(method,url,body){

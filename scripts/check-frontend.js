@@ -392,11 +392,20 @@ if (
   !html.includes('admin-route-only') ||
   !html.includes('function canUseArchiveOps') ||
   !html.includes("if(name==='archiveOps'&&!canUseArchiveOps())name='analiz'") ||
-  !html.includes('Kaynak, yayın linki, soru, hadis, slayt veya kullanıcı ara') ||
+  !html.includes('Kaynak Kayıt Sistemi') ||
+  !html.includes('archiveSourceText') ||
+  !html.includes('function loadArchiveOpsSources') ||
+  !html.includes('function saveArchiveSource') ||
+  !html.includes("if(name==='archiveOps')loadArchiveOpsSources()") ||
+  !server.includes('ARCHIVE_OPS_SOURCES_KEY') ||
+  !server.includes("app.get('/api/archive-ops/sources'") ||
+  !server.includes("app.post('/api/archive-ops/sources'") ||
+  !server.includes("app.put('/api/archive-ops/sources/:id'") ||
+  !server.includes('ARCHIVE_SOURCE_TEXT_LIMIT = 200000') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
-  !html.includes('Bu ilk kabuk veri yazmaz')
+  !html.includes('Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı')
 ) {
-  throw new Error('Arsiv Operasyon Merkezi yalniz super admin /admin pilot kabugu olarak korunmali.');
+  throw new Error('Arsiv Operasyon Merkezi super admin kaynak kayit akisi ve /admin korumasi ile korunmali.');
 }
 if (
   html.includes('adminRouteProbe') ||

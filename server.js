@@ -574,6 +574,11 @@ async function loadApprovalGroup(filterQuery) {
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
+const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
+const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
+const ARCHIVE_SOURCE_LIST_LIMIT = 300;
+const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
+const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', 'arsiv_adayi'];
 const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
 const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
@@ -644,6 +649,106 @@ function escapeRegExpServer(value = '') {
 
 function correctionPackageId() {
   return `cp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function archiveSourceId() {
+  return `src-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeArchiveSourceType(value) {
+  const type = String(value || '').trim();
+  return ARCHIVE_SOURCE_TYPES.includes(type) ? type : 'dokuman';
+}
+
+function normalizeArchiveSourceStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_SOURCE_STATUSES.includes(status) ? status : 'kaynak';
+}
+
+function archiveTextPreview(text = '', max = 260) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
+}
+
+function normalizeArchiveTags(value) {
+  const raw = Array.isArray(value) ? value.join(',') : String(value || '');
+  return [...new Set(raw.split(',').map(item => item.trim()).filter(Boolean).slice(0, 20))]
+    .map(item => item.slice(0, 48));
+}
+
+function normalizeArchiveSourceInput(input = {}, existing = {}) {
+  const title = String(input.title ?? existing.title ?? '').trim().slice(0, 180);
+  const sourceText = String(input.sourceText ?? input.text ?? existing.sourceText ?? '').trim();
+  if (!title) throw httpError('Kaynak başlığı gerekli.', 400);
+  if (!sourceText) throw httpError('Kaynak metni gerekli.', 400);
+  if (sourceText.length > ARCHIVE_SOURCE_TEXT_LIMIT) {
+    throw httpError('Kaynak metni 200.000 karakter sınırını aşıyor.', 413);
+  }
+  return {
+    ...existing,
+    title,
+    sourceType: normalizeArchiveSourceType(input.sourceType ?? existing.sourceType),
+    status: normalizeArchiveSourceStatus(input.status ?? existing.status),
+    category: String(input.category ?? existing.category ?? '').trim().slice(0, 120),
+    sourceDate: normalizeIsoDate(input.sourceDate ?? existing.sourceDate),
+    sourceUrl: String(input.sourceUrl ?? existing.sourceUrl ?? '').trim().slice(0, 700),
+    tags: normalizeArchiveTags(input.tags ?? existing.tags),
+    note: String(input.note ?? existing.note ?? '').trim().slice(0, 2000),
+    sourceText
+  };
+}
+
+function publicArchiveSource(source = {}, options = {}) {
+  const text = String(source.sourceText || '');
+  const base = {
+    id: source.id,
+    title: source.title,
+    sourceType: source.sourceType || 'dokuman',
+    status: source.status || 'kaynak',
+    category: source.category || '',
+    sourceDate: source.sourceDate || null,
+    sourceUrl: source.sourceUrl || '',
+    tags: Array.isArray(source.tags) ? source.tags : [],
+    note: source.note || '',
+    textLength: text.length,
+    textPreview: archiveTextPreview(text),
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt,
+    createdBy: source.createdBy || '',
+    updatedBy: source.updatedBy || ''
+  };
+  if (options.full) base.sourceText = text;
+  return base;
+}
+
+async function loadArchiveOpsSources() {
+  const sources = await loadJsonSetting(ARCHIVE_OPS_SOURCES_KEY, []);
+  return Array.isArray(sources) ? sources : [];
+}
+
+async function saveArchiveOpsSources(sources) {
+  const clean = Array.isArray(sources) ? sources.slice(0, ARCHIVE_SOURCE_LIST_LIMIT) : [];
+  await saveJsonSetting(ARCHIVE_OPS_SOURCES_KEY, clean);
+}
+
+function filterArchiveSources(sources, query = {}) {
+  const q = String(query.q || '').trim().toLocaleLowerCase('tr-TR');
+  const type = String(query.type || '').trim();
+  const status = String(query.status || '').trim();
+  return sources.filter(source => {
+    if (type && source.sourceType !== type) return false;
+    if (status && source.status !== status) return false;
+    if (!q) return true;
+    const haystack = [
+      source.title,
+      source.category,
+      source.note,
+      source.sourceUrl,
+      ...(Array.isArray(source.tags) ? source.tags : []),
+      source.sourceText
+    ].join(' ').toLocaleLowerCase('tr-TR');
+    return haystack.includes(q);
+  });
 }
 
 function loadCorrectionPackagesFromValue(value) {
@@ -1577,6 +1682,74 @@ app.post('/api/standards', auth, admin, async (req, res) => {
     await saveJsonSetting('standards_catalog', [{ id, title, category, content, createdAt: new Date().toISOString() }, ...catalog]);
     res.json({ success: true, id });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ARCHIVE OPERATIONS SOURCES ─────────────────────────────────────────────
+app.get('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const sources = await loadArchiveOpsSources();
+    const filtered = filterArchiveSources(sources, req.query)
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+    const counts = {
+      total: sources.length,
+      filtered: filtered.length,
+      byType: {},
+      byStatus: {}
+    };
+    for (const source of sources) {
+      counts.byType[source.sourceType || 'dokuman'] = (counts.byType[source.sourceType || 'dokuman'] || 0) + 1;
+      counts.byStatus[source.status || 'kaynak'] = (counts.byStatus[source.status || 'kaynak'] || 0) + 1;
+    }
+    res.json({
+      counts,
+      sources: filtered.slice(0, ARCHIVE_SOURCE_LIST_LIMIT).map(source => publicArchiveSource(source))
+    });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const sources = await loadArchiveOpsSources();
+    const now = new Date().toISOString();
+    const source = {
+      id: archiveSourceId(),
+      ...normalizeArchiveSourceInput(req.body || {}),
+      createdAt: now,
+      updatedAt: now,
+      createdBy: req.session.name || req.session.username || 'Sistem',
+      updatedBy: req.session.name || req.session.username || 'Sistem'
+    };
+    await saveArchiveOpsSources([source, ...sources]);
+    res.json({ success: true, source: publicArchiveSource(source, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const sources = await loadArchiveOpsSources();
+    const source = sources.find(item => item.id === req.params.id);
+    if (!source) return res.status(404).json({ error: 'Kaynak kaydı bulunamadı.' });
+    res.json({ source: publicArchiveSource(source, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.put('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const sources = await loadArchiveOpsSources();
+    const index = sources.findIndex(item => item.id === req.params.id);
+    if (index < 0) return res.status(404).json({ error: 'Kaynak kaydı bulunamadı.' });
+    const updated = {
+      ...normalizeArchiveSourceInput(req.body || {}, sources[index]),
+      id: sources[index].id,
+      createdAt: sources[index].createdAt,
+      createdBy: sources[index].createdBy,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.session.name || req.session.username || 'Sistem'
+    };
+    sources[index] = updated;
+    await saveArchiveOpsSources(sources);
+    res.json({ success: true, source: publicArchiveSource(updated, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 // ── CONTENT CORRECTION PACKAGES ────────────────────────────────────────────
