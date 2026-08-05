@@ -2,6 +2,27 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` içindeki Arşiv Operasyon Merkezi için ilk gerçek kaynak kayıt akışı production'a
+  alındı. Bu alan hâlâ yalnız süper admin ve yalnız `/admin` hedefli pilot alandır; root `/`
+  public arşiv için korunur ve public cutover yapılmadı.
+- Yeni akış: süper admin transkript, hadis, slayt, doküman, standart ve not türünde kaynak
+  metni ekleyebilir; başlık, kategori, kaynak tarihi, kaynak linki, etiket/kavram, durum ve
+  karar notu tutabilir. Hadis ve slaytlar yalnız link değil, metin olarak da sistemde
+  saklanacak şekilde hazırlandı.
+- Kaynak havuzunda arama başlık, tam metin, kategori, link, not ve etiketlerde çalışır.
+  Seçilen kaynak tam metniyle açılır, kopyalanır ve forma alınarak düzenlenebilir.
+- Bu adım DB/schema migration yapmadı. İlk pilot veri mevcut `settings` tablosunda
+  `archive_ops_sources` JSON anahtarıyla saklanır. Kaynak metni sınırı 200.000 karakterdir.
+  Daha büyük kalıcı ölçek için sonraki fazda ayrı kaynak tabloları/import hattı planlanmalı.
+- Runtime commit: `dcfab9e feat: add super admin archive source records`. GitHub'a push edildi.
+- Production deploy: `https://arsiv-kontrol-f0yrt2zdx-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_4ZL1sJy1BBwjc5SAYQCY933fv9Xt`, canlı alias `https://arsiv.ibrahimlive.ai`.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Canlı smoke geçti:
+  `/health`, `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  `manifest.webmanifest`, `sw.js`, `favicon.ico`. `/admin` noindex/no-store header'ları
+  doğru. `/api/archive-ops/sources` oturumsuz erişimde 401 dönüyor; route canlı ve korumalı.
+- Workspace'teki untracked public frontend dokümanları bu deploy'a dahil edilmedi.
+
 - Süper admin için `/admin` route'una `Arşiv Operasyon Merkezi` ilk kabuğu eklendi ve
   production'a alındı. Bu alan yalnız `super_admin` rolünde ve `/admin` adresinde görünür;
   root `/` şimdilik legacy admin/public cutover öncesi korunur.

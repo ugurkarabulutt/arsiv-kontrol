@@ -121,6 +121,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Süper admin Kaynak Kayıt Sistemi production'a alındı:** `/admin` içindeki Arşiv
+  Operasyon Merkezi artık yalnız plan kabuğu değil, ilk gerçek kaynak kayıt akışını içerir.
+  Süper admin transkript, hadis, slayt, doküman, standart ve not türünde kaynak metni
+  ekleyebilir; başlık, kategori, tarih, kaynak linki, kavram etiketleri, durum ve karar notu
+  tutabilir. Kayıtlar başlık/metin/kategori/link/not/etiket içinde aranır; seçilen kaynak tam
+  metniyle açılır, kopyalanır ve forma alınarak düzenlenebilir. Hadis ve slaytlar bağlantı
+  olarak değil, metin olarak da sistemde tutulacak yönde hazırlandı. Bu adım DB/schema
+  migration yapmaz; ilk pilot veri mevcut `settings` satırında `archive_ops_sources` JSON
+  anahtarıyla saklanır. Maksimum kaynak metni 200.000 karakterdir. Root `/` public cutover
+  yapılmadı, kullanıcı ekranları değişmedi. Runtime commit `dcfab9e` GitHub'a push edildi.
+  Production deploy: `https://arsiv-kontrol-f0yrt2zdx-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_4ZL1sJy1BBwjc5SAYQCY933fv9Xt`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Canlı smoke: `/health`, root `/`,
+  `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon
+  başarılı. `/admin` header'ları `X-Robots-Tag: noindex, nofollow` ve strict no-store.
+  `/api/archive-ops/sources` oturumsuz erişimde 401 dönerek süper admin korumasını doğruladı.
 - **Süper admin Arşiv Operasyon Merkezi kabuğu production'a alındı:** Manuel Google Drive,
   e-tablo ve doküman akışlarının ileride admin içinde yürütülmesi için ilk süper admin-only
   kabuk eklendi. Yeni alan yalnız `super_admin` rolünde ve `/admin` route'unda görünür; root `/`
