@@ -1,5 +1,27 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-06 Codex Güncel Durum
+
+- Süper admin için `/admin` route'una `Arşiv Operasyon Merkezi` ilk kabuğu eklendi ve
+  production'a alındı. Bu alan yalnız `super_admin` rolünde ve `/admin` adresinde görünür;
+  root `/` şimdilik legacy admin/public cutover öncesi korunur.
+- Kapsam: kaynak havuzu, yayın görevleri, çalışma kayıtları, hadis ve slayt metinleri,
+  içe aktarım merkezi ve public arşiv adayı aşamalarını tek süper admin operasyon kabuğunda
+  göstermek. Bu ilk kabuk veri yazmaz, DB/schema değiştirmez, gerçek Drive/e-tablo entegrasyonu
+  başlatmaz.
+- Kod commit'i: `1a0fa71 feat: add super admin archive operations shell`. GitHub'a push edildi.
+- Production deploy: `https://arsiv-kontrol-qzolw1q4e-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_8qCFG6RadRDZyyQyvctdGAjCwAQq`, canlı alias `https://arsiv.ibrahimlive.ai`.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Canlı smoke geçti:
+  `/health`, `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  `manifest.webmanifest`, `sw.js`, `favicon.ico` başarılı. `/admin` noindex/no-store
+  header'ları doğru.
+- Canlı HTML'de `Arşiv Operasyon Merkezi`, `tabContent-archiveOps` ve `admin-route-only`
+  mevcut; eski geçici `adminRouteProbe` yok.
+- Deploy temiz `git archive HEAD` kaynağından alındı. Workspace'teki untracked
+  `docs/project/PUBLIC_ARCHIVE_P2D_C_REFERENCE_LED_PREMIUM_REDESIGN_BRIEF.md` deploy'a
+  dahil edilmedi.
+
 ## 2026-08-05 Codex Güncel Durum
 
 - `/admin` geçişinden sonra DB'de `admin` görünen kullanıcının kendi ekranında admin menüsü

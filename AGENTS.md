@@ -120,6 +120,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-06
+- **Süper admin Arşiv Operasyon Merkezi kabuğu production'a alındı:** Manuel Google Drive,
+  e-tablo ve doküman akışlarının ileride admin içinde yürütülmesi için ilk süper admin-only
+  kabuk eklendi. Yeni alan yalnız `super_admin` rolünde ve `/admin` route'unda görünür; root `/`
+  public arşiv cutover için korunur. Kabuk şimdilik veri yazmaz ve DB/schema değiştirmez;
+  kaynak havuzu, yayın görevleri, çalışma kayıtları, hadis ve slayt metinleri, içe aktarım ve
+  public arşiv adayı aşamalarını tek operasyon merkezi altında gösterir. Commit `1a0fa71`
+  GitHub'a push edildi. Production deploy:
+  `https://arsiv-kontrol-qzolw1q4e-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_8qCFG6RadRDZyyQyvctdGAjCwAQq`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Canlı smoke: `/health` `ok`,
+  root `/` HTTP 200, `/admin`, `/admin/` ve `/admin/smoke-test` HTTP 200, `/api/auth/me`
+  HTTP 200 JSON, manifest, `sw.js` ve favicon HTTP 200. `/admin` header'ları
+  `X-Robots-Tag: noindex, nofollow` ve `Cache-Control: no-store, no-cache, must-revalidate,
+  proxy-revalidate`. Canlı HTML'de `Arşiv Operasyon Merkezi`, `tabContent-archiveOps` ve
+  `admin-route-only` mevcut; eski geçici `adminRouteProbe` yok. Untracked public frontend
+  brief dosyası deploy kaynağına alınmadı.
+
 ### 2026-08-05
 - **Rol değişikliği sonrası eski oturum yetkisi düzeltildi:** `/admin` geçişi sonrası
   DB'de `admin` görünen bir kullanıcının kendi ekranında hâlâ ekip üyesi menüsü görmesi
