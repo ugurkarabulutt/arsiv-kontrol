@@ -121,6 +121,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-05
+- **Rol değişikliği sonrası eski oturum yetkisi düzeltildi:** `/admin` geçişi sonrası
+  DB'de `admin` görünen bir kullanıcının kendi ekranında hâlâ ekip üyesi menüsü görmesi
+  sorununun kökü session cache olarak tespit edildi. `cookie-session` içindeki eski `role`
+  değeri, kullanıcı rolü sonradan değiştirildiğinde otomatik güncellenmiyordu. Auth
+  middleware ve `/api/auth/me` artık her oturum kontrolünde `users` tablosundan kullanıcıyı
+  tekrar okur, `effectiveRole` ile güncel rolü session'a yazar, pasif/silinmiş kullanıcıyı
+  oturumdan düşürür. Böylece admin yapılan kullanıcı sayfayı yenilediğinde veya yeni API
+  isteği attığında admin menüsü güncel rolüne göre açılır. Doğrulama: `npm.cmd run check`
+  başarılı, 86/86 test geçti. Bu adımda production deploy yapılmadı.
 - **Kelime içi `şer` yanlış pozitif kökü kapatıldı:** Ekip yöneticisinin işaret ettiği
   `Efendimizin sözlüğü` önceliğiyle kısa kökün kelime içindeki harf dizisine uygulanması
   riski backend seviyesinde kapatıldı. `şer -> şerr` standardı yalnız bağımsız `şer`,

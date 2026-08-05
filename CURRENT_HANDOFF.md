@@ -2,6 +2,13 @@
 
 ## 2026-08-05 Codex Güncel Durum
 
+- `/admin` geçişinden sonra DB'de `admin` görünen kullanıcının kendi ekranında admin menüsü
+  görememesi sorunu incelendi. Kök sebep session cache: `cookie-session` içinde eski `role`
+  kalıyor, `/api/auth/me` DB'deki güncel kullanıcı rolünü yeniden okumuyordu. Auth middleware
+  ve `/api/auth/me` artık `users` tablosundan kullanıcıyı yeniden okur, `effectiveRole` ile
+  session'ı günceller, pasif/silinmiş kullanıcıyı oturumdan düşürür. Doğrulama:
+  `npm.cmd run check` başarılı, 86/86 test geçti. Bu düzeltme yerelde; production deploy
+  henüz yapılmadı.
 - Ekip yöneticisinin `Efendimizin sözlüğü` önceliğiyle kelime içi yanlış uygulama olabileceği
   tespiti üzerine `şer` kökü backend seviyesinde sıkılaştırıldı. `şer -> şerr` yalnız bağımsız
   kelime/kök kullanımlarında kabul edilir; `ŞERİF`, `HADÎS-İ ŞERİF`, `şeriat`, `ŞERİAT`,

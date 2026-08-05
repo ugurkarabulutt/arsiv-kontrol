@@ -127,6 +127,9 @@ for (const marker of [
 ]) {
   assert(server.includes(marker), `Auth/session API route korunmali: ${marker}`);
 }
+assert(server.includes('async function syncSessionUserFromDb'), 'Oturum rolü DBden yeniden senkronize edilmeli.');
+assert(server.includes('await syncSessionUserFromDb(req)'), 'Auth/me ve korumali API akislari guncel DB rolunu okumali.');
+assert(!server.includes('normalizeSessionRole(req);'), 'Eski session-only rol normalizasyonu kullanilmamali.');
 assert(server.includes('const ADMIN_PARALLEL_ROUTE_ENABLED'), 'ADMIN_PARALLEL_ROUTE_ENABLED flag okunmali.');
 assert(server.includes('function sendAdminIndex'), 'Admin index helper bulunmali.');
 assert(server.includes("res.set('X-Robots-Tag', 'noindex, nofollow')"), '/admin HTML response noindex header almali.');

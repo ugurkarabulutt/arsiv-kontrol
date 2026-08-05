@@ -1244,8 +1244,29 @@ async function seed() {
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
-function normalizeSessionRole(req) {
-  if (req.session?.userId) req.session.role = effectiveRole(req.session.username, req.session.role);
+async function syncSessionUserFromDb(req) {
+  if (!req.session?.userId) return null;
+  const { data: user, error } = await supabase.from('users')
+    .select('id,username,name,role,active')
+    .eq('id', req.session.userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!user || user.active === false) {
+    req.session = null;
+    return null;
+  }
+
+  const role = effectiveRole(user.username, user.role);
+  if (role !== user.role) {
+    const { error: roleError } = await supabase.from('users').update({ role }).eq('id', user.id);
+    if (roleError) throw new Error(roleError.message);
+  }
+
+  req.session.userId = user.id;
+  req.session.username = user.username;
+  req.session.name = user.name;
+  req.session.role = role;
+  return { id: user.id, username: user.username, name: user.name, role, active: user.active };
 }
 
 function prepareAnalysisText(text) {
@@ -1271,12 +1292,13 @@ const auth = async (req, res, next) => {
   try {
     if (!req.session?.userId) return res.status(401).json({ error: 'Giriş gerekli.' });
     await startupReady;
-    normalizeSessionRole(req);
+    const currentUser = await syncSessionUserFromDb(req);
+    if (!currentUser) return res.status(401).json({ error: 'Giriş gerekli.' });
     const now = Date.now();
     const lastWrite = Number(req.session.lastSeenWriteAt || 0);
     if (!lastWrite || now - lastWrite > 60_000) {
       req.session.lastSeenWriteAt = now;
-      await recordUserActivity(req.session.userId);
+      await recordUserActivity(currentUser.id);
     }
     next();
   } catch (error) {
@@ -1315,9 +1337,10 @@ app.get('/api/auth/me', async (req, res, next) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
   try {
     await startupReady;
-    normalizeSessionRole(req);
-    await recordUserActivity(req.session.userId);
-    res.json({ loggedIn: true, id: req.session.userId, name: req.session.name, role: req.session.role, username: req.session.username });
+    const currentUser = await syncSessionUserFromDb(req);
+    if (!currentUser) return res.json({ loggedIn: false });
+    await recordUserActivity(currentUser.id);
+    res.json({ loggedIn: true, id: currentUser.id, name: currentUser.name, role: currentUser.role, username: currentUser.username });
   } catch (error) {
     next(error);
   }
