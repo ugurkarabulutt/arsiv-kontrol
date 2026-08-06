@@ -437,6 +437,10 @@ if (
   !server.includes("app.get('/api/archive-ops/sources'") ||
   !server.includes("app.post('/api/archive-ops/sources'") ||
   !server.includes("app.put('/api/archive-ops/sources/:id'") ||
+  !server.includes("app.get('/api/archive-ops/work-items'") ||
+  !server.includes("app.post('/api/archive-ops/work-items'") ||
+  !server.includes("app.put('/api/archive-ops/work-items/:id'") ||
+  !server.includes("app.delete('/api/archive-ops/work-items/:id'") ||
   !server.includes("app.get('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches/:id/items'") ||
@@ -452,6 +456,8 @@ if (
   !schema.includes('create table if not exists public.archive_source_events') ||
   !schema.includes('create table if not exists public.archive_import_batches') ||
   !schema.includes('create table if not exists public.archive_import_items') ||
+  !schema.includes('create table if not exists public.archive_work_items') ||
+  !schema.includes('archive_work_items_status_idx') ||
   !schema.includes('archive_import_items_batch_idx') ||
   !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
@@ -473,6 +479,15 @@ if (
   !html.includes('function openArchiveSourceFromImportItem') ||
   !html.includes('function skipArchiveImportItem') ||
   !html.includes('function deleteArchiveImportItem') ||
+  !html.includes('archiveWorkState') ||
+  !html.includes('id="archiveWorkTitle"') ||
+  !html.includes('id="archiveWorkSourceId"') ||
+  !html.includes('function loadArchiveWorkItems') ||
+  !html.includes('function saveArchiveWorkItem') ||
+  !html.includes('function deleteArchiveWorkItemUi') ||
+  !html.includes('Çalışma Kaydını Sakla') ||
+  !html.includes('Kaynağı Aç') ||
+  !html.includes('.ops-work-layout') ||
   !html.includes("api('DELETE',`/api/archive-ops/import-items/") ||
   !html.includes('Kaynak Olarak Kaydet') ||
   !html.includes('Formda Düzenle') ||

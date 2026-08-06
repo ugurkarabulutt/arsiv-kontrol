@@ -575,10 +575,14 @@ const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
+const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
 const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', 'arsiv_adayi'];
+const ARCHIVE_WORK_ITEM_LIMIT = 300;
+const ARCHIVE_WORK_STATUSES = ['taslak', 'hazirlaniyor', 'kontrol', 'onay_bekliyor', 'arsiv_adayi', 'tamamlandi'];
+const ARCHIVE_WORK_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -640,6 +644,25 @@ const ARCHIVE_IMPORT_ITEM_DB_LIST_COLUMNS = [
   'updated_at'
 ].join(',');
 const ARCHIVE_IMPORT_ITEM_DB_FULL_COLUMNS = `${ARCHIVE_IMPORT_ITEM_DB_LIST_COLUMNS},extracted_text`;
+const ARCHIVE_WORK_ITEM_DB_LIST_COLUMNS = [
+  'id',
+  'title',
+  'status',
+  'priority',
+  'assigned_to',
+  'due_date',
+  'source_id',
+  'source_title',
+  'category',
+  'topics',
+  'text_preview',
+  'text_length',
+  'created_by',
+  'updated_by',
+  'created_at',
+  'updated_at'
+].join(',');
+const ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS = `${ARCHIVE_WORK_ITEM_DB_LIST_COLUMNS},question,answer_draft,note`;
 const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
 const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
@@ -1245,6 +1268,316 @@ async function updateArchiveOpsSource(id, input = {}, actor = 'Sistem') {
     changeKeys: archiveSourceChangeKeys(archiveSourceAuditSnapshot(existing), archiveSourceAuditSnapshot(saved))
   });
   return { source: saved };
+}
+
+function archiveWorkItemId() {
+  return `wrk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeArchiveWorkStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_WORK_STATUSES.includes(status) ? status : 'taslak';
+}
+
+function normalizeArchiveWorkPriority(value) {
+  const priority = String(value || '').trim();
+  return ARCHIVE_WORK_PRIORITIES.includes(priority) ? priority : 'normal';
+}
+
+function buildArchiveWorkPreview(work = {}) {
+  return archiveTextPreview([
+    work.question,
+    work.answerDraft,
+    work.note
+  ].filter(Boolean).join(' '), 320);
+}
+
+function buildArchiveWorkSearchBlob(work = {}) {
+  return [
+    work.title,
+    work.status,
+    work.priority,
+    work.assignedTo,
+    work.sourceTitle,
+    work.category,
+    ...(Array.isArray(work.topics) ? work.topics : []),
+    work.question,
+    work.answerDraft,
+    work.note
+  ].join(' ').replace(/\s+/g, ' ').trim().slice(0, ARCHIVE_SOURCE_TEXT_LIMIT + 4000);
+}
+
+function archiveWorkTextLength(work = {}) {
+  return [work.question, work.answerDraft, work.note].join('\n').length;
+}
+
+function normalizeArchiveWorkInput(input = {}, existing = {}) {
+  const question = String(input.question ?? existing.question ?? '').trim().slice(0, 20000);
+  const answerDraft = String(input.answerDraft ?? input.answer_draft ?? existing.answerDraft ?? '').trim().slice(0, ARCHIVE_SOURCE_TEXT_LIMIT);
+  const note = String(input.note ?? existing.note ?? '').trim().slice(0, 10000);
+  const rawTitle = String(input.title ?? existing.title ?? '').trim();
+  const title = (rawTitle || question.slice(0, 120) || 'Başlıksız çalışma').trim().slice(0, 180);
+  return {
+    ...existing,
+    title,
+    status: normalizeArchiveWorkStatus(input.status ?? existing.status),
+    priority: normalizeArchiveWorkPriority(input.priority ?? existing.priority),
+    assignedTo: String(input.assignedTo ?? input.assigned_to ?? existing.assignedTo ?? '').trim().slice(0, 120),
+    dueDate: normalizeIsoDate(input.dueDate ?? input.due_date ?? existing.dueDate),
+    sourceId: String(input.sourceId ?? input.source_id ?? existing.sourceId ?? '').trim().slice(0, 160),
+    sourceTitle: String(input.sourceTitle ?? input.source_title ?? existing.sourceTitle ?? '').trim().slice(0, 220),
+    category: String(input.category ?? existing.category ?? '').trim().slice(0, 120),
+    topics: normalizeArchiveTags(input.topics ?? existing.topics),
+    question,
+    answerDraft,
+    note
+  };
+}
+
+function archiveWorkToDbRow(work = {}) {
+  return {
+    id: work.id,
+    title: work.title || '',
+    status: work.status || 'taslak',
+    priority: work.priority || 'normal',
+    assigned_to: work.assignedTo || '',
+    due_date: work.dueDate || null,
+    source_id: work.sourceId || null,
+    source_title: work.sourceTitle || '',
+    category: work.category || '',
+    topics: Array.isArray(work.topics) ? work.topics : [],
+    question: work.question || '',
+    answer_draft: work.answerDraft || '',
+    note: work.note || '',
+    text_preview: work.textPreview || buildArchiveWorkPreview(work),
+    text_length: Number(work.textLength || archiveWorkTextLength(work) || 0),
+    search_blob: buildArchiveWorkSearchBlob(work),
+    created_by: work.createdBy || '',
+    updated_by: work.updatedBy || '',
+    created_at: work.createdAt || new Date().toISOString(),
+    updated_at: work.updatedAt || new Date().toISOString()
+  };
+}
+
+function archiveWorkFromDbRow(row = {}, options = {}) {
+  return {
+    id: row.id,
+    title: row.title || '',
+    status: row.status || 'taslak',
+    priority: row.priority || 'normal',
+    assignedTo: row.assigned_to || '',
+    dueDate: row.due_date || null,
+    sourceId: row.source_id || '',
+    sourceTitle: row.source_title || '',
+    category: row.category || '',
+    topics: Array.isArray(row.topics) ? row.topics : [],
+    question: options.full ? String(row.question || '') : '',
+    answerDraft: options.full ? String(row.answer_draft || '') : '',
+    note: options.full ? String(row.note || '') : '',
+    textPreview: row.text_preview || '',
+    textLength: Number(row.text_length || 0),
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+    createdBy: row.created_by || '',
+    updatedBy: row.updated_by || ''
+  };
+}
+
+function publicArchiveWorkItem(work = {}, options = {}) {
+  const base = {
+    id: work.id,
+    title: work.title,
+    status: work.status || 'taslak',
+    priority: work.priority || 'normal',
+    assignedTo: work.assignedTo || '',
+    dueDate: work.dueDate || null,
+    sourceId: work.sourceId || '',
+    sourceTitle: work.sourceTitle || '',
+    category: work.category || '',
+    topics: Array.isArray(work.topics) ? work.topics : [],
+    textPreview: work.textPreview || buildArchiveWorkPreview(work),
+    textLength: Number(work.textLength || archiveWorkTextLength(work) || 0),
+    createdAt: work.createdAt,
+    updatedAt: work.updatedAt,
+    createdBy: work.createdBy || '',
+    updatedBy: work.updatedBy || ''
+  };
+  if (options.full) {
+    base.question = work.question || '';
+    base.answerDraft = work.answerDraft || '';
+    base.note = work.note || '';
+  }
+  return base;
+}
+
+async function loadArchiveWorkItems() {
+  const items = await loadJsonSetting(ARCHIVE_OPS_WORK_ITEMS_KEY, []);
+  return Array.isArray(items) ? items : [];
+}
+
+async function saveArchiveWorkItems(items) {
+  const clean = Array.isArray(items) ? items.slice(0, ARCHIVE_WORK_ITEM_LIMIT) : [];
+  await saveJsonSetting(ARCHIVE_OPS_WORK_ITEMS_KEY, clean);
+}
+
+function filterArchiveWorkItems(items = [], query = {}) {
+  const q = String(query.q || '').trim().toLocaleLowerCase('tr-TR');
+  const status = String(query.status || '').trim();
+  const priority = String(query.priority || '').trim();
+  return items.filter(item => {
+    if (status && item.status !== status) return false;
+    if (priority && item.priority !== priority) return false;
+    if (!q) return true;
+    return buildArchiveWorkSearchBlob(item).toLocaleLowerCase('tr-TR').includes(q);
+  });
+}
+
+async function listArchiveWorkItems(query = {}) {
+  if (!HAS_ARCHIVE_WORK_TABLES) {
+    const items = await loadArchiveWorkItems();
+    const filtered = filterArchiveWorkItems(items, query)
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+    return { storage: 'settings', items, filtered };
+  }
+
+  const q = String(query.q || '').trim();
+  const status = String(query.status || '').trim();
+  const priority = String(query.priority || '').trim();
+  let workQuery = supabase
+    .from('archive_work_items')
+    .select(ARCHIVE_WORK_ITEM_DB_LIST_COLUMNS, { count: 'exact' })
+    .order('updated_at', { ascending: false })
+    .limit(ARCHIVE_WORK_ITEM_LIMIT);
+  if (status) workQuery = workQuery.eq('status', status);
+  if (priority) workQuery = workQuery.eq('priority', priority);
+  if (q) workQuery = workQuery.ilike('search_blob', `%${escapeSupabaseLikePattern(q)}%`);
+  const { data, error, count } = await workQuery;
+  if (error) throw new Error(error.message);
+
+  const { count: totalCount, error: totalError } = await supabase
+    .from('archive_work_items')
+    .select('id', { count: 'exact', head: true });
+  if (totalError) throw new Error(totalError.message);
+
+  const rowsForCounts = await fetchAllPages(() => supabase.from('archive_work_items').select('status,priority'));
+  const counts = {
+    total: totalCount || 0,
+    filtered: count || 0,
+    byStatus: {},
+    byPriority: {}
+  };
+  for (const row of rowsForCounts) {
+    counts.byStatus[row.status || 'taslak'] = (counts.byStatus[row.status || 'taslak'] || 0) + 1;
+    counts.byPriority[row.priority || 'normal'] = (counts.byPriority[row.priority || 'normal'] || 0) + 1;
+  }
+  return {
+    storage: 'database',
+    counts,
+    filtered: (data || []).map(row => archiveWorkFromDbRow(row)),
+    items: []
+  };
+}
+
+async function getArchiveWorkItem(id) {
+  if (!HAS_ARCHIVE_WORK_TABLES) {
+    const items = await loadArchiveWorkItems();
+    return items.find(item => item.id === id) || null;
+  }
+  const { data, error } = await supabase
+    .from('archive_work_items')
+    .select(ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? archiveWorkFromDbRow(data, { full: true }) : null;
+}
+
+async function createArchiveWorkItem(input = {}, actor = 'Sistem') {
+  const now = new Date().toISOString();
+  const work = {
+    id: archiveWorkItemId(),
+    ...normalizeArchiveWorkInput(input),
+    createdAt: now,
+    updatedAt: now,
+    createdBy: actor,
+    updatedBy: actor
+  };
+  work.textPreview = buildArchiveWorkPreview(work);
+  work.textLength = archiveWorkTextLength(work);
+
+  if (!HAS_ARCHIVE_WORK_TABLES) {
+    const items = await loadArchiveWorkItems();
+    await saveArchiveWorkItems([work, ...items]);
+    return work;
+  }
+
+  const { data, error } = await supabase
+    .from('archive_work_items')
+    .insert(archiveWorkToDbRow(work))
+    .select(ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  return archiveWorkFromDbRow(data, { full: true });
+}
+
+async function updateArchiveWorkItem(id, input = {}, actor = 'Sistem') {
+  if (!HAS_ARCHIVE_WORK_TABLES) {
+    const items = await loadArchiveWorkItems();
+    const index = items.findIndex(item => item.id === id);
+    if (index < 0) return null;
+    const updated = {
+      ...normalizeArchiveWorkInput(input, items[index]),
+      id: items[index].id,
+      createdAt: items[index].createdAt,
+      createdBy: items[index].createdBy,
+      updatedAt: new Date().toISOString(),
+      updatedBy: actor
+    };
+    updated.textPreview = buildArchiveWorkPreview(updated);
+    updated.textLength = archiveWorkTextLength(updated);
+    items[index] = updated;
+    await saveArchiveWorkItems(items);
+    return updated;
+  }
+
+  const existing = await getArchiveWorkItem(id);
+  if (!existing) return null;
+  const updated = {
+    ...normalizeArchiveWorkInput(input, existing),
+    id: existing.id,
+    createdAt: existing.createdAt,
+    createdBy: existing.createdBy,
+    updatedAt: new Date().toISOString(),
+    updatedBy: actor
+  };
+  updated.textPreview = buildArchiveWorkPreview(updated);
+  updated.textLength = archiveWorkTextLength(updated);
+  const { data, error } = await supabase
+    .from('archive_work_items')
+    .update(archiveWorkToDbRow(updated))
+    .eq('id', id)
+    .select(ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  return archiveWorkFromDbRow(data, { full: true });
+}
+
+async function deleteArchiveWorkItem(id) {
+  if (!HAS_ARCHIVE_WORK_TABLES) {
+    const items = await loadArchiveWorkItems();
+    const next = items.filter(item => item.id !== id);
+    if (next.length === items.length) return null;
+    await saveArchiveWorkItems(next);
+    return { id };
+  }
+  const { data, error } = await supabase
+    .from('archive_work_items')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data || null;
 }
 
 function archiveImportBatchId() {
@@ -2212,6 +2545,10 @@ async function seed() {
   const { error: archiveImportItemsErr } = await supabase.from('archive_import_items').select('id').limit(1);
   HAS_ARCHIVE_IMPORT_TABLES = !archiveImportBatchesErr && !archiveImportItemsErr;
   if (!HAS_ARCHIVE_IMPORT_TABLES) console.warn('⚠ archive import tabloları yok — kalıcı içe aktarım partileri pasif.');
+
+  const { error: archiveWorkErr } = await supabase.from('archive_work_items').select('id').limit(1);
+  HAS_ARCHIVE_WORK_TABLES = !archiveWorkErr;
+  if (!HAS_ARCHIVE_WORK_TABLES) console.warn('⚠ archive_work_items tablosu yok — çalışma kayıtları settings yedeğiyle çalışacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -2612,6 +2949,64 @@ app.put('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res
       });
     }
     res.json({ success: true, source: publicArchiveSource(result.source, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/work-items', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const list = await listArchiveWorkItems(req.query);
+    const items = list.items || [];
+    const filtered = list.filtered || [];
+    const counts = list.counts || {
+      total: items.length,
+      filtered: filtered.length,
+      byStatus: {},
+      byPriority: {}
+    };
+    if (!list.counts) {
+      for (const item of items) {
+        counts.byStatus[item.status || 'taslak'] = (counts.byStatus[item.status || 'taslak'] || 0) + 1;
+        counts.byPriority[item.priority || 'normal'] = (counts.byPriority[item.priority || 'normal'] || 0) + 1;
+      }
+    }
+    res.json({
+      storage: list.storage || 'settings',
+      counts,
+      items: filtered.slice(0, ARCHIVE_WORK_ITEM_LIMIT).map(item => publicArchiveWorkItem(item))
+    });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/work-items', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const item = await createArchiveWorkItem(req.body || {}, actor);
+    res.json({ success: true, item: publicArchiveWorkItem(item, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const item = await getArchiveWorkItem(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
+    res.json({ item: publicArchiveWorkItem(item, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.put('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const item = await updateArchiveWorkItem(req.params.id, req.body || {}, actor);
+    if (!item) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
+    res.json({ success: true, item: publicArchiveWorkItem(item, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.delete('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const deleted = await deleteArchiveWorkItem(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
+    res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
@@ -4627,6 +5022,8 @@ let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş i�
 let HAS_AI_REPORTS = false; // startup'ta tespit edilir (AI rapor kayıtları)
 let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at kolonu)
 let HAS_ARCHIVE_SOURCE_TABLES = false; // startup'ta tespit edilir (kaynak kayıt tabloları)
+let HAS_ARCHIVE_IMPORT_TABLES = false; // startup'ta tespit edilir (kalıcı içe aktarım tabloları)
+let HAS_ARCHIVE_WORK_TABLES = false; // startup'ta tespit edilir (çalışma kayıtları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

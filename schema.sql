@@ -230,6 +230,34 @@ create index if not exists archive_import_items_batch_idx on public.archive_impo
 create index if not exists archive_import_items_status_idx on public.archive_import_items (status, updated_at desc);
 create index if not exists archive_import_items_text_hash_idx on public.archive_import_items (text_hash);
 
+-- archive_work_items
+create table if not exists public.archive_work_items (
+  id text primary key,
+  title text not null,
+  status text not null default 'taslak',
+  priority text not null default 'normal',
+  assigned_to text,
+  due_date timestamptz,
+  source_id text references public.archive_sources(id) on delete set null,
+  source_title text,
+  category text,
+  topics jsonb not null default '[]'::jsonb,
+  question text,
+  answer_draft text,
+  note text,
+  text_preview text,
+  text_length integer not null default 0,
+  search_blob text,
+  created_by text,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists archive_work_items_status_idx on public.archive_work_items (status, updated_at desc);
+create index if not exists archive_work_items_priority_idx on public.archive_work_items (priority, updated_at desc);
+create index if not exists archive_work_items_source_idx on public.archive_work_items (source_id, updated_at desc);
+create index if not exists archive_work_items_updated_at_idx on public.archive_work_items (updated_at desc);
+
 -- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
 alter table public.alerts add column if not exists feedback_status text default 'open';
 alter table public.alerts add column if not exists resolved_at timestamptz;

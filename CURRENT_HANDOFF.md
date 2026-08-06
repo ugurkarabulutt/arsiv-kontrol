@@ -2,6 +2,20 @@
 
 ## 2026-08-07 Codex Güncel Durum
 
+- `/admin` süper admin Arşiv Operasyon Merkezi içindeki `Çalışma Kayıtları` ekranı gerçek
+  kayıt akışına bağlandı. Süper admin soru/cevap çalışması oluşturabilir; durum, öncelik,
+  atanacak kişi, hedef tarih, kategori, kavramlar, bağlı kaynak, soru metni, cevap taslağı
+  ve not tutabilir. Kaynak Havuzu kayıtları aranarak çalışmaya bağlanabilir; bağlı kaynak
+  Kaynak Havuzu detayında açılabilir. Kayıt listesi arama, durum filtresi ve öncelik filtresiyle
+  çalışır; kayıt seçilince detayda açılır, düzenlenir veya silinir. Backend'e süper admin
+  korumalı `/api/archive-ops/work-items` CRUD rotaları eklendi. Canlı DB'de
+  `archive_work_items` tablosu varsa gerçek tablo kullanılır; tablo yoksa pilot olarak
+  `settings.archive_ops_work_items` JSON yedeğiyle çalışır. Kalıcı/ölçekli kullanım için
+  Supabase SQL Editor'de `schema.sql` içindeki `archive_work_items` bloğu uygulanmalıdır.
+  Kapsam: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Root `/` public cutover ve public frontend dosyaları kapsam dışı.
+  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+
 - `/admin` süper admin Arşiv Operasyon Merkezi içine `Dosya Merkezi` görünümü eklendi.
   Bu ekran mevcut kaynak kayıtlarını Drive benzeri dosya kartları ve klasör/kategori
   başlıklarıyla gösterir. Arama dosya adı, kaynak başlığı, kategori, kavram/etiket, not ve

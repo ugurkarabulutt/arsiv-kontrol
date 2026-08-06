@@ -407,6 +407,17 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
 .ops-status.err{color:var(--red);}
+.ops-work-layout{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:12px;align-items:start;}
+.ops-work-form,.ops-work-list-wrap{min-width:0;max-width:100%;box-sizing:border-box;}
+.ops-source-picker{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.7fr);gap:8px;align-items:start;}
+.ops-source-picker .ops-status{grid-column:1/-1;margin:0;}
+.ops-work-card{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;width:100%;cursor:pointer;color:var(--ink);}
+.ops-work-card:hover,.ops-work-card.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.ops-work-card.critical{border-left:3px solid var(--red);}
+.ops-work-card.important{border-left:3px solid var(--gold);}
+.ops-work-title{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;overflow-wrap:anywhere;word-break:break-word;}
+.ops-work-preview{font-size:12px;line-height:1.5;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
+.ops-work-list-wrap .ops-source-list{max-height:420px;}
 .ops-import-workspace{margin-top:18px;border:1px solid var(--bord2);background:var(--surface-strong);min-width:0;max-width:100%;box-sizing:border-box;overflow-x:hidden;}
 .ops-import-batch-bar{border:1px solid var(--bord2);background:var(--surface-strong);padding:14px;margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;}
 .ops-import-batch-list{display:flex;gap:8px;overflow:auto;padding:10px 14px;border-top:1px solid var(--border);}
@@ -440,8 +451,8 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:13px;line-height:1.6;max-height:420px;overflow:auto;color:var(--ink2);min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:break-word;}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
-@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1335,13 +1346,86 @@ canvas{width:100%!important;}
       </div>
 
       <div class="ops-module-page archive-ops-section" data-ops-view="work" hidden>
-        <div class="ops-module-kicker">Çalışma kaydı</div>
-        <div class="ops-module-title">Soru, cevap, not ve kaynak aynı iş kaydında birleşecek.</div>
-        <div class="ops-module-copy">Ekip üyesi bir çalışma açtığında kaynak metni, çalışma notu, soru, cevap, etiket ve denetim sonucu aynı kayda bağlanacak. Böylece hangi metnin nereden geldiği geriye dönük izlenebilir olacak.</div>
-        <div class="ops-module-list">
-          <div class="ops-module-item"><strong>Kaynak bağlantısı</strong>Çalışma hangi transkript, hadis, slayt veya dokümandan üretildiyse görünür.</div>
-          <div class="ops-module-item"><strong>Denetim bağı</strong>Metin denetimi ve onay süreci ilgili çalışmanın içinde takip edilir.</div>
-          <div class="ops-module-item"><strong>Arşiv izi</strong>Onaylanan çalışma ileride public arşiv adayı olabilir.</div>
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <div>
+              <div class="ops-card-title">Çalışma Kayıtları</div>
+              <p>Soru, cevap taslağı, kaynak, atama ve notları tek iş kaydında takip edin.</p>
+            </div>
+            <button class="btn-sec" onclick="clearArchiveWorkForm()">Yeni Çalışma</button>
+          </div>
+          <div class="ops-panel-body">
+            <div class="ops-work-layout">
+              <div class="ops-work-form">
+                <input class="ops-field" id="archiveWorkTitle" placeholder="Çalışma başlığı">
+                <div class="ops-form-grid two" style="margin-top:10px">
+                  <select class="ops-field" id="archiveWorkStatus">
+                    <option value="taslak">Taslak</option>
+                    <option value="hazirlaniyor">Hazırlanıyor</option>
+                    <option value="kontrol">Kontrolde</option>
+                    <option value="onay_bekliyor">Onay bekliyor</option>
+                    <option value="arsiv_adayi">Arşiv adayı</option>
+                    <option value="tamamlandi">Tamamlandı</option>
+                  </select>
+                  <select class="ops-field" id="archiveWorkPriority">
+                    <option value="normal">Normal</option>
+                    <option value="onemli">Önemli</option>
+                    <option value="kritik">Kritik</option>
+                  </select>
+                </div>
+                <div class="ops-form-grid two" style="margin-top:10px">
+                  <input class="ops-field" id="archiveWorkAssignedTo" placeholder="Atanan kişi">
+                  <input class="ops-field" id="archiveWorkDueDate" type="date" aria-label="Hedef tarih">
+                </div>
+                <div class="ops-form-grid two" style="margin-top:10px">
+                  <input class="ops-field" id="archiveWorkCategory" placeholder="Kategori veya çalışma alanı">
+                  <input class="ops-field" id="archiveWorkTopics" placeholder="Kavramlar / etiketler, virgülle ayırın">
+                </div>
+                <div class="ops-source-picker" style="margin-top:10px">
+                  <input class="ops-field" id="archiveWorkSourceSearch" placeholder="Bağlanacak kaynak içinde ara..." oninput="renderArchiveWorkSourcePicker()">
+                  <select class="ops-field" id="archiveWorkSourceId" onchange="selectArchiveWorkSource(this.value)">
+                    <option value="">Kaynak seçilmedi</option>
+                  </select>
+                  <div class="ops-status" id="archiveWorkSourceHint">Kaynak seçildiğinde çalışma kaydı o metne bağlanır.</div>
+                </div>
+                <textarea class="ops-field" id="archiveWorkQuestion" placeholder="Soru veya çalışma konusu" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
+                <textarea class="ops-field ops-source-text" id="archiveWorkAnswer" placeholder="Cevap taslağı veya hazırlanacak metin"></textarea>
+                <textarea class="ops-field" id="archiveWorkNote" placeholder="Not, kontrol ihtiyacı veya ekip açıklaması" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
+                <div class="ops-source-actions">
+                  <button class="btn-main" onclick="saveArchiveWorkItem()">Çalışma Kaydını Sakla</button>
+                  <button class="btn-sec" onclick="clearArchiveWorkForm()">Temizle</button>
+                  <button class="btn-sec" id="archiveWorkOpenSourceBtn" onclick="openArchiveWorkSource()" disabled>Kaynağı Aç</button>
+                  <button class="btn-danger" id="archiveWorkDeleteBtn" onclick="deleteArchiveWorkItemUi()" disabled>Kaydı Sil</button>
+                </div>
+                <div class="ops-status" id="archiveWorkStatusMsg"></div>
+              </div>
+              <div class="ops-work-list-wrap">
+                <div class="ops-filter-row">
+                  <input class="ops-field" id="archiveWorkSearch" placeholder="Çalışma, kaynak, kişi, kavram veya not ara..." oninput="setArchiveWorkSearch(this.value)">
+                  <select class="ops-field" id="archiveWorkStatusFilter" onchange="setArchiveWorkFilter()">
+                    <option value="">Tüm durumlar</option>
+                    <option value="taslak">Taslak</option>
+                    <option value="hazirlaniyor">Hazırlanıyor</option>
+                    <option value="kontrol">Kontrolde</option>
+                    <option value="onay_bekliyor">Onay bekliyor</option>
+                    <option value="arsiv_adayi">Arşiv adayı</option>
+                    <option value="tamamlandi">Tamamlandı</option>
+                  </select>
+                  <select class="ops-field" id="archiveWorkPriorityFilter" onchange="setArchiveWorkFilter()">
+                    <option value="">Tüm öncelikler</option>
+                    <option value="normal">Normal</option>
+                    <option value="onemli">Önemli</option>
+                    <option value="kritik">Kritik</option>
+                  </select>
+                </div>
+                <div class="ops-file-summary" id="archiveWorkSummary"></div>
+                <div class="ops-source-list" id="archiveWorkList"><div class="empty-state">Çalışmalar yükleniyor...</div></div>
+                <div class="ops-detail" id="archiveWorkDetail">
+                  <div class="empty-state">Bir çalışma seçildiğinde kaynak, soru, cevap ve not bilgisi burada açılır.</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1686,7 +1770,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates'];
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -2022,6 +2106,10 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   updateArchiveOpsNavState();
   if(archiveOpsState.view==='files')loadArchiveOpsSources({ignoreFilters:true});
   else if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
+  if(archiveOpsState.view==='work'){
+    loadArchiveOpsSources({ignoreFilters:true});
+    loadArchiveWorkItems();
+  }
   if(archiveOpsState.view==='import')loadArchiveImportBatches();
 }
 function openArchiveOps(view='overview'){
@@ -4764,6 +4852,301 @@ async function openArchiveFileSource(id){
   await openArchiveSource(id);
   window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
 }
+function archiveWorkStatusLabel(status){
+  return {
+    taslak:'Taslak',
+    hazirlaniyor:'Hazırlanıyor',
+    kontrol:'Kontrolde',
+    onay_bekliyor:'Onay bekliyor',
+    arsiv_adayi:'Arşiv adayı',
+    tamamlandi:'Tamamlandı'
+  }[status]||'Taslak';
+}
+function archiveWorkPriorityLabel(priority){
+  return {normal:'Normal',onemli:'Önemli',kritik:'Kritik'}[priority]||'Normal';
+}
+function archiveWorkDate(value){
+  if(!value)return 'Tarih yok';
+  const d=new Date(value);
+  return Number.isFinite(d.getTime())?d.toLocaleDateString('tr-TR'):'Tarih yok';
+}
+function setArchiveWorkStatus(message='',kind=''){
+  const box=el('archiveWorkStatusMsg');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function archiveWorkSummaryHtml(counts={}){
+  const byStatus=counts.byStatus||{};
+  return `
+    <div class="ops-file-summary-item"><strong>${counts.total||0}</strong><span>Toplam çalışma</span></div>
+    <div class="ops-file-summary-item"><strong>${counts.filtered||0}</strong><span>Görünen kayıt</span></div>
+    <div class="ops-file-summary-item"><strong>${byStatus.kontrol||0}</strong><span>Kontrolde</span></div>
+    <div class="ops-file-summary-item"><strong>${byStatus.arsiv_adayi||0}</strong><span>Arşiv adayı</span></div>
+  `;
+}
+function archiveWorkHaystack(item){
+  return [
+    item?.title,
+    item?.status,
+    item?.priority,
+    item?.assignedTo,
+    item?.sourceTitle,
+    item?.category,
+    item?.textPreview,
+    ...(item?.topics||[])
+  ].join(' ').toLocaleLowerCase('tr-TR');
+}
+function renderArchiveWorkSourcePicker(){
+  const select=el('archiveWorkSourceId');
+  const hint=el('archiveWorkSourceHint');
+  if(!select)return;
+  const current=select.value||archiveWorkState.activeItem?.sourceId||'';
+  const q=String(el('archiveWorkSourceSearch')?.value||'').trim().toLocaleLowerCase('tr-TR');
+  const sources=(archiveOpsState.sources||[]).filter(source=>{
+    if(!q)return true;
+    return [
+      source.title,
+      source.category,
+      source.sourceUrl,
+      source.note,
+      source.textPreview,
+      ...(source.tags||[])
+    ].join(' ').toLocaleLowerCase('tr-TR').includes(q);
+  }).slice(0,80);
+  select.innerHTML='<option value="">Kaynak seçilmedi</option>'+sources.map(source=>`<option value="${esc(source.id)}">${esc(source.title||'Başlıksız kaynak')} · ${esc(archiveSourceTypeLabel(source.sourceType))}</option>`).join('');
+  if(current&&sources.some(source=>source.id===current))select.value=current;
+  if(hint){
+    const source=(archiveOpsState.sources||[]).find(item=>item.id===select.value);
+    hint.textContent=source?`${source.title} kaynağına bağlı. ${Number(source.textLength||0).toLocaleString('tr-TR')} karakter.`:'Kaynak seçildiğinde çalışma kaydı o metne bağlanır.';
+    hint.className=`ops-status ${source?'ok':''}`.trim();
+  }
+}
+function selectArchiveWorkSource(id){
+  const source=(archiveOpsState.sources||[]).find(item=>item.id===id);
+  if(source){
+    if(!v('archiveWorkTitle'))el('archiveWorkTitle').value=source.title||'';
+    if(!v('archiveWorkCategory'))el('archiveWorkCategory').value=source.category||'';
+    if(!v('archiveWorkTopics'))el('archiveWorkTopics').value=(source.tags||[]).join(', ');
+  }
+  renderArchiveWorkSourcePicker();
+}
+function clearArchiveWorkForm(){
+  ['archiveWorkTitle','archiveWorkAssignedTo','archiveWorkDueDate','archiveWorkCategory','archiveWorkTopics','archiveWorkSourceSearch','archiveWorkQuestion','archiveWorkAnswer','archiveWorkNote'].forEach(id=>{const node=el(id);if(node)node.value='';});
+  const status=el('archiveWorkStatus');if(status)status.value='taslak';
+  const priority=el('archiveWorkPriority');if(priority)priority.value='normal';
+  const source=el('archiveWorkSourceId');if(source)source.value='';
+  archiveWorkState.activeItem=null;
+  const openBtn=el('archiveWorkOpenSourceBtn');if(openBtn)openBtn.disabled=true;
+  const deleteBtn=el('archiveWorkDeleteBtn');if(deleteBtn)deleteBtn.disabled=true;
+  renderArchiveWorkList();
+  renderArchiveWorkDetail(null);
+  renderArchiveWorkSourcePicker();
+  setArchiveWorkStatus('');
+}
+function archiveWorkPayload(){
+  const sourceId=el('archiveWorkSourceId')?.value||'';
+  const source=(archiveOpsState.sources||[]).find(item=>item.id===sourceId);
+  return {
+    title:v('archiveWorkTitle'),
+    status:el('archiveWorkStatus')?.value||'taslak',
+    priority:el('archiveWorkPriority')?.value||'normal',
+    assignedTo:v('archiveWorkAssignedTo'),
+    dueDate:el('archiveWorkDueDate')?.value||'',
+    sourceId,
+    sourceTitle:source?.title||archiveWorkState.activeItem?.sourceTitle||'',
+    category:v('archiveWorkCategory'),
+    topics:v('archiveWorkTopics'),
+    question:v('archiveWorkQuestion'),
+    answerDraft:v('archiveWorkAnswer'),
+    note:v('archiveWorkNote')
+  };
+}
+function archiveWorkCardHtml(item){
+  const active=archiveWorkState.activeItem?.id===item.id?' active':'';
+  const priorityClass=item.priority==='kritik'?' critical':item.priority==='onemli'?' important':'';
+  const topics=(item.topics||[]).slice(0,3).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  return `
+    <button class="ops-work-card${active}${priorityClass}" onclick="openArchiveWorkItem(${attrJson(item.id)})">
+      <div class="ops-work-title">${esc(item.title||'Başlıksız çalışma')}</div>
+      <div class="ops-source-meta">
+        <span>${esc(archiveWorkStatusLabel(item.status))}</span>
+        <span>${esc(archiveWorkPriorityLabel(item.priority))}</span>
+        ${item.assignedTo?`<span>${esc(item.assignedTo)}</span>`:''}
+        ${item.sourceTitle?`<span>${esc(item.sourceTitle)}</span>`:''}
+      </div>
+      <div class="ops-work-preview">${esc(item.textPreview||'Ön izleme yok.')}</div>
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+    </button>
+  `;
+}
+function renderArchiveWorkList(){
+  const search=el('archiveWorkSearch');
+  const status=el('archiveWorkStatusFilter');
+  const priority=el('archiveWorkPriorityFilter');
+  if(search&&search.value!==archiveWorkState.query)search.value=archiveWorkState.query;
+  if(status&&status.value!==archiveWorkState.status)status.value=archiveWorkState.status;
+  if(priority&&priority.value!==archiveWorkState.priority)priority.value=archiveWorkState.priority;
+  const summary=el('archiveWorkSummary');
+  if(summary)summary.innerHTML=archiveWorkSummaryHtml(archiveWorkState.counts||{});
+  const list=el('archiveWorkList');
+  if(!list)return;
+  if(!archiveWorkState.items.length){
+    list.innerHTML='<div class="empty-state">Henüz çalışma kaydı yok. Yeni Çalışma ile ilk kaydı açabilirsiniz.</div>';
+    return;
+  }
+  list.innerHTML=archiveWorkState.items.map(archiveWorkCardHtml).join('');
+}
+function renderArchiveWorkDetail(item){
+  const box=el('archiveWorkDetail');
+  if(!box)return;
+  if(!item){
+    box.innerHTML='<div class="empty-state">Bir çalışma seçildiğinde kaynak, soru, cevap ve not bilgisi burada açılır.</div>';
+    return;
+  }
+  const topics=(item.topics||[]).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  box.innerHTML=`
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(item.title||'Başlıksız çalışma')}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveWorkStatusLabel(item.status))}</span>
+          <span>${esc(archiveWorkPriorityLabel(item.priority))}</span>
+          ${item.assignedTo?`<span>Atanan: ${esc(item.assignedTo)}</span>`:''}
+          <span>Hedef: ${archiveWorkDate(item.dueDate)}</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="editArchiveWorkItem(${attrJson(item.id)})">Forma Al</button>
+    </div>
+    <div class="ops-detail-body">
+      ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
+      ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+      ${item.question?`<p><strong>Soru / çalışma konusu:</strong><br>${esc(item.question)}</p>`:''}
+      ${item.answerDraft?`<p><strong>Cevap taslağı:</strong></p><div class="ops-preview-text">${esc(item.answerDraft)}</div>`:''}
+      ${item.note?`<p><strong>Not:</strong><br>${esc(item.note)}</p>`:''}
+      <div class="ops-source-actions">
+        <button class="btn-sec" onclick="editArchiveWorkItem(${attrJson(item.id)})">Düzenle</button>
+        ${item.sourceId?`<button class="btn-sec" onclick="openArchiveWorkSource()">Kaynağı Aç</button>`:''}
+      </div>
+    </div>
+  `;
+}
+async function loadArchiveWorkItems(){
+  if(!canUseArchiveOps())return;
+  archiveWorkState.loading=true;
+  const params=new URLSearchParams();
+  if(archiveWorkState.query)params.set('q',archiveWorkState.query);
+  if(archiveWorkState.status)params.set('status',archiveWorkState.status);
+  if(archiveWorkState.priority)params.set('priority',archiveWorkState.priority);
+  const list=el('archiveWorkList');
+  if(list&&!archiveWorkState.items.length)list.innerHTML='<div class="empty-state">Çalışmalar yükleniyor...</div>';
+  const data=await api('GET',`/api/archive-ops/work-items${params.toString()?`?${params}`:''}`);
+  archiveWorkState.loading=false;
+  if(data.error){
+    if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+    setArchiveWorkStatus(data.error,'err');
+    return;
+  }
+  archiveWorkState.items=data.items||[];
+  archiveWorkState.counts=data.counts||null;
+  renderArchiveWorkList();
+}
+function setArchiveWorkSearch(value){
+  archiveWorkState.query=String(value||'');
+  loadArchiveWorkItems();
+}
+function setArchiveWorkFilter(){
+  archiveWorkState.status=el('archiveWorkStatusFilter')?.value||'';
+  archiveWorkState.priority=el('archiveWorkPriorityFilter')?.value||'';
+  loadArchiveWorkItems();
+}
+async function openArchiveWorkItem(id){
+  const data=await api('GET',`/api/archive-ops/work-items/${encodeURIComponent(id)}`);
+  if(data.error){await showSystemAlert('Çalışma açılamadı',data.error,'danger');return;}
+  archiveWorkState.activeItem=data.item;
+  renderArchiveWorkList();
+  renderArchiveWorkDetail(data.item);
+  editArchiveWorkItem(id,false);
+}
+function editArchiveWorkItem(id,scroll=true){
+  const item=archiveWorkState.activeItem?.id===id?archiveWorkState.activeItem:archiveWorkState.items.find(entry=>entry.id===id);
+  if(!item)return;
+  archiveWorkState.activeItem=item;
+  el('archiveWorkTitle').value=item.title||'';
+  el('archiveWorkStatus').value=item.status||'taslak';
+  el('archiveWorkPriority').value=item.priority||'normal';
+  el('archiveWorkAssignedTo').value=item.assignedTo||'';
+  el('archiveWorkDueDate').value=item.dueDate?String(item.dueDate).slice(0,10):'';
+  el('archiveWorkCategory').value=item.category||'';
+  el('archiveWorkTopics').value=(item.topics||[]).join(', ');
+  el('archiveWorkQuestion').value=item.question||'';
+  el('archiveWorkAnswer').value=item.answerDraft||'';
+  el('archiveWorkNote').value=item.note||'';
+  const sourceSelect=el('archiveWorkSourceId');
+  if(sourceSelect)sourceSelect.value=item.sourceId||'';
+  const openBtn=el('archiveWorkOpenSourceBtn');if(openBtn)openBtn.disabled=!item.sourceId;
+  const deleteBtn=el('archiveWorkDeleteBtn');if(deleteBtn)deleteBtn.disabled=false;
+  renderArchiveWorkSourcePicker();
+  renderArchiveWorkDetail(item);
+  renderArchiveWorkList();
+  setArchiveWorkStatus('Çalışma forma alındı. Değişiklikleri saklayabilirsiniz.','ok');
+  if(scroll)el('archiveWorkTitle')?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function saveArchiveWorkItem(){
+  if(!canUseArchiveOps())return;
+  if(archiveWorkState.submitInFlight)return;
+  const payload=archiveWorkPayload();
+  if(!payload.title){
+    payload.title=payload.question.slice(0,120)||'Başlıksız çalışma';
+    if(el('archiveWorkTitle'))el('archiveWorkTitle').value=payload.title;
+  }
+  archiveWorkState.submitInFlight=true;
+  setArchiveWorkStatus('Çalışma kaydı saklanıyor...');
+  const id=archiveWorkState.activeItem?.id;
+  const data=await api(id?'PUT':'POST',id?`/api/archive-ops/work-items/${encodeURIComponent(id)}`:'/api/archive-ops/work-items',payload);
+  archiveWorkState.submitInFlight=false;
+  if(data.error){
+    setArchiveWorkStatus(data.error,'err');
+    return;
+  }
+  archiveWorkState.activeItem=data.item;
+  await loadArchiveWorkItems();
+  renderArchiveWorkDetail(data.item);
+  setArchiveWorkStatus(id?'Çalışma kaydı güncellendi.':'Çalışma kaydı oluşturuldu.','ok');
+}
+async function deleteArchiveWorkItemUi(){
+  const item=archiveWorkState.activeItem;
+  if(!item?.id)return;
+  const ok=await openSystemConfirm({
+    title:'Çalışma kaydı silinsin mi?',
+    badge:'Çalışma Kayıtları',
+    message:`${item.title||'Bu çalışma'} kaydı silinecek.`,
+    detail:'Bu işlem yalnız çalışma kaydını kaldırır. Bağlı kaynak metni Kaynak Havuzu içinde kalır.',
+    confirmText:'Kaydı Sil',
+    cancelText:'Vazgeç',
+    tone:'danger'
+  });
+  if(!ok)return;
+  const data=await api('DELETE',`/api/archive-ops/work-items/${encodeURIComponent(item.id)}`);
+  if(data.error){
+    setArchiveWorkStatus(data.error,'err');
+    return;
+  }
+  clearArchiveWorkForm();
+  await loadArchiveWorkItems();
+  setArchiveWorkStatus('Çalışma kaydı silindi.','ok');
+}
+async function openArchiveWorkSource(){
+  const sourceId=archiveWorkState.activeItem?.sourceId||el('archiveWorkSourceId')?.value||'';
+  if(!sourceId){
+    setArchiveWorkStatus('Bu çalışma için bağlı kaynak seçilmedi.','err');
+    return;
+  }
+  renderArchiveOpsView('library');
+  await openArchiveSource(sourceId);
+  window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
 function archiveSourceConflictDetail(conflicts=[]){
   if(!Array.isArray(conflicts)||!conflicts.length)return 'Benzer kayıt bulundu.';
   return conflicts.slice(0,5).map((item,index)=>{
@@ -4878,12 +5261,14 @@ async function loadArchiveOpsSources(options={}){
   if(data.error){
     if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
     if(archiveOpsState.view==='files')renderArchiveFileCenter();
+    if(archiveOpsState.view==='work')renderArchiveWorkSourcePicker();
     return;
   }
   archiveOpsState.sources=data.sources||[];
   archiveOpsState.counts=data.counts||null;
   renderArchiveSourceList();
   if(archiveOpsState.view==='files')renderArchiveFileCenter();
+  if(archiveOpsState.view==='work')renderArchiveWorkSourcePicker();
 }
 async function openArchiveSource(id){
   const data=await api('GET',`/api/archive-ops/sources/${encodeURIComponent(id)}`);

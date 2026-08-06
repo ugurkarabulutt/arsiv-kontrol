@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-07
+- **Arşiv Operasyon Merkezi Çalışma Kayıtları gerçek akışa bağlandı:** `/admin` süper admin
+  Arşiv Operasyon Merkezi içindeki `Çalışma Kayıtları` ekranı placeholder olmaktan çıkarıldı.
+  Süper admin artık soru/cevap çalışması oluşturabilir; durum, öncelik, atanacak kişi,
+  hedef tarih, kategori, kavramlar, bağlı kaynak, soru metni, cevap taslağı ve not tutabilir.
+  Kaynak Havuzu kayıtları aranarak çalışma kaydına bağlanabilir; bağlı kaynak tek tuşla
+  Kaynak Havuzu detayında açılır. Kayıtlar aranabilir ve durum/öncelik filtresiyle
+  süzülebilir; seçilen kayıt detayda açılır, düzenlenir veya silinir. Backend'e süper admin
+  korumalı `/api/archive-ops/work-items` CRUD rotaları eklendi. Canlı DB'de
+  `archive_work_items` tablosu varsa gerçek tablo kullanılır; tablo yoksa pilot kullanım
+  `settings.archive_ops_work_items` JSON yedeğiyle çalışır. Kalıcı ve ölçekli kullanım için
+  `schema.sql` içindeki `archive_work_items` bloğu Supabase SQL Editor'de uygulanmalıdır.
+  Bu adım root `/` public cutover yapmaz ve public frontend dosyalarını kapsamaz. Değişen
+  dosyalar: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
 - **Arşiv Operasyon Merkezi Dosya Merkezi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içine Drive benzeri ilk `Dosya Merkezi` görünümü eklendi. Bu ekran mevcut kaynak
   kayıtlarını ayrı bir DB/schema gerektirmeden dosya kartları, klasör/kategori grupları,
