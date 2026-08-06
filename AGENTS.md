@@ -121,6 +121,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **İçe Aktarım Merkezi doğrudan kaynak kaydı akışına geçti:** `/admin` Arşiv Operasyon
+  Merkezi `İçe Aktarım Merkezi` ekranında dosya eklendikten sonra kaynak oluşturma adımı
+  sadeleştirildi. Dosyalar artık `Kaynak Olarak Kaydet` ile tek tuşla Kaynak Havuzu'na
+  alınabilir; detay değiştirmek isteyen süper admin için `Formda Düzenle` ayrı ikincil
+  aksiyon olarak kalır. Kaynak kaydı oluşan dosyada `Kaynak Havuzunda Aç` görünür.
+  İçe aktarım ekranına dört adımlı kısa akış göstergesi eklendi: dosya seç, metni kontrol et,
+  kaynak olarak kaydet, havuzda ara. Benzer kaynak çakışmaları mevcut sistem onayıyla
+  korunur; 200.000 karakter kaynak sınırı devam eder. Bu adım DB/schema/root `/` veya public
+  frontend hattına dokunmaz. Değişen dosyalar: `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
 - **İçe Aktarım Merkezi kuyruk aksiyonları netleştirildi:** `/admin` Arşiv Operasyon Merkezi
   `İçe Aktarım Merkezi` ekranında `Forma Aktar` ve `Atla` etiketleri kullanıcı açısından
   belirsiz bulundu. Akış şu şekilde ayrıştırıldı: `Kaynak Formuna Al` dosya metnini kaynak

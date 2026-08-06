@@ -2,6 +2,15 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kaynak oluşturma akışı sadeleştirildi.
+  Dosya eklendikten sonra süper admin artık `Kaynak Olarak Kaydet` ile dosyayı tek tuşla
+  Kaynak Havuzu'na alabilir. `Formda Düzenle` yalnız başlık, kategori, not veya metin üzerinde
+  son değişiklik yapmak isteyenler için ikincil yol olarak kaldı. Kaynak oluşan dosyada
+  `Kaynak Havuzunda Aç` görünür. Ekrana kısa dört adımlı akış eklendi: dosya seç, metni
+  kontrol et, kaynak olarak kaydet, havuzda ara. Kapsam: `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/server/root `/`
+  ve public frontend hattına dokunulmadı.
+
 - `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kuyruk aksiyonları netleştirildi.
   `Forma Aktar` yerine `Kaynak Formuna Al`, `Atla` yerine `İşlem Dışı Bırak` kullanılır.
   `Kaynak Formuna Al` yalnız dosya metnini kaynak kayıt formuna taşır; kalıcı kayıt için

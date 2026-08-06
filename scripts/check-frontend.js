@@ -452,6 +452,7 @@ if (
   !html.includes('id="archiveSourceText"') ||
   !html.includes('archiveImportFiles') ||
   !html.includes('ops-import-workspace') ||
+  !html.includes('ops-import-flow') ||
   !html.includes('archiveImportBatchList') ||
   !html.includes('createArchiveImportBatch') ||
   !html.includes('loadArchiveImportBatches') ||
@@ -460,9 +461,16 @@ if (
   !html.includes('function extractArchiveImportDocx') ||
   !html.includes("fetch('/api/extract-file-text'") ||
   !html.includes('function sendArchiveImportToSourceForm') ||
+  !html.includes('function archiveImportCanCreateSource') ||
+  !html.includes('function archiveImportSourcePayload') ||
+  !html.includes('function createArchiveSourceFromImportItem') ||
+  !html.includes('function openArchiveSourceFromImportItem') ||
   !html.includes('function skipArchiveImportItem') ||
   !html.includes('function deleteArchiveImportItem') ||
   !html.includes("api('DELETE',`/api/archive-ops/import-items/") ||
+  !html.includes('Kaynak Olarak Kaydet') ||
+  !html.includes('Formda Düzenle') ||
+  !html.includes('Kaynak Havuzunda Aç') ||
   !html.includes("tone:'danger'") ||
   !html.includes('archiveImportCanTransfer') ||
   !html.includes('.ops-import-workspace{margin-top:18px') ||
