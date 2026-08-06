@@ -130,7 +130,14 @@ tespit edilir).
   kaynak olarak kaydet, havuzda ara. Benzer kaynak çakışmaları mevcut sistem onayıyla
   korunur; 200.000 karakter kaynak sınırı devam eder. Bu adım DB/schema/root `/` veya public
   frontend hattına dokunmaz. Değişen dosyalar: `index.html`, `scripts/check-frontend.js`,
-  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Runtime commit `f15e6aa` GitHub'a push edildi ve
+  production'a alındı. Final production deploy:
+  `https://arsiv-kontrol-i3p8s7uh4-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store
+  doğru. Canlı HTML'de `ops-import-flow`, `Kaynak Olarak Kaydet`, `Formda Düzenle` ve
+  `Kaynak Havuzunda Aç` mevcut; eski geçici `adminRouteProbe` yok.
 - **İçe Aktarım Merkezi kuyruk aksiyonları netleştirildi:** `/admin` Arşiv Operasyon Merkezi
   `İçe Aktarım Merkezi` ekranında `Forma Aktar` ve `Atla` etiketleri kullanıcı açısından
   belirsiz bulundu. Akış şu şekilde ayrıştırıldı: `Kaynak Formuna Al` dosya metnini kaynak
