@@ -20,8 +20,13 @@
   `dpl_2VDgMUsiq8YxyDhrxJKbsfm1gjb7`, canlı alias `https://arsiv.ibrahimlive.ai`.
   Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti; temiz deploy klasöründe
   `node --check server.js` ve `node scripts/check-frontend.js` başarılı. Vercel inspect
-  deploy durumunu `Ready` gösterdi. Bu ortamdan canlı HTTP smoke istekleri bağlantı seviyesinde
-  açılamadı; kullanıcı tarayıcı testiyle ayrıca doğrulanmalıdır.
+  deploy durumunu `Ready` gösterdi. Supabase'de `archive_work_items` SQL'i kullanıcı tarafından
+  başarıyla uygulandıktan sonra canlı fonksiyonun tabloyu başlangıçta kesin algılaması için
+  temiz `HEAD` snapshot'ından yeniden production deploy alındı:
+  `https://arsiv-kontrol-8y8nt0bhy-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_DthUsG8XvnxLfTryMWqT8pEbd7va`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Vercel inspect bu redeploy'u `Ready` gösterdi. Bu ortamdan canlı HTTP smoke istekleri
+  bağlantı seviyesinde açılamadı; kullanıcı tarayıcı testiyle ayrıca doğrulanmalıdır.
 
 - `/admin` süper admin Arşiv Operasyon Merkezi içine `Dosya Merkezi` görünümü eklendi.
   Bu ekran mevcut kaynak kayıtlarını Drive benzeri dosya kartları ve klasör/kategori
