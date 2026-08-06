@@ -378,43 +378,47 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-source-preview{font-size:12px;color:var(--ink2);line-height:1.5;}
 .ops-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
 .ops-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.3);padding:3px 6px;}
-.ops-detail{border:1px solid var(--bord2);background:var(--surface-strong);min-height:360px;}
+.ops-detail{border:1px solid var(--bord2);background:var(--surface-strong);min-height:360px;min-width:0;max-width:100%;box-sizing:border-box;}
 .ops-detail-head{padding:13px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.ops-detail-title{font-size:17px;font-weight:900;color:var(--ink);line-height:1.35;}
-.ops-detail-body{padding:14px;}
+.ops-detail-head>div{min-width:0;}
+.ops-detail-title{font-size:17px;font-weight:900;color:var(--ink);line-height:1.35;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+.ops-detail-body{padding:14px;min-width:0;max-width:100%;box-sizing:border-box;}
 .ops-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:14px;line-height:1.65;max-height:520px;overflow:auto;color:var(--ink2);}
 .ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
 .ops-status.err{color:var(--red);}
-.ops-import-workspace{margin-top:18px;border:1px solid var(--bord2);background:var(--surface-strong);}
+.ops-import-workspace{margin-top:18px;border:1px solid var(--bord2);background:var(--surface-strong);min-width:0;max-width:100%;box-sizing:border-box;overflow-x:hidden;}
 .ops-import-batch-bar{border:1px solid var(--bord2);background:var(--surface-strong);padding:14px;margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;}
 .ops-import-batch-list{display:flex;gap:8px;overflow:auto;padding:10px 14px;border-top:1px solid var(--border);}
-.ops-import-batch{min-width:210px;border:1px solid var(--border);background:var(--bg);padding:10px;text-align:left;color:var(--ink);cursor:pointer;}
+.ops-import-batch{min-width:210px;max-width:min(78vw,320px);border:1px solid var(--border);background:var(--bg);padding:10px;text-align:left;color:var(--ink);cursor:pointer;box-sizing:border-box;}
 .ops-import-batch:hover,.ops-import-batch.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
-.ops-import-batch-title{font-size:13px;font-weight:900;line-height:1.35;margin-bottom:5px;}
+.ops-import-batch-title{font-size:13px;font-weight:900;line-height:1.35;margin-bottom:5px;overflow-wrap:anywhere;word-break:break-word;}
 .ops-import-batch-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:7px;flex-wrap:wrap;}
 .ops-import-drop{border:1px dashed rgba(var(--gold-rgb),.55);background:rgba(var(--gold-rgb),.06);padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
 .ops-import-drop.drag-over{border-color:var(--ai);background:rgba(var(--ai-rgb),.1);box-shadow:0 0 0 3px rgba(var(--ai-rgb),.1) inset;}
 .ops-import-drop strong{display:block;font-size:15px;color:var(--ink);margin-bottom:4px;}
 .ops-import-drop span{display:block;font-size:13px;color:var(--ink2);line-height:1.55;}
 .ops-import-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.ops-import-status{padding:10px 14px;border-top:1px solid var(--border);}
+.ops-import-status{padding:10px 14px;border-top:1px solid var(--border);overflow-wrap:anywhere;}
 .ops-import-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;padding:14px;border-top:1px solid var(--border);}
 .ops-import-list{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;}
+.ops-import-layout,.ops-import-list,.ops-import-item{min-width:0;max-width:100%;box-sizing:border-box;}
 .ops-import-item{border:1px solid var(--border);background:var(--bg);padding:12px;cursor:pointer;color:var(--ink);}
 .ops-import-item:hover,.ops-import-item.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
 .ops-import-item.error{border-left:3px solid var(--red);}
 .ops-import-item.ready{border-left:3px solid var(--green);}
-.ops-import-name{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;word-break:break-word;}
+.ops-import-name{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;overflow-wrap:anywhere;word-break:break-word;}
 .ops-import-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
-.ops-import-state{font-size:12px;line-height:1.5;color:var(--ink2);}
+.ops-source-meta span,.ops-import-meta span{min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+.ops-import-state{font-size:12px;line-height:1.5;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 .ops-import-state.ok{color:var(--green);}
 .ops-import-state.err{color:var(--red);}
-.ops-import-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:13px;line-height:1.6;max-height:420px;overflow:auto;color:var(--ink2);}
+.ops-import-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:13px;line-height:1.6;max-height:420px;overflow:auto;color:var(--ink2);min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:break-word;}
+.ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-import-layout{grid-template-columns:1fr}.ops-stats{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -5152,7 +5156,7 @@ function renderArchiveImportQueue(){
       ${selected.status==='skipped'?'<div class="ops-status err">Bu dosya atlandı. Gerekirse tekrar forma aktarılabilir.</div>':''}
       ${selected.status==='source_created'?'<div class="ops-status ok">Bu dosyadan kaynak kaydı oluşturuldu.</div>':''}
       ${selected.status==='reading'?'<div class="ops-status">Metin çıkarılıyor...</div>':''}
-      ${text?`<p><strong>Kayıt önerisi:</strong> ${esc(archiveSourceTypeLabel(selected.sourceType))} olarak kaynak formuna aktarılacak. Kaynak kaydı oluştuğunda bu dosya aynı partide tamamlandı olarak işaretlenir.</p><div class="ops-import-preview-text">${esc(text.slice(0,12000))}${text.length>12000?'\n\n... Önizleme ilk 12.000 karakterle sınırlandı. Forma aktarımda tam metin kullanılacak.':''}</div>`:''}
+      ${text?`<p class="ops-import-suggestion"><strong>Kayıt önerisi:</strong> ${esc(archiveSourceTypeLabel(selected.sourceType))} olarak kaynak formuna aktarılacak. Kaynak kaydı oluştuğunda bu dosya aynı partide tamamlandı olarak işaretlenir.</p><div class="ops-import-preview-text">${esc(text.slice(0,12000))}${text.length>12000?'\n\n... Önizleme ilk 12.000 karakterle sınırlandı. Forma aktarımda tam metin kullanılacak.':''}</div>`:''}
     </div>
   `;
 }

@@ -458,6 +458,14 @@ if (
   !html.includes('function extractArchiveImportDocx') ||
   !html.includes("fetch('/api/extract-file-text'") ||
   !html.includes('function sendArchiveImportToSourceForm') ||
+  !html.includes('.ops-import-workspace{margin-top:18px') ||
+  !html.includes('overflow-x:hidden') ||
+  !html.includes('.ops-import-preview-text{white-space:pre-wrap') ||
+  !html.includes('overflow-wrap:anywhere;word-break:break-word') ||
+  !html.includes('.ops-detail-head>div{min-width:0;}') ||
+  !html.includes('.ops-source-meta span,.ops-import-meta span') ||
+  !html.includes('ops-import-suggestion') ||
+  !html.includes('.ops-import-layout{padding:10px;gap:10px') ||
   !html.includes('DOCX, TXT, MD, CSV, TSV ve JSON')
 ) {
   throw new Error('Arsiv Operasyon Merkezi super admin kaynak kayit akisi ve /admin korumasi ile korunmali.');

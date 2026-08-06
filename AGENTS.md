@@ -121,6 +121,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **İçe Aktarım Merkezi mobil taşma düzeltildi:** `/admin` Arşiv Operasyon Merkezi içindeki
+  `İçe Aktarım Merkezi` mobil görünümünde uzun DOCX dosya adları, dosya detay başlığı ve
+  çıkarılan metin önizlemesi ekran genişliğini taşırarak yatay kaydırma oluşturuyordu.
+  Import alanına scoped responsive CSS eklendi: import workspace, liste, kart, detay başlığı,
+  öneri paragrafı ve önizleme metni artık `min-width:0`, `max-width:100%`,
+  `overflow-wrap:anywhere` ve mobil tek kolon kurallarıyla çalışır. Uzun dosya adları ve uzun
+  satırlar kutu dışına çıkmadan kırılır; `Forma Aktar` / `Atla` butonları mobilde düzenli
+  iki kolon davranışı alır. Bu adım backend/DB/schema/root `/` veya public frontend dosyalarına
+  dokunmadı. `scripts/check-frontend.js` bu mobil taşma korumalarını regresyon olarak kontrol
+  eder.
 - **İçe Aktarım Merkezi kalıcı parti yapısına hazırlandı:** `/admin` Arşiv Operasyon Merkezi
   içindeki `İçe Aktarım Merkezi` artık yalnız tarayıcı hafızasında duran geçici kuyruk değil,
   Supabase tabanlı `archive_import_batches` ve `archive_import_items` tablolarıyla kalıcı

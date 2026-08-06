@@ -2,6 +2,15 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` mobil taşması düzeltildi. Uzun DOCX
+  dosya adları, detay başlıkları ve çıkarılan metin önizlemesi artık mobilde yatay scroll
+  oluşturmayacak şekilde kırılır. Import workspace, liste, kart, detay ve önizleme metni
+  `min-width:0`, `max-width:100%`, `overflow-wrap:anywhere` ve mobil tek kolon kurallarıyla
+  korundu. `Forma Aktar` / `Atla` butonları mobilde düzenli iki kolon davranışı alır.
+  Değişen dosyalar: `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Backend/DB/schema/root `/` ve public frontend dirty dosyalarına
+  dokunulmadı. Bu düzeltme için `npm.cmd run check` ve canlı smoke çalıştırılmalıdır.
+
 - `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kalıcı parti yapısına geçirildi.
   Yeni şema `archive_import_batches` ve `archive_import_items` tablolarını içerir. Süper admin
   parti oluşturabilir, dosyaları aktif partiye ekleyebilir, çıkarılmış metni ve durumunu sayfa
