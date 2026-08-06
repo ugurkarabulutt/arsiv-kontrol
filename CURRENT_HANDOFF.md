@@ -12,7 +12,14 @@
   kullanıcı ekranlarına dokunulmadı. DOCX metin çıkarma mevcut `/api/extract-file-text`
   endpoint'iyle çalışır; TXT/MD/CSV/TSV/JSON tarayıcıda okunur.
 - Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. `git diff --check` yalnız mevcut
-  CRLF uyarılarını verdi. Henüz commit/push/deploy yapılmadı.
+  CRLF uyarılarını verdi.
+- Runtime commit `fe2c6a9` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-iyokwtgiv-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archiveImportFiles`,
+  `handleArchiveImportFiles`, `extractArchiveImportDocx`, `sendArchiveImportToSourceForm` ve
+  `DOCX, TXT, MD, CSV, TSV ve JSON` mevcut; eski geçici `adminRouteProbe` yok.
 
 - `/admin` Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi. Yazılı `Aç/Kapat` etiketi
   kaldırıldı; başlık diğer menü satırlarıyla aynı renkte kalır ve açılır menü olduğunu chevron

@@ -128,9 +128,14 @@ tespit edilir).
   tarayıcıda okunur. Dosyalar kalıcı kayda otomatik yazılmaz; önce kuyrukta önizlenir, seçilen
   dosya `Kaynak Kayıtları` formuna aktarılır ve süper admin son kontrol sonrası
   `Kaynak Kaydını Sakla` ile kalıcı kayda alır. Bu adım backend/DB/schema/root `/` veya public
-  frontend dosyalarına dokunmaz. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
-  Bu kayıt ilk olarak yerel/runtime hazırlık notudur; commit/deploy bilgisi production'a
-  alındığında ayrıca yazılmalıdır.
+  frontend dosyalarına dokunmadı. Runtime commit `fe2c6a9` GitHub'a push edildi ve production'a
+  alındı. Production deploy: `https://arsiv-kontrol-iyokwtgiv-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı,
+  86/86 test geçti. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store
+  doğru. Canlı HTML'de `archiveImportFiles`, `handleArchiveImportFiles`,
+  `extractArchiveImportDocx`, `sendArchiveImportToSourceForm` ve `DOCX, TXT, MD, CSV, TSV ve JSON`
+  mevcut; eski geçici `adminRouteProbe` yok.
 - **Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi:** `/admin` mobil ve masaüstü
   menüsünde `Arşiv Operasyon Merkezi` başlığındaki yazılı `Aç/Kapat` etiketi kaldırıldı.
   Başlık artık diğer menü satırlarıyla aynı renkte görünür ve açılır menü olduğunu sade
