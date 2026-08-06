@@ -378,6 +378,23 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-source-title{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;}
 .ops-source-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
 .ops-source-preview{font-size:12px;color:var(--ink2);line-height:1.5;}
+.ops-file-toolbar{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(150px,.7fr) minmax(150px,.7fr);gap:8px;margin-bottom:12px;}
+.ops-file-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:12px;}
+.ops-file-summary-item{background:var(--surface);padding:12px;}
+.ops-file-summary-item strong{display:block;font-size:22px;line-height:1;color:var(--ink);}
+.ops-file-summary-item span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);}
+.ops-folder-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:12px;}
+.ops-folder-card{border:1px solid var(--border);background:var(--surface-strong);padding:12px;text-align:left;color:var(--ink);cursor:pointer;min-width:0;}
+.ops-folder-card:hover{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.ops-folder-title{font-size:13px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;}
+.ops-folder-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-top:5px;}
+.ops-file-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;}
+.ops-file-card{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;color:var(--ink);cursor:pointer;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;}
+.ops-file-card:hover{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.ops-file-icon{width:36px;height:36px;display:grid;place-items:center;border:1px solid rgba(var(--gold-rgb),.35);background:rgba(var(--gold-rgb),.1);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:900;}
+.ops-file-name{font-size:14px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
+.ops-file-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
+.ops-file-preview{font-size:12px;line-height:1.5;color:var(--ink2);margin-top:8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .ops-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
 .ops-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.3);padding:3px 6px;}
 .ops-detail{border:1px solid var(--bord2);background:var(--surface-strong);min-height:360px;min-width:0;max-width:100%;box-sizing:border-box;}
@@ -423,8 +440,8 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:13px;line-height:1.6;max-height:420px;overflow:auto;color:var(--ink2);min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:break-word;}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
-@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-import-layout{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -887,6 +904,7 @@ canvas{width:100%!important;}
         <button class="mobile-menu-label archive-ops-parent" data-tab="archiveOps" onclick="toggleArchiveOpsMenu()"><span>Arşiv Operasyon Merkezi</span><span class="side-caret" aria-hidden="true"></span></button>
         <div class="mobile-subnav">
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="overview" onclick="mArchiveOps('overview')">Genel Bakış</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="files" onclick="mArchiveOps('files')">Dosya Merkezi</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="sources" onclick="mArchiveOps('sources')">Kaynak Kayıtları</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="library" onclick="mArchiveOps('library')">Kaynak Havuzu</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="publishing" onclick="mArchiveOps('publishing')">Yayın Görevleri</button>
@@ -927,6 +945,7 @@ canvas{width:100%!important;}
       <button class="side-link side-group-main archive-ops-parent" data-tab="archiveOps" onclick="toggleArchiveOpsMenu()"><span>Arşiv Operasyon Merkezi</span><span class="side-caret" aria-hidden="true"></span></button>
       <div class="side-subnav">
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="overview" onclick="openArchiveOps('overview')"><span>Genel Bakış</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="files" onclick="openArchiveOps('files')"><span>Dosya Merkezi</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="sources" onclick="openArchiveOps('sources')"><span>Kaynak Kayıtları</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="library" onclick="openArchiveOps('library')"><span>Kaynak Havuzu</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="publishing" onclick="openArchiveOps('publishing')"><span>Yayın Görevleri</span></button>
@@ -1153,6 +1172,42 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="files" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Dosya Merkezi</div>
+            <div class="ops-panel-sub">Kaynakları Drive mantığıyla dosya, klasör, tür ve durum üzerinden hızlıca bulun.</div>
+          </div>
+          <button class="btn-sec" onclick="renderArchiveOpsView('import')">Dosya Ekle</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="ops-file-toolbar">
+            <input class="ops-field" id="archiveFileSearch" placeholder="Dosya, kaynak, kategori, kavram veya metin içinde ara..." oninput="setArchiveFileSearch(this.value)">
+            <select class="ops-field" id="archiveFileTypeFilter" onchange="setArchiveFileFilter()">
+              <option value="">Tüm türler</option>
+              <option value="transkript">Transkript</option>
+              <option value="hadis">Hadis</option>
+              <option value="slayt">Slayt</option>
+              <option value="dokuman">Doküman</option>
+              <option value="standart">Standart</option>
+              <option value="not">Not</option>
+            </select>
+            <select class="ops-field" id="archiveFileStatusFilter" onchange="setArchiveFileFilter()">
+              <option value="">Tüm durumlar</option>
+              <option value="kaynak">Kaynak</option>
+              <option value="hazirlaniyor">Hazırlanıyor</option>
+              <option value="kontrol">Kontrol</option>
+              <option value="arsiv_adayi">Arşiv adayı</option>
+            </select>
+          </div>
+          <div class="ops-file-summary" id="archiveFileSummary"></div>
+          <div class="ops-folder-strip" id="archiveFolderStrip"></div>
+          <div class="ops-file-grid" id="archiveFileGrid">
+            <div class="empty-state">Kaynaklar yükleniyor...</div>
+          </div>
+        </div>
+      </div>
+
       <div class="ops-panel archive-ops-section" data-ops-view="sources" hidden>
         <div class="ops-panel-head">
           <div>
@@ -1238,6 +1293,10 @@ canvas{width:100%!important;}
       </div>
 
       <div class="ops-grid archive-ops-section" data-ops-view="overview">
+        <div class="ops-card">
+          <div class="ops-card-head"><div class="ops-card-title">Dosya Merkezi</div><span class="ops-pill">Yeni</span></div>
+          <p>Kaynak kayıtları Drive benzeri dosya kartları ve klasör başlıklarıyla aranabilir, açılabilir ve düzenleme akışına bağlanabilir.</p>
+        </div>
         <div class="ops-card">
           <div class="ops-card-head"><div class="ops-card-title">Kaynak Havuzu</div><span class="ops-pill">Başladı</span></div>
           <p>YouTube dökümleri, hadis metinleri, slayt metinleri ve standart dokümanları metin olarak kaydedilip aranabilir hale geliyor.</p>
@@ -1627,8 +1686,8 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
-const ARCHIVE_OPS_VIEWS=['overview','sources','library','publishing','work','texts','import','candidates'];
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates'];
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
@@ -1961,7 +2020,8 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     section.hidden=section.getAttribute('data-ops-view')!==archiveOpsState.view;
   });
   updateArchiveOpsNavState();
-  if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
+  if(archiveOpsState.view==='files')loadArchiveOpsSources({ignoreFilters:true});
+  else if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
   if(archiveOpsState.view==='import')loadArchiveImportBatches();
 }
 function openArchiveOps(view='overview'){
@@ -4596,6 +4656,114 @@ function archiveSourceStatsHtml(counts={}){
     <div class="ops-stat"><strong>${byStatus.arsiv_adayi||0}</strong><span>Arşiv adayı</span></div>
   `;
 }
+function archiveFileIcon(sourceType=''){
+  return {transkript:'TR',hadis:'HD',slayt:'SL',dokuman:'DK',standart:'ST',not:'NT'}[sourceType]||'KY';
+}
+function archiveFileFolderName(source){
+  return String(source?.category||archiveSourceTypeLabel(source?.sourceType)||'Genel kaynaklar').trim()||'Genel kaynaklar';
+}
+function archiveFileHaystack(source){
+  return [
+    source?.title,
+    source?.category,
+    source?.sourceType,
+    source?.status,
+    source?.sourceUrl,
+    source?.note,
+    source?.textPreview,
+    ...(source?.tags||[])
+  ].join(' ').toLocaleLowerCase('tr-TR');
+}
+function archiveFileFilteredSources(){
+  const query=String(archiveOpsState.fileQuery||'').trim().toLocaleLowerCase('tr-TR');
+  return (archiveOpsState.sources||[]).filter(source=>{
+    if(archiveOpsState.fileType&&source.sourceType!==archiveOpsState.fileType)return false;
+    if(archiveOpsState.fileStatus&&source.status!==archiveOpsState.fileStatus)return false;
+    if(query&&!archiveFileHaystack(source).includes(query))return false;
+    return true;
+  });
+}
+function archiveFileSummaryHtml(items=[]){
+  const sourceItems=archiveOpsState.sources||[];
+  const folderCount=new Set(items.map(archiveFileFolderName)).size;
+  const candidateCount=items.filter(item=>item.status==='arsiv_adayi').length;
+  return `
+    <div class="ops-file-summary-item"><strong>${sourceItems.length.toLocaleString('tr-TR')}</strong><span>Toplam dosya</span></div>
+    <div class="ops-file-summary-item"><strong>${items.length.toLocaleString('tr-TR')}</strong><span>Görünen dosya</span></div>
+    <div class="ops-file-summary-item"><strong>${folderCount.toLocaleString('tr-TR')}</strong><span>Klasör</span></div>
+    <div class="ops-file-summary-item"><strong>${candidateCount.toLocaleString('tr-TR')}</strong><span>Arşiv adayı</span></div>
+  `;
+}
+function archiveFolderCardsHtml(items=[]){
+  const folders=new Map();
+  items.forEach(source=>{
+    const folder=archiveFileFolderName(source);
+    folders.set(folder,(folders.get(folder)||0)+1);
+  });
+  if(!folders.size)return '<div class="empty-state">Bu filtreye uygun klasör yok.</div>';
+  return [...folders.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'tr')).slice(0,12).map(([folder,count])=>`
+    <button class="ops-folder-card" onclick="setArchiveFileSearch(${attrJson(folder)})">
+      <div class="ops-folder-title">${esc(folder)}</div>
+      <div class="ops-folder-meta">${count.toLocaleString('tr-TR')} dosya</div>
+    </button>
+  `).join('');
+}
+function archiveFileCardHtml(source){
+  const tags=(source.tags||[]).slice(0,3).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
+  return `
+    <button class="ops-file-card" onclick="openArchiveFileSource(${attrJson(source.id)})">
+      <div class="ops-file-icon">${esc(archiveFileIcon(source.sourceType))}</div>
+      <div>
+        <div class="ops-file-name">${esc(source.title||'Başlıksız kaynak')}</div>
+        <div class="ops-file-meta">
+          <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
+          <span>${esc(archiveSourceStatusLabel(source.status))}</span>
+          <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
+        </div>
+        <div class="ops-file-preview">${esc(source.textPreview||'Ön izleme yok.')}</div>
+        ${tags?`<div class="ops-tags">${tags}</div>`:''}
+      </div>
+    </button>
+  `;
+}
+function renderArchiveFileCenter(){
+  const search=el('archiveFileSearch');
+  const type=el('archiveFileTypeFilter');
+  const status=el('archiveFileStatusFilter');
+  if(search&&search.value!==archiveOpsState.fileQuery)search.value=archiveOpsState.fileQuery;
+  if(type&&type.value!==archiveOpsState.fileType)type.value=archiveOpsState.fileType;
+  if(status&&status.value!==archiveOpsState.fileStatus)status.value=archiveOpsState.fileStatus;
+  const items=archiveFileFilteredSources();
+  const summary=el('archiveFileSummary');
+  const folders=el('archiveFolderStrip');
+  const grid=el('archiveFileGrid');
+  if(summary)summary.innerHTML=archiveFileSummaryHtml(items);
+  if(folders)folders.innerHTML=archiveFolderCardsHtml(items);
+  if(!grid)return;
+  if(!archiveOpsState.sources.length){
+    grid.innerHTML='<div class="empty-state">Henüz kaynak dosyası yok. İçe Aktarım Merkezi veya Kaynak Kayıtları ekranından dosya ekleyebilirsiniz.</div>';
+    return;
+  }
+  if(!items.length){
+    grid.innerHTML='<div class="empty-state">Bu aramaya uygun dosya bulunamadı.</div>';
+    return;
+  }
+  grid.innerHTML=items.map(archiveFileCardHtml).join('');
+}
+function setArchiveFileSearch(value){
+  archiveOpsState.fileQuery=String(value||'');
+  renderArchiveFileCenter();
+}
+function setArchiveFileFilter(){
+  archiveOpsState.fileType=el('archiveFileTypeFilter')?.value||'';
+  archiveOpsState.fileStatus=el('archiveFileStatusFilter')?.value||'';
+  renderArchiveFileCenter();
+}
+async function openArchiveFileSource(id){
+  renderArchiveOpsView('library');
+  await openArchiveSource(id);
+  window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
 function archiveSourceConflictDetail(conflicts=[]){
   if(!Array.isArray(conflicts)||!conflicts.length)return 'Benzer kayıt bulundu.';
   return conflicts.slice(0,5).map((item,index)=>{
@@ -4697,22 +4865,25 @@ function renderArchiveSourceDetail(source){
     </div>
   `;
 }
-async function loadArchiveOpsSources(){
+async function loadArchiveOpsSources(options={}){
   if(!canUseArchiveOps())return;
   const params=new URLSearchParams();
-  if(archiveOpsState.query)params.set('q',archiveOpsState.query);
-  if(archiveOpsState.type)params.set('type',archiveOpsState.type);
-  if(archiveOpsState.status)params.set('status',archiveOpsState.status);
+  const useFilters=options.ignoreFilters!==true;
+  if(useFilters&&archiveOpsState.query)params.set('q',archiveOpsState.query);
+  if(useFilters&&archiveOpsState.type)params.set('type',archiveOpsState.type);
+  if(useFilters&&archiveOpsState.status)params.set('status',archiveOpsState.status);
   const list=el('archiveSourceList');
   if(list&&!archiveOpsState.sources.length)list.innerHTML='<div class="empty-state">Kaynaklar yükleniyor...</div>';
   const data=await api('GET',`/api/archive-ops/sources${params.toString()?`?${params}`:''}`);
   if(data.error){
     if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+    if(archiveOpsState.view==='files')renderArchiveFileCenter();
     return;
   }
   archiveOpsState.sources=data.sources||[];
   archiveOpsState.counts=data.counts||null;
   renderArchiveSourceList();
+  if(archiveOpsState.view==='files')renderArchiveFileCenter();
 }
 async function openArchiveSource(id){
   const data=await api('GET',`/api/archive-ops/sources/${encodeURIComponent(id)}`);

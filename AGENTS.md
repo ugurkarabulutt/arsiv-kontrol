@@ -120,6 +120,17 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-07
+- **Arşiv Operasyon Merkezi Dosya Merkezi eklendi:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içine Drive benzeri ilk `Dosya Merkezi` görünümü eklendi. Bu ekran mevcut kaynak
+  kayıtlarını ayrı bir DB/schema gerektirmeden dosya kartları, klasör/kategori grupları,
+  tür ve durum filtreleriyle gösterir. Süper admin dosya, kaynak, kategori, kavram veya
+  metin önizlemesi içinde arama yapabilir; dosya kartına tıklayınca kayıt mevcut Kaynak
+  Havuzu detay ekranında açılır ve mevcut düzenleme/kopyalama akışına bağlanır. Uzun başlık,
+  kategori, etiket ve metin önizlemeleri mobilde taşmayacak şekilde kırılır. Bu adım
+  backend/DB/schema/root `/` veya public frontend hattına dokunmaz. Değişen dosyalar:
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 ### 2026-08-06
 - **İçe Aktarım Merkezi doğrudan kaynak kaydı akışına geçti:** `/admin` Arşiv Operasyon
   Merkezi `İçe Aktarım Merkezi` ekranında dosya eklendikten sonra kaynak oluşturma adımı

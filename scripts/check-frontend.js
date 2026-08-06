@@ -409,6 +409,12 @@ if (
   html.includes("textContent=archiveOpsState.menuOpen?'Kapat':'Aç'") ||
   !html.includes('data-ops-view="sources"') ||
   !html.includes('data-ops-view="library"') ||
+  !html.includes('data-ops-view="files"') ||
+  !html.includes('Dosya Merkezi') ||
+  !html.includes('archiveFileSearch') ||
+  !html.includes('ops-file-grid') ||
+  !html.includes('function renderArchiveFileCenter') ||
+  !html.includes('function openArchiveFileSource') ||
   !html.includes("if(name==='archiveOps')renderArchiveOpsView()") ||
   !html.includes('Benzer kaynak bulundu') ||
   !html.includes('archiveSourceConflictDetail') ||

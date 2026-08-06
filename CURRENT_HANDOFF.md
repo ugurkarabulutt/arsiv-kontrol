@@ -1,5 +1,16 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-07 Codex Güncel Durum
+
+- `/admin` süper admin Arşiv Operasyon Merkezi içine `Dosya Merkezi` görünümü eklendi.
+  Bu ekran mevcut kaynak kayıtlarını Drive benzeri dosya kartları ve klasör/kategori
+  başlıklarıyla gösterir. Arama dosya adı, kaynak başlığı, kategori, kavram/etiket, not ve
+  metin önizlemesi üzerinde çalışır; tür ve durum filtreleri ayrıdır. Kart seçildiğinde
+  ilgili kaynak mevcut Kaynak Havuzu detay ekranında açılır ve düzenleme/kopyalama akışına
+  bağlanır. Kapsam: `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Backend/DB/schema/root `/` ve public frontend dirty dosyalarına
+  dokunulmadı.
+
 ## 2026-08-06 Codex Güncel Durum
 
 - `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kaynak oluşturma akışı sadeleştirildi.
