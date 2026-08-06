@@ -579,6 +579,10 @@ const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
 const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', 'arsiv_adayi'];
+const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
+const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
+const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
+const ARCHIVE_IMPORT_ITEM_STATUSES = ['extracted', 'review', 'form', 'source_created', 'skipped', 'error'];
 const ARCHIVE_SOURCE_DB_LIST_COLUMNS = [
   'id',
   'title',
@@ -603,6 +607,39 @@ const ARCHIVE_SOURCE_DB_LIST_COLUMNS = [
   'conflict_accepted_conflicts'
 ].join(',');
 const ARCHIVE_SOURCE_DB_FULL_COLUMNS = `${ARCHIVE_SOURCE_DB_LIST_COLUMNS},source_text`;
+const ARCHIVE_IMPORT_BATCH_DB_COLUMNS = [
+  'id',
+  'title',
+  'status',
+  'note',
+  'created_by',
+  'updated_by',
+  'created_at',
+  'updated_at'
+].join(',');
+const ARCHIVE_IMPORT_ITEM_DB_LIST_COLUMNS = [
+  'id',
+  'batch_id',
+  'file_name',
+  'file_extension',
+  'file_size',
+  'source_type',
+  'status',
+  'title',
+  'category',
+  'tags',
+  'note',
+  'text_preview',
+  'text_length',
+  'text_hash',
+  'source_id',
+  'error_message',
+  'created_by',
+  'updated_by',
+  'created_at',
+  'updated_at'
+].join(',');
+const ARCHIVE_IMPORT_ITEM_DB_FULL_COLUMNS = `${ARCHIVE_IMPORT_ITEM_DB_LIST_COLUMNS},extracted_text`;
 const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
 const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
@@ -1208,6 +1245,324 @@ async function updateArchiveOpsSource(id, input = {}, actor = 'Sistem') {
     changeKeys: archiveSourceChangeKeys(archiveSourceAuditSnapshot(existing), archiveSourceAuditSnapshot(saved))
   });
   return { source: saved };
+}
+
+function archiveImportBatchId() {
+  return `aib-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function archiveImportItemId() {
+  return `aii-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeArchiveImportBatchStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_IMPORT_BATCH_STATUSES.includes(status) ? status : 'open';
+}
+
+function normalizeArchiveImportItemStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_IMPORT_ITEM_STATUSES.includes(status) ? status : 'extracted';
+}
+
+function archiveImportExtension(name = '') {
+  const clean = String(name || '').trim().toLocaleLowerCase('tr-TR');
+  const parts = clean.split('.');
+  return parts.length > 1 ? parts.pop().slice(0, 20) : '';
+}
+
+function archiveImportBaseTitle(name = '') {
+  return String(name || 'Kaynak dosyası').replace(/\.[^.]+$/, '').trim().slice(0, 180) || 'Kaynak dosyası';
+}
+
+function archiveImportTextHash(text = '') {
+  const comparable = archiveComparableText(text);
+  return comparable ? textHash(comparable) : '';
+}
+
+function requireArchiveImportTables() {
+  if (!HAS_ARCHIVE_IMPORT_TABLES) {
+    throw httpError('Kalıcı içe aktarım tabloları henüz kurulmadı. Supabase SQL uygulandıktan sonra bu alan aktif olur.', 503);
+  }
+}
+
+function archiveImportBatchToDbRow(batch = {}) {
+  return {
+    id: batch.id,
+    title: batch.title || '',
+    status: batch.status || 'open',
+    note: batch.note || '',
+    created_by: batch.createdBy || '',
+    updated_by: batch.updatedBy || '',
+    created_at: batch.createdAt || new Date().toISOString(),
+    updated_at: batch.updatedAt || new Date().toISOString()
+  };
+}
+
+function archiveImportBatchFromDbRow(row = {}, counts = {}) {
+  return {
+    id: row.id,
+    title: row.title || '',
+    status: row.status || 'open',
+    note: row.note || '',
+    createdBy: row.created_by || '',
+    updatedBy: row.updated_by || '',
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+    counts: counts[row.id] || { total: 0, extracted: 0, review: 0, form: 0, source_created: 0, skipped: 0, error: 0 }
+  };
+}
+
+function normalizeArchiveImportBatchInput(input = {}, existing = {}) {
+  const title = String(input.title ?? existing.title ?? '').trim().slice(0, 180);
+  if (!title) throw httpError('İçe aktarım partisi için başlık gerekli.', 400);
+  return {
+    ...existing,
+    title,
+    status: normalizeArchiveImportBatchStatus(input.status ?? existing.status),
+    note: String(input.note ?? existing.note ?? '').trim().slice(0, 1200)
+  };
+}
+
+function archiveImportItemToDbRow(item = {}) {
+  return {
+    id: item.id,
+    batch_id: item.batchId,
+    file_name: item.fileName || '',
+    file_extension: item.fileExtension || archiveImportExtension(item.fileName),
+    file_size: Number(item.fileSize || 0),
+    source_type: item.sourceType || 'dokuman',
+    status: item.status || 'extracted',
+    title: item.title || '',
+    category: item.category || '',
+    tags: Array.isArray(item.tags) ? item.tags : [],
+    note: item.note || '',
+    extracted_text: item.extractedText || '',
+    text_preview: archiveTextPreview(item.extractedText || '', 360),
+    text_length: String(item.extractedText || '').length,
+    text_hash: item.textHash || archiveImportTextHash(item.extractedText),
+    source_id: item.sourceId || null,
+    error_message: item.errorMessage || '',
+    created_by: item.createdBy || '',
+    updated_by: item.updatedBy || '',
+    created_at: item.createdAt || new Date().toISOString(),
+    updated_at: item.updatedAt || new Date().toISOString()
+  };
+}
+
+function archiveImportItemFromDbRow(row = {}, options = {}) {
+  const extractedText = options.full ? String(row.extracted_text || '') : '';
+  return {
+    id: row.id,
+    batchId: row.batch_id,
+    fileName: row.file_name || '',
+    fileExtension: row.file_extension || '',
+    fileSize: Number(row.file_size || 0),
+    sourceType: row.source_type || 'dokuman',
+    status: row.status || 'extracted',
+    title: row.title || '',
+    category: row.category || '',
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    note: row.note || '',
+    extractedText,
+    textPreview: row.text_preview || archiveTextPreview(extractedText, 360),
+    textLength: Number(row.text_length || extractedText.length || 0),
+    textHash: row.text_hash || '',
+    sourceId: row.source_id || '',
+    errorMessage: row.error_message || '',
+    createdBy: row.created_by || '',
+    updatedBy: row.updated_by || '',
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null
+  };
+}
+
+function normalizeArchiveImportItemInput(input = {}, existing = {}) {
+  const fileName = String(input.fileName ?? input.name ?? existing.fileName ?? '').trim().slice(0, 240);
+  const extractedText = String(input.extractedText ?? input.text ?? existing.extractedText ?? '').trim();
+  if (!fileName) throw httpError('Dosya adı gerekli.', 400);
+  const nextStatus = normalizeArchiveImportItemStatus(input.status ?? existing.status);
+  if (!extractedText && !['error', 'skipped'].includes(nextStatus)) {
+    throw httpError('İçe aktarılacak metin gerekli.', 400);
+  }
+  if (extractedText.length > ARCHIVE_SOURCE_TEXT_LIMIT) {
+    throw httpError('İçe aktarılan metin 200.000 karakter sınırını aşıyor.', 413);
+  }
+  const title = String(input.title ?? existing.title ?? archiveImportBaseTitle(fileName)).trim().slice(0, 180) || archiveImportBaseTitle(fileName);
+  return {
+    ...existing,
+    fileName,
+    fileExtension: String(input.fileExtension ?? input.extension ?? existing.fileExtension ?? archiveImportExtension(fileName)).trim().slice(0, 20),
+    fileSize: Number(input.fileSize ?? input.size ?? existing.fileSize ?? 0),
+    sourceType: normalizeArchiveSourceType(input.sourceType ?? existing.sourceType),
+    status: nextStatus,
+    title,
+    category: String(input.category ?? existing.category ?? '').trim().slice(0, 120),
+    tags: normalizeArchiveTags(input.tags ?? existing.tags),
+    note: String(input.note ?? existing.note ?? '').trim().slice(0, 1600),
+    extractedText,
+    textHash: archiveImportTextHash(extractedText),
+    sourceId: input.sourceId ?? existing.sourceId ?? null,
+    errorMessage: String(input.errorMessage ?? existing.errorMessage ?? '').trim().slice(0, 800)
+  };
+}
+
+function publicArchiveImportItem(item = {}, options = {}) {
+  const base = {
+    id: item.id,
+    batchId: item.batchId,
+    fileName: item.fileName,
+    fileExtension: item.fileExtension,
+    fileSize: item.fileSize,
+    sourceType: item.sourceType,
+    status: item.status,
+    title: item.title,
+    category: item.category,
+    tags: item.tags || [],
+    note: item.note || '',
+    textPreview: item.textPreview || archiveTextPreview(item.extractedText || '', 360),
+    textLength: item.textLength || String(item.extractedText || '').length,
+    sourceId: item.sourceId || '',
+    errorMessage: item.errorMessage || '',
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    createdBy: item.createdBy || '',
+    updatedBy: item.updatedBy || ''
+  };
+  if (options.full) base.extractedText = item.extractedText || '';
+  return base;
+}
+
+async function listArchiveImportBatches() {
+  requireArchiveImportTables();
+  const { data, error } = await supabase
+    .from('archive_import_batches')
+    .select(ARCHIVE_IMPORT_BATCH_DB_COLUMNS)
+    .order('updated_at', { ascending: false })
+    .limit(ARCHIVE_IMPORT_BATCH_LIMIT);
+  if (error) throw new Error(error.message);
+
+  const batchIds = (data || []).map(row => row.id);
+  const counts = {};
+  for (const id of batchIds) {
+    counts[id] = { total: 0, extracted: 0, review: 0, form: 0, source_created: 0, skipped: 0, error: 0 };
+  }
+  if (batchIds.length) {
+    const { data: rows, error: itemError } = await supabase
+      .from('archive_import_items')
+      .select('batch_id,status')
+      .in('batch_id', batchIds);
+    if (itemError) throw new Error(itemError.message);
+    for (const row of rows || []) {
+      const bucket = counts[row.batch_id];
+      if (!bucket) continue;
+      bucket.total += 1;
+      const status = normalizeArchiveImportItemStatus(row.status);
+      bucket[status] = (bucket[status] || 0) + 1;
+    }
+  }
+  return (data || []).map(row => archiveImportBatchFromDbRow(row, counts));
+}
+
+async function createArchiveImportBatch(input = {}, actor = 'Sistem') {
+  requireArchiveImportTables();
+  const now = new Date().toISOString();
+  const batch = {
+    id: archiveImportBatchId(),
+    ...normalizeArchiveImportBatchInput(input),
+    createdAt: now,
+    updatedAt: now,
+    createdBy: actor,
+    updatedBy: actor
+  };
+  const { data, error } = await supabase
+    .from('archive_import_batches')
+    .insert(archiveImportBatchToDbRow(batch))
+    .select(ARCHIVE_IMPORT_BATCH_DB_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  return archiveImportBatchFromDbRow(data);
+}
+
+async function getArchiveImportBatch(batchId) {
+  requireArchiveImportTables();
+  const { data: batchRow, error: batchError } = await supabase
+    .from('archive_import_batches')
+    .select(ARCHIVE_IMPORT_BATCH_DB_COLUMNS)
+    .eq('id', batchId)
+    .maybeSingle();
+  if (batchError) throw new Error(batchError.message);
+  if (!batchRow) return null;
+  const { data: itemRows, error: itemError } = await supabase
+    .from('archive_import_items')
+    .select(ARCHIVE_IMPORT_ITEM_DB_FULL_COLUMNS)
+    .eq('batch_id', batchId)
+    .order('updated_at', { ascending: false })
+    .limit(ARCHIVE_IMPORT_ITEM_LIMIT);
+  if (itemError) throw new Error(itemError.message);
+  const batch = archiveImportBatchFromDbRow(batchRow);
+  const items = (itemRows || []).map(row => archiveImportItemFromDbRow(row, { full: true }));
+  batch.counts = items.reduce((acc, item) => {
+    acc.total += 1;
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    return acc;
+  }, { total: 0, extracted: 0, review: 0, form: 0, source_created: 0, skipped: 0, error: 0 });
+  return { batch, items };
+}
+
+async function createArchiveImportItem(batchId, input = {}, actor = 'Sistem') {
+  requireArchiveImportTables();
+  const batch = await getArchiveImportBatch(batchId);
+  if (!batch) return null;
+  const now = new Date().toISOString();
+  const item = {
+    id: archiveImportItemId(),
+    batchId,
+    ...normalizeArchiveImportItemInput(input),
+    createdAt: now,
+    updatedAt: now,
+    createdBy: actor,
+    updatedBy: actor
+  };
+  const { data, error } = await supabase
+    .from('archive_import_items')
+    .insert(archiveImportItemToDbRow(item))
+    .select(ARCHIVE_IMPORT_ITEM_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  await supabase.from('archive_import_batches').update({ updated_at: now, updated_by: actor }).eq('id', batchId);
+  return archiveImportItemFromDbRow(data, { full: true });
+}
+
+async function updateArchiveImportItem(itemId, input = {}, actor = 'Sistem') {
+  requireArchiveImportTables();
+  const { data: existingRow, error: existingError } = await supabase
+    .from('archive_import_items')
+    .select(ARCHIVE_IMPORT_ITEM_DB_FULL_COLUMNS)
+    .eq('id', itemId)
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+  if (!existingRow) return null;
+  const existing = archiveImportItemFromDbRow(existingRow, { full: true });
+  const now = new Date().toISOString();
+  const updated = {
+    ...normalizeArchiveImportItemInput(input, existing),
+    id: existing.id,
+    batchId: existing.batchId,
+    createdAt: existing.createdAt,
+    createdBy: existing.createdBy,
+    updatedAt: now,
+    updatedBy: actor
+  };
+  const { data, error } = await supabase
+    .from('archive_import_items')
+    .update(archiveImportItemToDbRow(updated))
+    .eq('id', itemId)
+    .select(ARCHIVE_IMPORT_ITEM_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  await supabase.from('archive_import_batches').update({ updated_at: now, updated_by: actor }).eq('id', existing.batchId);
+  return archiveImportItemFromDbRow(data, { full: true });
 }
 
 function filterArchiveSources(sources, query = {}) {
@@ -1831,6 +2186,11 @@ async function seed() {
   const { error: archiveEventsErr } = await supabase.from('archive_source_events').select('id').limit(1);
   HAS_ARCHIVE_SOURCE_TABLES = !archiveSourcesErr && !archiveVersionsErr && !archiveEventsErr;
   if (!HAS_ARCHIVE_SOURCE_TABLES) console.warn('⚠ archive source tabloları yok — Arşiv Operasyon Merkezi pilot JSON deposuyla çalışacak.');
+
+  const { error: archiveImportBatchesErr } = await supabase.from('archive_import_batches').select('id').limit(1);
+  const { error: archiveImportItemsErr } = await supabase.from('archive_import_items').select('id').limit(1);
+  HAS_ARCHIVE_IMPORT_TABLES = !archiveImportBatchesErr && !archiveImportItemsErr;
+  if (!HAS_ARCHIVE_IMPORT_TABLES) console.warn('⚠ archive import tabloları yok — kalıcı içe aktarım partileri pasif.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -2231,6 +2591,50 @@ app.put('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res
       });
     }
     res.json({ success: true, source: publicArchiveSource(result.source, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/import-batches', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const batches = await listArchiveImportBatches();
+    res.json({ ready: true, batches });
+  } catch (e) { res.status(e.statusCode || 500).json({ ready: false, error: e.message }); }
+});
+
+app.post('/api/archive-ops/import-batches', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const batch = await createArchiveImportBatch(req.body || {}, actor);
+    res.json({ success: true, batch });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/import-batches/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const result = await getArchiveImportBatch(req.params.id);
+    if (!result) return res.status(404).json({ error: 'İçe aktarım partisi bulunamadı.' });
+    res.json({
+      batch: result.batch,
+      items: result.items.map(item => publicArchiveImportItem(item, { full: true }))
+    });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/import-batches/:id/items', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const item = await createArchiveImportItem(req.params.id, req.body || {}, actor);
+    if (!item) return res.status(404).json({ error: 'İçe aktarım partisi bulunamadı.' });
+    res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.put('/api/archive-ops/import-items/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const item = await updateArchiveImportItem(req.params.id, req.body || {}, actor);
+    if (!item) return res.status(404).json({ error: 'İçe aktarım dosyası bulunamadı.' });
+    res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 

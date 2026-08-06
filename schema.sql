@@ -188,6 +188,48 @@ create table if not exists public.archive_source_events (
 create index if not exists archive_source_events_source_idx on public.archive_source_events (source_id, created_at desc);
 create index if not exists archive_source_events_created_at_idx on public.archive_source_events (created_at desc);
 
+-- archive_import_batches
+create table if not exists public.archive_import_batches (
+  id text primary key,
+  title text not null,
+  status text not null default 'open',
+  note text,
+  created_by text,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists archive_import_batches_status_idx on public.archive_import_batches (status, updated_at desc);
+create index if not exists archive_import_batches_updated_at_idx on public.archive_import_batches (updated_at desc);
+
+-- archive_import_items
+create table if not exists public.archive_import_items (
+  id text primary key,
+  batch_id text references public.archive_import_batches(id) on delete cascade,
+  file_name text not null,
+  file_extension text,
+  file_size bigint not null default 0,
+  source_type text not null default 'dokuman',
+  status text not null default 'extracted',
+  title text,
+  category text,
+  tags jsonb not null default '[]'::jsonb,
+  note text,
+  extracted_text text not null default '',
+  text_preview text,
+  text_length integer not null default 0,
+  text_hash text,
+  source_id text references public.archive_sources(id) on delete set null,
+  error_message text,
+  created_by text,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists archive_import_items_batch_idx on public.archive_import_items (batch_id, updated_at desc);
+create index if not exists archive_import_items_status_idx on public.archive_import_items (status, updated_at desc);
+create index if not exists archive_import_items_text_hash_idx on public.archive_import_items (text_hash);
+
 -- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
 alter table public.alerts add column if not exists feedback_status text default 'open';
 alter table public.alerts add column if not exists resolved_at timestamptz;

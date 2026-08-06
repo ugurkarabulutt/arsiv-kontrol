@@ -431,15 +431,29 @@ if (
   !server.includes("app.get('/api/archive-ops/sources'") ||
   !server.includes("app.post('/api/archive-ops/sources'") ||
   !server.includes("app.put('/api/archive-ops/sources/:id'") ||
+  !server.includes("app.get('/api/archive-ops/import-batches'") ||
+  !server.includes("app.post('/api/archive-ops/import-batches'") ||
+  !server.includes("app.post('/api/archive-ops/import-batches/:id/items'") ||
+  !server.includes("app.put('/api/archive-ops/import-items/:id'") ||
   !server.includes('ARCHIVE_SOURCE_TEXT_LIMIT = 200000') ||
+  !server.includes('HAS_ARCHIVE_IMPORT_TABLES') ||
+  !server.includes('archiveImportBatchToDbRow') ||
+  !server.includes('archiveImportItemToDbRow') ||
   !schema.includes('create table if not exists public.archive_sources') ||
   !schema.includes('create table if not exists public.archive_source_versions') ||
   !schema.includes('create table if not exists public.archive_source_events') ||
+  !schema.includes('create table if not exists public.archive_import_batches') ||
+  !schema.includes('create table if not exists public.archive_import_items') ||
+  !schema.includes('archive_import_items_batch_idx') ||
   !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
   !html.includes('Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı') ||
   !html.includes('archiveImportFiles') ||
   !html.includes('ops-import-workspace') ||
+  !html.includes('archiveImportBatchList') ||
+  !html.includes('createArchiveImportBatch') ||
+  !html.includes('loadArchiveImportBatches') ||
+  !html.includes('archiveImportState.pendingSourceItemId') ||
   !html.includes('function handleArchiveImportFiles') ||
   !html.includes('function extractArchiveImportDocx') ||
   !html.includes("fetch('/api/extract-file-text'") ||

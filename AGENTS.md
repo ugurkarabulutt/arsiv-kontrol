@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **İçe Aktarım Merkezi kalıcı parti yapısına hazırlandı:** `/admin` Arşiv Operasyon Merkezi
+  içindeki `İçe Aktarım Merkezi` artık yalnız tarayıcı hafızasında duran geçici kuyruk değil,
+  Supabase tabanlı `archive_import_batches` ve `archive_import_items` tablolarıyla kalıcı
+  içe aktarım partileri olarak çalışacak şekilde geliştirildi. Süper admin parti oluşturabilir,
+  DOCX/TXT/MD/CSV/TSV/JSON dosyalarını aktif partiye ekleyebilir, çıkarılan metni ve dosya
+  durumunu yenileme sonrası kaybetmeden görebilir. Her dosya `Metin çıkarıldı`, `Kontrol
+  bekliyor`, `Kaynak formuna aktarıldı`, `Kaynak kaydı oluşturuldu`, `Atlandı` veya `Hata var`
+  durumuyla takip edilir. Dosya kaynak formuna aktarıldığında item `form`, kaynak kaydı
+  oluşturulduğunda `source_created` olur. Dosyanın orijinal binary içeriği saklanmaz; çıkarılmış
+  metin, dosya adı, tür, boyut, not ve kaynak bağı saklanır. Kalıcı kullanım için canlı
+  Supabase'de schema.sql içindeki `archive_import_batches` ve `archive_import_items` blokları
+  uygulanmalıdır. Bu adım root `/` public cutover yapmaz ve public frontend hattına dokunmaz.
 - **İçe Aktarım Merkezi dosya kuyruğu eklendi:** `/admin` Arşiv Operasyon Merkezi içindeki
   `İçe Aktarım Merkezi` artık yalnız açıklama ekranı değil, süper adminin birden fazla dosyayı
   içe aktarım kuyruğuna alabileceği ilk çalışma alanını içerir. DOCX dosyaları mevcut

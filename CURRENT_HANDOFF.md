@@ -2,6 +2,19 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kalıcı parti yapısına geçirildi.
+  Yeni şema `archive_import_batches` ve `archive_import_items` tablolarını içerir. Süper admin
+  parti oluşturabilir, dosyaları aktif partiye ekleyebilir, çıkarılmış metni ve durumunu sayfa
+  yenilense de kaybetmeden takip edebilir. Dosya durumları: `extracted`, `review`, `form`,
+  `source_created`, `skipped`, `error`. Kaynak formuna aktarılan dosya `form`, kaynak kaydı
+  oluşturulunca `source_created` olur. Orijinal binary dosya saklanmaz; çıkarılmış metin ve
+  dosya meta bilgileri saklanır.
+- Canlıda kalıcı kullanım için Supabase SQL Editor'de `schema.sql` içindeki
+  `archive_import_batches` ve `archive_import_items` blokları uygulanmalıdır. Tablolar yoksa
+  API kontrollü hata verir; admin/root/public akışları bozulmaz.
+- Değişen dosyalar: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Public frontend dirty dosyalarına dokunulmadı.
+
 - `/admin` Arşiv Operasyon Merkezi içindeki `İçe Aktarım Merkezi` için dosya kuyruğu eklendi.
   Süper admin artık DOCX, TXT, MD, CSV, TSV ve JSON dosyalarını birden fazla seçebilir veya
   alana bırakabilir. Dosyalar kalıcı kayda otomatik yazılmaz; önce kuyrukta önizlenir, seçilen
