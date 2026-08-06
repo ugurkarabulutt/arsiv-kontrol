@@ -121,6 +121,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **İçe Aktarım Merkezi dosya kuyruğu eklendi:** `/admin` Arşiv Operasyon Merkezi içindeki
+  `İçe Aktarım Merkezi` artık yalnız açıklama ekranı değil, süper adminin birden fazla dosyayı
+  içe aktarım kuyruğuna alabileceği ilk çalışma alanını içerir. DOCX dosyaları mevcut
+  `/api/extract-file-text` endpoint'iyle metne çevrilir; TXT, MD, CSV, TSV ve JSON dosyaları
+  tarayıcıda okunur. Dosyalar kalıcı kayda otomatik yazılmaz; önce kuyrukta önizlenir, seçilen
+  dosya `Kaynak Kayıtları` formuna aktarılır ve süper admin son kontrol sonrası
+  `Kaynak Kaydını Sakla` ile kalıcı kayda alır. Bu adım backend/DB/schema/root `/` veya public
+  frontend dosyalarına dokunmaz. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  Bu kayıt ilk olarak yerel/runtime hazırlık notudur; commit/deploy bilgisi production'a
+  alındığında ayrıca yazılmalıdır.
 - **Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi:** `/admin` mobil ve masaüstü
   menüsünde `Arşiv Operasyon Merkezi` başlığındaki yazılı `Aç/Kapat` etiketi kaldırıldı.
   Başlık artık diğer menü satırlarıyla aynı renkte görünür ve açılır menü olduğunu sade

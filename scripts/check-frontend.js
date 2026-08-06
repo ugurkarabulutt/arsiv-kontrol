@@ -437,7 +437,14 @@ if (
   !schema.includes('create table if not exists public.archive_source_events') ||
   !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
-  !html.includes('Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı')
+  !html.includes('Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı') ||
+  !html.includes('archiveImportFiles') ||
+  !html.includes('ops-import-workspace') ||
+  !html.includes('function handleArchiveImportFiles') ||
+  !html.includes('function extractArchiveImportDocx') ||
+  !html.includes("fetch('/api/extract-file-text'") ||
+  !html.includes('function sendArchiveImportToSourceForm') ||
+  !html.includes('DOCX, TXT, MD, CSV, TSV ve JSON')
 ) {
   throw new Error('Arsiv Operasyon Merkezi super admin kaynak kayit akisi ve /admin korumasi ile korunmali.');
 }

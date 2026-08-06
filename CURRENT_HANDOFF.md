@@ -2,6 +2,18 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi içindeki `İçe Aktarım Merkezi` için dosya kuyruğu eklendi.
+  Süper admin artık DOCX, TXT, MD, CSV, TSV ve JSON dosyalarını birden fazla seçebilir veya
+  alana bırakabilir. Dosyalar kalıcı kayda otomatik yazılmaz; önce kuyrukta önizlenir, seçilen
+  dosya `Kaynak Kayıtları` formuna aktarılır ve son kontrol sonrası mevcut
+  `Kaynak Kaydını Sakla` akışıyla kaydedilir.
+- Kapsam dar tutuldu: `index.html`, `scripts/check-frontend.js`, `AGENTS.md` ve
+  `CURRENT_HANDOFF.md` değişti. `server.js`, DB/schema, root `/`, public frontend dosyaları ve
+  kullanıcı ekranlarına dokunulmadı. DOCX metin çıkarma mevcut `/api/extract-file-text`
+  endpoint'iyle çalışır; TXT/MD/CSV/TSV/JSON tarayıcıda okunur.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi. Henüz commit/push/deploy yapılmadı.
+
 - `/admin` Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi. Yazılı `Aç/Kapat` etiketi
   kaldırıldı; başlık diğer menü satırlarıyla aynı renkte kalır ve açılır menü olduğunu chevron
   ok işaretiyle gösterir. Alt başlık seçildiğinde yalnız alt başlık aktif görünür.

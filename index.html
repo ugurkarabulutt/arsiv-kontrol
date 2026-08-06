@@ -387,9 +387,28 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
 .ops-status.err{color:var(--red);}
+.ops-import-workspace{margin-top:18px;border:1px solid var(--bord2);background:var(--surface-strong);}
+.ops-import-drop{border:1px dashed rgba(var(--gold-rgb),.55);background:rgba(var(--gold-rgb),.06);padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.ops-import-drop.drag-over{border-color:var(--ai);background:rgba(var(--ai-rgb),.1);box-shadow:0 0 0 3px rgba(var(--ai-rgb),.1) inset;}
+.ops-import-drop strong{display:block;font-size:15px;color:var(--ink);margin-bottom:4px;}
+.ops-import-drop span{display:block;font-size:13px;color:var(--ink2);line-height:1.55;}
+.ops-import-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.ops-import-status{padding:10px 14px;border-top:1px solid var(--border);}
+.ops-import-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;padding:14px;border-top:1px solid var(--border);}
+.ops-import-list{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;}
+.ops-import-item{border:1px solid var(--border);background:var(--bg);padding:12px;cursor:pointer;color:var(--ink);}
+.ops-import-item:hover,.ops-import-item.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.ops-import-item.error{border-left:3px solid var(--red);}
+.ops-import-item.ready{border-left:3px solid var(--green);}
+.ops-import-name{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:6px;word-break:break-word;}
+.ops-import-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.ops-import-state{font-size:12px;line-height:1.5;color:var(--ink2);}
+.ops-import-state.ok{color:var(--green);}
+.ops-import-state.err{color:var(--red);}
+.ops-import-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:13px;line-height:1.6;max-height:420px;overflow:auto;color:var(--ink2);}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
-@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout{grid-template-columns:1fr}.ops-stats{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}}
+@media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-import-layout{grid-template-columns:1fr}.ops-stats{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1271,6 +1290,28 @@ canvas{width:100%!important;}
           <div class="ops-module-item"><strong>Çakışma kontrolü</strong>Aynı link, aynı metin veya benzer başlıklar işaretlenir.</div>
           <div class="ops-module-item"><strong>Seçerek kayıt</strong>Gerekli satırlar seçilerek sisteme alınır.</div>
         </div>
+        <div class="ops-import-workspace">
+          <div class="ops-import-drop" id="archiveImportDrop" ondragover="archiveImportDrag(event,true)" ondragleave="archiveImportDrag(event,false)" ondrop="handleArchiveImportDrop(event)">
+            <div>
+              <strong>Dosyaları içe aktarım kuyruğuna alın</strong>
+              <span>DOCX, TXT, MD, CSV, TSV ve JSON dosyaları önce önizlemeye düşer. Kayıt oluşmadan önce kaynak formunda son kontrol yapılır.</span>
+            </div>
+            <div class="ops-import-actions">
+              <input id="archiveImportFiles" type="file" multiple hidden accept=".docx,.txt,.md,.csv,.tsv,.json" onchange="handleArchiveImportFiles(this.files);this.value='';">
+              <button class="btn-primary" onclick="triggerArchiveImportPicker()">Dosya Seç</button>
+              <button class="btn-sec" onclick="clearArchiveImportQueue()">Kuyruğu Temizle</button>
+            </div>
+          </div>
+          <div class="ops-import-status ops-status" id="archiveImportStatus">Henüz dosya seçilmedi.</div>
+          <div class="ops-import-layout">
+            <div class="ops-import-list" id="archiveImportQueue">
+              <div class="empty-state">İçe aktarım kuyruğu boş.</div>
+            </div>
+            <div class="ops-detail" id="archiveImportPreview">
+              <div class="empty-state">Bir dosya seçildiğinde çıkarılan metin ve kayıt önerisi burada görünür.</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="ops-module-page archive-ops-section" data-ops-view="candidates" hidden>
@@ -1554,8 +1595,9 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveImportState={items:[],selectedId:null,processing:false};
 const ARCHIVE_OPS_VIEWS=['overview','sources','library','publishing','work','texts','import','candidates'];
+const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=200000;
@@ -1888,6 +1930,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   });
   updateArchiveOpsNavState();
   if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
+  if(archiveOpsState.view==='import')renderArchiveImportQueue();
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
@@ -4738,6 +4781,210 @@ async function saveArchiveSource(forceSave=false,changeConfirmed=false){
     archiveOpsState.sourceSubmitInFlight=false;
   }
   if(retryAfterConfirm)await saveArchiveSource(true);
+}
+
+function archiveImportFileId(){
+  return `imp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+}
+function archiveImportExtension(name=''){
+  const clean=String(name||'').toLowerCase();
+  const parts=clean.split('.');
+  return parts.length>1?parts.pop():'';
+}
+function archiveImportBaseTitle(name=''){
+  return String(name||'Kaynak dosyası').replace(/\.[^.]+$/,'').trim()||'Kaynak dosyası';
+}
+function archiveImportSourceType(name=''){
+  const lower=String(name||'').toLocaleLowerCase('tr-TR');
+  if(lower.includes('hadis'))return 'hadis';
+  if(lower.includes('slayt'))return 'slayt';
+  if(lower.includes('standart'))return 'standart';
+  if(lower.includes('transkript')||lower.includes('döküm')||lower.includes('dokum'))return 'transkript';
+  return 'dokuman';
+}
+function archiveImportKindLabel(item){
+  if(!item)return '';
+  const ext=item.extension?item.extension.toUpperCase():'DOSYA';
+  return `${ext} · ${archiveSourceTypeLabel(item.sourceType)}`;
+}
+function archiveImportSize(size=0){
+  const n=Number(size||0);
+  if(n>=1024*1024)return `${(n/(1024*1024)).toFixed(1)} MB`;
+  if(n>=1024)return `${Math.ceil(n/1024)} KB`;
+  return `${n} B`;
+}
+function setArchiveImportStatus(message='',kind=''){
+  const box=el('archiveImportStatus');
+  if(!box)return;
+  box.textContent=message||'';
+  box.className=`ops-import-status ops-status ${kind||''}`.trim();
+}
+function triggerArchiveImportPicker(){
+  el('archiveImportFiles')?.click();
+}
+function archiveImportDrag(event,active){
+  event.preventDefault();
+  event.currentTarget?.classList.toggle('drag-over',Boolean(active));
+}
+function handleArchiveImportDrop(event){
+  event.preventDefault();
+  event.currentTarget?.classList.remove('drag-over');
+  handleArchiveImportFiles(event.dataTransfer?.files||[]);
+}
+function readArchiveImportLocalText(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(new Error('Dosya okunamadı.'));
+    reader.readAsText(file,'utf-8');
+  });
+}
+async function extractArchiveImportDocx(file){
+  const fd=new FormData();
+  fd.append('file',file);
+  const response=await fetch('/api/extract-file-text',{method:'POST',body:fd,cache:'no-store'});
+  const text=await response.text();
+  let data={};
+  if(text){
+    try{data=JSON.parse(text);}
+    catch{data={error:'Sunucu dosya metnini okuyamadı.'};}
+  }
+  if(!response.ok||data.error)throw new Error(data.error||'Dosya metni çıkarılamadı.');
+  return data.text||'';
+}
+async function extractArchiveImportText(file){
+  const ext=archiveImportExtension(file.name);
+  if(ext==='docx')return extractArchiveImportDocx(file);
+  if(ARCHIVE_IMPORT_TEXT_EXTENSIONS.has(ext))return readArchiveImportLocalText(file);
+  throw new Error('Bu dosya türü için metin çıkarma henüz aktif değil. Şimdilik DOCX, TXT, MD, CSV, TSV veya JSON yükleyin.');
+}
+async function handleArchiveImportFiles(fileList){
+  if(!canUseArchiveOps())return;
+  const files=Array.from(fileList||[]);
+  if(!files.length)return;
+  archiveImportState.processing=true;
+  setArchiveImportStatus(`${files.length} dosya içe aktarım kuyruğuna alınıyor...`);
+  for(const file of files){
+    const id=archiveImportFileId();
+    const item={
+      id,
+      name:file.name||'Kaynak dosyası',
+      size:file.size||0,
+      extension:archiveImportExtension(file.name),
+      sourceType:archiveImportSourceType(file.name),
+      status:'reading',
+      text:'',
+      error:''
+    };
+    archiveImportState.items.unshift(item);
+    archiveImportState.selectedId=id;
+    renderArchiveImportQueue();
+    try{
+      const text=String(await extractArchiveImportText(file)||'').trim();
+      if(!text)throw new Error('Dosyada aktarılacak metin bulunamadı.');
+      if(text.length>200000)throw new Error('Bu kaynak metni 200.000 karakter sınırını aşıyor.');
+      item.text=text;
+      item.status='ready';
+      item.error='';
+    }catch(error){
+      item.status='error';
+      item.error=error?.message||'Dosya içe aktarılamadı.';
+    }
+    renderArchiveImportQueue();
+  }
+  archiveImportState.processing=false;
+  const ready=archiveImportState.items.filter(item=>item.status==='ready').length;
+  const failed=archiveImportState.items.filter(item=>item.status==='error').length;
+  setArchiveImportStatus(`${ready} dosya hazır${failed?`, ${failed} dosya kontrol istiyor`:''}.`,failed?'err':'ok');
+}
+function selectArchiveImportItem(id){
+  archiveImportState.selectedId=id;
+  renderArchiveImportQueue();
+}
+function removeArchiveImportItem(id){
+  archiveImportState.items=archiveImportState.items.filter(item=>item.id!==id);
+  if(archiveImportState.selectedId===id)archiveImportState.selectedId=archiveImportState.items[0]?.id||null;
+  renderArchiveImportQueue();
+  setArchiveImportStatus(archiveImportState.items.length?'Dosya kuyruktan kaldırıldı.':'İçe aktarım kuyruğu boş.');
+}
+function clearArchiveImportQueue(){
+  archiveImportState.items=[];
+  archiveImportState.selectedId=null;
+  renderArchiveImportQueue();
+  setArchiveImportStatus('İçe aktarım kuyruğu temizlendi.');
+}
+function archiveImportItemHtml(item){
+  const active=archiveImportState.selectedId===item.id?' active':'';
+  const stateClass=item.status==='ready'?'ok':item.status==='error'?'err':'';
+  const stateText=item.status==='reading'?'Metin çıkarılıyor...':item.status==='ready'?`${Number(item.text.length||0).toLocaleString('tr-TR')} karakter hazır`:item.error;
+  return `
+    <div class="ops-import-item ${item.status}${active}" role="button" tabindex="0" onclick="selectArchiveImportItem(${attrJson(item.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectArchiveImportItem(${attrJson(item.id)})}">
+      <div class="ops-import-name">${esc(item.name)}</div>
+      <div class="ops-import-meta">
+        <span>${esc(archiveImportKindLabel(item))}</span>
+        <span>${archiveImportSize(item.size)}</span>
+      </div>
+      <div class="ops-import-state ${stateClass}">${esc(stateText)}</div>
+      <div class="ops-source-actions">
+        <button class="btn-mini" onclick="event.stopPropagation();sendArchiveImportToSourceForm(${attrJson(item.id)})" ${item.status==='ready'?'':'disabled'}>Forma Aktar</button>
+        <button class="btn-mini" onclick="event.stopPropagation();removeArchiveImportItem(${attrJson(item.id)})">Kaldır</button>
+      </div>
+    </div>
+  `;
+}
+function renderArchiveImportQueue(){
+  const list=el('archiveImportQueue');
+  const preview=el('archiveImportPreview');
+  if(!list||!preview)return;
+  if(!archiveImportState.items.length){
+    list.innerHTML='<div class="empty-state">İçe aktarım kuyruğu boş.</div>';
+    preview.innerHTML='<div class="empty-state">Bir dosya seçildiğinde çıkarılan metin ve kayıt önerisi burada görünür.</div>';
+    return;
+  }
+  if(!archiveImportState.selectedId||!archiveImportState.items.some(item=>item.id===archiveImportState.selectedId)){
+    archiveImportState.selectedId=archiveImportState.items[0].id;
+  }
+  list.innerHTML=archiveImportState.items.map(archiveImportItemHtml).join('');
+  const selected=archiveImportState.items.find(item=>item.id===archiveImportState.selectedId);
+  if(!selected){
+    preview.innerHTML='<div class="empty-state">Dosya seçilmedi.</div>';
+    return;
+  }
+  const ready=selected.status==='ready';
+  preview.innerHTML=`
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(archiveImportBaseTitle(selected.name))}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveImportKindLabel(selected))}</span>
+          <span>${archiveImportSize(selected.size)}</span>
+          <span>${ready?Number(selected.text.length||0).toLocaleString('tr-TR')+' karakter':esc(selected.status)}</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="sendArchiveImportToSourceForm(${attrJson(selected.id)})" ${ready?'':'disabled'}>Forma Aktar</button>
+    </div>
+    <div class="ops-detail-body">
+      ${selected.status==='error'?`<div class="ops-status err">${esc(selected.error)}</div>`:''}
+      ${selected.status==='reading'?'<div class="ops-status">Metin çıkarılıyor...</div>':''}
+      ${ready?`<p><strong>Kayıt önerisi:</strong> ${esc(archiveSourceTypeLabel(selected.sourceType))} olarak kaynak formuna aktarılacak. Kaydetmeden önce başlık, kategori, etiket ve metin son kez kontrol edilecek.</p><div class="ops-import-preview-text">${esc(selected.text.slice(0,12000))}${selected.text.length>12000?'\n\n... Önizleme ilk 12.000 karakterle sınırlandı. Forma aktarımda tam metin kullanılacak.':''}</div>`:''}
+    </div>
+  `;
+}
+function sendArchiveImportToSourceForm(id){
+  const item=archiveImportState.items.find(entry=>entry.id===id);
+  if(!item||item.status!=='ready')return;
+  clearArchiveSourceForm();
+  el('archiveSourceTitle').value=archiveImportBaseTitle(item.name);
+  el('archiveSourceType').value=item.sourceType||'dokuman';
+  el('archiveSourceStatus').value='kaynak';
+  el('archiveSourceCategory').value='İçe aktarım';
+  el('archiveSourceTags').value='';
+  el('archiveSourceText').value=item.text||'';
+  el('archiveSourceNote').value=`İçe Aktarım Merkezi üzerinden "${item.name}" dosyasından forma alındı. Kalıcı kayıt oluşturmadan önce başlık, kategori, etiket ve metni kontrol edin.`;
+  updateArchiveSourceCount();
+  renderArchiveOpsView('sources');
+  setArchiveOpsStatus('Dosya kaynak formuna aktarıldı. Son kontrol sonrası Kaynak Kaydını Sakla ile kalıcı kayda alınır.','ok');
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function api(method,url,body){
