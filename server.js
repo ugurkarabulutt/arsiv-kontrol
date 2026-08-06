@@ -1565,6 +1565,27 @@ async function updateArchiveImportItem(itemId, input = {}, actor = 'Sistem') {
   return archiveImportItemFromDbRow(data, { full: true });
 }
 
+async function deleteArchiveImportItem(itemId, actor = 'Sistem') {
+  requireArchiveImportTables();
+  const { data: existingRow, error: existingError } = await supabase
+    .from('archive_import_items')
+    .select('id,batch_id')
+    .eq('id', itemId)
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+  if (!existingRow) return null;
+  const { error } = await supabase
+    .from('archive_import_items')
+    .delete()
+    .eq('id', itemId);
+  if (error) throw new Error(error.message);
+  await supabase
+    .from('archive_import_batches')
+    .update({ updated_at: new Date().toISOString(), updated_by: actor })
+    .eq('id', existingRow.batch_id);
+  return { id: existingRow.id, batchId: existingRow.batch_id };
+}
+
 function filterArchiveSources(sources, query = {}) {
   const q = String(query.q || '').trim().toLocaleLowerCase('tr-TR');
   const type = String(query.type || '').trim();
@@ -2635,6 +2656,15 @@ app.put('/api/archive-ops/import-items/:id', auth, admin, superAdmin, async (req
     const item = await updateArchiveImportItem(req.params.id, req.body || {}, actor);
     if (!item) return res.status(404).json({ error: 'İçe aktarım dosyası bulunamadı.' });
     res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.delete('/api/archive-ops/import-items/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const deleted = await deleteArchiveImportItem(req.params.id, actor);
+    if (!deleted) return res.status(404).json({ error: 'İçe aktarım dosyası bulunamadı.' });
+    res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 

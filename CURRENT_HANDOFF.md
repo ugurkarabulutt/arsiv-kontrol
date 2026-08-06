@@ -2,6 +2,17 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kuyruk aksiyonları netleştirildi.
+  `Forma Aktar` yerine `Kaynak Formuna Al`, `Atla` yerine `İşlem Dışı Bırak` kullanılır.
+  `Kaynak Formuna Al` yalnız dosya metnini kaynak kayıt formuna taşır; kalıcı kayıt için
+  formdaki `Kaynak Kaydını Sakla` gerekir. Yanlış eklenen dosyalar için gerçek
+  `Kuyruktan Sil` işlemi eklendi. Bu işlem yalnız içe aktarım kuyruğundaki
+  `archive_import_items` satırını kaldırır; varsa oluşturulmuş kaynak kaydını silmez.
+  Backend'e süper admin korumalı `DELETE /api/archive-ops/import-items/:id` rotası eklendi.
+  Kapsam: `index.html`, `server.js`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Public frontend dirty dosyalarına ve root `/` public cutover'a
+  dokunulmadı. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+
 - `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` mobil taşması düzeltildi. Uzun DOCX
   dosya adları, detay başlıkları ve çıkarılan metin önizlemesi artık mobilde yatay scroll
   oluşturmayacak şekilde kırılır. Import workspace, liste, kart, detay ve önizleme metni

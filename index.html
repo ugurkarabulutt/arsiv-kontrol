@@ -418,7 +418,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-import-layout{grid-template-columns:1fr}.ops-stats{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1314,12 +1314,12 @@ canvas{width:100%!important;}
           <div class="ops-import-drop" id="archiveImportDrop" ondragover="archiveImportDrag(event,true)" ondragleave="archiveImportDrag(event,false)" ondrop="handleArchiveImportDrop(event)">
             <div>
               <strong>Dosyaları içe aktarım kuyruğuna alın</strong>
-              <span>DOCX, TXT, MD, CSV, TSV ve JSON dosyaları aktif partiye kaydedilir. Kayıt oluşmadan önce kaynak formunda son kontrol yapılır.</span>
+              <span>Dosya seçildiğinde metin çıkarılır. Kaynak oluşturmak için önce Kaynak Formuna Al, sonra formda Kaynak Kaydını Sakla kullanılır. Yanlış dosyayı Kuyruktan Sil ile kaldırabilirsiniz.</span>
             </div>
             <div class="ops-import-actions">
               <input id="archiveImportFiles" type="file" multiple hidden accept=".docx,.txt,.md,.csv,.tsv,.json" onchange="handleArchiveImportFiles(this.files);this.value='';">
               <button class="btn-primary" onclick="triggerArchiveImportPicker()">Dosya Seç</button>
-              <button class="btn-sec" onclick="clearArchiveImportQueue()">Partiyi Yenile</button>
+              <button class="btn-sec" onclick="clearArchiveImportQueue()">Listeyi Yenile</button>
             </div>
           </div>
           <div class="ops-import-status ops-status" id="archiveImportStatus">Henüz dosya seçilmedi.</div>
@@ -4853,7 +4853,7 @@ function archiveImportItemStatusLabel(status){
     review:'Kontrol bekliyor',
     form:'Kaynak formuna aktarıldı',
     source_created:'Kaynak kaydı oluşturuldu',
-    skipped:'Atlandı',
+    skipped:'İşlem dışı bırakıldı',
     error:'Hata var'
   }[status]||'Metin çıkarıldı';
 }
@@ -5065,6 +5065,9 @@ function selectArchiveImportItem(id){
   archiveImportState.selectedId=id;
   renderArchiveImportQueue();
 }
+function archiveImportCanTransfer(item){
+  return ['extracted','review','form','skipped'].includes(item?.status);
+}
 async function updateArchiveImportItemStatus(id,status,extra={}){
   const current=archiveImportState.items.find(item=>item.id===id);
   if(!current)return null;
@@ -5087,9 +5090,40 @@ async function updateArchiveImportItemStatus(id,status,extra={}){
   renderArchiveImportQueue();
   return data.item;
 }
-async function removeArchiveImportItem(id){
+async function skipArchiveImportItem(id){
   await updateArchiveImportItemStatus(id,'skipped');
-  setArchiveImportStatus('Dosya atlandı. Kayıt silinmedi; partide atlandı olarak kalır.','ok');
+  setArchiveImportStatus('Dosya işlem dışı bırakıldı. Silinmedi; isterseniz tekrar kaynak formuna alabilir veya kuyruktan silebilirsiniz.','ok');
+}
+async function deleteArchiveImportItem(id){
+  const item=archiveImportState.items.find(entry=>entry.id===id);
+  if(!item)return;
+  const ok=await openSystemConfirm({
+    title:'Dosya kuyruktan silinsin mi?',
+    badge:'İçe aktarım',
+    message:`${item.fileName||item.name||'Bu dosya'} içe aktarım kuyruğundan kaldırılacak.`,
+    detail:'Bu işlem yalnız içe aktarım listesindeki dosya satırını siler. Eğer bu dosyadan ayrıca kaynak kaydı oluşturulduysa kaynak kaydı silinmez.',
+    confirmText:'Kuyruktan Sil',
+    cancelText:'Vazgeç',
+    tone:'danger'
+  });
+  if(!ok)return;
+  if(String(id).startsWith('tmp-')){
+    archiveImportState.items=archiveImportState.items.filter(entry=>entry.id!==id);
+    if(archiveImportState.selectedId===id)archiveImportState.selectedId=archiveImportState.items[0]?.id||null;
+    renderArchiveImportQueue();
+    setArchiveImportStatus('Dosya içe aktarım kuyruğundan silindi.','ok');
+    return;
+  }
+  const data=await api('DELETE',`/api/archive-ops/import-items/${encodeURIComponent(id)}`);
+  if(data.error){
+    setArchiveImportStatus(data.error,'err');
+    return;
+  }
+  archiveImportState.items=archiveImportState.items.filter(entry=>entry.id!==id);
+  if(archiveImportState.selectedId===id)archiveImportState.selectedId=archiveImportState.items[0]?.id||null;
+  renderArchiveImportQueue();
+  if(archiveImportState.activeBatchId)await loadArchiveImportBatches();
+  setArchiveImportStatus('Dosya içe aktarım kuyruğundan silindi.','ok');
 }
 function clearArchiveImportQueue(){
   if(archiveImportState.activeBatchId)loadArchiveImportBatchDetail(archiveImportState.activeBatchId);
@@ -5097,7 +5131,8 @@ function clearArchiveImportQueue(){
 }
 function archiveImportItemHtml(item){
   const active=archiveImportState.selectedId===item.id?' active':'';
-  const isReady=['extracted','review','form'].includes(item.status);
+  const isReady=archiveImportCanTransfer(item);
+  const canSkip=!['source_created','skipped','reading'].includes(item.status);
   const stateClass=item.status==='source_created'?'ok':item.status==='error'||item.status==='skipped'?'err':isReady?'ok':'';
   const length=Number(item.textLength||item.extractedText?.length||0);
   const stateText=item.status==='reading'?'Metin çıkarılıyor...':item.status==='error'?item.errorMessage:`${archiveImportItemStatusLabel(item.status)}${length?` · ${length.toLocaleString('tr-TR')} karakter`:''}`;
@@ -5110,8 +5145,9 @@ function archiveImportItemHtml(item){
       </div>
       <div class="ops-import-state ${stateClass}">${esc(stateText)}</div>
       <div class="ops-source-actions">
-        <button class="btn-mini" onclick="event.stopPropagation();sendArchiveImportToSourceForm(${attrJson(item.id)})" ${isReady?'':'disabled'}>Forma Aktar</button>
-        <button class="btn-mini" onclick="event.stopPropagation();removeArchiveImportItem(${attrJson(item.id)})" ${item.status==='source_created'?'disabled':''}>Atla</button>
+        <button class="btn-mini" onclick="event.stopPropagation();sendArchiveImportToSourceForm(${attrJson(item.id)})" ${isReady?'':'disabled'}>Kaynak Formuna Al</button>
+        <button class="btn-mini" onclick="event.stopPropagation();skipArchiveImportItem(${attrJson(item.id)})" ${canSkip?'':'disabled'}>İşlem Dışı Bırak</button>
+        <button class="btn-mini" onclick="event.stopPropagation();deleteArchiveImportItem(${attrJson(item.id)})">Kuyruktan Sil</button>
       </div>
     </div>
   `;
@@ -5134,8 +5170,7 @@ function renderArchiveImportQueue(){
     preview.innerHTML='<div class="empty-state">Dosya seçilmedi.</div>';
     return;
   }
-  const ready=selected.status==='ready';
-  const canTransfer=['extracted','review','form'].includes(selected.status);
+  const canTransfer=archiveImportCanTransfer(selected);
   const text=selected.extractedText||selected.text||'';
   const fileName=selected.fileName||selected.name||'Kaynak dosyası';
   preview.innerHTML=`
@@ -5149,20 +5184,23 @@ function renderArchiveImportQueue(){
           <span>${Number(selected.textLength||text.length||0).toLocaleString('tr-TR')} karakter</span>
         </div>
       </div>
-      <button class="btn-mini" onclick="sendArchiveImportToSourceForm(${attrJson(selected.id)})" ${canTransfer?'':'disabled'}>Forma Aktar</button>
+      <div class="ops-source-actions" style="margin-top:0">
+        <button class="btn-mini" onclick="sendArchiveImportToSourceForm(${attrJson(selected.id)})" ${canTransfer?'':'disabled'}>Kaynak Formuna Al</button>
+        <button class="btn-mini" onclick="deleteArchiveImportItem(${attrJson(selected.id)})">Kuyruktan Sil</button>
+      </div>
     </div>
     <div class="ops-detail-body">
       ${selected.status==='error'?`<div class="ops-status err">${esc(selected.errorMessage)}</div>`:''}
-      ${selected.status==='skipped'?'<div class="ops-status err">Bu dosya atlandı. Gerekirse tekrar forma aktarılabilir.</div>':''}
+      ${selected.status==='skipped'?'<div class="ops-status err">Bu dosya işlem dışı bırakıldı. İsterseniz kaynak formuna alabilir veya kuyruktan silebilirsiniz.</div>':''}
       ${selected.status==='source_created'?'<div class="ops-status ok">Bu dosyadan kaynak kaydı oluşturuldu.</div>':''}
       ${selected.status==='reading'?'<div class="ops-status">Metin çıkarılıyor...</div>':''}
-      ${text?`<p class="ops-import-suggestion"><strong>Kayıt önerisi:</strong> ${esc(archiveSourceTypeLabel(selected.sourceType))} olarak kaynak formuna aktarılacak. Kaynak kaydı oluştuğunda bu dosya aynı partide tamamlandı olarak işaretlenir.</p><div class="ops-import-preview-text">${esc(text.slice(0,12000))}${text.length>12000?'\n\n... Önizleme ilk 12.000 karakterle sınırlandı. Forma aktarımda tam metin kullanılacak.':''}</div>`:''}
+      ${text?`<p class="ops-import-suggestion"><strong>Kayıt adımı:</strong> Bu dosya önce kaynak formuna alınır. Kaynak kaydı oluşturmak için formdaki <strong>Kaynak Kaydını Sakla</strong> butonuna basmanız gerekir. Yanlış dosyaysa <strong>Kuyruktan Sil</strong> ile kaldırabilirsiniz.</p><div class="ops-import-preview-text">${esc(text.slice(0,12000))}${text.length>12000?'\n\n... Önizleme ilk 12.000 karakterle sınırlandı. Kaynak formuna aktarımda tam metin kullanılacak.':''}</div>`:''}
     </div>
   `;
 }
 async function sendArchiveImportToSourceForm(id){
   const item=archiveImportState.items.find(entry=>entry.id===id);
-  if(!item||!['extracted','review','form'].includes(item.status))return;
+  if(!item||!archiveImportCanTransfer(item))return;
   const text=item.extractedText||item.text||'';
   clearArchiveSourceForm();
   el('archiveSourceTitle').value=item.title||archiveImportBaseTitle(item.fileName||item.name);

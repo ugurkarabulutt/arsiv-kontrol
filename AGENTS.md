@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **İçe Aktarım Merkezi kuyruk aksiyonları netleştirildi:** `/admin` Arşiv Operasyon Merkezi
+  `İçe Aktarım Merkezi` ekranında `Forma Aktar` ve `Atla` etiketleri kullanıcı açısından
+  belirsiz bulundu. Akış şu şekilde ayrıştırıldı: `Kaynak Formuna Al` dosya metnini kaynak
+  kayıt formuna taşır ama tek başına kayıt oluşturmaz; kalıcı kaynak kaydı için formdaki
+  `Kaynak Kaydını Sakla` kullanılır. `İşlem Dışı Bırak` dosyayı silmeden partide pasif duruma
+  alır. Yanlış eklenen dosyalar için gerçek `Kuyruktan Sil` işlemi eklendi; bu işlem yalnız
+  `archive_import_items` satırını kaldırır, varsa oluşturulmuş kaynak kaydını silmez. Silme
+  işlemi sistem temalı onay penceresiyle korunur; henüz DB'ye yazılmamış geçici okuma satırları
+  API çağırmadan ekrandan kaldırılır. Backend'e süper admin korumalı
+  `DELETE /api/archive-ops/import-items/:id` endpoint'i eklendi. Doğrulama:
+  `npm.cmd run check` başarılı, 86/86 test geçti.
 - **İçe Aktarım Merkezi mobil taşma düzeltildi:** `/admin` Arşiv Operasyon Merkezi içindeki
   `İçe Aktarım Merkezi` mobil görünümünde uzun DOCX dosya adları, dosya detay başlığı ve
   çıkarılan metin önizlemesi ekran genişliğini taşırarak yatay kaydırma oluşturuyordu.

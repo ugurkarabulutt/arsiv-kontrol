@@ -435,10 +435,12 @@ if (
   !server.includes("app.post('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches/:id/items'") ||
   !server.includes("app.put('/api/archive-ops/import-items/:id'") ||
+  !server.includes("app.delete('/api/archive-ops/import-items/:id'") ||
   !server.includes('ARCHIVE_SOURCE_TEXT_LIMIT = 200000') ||
   !server.includes('HAS_ARCHIVE_IMPORT_TABLES') ||
   !server.includes('archiveImportBatchToDbRow') ||
   !server.includes('archiveImportItemToDbRow') ||
+  !server.includes('deleteArchiveImportItem') ||
   !schema.includes('create table if not exists public.archive_sources') ||
   !schema.includes('create table if not exists public.archive_source_versions') ||
   !schema.includes('create table if not exists public.archive_source_events') ||
@@ -447,7 +449,7 @@ if (
   !schema.includes('archive_import_items_batch_idx') ||
   !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
-  !html.includes('Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı') ||
+  !html.includes('id="archiveSourceText"') ||
   !html.includes('archiveImportFiles') ||
   !html.includes('ops-import-workspace') ||
   !html.includes('archiveImportBatchList') ||
@@ -458,6 +460,11 @@ if (
   !html.includes('function extractArchiveImportDocx') ||
   !html.includes("fetch('/api/extract-file-text'") ||
   !html.includes('function sendArchiveImportToSourceForm') ||
+  !html.includes('function skipArchiveImportItem') ||
+  !html.includes('function deleteArchiveImportItem') ||
+  !html.includes("api('DELETE',`/api/archive-ops/import-items/") ||
+  !html.includes("tone:'danger'") ||
+  !html.includes('archiveImportCanTransfer') ||
   !html.includes('.ops-import-workspace{margin-top:18px') ||
   !html.includes('overflow-x:hidden') ||
   !html.includes('.ops-import-preview-text{white-space:pre-wrap') ||
@@ -466,7 +473,8 @@ if (
   !html.includes('.ops-source-meta span,.ops-import-meta span') ||
   !html.includes('ops-import-suggestion') ||
   !html.includes('.ops-import-layout{padding:10px;gap:10px') ||
-  !html.includes('DOCX, TXT, MD, CSV, TSV ve JSON')
+  !html.includes('ARCHIVE_IMPORT_TEXT_EXTENSIONS') ||
+  !html.includes('accept=".docx,.txt,.md,.csv,.tsv,.json"')
 ) {
   throw new Error('Arsiv Operasyon Merkezi super admin kaynak kayit akisi ve /admin korumasi ile korunmali.');
 }
