@@ -5,6 +5,10 @@
 - `/admin` Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi. Yazılı `Aç/Kapat` etiketi
   kaldırıldı; başlık diğer menü satırlarıyla aynı renkte kalır ve açılır menü olduğunu chevron
   ok işaretiyle gösterir. Alt başlık seçildiğinde yalnız alt başlık aktif görünür.
+- Runtime commit `2196c27` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-5oux56oks-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı HTML'de chevron CSS'i mevcut, yazılı `Aç` span'ı ve
+  eski `Aç/Kapat` text swap kodu yok.
 
 - `/admin` Arşiv Operasyon Merkezi menüsü kapalı/açılır hale getirildi. Mobil ve masaüstü
   menüde önce yalnız ana başlık görünür; ana başlığa tıklanınca alt başlıklar açılır, tekrar

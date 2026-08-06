@@ -127,8 +127,12 @@ tespit edilir).
   chevron ok işaretiyle anlatır. Alt başlıklar seçildiğinde yalnız alt başlık aktif görünür;
   ana başlık menüde farklı renge dönmez. Bu adımda backend/DB/schema/root `/` değişmedi,
   süper admin rol mimarisi değiştirilmedi ve public frontend dosyalarına dokunulmadı.
-  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Production deploy henüz
-  yapılmadı.
+  Runtime commit `2196c27` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-5oux56oks-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  manifest, `sw.js` ve favicon başarılı. Canlı HTML'de chevron CSS'i mevcut, yazılı `Aç`
+  span'ı ve eski `Aç/Kapat` text swap kodu yok; eski geçici `adminRouteProbe` yok.
 - **Arşiv Operasyon Merkezi menüsü kapalı/açılır hale getirildi:** `/admin` içindeki
   süper admin `Arşiv Operasyon Merkezi` alt başlıkları artık menü açıldığında doğrudan
   uzun liste olarak görünmez. Mobil ve masaüstü menüde önce yalnız ana başlık görünür;
