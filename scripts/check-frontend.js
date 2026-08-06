@@ -404,6 +404,9 @@ if (
   !html.includes("archiveOpsState.menuOpen=false") ||
   !html.includes('.archive-ops-menu-group') ||
   !html.includes('.mobile-menu-group:not(.open) .mobile-subnav') ||
+  !html.includes('border-right:1.5px solid currentColor') ||
+  html.includes('<span class="side-caret">Aç</span>') ||
+  html.includes("textContent=archiveOpsState.menuOpen?'Kapat':'Aç'") ||
   !html.includes('data-ops-view="sources"') ||
   !html.includes('data-ops-view="library"') ||
   !html.includes("if(name==='archiveOps')renderArchiveOpsView()") ||

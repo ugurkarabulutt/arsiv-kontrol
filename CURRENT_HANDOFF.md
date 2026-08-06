@@ -2,6 +2,10 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi. Yazılı `Aç/Kapat` etiketi
+  kaldırıldı; başlık diğer menü satırlarıyla aynı renkte kalır ve açılır menü olduğunu chevron
+  ok işaretiyle gösterir. Alt başlık seçildiğinde yalnız alt başlık aktif görünür.
+
 - `/admin` Arşiv Operasyon Merkezi menüsü kapalı/açılır hale getirildi. Mobil ve masaüstü
   menüde önce yalnız ana başlık görünür; ana başlığa tıklanınca alt başlıklar açılır, tekrar
   tıklanınca kapanır. Bu adımda `index.html`, `scripts/check-frontend.js`, `AGENTS.md` ve

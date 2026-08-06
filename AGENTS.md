@@ -121,6 +121,14 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Arşiv Operasyon Merkezi açılır başlığı sadeleştirildi:** `/admin` mobil ve masaüstü
+  menüsünde `Arşiv Operasyon Merkezi` başlığındaki yazılı `Aç/Kapat` etiketi kaldırıldı.
+  Başlık artık diğer menü satırlarıyla aynı renkte görünür ve açılır menü olduğunu sade
+  chevron ok işaretiyle anlatır. Alt başlıklar seçildiğinde yalnız alt başlık aktif görünür;
+  ana başlık menüde farklı renge dönmez. Bu adımda backend/DB/schema/root `/` değişmedi,
+  süper admin rol mimarisi değiştirilmedi ve public frontend dosyalarına dokunulmadı.
+  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Production deploy henüz
+  yapılmadı.
 - **Arşiv Operasyon Merkezi menüsü kapalı/açılır hale getirildi:** `/admin` içindeki
   süper admin `Arşiv Operasyon Merkezi` alt başlıkları artık menü açıldığında doğrudan
   uzun liste olarak görünmez. Mobil ve masaüstü menüde önce yalnız ana başlık görünür;
