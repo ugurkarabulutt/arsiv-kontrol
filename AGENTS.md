@@ -134,7 +134,14 @@ tespit edilir).
   `schema.sql` içindeki `archive_work_items` bloğu Supabase SQL Editor'de uygulanmalıdır.
   Bu adım root `/` public cutover yapmaz ve public frontend dosyalarını kapsamaz. Değişen
   dosyalar: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
-  `AGENTS.md`, `CURRENT_HANDOFF.md`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Runtime commit `aa4c291` GitHub'a push edildi ve temiz
+  `git archive HEAD` deploy kaynağıyla production'a alındı. Production deploy:
+  `https://arsiv-kontrol-frwabikcb-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_2VDgMUsiq8YxyDhrxJKbsfm1gjb7`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti; temiz deploy klasöründe
+  `node --check server.js` ve `node scripts/check-frontend.js` başarılı. Vercel inspect
+  deploy durumunu `Ready` gösterdi. Bu ortamdan canlı HTTP smoke istekleri bağlantı seviyesinde
+  açılamadı; kullanıcı tarayıcı testiyle ayrıca doğrulanmalıdır.
 - **Arşiv Operasyon Merkezi Dosya Merkezi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içine Drive benzeri ilk `Dosya Merkezi` görünümü eklendi. Bu ekran mevcut kaynak
   kayıtlarını ayrı bir DB/schema gerektirmeden dosya kartları, klasör/kategori grupları,
