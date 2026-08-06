@@ -121,6 +121,73 @@ create index if not exists ai_reports_created_at_idx on public.ai_reports (creat
 create index if not exists ai_reports_period_idx on public.ai_reports (period, created_at desc);
 create unique index if not exists ai_reports_period_range_idx on public.ai_reports (period, period_start, period_end);
 
+-- archive_sources
+create table if not exists public.archive_sources (
+  id text primary key,
+  title text not null,
+  source_type text not null default 'dokuman',
+  status text not null default 'kaynak',
+  category text,
+  source_date timestamptz,
+  source_url text,
+  tags jsonb not null default '[]'::jsonb,
+  note text,
+  source_text text not null,
+  text_preview text,
+  text_length integer not null default 0,
+  source_text_hash text,
+  title_key text,
+  source_url_key text,
+  search_blob text,
+  created_by text,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  conflict_accepted_at timestamptz,
+  conflict_accepted_by text,
+  conflict_accepted_conflicts jsonb not null default '[]'::jsonb
+);
+create index if not exists archive_sources_updated_at_idx on public.archive_sources (updated_at desc);
+create index if not exists archive_sources_type_status_idx on public.archive_sources (source_type, status);
+create index if not exists archive_sources_text_hash_idx on public.archive_sources (source_text_hash);
+create index if not exists archive_sources_url_key_idx on public.archive_sources (source_url_key);
+create index if not exists archive_sources_title_type_idx on public.archive_sources (title_key, source_type);
+
+alter table public.archive_sources add column if not exists text_preview text;
+alter table public.archive_sources add column if not exists text_length integer not null default 0;
+alter table public.archive_sources add column if not exists search_blob text;
+alter table public.archive_sources add column if not exists conflict_accepted_at timestamptz;
+alter table public.archive_sources add column if not exists conflict_accepted_by text;
+alter table public.archive_sources add column if not exists conflict_accepted_conflicts jsonb not null default '[]'::jsonb;
+
+-- archive_source_versions
+create table if not exists public.archive_source_versions (
+  id uuid primary key default gen_random_uuid(),
+  source_id text references public.archive_sources(id) on delete cascade,
+  version_no integer not null,
+  event_type text not null default 'update',
+  snapshot jsonb not null default '{}'::jsonb,
+  previous_snapshot jsonb,
+  change_keys jsonb not null default '[]'::jsonb,
+  created_by text,
+  created_at timestamptz not null default now()
+);
+create unique index if not exists archive_source_versions_source_version_idx on public.archive_source_versions (source_id, version_no);
+create index if not exists archive_source_versions_source_idx on public.archive_source_versions (source_id, created_at desc);
+
+-- archive_source_events
+create table if not exists public.archive_source_events (
+  id uuid primary key default gen_random_uuid(),
+  source_id text references public.archive_sources(id) on delete set null,
+  event_type text not null,
+  actor text,
+  summary text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists archive_source_events_source_idx on public.archive_source_events (source_id, created_at desc);
+create index if not exists archive_source_events_created_at_idx on public.archive_source_events (created_at desc);
+
 -- Mevcut bir veritabanına sonradan eklemek için (alerts zaten varsa):
 alter table public.alerts add column if not exists feedback_status text default 'open';
 alter table public.alerts add column if not exists resolved_at timestamptz;

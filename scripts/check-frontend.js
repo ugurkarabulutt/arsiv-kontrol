@@ -3,6 +3,7 @@ const path = require('path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+const schema = fs.readFileSync(path.join(__dirname, '..', 'schema.sql'), 'utf8');
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
 const script = html.match(/<script>([\s\S]*?)<\/script>/);
 const root = path.join(__dirname, '..');
@@ -404,13 +405,25 @@ if (
   !html.includes('sourceSubmitInFlight') ||
   !html.includes("return {...data,error:data.error||") ||
   !server.includes('ARCHIVE_OPS_SOURCES_KEY') ||
+  !server.includes('HAS_ARCHIVE_SOURCE_TABLES') ||
+  !server.includes('archiveSourceToDbRow') ||
+  !server.includes('archiveSourceFromDbRow') ||
+  !server.includes('ensureArchiveSourcesMigratedFromSettings') ||
+  !server.includes('insertArchiveSourceVersion') ||
+  !server.includes('archive_source_versions') ||
+  !server.includes('archive_source_events') ||
   !server.includes('findArchiveSourceConflicts') ||
+  !server.includes('findArchiveSourceConflictsDb') ||
   !server.includes('archiveSourceFingerprint') ||
   !server.includes('input.forceSave !== true') ||
   !server.includes("app.get('/api/archive-ops/sources'") ||
   !server.includes("app.post('/api/archive-ops/sources'") ||
   !server.includes("app.put('/api/archive-ops/sources/:id'") ||
   !server.includes('ARCHIVE_SOURCE_TEXT_LIMIT = 200000') ||
+  !schema.includes('create table if not exists public.archive_sources') ||
+  !schema.includes('create table if not exists public.archive_source_versions') ||
+  !schema.includes('create table if not exists public.archive_source_events') ||
+  !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
   !html.includes('Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı')
 ) {

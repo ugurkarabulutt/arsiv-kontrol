@@ -579,6 +579,30 @@ const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
 const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', 'arsiv_adayi'];
+const ARCHIVE_SOURCE_DB_LIST_COLUMNS = [
+  'id',
+  'title',
+  'source_type',
+  'status',
+  'category',
+  'source_date',
+  'source_url',
+  'tags',
+  'note',
+  'text_preview',
+  'text_length',
+  'source_text_hash',
+  'title_key',
+  'source_url_key',
+  'created_at',
+  'updated_at',
+  'created_by',
+  'updated_by',
+  'conflict_accepted_at',
+  'conflict_accepted_by',
+  'conflict_accepted_conflicts'
+].join(',');
+const ARCHIVE_SOURCE_DB_FULL_COLUMNS = `${ARCHIVE_SOURCE_DB_LIST_COLUMNS},source_text`;
 const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
 const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
@@ -693,6 +717,75 @@ function archiveSourceUrlKey(value = '') {
   return String(value || '').trim().replace(/\/+$/, '').toLocaleLowerCase('tr-TR').slice(0, 700);
 }
 
+function buildArchiveSourceSearchBlob(source = {}) {
+  return [
+    source.title,
+    source.sourceType,
+    source.status,
+    source.category,
+    source.sourceUrl,
+    source.note,
+    ...(Array.isArray(source.tags) ? source.tags : []),
+    source.sourceText
+  ].join(' ').replace(/\s+/g, ' ').trim().slice(0, ARCHIVE_SOURCE_TEXT_LIMIT + 4000);
+}
+
+function archiveSourceToDbRow(source = {}) {
+  return {
+    id: source.id,
+    title: source.title || '',
+    source_type: source.sourceType || 'dokuman',
+    status: source.status || 'kaynak',
+    category: source.category || '',
+    source_date: source.sourceDate || null,
+    source_url: source.sourceUrl || '',
+    tags: Array.isArray(source.tags) ? source.tags : [],
+    note: source.note || '',
+    source_text: source.sourceText || '',
+    text_preview: archiveTextPreview(source.sourceText || ''),
+    text_length: String(source.sourceText || '').length,
+    source_text_hash: source.sourceTextHash || archiveSourceFingerprint(source.sourceText),
+    title_key: source.titleKey || archiveSourceTitleKey(source.title),
+    source_url_key: source.sourceUrlKey || archiveSourceUrlKey(source.sourceUrl),
+    search_blob: buildArchiveSourceSearchBlob(source),
+    created_by: source.createdBy || '',
+    updated_by: source.updatedBy || '',
+    created_at: source.createdAt || new Date().toISOString(),
+    updated_at: source.updatedAt || new Date().toISOString(),
+    conflict_accepted_at: source.conflictAcceptedAt || null,
+    conflict_accepted_by: source.conflictAcceptedBy || '',
+    conflict_accepted_conflicts: Array.isArray(source.conflictAcceptedConflicts) ? source.conflictAcceptedConflicts : []
+  };
+}
+
+function archiveSourceFromDbRow(row = {}, options = {}) {
+  const sourceText = options.full ? String(row.source_text || '') : '';
+  return {
+    id: row.id,
+    title: row.title || '',
+    sourceType: row.source_type || 'dokuman',
+    status: row.status || 'kaynak',
+    category: row.category || '',
+    sourceDate: row.source_date || null,
+    sourceUrl: row.source_url || '',
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    note: row.note || '',
+    sourceText,
+    textPreview: row.text_preview || archiveTextPreview(sourceText),
+    textLength: Number(row.text_length || sourceText.length || 0),
+    sourceTextHash: row.source_text_hash || '',
+    titleKey: row.title_key || '',
+    sourceUrlKey: row.source_url_key || '',
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+    createdBy: row.created_by || '',
+    updatedBy: row.updated_by || '',
+    conflictAcceptedAt: row.conflict_accepted_at || null,
+    conflictAcceptedBy: row.conflict_accepted_by || '',
+    conflictAcceptedConflicts: Array.isArray(row.conflict_accepted_conflicts) ? row.conflict_accepted_conflicts : []
+  };
+}
+
 function archiveSourceConflictSummary(source = {}, reason = '', matchType = '') {
   const text = String(source.sourceText || '');
   return {
@@ -700,7 +793,7 @@ function archiveSourceConflictSummary(source = {}, reason = '', matchType = '') 
     title: source.title || 'Başlıksız kaynak',
     sourceType: source.sourceType || 'dokuman',
     status: source.status || 'kaynak',
-    textLength: text.length,
+    textLength: Number(source.textLength || text.length || 0),
     updatedAt: source.updatedAt || source.createdAt || null,
     reason,
     matchType
@@ -764,6 +857,8 @@ function normalizeArchiveSourceInput(input = {}, existing = {}) {
 
 function publicArchiveSource(source = {}, options = {}) {
   const text = String(source.sourceText || '');
+  const textPreview = source.textPreview || archiveTextPreview(text);
+  const textLength = Number(source.textLength || text.length || 0);
   const base = {
     id: source.id,
     title: source.title,
@@ -774,8 +869,8 @@ function publicArchiveSource(source = {}, options = {}) {
     sourceUrl: source.sourceUrl || '',
     tags: Array.isArray(source.tags) ? source.tags : [],
     note: source.note || '',
-    textLength: text.length,
-    textPreview: archiveTextPreview(text),
+    textLength,
+    textPreview,
     createdAt: source.createdAt,
     updatedAt: source.updatedAt,
     createdBy: source.createdBy || '',
@@ -796,6 +891,323 @@ async function loadArchiveOpsSources() {
 async function saveArchiveOpsSources(sources) {
   const clean = Array.isArray(sources) ? sources.slice(0, ARCHIVE_SOURCE_LIST_LIMIT) : [];
   await saveJsonSetting(ARCHIVE_OPS_SOURCES_KEY, clean);
+}
+
+function escapeSupabaseLikePattern(value = '') {
+  return String(value || '').replace(/[\\%_]/g, match => `\\${match}`);
+}
+
+async function ensureArchiveSourcesMigratedFromSettings() {
+  if (!HAS_ARCHIVE_SOURCE_TABLES) return;
+  const { count, error: countError } = await supabase
+    .from('archive_sources')
+    .select('id', { count: 'exact', head: true });
+  if (countError) throw new Error(countError.message);
+  if ((count || 0) > 0) return;
+
+  const legacySources = await loadArchiveOpsSources();
+  if (!legacySources.length) return;
+
+  const rows = legacySources
+    .filter(source => source?.id && source?.title && source?.sourceText)
+    .map(source => archiveSourceToDbRow(source));
+  for (let i = 0; i < rows.length; i += 100) {
+    const { error } = await supabase.from('archive_sources').upsert(rows.slice(i, i + 100), { onConflict: 'id' });
+    if (error) throw new Error(error.message);
+  }
+  await insertArchiveSourceEvent(null, 'legacy_migration', 'Sistem', `${rows.length} pilot kaynak kaydı tablo yapısına taşındı.`, {
+    legacyKey: ARCHIVE_OPS_SOURCES_KEY,
+    migratedCount: rows.length
+  });
+}
+
+async function insertArchiveSourceEvent(sourceId, eventType, actor, summary, metadata = {}) {
+  if (!HAS_ARCHIVE_SOURCE_TABLES) return;
+  const { error } = await supabase.from('archive_source_events').insert({
+    source_id: sourceId || null,
+    event_type: eventType,
+    actor: actor || 'Sistem',
+    summary: summary || '',
+    metadata
+  });
+  if (error) console.warn('archive_source_events yazılamadı:', error.message);
+}
+
+async function nextArchiveSourceVersionNo(sourceId) {
+  const { data, error } = await supabase
+    .from('archive_source_versions')
+    .select('version_no')
+    .eq('source_id', sourceId)
+    .order('version_no', { ascending: false })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return Number(data?.[0]?.version_no || 0) + 1;
+}
+
+function archiveSourceAuditSnapshot(source = {}) {
+  return {
+    id: source.id,
+    title: source.title || '',
+    sourceType: source.sourceType || 'dokuman',
+    status: source.status || 'kaynak',
+    category: source.category || '',
+    sourceDate: source.sourceDate || null,
+    sourceUrl: source.sourceUrl || '',
+    tags: Array.isArray(source.tags) ? source.tags : [],
+    note: source.note || '',
+    sourceText: source.sourceText || '',
+    sourceTextHash: source.sourceTextHash || archiveSourceFingerprint(source.sourceText),
+    textLength: Number(source.textLength || String(source.sourceText || '').length || 0),
+    createdAt: source.createdAt || null,
+    updatedAt: source.updatedAt || null,
+    createdBy: source.createdBy || '',
+    updatedBy: source.updatedBy || ''
+  };
+}
+
+function archiveSourceChangeKeys(before = {}, after = {}) {
+  const keys = ['title', 'sourceType', 'status', 'category', 'sourceDate', 'sourceUrl', 'tags', 'note', 'sourceText'];
+  return keys.filter(key => JSON.stringify(before[key] || '') !== JSON.stringify(after[key] || ''));
+}
+
+async function insertArchiveSourceVersion(source = {}, actor = 'Sistem', eventType = 'update', previous = null) {
+  if (!HAS_ARCHIVE_SOURCE_TABLES || !source.id) return;
+  const snapshot = archiveSourceAuditSnapshot(source);
+  const previousSnapshot = previous ? archiveSourceAuditSnapshot(previous) : null;
+  const versionNo = await nextArchiveSourceVersionNo(source.id);
+  const { error } = await supabase.from('archive_source_versions').insert({
+    source_id: source.id,
+    version_no: versionNo,
+    event_type: eventType,
+    snapshot,
+    previous_snapshot: previousSnapshot,
+    change_keys: previousSnapshot ? archiveSourceChangeKeys(previousSnapshot, snapshot) : [],
+    created_by: actor || 'Sistem'
+  });
+  if (error) throw new Error(error.message);
+}
+
+async function findArchiveSourceConflictsDb(candidate = {}, currentId = '') {
+  const checks = [];
+  const candidateTextHash = candidate.sourceTextHash || archiveSourceFingerprint(candidate.sourceText);
+  const candidateUrlKey = candidate.sourceUrlKey || archiveSourceUrlKey(candidate.sourceUrl);
+  const candidateTitleKey = candidate.titleKey || archiveSourceTitleKey(candidate.title);
+  const candidateType = candidate.sourceType || 'dokuman';
+
+  if (candidateTextHash) {
+    checks.push({
+      query: () => supabase.from('archive_sources').select(ARCHIVE_SOURCE_DB_LIST_COLUMNS).eq('source_text_hash', candidateTextHash).limit(4),
+      reason: 'Aynı kaynak metni daha önce kaydedilmiş.',
+      matchType: 'same_text'
+    });
+  }
+  if (candidateUrlKey) {
+    checks.push({
+      query: () => supabase.from('archive_sources').select(ARCHIVE_SOURCE_DB_LIST_COLUMNS).eq('source_url_key', candidateUrlKey).limit(4),
+      reason: 'Aynı kaynak linkiyle daha önce kayıt açılmış.',
+      matchType: 'same_url'
+    });
+  }
+  if (candidateTitleKey) {
+    checks.push({
+      query: () => supabase.from('archive_sources').select(ARCHIVE_SOURCE_DB_LIST_COLUMNS).eq('title_key', candidateTitleKey).eq('source_type', candidateType).limit(4),
+      reason: 'Aynı başlık ve kaynak türüyle benzer kayıt var.',
+      matchType: 'same_title_type'
+    });
+  }
+
+  const conflicts = [];
+  const seen = new Set();
+  for (const check of checks) {
+    let query = check.query();
+    if (currentId) query = query.neq('id', currentId);
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    for (const row of data || []) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      conflicts.push(archiveSourceConflictSummary(archiveSourceFromDbRow(row), check.reason, check.matchType));
+    }
+  }
+  return conflicts.slice(0, 8);
+}
+
+async function listArchiveOpsSources(query = {}) {
+  if (!HAS_ARCHIVE_SOURCE_TABLES) {
+    const sources = await loadArchiveOpsSources();
+    const filtered = filterArchiveSources(sources, query)
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+    return { storage: 'settings', sources, filtered };
+  }
+
+  await ensureArchiveSourcesMigratedFromSettings();
+  const q = String(query.q || '').trim();
+  const type = String(query.type || '').trim();
+  const status = String(query.status || '').trim();
+  let sourceQuery = supabase
+    .from('archive_sources')
+    .select(ARCHIVE_SOURCE_DB_LIST_COLUMNS, { count: 'exact' })
+    .order('updated_at', { ascending: false })
+    .limit(ARCHIVE_SOURCE_LIST_LIMIT);
+  if (type) sourceQuery = sourceQuery.eq('source_type', type);
+  if (status) sourceQuery = sourceQuery.eq('status', status);
+  if (q) sourceQuery = sourceQuery.ilike('search_blob', `%${escapeSupabaseLikePattern(q)}%`);
+  const { data, error, count } = await sourceQuery;
+  if (error) throw new Error(error.message);
+
+  const { count: totalCount, error: totalError } = await supabase
+    .from('archive_sources')
+    .select('id', { count: 'exact', head: true });
+  if (totalError) throw new Error(totalError.message);
+
+  const rowsForCounts = await fetchAllPages(() => supabase.from('archive_sources').select('source_type,status'));
+  const counts = {
+    total: totalCount || 0,
+    filtered: count || 0,
+    byType: {},
+    byStatus: {}
+  };
+  for (const row of rowsForCounts) {
+    counts.byType[row.source_type || 'dokuman'] = (counts.byType[row.source_type || 'dokuman'] || 0) + 1;
+    counts.byStatus[row.status || 'kaynak'] = (counts.byStatus[row.status || 'kaynak'] || 0) + 1;
+  }
+  return {
+    storage: 'database',
+    counts,
+    filtered: (data || []).map(row => archiveSourceFromDbRow(row)),
+    sources: []
+  };
+}
+
+async function getArchiveOpsSource(id) {
+  if (!HAS_ARCHIVE_SOURCE_TABLES) {
+    const sources = await loadArchiveOpsSources();
+    return sources.find(item => item.id === id) || null;
+  }
+  await ensureArchiveSourcesMigratedFromSettings();
+  const { data, error } = await supabase
+    .from('archive_sources')
+    .select(ARCHIVE_SOURCE_DB_FULL_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? archiveSourceFromDbRow(data, { full: true }) : null;
+}
+
+async function createArchiveOpsSource(input = {}, actor = 'Sistem') {
+  const now = new Date().toISOString();
+  const source = {
+    id: archiveSourceId(),
+    ...normalizeArchiveSourceInput(input),
+    createdAt: now,
+    updatedAt: now,
+    createdBy: actor,
+    updatedBy: actor
+  };
+
+  if (!HAS_ARCHIVE_SOURCE_TABLES) {
+    const sources = await loadArchiveOpsSources();
+    const conflicts = findArchiveSourceConflicts(sources, source);
+    if (conflicts.length && input.forceSave !== true) return { conflict: true, conflicts };
+    if (conflicts.length) {
+      source.conflictAcceptedAt = now;
+      source.conflictAcceptedBy = actor;
+      source.conflictAcceptedConflicts = conflicts;
+    }
+    await saveArchiveOpsSources([source, ...sources]);
+    return { source };
+  }
+
+  await ensureArchiveSourcesMigratedFromSettings();
+  const conflicts = await findArchiveSourceConflictsDb(source);
+  if (conflicts.length && input.forceSave !== true) return { conflict: true, conflicts };
+  if (conflicts.length) {
+    source.conflictAcceptedAt = now;
+    source.conflictAcceptedBy = actor;
+    source.conflictAcceptedConflicts = conflicts;
+  }
+  const { data, error } = await supabase
+    .from('archive_sources')
+    .insert(archiveSourceToDbRow(source))
+    .select(ARCHIVE_SOURCE_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  const inserted = archiveSourceFromDbRow(data, { full: true });
+  await insertArchiveSourceVersion(inserted, actor, 'create');
+  await insertArchiveSourceEvent(inserted.id, 'create', actor, 'Kaynak kaydı oluşturuldu.', {
+    title: inserted.title,
+    sourceType: inserted.sourceType,
+    textLength: inserted.textLength
+  });
+  return { source: inserted };
+}
+
+async function updateArchiveOpsSource(id, input = {}, actor = 'Sistem') {
+  if (!HAS_ARCHIVE_SOURCE_TABLES) {
+    const sources = await loadArchiveOpsSources();
+    const index = sources.findIndex(item => item.id === id);
+    if (index < 0) return null;
+    const updated = {
+      ...normalizeArchiveSourceInput(input, sources[index]),
+      id: sources[index].id,
+      createdAt: sources[index].createdAt,
+      createdBy: sources[index].createdBy,
+      updatedAt: new Date().toISOString(),
+      updatedBy: actor
+    };
+    const conflicts = findArchiveSourceConflicts(sources, updated, id);
+    if (conflicts.length && input.forceSave !== true) return { conflict: true, conflicts };
+    if (conflicts.length) {
+      updated.conflictAcceptedAt = updated.updatedAt;
+      updated.conflictAcceptedBy = actor;
+      updated.conflictAcceptedConflicts = conflicts;
+    } else {
+      delete updated.conflictAcceptedAt;
+      delete updated.conflictAcceptedBy;
+      delete updated.conflictAcceptedConflicts;
+    }
+    sources[index] = updated;
+    await saveArchiveOpsSources(sources);
+    return { source: updated };
+  }
+
+  await ensureArchiveSourcesMigratedFromSettings();
+  const existing = await getArchiveOpsSource(id);
+  if (!existing) return null;
+  const updated = {
+    ...normalizeArchiveSourceInput(input, existing),
+    id: existing.id,
+    createdAt: existing.createdAt,
+    createdBy: existing.createdBy,
+    updatedAt: new Date().toISOString(),
+    updatedBy: actor
+  };
+  const conflicts = await findArchiveSourceConflictsDb(updated, id);
+  if (conflicts.length && input.forceSave !== true) return { conflict: true, conflicts };
+  if (conflicts.length) {
+    updated.conflictAcceptedAt = updated.updatedAt;
+    updated.conflictAcceptedBy = actor;
+    updated.conflictAcceptedConflicts = conflicts;
+  } else {
+    updated.conflictAcceptedAt = null;
+    updated.conflictAcceptedBy = '';
+    updated.conflictAcceptedConflicts = [];
+  }
+  const { data, error } = await supabase
+    .from('archive_sources')
+    .update(archiveSourceToDbRow(updated))
+    .eq('id', id)
+    .select(ARCHIVE_SOURCE_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  const saved = archiveSourceFromDbRow(data, { full: true });
+  await insertArchiveSourceVersion(saved, actor, 'update', existing);
+  await insertArchiveSourceEvent(saved.id, 'update', actor, 'Kaynak kaydı güncellendi.', {
+    title: saved.title,
+    sourceType: saved.sourceType,
+    changeKeys: archiveSourceChangeKeys(archiveSourceAuditSnapshot(existing), archiveSourceAuditSnapshot(saved))
+  });
+  return { source: saved };
 }
 
 function filterArchiveSources(sources, query = {}) {
@@ -1413,6 +1825,12 @@ async function seed() {
   const { error: lastSeenErr } = await supabase.from('users').select('last_seen_at').limit(1);
   HAS_USER_LAST_SEEN = !lastSeenErr;
   if (!HAS_USER_LAST_SEEN) console.warn('⚠ users.last_seen_at kolonu yok — son aktiflik settings yedeğinden okunacak.');
+
+  const { error: archiveSourcesErr } = await supabase.from('archive_sources').select('id').limit(1);
+  const { error: archiveVersionsErr } = await supabase.from('archive_source_versions').select('id').limit(1);
+  const { error: archiveEventsErr } = await supabase.from('archive_source_events').select('id').limit(1);
+  HAS_ARCHIVE_SOURCE_TABLES = !archiveSourcesErr && !archiveVersionsErr && !archiveEventsErr;
+  if (!HAS_ARCHIVE_SOURCE_TABLES) console.warn('⚠ archive source tabloları yok — Arşiv Operasyon Merkezi pilot JSON deposuyla çalışacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -1754,20 +2172,23 @@ app.post('/api/standards', auth, admin, async (req, res) => {
 // ── ARCHIVE OPERATIONS SOURCES ─────────────────────────────────────────────
 app.get('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) => {
   try {
-    const sources = await loadArchiveOpsSources();
-    const filtered = filterArchiveSources(sources, req.query)
-      .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
-    const counts = {
+    const list = await listArchiveOpsSources(req.query);
+    const sources = list.sources || [];
+    const filtered = list.filtered || [];
+    const counts = list.counts || {
       total: sources.length,
       filtered: filtered.length,
       byType: {},
       byStatus: {}
     };
-    for (const source of sources) {
-      counts.byType[source.sourceType || 'dokuman'] = (counts.byType[source.sourceType || 'dokuman'] || 0) + 1;
-      counts.byStatus[source.status || 'kaynak'] = (counts.byStatus[source.status || 'kaynak'] || 0) + 1;
+    if (!list.counts) {
+      for (const source of sources) {
+        counts.byType[source.sourceType || 'dokuman'] = (counts.byType[source.sourceType || 'dokuman'] || 0) + 1;
+        counts.byStatus[source.status || 'kaynak'] = (counts.byStatus[source.status || 'kaynak'] || 0) + 1;
+      }
     }
     res.json({
+      storage: list.storage || 'settings',
       counts,
       sources: filtered.slice(0, ARCHIVE_SOURCE_LIST_LIMIT).map(source => publicArchiveSource(source))
     });
@@ -1776,39 +2197,22 @@ app.get('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) =>
 
 app.post('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) => {
   try {
-    const sources = await loadArchiveOpsSources();
-    const now = new Date().toISOString();
     const input = req.body || {};
     const actor = req.session.name || req.session.username || 'Sistem';
-    const source = {
-      id: archiveSourceId(),
-      ...normalizeArchiveSourceInput(input),
-      createdAt: now,
-      updatedAt: now,
-      createdBy: actor,
-      updatedBy: actor
-    };
-    const conflicts = findArchiveSourceConflicts(sources, source);
-    if (conflicts.length && input.forceSave !== true) {
+    const result = await createArchiveOpsSource(input, actor);
+    if (result?.conflict) {
       return res.status(409).json({
         error: 'Benzer kaynak bulundu. Kaydetmeden önce mevcut kaydı kontrol edin.',
-        conflicts
+        conflicts: result.conflicts
       });
     }
-    if (conflicts.length) {
-      source.conflictAcceptedAt = now;
-      source.conflictAcceptedBy = actor;
-      source.conflictAcceptedConflicts = conflicts;
-    }
-    await saveArchiveOpsSources([source, ...sources]);
-    res.json({ success: true, source: publicArchiveSource(source, { full: true }) });
+    res.json({ success: true, source: publicArchiveSource(result.source, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.get('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res) => {
   try {
-    const sources = await loadArchiveOpsSources();
-    const source = sources.find(item => item.id === req.params.id);
+    const source = await getArchiveOpsSource(req.params.id);
     if (!source) return res.status(404).json({ error: 'Kaynak kaydı bulunamadı.' });
     res.json({ source: publicArchiveSource(source, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
@@ -1816,38 +2220,17 @@ app.get('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res
 
 app.put('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res) => {
   try {
-    const sources = await loadArchiveOpsSources();
-    const index = sources.findIndex(item => item.id === req.params.id);
-    if (index < 0) return res.status(404).json({ error: 'Kaynak kaydı bulunamadı.' });
     const input = req.body || {};
     const actor = req.session.name || req.session.username || 'Sistem';
-    const updated = {
-      ...normalizeArchiveSourceInput(input, sources[index]),
-      id: sources[index].id,
-      createdAt: sources[index].createdAt,
-      createdBy: sources[index].createdBy,
-      updatedAt: new Date().toISOString(),
-      updatedBy: actor
-    };
-    const conflicts = findArchiveSourceConflicts(sources, updated, req.params.id);
-    if (conflicts.length && input.forceSave !== true) {
+    const result = await updateArchiveOpsSource(req.params.id, input, actor);
+    if (!result) return res.status(404).json({ error: 'Kaynak kaydı bulunamadı.' });
+    if (result.conflict) {
       return res.status(409).json({
         error: 'Benzer kaynak bulundu. Kaydetmeden önce mevcut kaydı kontrol edin.',
-        conflicts
+        conflicts: result.conflicts
       });
     }
-    if (conflicts.length) {
-      updated.conflictAcceptedAt = updated.updatedAt;
-      updated.conflictAcceptedBy = actor;
-      updated.conflictAcceptedConflicts = conflicts;
-    } else {
-      delete updated.conflictAcceptedAt;
-      delete updated.conflictAcceptedBy;
-      delete updated.conflictAcceptedConflicts;
-    }
-    sources[index] = updated;
-    await saveArchiveOpsSources(sources);
-    res.json({ success: true, source: publicArchiveSource(updated, { full: true }) });
+    res.json({ success: true, source: publicArchiveSource(result.source, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
@@ -3809,6 +4192,7 @@ let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kay�
 let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş içerik düzeltme kayıt defteri)
 let HAS_AI_REPORTS = false; // startup'ta tespit edilir (AI rapor kayıtları)
 let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at kolonu)
+let HAS_ARCHIVE_SOURCE_TABLES = false; // startup'ta tespit edilir (kaynak kayıt tabloları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

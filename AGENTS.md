@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Arşiv kaynak kayıtları tablo destekli hale getirildi:** `/admin` Arşiv Operasyon Merkezi
+  kaynak kayıt sistemi pilot `settings.archive_ops_sources` JSON deposuna bağlı kalmadan gerçek
+  Supabase tablolarını kullanabilecek şekilde hazırlandı. Yeni `archive_sources`,
+  `archive_source_versions` ve `archive_source_events` şeması eklendi. Sunucu başlangıçta bu
+  tabloların varlığını algılar; tablolar yoksa mevcut JSON pilot akışı bozulmadan devam eder.
+  Tablolar varsa listeleme tam metni yüklemeden `text_preview` / `text_length` ile çalışır,
+  detay açılınca tam metin alınır, kayıt oluşturma/güncelleme versiyon ve olay defterine yazılır,
+  eski pilot JSON kayıtları tablo boşsa idempotent şekilde taşınır. Bu adım SQL'i canlı DB'ye
+  otomatik uygulamadı, kaynak importu yapmadı, root `/` public cutover yapmadı ve kullanıcı
+  ekranlarına açmadı. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Production
+  deploy yapılmadı.
 - **Kaynak kaydı güncelleme son kontrolü eklendi:** Süper admin bir kaynak kaydını forma alıp
   güncellediğinde sistem artık doğrudan üzerine yazmaz; başlık, tür, durum, kategori, tarih,
   kaynak linki, etiket, not veya metin değiştiyse sistem temalı `Kaynak kaydı güncellensin mi?`

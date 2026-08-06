@@ -2,6 +2,23 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi kaynak kayıtları için tablo destekli repository katmanı
+  eklendi. Sistem artık canlı DB'de `archive_sources`, `archive_source_versions` ve
+  `archive_source_events` tabloları varsa kaynakları bu tablolardan yönetebilir; tablolar henüz
+  yoksa mevcut `settings.archive_ops_sources` JSON pilot akışı bozulmadan devam eder.
+- Yeni tablo modeli `schema.sql` içine eklendi. Sunucu tablo varlığını startup'ta algılar; tablo
+  boşsa eski pilot JSON kayıtlarını idempotent şekilde tabloya taşır. Listeleme tam metni
+  çekmeden `text_preview` ve `text_length` ile çalışır; detay açılınca tam metin alınır. Yeni
+  kayıt ve güncelleme işlemleri versiyon ve olay kaydı oluşturacak şekilde hazırlandı.
+- Değişen dosyalar: `server.js`, `schema.sql`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Public frontend untracked dokümanlarına dokunulmadı.
+- Bu adımda canlı DB'ye SQL uygulanmadı, kaynak importu yapılmadı, root `/` public cutover
+  yapılmadı, commit/push/deploy yapılmadı.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+- Sonraki güvenli adım: kullanıcı onayıyla `schema.sql` içindeki `archive_sources`,
+  `archive_source_versions` ve `archive_source_events` SQL blokları Supabase SQL Editor'de
+  uygulanır; ardından ayrı onayla production deploy ve `/admin` canlı smoke yapılır.
+
 - `/admin` Arşiv Operasyon Merkezi kaynak kayıtlarında güncelleme son kontrolü eklendi. Bir
   kaynak forma alınıp değiştirildiğinde sistem artık değişen alanları özetleyen
   `Kaynak kaydı güncellensin mi?` onay penceresi açar; onay verilmeden mevcut kayıt üzerine
