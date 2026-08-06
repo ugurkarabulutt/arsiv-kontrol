@@ -128,10 +128,16 @@ tespit edilir).
   tabloların varlığını algılar; tablolar yoksa mevcut JSON pilot akışı bozulmadan devam eder.
   Tablolar varsa listeleme tam metni yüklemeden `text_preview` / `text_length` ile çalışır,
   detay açılınca tam metin alınır, kayıt oluşturma/güncelleme versiyon ve olay defterine yazılır,
-  eski pilot JSON kayıtları tablo boşsa idempotent şekilde taşınır. Bu adım SQL'i canlı DB'ye
-  otomatik uygulamadı, kaynak importu yapmadı, root `/` public cutover yapmadı ve kullanıcı
-  ekranlarına açmadı. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Production
-  deploy yapılmadı.
+  eski pilot JSON kayıtları tablo boşsa idempotent şekilde taşınır. Canlı DB'de ilgili SQL
+  Supabase SQL Editor'de uygulandı; üç tablo REST kontrolünde `200` döndü ve başlangıçta boş
+  olduğu doğrulandı. Kaynak importu yapılmadı, root `/` public cutover yapmadı ve kullanıcı
+  ekranlarına açmadı. Runtime commit `16ff508` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-o1drv6x69-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı,
+  86/86 test geçti. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru; `/api/archive-ops/sources` oturumsuz erişimde `401`
+  dönüyor.
 - **Kaynak kaydı güncelleme son kontrolü eklendi:** Süper admin bir kaynak kaydını forma alıp
   güncellediğinde sistem artık doğrudan üzerine yazmaz; başlık, tür, durum, kategori, tarih,
   kaynak linki, etiket, not veya metin değiştiyse sistem temalı `Kaynak kaydı güncellensin mi?`

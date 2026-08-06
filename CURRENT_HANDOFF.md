@@ -12,12 +12,19 @@
   kayıt ve güncelleme işlemleri versiyon ve olay kaydı oluşturacak şekilde hazırlandı.
 - Değişen dosyalar: `server.js`, `schema.sql`, `scripts/check-frontend.js`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`. Public frontend untracked dokümanlarına dokunulmadı.
-- Bu adımda canlı DB'ye SQL uygulanmadı, kaynak importu yapılmadı, root `/` public cutover
-  yapılmadı, commit/push/deploy yapılmadı.
-- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
-- Sonraki güvenli adım: kullanıcı onayıyla `schema.sql` içindeki `archive_sources`,
-  `archive_source_versions` ve `archive_source_events` SQL blokları Supabase SQL Editor'de
-  uygulanır; ardından ayrı onayla production deploy ve `/admin` canlı smoke yapılır.
+- Canlı DB'de `archive_sources`, `archive_source_versions` ve `archive_source_events` SQL
+  blokları Supabase SQL Editor'de uygulandı. REST HEAD kontrolünde üç tablo da `200` döndü ve
+  başlangıçta boş olduğu doğrulandı.
+- Runtime commit `16ff508` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-o1drv6x69-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Canlı smoke geçti:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  `manifest.webmanifest`, `sw.js`, `favicon.ico`. `/admin` noindex/no-store header'ları doğru.
+  `/api/archive-ops/sources` oturumsuz erişimde `401` dönüyor.
+- Bu adımda kaynak importu yapılmadı, root `/` public cutover yapılmadı, kullanıcı ekranlarına
+  yeni özellik açılmadı. Sonraki güvenli adım: süper adminle `/admin` kaynak kayıt akışında
+  bir pilot kayıt oluşturup DB repository + versiyon/event kayıtlarını canlıda doğrulamak.
 
 - `/admin` Arşiv Operasyon Merkezi kaynak kayıtlarında güncelleme son kontrolü eklendi. Bir
   kaynak forma alınıp değiştirildiğinde sistem artık değişen alanları özetleyen
