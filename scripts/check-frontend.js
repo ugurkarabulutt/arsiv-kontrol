@@ -397,7 +397,12 @@ if (
   !html.includes('archiveSourceText') ||
   !html.includes('function loadArchiveOpsSources') ||
   !html.includes('function saveArchiveSource(forceSave=false,changeConfirmed=false)') ||
-  !html.includes("if(name==='archiveOps')loadArchiveOpsSources()") ||
+  !html.includes('function openArchiveOps') ||
+  !html.includes('function renderArchiveOpsView') ||
+  !html.includes('function mArchiveOps') ||
+  !html.includes('data-ops-view="sources"') ||
+  !html.includes('data-ops-view="library"') ||
+  !html.includes("if(name==='archiveOps')renderArchiveOpsView()") ||
   !html.includes('Benzer kaynak bulundu') ||
   !html.includes('archiveSourceConflictDetail') ||
   !html.includes('archiveSourceChangeSummary') ||

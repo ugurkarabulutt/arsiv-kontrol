@@ -2,6 +2,22 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi tek uzun sayfa yerine alt menülü odak ekran yapısına
+  taşındı. Süper admin menüsünde `Genel Bakış`, `Kaynak Kayıtları`, `Kaynak Havuzu`,
+  `Yayın Görevleri`, `Çalışma Kayıtları`, `Hadis ve Slayt Metinleri`, `İçe Aktarım Merkezi`
+  ve `Public Arşiv Adayları` ayrı alt başlıklar olarak açılır. Her başlık yalnız kendi
+  bölümünü gösterir; kaynak araması `Kaynak Havuzu` ekranına, kaydı forma alma işlemi
+  `Kaynak Kayıtları` ekranına yönlendirir.
+- Kapsam dar tutuldu: `index.html`, `scripts/check-frontend.js`, `AGENTS.md` ve
+  `CURRENT_HANDOFF.md` değişti. `server.js`, public preview dosyaları, DB/schema ve root `/`
+  public cutover'a dokunulmadı. Süper admin rol mimarisi değiştirilmedi; `admin` kullanıcı adı
+  tek gerçek süper admin hesabı olarak korunur.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Ek statik DOM kontrolü alt ekran
+  işaretleri ve davranış fonksiyonlarının varlığını doğruladı. `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi.
+- Not: Kullanıcının isteğiyle ileride dashboard içinde birden çok işi olan diğer ana başlıklar
+  da aynı alt menü / odak ekran desenine taşınmalıdır.
+
 - `/admin` Arşiv Operasyon Merkezi kaynak kayıtları için tablo destekli repository katmanı
   eklendi. Sistem artık canlı DB'de `archive_sources`, `archive_source_versions` ve
   `archive_source_events` tabloları varsa kaynakları bu tablolardan yönetebilir; tablolar henüz

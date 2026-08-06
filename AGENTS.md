@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Arşiv Operasyon Merkezi alt menü desenine taşındı:** `/admin` içindeki süper admin
+  `Arşiv Operasyon Merkezi` artık tek uzun sayfa yerine WordPress benzeri ana menü + alt
+  ekran yapısıyla çalışır. Sol menü ve mobil menü altında `Genel Bakış`, `Kaynak Kayıtları`,
+  `Kaynak Havuzu`, `Yayın Görevleri`, `Çalışma Kayıtları`, `Hadis ve Slayt Metinleri`,
+  `İçe Aktarım Merkezi` ve `Public Arşiv Adayları` başlıkları açılır. Her alt başlık yalnız
+  kendi bölümünü gösterir; kaynak araması otomatik `Kaynak Havuzu` ekranına geçirir, seçilen
+  kaynak forma alındığında `Kaynak Kayıtları` ekranına taşır. Backend/DB/schema değişmedi,
+  root `/` public cutover yapılmadı, public frontend dosyalarına dokunulmadı. Bundan sonra
+  dashboard içinde birden çok işi olan diğer ana başlıklar da bu alt menü/odak ekran desenine
+  taşınmalıdır. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti; statik DOM kontrolü
+  operasyon alt ekran işaretlerini doğruladı. Bu adımda production deploy henüz yapılmadı.
 - **Arşiv kaynak kayıtları tablo destekli hale getirildi:** `/admin` Arşiv Operasyon Merkezi
   kaynak kayıt sistemi pilot `settings.archive_ops_sources` JSON deposuna bağlı kalmadan gerçek
   Supabase tablolarını kullanabilecek şekilde hazırlandı. Yeni `archive_sources`,

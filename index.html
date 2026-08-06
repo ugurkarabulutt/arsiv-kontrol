@@ -142,6 +142,15 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .side-link:hover{background:var(--surface2);border-color:var(--border);color:var(--ink);transform:translateX(2px);}
 .side-link.active-tab{background:linear-gradient(90deg,var(--gold-bg),var(--surface));border-color:var(--border);border-left-color:var(--gold);color:var(--ink);font-weight:700;box-shadow:var(--soft-shadow);}
 .side-link .badge{position:static;width:auto;min-width:17px;height:17px;padding:0 5px;}
+.side-group{margin:2px 0 8px;}
+.side-group-main{font-weight:800;}
+.side-caret{font-size:10px;color:var(--gold);letter-spacing:0;}
+.side-subnav{margin:2px 10px 8px 18px;padding:4px 0 4px 9px;border-left:1px solid rgba(var(--gold-rgb),.34);}
+.side-sub-link{width:calc(100% - 8px);margin:1px 0;padding:8px 10px;border-left-width:2px;font-size:11px;color:var(--ink3);}
+.side-sub-link:hover{transform:translateX(1px);}
+.side-sub-link.active-tab{background:rgba(var(--gold-rgb),.08);box-shadow:none;color:var(--ink);border-left-color:var(--gold);}
+.mobile-menu-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--gold-lt);padding:18px 4px 8px;border-bottom:1px solid rgba(255,255,255,.06);}
+.mobile-sub-link{padding-left:18px;color:rgba(245,240,232,.66);}
 .side-logout{margin-top:12px;color:var(--red);border-top-color:var(--border);}
 .app-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tab-content{display:none;max-width:1160px;margin:0 auto;padding:24px 16px;}
@@ -313,6 +322,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .dash-card{background:var(--white);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);}
 .dash-card-head{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);font-weight:600;font-size:13px;}
 .dash-card-body{padding:14px;}
+.archive-ops-section[hidden]{display:none !important;}
 .ops-hero{border:1px solid rgba(var(--gold-rgb),.35);background:linear-gradient(135deg,rgba(var(--gold-rgb),.12),var(--white));box-shadow:var(--soft-shadow);padding:18px;margin-bottom:14px;}
 .ops-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800;margin-bottom:8px;}
 .ops-title{font-size:22px;font-weight:900;line-height:1.22;color:var(--ink);margin-bottom:6px;}
@@ -332,6 +342,13 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-step strong{display:block;font-size:14px;color:var(--ink);line-height:1.3;margin-bottom:5px;}
 .ops-step span{display:block;font-size:12px;line-height:1.45;color:var(--ink3);}
 .ops-note{border:1px solid rgba(var(--ai-rgb),.32);border-left:3px solid var(--ai);background:rgba(var(--ai-rgb),.08);padding:12px 14px;font-size:13px;line-height:1.6;color:var(--ink2);margin-bottom:14px;}
+.ops-module-page{background:var(--surface);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);padding:18px;margin-bottom:14px;}
+.ops-module-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:800;margin-bottom:10px;}
+.ops-module-title{font-size:22px;font-weight:900;color:var(--ink);line-height:1.25;margin-bottom:8px;}
+.ops-module-copy{font-size:14px;line-height:1.65;color:var(--ink2);max-width:820px;}
+.ops-module-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;}
+.ops-module-item{border:1px solid var(--border);background:var(--surface-strong);padding:12px;font-size:13px;line-height:1.55;color:var(--ink2);}
+.ops-module-item strong{display:block;color:var(--ink);font-size:13px;margin-bottom:4px;}
 .ops-panel{background:var(--surface);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);margin-bottom:14px;}
 .ops-panel-head{padding:13px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
 .ops-panel-title{font-size:16px;font-weight:900;color:var(--ink);line-height:1.3;}
@@ -367,7 +384,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
 .ops-status.err{color:var(--red);}
-@media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}}
+@media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout{grid-template-columns:1fr}.ops-stats{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats{grid-template-columns:1fr}.ops-preview-text{max-height:420px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
@@ -828,7 +845,17 @@ canvas{width:100%!important;}
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Sistem Uyarıları <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
-      <button class="btn-mobile super-admin-only admin-route-only" onclick="mNav('archiveOps')" style="display:none">Arşiv Operasyon Merkezi</button>
+      <div class="mobile-menu-group super-admin-only admin-route-only" style="display:none">
+        <div class="mobile-menu-label">Arşiv Operasyon Merkezi</div>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="overview" onclick="mArchiveOps('overview')">Genel Bakış</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="sources" onclick="mArchiveOps('sources')">Kaynak Kayıtları</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="library" onclick="mArchiveOps('library')">Kaynak Havuzu</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="publishing" onclick="mArchiveOps('publishing')">Yayın Görevleri</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="work" onclick="mArchiveOps('work')">Çalışma Kayıtları</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="texts" onclick="mArchiveOps('texts')">Hadis ve Slayt Metinleri</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="import" onclick="mArchiveOps('import')">İçe Aktarım Merkezi</button>
+        <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="candidates" onclick="mArchiveOps('candidates')">Public Arşiv Adayları</button>
+      </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
       <button class="btn-mobile super-admin-only" onclick="mNav('resolution')" style="display:none">Çözüm Takibi</button>
       <button class="btn-mobile" onclick="mNav('ayarlar')">Ayarlar</button>
@@ -856,7 +883,19 @@ canvas{width:100%!important;}
     <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyar&#305;lar&#305;</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
 
     <div class="side-section-label super-admin-only admin-route-only" style="display:none">Arşiv Operasyonu</div>
-    <button class="side-link super-admin-only admin-route-only" data-tab="archiveOps" onclick="showTab('archiveOps')" style="display:none"><span>Arşiv Operasyon Merkezi</span></button>
+    <div class="side-group super-admin-only admin-route-only" style="display:none">
+      <button class="side-link side-group-main archive-ops-parent" data-tab="archiveOps" onclick="openArchiveOps('overview')"><span>Arşiv Operasyon Merkezi</span><span class="side-caret">Aç</span></button>
+      <div class="side-subnav">
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="overview" onclick="openArchiveOps('overview')"><span>Genel Bakış</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="sources" onclick="openArchiveOps('sources')"><span>Kaynak Kayıtları</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="library" onclick="openArchiveOps('library')"><span>Kaynak Havuzu</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="publishing" onclick="openArchiveOps('publishing')"><span>Yayın Görevleri</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="work" onclick="openArchiveOps('work')"><span>Çalışma Kayıtları</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="texts" onclick="openArchiveOps('texts')"><span>Hadis ve Slayt Metinleri</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="import" onclick="openArchiveOps('import')"><span>İçe Aktarım Merkezi</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="candidates" onclick="openArchiveOps('candidates')"><span>Public Arşiv Adayları</span></button>
+      </div>
+    </div>
 
     <div class="side-section-label admin-only" style="display:none">Y&ouml;netim</div>
     <button class="side-link admin-only" data-tab="kullanici" onclick="showTab('kullanici')" style="display:none"><span>Kullan&#305;c&#305;lar</span></button>
@@ -1062,7 +1101,7 @@ canvas{width:100%!important;}
       <div class="page-sub">Drive, e-tablo ve dokümanlarda yürüyen arşiv işlerini online sisteme taşıma pilotu</div>
       <div class="divider"></div>
 
-      <div class="ops-hero">
+      <div class="ops-hero archive-ops-section" data-ops-view="overview">
         <div class="ops-kicker">Süper admin pilot alanı</div>
         <div class="ops-title">Kaynak kayıtları artık sistem içinde metin olarak tutulmaya başlıyor.</div>
         <div class="ops-copy">
@@ -1070,11 +1109,11 @@ canvas{width:100%!important;}
         </div>
         <div class="ops-search">
           <span>⌕</span>
-          <input id="archiveSourceSearch" placeholder="Kaynak, yayın linki, hadis, slayt, kategori veya not ara..." oninput="setArchiveSourceSearch()">
+          <input id="archiveSourceSearch" placeholder="Kaynak, yayın linki, hadis, slayt, kategori veya not ara..." oninput="setArchiveSourceSearch(null,'library')">
         </div>
       </div>
 
-      <div class="ops-panel">
+      <div class="ops-panel archive-ops-section" data-ops-view="sources" hidden>
         <div class="ops-panel-head">
           <div>
             <div class="ops-panel-title">Kaynak Kayıt Sistemi</div>
@@ -1121,7 +1160,7 @@ canvas{width:100%!important;}
         </div>
       </div>
 
-      <div class="ops-panel">
+      <div class="ops-panel archive-ops-section" data-ops-view="library" hidden>
         <div class="ops-panel-head">
           <div>
             <div class="ops-panel-title">Kaynak Havuzu</div>
@@ -1158,7 +1197,7 @@ canvas{width:100%!important;}
         </div>
       </div>
 
-      <div class="ops-grid">
+      <div class="ops-grid archive-ops-section" data-ops-view="overview">
         <div class="ops-card">
           <div class="ops-card-head"><div class="ops-card-title">Kaynak Havuzu</div><span class="ops-pill">Başladı</span></div>
           <p>YouTube dökümleri, hadis metinleri, slayt metinleri ve standart dokümanları metin olarak kaydedilip aranabilir hale geliyor.</p>
@@ -1185,7 +1224,62 @@ canvas{width:100%!important;}
         </div>
       </div>
 
-      <div class="ops-flow">
+      <div class="ops-module-page archive-ops-section" data-ops-view="publishing" hidden>
+        <div class="ops-module-kicker">Yayın planı</div>
+        <div class="ops-module-title">Yayın görevleri ayrı bir çalışma ekranı olacak.</div>
+        <div class="ops-module-copy">Her yayın linki, tarihi, atanan kişi, durum ve not bilgisiyle takip edilecek. Amaç Drive ve e-tablo üzerinden yürüyen görev paylaşımını tek merkezde görünür hale getirmek.</div>
+        <div class="ops-module-list">
+          <div class="ops-module-item"><strong>Yayın bilgisi</strong>Link, tarih, kaynak türü ve kısa açıklama aynı kayıtta tutulur.</div>
+          <div class="ops-module-item"><strong>Atama</strong>Çalışmayı kimin hazırladığı ve hangi aşamada olduğu izlenir.</div>
+          <div class="ops-module-item"><strong>Takip</strong>Hazırlanıyor, kontrolde ve arşiv adayı gibi durumlar tek ekranda görünür.</div>
+        </div>
+      </div>
+
+      <div class="ops-module-page archive-ops-section" data-ops-view="work" hidden>
+        <div class="ops-module-kicker">Çalışma kaydı</div>
+        <div class="ops-module-title">Soru, cevap, not ve kaynak aynı iş kaydında birleşecek.</div>
+        <div class="ops-module-copy">Ekip üyesi bir çalışma açtığında kaynak metni, çalışma notu, soru, cevap, etiket ve denetim sonucu aynı kayda bağlanacak. Böylece hangi metnin nereden geldiği geriye dönük izlenebilir olacak.</div>
+        <div class="ops-module-list">
+          <div class="ops-module-item"><strong>Kaynak bağlantısı</strong>Çalışma hangi transkript, hadis, slayt veya dokümandan üretildiyse görünür.</div>
+          <div class="ops-module-item"><strong>Denetim bağı</strong>Metin denetimi ve onay süreci ilgili çalışmanın içinde takip edilir.</div>
+          <div class="ops-module-item"><strong>Arşiv izi</strong>Onaylanan çalışma ileride public arşiv adayı olabilir.</div>
+        </div>
+      </div>
+
+      <div class="ops-module-page archive-ops-section" data-ops-view="texts" hidden>
+        <div class="ops-module-kicker">Metin kaynakları</div>
+        <div class="ops-module-title">Hadis ve slaytlar bağlantı değil, okunabilir metin olarak tutulacak.</div>
+        <div class="ops-module-copy">Bu bölüm hadis, slayt ve standart metinlerini sistem içinde aranabilir metin halinde tutmak için ayrıldı. Kullanıcı kaynak seçerken linke mecbur kalmayacak; içerik sistem içinde okunabilir ve seçilebilir olacak.</div>
+        <div class="ops-module-list">
+          <div class="ops-module-item"><strong>Hadis metni</strong>Kaynak adı, not ve tam metin birlikte saklanır.</div>
+          <div class="ops-module-item"><strong>Slayt metni</strong>Slayt içeriği aranabilir ve çalışmaya bağlanabilir.</div>
+          <div class="ops-module-item"><strong>Standart metni</strong>Ekibin esas aldığı imlâ ve içerik kararları kaynak gibi yönetilir.</div>
+        </div>
+      </div>
+
+      <div class="ops-module-page archive-ops-section" data-ops-view="import" hidden>
+        <div class="ops-module-kicker">İçe aktarım</div>
+        <div class="ops-module-title">Google dosyalarından gelen kayıtlar önce kontrollü ön izlemeye düşecek.</div>
+        <div class="ops-module-copy">Geniş dosya aktarımı doğrudan kalıcı kayda dönüşmeyecek. Önce satır satır kontrol edilecek, benzer kayıt uyarısı verilecek, ardından süper admin onayıyla kaynak veya çalışma kaydı açılacak.</div>
+        <div class="ops-module-list">
+          <div class="ops-module-item"><strong>Ön izleme</strong>Aktarılan satırlar kalıcı kayda dönüşmeden kontrol edilir.</div>
+          <div class="ops-module-item"><strong>Çakışma kontrolü</strong>Aynı link, aynı metin veya benzer başlıklar işaretlenir.</div>
+          <div class="ops-module-item"><strong>Seçerek kayıt</strong>Gerekli satırlar seçilerek sisteme alınır.</div>
+        </div>
+      </div>
+
+      <div class="ops-module-page archive-ops-section" data-ops-view="candidates" hidden>
+        <div class="ops-module-kicker">Public arşiv adayı</div>
+        <div class="ops-module-title">Onaylanan çalışmalar ileride public soru-cevap arşivine hazırlanacak.</div>
+        <div class="ops-module-copy">Bu alan public arşiv açıldığında hangi kayıtların yayın adayı olduğunu izlemek için kullanılacak. Şimdilik yalnız süper admin pilot alanıdır; root public arşiv bu adımda açılmaz.</div>
+        <div class="ops-module-list">
+          <div class="ops-module-item"><strong>Yayın adayı</strong>Onaylanan soru-cevaplar aday havuzuna alınır.</div>
+          <div class="ops-module-item"><strong>Kaynak izi</strong>Public içerikte hangi kaynaklardan yararlanıldığı takip edilir.</div>
+          <div class="ops-module-item"><strong>Son kontrol</strong>Yayın öncesi kategori, kavram ve metin kalitesi kontrol edilir.</div>
+        </div>
+      </div>
+
+      <div class="ops-flow archive-ops-section" data-ops-view="overview">
         <div class="ops-step"><div class="ops-step-num">01</div><strong>Kaynak girer</strong><span>Yayın, transkript, hadis, slayt veya standart sisteme alınır.</span></div>
         <div class="ops-step"><div class="ops-step-num">02</div><strong>Görev atanır</strong><span>Kişi, tarih, durum ve çalışma notu belirlenir.</span></div>
         <div class="ops-step"><div class="ops-step-num">03</div><strong>Çalışma yapılır</strong><span>Kullanıcı soru-cevap kaydını sistem içinde hazırlar.</span></div>
@@ -1193,7 +1287,7 @@ canvas{width:100%!important;}
         <div class="ops-step"><div class="ops-step-num">05</div><strong>Arşiv adayı olur</strong><span>Onaylanan kayıtlar ileride public arşive hazırlanır.</span></div>
       </div>
 
-      <div class="ops-note">
+      <div class="ops-note archive-ops-section" data-ops-view="overview">
         Bu alan yalnız süper admin tarafından test edilir. Şimdilik kayıtlar sistem içinde pilot kaynak havuzu olarak tutulur; root public arşiv açılmaz, kullanıcı ekranları değişmez, Google Drive otomatik importu sonraki ayrı adımdır.
       </div>
     </div>
@@ -1455,7 +1549,8 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',sourceSubmitInFlight:false};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',sourceSubmitInFlight:false,view:'overview'};
+const ARCHIVE_OPS_VIEWS=['overview','sources','library','publishing','work','texts','import','candidates'];
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=200000;
@@ -1760,6 +1855,29 @@ async function doLogout(){
 function toggleMenu(){el('hamburger').classList.toggle('open');el('mobileMenu').classList.toggle('open');}
 function closeMobileMenu(){el('hamburger').classList.remove('open');el('mobileMenu').classList.remove('open');}
 function mNav(tab){closeMobileMenu();showTab(tab);}
+function normalizeArchiveOpsView(view){return ARCHIVE_OPS_VIEWS.includes(view)?view:'overview';}
+function updateArchiveOpsNavState(){
+  document.querySelectorAll('.archive-ops-nav,.archive-ops-parent').forEach(e=>e.classList.remove('active-tab'));
+  if(!canUseArchiveOps())return;
+  document.querySelectorAll('.archive-ops-parent').forEach(e=>e.classList.add('active-tab'));
+  document.querySelectorAll(`.archive-ops-nav[data-ops-view="${archiveOpsState.view}"]`).forEach(e=>e.classList.add('active-tab'));
+}
+function renderArchiveOpsView(view=archiveOpsState.view){
+  archiveOpsState.view=normalizeArchiveOpsView(view);
+  document.querySelectorAll('.archive-ops-section').forEach(section=>{
+    section.hidden=section.getAttribute('data-ops-view')!==archiveOpsState.view;
+  });
+  updateArchiveOpsNavState();
+  if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
+}
+function openArchiveOps(view='overview'){
+  archiveOpsState.view=normalizeArchiveOpsView(view);
+  showTab('archiveOps');
+}
+function mArchiveOps(view='overview'){
+  closeMobileMenu();
+  openArchiveOps(view);
+}
 
 function showTab(name){
   refreshRouteScopedVisibility();
@@ -1769,14 +1887,15 @@ function showTab(name){
   el(`tabContent-${name}`).classList.add('active');
   const cap=name.charAt(0).toUpperCase()+name.slice(1);
   const b=el(`tabBtn${cap}`);if(b)b.classList.add('active-tab');
-  document.querySelectorAll(`.side-link[data-tab="${name}"]`).forEach(e=>e.classList.add('active-tab'));
+  if(name==='archiveOps')updateArchiveOpsNavState();
+  else document.querySelectorAll(`.side-link[data-tab="${name}"]`).forEach(e=>e.classList.add('active-tab'));
   if(name==='gecmis')loadHistory();
   if(name==='dash')loadDash();
   if(name==='ai')loadAiReports();
   if(name==='onay')loadOnay();
   if(name==='feedback')loadFeedbackCenter();
   if(name==='corrections')loadCorrectionPackages();
-  if(name==='archiveOps')loadArchiveOpsSources();
+  if(name==='archiveOps')renderArchiveOpsView();
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
   if(name==='msglog')loadMessageLog();
   if(name==='resolution')loadResolutionResponses();
@@ -4355,13 +4474,17 @@ function clearArchiveSourceForm(){
   updateArchiveSourceCount();
   setArchiveOpsStatus('');
 }
-function setArchiveSourceSearch(value){
+function setArchiveSourceSearch(value,targetView){
   const query=typeof value==='string'?value:(el('archiveSourceSearch')?.value||'');
   archiveOpsState.query=query;
   const hero=el('archiveSourceSearch');
   const list=el('archiveSourceListSearch');
   if(hero&&hero.value!==query)hero.value=query;
   if(list&&list.value!==query)list.value=query;
+  if(targetView){
+    renderArchiveOpsView(targetView);
+    return;
+  }
   loadArchiveOpsSources();
 }
 function setArchiveSourceFilter(){
@@ -4518,6 +4641,7 @@ function editArchiveSource(id){
   el('archiveSourceNote').value=source.note||'';
   updateArchiveSourceCount();
   setArchiveOpsStatus('Kayıt forma alındı. Değişiklikleri saklayabilirsiniz.','ok');
+  renderArchiveOpsView('sources');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function copyArchiveSourceText(){
