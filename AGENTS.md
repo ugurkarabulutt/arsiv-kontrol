@@ -128,9 +128,15 @@ tespit edilir).
   `Yayın Görevleri`, `Çalışma Kayıtları`, `Hadis ve Slayt Metinleri`, `İçe Aktarım Merkezi`
   ve `Public Arşiv Adayları` alt başlıkları açılır, tekrar tıklanınca kapanır. Bu adımda
   backend/DB/schema/root `/` değişmedi, süper admin rol mimarisi değiştirilmedi ve public
-  frontend dosyalarına dokunulmadı. Doğrulama: `npm.cmd run check` başarılı, 86/86 test
-  geçti; statik DOM kontrolü kapalı alt menü işaretlerini doğruladı. Production deploy
-  henüz yapılmadı.
+  frontend dosyalarına dokunulmadı. Runtime commit `5583111` GitHub'a push edildi ve
+  production'a alındı. Production deploy:
+  `https://arsiv-kontrol-qc9fvavzj-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test
+  geçti; statik DOM kontrolü kapalı alt menü işaretlerini doğruladı. Canlı smoke:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  manifest, `sw.js` ve favicon başarılı. Canlı HTML'de `toggleArchiveOpsMenu`,
+  kapalı mobil/masaüstü alt menü CSS'i ve `archive-ops-menu-group` mevcut; eski geçici
+  `adminRouteProbe` yok.
 - **Arşiv Operasyon Merkezi alt menü desenine taşındı:** `/admin` içindeki süper admin
   `Arşiv Operasyon Merkezi` artık tek uzun sayfa yerine WordPress benzeri ana menü + alt
   ekran yapısıyla çalışır. Sol menü ve mobil menü altında `Genel Bakış`, `Kaynak Kayıtları`,

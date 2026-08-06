@@ -9,6 +9,11 @@
   dokunulmadı. Süper admin rol mimarisi aynı kaldı.
 - Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Ek statik DOM kontrolü kapalı
   alt menü işaretlerini doğruladı.
+- Runtime commit `5583111` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-qc9fvavzj-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. Canlı HTML'de
+  kapalı alt menü işaretleri mevcut; eski geçici `adminRouteProbe` yok.
 
 - `/admin` Arşiv Operasyon Merkezi tek uzun sayfa yerine alt menülü odak ekran yapısına
   taşındı. Süper admin menüsünde `Genel Bakış`, `Kaynak Kayıtları`, `Kaynak Havuzu`,
