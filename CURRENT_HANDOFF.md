@@ -2,6 +2,14 @@
 
 ## 2026-08-06 Codex Güncel Durum
 
+- `/admin` Arşiv Operasyon Merkezi menüsü kapalı/açılır hale getirildi. Mobil ve masaüstü
+  menüde önce yalnız ana başlık görünür; ana başlığa tıklanınca alt başlıklar açılır, tekrar
+  tıklanınca kapanır. Bu adımda `index.html`, `scripts/check-frontend.js`, `AGENTS.md` ve
+  `CURRENT_HANDOFF.md` değişti; backend/DB/schema/root `/` ve public frontend dosyalarına
+  dokunulmadı. Süper admin rol mimarisi aynı kaldı.
+- Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Ek statik DOM kontrolü kapalı
+  alt menü işaretlerini doğruladı.
+
 - `/admin` Arşiv Operasyon Merkezi tek uzun sayfa yerine alt menülü odak ekran yapısına
   taşındı. Süper admin menüsünde `Genel Bakış`, `Kaynak Kayıtları`, `Kaynak Havuzu`,
   `Yayın Görevleri`, `Çalışma Kayıtları`, `Hadis ve Slayt Metinleri`, `İçe Aktarım Merkezi`

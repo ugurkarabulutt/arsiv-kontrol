@@ -121,6 +121,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-06
+- **Arşiv Operasyon Merkezi menüsü kapalı/açılır hale getirildi:** `/admin` içindeki
+  süper admin `Arşiv Operasyon Merkezi` alt başlıkları artık menü açıldığında doğrudan
+  uzun liste olarak görünmez. Mobil ve masaüstü menüde önce yalnız ana başlık görünür;
+  kullanıcı ana başlığa tıklayınca `Genel Bakış`, `Kaynak Kayıtları`, `Kaynak Havuzu`,
+  `Yayın Görevleri`, `Çalışma Kayıtları`, `Hadis ve Slayt Metinleri`, `İçe Aktarım Merkezi`
+  ve `Public Arşiv Adayları` alt başlıkları açılır, tekrar tıklanınca kapanır. Bu adımda
+  backend/DB/schema/root `/` değişmedi, süper admin rol mimarisi değiştirilmedi ve public
+  frontend dosyalarına dokunulmadı. Doğrulama: `npm.cmd run check` başarılı, 86/86 test
+  geçti; statik DOM kontrolü kapalı alt menü işaretlerini doğruladı. Production deploy
+  henüz yapılmadı.
 - **Arşiv Operasyon Merkezi alt menü desenine taşındı:** `/admin` içindeki süper admin
   `Arşiv Operasyon Merkezi` artık tek uzun sayfa yerine WordPress benzeri ana menü + alt
   ekran yapısıyla çalışır. Sol menü ve mobil menü altında `Genel Bakış`, `Kaynak Kayıtları`,

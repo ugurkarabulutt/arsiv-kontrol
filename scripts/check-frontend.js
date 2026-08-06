@@ -400,6 +400,10 @@ if (
   !html.includes('function openArchiveOps') ||
   !html.includes('function renderArchiveOpsView') ||
   !html.includes('function mArchiveOps') ||
+  !html.includes('function toggleArchiveOpsMenu') ||
+  !html.includes("archiveOpsState.menuOpen=false") ||
+  !html.includes('.archive-ops-menu-group') ||
+  !html.includes('.mobile-menu-group:not(.open) .mobile-subnav') ||
   !html.includes('data-ops-view="sources"') ||
   !html.includes('data-ops-view="library"') ||
   !html.includes("if(name==='archiveOps')renderArchiveOpsView()") ||
