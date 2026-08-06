@@ -9,7 +9,13 @@
   korundu. `Forma Aktar` / `Atla` butonları mobilde düzenli iki kolon davranışı alır.
   Değişen dosyalar: `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`. Backend/DB/schema/root `/` ve public frontend dirty dosyalarına
-  dokunulmadı. Bu düzeltme için `npm.cmd run check` ve canlı smoke çalıştırılmalıdır.
+  dokunulmadı. Runtime commit `3e0b253` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-kkqal7n74-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı,
+  86/86 test geçti. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js`, favicon ve import API güvenlik
+  kontrolü başarılı. Canlı HTML'de mobil taşma koruma marker'ları mevcut; `adminRouteProbe`
+  ve public preview flag'i yok.
 
 - `/admin` Arşiv Operasyon Merkezi `İçe Aktarım Merkezi` kalıcı parti yapısına geçirildi.
   Yeni şema `archive_import_batches` ve `archive_import_items` tablolarını içerir. Süper admin

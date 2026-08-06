@@ -130,7 +130,14 @@ tespit edilir).
   satırlar kutu dışına çıkmadan kırılır; `Forma Aktar` / `Atla` butonları mobilde düzenli
   iki kolon davranışı alır. Bu adım backend/DB/schema/root `/` veya public frontend dosyalarına
   dokunmadı. `scripts/check-frontend.js` bu mobil taşma korumalarını regresyon olarak kontrol
-  eder.
+  eder. Runtime commit `3e0b253` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-kkqal7n74-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store
+  doğru. `/api/archive-ops/import-batches` oturumsuz erişimde `401` döndü. Canlı HTML'de
+  mobil taşma koruma marker'ları mevcut; eski geçici `adminRouteProbe` ve public preview flag'i
+  yok.
 - **İçe Aktarım Merkezi kalıcı parti yapısına hazırlandı:** `/admin` Arşiv Operasyon Merkezi
   içindeki `İçe Aktarım Merkezi` artık yalnız tarayıcı hafızasında duran geçici kuyruk değil,
   Supabase tabanlı `archive_import_batches` ve `archive_import_items` tablolarıyla kalıcı
