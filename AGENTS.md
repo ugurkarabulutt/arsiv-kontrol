@@ -130,8 +130,15 @@ tespit edilir).
   kaynak forma alındığında `Kaynak Kayıtları` ekranına taşır. Backend/DB/schema değişmedi,
   root `/` public cutover yapılmadı, public frontend dosyalarına dokunulmadı. Bundan sonra
   dashboard içinde birden çok işi olan diğer ana başlıklar da bu alt menü/odak ekran desenine
-  taşınmalıdır. Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti; statik DOM kontrolü
-  operasyon alt ekran işaretlerini doğruladı. Bu adımda production deploy henüz yapılmadı.
+  taşınmalıdır. Runtime commit `c0a29d0` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-jmn0ywmnf-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı,
+  86/86 test geçti; statik DOM kontrolü operasyon alt ekran işaretlerini doğruladı.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları
+  `X-Robots-Tag: noindex, nofollow` ve strict no-store. Canlı HTML'de
+  `Arşiv Operasyon Merkezi`, `data-ops-view="sources"`, `data-ops-view="library"`,
+  `mArchiveOps` ve `openArchiveOps` mevcut; eski geçici `adminRouteProbe` yok.
 - **Arşiv kaynak kayıtları tablo destekli hale getirildi:** `/admin` Arşiv Operasyon Merkezi
   kaynak kayıt sistemi pilot `settings.archive_ops_sources` JSON deposuna bağlı kalmadan gerçek
   Supabase tablolarını kullanabilecek şekilde hazırlandı. Yeni `archive_sources`,

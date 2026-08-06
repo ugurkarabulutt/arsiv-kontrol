@@ -15,6 +15,12 @@
 - Doğrulama: `npm.cmd run check` başarılı, 86/86 test geçti. Ek statik DOM kontrolü alt ekran
   işaretleri ve davranış fonksiyonlarının varlığını doğruladı. `git diff --check` yalnız mevcut
   CRLF uyarılarını verdi.
+- Runtime commit `c0a29d0` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-jmn0ywmnf-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de Arşiv Operasyon Merkezi alt menü
+  işaretleri mevcut; eski geçici `adminRouteProbe` yok.
 - Not: Kullanıcının isteğiyle ileride dashboard içinde birden çok işi olan diğer ana başlıklar
   da aynı alt menü / odak ekran desenine taşınmalıdır.
 
