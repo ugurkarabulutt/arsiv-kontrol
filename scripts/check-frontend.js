@@ -451,6 +451,8 @@ if (
   !server.includes("app.put('/api/archive-ops/import-items/:id'") ||
   !server.includes("app.delete('/api/archive-ops/import-items/:id'") ||
   !server.includes('ARCHIVE_SOURCE_TEXT_LIMIT = 200000') ||
+  !server.includes('function normalizeArchiveSourceTypes') ||
+  !server.includes(".in('source_type', types)") ||
   !server.includes('HAS_ARCHIVE_IMPORT_TABLES') ||
   !server.includes('archiveImportBatchToDbRow') ||
   !server.includes('archiveImportItemToDbRow') ||
@@ -467,6 +469,14 @@ if (
   !schema.includes('archive_import_items_batch_idx') ||
   !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
+  !html.includes('id="archiveTextSearch"') ||
+  !html.includes('id="archiveTextList"') ||
+  !html.includes('id="archiveTextDetail"') ||
+  !html.includes('function loadArchiveTextSources') ||
+  !html.includes('function renderArchiveTextLibrary') ||
+  !html.includes("params.set('types','hadis,slayt')") ||
+  !html.includes("newArchiveTextSource('hadis')") ||
+  !html.includes('function openArchiveTextSource') ||
   !html.includes('id="archiveSourceText"') ||
   !html.includes('archiveImportFiles') ||
   !html.includes('ops-import-workspace') ||

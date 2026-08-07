@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-07
+- **Hadis ve Slayt Metinleri ekranı gerçek kaynak kayıtlarına bağlandı:** `/admin` süper
+  admin Arşiv Operasyon Merkezi içindeki `Hadis ve Slayt Metinleri` artık statik açıklama
+  alanı değil, kaynak havuzundaki `hadis` ve `slayt` türlerini ayrı bir çalışma ekranında
+  gösteren gerçek metin envanteridir. Süper admin bu ekrandan hadis/slayt metinlerinde
+  arama yapabilir, tür ve durum filtresi kullanabilir, toplam/hadis/slayt/arşiv adayı
+  sayılarını görebilir, seçtiği kaydın tam metnini okuyabilir, metni kopyalayabilir,
+  kaydı Kaynak Havuzu'nda açabilir veya kaynak formuna alıp düzenleyebilir. `Yeni Hadis
+  Metni`, `Yeni Slayt Metni` ve `Dosyadan Ekle` aksiyonları kaynak kayıt sistemi ve içe
+  aktarım merkeziyle aynı veri modeline bağlıdır. Backend kaynak liste API'si `types`
+  parametresiyle çoklu tür filtresini destekler; böylece hadis/slayt ekranı genel ilk
+  300 kayıt sınırına takılmadan doğrudan ilgili türleri ister. Bu adım DB/schema/root `/`
+  veya public frontend hattına dokunmaz. Değişen dosyalar: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Doğrulama:
+  `npm.cmd run check` başarılı, 258/258 test geçti.
 - **Arşiv Operasyon Merkezi Yayın Görevleri gerçek akışa bağlandı:** `/admin` süper admin
   Arşiv Operasyon Merkezi içindeki `Yayın Görevleri` ekranı artık statik açıklama alanı
   değil, gerçek görev takip ekranıdır. Süper admin yayın görevi oluşturabilir; durum,

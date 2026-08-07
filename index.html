@@ -399,6 +399,9 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-file-name{font-size:14px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
 .ops-file-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
 .ops-file-preview{font-size:12px;line-height:1.5;color:var(--ink2);margin-top:8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.ops-text-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.ops-text-actions button{white-space:nowrap;}
+.ops-text-empty{border:1px dashed var(--border);background:var(--bg);padding:16px;font-size:13px;line-height:1.6;color:var(--ink3);}
 .ops-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
 .ops-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.3);padding:3px 6px;}
 .ops-detail{border:1px solid var(--bord2);background:var(--surface-strong);min-height:360px;min-width:0;max-width:100%;box-sizing:border-box;}
@@ -456,7 +459,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1522,14 +1525,44 @@ canvas{width:100%!important;}
         </div>
       </div>
 
-      <div class="ops-module-page archive-ops-section" data-ops-view="texts" hidden>
-        <div class="ops-module-kicker">Metin kaynakları</div>
-        <div class="ops-module-title">Hadis ve slaytlar bağlantı değil, okunabilir metin olarak tutulacak.</div>
-        <div class="ops-module-copy">Bu bölüm hadis, slayt ve standart metinlerini sistem içinde aranabilir metin halinde tutmak için ayrıldı. Kullanıcı kaynak seçerken linke mecbur kalmayacak; içerik sistem içinde okunabilir ve seçilebilir olacak.</div>
-        <div class="ops-module-list">
-          <div class="ops-module-item"><strong>Hadis metni</strong>Kaynak adı, not ve tam metin birlikte saklanır.</div>
-          <div class="ops-module-item"><strong>Slayt metni</strong>Slayt içeriği aranabilir ve çalışmaya bağlanabilir.</div>
-          <div class="ops-module-item"><strong>Standart metni</strong>Ekibin esas aldığı imlâ ve içerik kararları kaynak gibi yönetilir.</div>
+      <div class="ops-panel archive-ops-section" data-ops-view="texts" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Hadis ve Slayt Metinleri</div>
+            <div class="ops-panel-sub">Hadis ve slayt kaynaklarını linke bağlı kalmadan tam metin olarak bulun, okuyun ve düzenleyin.</div>
+          </div>
+          <div class="ops-text-actions">
+            <button class="btn-primary" onclick="newArchiveTextSource('hadis')">Yeni Hadis Metni</button>
+            <button class="btn-sec" onclick="newArchiveTextSource('slayt')">Yeni Slayt Metni</button>
+            <button class="btn-sec" onclick="renderArchiveOpsView('import')">Dosyadan Ekle</button>
+          </div>
+        </div>
+        <div class="ops-panel-body">
+          <div class="ops-filter-row">
+            <input class="ops-field" id="archiveTextSearch" placeholder="Hadis, slayt, kaynak adı, kategori veya metin içinde ara..." oninput="setArchiveTextSearch(this.value)">
+            <select class="ops-field" id="archiveTextTypeFilter" onchange="setArchiveTextFilter()">
+              <option value="">Hadis ve slaytlar</option>
+              <option value="hadis">Sadece hadis</option>
+              <option value="slayt">Sadece slayt</option>
+            </select>
+            <select class="ops-field" id="archiveTextStatusFilter" onchange="setArchiveTextFilter()">
+              <option value="">Tüm durumlar</option>
+              <option value="kaynak">Kaynak</option>
+              <option value="hazirlaniyor">Hazırlanıyor</option>
+              <option value="kontrol">Kontrol</option>
+              <option value="arsiv_adayi">Arşiv adayı</option>
+            </select>
+          </div>
+          <div class="ops-file-summary" id="archiveTextSummary"></div>
+          <div class="ops-status" id="archiveTextStatusMsg"></div>
+          <div class="ops-source-layout">
+            <div class="ops-source-list" id="archiveTextList">
+              <div class="empty-state">Hadis ve slayt metinleri yükleniyor...</div>
+            </div>
+            <div class="ops-detail" id="archiveTextDetail">
+              <div class="empty-state">Bir hadis veya slayt kaydı seçildiğinde tam metin burada açılır.</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1863,8 +1896,9 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates'];
+const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
@@ -2202,6 +2236,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   updateArchiveOpsNavState();
   if(archiveOpsState.view==='files')loadArchiveOpsSources({ignoreFilters:true});
   else if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
+  else if(archiveOpsState.view==='texts')loadArchiveTextSources();
   if(archiveOpsState.view==='publishing'){
     loadArchiveOpsSources({ignoreFilters:true});
     loadArchiveWorkItems({silent:true});
@@ -4960,6 +4995,186 @@ function setArchiveFileFilter(){
   renderArchiveFileCenter();
 }
 async function openArchiveFileSource(id){
+  renderArchiveOpsView('library');
+  await openArchiveSource(id);
+  window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+function setArchiveTextStatus(message='',kind=''){
+  const box=el('archiveTextStatusMsg');
+  if(!box)return;
+  box.textContent=message||'';
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function archiveTextHaystack(source){
+  return [
+    source?.title,
+    source?.category,
+    source?.sourceUrl,
+    source?.note,
+    source?.textPreview,
+    source?.sourceText,
+    ...(source?.tags||[])
+  ].join(' ').toLocaleLowerCase('tr-TR');
+}
+function archiveTextFilteredSources(){
+  const query=String(archiveOpsState.textQuery||'').trim().toLocaleLowerCase('tr-TR');
+  return (archiveOpsState.sources||[]).filter(source=>{
+    if(!ARCHIVE_TEXT_SOURCE_TYPES.has(source.sourceType))return false;
+    if(archiveOpsState.textType&&source.sourceType!==archiveOpsState.textType)return false;
+    if(archiveOpsState.textStatus&&source.status!==archiveOpsState.textStatus)return false;
+    if(query&&!archiveTextHaystack(source).includes(query))return false;
+    return true;
+  });
+}
+function archiveTextSummaryHtml(items=[]){
+  const hadisCount=items.filter(item=>item.sourceType==='hadis').length;
+  const slaytCount=items.filter(item=>item.sourceType==='slayt').length;
+  const candidateCount=items.filter(item=>item.status==='arsiv_adayi').length;
+  return `
+    <div class="ops-file-summary-item"><strong>${items.length.toLocaleString('tr-TR')}</strong><span>Görünen metin</span></div>
+    <div class="ops-file-summary-item"><strong>${hadisCount.toLocaleString('tr-TR')}</strong><span>Hadis</span></div>
+    <div class="ops-file-summary-item"><strong>${slaytCount.toLocaleString('tr-TR')}</strong><span>Slayt</span></div>
+    <div class="ops-file-summary-item"><strong>${candidateCount.toLocaleString('tr-TR')}</strong><span>Arşiv adayı</span></div>
+  `;
+}
+function archiveTextCardHtml(source){
+  const active=archiveOpsState.activeSource?.id===source.id?' active':'';
+  const tags=(source.tags||[]).slice(0,4).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
+  return `
+    <button class="ops-source-item${active}" onclick="openArchiveTextSource(${attrJson(source.id)})">
+      <div class="ops-source-title">${esc(source.title||'Başlıksız metin')}</div>
+      <div class="ops-source-meta">
+        <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
+        <span>${esc(archiveSourceStatusLabel(source.status))}</span>
+        <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
+        ${source.category?`<span>${esc(source.category)}</span>`:''}
+      </div>
+      <div class="ops-source-preview">${esc(source.textPreview||'Ön izleme yok.')}</div>
+      ${tags?`<div class="ops-tags">${tags}</div>`:''}
+    </button>
+  `;
+}
+function renderArchiveTextLibrary(){
+  const search=el('archiveTextSearch');
+  const type=el('archiveTextTypeFilter');
+  const status=el('archiveTextStatusFilter');
+  if(search&&search.value!==archiveOpsState.textQuery)search.value=archiveOpsState.textQuery;
+  if(type&&type.value!==archiveOpsState.textType)type.value=archiveOpsState.textType;
+  if(status&&status.value!==archiveOpsState.textStatus)status.value=archiveOpsState.textStatus;
+  const items=archiveTextFilteredSources();
+  const summary=el('archiveTextSummary');
+  const list=el('archiveTextList');
+  if(summary)summary.innerHTML=archiveTextSummaryHtml(items);
+  if(!list)return;
+  if(!archiveOpsState.sources.length){
+    list.innerHTML='<div class="empty-state">Henüz hadis veya slayt metni yok. Yeni kayıt açabilir ya da dosyadan ekleyebilirsiniz.</div>';
+    renderArchiveTextDetail(null);
+    return;
+  }
+  if(!items.length){
+    list.innerHTML='<div class="empty-state">Bu aramaya uygun hadis veya slayt metni bulunamadı.</div>';
+    renderArchiveTextDetail(null);
+    return;
+  }
+  list.innerHTML=items.map(archiveTextCardHtml).join('');
+  if(archiveOpsState.activeSource&&!ARCHIVE_TEXT_SOURCE_TYPES.has(archiveOpsState.activeSource.sourceType)){
+    renderArchiveTextDetail(null);
+  }
+}
+function renderArchiveTextDetail(source){
+  const box=el('archiveTextDetail');
+  if(!box)return;
+  if(!source){
+    box.innerHTML='<div class="empty-state">Bir hadis veya slayt kaydı seçildiğinde tam metin burada açılır.</div>';
+    return;
+  }
+  const tags=(source.tags||[]).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
+  box.innerHTML=`
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(source.title||'Başlıksız metin')}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
+          <span>${esc(archiveSourceStatusLabel(source.status))}</span>
+          <span>${archiveSourceDate(source.sourceDate)}</span>
+          <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="editArchiveTextSource(${attrJson(source.id)})">Forma Al</button>
+    </div>
+    <div class="ops-detail-body">
+      ${source.category?`<p><strong>Kategori:</strong> ${esc(source.category)}</p>`:''}
+      ${source.sourceUrl?`<p><strong>Kaynak bilgisi:</strong> ${esc(source.sourceUrl)}</p>`:''}
+      ${source.note?`<p><strong>Not:</strong> ${esc(source.note)}</p>`:''}
+      ${tags?`<div class="ops-tags">${tags}</div>`:''}
+      <div class="ops-source-actions">
+        <button class="btn-sec" onclick="copyArchiveTextSource()">Metni Kopyala</button>
+        <button class="btn-sec" onclick="editArchiveTextSource(${attrJson(source.id)})">Düzenle</button>
+        <button class="btn-sec" onclick="openArchiveTextInLibrary(${attrJson(source.id)})">Kaynak Havuzunda Aç</button>
+      </div>
+      <div class="ops-preview-text" style="margin-top:12px">${esc(source.sourceText||source.textPreview||'')}</div>
+    </div>
+  `;
+}
+async function loadArchiveTextSources(){
+  if(!canUseArchiveOps())return;
+  const params=new URLSearchParams();
+  if(archiveOpsState.textQuery)params.set('q',archiveOpsState.textQuery);
+  if(archiveOpsState.textType)params.set('type',archiveOpsState.textType);
+  else params.set('types','hadis,slayt');
+  if(archiveOpsState.textStatus)params.set('status',archiveOpsState.textStatus);
+  const list=el('archiveTextList');
+  if(list&&!archiveOpsState.sources.length)list.innerHTML='<div class="empty-state">Hadis ve slayt metinleri yükleniyor...</div>';
+  const data=await api('GET',`/api/archive-ops/sources${params.toString()?`?${params}`:''}`);
+  if(data.error){
+    if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+    setArchiveTextStatus(data.error,'err');
+    return;
+  }
+  archiveOpsState.sources=data.sources||[];
+  archiveOpsState.counts=data.counts||null;
+  renderArchiveTextLibrary();
+  setArchiveTextStatus('');
+}
+function setArchiveTextSearch(value){
+  archiveOpsState.textQuery=String(value||'');
+  loadArchiveTextSources();
+}
+function setArchiveTextFilter(){
+  archiveOpsState.textType=el('archiveTextTypeFilter')?.value||'';
+  archiveOpsState.textStatus=el('archiveTextStatusFilter')?.value||'';
+  loadArchiveTextSources();
+}
+function newArchiveTextSource(type='hadis'){
+  const sourceType=type==='slayt'?'slayt':'hadis';
+  clearArchiveSourceForm();
+  if(el('archiveSourceType'))el('archiveSourceType').value=sourceType;
+  if(el('archiveSourceStatus'))el('archiveSourceStatus').value='kaynak';
+  renderArchiveOpsView('sources');
+  setArchiveOpsStatus(`${archiveSourceTypeLabel(sourceType)} metni için kaynak formu açıldı. Metni ekleyip Kaynak Kaydını Sakla ile kaydedin.`,'ok');
+  window.setTimeout(()=>el('archiveSourceTitle')?.focus(),80);
+}
+async function openArchiveTextSource(id){
+  const data=await api('GET',`/api/archive-ops/sources/${encodeURIComponent(id)}`);
+  if(data.error){await showSystemAlert('Metin açılamadı',data.error,'danger');return;}
+  archiveOpsState.activeSource=data.source;
+  renderArchiveTextLibrary();
+  renderArchiveTextDetail(data.source);
+}
+function editArchiveTextSource(id){
+  editArchiveSource(id);
+}
+async function copyArchiveTextSource(){
+  const text=archiveOpsState.activeSource?.sourceText||'';
+  if(!text){setArchiveTextStatus('Kopyalanacak tam metin bulunamadı.','err');return;}
+  try{
+    await navigator.clipboard.writeText(text);
+    setArchiveTextStatus('Metin kopyalandı.','ok');
+  }catch(_){
+    await showSystemAlert('Kopyalama yapılamadı','Tarayıcı kopyalama izni vermedi. Metni manuel seçebilirsiniz.','danger');
+  }
+}
+async function openArchiveTextInLibrary(id){
   renderArchiveOpsView('library');
   await openArchiveSource(id);
   window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);

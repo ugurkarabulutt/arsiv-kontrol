@@ -2,6 +2,20 @@
 
 ## 2026-08-07 Codex Güncel Durum
 
+- Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Hadis ve
+  Slayt Metinleri` ekranı artık statik açıklama alanı değil, kaynak havuzundaki `hadis` ve
+  `slayt` türlerini ayrı bir çalışma ekranında gösteren gerçek metin envanteridir. Süper
+  admin hadis/slayt metinlerinde arama yapabilir, tür ve durum filtresi kullanabilir,
+  toplam/hadis/slayt/arşiv adayı sayılarını görebilir, seçtiği kaydın tam metnini okuyabilir,
+  metni kopyalayabilir, kaydı Kaynak Havuzu'nda açabilir veya kaynak formuna alıp
+  düzenleyebilir. `Yeni Hadis Metni`, `Yeni Slayt Metni` ve `Dosyadan Ekle` aksiyonları
+  kaynak kayıt sistemi ve içe aktarım merkeziyle aynı veri modeline bağlıdır. Backend kaynak
+  liste API'si `types` parametresiyle çoklu tür filtresini destekler; böylece hadis/slayt
+  ekranı genel ilk 300 kayıt sınırına takılmadan doğrudan ilgili türleri ister. Kapsam:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  DB/schema/root `/` ve public frontend hattına dokunulmadı. Doğrulama: `npm.cmd run check`
+  başarılı, 258/258 test geçti.
+
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Yayın
   Görevleri` ekranı artık statik açıklama alanı değil, gerçek görev takip ekranıdır. Süper
   admin yayın görevi oluşturabilir; durum, öncelik, atanacak kişi, hedef tarih, yayın tarihi,

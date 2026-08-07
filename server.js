@@ -772,6 +772,11 @@ function normalizeArchiveSourceType(value) {
   return ARCHIVE_SOURCE_TYPES.includes(type) ? type : 'dokuman';
 }
 
+function normalizeArchiveSourceTypes(value) {
+  const raw = Array.isArray(value) ? value.join(',') : String(value || '');
+  return [...new Set(raw.split(',').map(part => String(part || '').trim()).filter(type => ARCHIVE_SOURCE_TYPES.includes(type)))];
+}
+
 function normalizeArchiveSourceStatus(value) {
   const status = String(value || '').trim();
   return ARCHIVE_SOURCE_STATUSES.includes(status) ? status : 'kaynak';
@@ -1131,13 +1136,16 @@ async function listArchiveOpsSources(query = {}) {
   await ensureArchiveSourcesMigratedFromSettings();
   const q = String(query.q || '').trim();
   const type = String(query.type || '').trim();
+  const types = normalizeArchiveSourceTypes(query.types);
+  if (ARCHIVE_SOURCE_TYPES.includes(type) && !types.includes(type)) types.push(type);
   const status = String(query.status || '').trim();
   let sourceQuery = supabase
     .from('archive_sources')
     .select(ARCHIVE_SOURCE_DB_LIST_COLUMNS, { count: 'exact' })
     .order('updated_at', { ascending: false })
     .limit(ARCHIVE_SOURCE_LIST_LIMIT);
-  if (type) sourceQuery = sourceQuery.eq('source_type', type);
+  if (types.length === 1) sourceQuery = sourceQuery.eq('source_type', types[0]);
+  else if (types.length > 1) sourceQuery = sourceQuery.in('source_type', types);
   if (status) sourceQuery = sourceQuery.eq('status', status);
   if (q) sourceQuery = sourceQuery.ilike('search_blob', `%${escapeSupabaseLikePattern(q)}%`);
   const { data, error, count } = await sourceQuery;
@@ -2280,9 +2288,11 @@ async function deleteArchiveImportItem(itemId, actor = 'Sistem') {
 function filterArchiveSources(sources, query = {}) {
   const q = String(query.q || '').trim().toLocaleLowerCase('tr-TR');
   const type = String(query.type || '').trim();
+  const types = normalizeArchiveSourceTypes(query.types);
+  if (ARCHIVE_SOURCE_TYPES.includes(type) && !types.includes(type)) types.push(type);
   const status = String(query.status || '').trim();
   return sources.filter(source => {
-    if (type && source.sourceType !== type) return false;
+    if (types.length && !types.includes(source.sourceType)) return false;
     if (status && source.status !== status) return false;
     if (!q) return true;
     const haystack = [
