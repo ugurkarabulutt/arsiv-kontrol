@@ -441,6 +441,10 @@ if (
   !server.includes("app.post('/api/archive-ops/work-items'") ||
   !server.includes("app.put('/api/archive-ops/work-items/:id'") ||
   !server.includes("app.delete('/api/archive-ops/work-items/:id'") ||
+  !server.includes("app.get('/api/archive-ops/publish-tasks'") ||
+  !server.includes("app.post('/api/archive-ops/publish-tasks'") ||
+  !server.includes("app.put('/api/archive-ops/publish-tasks/:id'") ||
+  !server.includes("app.delete('/api/archive-ops/publish-tasks/:id'") ||
   !server.includes("app.get('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches/:id/items'") ||
@@ -457,7 +461,9 @@ if (
   !schema.includes('create table if not exists public.archive_import_batches') ||
   !schema.includes('create table if not exists public.archive_import_items') ||
   !schema.includes('create table if not exists public.archive_work_items') ||
+  !schema.includes('create table if not exists public.archive_publish_tasks') ||
   !schema.includes('archive_work_items_status_idx') ||
+  !schema.includes('archive_publish_tasks_status_idx') ||
   !schema.includes('archive_import_items_batch_idx') ||
   !schema.includes('archive_sources_text_hash_idx') ||
   !html.includes('Hadis ve Slayt Metinleri') ||
@@ -480,6 +486,15 @@ if (
   !html.includes('function skipArchiveImportItem') ||
   !html.includes('function deleteArchiveImportItem') ||
   !html.includes('archiveWorkState') ||
+  !html.includes('archivePublishState') ||
+  !html.includes('id="archivePublishTitle"') ||
+  !html.includes('id="archivePublishSourceId"') ||
+  !html.includes('id="archivePublishWorkId"') ||
+  !html.includes('function loadArchivePublishTasks') ||
+  !html.includes('function saveArchivePublishTask') ||
+  !html.includes('function deleteArchivePublishTaskUi') ||
+  !html.includes('Yayın Görevini Sakla') ||
+  !html.includes('Yayın Görevleri') ||
   !html.includes('id="archiveWorkTitle"') ||
   !html.includes('id="archiveWorkSourceId"') ||
   !html.includes('function loadArchiveWorkItems') ||

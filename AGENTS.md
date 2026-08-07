@@ -121,6 +121,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-07
+- **Arşiv Operasyon Merkezi Yayın Görevleri gerçek akışa bağlandı:** `/admin` süper admin
+  Arşiv Operasyon Merkezi içindeki `Yayın Görevleri` ekranı artık statik açıklama alanı
+  değil, gerçek görev takip ekranıdır. Süper admin yayın görevi oluşturabilir; durum,
+  öncelik, atanacak kişi, hedef tarih, yayın tarihi, platform/program, yayın linki,
+  kategori, kavramlar, bağlı kaynak, bağlı çalışma kaydı, açıklama ve not tutabilir.
+  Kaynak Havuzu kayıtları ve Çalışma Kayıtları aranarak yayın görevine bağlanabilir;
+  seçilen görev detay panelinde açılır, düzenlenir veya silinir. Backend'e süper admin
+  korumalı `/api/archive-ops/publish-tasks` CRUD rotaları eklendi. Canlı DB'de
+  `archive_publish_tasks` tablosu varsa gerçek tablo kullanılır; tablo yoksa pilot kullanım
+  `settings.archive_ops_publish_tasks` JSON yedeğiyle çalışır. Kalıcı/ölçekli kullanım için
+  `schema.sql` içindeki `archive_publish_tasks` bloğu Supabase SQL Editor'de uygulanmalıdır.
+  Bu adım root `/` public cutover yapmaz ve public frontend hattına dokunmaz. Değişen
+  dosyalar: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Doğrulama: `npm.cmd run check` başarılı, 258/258 test
+  geçti. Bu adım henüz commit, push veya production deploy edilmedi.
 - **Çalışma kayıtları denetim/onay akışına bağlandı:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Çalışma Kayıtları` artık Metin Denetimi ile bağlantılı çalışır. Süper
   admin bir çalışma kaydının cevap taslağını veya cevap yoksa soru metnini `Denetime Aktar`

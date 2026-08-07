@@ -576,6 +576,7 @@ const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
 const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
+const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
@@ -583,6 +584,9 @@ const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', 'arsiv_ada
 const ARCHIVE_WORK_ITEM_LIMIT = 300;
 const ARCHIVE_WORK_STATUSES = ['taslak', 'hazirlaniyor', 'kontrol', 'onay_bekliyor', 'arsiv_adayi', 'tamamlandi'];
 const ARCHIVE_WORK_PRIORITIES = ['normal', 'onemli', 'kritik'];
+const ARCHIVE_PUBLISH_TASK_LIMIT = 300;
+const ARCHIVE_PUBLISH_STATUSES = ['planlandi', 'hazirlaniyor', 'kontrol', 'kaynak_bekliyor', 'arsiv_adayi', 'tamamlandi', 'iptal'];
+const ARCHIVE_PUBLISH_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -663,6 +667,30 @@ const ARCHIVE_WORK_ITEM_DB_LIST_COLUMNS = [
   'updated_at'
 ].join(',');
 const ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS = `${ARCHIVE_WORK_ITEM_DB_LIST_COLUMNS},question,answer_draft,note`;
+const ARCHIVE_PUBLISH_TASK_DB_LIST_COLUMNS = [
+  'id',
+  'title',
+  'status',
+  'priority',
+  'assigned_to',
+  'due_date',
+  'publish_date',
+  'publication_url',
+  'platform',
+  'source_id',
+  'source_title',
+  'work_item_id',
+  'work_item_title',
+  'category',
+  'topics',
+  'text_preview',
+  'text_length',
+  'created_by',
+  'updated_by',
+  'created_at',
+  'updated_at'
+].join(',');
+const ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS = `${ARCHIVE_PUBLISH_TASK_DB_LIST_COLUMNS},description,note`;
 const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
 const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
@@ -1572,6 +1600,336 @@ async function deleteArchiveWorkItem(id) {
   }
   const { data, error } = await supabase
     .from('archive_work_items')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data || null;
+}
+
+function archivePublishTaskId() {
+  return `pub-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeArchivePublishStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_PUBLISH_STATUSES.includes(status) ? status : 'planlandi';
+}
+
+function normalizeArchivePublishPriority(value) {
+  const priority = String(value || '').trim();
+  return ARCHIVE_PUBLISH_PRIORITIES.includes(priority) ? priority : 'normal';
+}
+
+function buildArchivePublishPreview(task = {}) {
+  return archiveTextPreview([
+    task.description,
+    task.note,
+    task.publicationUrl,
+    task.sourceTitle,
+    task.workItemTitle
+  ].filter(Boolean).join(' '), 320);
+}
+
+function buildArchivePublishSearchBlob(task = {}) {
+  return [
+    task.title,
+    task.status,
+    task.priority,
+    task.assignedTo,
+    task.publicationUrl,
+    task.platform,
+    task.sourceTitle,
+    task.workItemTitle,
+    task.category,
+    ...(Array.isArray(task.topics) ? task.topics : []),
+    task.description,
+    task.note
+  ].join(' ').replace(/\s+/g, ' ').trim().slice(0, ARCHIVE_SOURCE_TEXT_LIMIT + 4000);
+}
+
+function archivePublishTextLength(task = {}) {
+  return [task.description, task.note].join('\n').length;
+}
+
+function normalizeArchivePublishInput(input = {}, existing = {}) {
+  const description = String(input.description ?? existing.description ?? '').trim().slice(0, 30000);
+  const note = String(input.note ?? existing.note ?? '').trim().slice(0, 10000);
+  const publicationUrl = String(input.publicationUrl ?? input.publication_url ?? existing.publicationUrl ?? '').trim().slice(0, 700);
+  const rawTitle = String(input.title ?? existing.title ?? '').trim();
+  const title = (rawTitle || publicationUrl || description.slice(0, 120) || 'Başlıksız yayın görevi').trim().slice(0, 180);
+  return {
+    ...existing,
+    title,
+    status: normalizeArchivePublishStatus(input.status ?? existing.status),
+    priority: normalizeArchivePublishPriority(input.priority ?? existing.priority),
+    assignedTo: String(input.assignedTo ?? input.assigned_to ?? existing.assignedTo ?? '').trim().slice(0, 120),
+    dueDate: normalizeIsoDate(input.dueDate ?? input.due_date ?? existing.dueDate),
+    publishDate: normalizeIsoDate(input.publishDate ?? input.publish_date ?? existing.publishDate),
+    publicationUrl,
+    platform: String(input.platform ?? existing.platform ?? '').trim().slice(0, 80),
+    sourceId: String(input.sourceId ?? input.source_id ?? existing.sourceId ?? '').trim().slice(0, 160),
+    sourceTitle: String(input.sourceTitle ?? input.source_title ?? existing.sourceTitle ?? '').trim().slice(0, 220),
+    workItemId: String(input.workItemId ?? input.work_item_id ?? existing.workItemId ?? '').trim().slice(0, 160),
+    workItemTitle: String(input.workItemTitle ?? input.work_item_title ?? existing.workItemTitle ?? '').trim().slice(0, 220),
+    category: String(input.category ?? existing.category ?? '').trim().slice(0, 120),
+    topics: normalizeArchiveTags(input.topics ?? existing.topics),
+    description,
+    note
+  };
+}
+
+function archivePublishTaskToDbRow(task = {}) {
+  return {
+    id: task.id,
+    title: task.title || '',
+    status: task.status || 'planlandi',
+    priority: task.priority || 'normal',
+    assigned_to: task.assignedTo || '',
+    due_date: task.dueDate || null,
+    publish_date: task.publishDate || null,
+    publication_url: task.publicationUrl || '',
+    platform: task.platform || '',
+    source_id: task.sourceId || null,
+    source_title: task.sourceTitle || '',
+    work_item_id: task.workItemId || null,
+    work_item_title: task.workItemTitle || '',
+    category: task.category || '',
+    topics: Array.isArray(task.topics) ? task.topics : [],
+    description: task.description || '',
+    note: task.note || '',
+    text_preview: task.textPreview || buildArchivePublishPreview(task),
+    text_length: Number(task.textLength || archivePublishTextLength(task) || 0),
+    search_blob: buildArchivePublishSearchBlob(task),
+    created_by: task.createdBy || '',
+    updated_by: task.updatedBy || '',
+    created_at: task.createdAt || new Date().toISOString(),
+    updated_at: task.updatedAt || new Date().toISOString()
+  };
+}
+
+function archivePublishTaskFromDbRow(row = {}, options = {}) {
+  return {
+    id: row.id,
+    title: row.title || '',
+    status: row.status || 'planlandi',
+    priority: row.priority || 'normal',
+    assignedTo: row.assigned_to || '',
+    dueDate: row.due_date || null,
+    publishDate: row.publish_date || null,
+    publicationUrl: row.publication_url || '',
+    platform: row.platform || '',
+    sourceId: row.source_id || '',
+    sourceTitle: row.source_title || '',
+    workItemId: row.work_item_id || '',
+    workItemTitle: row.work_item_title || '',
+    category: row.category || '',
+    topics: Array.isArray(row.topics) ? row.topics : [],
+    description: options.full ? String(row.description || '') : '',
+    note: options.full ? String(row.note || '') : '',
+    textPreview: row.text_preview || '',
+    textLength: Number(row.text_length || 0),
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+    createdBy: row.created_by || '',
+    updatedBy: row.updated_by || ''
+  };
+}
+
+function publicArchivePublishTask(task = {}, options = {}) {
+  const base = {
+    id: task.id,
+    title: task.title,
+    status: task.status || 'planlandi',
+    priority: task.priority || 'normal',
+    assignedTo: task.assignedTo || '',
+    dueDate: task.dueDate || null,
+    publishDate: task.publishDate || null,
+    publicationUrl: task.publicationUrl || '',
+    platform: task.platform || '',
+    sourceId: task.sourceId || '',
+    sourceTitle: task.sourceTitle || '',
+    workItemId: task.workItemId || '',
+    workItemTitle: task.workItemTitle || '',
+    category: task.category || '',
+    topics: Array.isArray(task.topics) ? task.topics : [],
+    textPreview: task.textPreview || buildArchivePublishPreview(task),
+    textLength: Number(task.textLength || archivePublishTextLength(task) || 0),
+    createdAt: task.createdAt,
+    updatedAt: task.updatedAt,
+    createdBy: task.createdBy || '',
+    updatedBy: task.updatedBy || ''
+  };
+  if (options.full) {
+    base.description = task.description || '';
+    base.note = task.note || '';
+  }
+  return base;
+}
+
+async function loadArchivePublishTasks() {
+  const tasks = await loadJsonSetting(ARCHIVE_OPS_PUBLISH_TASKS_KEY, []);
+  return Array.isArray(tasks) ? tasks : [];
+}
+
+async function saveArchivePublishTasks(tasks) {
+  const clean = Array.isArray(tasks) ? tasks.slice(0, ARCHIVE_PUBLISH_TASK_LIMIT) : [];
+  await saveJsonSetting(ARCHIVE_OPS_PUBLISH_TASKS_KEY, clean);
+}
+
+function filterArchivePublishTasks(tasks = [], query = {}) {
+  const q = String(query.q || '').trim().toLocaleLowerCase('tr-TR');
+  const status = String(query.status || '').trim();
+  const priority = String(query.priority || '').trim();
+  return tasks.filter(task => {
+    if (status && task.status !== status) return false;
+    if (priority && task.priority !== priority) return false;
+    if (!q) return true;
+    return buildArchivePublishSearchBlob(task).toLocaleLowerCase('tr-TR').includes(q);
+  });
+}
+
+async function listArchivePublishTasks(query = {}) {
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) {
+    const tasks = await loadArchivePublishTasks();
+    const filtered = filterArchivePublishTasks(tasks, query)
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+    return { storage: 'settings', tasks, filtered };
+  }
+
+  const q = String(query.q || '').trim();
+  const status = String(query.status || '').trim();
+  const priority = String(query.priority || '').trim();
+  let taskQuery = supabase
+    .from('archive_publish_tasks')
+    .select(ARCHIVE_PUBLISH_TASK_DB_LIST_COLUMNS, { count: 'exact' })
+    .order('updated_at', { ascending: false })
+    .limit(ARCHIVE_PUBLISH_TASK_LIMIT);
+  if (status) taskQuery = taskQuery.eq('status', status);
+  if (priority) taskQuery = taskQuery.eq('priority', priority);
+  if (q) taskQuery = taskQuery.ilike('search_blob', `%${escapeSupabaseLikePattern(q)}%`);
+  const { data, error, count } = await taskQuery;
+  if (error) throw new Error(error.message);
+
+  const { count: totalCount, error: totalError } = await supabase
+    .from('archive_publish_tasks')
+    .select('id', { count: 'exact', head: true });
+  if (totalError) throw new Error(totalError.message);
+
+  const rowsForCounts = await fetchAllPages(() => supabase.from('archive_publish_tasks').select('status,priority'));
+  const counts = {
+    total: totalCount || 0,
+    filtered: count || 0,
+    byStatus: {},
+    byPriority: {}
+  };
+  for (const row of rowsForCounts) {
+    counts.byStatus[row.status || 'planlandi'] = (counts.byStatus[row.status || 'planlandi'] || 0) + 1;
+    counts.byPriority[row.priority || 'normal'] = (counts.byPriority[row.priority || 'normal'] || 0) + 1;
+  }
+  return {
+    storage: 'database',
+    counts,
+    filtered: (data || []).map(row => archivePublishTaskFromDbRow(row)),
+    tasks: []
+  };
+}
+
+async function getArchivePublishTask(id) {
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) {
+    const tasks = await loadArchivePublishTasks();
+    return tasks.find(task => task.id === id) || null;
+  }
+  const { data, error } = await supabase
+    .from('archive_publish_tasks')
+    .select(ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? archivePublishTaskFromDbRow(data, { full: true }) : null;
+}
+
+async function createArchivePublishTask(input = {}, actor = 'Sistem') {
+  const now = new Date().toISOString();
+  const task = {
+    id: archivePublishTaskId(),
+    ...normalizeArchivePublishInput(input),
+    createdAt: now,
+    updatedAt: now,
+    createdBy: actor,
+    updatedBy: actor
+  };
+  task.textPreview = buildArchivePublishPreview(task);
+  task.textLength = archivePublishTextLength(task);
+
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) {
+    const tasks = await loadArchivePublishTasks();
+    await saveArchivePublishTasks([task, ...tasks]);
+    return task;
+  }
+
+  const { data, error } = await supabase
+    .from('archive_publish_tasks')
+    .insert(archivePublishTaskToDbRow(task))
+    .select(ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  return archivePublishTaskFromDbRow(data, { full: true });
+}
+
+async function updateArchivePublishTask(id, input = {}, actor = 'Sistem') {
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) {
+    const tasks = await loadArchivePublishTasks();
+    const index = tasks.findIndex(task => task.id === id);
+    if (index < 0) return null;
+    const updated = {
+      ...normalizeArchivePublishInput(input, tasks[index]),
+      id: tasks[index].id,
+      createdAt: tasks[index].createdAt,
+      createdBy: tasks[index].createdBy,
+      updatedAt: new Date().toISOString(),
+      updatedBy: actor
+    };
+    updated.textPreview = buildArchivePublishPreview(updated);
+    updated.textLength = archivePublishTextLength(updated);
+    tasks[index] = updated;
+    await saveArchivePublishTasks(tasks);
+    return updated;
+  }
+
+  const existing = await getArchivePublishTask(id);
+  if (!existing) return null;
+  const updated = {
+    ...normalizeArchivePublishInput(input, existing),
+    id: existing.id,
+    createdAt: existing.createdAt,
+    createdBy: existing.createdBy,
+    updatedAt: new Date().toISOString(),
+    updatedBy: actor
+  };
+  updated.textPreview = buildArchivePublishPreview(updated);
+  updated.textLength = archivePublishTextLength(updated);
+  const { data, error } = await supabase
+    .from('archive_publish_tasks')
+    .update(archivePublishTaskToDbRow(updated))
+    .eq('id', id)
+    .select(ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS)
+    .single();
+  if (error) throw new Error(error.message);
+  return archivePublishTaskFromDbRow(data, { full: true });
+}
+
+async function deleteArchivePublishTask(id) {
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) {
+    const tasks = await loadArchivePublishTasks();
+    const next = tasks.filter(task => task.id !== id);
+    if (next.length === tasks.length) return null;
+    await saveArchivePublishTasks(next);
+    return { id };
+  }
+  const { data, error } = await supabase
+    .from('archive_publish_tasks')
     .delete()
     .eq('id', id)
     .select('id')
@@ -2549,6 +2907,10 @@ async function seed() {
   const { error: archiveWorkErr } = await supabase.from('archive_work_items').select('id').limit(1);
   HAS_ARCHIVE_WORK_TABLES = !archiveWorkErr;
   if (!HAS_ARCHIVE_WORK_TABLES) console.warn('⚠ archive_work_items tablosu yok — çalışma kayıtları settings yedeğiyle çalışacak.');
+
+  const { error: archivePublishErr } = await supabase.from('archive_publish_tasks').select('id').limit(1);
+  HAS_ARCHIVE_PUBLISH_TABLES = !archivePublishErr;
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) console.warn('⚠ archive_publish_tasks tablosu yok — yayın görevleri settings yedeğiyle çalışacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -3006,6 +3368,64 @@ app.delete('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (re
   try {
     const deleted = await deleteArchiveWorkItem(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
+    res.json({ success: true, deleted });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const list = await listArchivePublishTasks(req.query);
+    const tasks = list.tasks || [];
+    const filtered = list.filtered || [];
+    const counts = list.counts || {
+      total: tasks.length,
+      filtered: filtered.length,
+      byStatus: {},
+      byPriority: {}
+    };
+    if (!list.counts) {
+      for (const task of tasks) {
+        counts.byStatus[task.status || 'planlandi'] = (counts.byStatus[task.status || 'planlandi'] || 0) + 1;
+        counts.byPriority[task.priority || 'normal'] = (counts.byPriority[task.priority || 'normal'] || 0) + 1;
+      }
+    }
+    res.json({
+      storage: list.storage || 'settings',
+      counts,
+      tasks: filtered.slice(0, ARCHIVE_PUBLISH_TASK_LIMIT).map(task => publicArchivePublishTask(task))
+    });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const task = await createArchivePublishTask(req.body || {}, actor);
+    res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const task = await getArchivePublishTask(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    res.json({ task: publicArchivePublishTask(task, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.put('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const task = await updateArchivePublishTask(req.params.id, req.body || {}, actor);
+    if (!task) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.delete('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const deleted = await deleteArchivePublishTask(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
     res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -5024,6 +5444,7 @@ let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at 
 let HAS_ARCHIVE_SOURCE_TABLES = false; // startup'ta tespit edilir (kaynak kayıt tabloları)
 let HAS_ARCHIVE_IMPORT_TABLES = false; // startup'ta tespit edilir (kalıcı içe aktarım tabloları)
 let HAS_ARCHIVE_WORK_TABLES = false; // startup'ta tespit edilir (çalışma kayıtları)
+let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın görevleri)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

@@ -2,6 +2,21 @@
 
 ## 2026-08-07 Codex Güncel Durum
 
+- Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Yayın
+  Görevleri` ekranı artık statik açıklama alanı değil, gerçek görev takip ekranıdır. Süper
+  admin yayın görevi oluşturabilir; durum, öncelik, atanacak kişi, hedef tarih, yayın tarihi,
+  platform/program, yayın linki, kategori, kavramlar, bağlı kaynak, bağlı çalışma kaydı,
+  açıklama ve not tutabilir. Kaynak Havuzu ve Çalışma Kayıtları aranarak yayın görevine
+  bağlanabilir; görev seçilince detay panelinde açılır, düzenlenir veya silinir. Backend'e
+  süper admin korumalı `/api/archive-ops/publish-tasks` CRUD rotaları eklendi. Canlı DB'de
+  `archive_publish_tasks` tablosu varsa gerçek tablo kullanılır; tablo yoksa pilot olarak
+  `settings.archive_ops_publish_tasks` JSON yedeğiyle çalışır. Kalıcı/ölçekli kullanım için
+  Supabase SQL Editor'de `schema.sql` içindeki `archive_publish_tasks` bloğu uygulanmalıdır.
+  Kapsam: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Root `/` public cutover ve public frontend dosyaları
+  kapsam dışı. Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti. Henüz commit,
+  push veya production deploy yapılmadı.
+
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Çalışma
   Kayıtları` ekranındaki bir kayıt artık `Denetime Aktar` ile Metin Denetimi ekranına
   taşınabilir. Denetim ekranında bağlı çalışma kartı görünür. Bağlı sonuç `Onaya Gönder`
