@@ -580,12 +580,13 @@ const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
-const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', 'arsiv_adayi'];
+const ARCHIVE_PUBLIC_CANDIDATE_STATUSES = ['arsiv_adayi', 'yayina_hazir', 'kaynak_eksik', 'revizyon_gerekli', 'beklet'];
+const ARCHIVE_SOURCE_STATUSES = ['kaynak', 'hazirlaniyor', 'kontrol', ...ARCHIVE_PUBLIC_CANDIDATE_STATUSES];
 const ARCHIVE_WORK_ITEM_LIMIT = 300;
-const ARCHIVE_WORK_STATUSES = ['taslak', 'hazirlaniyor', 'kontrol', 'onay_bekliyor', 'arsiv_adayi', 'tamamlandi'];
+const ARCHIVE_WORK_STATUSES = ['taslak', 'hazirlaniyor', 'kontrol', 'onay_bekliyor', ...ARCHIVE_PUBLIC_CANDIDATE_STATUSES, 'tamamlandi'];
 const ARCHIVE_WORK_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_PUBLISH_TASK_LIMIT = 300;
-const ARCHIVE_PUBLISH_STATUSES = ['planlandi', 'hazirlaniyor', 'kontrol', 'kaynak_bekliyor', 'arsiv_adayi', 'tamamlandi', 'iptal'];
+const ARCHIVE_PUBLISH_STATUSES = ['planlandi', 'hazirlaniyor', 'kontrol', 'kaynak_bekliyor', ...ARCHIVE_PUBLIC_CANDIDATE_STATUSES, 'tamamlandi', 'iptal'];
 const ARCHIVE_PUBLISH_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
@@ -1839,35 +1840,118 @@ function publicArchiveCandidate(kind = '', record = {}) {
   };
 }
 
+function normalizeArchiveCandidateStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_PUBLIC_CANDIDATE_STATUSES.includes(status) ? status : '';
+}
+
+function archiveCandidateDecisionLabel(status = '') {
+  return {
+    arsiv_adayi: 'Son kontrol bekliyor',
+    yayina_hazir: 'Yayına hazır',
+    kaynak_eksik: 'Kaynak eksik',
+    revizyon_gerekli: 'Revizyon gerekli',
+    beklet: 'Beklet'
+  }[status] || status || 'Karar yok';
+}
+
+function appendArchiveCandidateDecisionNote(existingNote = '', status = '', note = '', actor = 'Sistem') {
+  const cleanNote = String(note || '').trim().replace(/\s+/g, ' ').slice(0, 1000);
+  const stamp = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+  const decision = `Public arşiv kararı: ${archiveCandidateDecisionLabel(status)}.`;
+  const detail = cleanNote ? ` Not: ${cleanNote}` : '';
+  const entry = `[${stamp}] ${decision}${detail} Kararı veren: ${actor || 'Sistem'}.`;
+  return [entry, String(existingNote || '').trim()].filter(Boolean).join('\n').slice(0, 10000);
+}
+
+async function listArchiveCandidateRows(loader, q = '', status = '') {
+  const statuses = status ? [status] : ARCHIVE_PUBLIC_CANDIDATE_STATUSES;
+  const rows = [];
+  const seen = new Set();
+  for (const candidateStatus of statuses) {
+    const list = await loader({ q, status: candidateStatus });
+    for (const row of list.filtered || []) {
+      if (!row?.id || seen.has(row.id)) continue;
+      seen.add(row.id);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
 async function listArchivePublicCandidates(query = {}) {
   const q = String(query.q || '').trim();
   const requestedKind = String(query.kind || '').trim();
   const kind = ['source', 'work', 'publish'].includes(requestedKind) ? requestedKind : '';
+  const status = normalizeArchiveCandidateStatus(query.status);
   const candidates = [];
-  const counts = { total: 0, source: 0, work: 0, publish: 0 };
+  const counts = { total: 0, source: 0, work: 0, publish: 0, byStatus: {} };
 
   if (!kind || kind === 'source') {
-    const list = await listArchiveOpsSources({ q, status: 'arsiv_adayi' });
-    const rows = list.filtered || [];
+    const rows = await listArchiveCandidateRows(listArchiveOpsSources, q, status);
     counts.source = rows.length;
     candidates.push(...rows.map(row => publicArchiveCandidate('source', row)));
   }
   if (!kind || kind === 'work') {
-    const list = await listArchiveWorkItems({ q, status: 'arsiv_adayi' });
-    const rows = list.filtered || [];
+    const rows = await listArchiveCandidateRows(listArchiveWorkItems, q, status);
     counts.work = rows.length;
     candidates.push(...rows.map(row => publicArchiveCandidate('work', row)));
   }
   if (!kind || kind === 'publish') {
-    const list = await listArchivePublishTasks({ q, status: 'arsiv_adayi' });
-    const rows = list.filtered || [];
+    const rows = await listArchiveCandidateRows(listArchivePublishTasks, q, status);
     counts.publish = rows.length;
     candidates.push(...rows.map(row => publicArchiveCandidate('publish', row)));
   }
 
   candidates.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
   counts.total = candidates.length;
+  for (const candidate of candidates) {
+    const key = normalizeArchiveCandidateStatus(candidate.status) || 'diger';
+    counts.byStatus[key] = (counts.byStatus[key] || 0) + 1;
+  }
   return { counts, candidates: candidates.slice(0, ARCHIVE_SOURCE_LIST_LIMIT) };
+}
+
+async function updateArchivePublicCandidateDecision(kind = '', id = '', status = '', note = '', actor = 'Sistem') {
+  const nextStatus = normalizeArchiveCandidateStatus(status);
+  if (!nextStatus) throw httpError('Geçerli bir public arşiv kararı seçin.', 400);
+  if (!id) throw httpError('Karar uygulanacak kayıt bulunamadı.', 400);
+
+  if (kind === 'source') {
+    const source = await getArchiveOpsSource(id);
+    if (!source) return null;
+    const result = await updateArchiveOpsSource(id, {
+      ...source,
+      status: nextStatus,
+      note: appendArchiveCandidateDecisionNote(source.note, nextStatus, note, actor),
+      forceSave: true
+    }, actor);
+    return result?.source ? publicArchiveCandidate('source', result.source) : null;
+  }
+
+  if (kind === 'work') {
+    const work = await getArchiveWorkItem(id);
+    if (!work) return null;
+    const updated = await updateArchiveWorkItem(id, {
+      ...work,
+      status: nextStatus,
+      note: appendArchiveCandidateDecisionNote(work.note, nextStatus, note, actor)
+    }, actor);
+    return updated ? publicArchiveCandidate('work', updated) : null;
+  }
+
+  if (kind === 'publish') {
+    const task = await getArchivePublishTask(id);
+    if (!task) return null;
+    const updated = await updateArchivePublishTask(id, {
+      ...task,
+      status: nextStatus,
+      note: appendArchiveCandidateDecisionNote(task.note, nextStatus, note, actor)
+    }, actor);
+    return updated ? publicArchiveCandidate('publish', updated) : null;
+  }
+
+  throw httpError('Geçersiz aday türü.', 400);
 }
 
 async function loadArchivePublishTasks() {
@@ -3359,6 +3443,20 @@ app.get('/api/archive-ops/public-candidates', auth, admin, superAdmin, async (re
     const result = await listArchivePublicCandidates(req.query);
     res.json({ ready: true, counts: result.counts, candidates: result.candidates });
   } catch (e) { res.status(e.statusCode || 500).json({ ready: false, error: e.message }); }
+});
+
+app.post('/api/archive-ops/public-candidates/:kind/:id/decision', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const candidate = await updateArchivePublicCandidateDecision(
+      req.params.kind,
+      req.params.id,
+      req.body?.status,
+      req.body?.note,
+      req.session?.name || req.session?.username || 'Sistem'
+    );
+    if (!candidate) return res.status(404).json({ error: 'Aday kayıt bulunamadı.' });
+    res.json({ success: true, candidate });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.get('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) => {

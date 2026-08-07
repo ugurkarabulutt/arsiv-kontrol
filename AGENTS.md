@@ -120,6 +120,22 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-08
+- **Public Arşiv Adayları karar akışı eklendi:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içindeki `Public Arşiv Adayları` ekranı yalnız adayları listelemekle kalmaz; seçilen
+  kaynak, çalışma kaydı veya yayın görevi için public arşiv kararını doğrudan uygulayabilir.
+  Süper admin adayları karar durumuna göre filtreleyebilir: `Son kontrol bekliyor`,
+  `Yayına hazır`, `Kaynak eksik`, `Revizyon gerekli` ve `Beklet`. Seçilen aday detayında kısa
+  karar notu yazılıp ilgili kayıt tek kayda özel güncellenir; karar izi kaydın not alanına en
+  son karar en üstte kalacak şekilde eklenir. Backend'e süper admin korumalı
+  `POST /api/archive-ops/public-candidates/:kind/:id/decision` endpoint'i eklendi. Karar
+  güncellemesi `archive_sources`, `archive_work_items` ve `archive_publish_tasks` kayıtlarıyla
+  aynı veri modelini kullanır; yeni DB/schema migration yapılmadı, root `/` public arşive
+  çevrilmedi ve public frontend hattına dokunulmadı. Değişen dosyalar: `server.js`,
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Doğrulama:
+  `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace hatası
+  vermedi, yalnız mevcut CRLF uyarıları görüldü.
+
 ### 2026-08-07
 - **Public Arşiv Adayları gerçek aday havuzuna bağlandı:** `/admin` süper admin Arşiv
   Operasyon Merkezi içindeki `Public Arşiv Adayları` ekranı statik açıklama olmaktan çıkarıldı.
@@ -132,7 +148,15 @@ tespit edilir).
   yeni DB/schema migration yapılmadı ve root `/` public arşive çevrilmedi. Değişen dosyalar:
   `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
   Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace
-  hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  hatası vermedi, yalnız mevcut CRLF uyarıları görüldü. Runtime commit `479fcbd` GitHub'a
+  push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-p92k8g1im-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archiveCandidateSearch`,
+  `/api/archive-ops/public-candidates`, `Public Arşiv Adayları` ve
+  `openArchiveCandidateRecord` mevcut; oturumsuz `/api/archive-ops/public-candidates` `401`
+  döndü. Eski geçici `adminRouteProbe` ve public preview marker'ı yok.
 - **Hadis ve Slayt Metinleri ekranı gerçek kaynak kayıtlarına bağlandı:** `/admin` süper
   admin Arşiv Operasyon Merkezi içindeki `Hadis ve Slayt Metinleri` artık statik açıklama
   alanı değil, kaynak havuzundaki `hadis` ve `slayt` türlerini ayrı bir çalışma ekranında

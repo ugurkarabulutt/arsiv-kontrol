@@ -446,6 +446,9 @@ if (
   !server.includes("app.put('/api/archive-ops/publish-tasks/:id'") ||
   !server.includes("app.delete('/api/archive-ops/publish-tasks/:id'") ||
   !server.includes("app.get('/api/archive-ops/public-candidates'") ||
+  !server.includes("app.post('/api/archive-ops/public-candidates/:kind/:id/decision'") ||
+  !server.includes('ARCHIVE_PUBLIC_CANDIDATE_STATUSES') ||
+  !server.includes('function updateArchivePublicCandidateDecision') ||
   !server.includes('function listArchivePublicCandidates') ||
   !server.includes("app.get('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches'") ||
@@ -506,11 +509,15 @@ if (
   !html.includes('function saveArchivePublishTask') ||
   !html.includes('function deleteArchivePublishTaskUi') ||
   !html.includes('id="archiveCandidateSearch"') ||
+  !html.includes('id="archiveCandidateStatusFilter"') ||
   !html.includes('id="archiveCandidateList"') ||
   !html.includes('id="archiveCandidateDetail"') ||
   !html.includes('function loadArchiveCandidates') ||
+  !html.includes('function setArchiveCandidateDecision') ||
   !html.includes('function openArchiveCandidateRecord') ||
   !html.includes("api('GET',`/api/archive-ops/public-candidates") ||
+  !html.includes("/api/archive-ops/public-candidates/${encodeURIComponent(item.kind)}/${encodeURIComponent(item.recordId)}/decision") ||
+  !html.includes('Yayına Hazır') ||
   !html.includes('Yayın Görevini Sakla') ||
   !html.includes('Yayın Görevleri') ||
   !html.includes('id="archiveWorkTitle"') ||

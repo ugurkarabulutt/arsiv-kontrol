@@ -1,5 +1,19 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-08 Codex Güncel Durum
+
+- Yerelde yeni akış eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Public Arşiv
+  Adayları` ekranında aday kayıtlar artık karar durumuna göre filtrelenebilir ve seçili aday
+  kaydı için doğrudan karar uygulanabilir. Karar durumları: `Son kontrol bekliyor`,
+  `Yayına hazır`, `Kaynak eksik`, `Revizyon gerekli`, `Beklet`. Karar yalnız seçilen kaynak,
+  çalışma kaydı veya yayın görevi kaydına uygulanır; toplu geçmiş taşıma yapmaz. Karar notu
+  girilirse ilgili kaydın not alanına en son karar en üstte kalacak şekilde eklenir. Backend'e
+  süper admin korumalı `POST /api/archive-ops/public-candidates/:kind/:id/decision` endpoint'i
+  eklendi. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattına dokunulmadı. Doğrulama:
+  `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace hatası
+  vermedi, yalnız mevcut CRLF uyarıları görüldü.
+
 ## 2026-08-07 Codex Güncel Durum
 
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Public
@@ -13,7 +27,15 @@
   `/api/archive-ops/public-candidates` endpoint'i eklendi. Kapsam: `server.js`, `index.html`,
   `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public
   frontend hattına dokunulmadı. Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti;
-  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü. Runtime
+  commit `479fcbd` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-p92k8g1im-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archiveCandidateSearch`,
+  `/api/archive-ops/public-candidates`, `Public Arşiv Adayları` ve
+  `openArchiveCandidateRecord` mevcut; oturumsuz `/api/archive-ops/public-candidates` `401`
+  döndü. Eski geçici `adminRouteProbe` ve public preview marker'ı yok.
 
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Hadis ve
   Slayt Metinleri` ekranı artık statik açıklama alanı değil, kaynak havuzundaki `hadis` ve
