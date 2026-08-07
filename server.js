@@ -1776,6 +1776,100 @@ function publicArchivePublishTask(task = {}, options = {}) {
   return base;
 }
 
+function publicArchiveCandidate(kind = '', record = {}) {
+  if (kind === 'source') {
+    const source = publicArchiveSource(record);
+    return {
+      id: `source:${source.id}`,
+      kind: 'source',
+      recordId: source.id,
+      title: source.title || 'Başlıksız kaynak',
+      status: source.status || 'arsiv_adayi',
+      sourceType: source.sourceType || 'dokuman',
+      category: source.category || '',
+      topics: Array.isArray(source.tags) ? source.tags : [],
+      sourceId: source.id,
+      sourceTitle: source.title || '',
+      textPreview: source.textPreview || '',
+      textLength: Number(source.textLength || 0),
+      updatedAt: source.updatedAt || source.createdAt || null,
+      createdAt: source.createdAt || null
+    };
+  }
+  if (kind === 'work') {
+    const work = publicArchiveWorkItem(record);
+    return {
+      id: `work:${work.id}`,
+      kind: 'work',
+      recordId: work.id,
+      title: work.title || 'Başlıksız çalışma',
+      status: work.status || 'arsiv_adayi',
+      priority: work.priority || 'normal',
+      assignedTo: work.assignedTo || '',
+      category: work.category || '',
+      topics: Array.isArray(work.topics) ? work.topics : [],
+      sourceId: work.sourceId || '',
+      sourceTitle: work.sourceTitle || '',
+      textPreview: work.textPreview || '',
+      textLength: Number(work.textLength || 0),
+      updatedAt: work.updatedAt || work.createdAt || null,
+      createdAt: work.createdAt || null
+    };
+  }
+  const task = publicArchivePublishTask(record);
+  return {
+    id: `publish:${task.id}`,
+    kind: 'publish',
+    recordId: task.id,
+    title: task.title || 'Başlıksız yayın görevi',
+    status: task.status || 'arsiv_adayi',
+    priority: task.priority || 'normal',
+    assignedTo: task.assignedTo || '',
+    category: task.category || '',
+    topics: Array.isArray(task.topics) ? task.topics : [],
+    sourceId: task.sourceId || '',
+    sourceTitle: task.sourceTitle || '',
+    workItemId: task.workItemId || '',
+    workItemTitle: task.workItemTitle || '',
+    publicationUrl: task.publicationUrl || '',
+    textPreview: task.textPreview || '',
+    textLength: Number(task.textLength || 0),
+    updatedAt: task.updatedAt || task.createdAt || null,
+    createdAt: task.createdAt || null
+  };
+}
+
+async function listArchivePublicCandidates(query = {}) {
+  const q = String(query.q || '').trim();
+  const requestedKind = String(query.kind || '').trim();
+  const kind = ['source', 'work', 'publish'].includes(requestedKind) ? requestedKind : '';
+  const candidates = [];
+  const counts = { total: 0, source: 0, work: 0, publish: 0 };
+
+  if (!kind || kind === 'source') {
+    const list = await listArchiveOpsSources({ q, status: 'arsiv_adayi' });
+    const rows = list.filtered || [];
+    counts.source = rows.length;
+    candidates.push(...rows.map(row => publicArchiveCandidate('source', row)));
+  }
+  if (!kind || kind === 'work') {
+    const list = await listArchiveWorkItems({ q, status: 'arsiv_adayi' });
+    const rows = list.filtered || [];
+    counts.work = rows.length;
+    candidates.push(...rows.map(row => publicArchiveCandidate('work', row)));
+  }
+  if (!kind || kind === 'publish') {
+    const list = await listArchivePublishTasks({ q, status: 'arsiv_adayi' });
+    const rows = list.filtered || [];
+    counts.publish = rows.length;
+    candidates.push(...rows.map(row => publicArchiveCandidate('publish', row)));
+  }
+
+  candidates.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+  counts.total = candidates.length;
+  return { counts, candidates: candidates.slice(0, ARCHIVE_SOURCE_LIST_LIMIT) };
+}
+
 async function loadArchivePublishTasks() {
   const tasks = await loadJsonSetting(ARCHIVE_OPS_PUBLISH_TASKS_KEY, []);
   return Array.isArray(tasks) ? tasks : [];
@@ -3260,6 +3354,13 @@ app.post('/api/standards', auth, admin, async (req, res) => {
 });
 
 // ── ARCHIVE OPERATIONS SOURCES ─────────────────────────────────────────────
+app.get('/api/archive-ops/public-candidates', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const result = await listArchivePublicCandidates(req.query);
+    res.json({ ready: true, counts: result.counts, candidates: result.candidates });
+  } catch (e) { res.status(e.statusCode || 500).json({ ready: false, error: e.message }); }
+});
+
 app.get('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) => {
   try {
     const list = await listArchiveOpsSources(req.query);

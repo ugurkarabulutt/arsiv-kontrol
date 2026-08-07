@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-07
+- **Public Arşiv Adayları gerçek aday havuzuna bağlandı:** `/admin` süper admin Arşiv
+  Operasyon Merkezi içindeki `Public Arşiv Adayları` ekranı statik açıklama olmaktan çıkarıldı.
+  Ekran artık mevcut gerçek veri kaynaklarından `arsiv_adayi` durumundaki kayıtları tek yerde
+  toplar: `archive_sources`, `archive_work_items` ve `archive_publish_tasks`. Süper admin aday
+  kayıtları arayabilir, kayıt türüne göre filtreleyebilir, toplam/kaynak/çalışma/yayın görevi
+  sayılarını görebilir, seçilen adayın kaynak izi ve metin ön izlemesini okuyabilir, aday
+  kaydını ilgili Kaynak Havuzu, Çalışma Kayıtları veya Yayın Görevleri ekranında açabilir.
+  Backend'e süper admin korumalı `GET /api/archive-ops/public-candidates` endpoint'i eklendi;
+  yeni DB/schema migration yapılmadı ve root `/` public arşive çevrilmedi. Değişen dosyalar:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace
+  hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
 - **Hadis ve Slayt Metinleri ekranı gerçek kaynak kayıtlarına bağlandı:** `/admin` süper
   admin Arşiv Operasyon Merkezi içindeki `Hadis ve Slayt Metinleri` artık statik açıklama
   alanı değil, kaynak havuzundaki `hadis` ve `slayt` türlerini ayrı bir çalışma ekranında

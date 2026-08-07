@@ -1615,14 +1615,37 @@ canvas{width:100%!important;}
         </div>
       </div>
 
-      <div class="ops-module-page archive-ops-section" data-ops-view="candidates" hidden>
-        <div class="ops-module-kicker">Public arşiv adayı</div>
-        <div class="ops-module-title">Onaylanan çalışmalar ileride public soru-cevap arşivine hazırlanacak.</div>
-        <div class="ops-module-copy">Bu alan public arşiv açıldığında hangi kayıtların yayın adayı olduğunu izlemek için kullanılacak. Şimdilik yalnız süper admin pilot alanıdır; root public arşiv bu adımda açılmaz.</div>
-        <div class="ops-module-list">
-          <div class="ops-module-item"><strong>Yayın adayı</strong>Onaylanan soru-cevaplar aday havuzuna alınır.</div>
-          <div class="ops-module-item"><strong>Kaynak izi</strong>Public içerikte hangi kaynaklardan yararlanıldığı takip edilir.</div>
-          <div class="ops-module-item"><strong>Son kontrol</strong>Yayın öncesi kategori, kavram ve metin kalitesi kontrol edilir.</div>
+      <div class="ops-panel archive-ops-section" data-ops-view="candidates" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Public Arşiv Adayları</div>
+            <div class="ops-panel-sub">Kaynak, çalışma ve yayın görevlerinden arşiv adayı olan kayıtları tek yerde kontrol edin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadArchiveCandidates()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="ops-filter-row">
+            <input class="ops-field" id="archiveCandidateSearch" placeholder="Aday, kaynak, çalışma, kavram veya not içinde ara..." oninput="setArchiveCandidateSearch(this.value)">
+            <select class="ops-field" id="archiveCandidateKindFilter" onchange="setArchiveCandidateFilter()">
+              <option value="">Tüm adaylar</option>
+              <option value="source">Kaynak kayıtları</option>
+              <option value="work">Çalışma kayıtları</option>
+              <option value="publish">Yayın görevleri</option>
+            </select>
+            <button class="btn-sec" onclick="clearArchiveCandidateFilters()">Filtreyi Temizle</button>
+          </div>
+          <div class="ops-file-summary" id="archiveCandidateSummary"></div>
+          <div class="ops-status" id="archiveCandidateStatusMsg"></div>
+          <div class="ops-work-layout" style="margin-top:12px">
+            <div class="ops-work-list-wrap">
+              <div class="ops-source-list" id="archiveCandidateList">
+                <div class="empty-state">Arşiv adayları yükleniyor...</div>
+              </div>
+            </div>
+            <div class="ops-detail" id="archiveCandidateDetail">
+              <div class="empty-state">Bir aday seçildiğinde bağlı kayıt, kaynak izi ve ön izleme burada açılır.</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1897,6 +1920,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
 let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates'];
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
@@ -2247,6 +2271,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchiveWorkItems();
   }
   if(archiveOpsState.view==='import')loadArchiveImportBatches();
+  if(archiveOpsState.view==='candidates')loadArchiveCandidates();
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
@@ -5529,6 +5554,185 @@ async function openArchivePublishWork(){
     setArchivePublishStatus('Bu yayın görevi için bağlı çalışma seçilmedi.','err');
     return;
   }
+  renderArchiveOpsView('work');
+  await openArchiveWorkItem(workId);
+  window.setTimeout(()=>el('archiveWorkDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+function archiveCandidateKindLabel(kind){
+  return {source:'Kaynak kaydı',work:'Çalışma kaydı',publish:'Yayın görevi'}[kind]||'Aday kayıt';
+}
+function archiveCandidateStatusLabel(item){
+  if(!item)return '';
+  if(item.kind==='source')return archiveSourceStatusLabel(item.status);
+  if(item.kind==='work')return archiveWorkStatusLabel(item.status);
+  if(item.kind==='publish')return archivePublishStatusLabel(item.status);
+  return item.status||'';
+}
+function archiveCandidateSummaryHtml(counts={}){
+  return `
+    <div class="ops-file-summary-item"><strong>${Number(counts.total||0).toLocaleString('tr-TR')}</strong><span>Toplam aday</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts.source||0).toLocaleString('tr-TR')}</strong><span>Kaynak</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts.work||0).toLocaleString('tr-TR')}</strong><span>Çalışma</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts.publish||0).toLocaleString('tr-TR')}</strong><span>Yayın görevi</span></div>
+  `;
+}
+function setArchiveCandidateStatus(message='',kind=''){
+  const box=el('archiveCandidateStatusMsg');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function archiveCandidateCardHtml(item){
+  const active=archiveCandidateState.activeItem?.id===item.id?' active':'';
+  const topics=(item.topics||[]).slice(0,3).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const meta=[
+    archiveCandidateKindLabel(item.kind),
+    archiveCandidateStatusLabel(item),
+    item.category||'',
+    item.sourceType?archiveSourceTypeLabel(item.sourceType):'',
+    item.sourceTitle?`Kaynak: ${item.sourceTitle}`:'',
+    item.workItemTitle?`Çalışma: ${item.workItemTitle}`:'',
+    `${Number(item.textLength||0).toLocaleString('tr-TR')} karakter`
+  ].filter(Boolean);
+  return `
+    <button class="ops-work-card${active}" onclick="openArchiveCandidate(${attrJson(item.id)})">
+      <div class="ops-work-title">${esc(item.title||'Başlıksız aday')}</div>
+      <div class="ops-source-meta">${meta.map(value=>`<span>${esc(value)}</span>`).join('')}</div>
+      <div class="ops-work-preview">${esc(item.textPreview||'Ön izleme yok.')}</div>
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+    </button>
+  `;
+}
+function renderArchiveCandidateList(){
+  const search=el('archiveCandidateSearch');
+  const kind=el('archiveCandidateKindFilter');
+  if(search&&search.value!==archiveCandidateState.query)search.value=archiveCandidateState.query;
+  if(kind&&kind.value!==archiveCandidateState.kind)kind.value=archiveCandidateState.kind;
+  const summary=el('archiveCandidateSummary');
+  if(summary)summary.innerHTML=archiveCandidateSummaryHtml(archiveCandidateState.counts||{});
+  const list=el('archiveCandidateList');
+  if(!list)return;
+  if(!archiveCandidateState.items.length){
+    list.innerHTML='<div class="empty-state">Bu filtreye uygun public arşiv adayı yok.</div>';
+    return;
+  }
+  list.innerHTML=archiveCandidateState.items.map(archiveCandidateCardHtml).join('');
+}
+function renderArchiveCandidateDetail(item){
+  const box=el('archiveCandidateDetail');
+  if(!box)return;
+  if(!item){
+    box.innerHTML='<div class="empty-state">Bir aday seçildiğinde bağlı kayıt, kaynak izi ve ön izleme burada açılır.</div>';
+    return;
+  }
+  const topics=(item.topics||[]).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const dateText=item.updatedAt?new Date(item.updatedAt).toLocaleString('tr-TR'):'Tarih yok';
+  box.innerHTML=`
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(item.title||'Başlıksız aday')}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
+          <span>${esc(archiveCandidateStatusLabel(item))}</span>
+          <span>${esc(dateText)}</span>
+          <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="openArchiveCandidateRecord()">Kaydı Aç</button>
+    </div>
+    <div class="ops-detail-body">
+      ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
+      ${item.assignedTo?`<p><strong>Atanan:</strong> ${esc(item.assignedTo)}</p>`:''}
+      ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
+      ${item.workItemTitle?`<p><strong>Çalışma:</strong> ${esc(item.workItemTitle)}</p>`:''}
+      ${item.publicationUrl?`<p><strong>Yayın linki:</strong> ${esc(item.publicationUrl)}</p>`:''}
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+      <div class="ops-source-actions">
+        <button class="btn-main" onclick="openArchiveCandidateRecord()">Aday Kaydını Aç</button>
+        ${item.sourceId?`<button class="btn-sec" onclick="openArchiveCandidateSource()">Kaynağı Aç</button>`:''}
+        ${item.workItemId?`<button class="btn-sec" onclick="openArchiveCandidateWork()">Çalışmayı Aç</button>`:''}
+      </div>
+      <div class="ops-preview-text" style="margin-top:12px">${esc(item.textPreview||'Ön izleme yok.')}</div>
+    </div>
+  `;
+}
+async function loadArchiveCandidates(){
+  if(!canUseArchiveOps())return;
+  archiveCandidateState.loading=true;
+  const params=new URLSearchParams();
+  if(archiveCandidateState.query)params.set('q',archiveCandidateState.query);
+  if(archiveCandidateState.kind)params.set('kind',archiveCandidateState.kind);
+  const list=el('archiveCandidateList');
+  if(list&&!archiveCandidateState.items.length)list.innerHTML='<div class="empty-state">Public arşiv adayları yükleniyor...</div>';
+  const data=await api('GET',`/api/archive-ops/public-candidates${params.toString()?`?${params}`:''}`);
+  archiveCandidateState.loading=false;
+  if(data.error){
+    if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+    setArchiveCandidateStatus(data.error,'err');
+    return;
+  }
+  archiveCandidateState.items=data.candidates||[];
+  archiveCandidateState.counts=data.counts||null;
+  if(archiveCandidateState.activeItem&&!archiveCandidateState.items.some(item=>item.id===archiveCandidateState.activeItem.id)){
+    archiveCandidateState.activeItem=null;
+    renderArchiveCandidateDetail(null);
+  }
+  renderArchiveCandidateList();
+  setArchiveCandidateStatus(archiveCandidateState.items.length?'Aday kayıtlar listelendi.':'Bu filtreye uygun aday yok.','ok');
+}
+function setArchiveCandidateSearch(value){
+  archiveCandidateState.query=String(value||'');
+  loadArchiveCandidates();
+}
+function setArchiveCandidateFilter(){
+  archiveCandidateState.kind=el('archiveCandidateKindFilter')?.value||'';
+  loadArchiveCandidates();
+}
+function clearArchiveCandidateFilters(){
+  archiveCandidateState.query='';
+  archiveCandidateState.kind='';
+  loadArchiveCandidates();
+}
+function openArchiveCandidate(id){
+  const item=archiveCandidateState.items.find(entry=>entry.id===id);
+  if(!item)return;
+  archiveCandidateState.activeItem=item;
+  renderArchiveCandidateList();
+  renderArchiveCandidateDetail(item);
+}
+async function openArchiveCandidateRecord(){
+  const item=archiveCandidateState.activeItem;
+  if(!item)return;
+  if(item.kind==='source'){
+    renderArchiveOpsView('library');
+    await openArchiveSource(item.recordId);
+    window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+    return;
+  }
+  if(item.kind==='work'){
+    renderArchiveOpsView('work');
+    await openArchiveWorkItem(item.recordId);
+    window.setTimeout(()=>el('archiveWorkDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+    return;
+  }
+  if(item.kind==='publish'){
+    renderArchiveOpsView('publishing');
+    await openArchivePublishTask(item.recordId);
+    window.setTimeout(()=>el('archivePublishDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  }
+}
+async function openArchiveCandidateSource(){
+  const item=archiveCandidateState.activeItem;
+  const sourceId=item?.sourceId||(item?.kind==='source'?item.recordId:'');
+  if(!sourceId)return;
+  renderArchiveOpsView('library');
+  await openArchiveSource(sourceId);
+  window.setTimeout(()=>el('archiveSourceDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+async function openArchiveCandidateWork(){
+  const item=archiveCandidateState.activeItem;
+  const workId=item?.workItemId||(item?.kind==='work'?item.recordId:'');
+  if(!workId)return;
   renderArchiveOpsView('work');
   await openArchiveWorkItem(workId);
   window.setTimeout(()=>el('archiveWorkDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);

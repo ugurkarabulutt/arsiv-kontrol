@@ -2,6 +2,19 @@
 
 ## 2026-08-07 Codex Güncel Durum
 
+- Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Public
+  Arşiv Adayları` ekranı artık statik açıklama alanı değil, gerçek aday havuzu görünümüdür.
+  Mevcut `archive_sources`, `archive_work_items` ve `archive_publish_tasks` kayıtlarında
+  `arsiv_adayi` durumundaki kaynak, çalışma ve yayın görevi kayıtları tek listede toplanır.
+  Süper admin adaylarda arama yapabilir, kaynak/çalışma/yayın görevi türüne göre filtreleyebilir,
+  toplam/kaynak/çalışma/yayın görevi sayılarını görebilir, seçilen adayın kaynak izi ve metin
+  ön izlemesini okuyabilir, aday kaydı ilgili Kaynak Havuzu, Çalışma Kayıtları veya Yayın
+  Görevleri ekranında açabilir. Backend'e süper admin korumalı
+  `/api/archive-ops/public-candidates` endpoint'i eklendi. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public
+  frontend hattına dokunulmadı. Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti;
+  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Hadis ve
   Slayt Metinleri` ekranı artık statik açıklama alanı değil, kaynak havuzundaki `hadis` ve
   `slayt` türlerini ayrı bir çalışma ekranında gösteren gerçek metin envanteridir. Süper

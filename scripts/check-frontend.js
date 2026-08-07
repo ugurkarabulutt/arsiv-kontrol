@@ -445,6 +445,8 @@ if (
   !server.includes("app.post('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.put('/api/archive-ops/publish-tasks/:id'") ||
   !server.includes("app.delete('/api/archive-ops/publish-tasks/:id'") ||
+  !server.includes("app.get('/api/archive-ops/public-candidates'") ||
+  !server.includes('function listArchivePublicCandidates') ||
   !server.includes("app.get('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches'") ||
   !server.includes("app.post('/api/archive-ops/import-batches/:id/items'") ||
@@ -503,6 +505,12 @@ if (
   !html.includes('function loadArchivePublishTasks') ||
   !html.includes('function saveArchivePublishTask') ||
   !html.includes('function deleteArchivePublishTaskUi') ||
+  !html.includes('id="archiveCandidateSearch"') ||
+  !html.includes('id="archiveCandidateList"') ||
+  !html.includes('id="archiveCandidateDetail"') ||
+  !html.includes('function loadArchiveCandidates') ||
+  !html.includes('function openArchiveCandidateRecord') ||
+  !html.includes("api('GET',`/api/archive-ops/public-candidates") ||
   !html.includes('Yayın Görevini Sakla') ||
   !html.includes('Yayın Görevleri') ||
   !html.includes('id="archiveWorkTitle"') ||
