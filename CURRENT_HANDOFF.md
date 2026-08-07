@@ -13,8 +13,15 @@
   liste API'si `types` parametresiyle çoklu tür filtresini destekler; böylece hadis/slayt
   ekranı genel ilk 300 kayıt sınırına takılmadan doğrudan ilgili türleri ister. Kapsam:
   `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
-  DB/schema/root `/` ve public frontend hattına dokunulmadı. Doğrulama: `npm.cmd run check`
-  başarılı, 258/258 test geçti.
+  DB/schema/root `/` ve public frontend hattına dokunulmadı. Runtime commit `a8cb996`
+  GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-lkdwvyxrl-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı, 258/258 test
+  geçti. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store
+  doğru. Canlı HTML'de `archiveTextSearch`, `archiveTextList`, `loadArchiveTextSources`,
+  `params.set('types','hadis,slayt')` ve `Yeni Hadis Metni` mevcut; eski geçici
+  `adminRouteProbe` ve public preview marker'ı yok.
 
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Yayın
   Görevleri` ekranı artık statik açıklama alanı değil, gerçek görev takip ekranıdır. Süper
