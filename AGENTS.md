@@ -131,9 +131,18 @@ tespit edilir).
   ve not alanına denetim kaydı/tarih bilgisi eklenir. Bu adım DB/schema/server/root `/` veya
   public frontend hattına dokunmaz; mevcut çalışma kayıtları API'sini kullanır. Değişen
   dosyalar: `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
-  Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check`
-  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü. Bu adım henüz commit,
-  push veya production deploy edilmedi.
+  Başarısız public ön yüz demo hattına ait takipli `archive-public.css` ve
+  `public-archive-demo.js` dosyaları kaldırıldı; `server.js` üzerindeki public preview/demo
+  kirli değişikliği repo sürümüne döndürüldü ve untracked public archive P2D araştırma/brief
+  dokümanları silindi. Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti;
+  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  Runtime commit `fd34509` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-3amq3797h-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archiveWorkAuditContext`,
+  `transferArchiveWorkToAudit`, `markArchiveWorkSubmittedAfterApproval` ve `Denetime Aktar`
+  mevcut; public preview/demo marker'ı yok.
 - **Arşiv Operasyon Merkezi Çalışma Kayıtları gerçek akışa bağlandı:** `/admin` süper admin
   Arşiv Operasyon Merkezi içindeki `Çalışma Kayıtları` ekranı placeholder olmaktan çıkarıldı.
   Süper admin artık soru/cevap çalışması oluşturabilir; durum, öncelik, atanacak kişi,
