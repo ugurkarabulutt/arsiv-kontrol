@@ -14,8 +14,14 @@
   Supabase SQL Editor'de `schema.sql` içindeki `archive_publish_tasks` bloğu uygulanmalıdır.
   Kapsam: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
   `AGENTS.md`, `CURRENT_HANDOFF.md`. Root `/` public cutover ve public frontend dosyaları
-  kapsam dışı. Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti. Henüz commit,
-  push veya production deploy yapılmadı.
+  kapsam dışı. Runtime commit `5ec6f8c` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-jumo4q4fr-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Doğrulama: `npm.cmd run check` başarılı,
+  258/258 test geçti. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archivePublishTitle`,
+  `/api/archive-ops/publish-tasks` ve `Yayın Görevini Sakla` mevcut; public preview/demo
+  marker'ı yok.
 
 - Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Çalışma
   Kayıtları` ekranındaki bir kayıt artık `Denetime Aktar` ile Metin Denetimi ekranına
