@@ -142,6 +142,14 @@ tespit edilir).
   `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store
   doğru. Canlı HTML'de `archivePublishTitle`, `/api/archive-ops/publish-tasks` ve
   `Yayın Görevini Sakla` mevcut; public preview/demo marker'ı yok.
+  Canlı DB'de `archive_publish_tasks` SQL'i kullanıcı tarafından başarıyla uygulandıktan
+  sonra fonksiyonun tabloyu başlangıçta kesin algılaması için temiz HEAD yeniden production'a
+  alındı. Redeploy:
+  `https://arsiv-kontrol-519ggzg3q-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Smoke tekrar geçti: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı;
+  `/admin` noindex/no-store doğru, yayın görevi marker'ları canlı HTML'de mevcut ve public
+  preview marker'ı yok.
 - **Çalışma kayıtları denetim/onay akışına bağlandı:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Çalışma Kayıtları` artık Metin Denetimi ile bağlantılı çalışır. Süper
   admin bir çalışma kaydının cevap taslağını veya cevap yoksa soru metnini `Denetime Aktar`
