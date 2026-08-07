@@ -12,7 +12,14 @@
   eklendi. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattına dokunulmadı. Doğrulama:
   `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace hatası
-  vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  vermedi, yalnız mevcut CRLF uyarıları görüldü. Runtime commit `3f47cd9` GitHub'a push edildi
+  ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-iqwk45bnb-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_HGNLLYiY3L14rsS5FYrJzM6mXMja`, canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest,
+  `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store doğru. Canlı HTML'de
+  `archiveCandidateStatusFilter`, `setArchiveCandidateDecision` ve
+  `/api/archive-ops/public-candidates` mevcut; eski geçici `adminRouteProbe` yok.
 
 ## 2026-08-07 Codex Güncel Durum
 
