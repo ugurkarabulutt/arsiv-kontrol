@@ -2,6 +2,16 @@
 
 ## 2026-08-07 Codex Güncel Durum
 
+- Yerelde yeni bağlantı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Çalışma
+  Kayıtları` ekranındaki bir kayıt artık `Denetime Aktar` ile Metin Denetimi ekranına
+  taşınabilir. Denetim ekranında bağlı çalışma kartı görünür. Bağlı sonuç `Onaya Gönder`
+  ile iletilirse çalışma kaydı mevcut `/api/archive-ops/work-items/:id` API'siyle
+  `onay_bekliyor` durumuna alınır ve not alanına denetim kaydı/tarih bilgisi eklenir.
+  Kapsam: `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  DB/schema/server/root `/` ve public frontend hattına dokunulmadı. Doğrulama:
+  `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace hatası
+  vermedi, yalnız mevcut CRLF uyarıları görüldü. Henüz commit/push/deploy yapılmadı.
+
 - `/admin` süper admin Arşiv Operasyon Merkezi içindeki `Çalışma Kayıtları` ekranı gerçek
   kayıt akışına bağlandı. Süper admin soru/cevap çalışması oluşturabilir; durum, öncelik,
   atanacak kişi, hedef tarih, kategori, kavramlar, bağlı kaynak, soru metni, cevap taslağı

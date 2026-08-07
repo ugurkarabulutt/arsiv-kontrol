@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-07
+- **Çalışma kayıtları denetim/onay akışına bağlandı:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içindeki `Çalışma Kayıtları` artık Metin Denetimi ile bağlantılı çalışır. Süper
+  admin bir çalışma kaydının cevap taslağını veya cevap yoksa soru metnini `Denetime Aktar`
+  ile Metin Denetimi ekranına taşıyabilir. Denetim ekranında kaydın hangi çalışma kaydından
+  geldiğini gösteren bağlam kartı görünür; bu bağlam yerel taslakta korunur ve istenirse
+  kaldırılabilir. Bağlı bir denetim sonucu `Onaya Gönder` ile iletilirse ilgili çalışma kaydı
+  mevcut `/api/archive-ops/work-items/:id` akışıyla otomatik `onay_bekliyor` durumuna alınır
+  ve not alanına denetim kaydı/tarih bilgisi eklenir. Bu adım DB/schema/server/root `/` veya
+  public frontend hattına dokunmaz; mevcut çalışma kayıtları API'sini kullanır. Değişen
+  dosyalar: `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Doğrulama: `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check`
+  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü. Bu adım henüz commit,
+  push veya production deploy edilmedi.
 - **Arşiv Operasyon Merkezi Çalışma Kayıtları gerçek akışa bağlandı:** `/admin` süper admin
   Arşiv Operasyon Merkezi içindeki `Çalışma Kayıtları` ekranı placeholder olmaktan çıkarıldı.
   Süper admin artık soru/cevap çalışması oluşturabilir; durum, öncelik, atanacak kişi,

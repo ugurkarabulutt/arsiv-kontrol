@@ -485,6 +485,11 @@ if (
   !html.includes('function loadArchiveWorkItems') ||
   !html.includes('function saveArchiveWorkItem') ||
   !html.includes('function deleteArchiveWorkItemUi') ||
+  !html.includes('id="archiveWorkAuditContext"') ||
+  !html.includes('function transferArchiveWorkToAudit') ||
+  !html.includes('function markArchiveWorkSubmittedAfterApproval') ||
+  !html.includes('Çalışma kaydından denetleniyor') ||
+  !html.includes('Denetime Aktar') ||
   !html.includes('Çalışma Kaydını Sakla') ||
   !html.includes('Kaynağı Aç') ||
   !html.includes('.ops-work-layout') ||
