@@ -1976,6 +1976,33 @@ function archiveReleasePackageStatusLabel(status = '') {
   }[status] || status || 'Taslak';
 }
 
+function archiveReleaseItemReadiness(item = {}) {
+  const topics = Array.isArray(item.topics) ? item.topics.filter(Boolean) : [];
+  const textLength = Number(item.textLength || 0);
+  const textPreview = String(item.textPreview || '').trim();
+  const hasSourceTrace = Boolean(item.sourceTitle || item.sourceId || item.publicationUrl || item.workItemTitle || item.workItemId);
+  const checks = [
+    { key: 'title', label: 'Başlık', ok: Boolean(String(item.title || '').trim()) && String(item.title || '').trim() !== 'Başlıksız kayıt', severity: 'blocker' },
+    { key: 'text', label: 'Metin', ok: textLength > 0 || Boolean(textPreview), severity: 'blocker' },
+    { key: 'category', label: 'Kategori', ok: Boolean(String(item.category || '').trim()), severity: 'blocker' },
+    { key: 'source', label: 'Kaynak izi', ok: hasSourceTrace, severity: 'blocker' },
+    { key: 'topics', label: 'Kavramlar', ok: topics.length > 0, severity: 'warning' }
+  ];
+  if (item.kind === 'publish') {
+    checks.push({ key: 'publicationUrl', label: 'Yayın linki', ok: Boolean(String(item.publicationUrl || '').trim()), severity: 'warning' });
+  }
+  const blockers = checks.filter(check => !check.ok && check.severity === 'blocker');
+  const warnings = checks.filter(check => !check.ok && check.severity !== 'blocker');
+  return {
+    checks,
+    done: checks.filter(check => check.ok).length,
+    total: checks.length,
+    ready: blockers.length === 0,
+    blockers,
+    warnings
+  };
+}
+
 function sanitizeArchiveReleasePackageItem(item = {}) {
   const kind = String(item.kind || '').trim();
   const recordId = String(item.recordId || '').trim();
@@ -2002,6 +2029,32 @@ function sanitizeArchiveReleasePackageItem(item = {}) {
   };
 }
 
+function archiveReleasePackageReadiness(pkg = {}) {
+  const items = Array.isArray(pkg.items) ? pkg.items.map(sanitizeArchiveReleasePackageItem).filter(Boolean) : [];
+  const packageChecks = [
+    { key: 'packageTitle', label: 'Paket başlığı', ok: Boolean(String(pkg.title || '').trim()), severity: 'blocker' },
+    { key: 'packageItems', label: 'Paket içeriği', ok: items.length > 0, severity: 'blocker' },
+    { key: 'packageNote', label: 'Yayın notu', ok: Boolean(String(pkg.note || '').trim()), severity: 'warning' }
+  ];
+  const itemReviews = items.map(item => ({ itemId: item.id, title: item.title, ...archiveReleaseItemReadiness(item) }));
+  const blockers = [
+    ...packageChecks.filter(check => !check.ok && check.severity === 'blocker').map(check => ({ scope: 'package', label: check.label })),
+    ...itemReviews.flatMap(review => review.blockers.map(check => ({ scope: 'item', itemId: review.itemId, title: review.title, label: check.label })))
+  ];
+  const warnings = [
+    ...packageChecks.filter(check => !check.ok && check.severity !== 'blocker').map(check => ({ scope: 'package', label: check.label })),
+    ...itemReviews.flatMap(review => review.warnings.map(check => ({ scope: 'item', itemId: review.itemId, title: review.title, label: check.label })))
+  ];
+  return {
+    ready: blockers.length === 0,
+    blockers,
+    warnings,
+    itemReviews,
+    done: packageChecks.filter(check => check.ok).length + itemReviews.reduce((sum, review) => sum + review.done, 0),
+    total: packageChecks.length + itemReviews.reduce((sum, review) => sum + review.total, 0)
+  };
+}
+
 function normalizeArchiveReleasePackageInput(input = {}, existing = {}) {
   const seen = new Set();
   const items = (Array.isArray(input.items) ? input.items : existing.items || [])
@@ -2023,6 +2076,7 @@ function normalizeArchiveReleasePackageInput(input = {}, existing = {}) {
 
 function publicArchiveReleasePackage(pkg = {}) {
   const items = Array.isArray(pkg.items) ? pkg.items.map(sanitizeArchiveReleasePackageItem).filter(Boolean) : [];
+  const readiness = archiveReleasePackageReadiness({ ...pkg, items });
   return {
     id: pkg.id,
     title: pkg.title || 'Başlıksız yayın paketi',
@@ -2032,6 +2086,7 @@ function publicArchiveReleasePackage(pkg = {}) {
     itemCount: items.length,
     totalTextLength: items.reduce((sum, item) => sum + Number(item.textLength || 0), 0),
     items,
+    readiness,
     createdAt: pkg.createdAt || null,
     updatedAt: pkg.updatedAt || null,
     createdBy: pkg.createdBy || '',
@@ -2095,6 +2150,9 @@ async function listArchiveReleasePackages(query = {}) {
 async function createArchiveReleasePackage(input = {}, actor = 'Sistem') {
   const clean = normalizeArchiveReleasePackageInput(input);
   if (!clean.title) throw httpError('Yayın paketi için başlık gerekli.', 400);
+  if (clean.status === 'hazir' && !archiveReleasePackageReadiness(clean).ready) {
+    throw httpError('Paket hazır durumuna alınamaz. Eksik alanları kontrol edin.', 400);
+  }
   const now = new Date().toISOString();
   const pkg = {
     id: archiveReleasePackageId(),
@@ -2116,6 +2174,9 @@ async function updateArchiveReleasePackage(id = '', input = {}, actor = 'Sistem'
   const existing = packages[index];
   const clean = normalizeArchiveReleasePackageInput(input, existing);
   if (!clean.title) throw httpError('Yayın paketi için başlık gerekli.', 400);
+  if (clean.status === 'hazir' && !archiveReleasePackageReadiness(clean).ready) {
+    throw httpError('Paket hazır durumuna alınamaz. Eksik alanları kontrol edin.', 400);
+  }
   const updated = {
     ...existing,
     ...clean,

@@ -2,6 +2,19 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde Yayın Paketleri son kontrol katmanı eklendi: `/admin` süper admin `Arşiv
+  Operasyon Merkezi > Yayın Paketleri` detay ekranı artık yalnız paket listesi değil, paket
+  yayına hazır mı değil mi gösteren kontrol merkezidir. Paket başlığı, paket içeriği, yayın
+  notu, her kayıt için başlık/metin/kategori/kaynak izi/kavram kontrolleri ayrı ayrı
+  gösterilir. Eksik alanlar kırmızı, uyarılar sarı, hazır kontroller yeşil işaretlenir.
+  Paket içindeki her kayıt `Kaydı Aç` ile kendi Kaynak Havuzu, Çalışma Kayıtları veya Yayın
+  Görevleri ekranında açılabilir; kayıt tek tek paketten çıkarılabilir. Paket eksikleri varsa
+  frontend ve backend birlikte `Hazır` durumuna almayı engeller; böylece eksik kaynak izi,
+  başlık veya metinle yayın paketi yanlışlıkla hazır yapılamaz. Kapsam: `server.js`,
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root
+  `/` ve public frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; 258/258 test geçti.
+
 - Yerelde yeni paketleme ekranı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
   Yayın Paketleri` ekranı artık `yayina_hazir` durumundaki public arşiv adaylarını yayın öncesi
   paketlerde gruplamak için kullanılabilir. Paket başlığı, durum ve not tutulur; paketlerde

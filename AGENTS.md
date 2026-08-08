@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Yayın Paketleri son kontrol katmanı eklendi:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içindeki `Yayın Paketleri` detay ekranı artık yayın öncesi paketleri yalnız gruplamaz;
+  paket yayına hazır mı değil mi kontrol eder. Paket başlığı, paket içeriği, yayın notu ve
+  paket içindeki her aday kayıt için başlık, metin, kategori, kaynak izi, kavramlar ve yayın
+  görevi linki kontrolleri görünür. Hazır kontroller yeşil, uyarılar sarı, engelleyici eksikler
+  kırmızı gösterilir. Paket içindeki kayıtlar `Kaydı Aç` ile ilgili Kaynak Havuzu, Çalışma
+  Kayıtları veya Yayın Görevleri ekranında açılabilir; kayıtlar tek tek paketten çıkarılabilir.
+  Eksik başlık, metin, kategori, kaynak izi veya boş paket varsa `Hazır` durumuna alma frontend
+  ve backend tarafında engellenir. Bu adım DB/schema/root `/` veya public frontend hattına
+  dokunmaz. Değişen dosyalar: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; 258/258 test geçti.
+
 - **Yayın Paketleri pilotu eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
   `Yayın Paketleri` alt ekranı eklendi. Bu ekran `yayina_hazir` durumundaki public arşiv
   adaylarını yayın öncesi paketlerde gruplamak için hazırlandı. Süper admin paket başlığı,

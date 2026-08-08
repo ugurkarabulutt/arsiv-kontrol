@@ -452,6 +452,9 @@ if (
   !server.includes("app.put('/api/archive-ops/release-packages/:id'") ||
   !server.includes("app.delete('/api/archive-ops/release-packages/:id'") ||
   !server.includes('ARCHIVE_OPS_RELEASE_PACKAGES_KEY') ||
+  !server.includes('function archiveReleasePackageReadiness') ||
+  !server.includes('function archiveReleaseItemReadiness') ||
+  !server.includes('Paket hazır durumuna alınamaz') ||
   !server.includes('function listArchiveReleasePackages') ||
   !server.includes('function updateArchiveReleasePackage') ||
   !server.includes('ARCHIVE_PUBLIC_CANDIDATE_STATUSES') ||
@@ -536,6 +539,12 @@ if (
   !html.includes('id="archiveReleaseReadyList"') ||
   !html.includes('function loadArchiveReleasePackages') ||
   !html.includes('function addSelectedReadyToReleasePackage') ||
+  !html.includes('function archiveReleasePackageReview') ||
+  !html.includes('function archiveReleaseItemChecksHtml') ||
+  !html.includes('function openArchiveReleaseItemRecord') ||
+  !html.includes('archive-release-review') ||
+  !html.includes('archive-release-checks') ||
+  !html.includes('Paket hazır değil') ||
   !html.includes("api('GET',`/api/archive-ops/release-packages") ||
   !html.includes("api('GET',`/api/archive-ops/public-candidates?${params}`)") ||
   !html.includes('function loadArchiveCandidates') ||
