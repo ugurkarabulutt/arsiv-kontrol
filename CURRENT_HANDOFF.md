@@ -16,7 +16,16 @@
   258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
   uyarıları görüldü. Marker kontrolü `archiveReadySearch`, `archiveReadyList`,
   `archiveReadyDetail`, `loadArchiveReadyQueue`, `setArchiveReadyDecision` ve
-  `Yayın Hazırlık Kuyruğu` öğelerini doğruladı.
+  `Yayın Hazırlık Kuyruğu` öğelerini doğruladı. Runtime commit `2773205` GitHub'a push
+  edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-4xdicabl9-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_9bT8Mino37cBvQPVhNjatrHFtLqG`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları
+  noindex/no-store doğru. `/api/archive-ops/public-candidates?status=yayina_hazir`
+  oturumsuz erişimde `401` döndü. Canlı HTML'de `Yayın Hazırlık Kuyruğu`,
+  `archiveReadySearch`, `loadArchiveReadyQueue` ve `setArchiveReadyDecision` mevcut;
+  eski geçici `adminRouteProbe` yok.
 
 - Yerelde yeni son kontrol katmanı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
   Public Arşiv Adayları` detay paneli artık seçilen aday için yayın öncesi hazırlık kontrolü
