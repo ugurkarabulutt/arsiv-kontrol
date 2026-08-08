@@ -594,6 +594,7 @@ const ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT = 200;
 const ARCHIVE_RELEASE_PACKAGE_STATUSES = ['taslak', 'son_kontrol', 'hazir', 'beklet'];
 const ARCHIVE_RELEASE_PACKAGE_ITEM_REVIEW_STATUSES = ['bekliyor', 'kontrol_edildi', 'revizyon', 'beklet'];
 const ARCHIVE_RELEASE_PUBLICATION_STATUSES = ['bekliyor', 'yayinda', 'arsive_aktarildi', 'geri_alindi'];
+const ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION = 'public_archive_records_v1';
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -2359,12 +2360,135 @@ function archiveReleaseOutputFileName(title = 'yayin-paketi', extension = 'json'
   return `${slug}.${extension}`;
 }
 
+function archivePublicSlugPart(text = '', fallback = 'kayit') {
+  const slug = String(text || fallback || 'kayit')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 90);
+  return slug || fallback || 'kayit';
+}
+
+function estimateArchiveReadTime(text = '') {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 180));
+  return { words, minutes, label: `${minutes} dk okuma` };
+}
+
+function splitArchiveQuestionAnswer(text = '', fallbackTitle = '') {
+  const clean = String(text || '').trim();
+  if (!clean) return { question: fallbackTitle || '', answer: '', body: '' };
+  const lines = clean.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const questionMarker = lines.findIndex(line => /^(soru|sual)\s*[:：-]/i.test(line));
+  const answerMarker = lines.findIndex(line => /^(cevap|yanıt|yanit)\s*[:：-]/i.test(line));
+  if (questionMarker >= 0 && answerMarker > questionMarker) {
+    const question = lines
+      .slice(questionMarker, answerMarker)
+      .join('\n')
+      .replace(/^(soru|sual)\s*[:：-]\s*/i, '')
+      .trim();
+    const answer = lines
+      .slice(answerMarker)
+      .join('\n')
+      .replace(/^(cevap|yanıt|yanit)\s*[:：-]\s*/i, '')
+      .trim();
+    return { question: question || fallbackTitle || '', answer, body: clean };
+  }
+  const firstQuestionLine = lines.find(line => line.endsWith('?'));
+  if (firstQuestionLine && clean.length > firstQuestionLine.length + 20) {
+    const answer = clean.slice(clean.indexOf(firstQuestionLine) + firstQuestionLine.length).trim();
+    return { question: firstQuestionLine, answer, body: clean };
+  }
+  return {
+    question: fallbackTitle || lines[0] || '',
+    answer: clean,
+    body: clean
+  };
+}
+
+function archiveReleasePublicRecordFromItem(item = {}, manifest = {}) {
+  const title = String(item.title || item.summary || manifest.title || 'Arşiv kaydı').trim();
+  const text = String(item.text || item.summary || '').trim();
+  const qa = splitArchiveQuestionAnswer(text, title);
+  const summary = String(item.summary || qa.answer || qa.body || '').trim().slice(0, 420);
+  const category = String(item.category || 'Genel').trim();
+  const topics = normalizeArchiveTopicList(item.topics || []);
+  const slugBase = `${title}-${item.kind || 'kayit'}-${item.recordId || item.id || item.order || ''}`;
+  return {
+    schemaVersion: ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION,
+    id: `${item.kind || 'record'}:${item.recordId || item.id || item.order || archivePublicSlugPart(title)}`,
+    slug: archivePublicSlugPart(slugBase),
+    sourceRecord: {
+      packageId: manifest.id || '',
+      packageTitle: manifest.title || '',
+      order: item.order || 0,
+      kind: item.kind || '',
+      recordId: item.recordId || item.id || ''
+    },
+    title,
+    summary,
+    question: qa.question,
+    answer: qa.answer,
+    body: qa.body,
+    category,
+    topics,
+    source: {
+      title: item.sourceTitle || '',
+      url: item.sourceUrl || '',
+      trace: [item.sourceTitle, item.sourceUrl].filter(Boolean).join(' | ')
+    },
+    publication: {
+      packageStatus: manifest.status || '',
+      publicationStatus: manifest.publicationStatus || '',
+      publicationUrl: manifest.publicationUrl || '',
+      publicationNote: manifest.publicationNote || ''
+    },
+    seo: {
+      title,
+      description: summary || qa.question || title,
+      canonicalPath: `/soru/${archivePublicSlugPart(slugBase)}`
+    },
+    reading: estimateArchiveReadTime(qa.body || qa.answer),
+    updatedAt: manifest.generatedAt || new Date().toISOString()
+  };
+}
+
+function archiveReleasePackagePublicRecords(manifest = {}) {
+  const records = (manifest.items || []).map(item => archiveReleasePublicRecordFromItem(item, manifest));
+  return {
+    schemaVersion: ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION,
+    generatedAt: manifest.generatedAt || new Date().toISOString(),
+    package: {
+      id: manifest.id || '',
+      title: manifest.title || '',
+      status: manifest.status || '',
+      itemCount: records.length,
+      publicationStatus: manifest.publicationStatus || '',
+      publicationUrl: manifest.publicationUrl || ''
+    },
+    contract: {
+      purpose: 'public_archive_frontend',
+      language: 'tr',
+      excludesInternalWorkflow: true,
+      recordFields: ['id', 'slug', 'title', 'summary', 'question', 'answer', 'body', 'category', 'topics', 'source', 'publication', 'seo', 'reading', 'updatedAt']
+    },
+    records
+  };
+}
+
 async function getArchiveReleasePackageOutput(id = '', format = 'json') {
   const packages = await loadArchiveReleasePackages();
   const pkg = packages.find(item => item.id === id);
   if (!pkg) return null;
   const manifest = await archiveReleasePackageOutputManifest(pkg);
-  const normalizedFormat = ['json', 'markdown', 'csv'].includes(String(format || '').trim()) ? String(format || '').trim() : 'json';
+  const normalizedFormat = ['json', 'markdown', 'csv', 'public-json'].includes(String(format || '').trim()) ? String(format || '').trim() : 'json';
   if (normalizedFormat === 'markdown') {
     return {
       format: 'markdown',
@@ -2381,6 +2505,17 @@ async function getArchiveReleasePackageOutput(id = '', format = 'json') {
       filename: archiveReleaseOutputFileName(manifest.title, 'csv'),
       content: archiveReleasePackageOutputCsv(manifest),
       manifest
+    };
+  }
+  if (normalizedFormat === 'public-json') {
+    const publicRecords = archiveReleasePackagePublicRecords(manifest);
+    return {
+      format: 'public-json',
+      contentType: 'application/json; charset=utf-8',
+      filename: archiveReleaseOutputFileName(`${manifest.title || 'yayin-paketi'}-public-kayitlar`, 'json'),
+      content: JSON.stringify(publicRecords, null, 2),
+      manifest,
+      publicRecords
     };
   }
   return {

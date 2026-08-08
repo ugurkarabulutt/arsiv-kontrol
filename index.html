@@ -1925,6 +1925,7 @@ canvas{width:100%!important;}
               <option value="json">JSON</option>
               <option value="markdown">Markdown</option>
               <option value="csv">CSV</option>
+              <option value="public-json">Public Kayıt JSON</option>
             </select>
             <button class="btn-sec" onclick="clearArchiveOutput()">Çıktıyı Temizle</button>
           </div>
@@ -7129,6 +7130,33 @@ function archiveOutputPublicationHtml(pkg={},outputBelongs=false,readiness={read
     </div>
   `;
 }
+function archiveOutputPublicContractHtml(pkg={},outputBelongs=false,readiness={ready:false}){
+  const publicOutputReady=outputBelongs&&archiveOutputState.output?.format==='public-json';
+  return `
+    <div class="archive-output-publication">
+      <div class="archive-output-publication-head">
+        <div>
+          <div class="archive-output-publication-title">Public Kayıt Sözleşmesi</div>
+          <div class="archive-output-publication-meta">Ön yüz için temiz soru-cevap kayıtları</div>
+        </div>
+        <span class="badge">${publicOutputReady?'Hazır':'Hazırlanmadı'}</span>
+      </div>
+      <div class="ops-status ${readiness.ready?'ok':'err'}">
+        ${readiness.ready
+          ? 'Bu paket public arşiv ön yüzüne aktarılabilecek temiz JSON kayıtlarına çevrilebilir.'
+          : 'Public kayıt sözleşmesi için paket önce hazır, kilitli ve son kontrolü tamamlanmış olmalı.'}
+      </div>
+      <div class="archive-output-publication-actions">
+        <button class="btn-main" onclick="prepareArchivePublicRecordsOutput()" ${readiness.ready?'':'disabled'}>Public Kayıtları Hazırla</button>
+        <button class="btn-sec" onclick="copyArchivePackageOutput()" ${publicOutputReady?'':'disabled'}>Public JSON Kopyala</button>
+        <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${publicOutputReady?'':'disabled'}>Public JSON İndir</button>
+      </div>
+      <div class="ops-help-text">
+        Bu çıktı kullanıcıya admin, denetim, prompt veya iç süreç bilgisini göstermez; yalnız başlık, soru, cevap, özet, kategori, kavramlar ve kaynak izini taşır.
+      </div>
+    </div>
+  `;
+}
 function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   const box=el('archiveOutputDetail');
   if(!box)return;
@@ -7162,6 +7190,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
       </div>
       ${readiness.ready?'<div class="ops-status ok">Paket çıktı oluşturmaya hazır.</div>':`<div class="ops-status err">Çıktı için önce paket kilidi ve son kontrol eksikleri tamamlanmalı.</div>`}
       <div class="archive-output-preview">${outputBelongs?esc(output.content):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
+      ${archiveOutputPublicContractHtml(pkg,outputBelongs,readiness)}
       ${archiveOutputPublicationHtml(pkg,outputBelongs,readiness)}
     </div>
   `;
@@ -7209,7 +7238,7 @@ function setArchiveOutputSearch(value){
   renderArchiveOutputPackages();
 }
 function setArchiveOutputFormat(value){
-  archiveOutputState.format=['json','markdown','csv'].includes(value)?value:'json';
+  archiveOutputState.format=['json','markdown','csv','public-json'].includes(value)?value:'json';
   archiveOutputState.output=null;
   renderArchiveOutputDetail();
 }
@@ -7236,6 +7265,12 @@ async function generateArchivePackageOutput(){
   archiveOutputState.output={packageId:pkg.id,format:data.format,content:data.content||'',filename:data.filename||'yayin-paketi.json',contentType:data.contentType||'text/plain'};
   renderArchiveOutputDetail();
   setArchiveOutputStatus('Paket çıktısı hazırlandı.','ok');
+}
+async function prepareArchivePublicRecordsOutput(){
+  archiveOutputState.format='public-json';
+  const format=el('archiveOutputFormat');
+  if(format)format.value='public-json';
+  await generateArchivePackageOutput();
 }
 async function copyArchivePackageOutput(){
   const output=archiveOutputState.output;

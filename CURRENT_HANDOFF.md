@@ -2,6 +2,20 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde Public kayıt JSON sözleşmesi eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
+  Paket Çıktı Merkezi` ekranı artık kilitli, `Hazır` durumundaki ve paket son kontrolü
+  tamamlanmış yayın paketlerinden public ön yüz için temiz JSON kayıt sözleşmesi üretebilir.
+  Yeni `public-json` formatı paket içindeki kaynak/çalışma/yayın görevi kayıtlarını public
+  arşiv ön yüzünün okuyabileceği `schemaVersion`, `slug`, `title`, `summary`, `question`,
+  `answer`, `body`, `category`, `topics`, `source`, `publication`, `seo`, `reading` ve
+  `updatedAt` alanlarıyla verir. Frontend'e `Public Kayıt Sözleşmesi` kartı,
+  `Public Kayıtları Hazırla`, `Public JSON Kopyala` ve `Public JSON İndir` aksiyonları eklendi.
+  Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattına dokunulmadı. Yerel
+  doğrulama: `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check`
+  ve `npm.cmd run check` başarılı; 262/262 test geçti. Bu değişiklik temiz
+  `codex/admin-public-json-output` branch/worktree üzerinde commit ve deploy için ayrıştırıldı.
+
 - Yerelde Paket Çıktı Merkezi yayın takibi eklendi: `/admin` süper admin `Arşiv Operasyon
   Merkezi > Paket Çıktı Merkezi` ekranı artık kilitli ve hazır paketlerden çıktı üretmenin
   yanında yayın/arşiv takip durumunu da aynı paket üzerinde saklar. Seçili pakette `Yayın

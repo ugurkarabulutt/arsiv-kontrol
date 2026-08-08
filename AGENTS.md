@@ -121,6 +121,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Public kayıt JSON sözleşmesi eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi
+  içindeki `Paket Çıktı Merkezi` artık kilitli, `Hazır` durumundaki ve paket son kontrolü
+  tamamlanmış yayın paketlerinden public ön yüz için temiz kayıt sözleşmesi üretebilir.
+  Yeni `public-json` çıktı formatı, paket içindeki kaynak/çalışma/yayın görevi kayıtlarını
+  `schemaVersion`, `slug`, `title`, `summary`, `question`, `answer`, `body`, `category`,
+  `topics`, `source`, `publication`, `seo`, `reading` ve `updatedAt` alanlarıyla JSON olarak
+  verir. Bu çıktı public arşiv ön yüzünün okuyacağı ara katmandır; public root açmaz, kullanıcıya
+  AI/admin/denetim/prompt gibi iç süreç ifadeleri taşımaz ve DB/schema migration gerektirmez.
+  Frontend'e `Public Kayıt Sözleşmesi` kartı, `Public Kayıtları Hazırla`, `Public JSON Kopyala`
+  ve `Public JSON İndir` aksiyonları eklendi. Değişen dosyalar: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 262/262 test geçti. Bu kayıt anında commit/push/deploy
+  yapılmadı; workspace'te diğer sohbetin public preview dosyalarıyla karışma riski olduğu için
+  canlıya alma ayrı temiz patch/deploy adımı gerektirir.
+
 - **Paket Çıktı Merkezi yayın takibi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Paket Çıktı Merkezi` artık yalnız JSON/Markdown/CSV çıktı üretmez; çıktı
   sonrası yayın yaşam döngüsünü de aynı paket üzerinde takip eder. Hazır ve kilitli paketler
