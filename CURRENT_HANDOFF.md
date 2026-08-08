@@ -2,6 +2,22 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde yeni kuyruk eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Yayın
+  Hazırlık Kuyruğu` ekranı artık `yayina_hazir` durumundaki public arşiv adaylarını ayrı
+  bir çalışma alanında gösterir. Bu ekran yalnız yayına hazır kayıtları çeker; kaynak,
+  çalışma ve yayın görevi türlerine göre filtreler, arar, hazırlık özetini verir, seçili
+  kaydın kaynak izi/checklist/public ön izlemesini gösterir ve kaydı ilgili kaynak/çalışma/
+  yayın görevi ekranında açar. Uygun olmayan kayıtlar tek tek `Son Kontrole Geri Al`,
+  `Revizyon Gerekli`, `Kaynak Eksik` veya `Beklet` kararına taşınabilir. Karar yalnız seçili
+  kayda uygulanır; toplu yayın, root `/` public cutover, DB/schema ve backend değişikliği
+  yapılmadı. Mobil taşma riskine karşı kuyruk listesi ve detay aksiyonları responsive
+  kurallarla tek kolona düşer. Kapsam: `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `npm.cmd run check` başarılı,
+  258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü. Marker kontrolü `archiveReadySearch`, `archiveReadyList`,
+  `archiveReadyDetail`, `loadArchiveReadyQueue`, `setArchiveReadyDecision` ve
+  `Yayın Hazırlık Kuyruğu` öğelerini doğruladı.
+
 - Yerelde yeni son kontrol katmanı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
   Public Arşiv Adayları` detay paneli artık seçilen aday için yayın öncesi hazırlık kontrolü
   gösterir. Panel; başlık/metin/kategori/kavram/kaynak izi checklist'i, eksik alanlar özeti,

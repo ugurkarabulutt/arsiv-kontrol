@@ -512,6 +512,15 @@ if (
   !html.includes('id="archiveCandidateStatusFilter"') ||
   !html.includes('id="archiveCandidateList"') ||
   !html.includes('id="archiveCandidateDetail"') ||
+  !html.includes('data-ops-view="ready"') ||
+  !html.includes('id="archiveReadySearch"') ||
+  !html.includes('id="archiveReadyList"') ||
+  !html.includes('id="archiveReadyDetail"') ||
+  !html.includes('archive-ready-layout') ||
+  !html.includes('function loadArchiveReadyQueue') ||
+  !html.includes("params.set('status','yayina_hazir')") ||
+  !html.includes('function setArchiveReadyDecision') ||
+  !html.includes('Yayın Hazırlık Kuyruğu') ||
   !html.includes('function loadArchiveCandidates') ||
   !html.includes('function setArchiveCandidateDecision') ||
   !html.includes('function openArchiveCandidateRecord') ||

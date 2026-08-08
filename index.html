@@ -431,6 +431,18 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .candidate-public-preview h4{font-size:18px;line-height:1.35;margin:0 0 8px;color:var(--ink);overflow-wrap:anywhere;word-break:break-word;}
 .candidate-public-preview p{margin:0;color:var(--ink2);line-height:1.65;overflow-wrap:anywhere;word-break:break-word;}
 .candidate-review-alert{border-left:3px solid var(--gold);background:rgba(var(--gold-rgb),.08);padding:10px 12px;margin-top:12px;font-size:12px;line-height:1.55;color:var(--ink2);}
+.archive-ready-hero{border:1px solid rgba(var(--green-rgb),.38);background:linear-gradient(135deg,rgba(var(--green-rgb),.1),rgba(var(--gold-rgb),.06));padding:14px;margin-bottom:12px;min-width:0;}
+.archive-ready-hero strong{display:block;font-size:16px;line-height:1.35;color:var(--ink);margin-bottom:5px;overflow-wrap:anywhere;}
+.archive-ready-hero span{display:block;font-size:13px;line-height:1.55;color:var(--ink2);}
+.archive-ready-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;align-items:start;margin-top:12px;}
+.archive-ready-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;min-width:0;}
+.archive-ready-card{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;width:100%;cursor:pointer;color:var(--ink);min-width:0;}
+.archive-ready-card:hover,.archive-ready-card.active{border-color:var(--green);background:rgba(var(--green-rgb),.08);}
+.archive-ready-card-title{font-size:14px;font-weight:900;line-height:1.35;margin-bottom:7px;overflow-wrap:anywhere;word-break:break-word;}
+.archive-ready-card-preview{font-size:12px;line-height:1.5;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.archive-ready-detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.archive-ready-detail-actions button{white-space:nowrap;}
+.archive-ready-empty{border:1px dashed var(--border);background:var(--bg);padding:16px;color:var(--ink3);font-size:13px;line-height:1.6;}
 .ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
@@ -495,6 +507,8 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .work-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-bottom:8px;}
 .work-actions{display:flex;gap:4px;flex-wrap:wrap;}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
+@media(max-width:900px){.archive-ready-layout{grid-template-columns:1fr}.archive-ready-list{max-height:none;overflow:visible}}
+@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -952,6 +966,7 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="texts" onclick="mArchiveOps('texts')">Hadis ve Slayt Metinleri</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="import" onclick="mArchiveOps('import')">İçe Aktarım Merkezi</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="candidates" onclick="mArchiveOps('candidates')">Public Arşiv Adayları</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Yayın Hazırlık Kuyruğu</button>
         </div>
       </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
@@ -993,6 +1008,7 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="texts" onclick="openArchiveOps('texts')"><span>Hadis ve Slayt Metinleri</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="import" onclick="openArchiveOps('import')"><span>İçe Aktarım Merkezi</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="candidates" onclick="openArchiveOps('candidates')"><span>Public Arşiv Adayları</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Yayın Hazırlık Kuyruğu</span></button>
       </div>
     </div>
 
@@ -1711,6 +1727,42 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="ready" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Yayın Hazırlık Kuyruğu</div>
+            <div class="ops-panel-sub">Yayına hazır işaretlenen adayları son kez ayrı bir kuyrukta kontrol edin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadArchiveReadyQueue()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="archive-ready-hero">
+            <strong>Bu ekran yalnız yayına hazır kayıtları gösterir.</strong>
+            <span>Kaynak izi, kategori, kavram ve metin ön izlemesi birlikte kontrol edilir. Eksik veya şüpheli görülen kayıtlar tek tek son kontrole, revizyona veya beklemeye alınabilir.</span>
+          </div>
+          <div class="ops-filter-row">
+            <input class="ops-field" id="archiveReadySearch" placeholder="Yayına hazır adaylarda ara..." oninput="setArchiveReadySearch(this.value)">
+            <select class="ops-field" id="archiveReadyKindFilter" onchange="setArchiveReadyFilter()">
+              <option value="">Tüm türler</option>
+              <option value="source">Kaynak kayıtları</option>
+              <option value="work">Çalışma kayıtları</option>
+              <option value="publish">Yayın görevleri</option>
+            </select>
+            <button class="btn-sec" onclick="clearArchiveReadyFilters()">Filtreyi Temizle</button>
+          </div>
+          <div class="ops-file-summary" id="archiveReadySummary"></div>
+          <div class="ops-status" id="archiveReadyStatusMsg"></div>
+          <div class="archive-ready-layout">
+            <div class="archive-ready-list" id="archiveReadyList">
+              <div class="empty-state">Yayına hazır kayıtlar yükleniyor...</div>
+            </div>
+            <div class="ops-detail" id="archiveReadyDetail">
+              <div class="empty-state">Bir yayına hazır kayıt seçildiğinde son kontrol, public ön izleme ve kaynak izi burada açılır.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="ops-flow archive-ops-section" data-ops-view="overview">
         <div class="ops-step"><div class="ops-step-num">01</div><strong>Kaynak girer</strong><span>Yayın, transkript, hadis, slayt veya standart sisteme alınır.</span></div>
         <div class="ops-step"><div class="ops-step-num">02</div><strong>Görev atanır</strong><span>Kişi, tarih, durum ve çalışma notu belirlenir.</span></div>
@@ -1983,7 +2035,8 @@ if('serviceWorker' in navigator){
 }
 let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates'];
+let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready'];
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -2334,6 +2387,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   }
   if(archiveOpsState.view==='import')loadArchiveImportBatches();
   if(archiveOpsState.view==='candidates')loadArchiveCandidates();
+  if(archiveOpsState.view==='ready')loadArchiveReadyQueue();
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
@@ -5967,6 +6021,208 @@ async function openArchiveCandidateWork(){
   renderArchiveOpsView('work');
   await openArchiveWorkItem(workId);
   window.setTimeout(()=>el('archiveWorkDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+function archiveReadySummaryHtml(){
+  const items=archiveReadyState.items||[];
+  const sources=items.filter(item=>item.kind==='source').length;
+  const works=items.filter(item=>item.kind==='work').length;
+  const publishes=items.filter(item=>item.kind==='publish').length;
+  const needsReview=items.filter(item=>archiveCandidateReadinessItems(item).some(entry=>!entry.ok)).length;
+  return `
+    <div class="ops-file-summary-item"><strong>${Number(items.length||0).toLocaleString('tr-TR')}</strong><span>Yayına hazır</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(sources).toLocaleString('tr-TR')}</strong><span>Kaynak</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(works).toLocaleString('tr-TR')}</strong><span>Çalışma</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(publishes).toLocaleString('tr-TR')}</strong><span>Yayın görevi</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(needsReview).toLocaleString('tr-TR')}</strong><span>Eksik kontrol</span></div>
+  `;
+}
+function setArchiveReadyStatus(message='',kind=''){
+  const box=el('archiveReadyStatusMsg');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function archiveReadyCardHtml(item){
+  const active=archiveReadyState.activeItem?.id===item.id?' active':'';
+  const score=archiveCandidateReadinessScore(item);
+  const topics=(item.topics||[]).slice(0,3).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const meta=[
+    archiveCandidateKindLabel(item.kind),
+    item.category||'Kategori yok',
+    `${score.done}/${score.total} alan hazır`,
+    `${Number(item.textLength||0).toLocaleString('tr-TR')} karakter`
+  ].filter(Boolean);
+  return `
+    <button class="archive-ready-card${active}" onclick="openArchiveReadyItem(${attrJson(item.id)})">
+      <div class="archive-ready-card-title">${esc(item.title||'Başlıksız kayıt')}</div>
+      <div class="ops-source-meta">${meta.map(value=>`<span>${esc(value)}</span>`).join('')}</div>
+      <div class="archive-ready-card-preview">${esc(item.textPreview||'Ön izleme yok.')}</div>
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+    </button>
+  `;
+}
+function renderArchiveReadyList(){
+  const search=el('archiveReadySearch');
+  const kind=el('archiveReadyKindFilter');
+  if(search&&search.value!==archiveReadyState.query)search.value=archiveReadyState.query;
+  if(kind&&kind.value!==archiveReadyState.kind)kind.value=archiveReadyState.kind;
+  const summary=el('archiveReadySummary');
+  if(summary)summary.innerHTML=archiveReadySummaryHtml();
+  const list=el('archiveReadyList');
+  if(!list)return;
+  if(!archiveReadyState.items.length){
+    list.innerHTML='<div class="archive-ready-empty">Bu filtreye uygun yayına hazır kayıt yok.</div>';
+    return;
+  }
+  list.innerHTML=archiveReadyState.items.map(archiveReadyCardHtml).join('');
+}
+function renderArchiveReadyDetail(item){
+  const box=el('archiveReadyDetail');
+  if(!box)return;
+  if(!item){
+    box.innerHTML='<div class="empty-state">Bir yayına hazır kayıt seçildiğinde son kontrol, public ön izleme ve kaynak izi burada açılır.</div>';
+    return;
+  }
+  const score=archiveCandidateReadinessScore(item);
+  const topics=(item.topics||[]).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const dateText=item.updatedAt?new Date(item.updatedAt).toLocaleString('tr-TR'):'Tarih yok';
+  box.innerHTML=`
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(item.title||'Başlıksız kayıt')}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
+          <span>Yayına hazır</span>
+          <span>${esc(dateText)}</span>
+          <span>${score.done}/${score.total} alan hazır</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="openArchiveReadyRecord()">Kaydı Aç</button>
+    </div>
+    <div class="ops-detail-body">
+      ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
+      ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
+      ${item.workItemTitle?`<p><strong>Çalışma:</strong> ${esc(item.workItemTitle)}</p>`:''}
+      ${item.publicationUrl?`<p><strong>Yayın linki:</strong> ${esc(item.publicationUrl)}</p>`:''}
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+      <div class="archive-ready-detail-actions">
+        <button class="btn-main" onclick="openArchiveReadyRecord()">Aday Kaydını Aç</button>
+        ${item.sourceId?`<button class="btn-sec" onclick="openArchiveReadySource()">Kaynağı Aç</button>`:''}
+        ${item.workItemId?`<button class="btn-sec" onclick="openArchiveReadyWork()">Çalışmayı Aç</button>`:''}
+      </div>
+      <div class="candidate-review-grid">
+        ${archiveCandidateChecklistHtml(item)}
+        ${archiveCandidateMissingHtml(item)}
+        ${archiveCandidateTraceHtml(item)}
+        <div class="candidate-review-card">
+          <h4>Metin ön izlemesi</h4>
+          <div class="ops-preview-text" style="max-height:240px">${esc(item.textPreview||'Ön izleme yok.')}</div>
+        </div>
+      </div>
+      ${archiveCandidatePublicPreviewHtml(item)}
+      <div class="ops-conflict-box" style="margin-top:12px">
+        <strong>Son kontrol kararı</strong>
+        <p>Bu işlem yalnız seçili kaydı etkiler. Kayıt uygun değilse yayına hazır kuyruğundan çıkarıp ilgili ekrana geri gönderebilirsiniz.</p>
+        <textarea class="ops-field" id="archiveReadyDecisionNote" placeholder="Kısa karar notu" style="min-height:72px;resize:vertical"></textarea>
+        <div class="archive-ready-detail-actions">
+          <button class="btn-sec" onclick="setArchiveReadyDecision('arsiv_adayi')">Son Kontrole Geri Al</button>
+          <button class="btn-sec" onclick="setArchiveReadyDecision('revizyon_gerekli')">Revizyon Gerekli</button>
+          <button class="btn-sec" onclick="setArchiveReadyDecision('kaynak_eksik')">Kaynak Eksik</button>
+          <button class="btn-sec" onclick="setArchiveReadyDecision('beklet')">Beklet</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+async function loadArchiveReadyQueue(){
+  if(!canUseArchiveOps())return;
+  archiveReadyState.loading=true;
+  const params=new URLSearchParams();
+  params.set('status','yayina_hazir');
+  if(archiveReadyState.query)params.set('q',archiveReadyState.query);
+  if(archiveReadyState.kind)params.set('kind',archiveReadyState.kind);
+  const list=el('archiveReadyList');
+  if(list&&!archiveReadyState.items.length)list.innerHTML='<div class="empty-state">Yayına hazır kayıtlar yükleniyor...</div>';
+  const data=await api('GET',`/api/archive-ops/public-candidates?${params}`);
+  archiveReadyState.loading=false;
+  if(data.error){
+    if(list)list.innerHTML=`<div class="archive-ready-empty">${esc(data.error)}</div>`;
+    setArchiveReadyStatus(data.error,'err');
+    return;
+  }
+  archiveReadyState.items=data.candidates||[];
+  archiveReadyState.counts=data.counts||null;
+  if(archiveReadyState.activeItem&&!archiveReadyState.items.some(item=>item.id===archiveReadyState.activeItem.id)){
+    archiveReadyState.activeItem=null;
+    renderArchiveReadyDetail(null);
+  }
+  renderArchiveReadyList();
+  setArchiveReadyStatus(archiveReadyState.items.length?'Yayına hazır kayıtlar listelendi.':'Yayına hazır kayıt yok.','ok');
+}
+function setArchiveReadySearch(value){
+  archiveReadyState.query=String(value||'');
+  loadArchiveReadyQueue();
+}
+function setArchiveReadyFilter(){
+  archiveReadyState.kind=el('archiveReadyKindFilter')?.value||'';
+  loadArchiveReadyQueue();
+}
+function clearArchiveReadyFilters(){
+  archiveReadyState.query='';
+  archiveReadyState.kind='';
+  loadArchiveReadyQueue();
+}
+function openArchiveReadyItem(id){
+  const item=archiveReadyState.items.find(entry=>entry.id===id);
+  if(!item)return;
+  archiveReadyState.activeItem=item;
+  renderArchiveReadyList();
+  renderArchiveReadyDetail(item);
+}
+async function setArchiveReadyDecision(status){
+  const item=archiveReadyState.activeItem;
+  if(!item||archiveReadyState.decisionLoading)return;
+  const label={
+    arsiv_adayi:'son kontrole geri alınacak',
+    kaynak_eksik:'kaynak eksik olarak işaretlenecek',
+    revizyon_gerekli:'revizyon gerekli olarak işaretlenecek',
+    beklet:'beklemeye alınacak'
+  }[status]||status;
+  const ok=await openSystemConfirm({
+    title:'Kayıt kuyruktan çıkarılsın mı?',
+    badge:'Yayın Hazırlığı',
+    message:`${item.title||'Seçili kayıt'} ${label}.`,
+    detail:'Bu karar yalnız seçili kayda uygulanır. Diğer yayına hazır kayıtlar etkilenmez.',
+    confirmText:'Kararı Uygula',
+    cancelText:'Vazgeç'
+  });
+  if(!ok)return;
+  archiveReadyState.decisionLoading=true;
+  setArchiveReadyStatus('Karar uygulanıyor...','');
+  const note=el('archiveReadyDecisionNote')?.value||'';
+  const data=await api('POST',`/api/archive-ops/public-candidates/${encodeURIComponent(item.kind)}/${encodeURIComponent(item.recordId)}/decision`,{status,note});
+  archiveReadyState.decisionLoading=false;
+  if(data.error){
+    setArchiveReadyStatus(data.error,'err');
+    await showSystemAlert('Karar uygulanamadı',data.error,'danger');
+    return;
+  }
+  archiveReadyState.activeItem=null;
+  renderArchiveReadyDetail(null);
+  await loadArchiveReadyQueue();
+  setArchiveReadyStatus('Kayıt güncellendi ve yayına hazır kuyruğundan çıkarıldı.','ok');
+}
+async function openArchiveReadyRecord(){
+  archiveCandidateState.activeItem=archiveReadyState.activeItem;
+  await openArchiveCandidateRecord();
+}
+async function openArchiveReadySource(){
+  archiveCandidateState.activeItem=archiveReadyState.activeItem;
+  await openArchiveCandidateSource();
+}
+async function openArchiveReadyWork(){
+  archiveCandidateState.activeItem=archiveReadyState.activeItem;
+  await openArchiveCandidateWork();
 }
 function archiveWorkStatusLabel(status){
   return {

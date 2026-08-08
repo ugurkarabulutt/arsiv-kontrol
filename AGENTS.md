@@ -121,6 +121,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Yayın Hazırlık Kuyruğu eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
+  `Yayın Hazırlık Kuyruğu` alt ekranı eklendi. Bu ekran yalnız `yayina_hazir` durumundaki
+  public arşiv adaylarını çeker ve adayları normal aday havuzundan ayrı bir son hazırlık
+  kuyruğunda gösterir. Süper admin kaynak, çalışma ve yayın görevi türlerine göre filtre
+  kullanabilir, kayıt içinde arama yapabilir, yayına hazır/kaynak/çalışma/yayın görevi/eksik
+  kontrol sayılarını görebilir, seçilen kaydın kaynak izi, hazırlık checklist'i, metin ön
+  izlemesi ve public görünüm ön izlemesini okuyabilir. Seçili kayıt ilgili Kaynak Havuzu,
+  Çalışma Kayıtları veya Yayın Görevleri ekranında açılabilir. Uygun olmayan kayıtlar tek tek
+  `Son Kontrole Geri Al`, `Revizyon Gerekli`, `Kaynak Eksik` veya `Beklet` kararına taşınır;
+  karar yalnız seçili kayda uygulanır. Bu adım backend/DB/schema/root `/` veya public frontend
+  hattına dokunmadı. Değişen dosyalar: `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `npm.cmd run check` başarılı,
+  258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü. Marker kontrolü `archiveReadySearch`, `archiveReadyList`,
+  `archiveReadyDetail`, `loadArchiveReadyQueue`, `setArchiveReadyDecision` ve
+  `Yayın Hazırlık Kuyruğu` öğelerini doğruladı.
+
 - **Public Arşiv Adayları son kontrol paneli kullanışlı hale getirildi:** `/admin` süper
   admin Arşiv Operasyon Merkezi içindeki `Public Arşiv Adayları` detay ekranına yayın öncesi
   son kontrol katmanı eklendi. Seçilen aday artık yalnız metin ön izlemesi ve karar butonlarıyla
