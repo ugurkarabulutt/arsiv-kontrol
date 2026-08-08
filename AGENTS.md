@@ -132,7 +132,15 @@ tespit edilir).
   aksiyonlarini kapatir. Uyarilar bloklamaz ama super adminin kayit bazinda son kontrol
   yapmasini saglar. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`,
   `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattina
-  dokunulmaz.
+  dokunulmadi. Yerel dogrulama: `npm.cmd run check` basarili, 86/86 test gecti. Runtime
+  commit `23d101e` GitHub'a push edildi ve production'a alindi. Production deploy:
+  `https://arsiv-kontrol-1t5youj5a-ugurkarabulutts-projects.vercel.app`, canli alias
+  `https://arsiv.ibrahimlive.ai`. Canli smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon basarili. `/admin`
+  header'lari noindex/no-store dogru. Canli HTML'de `Public yayin kontrolu`,
+  `archiveOutputPublicReadinessHtml` ve `Public JSON kalite kontrolunden gecmedi` marker'lari
+  mevcut; eski gecici `adminRouteProbe` yok. Oturumsuz public-json output endpoint'i `401`
+  dondu.
 
 - **Public kayıt JSON sözleşmesi eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi
   içindeki `Paket Çıktı Merkezi` artık kilitli, `Hazır` durumundaki ve paket son kontrolü
