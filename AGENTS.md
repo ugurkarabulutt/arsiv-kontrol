@@ -121,6 +121,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Paket Çıktı Merkezi yayın takibi eklendi:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içindeki `Paket Çıktı Merkezi` artık yalnız JSON/Markdown/CSV çıktı üretmez; çıktı
+  sonrası yayın yaşam döngüsünü de aynı paket üzerinde takip eder. Hazır ve kilitli paketler
+  için `Yayın Takibi` kartı eklendi: yayın/arşiv linki, kısa not, `Yayına Verildi`,
+  `Arşive Aktarıldı` ve `Geri Alındı` durumları tutulur. `Yayına Verildi` ve
+  `Arşive Aktarıldı` kararları backend tarafında da yalnız hazır, kilitli ve son kontrolü
+  tamamlanmış paketlere uygulanabilir; hazır olmayan paketlerin yayın takibine yanlışlıkla
+  alınması engellenir. Yayın durumu paket listesinde, detayda ve çıktı manifestinde görünür;
+  Markdown çıktısına yayın takibi/link/not bilgisi eklenir. Bu adım DB/schema/root `/` veya
+  public frontend hattına dokunmaz; paket verisi mevcut `settings.archive_ops_release_packages`
+  JSON kaydında saklanır. Değişen dosyalar: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 258/258 test geçti.
+
 - **Yayın Paketi Çıktı Merkezi eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
   `Paket Çıktı Merkezi` alt ekranı eklendi. Bu ekran yalnız kilitlenmiş, `Hazır` durumundaki
   ve paket son kontrolü tamamlanmış yayın paketlerinden çıktı üretir. Süper admin hazır

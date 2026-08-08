@@ -519,6 +519,13 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-output-check.blocked .archive-output-check-dot{border-color:var(--red);background:var(--red-bg);}
 .archive-output-check strong{display:block;color:var(--ink);font-size:12px;overflow-wrap:anywhere;}
 .archive-output-check span{display:block;color:var(--ink3);overflow-wrap:anywhere;word-break:break-word;}
+.archive-output-publication{border:1px solid rgba(var(--gold-rgb),.38);background:linear-gradient(135deg,rgba(var(--gold-rgb),.08),rgba(var(--green-rgb),.05));padding:12px;margin:12px 0;min-width:0;}
+.archive-output-publication-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;min-width:0;}
+.archive-output-publication-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;}
+.archive-output-publication-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);line-height:1.45;overflow-wrap:anywhere;word-break:break-word;}
+.archive-output-publication-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:8px;}
+.archive-output-publication-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;}
+.archive-output-publication-actions button{min-width:0;white-space:normal;}
 .ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
@@ -585,7 +592,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
 @media(max-width:900px){.archive-output-layout{grid-template-columns:1fr}.archive-output-package-list{max-height:none;overflow:visible}}
-@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks{grid-template-columns:1fr}.archive-output-preview{font-size:11px;max-height:380px}}
+@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks{grid-template-columns:1fr}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -6407,6 +6414,9 @@ async function openArchiveReadyWork(){
 function archiveReleasePackageStatusLabel(status){
   return {taslak:'Taslak',son_kontrol:'Son kontrol',hazir:'Hazır',beklet:'Beklet'}[status]||'Taslak';
 }
+function archiveReleasePublicationStatusLabel(status){
+  return {bekliyor:'Yayın bekliyor',yayinda:'Yayına verildi',arsive_aktarildi:'Public arşive aktarıldı',geri_alindi:'Geri alındı'}[status]||'Yayın bekliyor';
+}
 function archiveReleaseItemReviewStatusLabel(status){
   return {bekliyor:'Kontrol bekliyor',kontrol_edildi:'Kontrol edildi',revizyon:'Revizyon gerekli',beklet:'Beklet'}[status]||'Kontrol bekliyor';
 }
@@ -7048,6 +7058,7 @@ function archiveOutputPackageCardHtml(pkg){
       <div class="ops-source-meta">
         <span>${pkg.locked?'Kilitli':'Kilit bekliyor'}</span>
         <span>${esc(archiveReleasePackageStatusLabel(pkg.status))}</span>
+        <span>${esc(pkg.publicationStatusLabel||archiveReleasePublicationStatusLabel(pkg.publicationStatus))}</span>
         <span>${Number(pkg.itemCount||0).toLocaleString('tr-TR')} kayıt</span>
         <span>${esc(dateText)}</span>
       </div>
@@ -7065,7 +7076,7 @@ function renderArchiveOutputPackages(){
   const q=archiveOutputState.query.trim().toLocaleLowerCase('tr-TR');
   const packages=(archiveOutputState.packages||[]).filter(pkg=>{
     if(!q)return true;
-    return [pkg.title,pkg.note,pkg.status,...(pkg.items||[]).map(item=>`${item.title} ${item.category} ${item.sourceTitle} ${(item.topics||[]).join(' ')}`)]
+    return [pkg.title,pkg.note,pkg.status,pkg.publicationStatus,pkg.publicationUrl,pkg.publicationNote,...(pkg.items||[]).map(item=>`${item.title} ${item.category} ${item.sourceTitle} ${(item.topics||[]).join(' ')}`)]
       .join(' ')
       .toLocaleLowerCase('tr-TR')
       .includes(q);
@@ -7091,6 +7102,33 @@ function archiveOutputChecksHtml(pkg={}){
     </div>
   `).join('')}</div>`;
 }
+function archiveOutputPublicationHtml(pkg={},outputBelongs=false,readiness={ready:false}){
+  const status=pkg.publicationStatus||'bekliyor';
+  const updated=pkg.publicationUpdatedAt?new Date(pkg.publicationUpdatedAt).toLocaleString('tr-TR'):'Henüz işlem yok';
+  const actor=pkg.publicationUpdatedBy?` · ${pkg.publicationUpdatedBy}`:'';
+  const disabled=readiness.ready?'':'disabled';
+  return `
+    <div class="archive-output-publication">
+      <div class="archive-output-publication-head">
+        <div>
+          <div class="archive-output-publication-title">Yayın Takibi</div>
+          <div class="archive-output-publication-meta">${esc(pkg.publicationStatusLabel||archiveReleasePublicationStatusLabel(status))} · ${esc(updated)}${esc(actor)}</div>
+        </div>
+        <span class="badge">${esc(pkg.publicationStatusLabel||archiveReleasePublicationStatusLabel(status))}</span>
+      </div>
+      <div class="archive-output-publication-grid">
+        <input id="archiveOutputPublicationUrl" placeholder="Yayın veya arşiv linki" value="${escAttr(pkg.publicationUrl||'')}">
+        <textarea id="archiveOutputPublicationNote" rows="3" placeholder="Kısa yayın notu">${esc(pkg.publicationNote||'')}</textarea>
+      </div>
+      <div class="archive-output-publication-actions">
+        <button class="btn-sec" onclick="setArchivePackagePublicationStatus('yayinda')" ${disabled}>Yayına Verildi</button>
+        <button class="btn-main" onclick="setArchivePackagePublicationStatus('arsive_aktarildi')" ${disabled}>Arşive Aktarıldı</button>
+        <button class="btn-sec danger" onclick="setArchivePackagePublicationStatus('geri_alindi')">Geri Alındı</button>
+      </div>
+      <div class="ops-status ${readiness.ready?'ok':'err'}">${readiness.ready?'Paket yayın takibine alınabilir.':'Yayın takibi için paket önce hazır ve kilitli olmalı.'}${outputBelongs?' Çıktı ön izlemesi bu paket için hazır.':''}</div>
+    </div>
+  `;
+}
 function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   const box=el('archiveOutputDetail');
   if(!box)return;
@@ -7108,6 +7146,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
         <div class="ops-source-meta">
           <span>${pkg.locked?'Kilitli':'Kilit bekliyor'}</span>
           <span>${esc(archiveReleasePackageStatusLabel(pkg.status))}</span>
+          <span>${esc(pkg.publicationStatusLabel||archiveReleasePublicationStatusLabel(pkg.publicationStatus))}</span>
           <span>${Number(pkg.itemCount||0).toLocaleString('tr-TR')} kayıt</span>
           <span>${Number(pkg.totalTextLength||0).toLocaleString('tr-TR')} karakter</span>
         </div>
@@ -7123,6 +7162,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
       </div>
       ${readiness.ready?'<div class="ops-status ok">Paket çıktı oluşturmaya hazır.</div>':`<div class="ops-status err">Çıktı için önce paket kilidi ve son kontrol eksikleri tamamlanmalı.</div>`}
       <div class="archive-output-preview">${outputBelongs?esc(output.content):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
+      ${archiveOutputPublicationHtml(pkg,outputBelongs,readiness)}
     </div>
   `;
 }
@@ -7153,6 +7193,16 @@ function openArchiveOutputPackage(id){
   archiveOutputState.output=null;
   renderArchiveOutputPackages();
   renderArchiveOutputDetail();
+}
+function updateArchiveOutputPackageInState(pkg){
+  if(!pkg?.id)return;
+  archiveOutputState.packages=(archiveOutputState.packages||[]).map(item=>item.id===pkg.id?pkg:item);
+  if(archiveOutputState.activePackage?.id===pkg.id){
+    archiveOutputState.activePackage=pkg;
+  }
+  if(archiveReleasePackageState?.activePackage?.id===pkg.id){
+    archiveReleasePackageState.activePackage=pkg;
+  }
 }
 function setArchiveOutputSearch(value){
   archiveOutputState.query=String(value||'');
@@ -7206,6 +7256,30 @@ function downloadArchivePackageOutput(){
   a.remove();
   URL.revokeObjectURL(url);
   setArchiveOutputStatus('Çıktı indirildi.','ok');
+}
+async function setArchivePackagePublicationStatus(status){
+  const pkg=archiveOutputState.activePackage;
+  if(!pkg)return showSystemAlert('Paket seçilmedi','Yayın takibi için önce bir paket seçin.','danger');
+  const readiness=archiveOutputPackageReady(pkg);
+  if(['yayinda','arsive_aktarildi'].includes(status)&&!readiness.ready){
+    return showSystemAlert('Yayın takibi yapılamaz','Paket hazır ve kilitli değil. Önce paket son kontrolünü tamamlayın.','danger');
+  }
+  const payload={
+    status,
+    publicationUrl:el('archiveOutputPublicationUrl')?.value||'',
+    publicationNote:el('archiveOutputPublicationNote')?.value||''
+  };
+  setArchiveOutputStatus('Yayın takibi güncelleniyor...','');
+  const data=await api('POST',`/api/archive-ops/release-packages/${encodeURIComponent(pkg.id)}/publication`,payload);
+  if(data.error){
+    setArchiveOutputStatus(data.error,'err');
+    return showSystemAlert('Yayın takibi güncellenemedi',data.error,'danger');
+  }
+  updateArchiveOutputPackageInState(data.package);
+  renderArchiveOutputPackages();
+  renderArchiveOutputDetail();
+  setArchiveOutputStatus('Yayın takibi güncellendi.','ok');
+  showSystemAlert('Yayın takibi güncellendi',`${data.package?.title||'Paket'} için durum: ${archiveReleasePublicationStatusLabel(data.package?.publicationStatus)}.`,'success');
 }
 function openArchiveOutputFromReleasePackage(){
   const pkg=archiveReleasePackageState.activePackage;

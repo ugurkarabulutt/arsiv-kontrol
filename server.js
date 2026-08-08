@@ -593,6 +593,7 @@ const ARCHIVE_RELEASE_PACKAGE_LIMIT = 80;
 const ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT = 200;
 const ARCHIVE_RELEASE_PACKAGE_STATUSES = ['taslak', 'son_kontrol', 'hazir', 'beklet'];
 const ARCHIVE_RELEASE_PACKAGE_ITEM_REVIEW_STATUSES = ['bekliyor', 'kontrol_edildi', 'revizyon', 'beklet'];
+const ARCHIVE_RELEASE_PUBLICATION_STATUSES = ['bekliyor', 'yayinda', 'arsive_aktarildi', 'geri_alindi'];
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -1977,6 +1978,20 @@ function archiveReleasePackageStatusLabel(status = '') {
   }[status] || status || 'Taslak';
 }
 
+function normalizeArchiveReleasePublicationStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_RELEASE_PUBLICATION_STATUSES.includes(status) ? status : 'bekliyor';
+}
+
+function archiveReleasePublicationStatusLabel(status = '') {
+  return {
+    bekliyor: 'Yayın bekliyor',
+    yayinda: 'Yayına verildi',
+    arsive_aktarildi: 'Public arşive aktarıldı',
+    geri_alindi: 'Geri alındı'
+  }[status] || 'Yayın bekliyor';
+}
+
 function normalizeArchiveReleaseItemReviewStatus(value) {
   const status = String(value || '').trim();
   return ARCHIVE_RELEASE_PACKAGE_ITEM_REVIEW_STATUSES.includes(status) ? status : 'bekliyor';
@@ -2131,6 +2146,18 @@ function publicArchiveReleasePackage(pkg = {}) {
     locked: Boolean(pkg.locked),
     lockedAt: pkg.lockedAt || null,
     lockedBy: pkg.lockedBy || '',
+    publicationStatus: normalizeArchiveReleasePublicationStatus(pkg.publicationStatus),
+    publicationStatusLabel: archiveReleasePublicationStatusLabel(pkg.publicationStatus),
+    publicationUrl: String(pkg.publicationUrl || '').trim().slice(0, 700),
+    publicationNote: String(pkg.publicationNote || '').trim().slice(0, 2000),
+    publishedAt: pkg.publishedAt || null,
+    publishedBy: pkg.publishedBy || '',
+    archivedAt: pkg.archivedAt || null,
+    archivedBy: pkg.archivedBy || '',
+    withdrawnAt: pkg.withdrawnAt || null,
+    withdrawnBy: pkg.withdrawnBy || '',
+    publicationUpdatedAt: pkg.publicationUpdatedAt || null,
+    publicationUpdatedBy: pkg.publicationUpdatedBy || '',
     createdAt: pkg.createdAt || null,
     updatedAt: pkg.updatedAt || null,
     createdBy: pkg.createdBy || '',
@@ -2243,6 +2270,12 @@ async function archiveReleasePackageOutputManifest(pkg = {}) {
     title: clean.title,
     status: clean.status,
     statusLabel: clean.statusLabel,
+    publicationStatus: clean.publicationStatus,
+    publicationStatusLabel: clean.publicationStatusLabel,
+    publicationUrl: clean.publicationUrl,
+    publicationNote: clean.publicationNote,
+    publishedAt: clean.publishedAt,
+    archivedAt: clean.archivedAt,
     locked: clean.locked,
     lockedAt: clean.lockedAt,
     lockedBy: clean.lockedBy,
@@ -2265,6 +2298,9 @@ function archiveReleasePackageOutputMarkdown(manifest = {}) {
     '',
     archiveReleaseMarkdownMeta('Paket ID', manifest.packageId),
     archiveReleaseMarkdownMeta('Durum', manifest.statusLabel),
+    archiveReleaseMarkdownMeta('Yayın takibi', manifest.publicationStatusLabel),
+    archiveReleaseMarkdownMeta('Yayın linki', manifest.publicationUrl),
+    archiveReleaseMarkdownMeta('Yayın notu', manifest.publicationNote),
     archiveReleaseMarkdownMeta('Kilit tarihi', manifest.lockedAt),
     archiveReleaseMarkdownMeta('Kilitleyen', manifest.lockedBy),
     archiveReleaseMarkdownMeta('Oluşturulma', manifest.generatedAt),
@@ -2523,6 +2559,47 @@ async function unlockArchiveReleasePackage(id = '', actor = 'Sistem') {
     updatedAt: new Date().toISOString(),
     updatedBy: actor
   };
+  packages[index] = updated;
+  await saveArchiveReleasePackages(packages);
+  return publicArchiveReleasePackage(updated);
+}
+
+async function updateArchiveReleasePackagePublication(id = '', input = {}, actor = 'Sistem') {
+  const packages = await loadArchiveReleasePackages();
+  const index = packages.findIndex(pkg => pkg.id === id);
+  if (index < 0) return null;
+  const existing = publicArchiveReleasePackage(packages[index]);
+  const status = normalizeArchiveReleasePublicationStatus(input.status);
+  const outputStatus = archiveReleaseOutputStatus(existing);
+  if (['yayinda', 'arsive_aktarildi'].includes(status) && !outputStatus.ready) {
+    throw httpError('Paket yayın takibine alınamaz. Önce paket hazır, kilitli ve son kontrolü tamamlanmış olmalı.', 409);
+  }
+  const now = new Date().toISOString();
+  const updated = {
+    ...existing,
+    publicationStatus: status,
+    publicationStatusLabel: archiveReleasePublicationStatusLabel(status),
+    publicationUrl: String(input.publicationUrl ?? existing.publicationUrl ?? '').trim().slice(0, 700),
+    publicationNote: String(input.publicationNote ?? existing.publicationNote ?? '').trim().slice(0, 2000),
+    publicationUpdatedAt: now,
+    publicationUpdatedBy: actor,
+    updatedAt: now,
+    updatedBy: actor
+  };
+  if (status === 'yayinda') {
+    updated.publishedAt = existing.publishedAt || now;
+    updated.publishedBy = existing.publishedBy || actor;
+  }
+  if (status === 'arsive_aktarildi') {
+    updated.publishedAt = existing.publishedAt || now;
+    updated.publishedBy = existing.publishedBy || actor;
+    updated.archivedAt = existing.archivedAt || now;
+    updated.archivedBy = existing.archivedBy || actor;
+  }
+  if (status === 'geri_alindi') {
+    updated.withdrawnAt = existing.withdrawnAt || now;
+    updated.withdrawnBy = existing.withdrawnBy || actor;
+  }
   packages[index] = updated;
   await saveArchiveReleasePackages(packages);
   return publicArchiveReleasePackage(updated);
@@ -4099,6 +4176,15 @@ app.post('/api/archive-ops/release-packages/:id/unlock', auth, admin, superAdmin
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await unlockArchiveReleasePackage(req.params.id, actor);
+    if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, package: pkg });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/release-packages/:id/publication', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const pkg = await updateArchiveReleasePackagePublication(req.params.id, req.body || {}, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }

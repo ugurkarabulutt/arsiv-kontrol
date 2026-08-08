@@ -2,6 +2,20 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde Paket Çıktı Merkezi yayın takibi eklendi: `/admin` süper admin `Arşiv Operasyon
+  Merkezi > Paket Çıktı Merkezi` ekranı artık kilitli ve hazır paketlerden çıktı üretmenin
+  yanında yayın/arşiv takip durumunu da aynı paket üzerinde saklar. Seçili pakette `Yayın
+  Takibi` kartı görünür; süper admin yayın/arşiv linki ve kısa not yazabilir, paketi
+  `Yayına Verildi`, `Arşive Aktarıldı` veya `Geri Alındı` olarak işaretleyebilir. Backend'e
+  süper admin korumalı `POST /api/archive-ops/release-packages/:id/publication` endpoint'i
+  eklendi. Hazır, kilitli ve son kontrolü tamamlanmamış paketler `Yayına Verildi` veya
+  `Arşive Aktarıldı` durumuna alınamaz. Yayın takip bilgisi paket listesinde, detayda, JSON
+  manifestinde ve Markdown çıktısında görünür. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve
+  public frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  258/258 test geçti. Henüz commit/push/deploy yapılmadı.
+
 - Yerelde Yayın Paketi Çıktı Merkezi eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
   Paket Çıktı Merkezi` ekranı artık kilitli, `Hazır` durumundaki ve paket son kontrolü
   tamamlanmış yayın paketlerinden JSON, Markdown veya CSV çıktı üretebilir. Süper admin hazır
