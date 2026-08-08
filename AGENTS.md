@@ -133,6 +133,15 @@ tespit edilir).
   dokunmaz. Değişen dosyalar: `server.js`, `index.html`, `scripts/check-frontend.js`,
   `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
   `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; 258/258 test geçti.
+  Runtime commit `7db1d20` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-84203zb09-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_8Dc6uCKDBKQi6V5SFtffGXCy9Upd`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store
+  doğru. `/api/archive-ops/release-packages` oturumsuz erişimde `401` döndü. Canlı HTML'de
+  `Yayın Paketleri`, `archiveReleasePackageReview`, `archiveReleaseItemChecksHtml`,
+  `openArchiveReleaseItemRecord`, `archive-release-review` ve `archive-release-checks` mevcut;
+  eski geçici `adminRouteProbe` yok.
 
 - **Yayın Paketleri pilotu eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
   `Yayın Paketleri` alt ekranı eklendi. Bu ekran `yayina_hazir` durumundaki public arşiv
