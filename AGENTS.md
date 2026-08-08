@@ -120,6 +120,17 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-09
+- **Desktop Arşiv Operasyon Merkezi menü görünürlüğü düzeltildi:** `/admin` süper admin
+  desktop sol menüsünde `Arşiv Operasyon Merkezi` grubu `Geri Bildirim` bölümünün altında
+  kaldığı için küçük ekran yüksekliğinde görünmüyor gibi algılanabiliyordu. Desktop sidebar
+  sırası değiştirildi; grup artık `Operasyon` bölümünde `İş Panosu`ndan hemen sonra görünür.
+  Mobil menü, `/admin` koşulu ve süper admin yetki sınırı korunur. Frontend guard'a desktop
+  sidebar sırasını doğrulayan kontrol eklendi. Kapsam: `index.html`,
+  `scripts/check-frontend.js`. DB/schema/root `/` ve public frontend hattına dokunulmadı.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 ### 2026-08-08
 - **Public JSON kalite kapisi eklendi:** `/admin` super admin Arsiv Operasyon Merkezi
   icindeki `Paket Cikti Merkezi`, public on yuz icin JSON uretmeden once artik ikinci bir

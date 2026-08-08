@@ -1,5 +1,16 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-09 Codex Güncel Durum
+
+- Yerelde desktop `/admin` süper admin menü görünürlüğü düzeltildi: `Arşiv Operasyon Merkezi`
+  grubu desktop sidebar'da `Geri Bildirim` altından alınıp `Operasyon` bölümünde `İş Panosu`
+  satırının hemen altına taşındı. Mobil menü, süper admin yetki koşulu ve `/admin` route koruması
+  değiştirilmedi. `scripts/check-frontend.js` artık desktop sidebar'da bu grubun `Geri Bildirim`
+  üstünde kaldığını da kontrol eder. Kapsam: `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattına dokunulmadı.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check`
+  ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 ## 2026-08-08 Codex Güncel Durum
 
 - Yerelde Public JSON kalite kapisi eklendi: `/admin` super admin `Arsiv Operasyon Merkezi >

@@ -660,4 +660,15 @@ if (
 ) {
   throw new Error('Tarayici confirm/alert/prompt yerine tema uyumlu sistem ici onay penceresi kullanilmali.');
 }
+const sidebarIndex = html.indexOf('<aside class="side-nav">');
+const sidebarOnayIndex = html.indexOf('data-tab="onay"', sidebarIndex);
+const sidebarArchiveOpsIndex = html.indexOf('<div class="side-group archive-ops-menu-group', sidebarIndex);
+const sidebarFeedbackIndex = html.indexOf('Geri Bildirim', sidebarOnayIndex);
+assert(
+  sidebarIndex > -1 &&
+  sidebarOnayIndex > sidebarIndex &&
+  sidebarArchiveOpsIndex > sidebarOnayIndex &&
+  sidebarArchiveOpsIndex < sidebarFeedbackIndex,
+  'Desktop sidebar Arsiv Operasyon Merkezi grubu super admin icin Operasyon bolumunde gorunur kalmali.'
+);
 console.log('Frontend/PWA doğrulaması: başarılı');
