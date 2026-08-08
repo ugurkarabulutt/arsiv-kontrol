@@ -515,6 +515,11 @@ if (
   !html.includes('function loadArchiveCandidates') ||
   !html.includes('function setArchiveCandidateDecision') ||
   !html.includes('function openArchiveCandidateRecord') ||
+  !html.includes('function archiveCandidateChecklistHtml') ||
+  !html.includes('function archiveCandidatePublicPreviewHtml') ||
+  !html.includes('candidate-review-grid') ||
+  !html.includes('Public görünüm ön izlemesi') ||
+  !html.includes('Yayın öncesi durum') ||
   !html.includes("api('GET',`/api/archive-ops/public-candidates") ||
   !html.includes("/api/archive-ops/public-candidates/${encodeURIComponent(item.kind)}/${encodeURIComponent(item.recordId)}/decision") ||
   !html.includes('Yayına Hazır') ||

@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Public Arşiv Adayları son kontrol paneli kullanışlı hale getirildi:** `/admin` süper
+  admin Arşiv Operasyon Merkezi içindeki `Public Arşiv Adayları` detay ekranına yayın öncesi
+  son kontrol katmanı eklendi. Seçilen aday artık yalnız metin ön izlemesi ve karar butonlarıyla
+  görünmez; başlık, metin, kategori, kavram ve kaynak izi için okunabilir bir hazırlık kontrolü,
+  eksik alanlar özeti, kaynak/çalışma/yayın bağlantı izi ve public arşiv kartında nasıl
+  görüneceğini gösteren ön izleme paneli birlikte görünür. Karar önerisi eksik alanlara göre
+  otomatik açıklama verir; karar yine yalnız seçili adaya uygulanır. Mobil görünümde uzun başlık,
+  kaynak linki ve metin ön izlemesi taşma üretmemesi için aday paneline özel responsive kurallar
+  eklendi. Backend/DB/schema/root `/` ve public frontend hattına dokunulmadı. Değişen dosyalar:
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `npm.cmd run check` başarılı, 258/258 test geçti; `git diff --check` whitespace hatası
+  vermedi, yalnız mevcut CRLF uyarıları görüldü.
+
 - **Public Arşiv Adayları karar akışı eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Public Arşiv Adayları` ekranı yalnız adayları listelemekle kalmaz; seçilen
   kaynak, çalışma kaydı veya yayın görevi için public arşiv kararını doğrudan uygulayabilir.

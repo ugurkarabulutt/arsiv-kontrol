@@ -410,6 +410,27 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-detail-title{font-size:17px;font-weight:900;color:var(--ink);line-height:1.35;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
 .ops-detail-body{padding:14px;min-width:0;max-width:100%;box-sizing:border-box;}
 .ops-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:14px;line-height:1.65;max-height:520px;overflow:auto;color:var(--ink2);}
+.candidate-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;}
+.candidate-review-card{border:1px solid var(--border);background:var(--bg);padding:13px;min-width:0;}
+.candidate-review-card h4{margin:0 0 9px;font-size:13px;line-height:1.35;color:var(--ink);}
+.candidate-review-score{display:flex;align-items:baseline;gap:6px;margin-bottom:10px;}
+.candidate-review-score strong{font-size:28px;line-height:1;color:var(--ink);}
+.candidate-review-score span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;}
+.candidate-check-list{display:grid;gap:7px;}
+.candidate-check-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;font-size:12px;line-height:1.45;color:var(--ink2);}
+.candidate-check-dot{width:12px;height:12px;border-radius:999px;border:1px solid var(--red);background:var(--red-bg);margin-top:2px;}
+.candidate-check-item.ok .candidate-check-dot{border-color:var(--green);background:var(--grn-bg);}
+.candidate-check-item strong{display:block;color:var(--ink);font-size:12px;}
+.candidate-check-item span{display:block;color:var(--ink3);overflow-wrap:anywhere;}
+.candidate-trace{display:grid;gap:7px;font-size:12px;line-height:1.45;}
+.candidate-trace-row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px;border-bottom:1px solid var(--border);padding-bottom:7px;}
+.candidate-trace-row:last-child{border-bottom:0;padding-bottom:0;}
+.candidate-trace-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);}
+.candidate-trace-value{color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
+.candidate-public-preview{border:1px solid rgba(var(--gold-rgb),.36);background:linear-gradient(135deg,rgba(var(--gold-rgb),.1),rgba(var(--ai-rgb),.06));padding:14px;margin-top:12px;min-width:0;}
+.candidate-public-preview h4{font-size:18px;line-height:1.35;margin:0 0 8px;color:var(--ink);overflow-wrap:anywhere;word-break:break-word;}
+.candidate-public-preview p{margin:0;color:var(--ink2);line-height:1.65;overflow-wrap:anywhere;word-break:break-word;}
+.candidate-review-alert{border-left:3px solid var(--gold);background:rgba(var(--gold-rgb),.08);padding:10px 12px;margin-top:12px;font-size:12px;line-height:1.55;color:var(--ink2);}
 .ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
@@ -460,6 +481,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:640px){.candidate-review-grid{grid-template-columns:1fr}.candidate-trace-row{grid-template-columns:1fr;gap:2px}.candidate-public-preview{padding:12px}.candidate-public-preview h4{font-size:16px}.candidate-review-card{padding:12px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -5616,6 +5638,98 @@ function archiveCandidateStatusLabel(item){
   if(item.kind==='publish')return archivePublishStatusLabel(item.status);
   return item.status||'';
 }
+function archiveCandidateReadinessItems(item){
+  const topics=Array.isArray(item?.topics)?item.topics.filter(Boolean):[];
+  const textLength=Number(item?.textLength||0);
+  const textPreview=String(item?.textPreview||'').trim();
+  const hasSourceTrace=Boolean(item?.sourceTitle||item?.sourceId||item?.publicationUrl||item?.workItemTitle||item?.workItemId);
+  return [
+    {key:'title',label:'Başlık',ok:Boolean(String(item?.title||'').trim()),help:'Public kart ve detay sayfası için başlık gerekli.'},
+    {key:'text',label:'Metin',ok:textLength>0||Boolean(textPreview),help:'Aday kaydın okunabilir metin veya ön izlemesi olmalı.'},
+    {key:'category',label:'Kategori',ok:Boolean(String(item?.category||'').trim()),help:'Kategori boşsa arşivde sınıflandırma zayıf kalır.'},
+    {key:'topics',label:'Kavramlar',ok:topics.length>0,help:'Kavramlar arama ve benzer içerik bağlantısını güçlendirir.'},
+    {key:'source',label:'Kaynak izi',ok:hasSourceTrace,help:'Kaynak, çalışma veya yayın izi görünür olmalı.'}
+  ];
+}
+function archiveCandidateReadinessScore(item){
+  const items=archiveCandidateReadinessItems(item);
+  return {done:items.filter(entry=>entry.ok).length,total:items.length,items};
+}
+function archiveCandidateChecklistHtml(item){
+  const score=archiveCandidateReadinessScore(item);
+  const rows=score.items.map(entry=>`
+    <div class="candidate-check-item ${entry.ok?'ok':'missing'}">
+      <span class="candidate-check-dot" aria-hidden="true"></span>
+      <span><strong>${esc(entry.label)}</strong><span>${entry.ok?'Hazır.':esc(entry.help)}</span></span>
+    </div>
+  `).join('');
+  return `
+    <div class="candidate-review-card">
+      <h4>Yayın öncesi durum</h4>
+      <div class="candidate-review-score"><strong>${score.done}/${score.total}</strong><span>alan hazır</span></div>
+      <div class="candidate-check-list">${rows}</div>
+    </div>
+  `;
+}
+function archiveCandidateMissingHtml(item){
+  const missing=archiveCandidateReadinessItems(item).filter(entry=>!entry.ok);
+  const body=missing.length
+    ? missing.map(entry=>`<div class="candidate-check-item missing"><span class="candidate-check-dot" aria-hidden="true"></span><span><strong>${esc(entry.label)}</strong><span>${esc(entry.help)}</span></span></div>`).join('')
+    : '<div class="candidate-check-item ok"><span class="candidate-check-dot" aria-hidden="true"></span><span><strong>Kritik eksik görünmüyor</strong><span>Yine de metin ve kaynak son kez okunmalı.</span></span></div>';
+  return `
+    <div class="candidate-review-card">
+      <h4>Eksik alanlar</h4>
+      <div class="candidate-check-list">${body}</div>
+    </div>
+  `;
+}
+function archiveCandidateTraceHtml(item){
+  const rows=[
+    ['Kayıt türü',archiveCandidateKindLabel(item.kind)],
+    ['Durum',archiveCandidateStatusLabel(item)],
+    ['Kaynak',item.sourceTitle||item.sourceId||'Kaynak bağı yok'],
+    ['Çalışma',item.workItemTitle||item.workItemId||'Çalışma bağı yok'],
+    ['Yayın linki',item.publicationUrl||'Yayın linki yok'],
+    ['Atanan',item.assignedTo||'Atanan kişi yok'],
+    ['Güncelleme',item.updatedAt?new Date(item.updatedAt).toLocaleString('tr-TR'):'Tarih yok']
+  ];
+  return `
+    <div class="candidate-review-card">
+      <h4>Kaynak izi</h4>
+      <div class="candidate-trace">
+        ${rows.map(([label,value])=>`
+          <div class="candidate-trace-row">
+            <div class="candidate-trace-label">${esc(label)}</div>
+            <div class="candidate-trace-value">${esc(value)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+function archiveCandidatePublicPreviewHtml(item){
+  const topics=(item.topics||[]).slice(0,6).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const excerpt=String(item.textPreview||'Ön izleme yok.').trim();
+  return `
+    <div class="candidate-public-preview">
+      <div class="candidate-trace-label">Public görünüm ön izlemesi</div>
+      <div class="ops-source-meta">
+        <span>${esc(item.category||'Kategori yok')}</span>
+        <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
+      </div>
+      <h4>${esc(item.title||'Başlıksız aday')}</h4>
+      <p>${esc(excerpt)}</p>
+      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+    </div>
+  `;
+}
+function archiveCandidateDecisionHintHtml(item){
+  const missing=archiveCandidateReadinessItems(item).filter(entry=>!entry.ok);
+  if(!missing.length){
+    return '<div class="candidate-review-alert"><strong>Öneri:</strong> Metin ve kaynak son kez okunduktan sonra kayıt yayına hazır olarak işaretlenebilir.</div>';
+  }
+  return `<div class="candidate-review-alert"><strong>Öneri:</strong> ${missing.map(entry=>entry.label).join(', ')} alanı eksik görünüyor. Yayına hazır demeden önce bu kayıt açılıp tamamlanmalı.</div>`;
+}
 function archiveCandidateSummaryHtml(counts={}){
   const byStatus=counts.byStatus||{};
   return `
@@ -5705,6 +5819,17 @@ function renderArchiveCandidateDetail(item){
         ${item.sourceId?`<button class="btn-sec" onclick="openArchiveCandidateSource()">Kaynağı Aç</button>`:''}
         ${item.workItemId?`<button class="btn-sec" onclick="openArchiveCandidateWork()">Çalışmayı Aç</button>`:''}
       </div>
+      <div class="candidate-review-grid">
+        ${archiveCandidateChecklistHtml(item)}
+        ${archiveCandidateMissingHtml(item)}
+        ${archiveCandidateTraceHtml(item)}
+        <div class="candidate-review-card">
+          <h4>Metin ön izlemesi</h4>
+          <div class="ops-preview-text" style="max-height:220px">${esc(item.textPreview||'Ön izleme yok.')}</div>
+        </div>
+      </div>
+      ${archiveCandidatePublicPreviewHtml(item)}
+      ${archiveCandidateDecisionHintHtml(item)}
       <div class="ops-conflict-box" style="margin-top:12px">
         <strong>Public arşiv kararı</strong>
         <p>Karar yalnız seçili aday kaydına uygulanır. Gerekirse kaydı açıp metni ayrıca kontrol edin.</p>
@@ -5717,7 +5842,6 @@ function renderArchiveCandidateDetail(item){
           <button class="btn-sec" onclick="setArchiveCandidateDecision('arsiv_adayi')" ${item.status==='arsiv_adayi'?'disabled':''}>Son Kontrole Al</button>
         </div>
       </div>
-      <div class="ops-preview-text" style="margin-top:12px">${esc(item.textPreview||'Ön izleme yok.')}</div>
     </div>
   `;
 }

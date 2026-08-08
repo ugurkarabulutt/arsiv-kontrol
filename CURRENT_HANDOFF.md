@@ -2,6 +2,17 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde yeni son kontrol katmanı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
+  Public Arşiv Adayları` detay paneli artık seçilen aday için yayın öncesi hazırlık kontrolü
+  gösterir. Panel; başlık/metin/kategori/kavram/kaynak izi checklist'i, eksik alanlar özeti,
+  kaynak/çalışma/yayın bağlantı izi, public görünüm ön izlemesi ve karar önerisi içerir.
+  Karar akışı değişmedi: karar yalnız seçilen aday kaydına uygulanır. Mobil taşma riskine karşı
+  aday paneli için özel responsive CSS eklendi. Kapsam: `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Backend/DB/schema/root `/`
+  ve public frontend hattına dokunulmadı. Yerel doğrulama: `npm.cmd run check` başarılı,
+  258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü. Henüz commit/push/deploy bilgisi bu maddeye eklenmedi.
+
 - Yerelde yeni akış eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Public Arşiv
   Adayları` ekranında aday kayıtlar artık karar durumuna göre filtrelenebilir ve seçili aday
   kaydı için doğrudan karar uygulanabilir. Karar durumları: `Son kontrol bekliyor`,
