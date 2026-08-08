@@ -100,6 +100,12 @@ if (!html.includes('/api/extract-file-text') || !server.includes('/api/extract-f
 if (!server.includes("status = 'taslak'") || !server.includes('/api/history/submit-merged') || !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/submit'")) {
   throw new Error('Denetim sonucunun once taslak kalip ayrica onaya gonderilmesini saglayan API akisi eksik.');
 }
+if (!html.includes('id="approveDetailBtn"') || !html.includes('approveDetailFromModal') || !html.includes("window.setTimeout(()=>closeModal('detailModal'),450)")) {
+  throw new Error('Denetim kaydi modalinda kopyalama yerine dogrudan onaylama akisi bulunmali.');
+}
+if (html.includes('id="copyDetailBtn"') || html.includes('function copyDetail()')) {
+  throw new Error('Denetim kaydi modalinda eski Kopyala butonu/akisi kalmamali.');
+}
 const noStoreHeader = (vercelConfig.headers || []).some(item =>
   (item.headers || []).some(h => h.key === 'Cache-Control' && String(h.value || '').includes('no-store'))
 );
