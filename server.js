@@ -577,6 +577,7 @@ const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
 const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
 const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
+const ARCHIVE_OPS_RELEASE_PACKAGES_KEY = 'archive_ops_release_packages';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
@@ -588,6 +589,9 @@ const ARCHIVE_WORK_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_PUBLISH_TASK_LIMIT = 300;
 const ARCHIVE_PUBLISH_STATUSES = ['planlandi', 'hazirlaniyor', 'kontrol', 'kaynak_bekliyor', ...ARCHIVE_PUBLIC_CANDIDATE_STATUSES, 'tamamlandi', 'iptal'];
 const ARCHIVE_PUBLISH_PRIORITIES = ['normal', 'onemli', 'kritik'];
+const ARCHIVE_RELEASE_PACKAGE_LIMIT = 80;
+const ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT = 200;
+const ARCHIVE_RELEASE_PACKAGE_STATUSES = ['taslak', 'son_kontrol', 'hazir', 'beklet'];
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -766,6 +770,10 @@ function correctionPackageId() {
 
 function archiveSourceId() {
   return `src-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function archiveReleasePackageId() {
+  return `rel-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function normalizeArchiveSourceType(value) {
@@ -1952,6 +1960,179 @@ async function updateArchivePublicCandidateDecision(kind = '', id = '', status =
   }
 
   throw httpError('Geçersiz aday türü.', 400);
+}
+
+function normalizeArchiveReleasePackageStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_RELEASE_PACKAGE_STATUSES.includes(status) ? status : 'taslak';
+}
+
+function archiveReleasePackageStatusLabel(status = '') {
+  return {
+    taslak: 'Taslak',
+    son_kontrol: 'Son kontrol',
+    hazir: 'Hazır',
+    beklet: 'Beklet'
+  }[status] || status || 'Taslak';
+}
+
+function sanitizeArchiveReleasePackageItem(item = {}) {
+  const kind = String(item.kind || '').trim();
+  const recordId = String(item.recordId || '').trim();
+  if (!['source', 'work', 'publish'].includes(kind) || !recordId) return null;
+  const topics = Array.isArray(item.topics)
+    ? item.topics.map(topic => String(topic || '').trim()).filter(Boolean).slice(0, 12)
+    : [];
+  return {
+    id: `${kind}:${recordId}`,
+    kind,
+    recordId,
+    title: String(item.title || '').trim().slice(0, 220) || 'Başlıksız kayıt',
+    category: String(item.category || '').trim().slice(0, 120),
+    topics,
+    sourceTitle: String(item.sourceTitle || '').trim().slice(0, 220),
+    sourceId: String(item.sourceId || '').trim().slice(0, 80),
+    workItemTitle: String(item.workItemTitle || '').trim().slice(0, 220),
+    workItemId: String(item.workItemId || '').trim().slice(0, 80),
+    publicationUrl: String(item.publicationUrl || '').trim().slice(0, 700),
+    textLength: Number(item.textLength || 0) || 0,
+    textPreview: archiveTextPreview(item.textPreview || '', 520),
+    updatedAt: String(item.updatedAt || '').trim().slice(0, 40),
+    createdAt: String(item.createdAt || '').trim().slice(0, 40)
+  };
+}
+
+function normalizeArchiveReleasePackageInput(input = {}, existing = {}) {
+  const seen = new Set();
+  const items = (Array.isArray(input.items) ? input.items : existing.items || [])
+    .map(sanitizeArchiveReleasePackageItem)
+    .filter(Boolean)
+    .filter(item => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    })
+    .slice(0, ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT);
+  return {
+    title: String(input.title ?? existing.title ?? '').trim().slice(0, 160),
+    note: String(input.note ?? existing.note ?? '').trim().slice(0, 2000),
+    status: normalizeArchiveReleasePackageStatus(input.status ?? existing.status),
+    items
+  };
+}
+
+function publicArchiveReleasePackage(pkg = {}) {
+  const items = Array.isArray(pkg.items) ? pkg.items.map(sanitizeArchiveReleasePackageItem).filter(Boolean) : [];
+  return {
+    id: pkg.id,
+    title: pkg.title || 'Başlıksız yayın paketi',
+    note: pkg.note || '',
+    status: normalizeArchiveReleasePackageStatus(pkg.status),
+    statusLabel: archiveReleasePackageStatusLabel(pkg.status),
+    itemCount: items.length,
+    totalTextLength: items.reduce((sum, item) => sum + Number(item.textLength || 0), 0),
+    items,
+    createdAt: pkg.createdAt || null,
+    updatedAt: pkg.updatedAt || null,
+    createdBy: pkg.createdBy || '',
+    updatedBy: pkg.updatedBy || ''
+  };
+}
+
+async function loadArchiveReleasePackages() {
+  const packages = await loadJsonSetting(ARCHIVE_OPS_RELEASE_PACKAGES_KEY, []);
+  return Array.isArray(packages) ? packages : [];
+}
+
+async function saveArchiveReleasePackages(packages = []) {
+  const clean = Array.isArray(packages)
+    ? packages.map(publicArchiveReleasePackage).slice(0, ARCHIVE_RELEASE_PACKAGE_LIMIT)
+    : [];
+  await saveJsonSetting(ARCHIVE_OPS_RELEASE_PACKAGES_KEY, clean);
+}
+
+function filterArchiveReleasePackages(packages = [], query = {}) {
+  const q = String(query.q || '').trim().toLocaleLowerCase('tr-TR');
+  const status = normalizeArchiveReleasePackageStatus(query.status || '');
+  const hasStatusFilter = String(query.status || '').trim();
+  return packages.filter(pkg => {
+    if (hasStatusFilter && normalizeArchiveReleasePackageStatus(pkg.status) !== status) return false;
+    if (!q) return true;
+    const blob = [
+      pkg.title,
+      pkg.note,
+      pkg.status,
+      ...(Array.isArray(pkg.items) ? pkg.items.flatMap(item => [
+        item.title,
+        item.category,
+        item.sourceTitle,
+        item.workItemTitle,
+        item.publicationUrl,
+        item.textPreview,
+        ...(Array.isArray(item.topics) ? item.topics : [])
+      ]) : [])
+    ].join(' ').replace(/\s+/g, ' ').toLocaleLowerCase('tr-TR');
+    return blob.includes(q);
+  });
+}
+
+async function listArchiveReleasePackages(query = {}) {
+  const packages = await loadArchiveReleasePackages();
+  const filtered = filterArchiveReleasePackages(packages, query)
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+  const counts = {
+    total: packages.length,
+    filtered: filtered.length,
+    byStatus: {}
+  };
+  for (const pkg of packages) {
+    const key = normalizeArchiveReleasePackageStatus(pkg.status);
+    counts.byStatus[key] = (counts.byStatus[key] || 0) + 1;
+  }
+  return { counts, packages: filtered.map(publicArchiveReleasePackage) };
+}
+
+async function createArchiveReleasePackage(input = {}, actor = 'Sistem') {
+  const clean = normalizeArchiveReleasePackageInput(input);
+  if (!clean.title) throw httpError('Yayın paketi için başlık gerekli.', 400);
+  const now = new Date().toISOString();
+  const pkg = {
+    id: archiveReleasePackageId(),
+    ...clean,
+    createdAt: now,
+    updatedAt: now,
+    createdBy: actor,
+    updatedBy: actor
+  };
+  const packages = await loadArchiveReleasePackages();
+  await saveArchiveReleasePackages([pkg, ...packages]);
+  return publicArchiveReleasePackage(pkg);
+}
+
+async function updateArchiveReleasePackage(id = '', input = {}, actor = 'Sistem') {
+  const packages = await loadArchiveReleasePackages();
+  const index = packages.findIndex(pkg => pkg.id === id);
+  if (index < 0) return null;
+  const existing = packages[index];
+  const clean = normalizeArchiveReleasePackageInput(input, existing);
+  if (!clean.title) throw httpError('Yayın paketi için başlık gerekli.', 400);
+  const updated = {
+    ...existing,
+    ...clean,
+    updatedAt: new Date().toISOString(),
+    updatedBy: actor
+  };
+  packages[index] = updated;
+  await saveArchiveReleasePackages(packages);
+  return publicArchiveReleasePackage(updated);
+}
+
+async function deleteArchiveReleasePackage(id = '') {
+  const packages = await loadArchiveReleasePackages();
+  const next = packages.filter(pkg => pkg.id !== id);
+  if (next.length === packages.length) return null;
+  await saveArchiveReleasePackages(next);
+  return { id };
 }
 
 async function loadArchivePublishTasks() {
@@ -3456,6 +3637,38 @@ app.post('/api/archive-ops/public-candidates/:kind/:id/decision', auth, admin, s
     );
     if (!candidate) return res.status(404).json({ error: 'Aday kayıt bulunamadı.' });
     res.json({ success: true, candidate });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/release-packages', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const result = await listArchiveReleasePackages(req.query);
+    res.json({ ready: true, counts: result.counts, packages: result.packages });
+  } catch (e) { res.status(e.statusCode || 500).json({ ready: false, error: e.message }); }
+});
+
+app.post('/api/archive-ops/release-packages', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const pkg = await createArchiveReleasePackage(req.body || {}, actor);
+    res.json({ success: true, package: pkg });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.put('/api/archive-ops/release-packages/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const pkg = await updateArchiveReleasePackage(req.params.id, req.body || {}, actor);
+    if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, package: pkg });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.delete('/api/archive-ops/release-packages/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const deleted = await deleteArchiveReleasePackage(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 

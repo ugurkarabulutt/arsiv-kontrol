@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Yayın Paketleri pilotu eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
+  `Yayın Paketleri` alt ekranı eklendi. Bu ekran `yayina_hazir` durumundaki public arşiv
+  adaylarını yayın öncesi paketlerde gruplamak için hazırlandı. Süper admin paket başlığı,
+  durum ve not tutabilir; paketlerde arama/durum filtresi kullanabilir; yayına hazır kaynak,
+  çalışma ve yayın görevi adaylarını seçip pakete ekleyebilir veya paketten tek tek çıkarabilir.
+  Paket kayıtları şimdilik ayrı DB migration gerektirmeden `settings.archive_ops_release_packages`
+  JSON anahtarında saklanır; aday kayıtlarının durumunu otomatik değiştirmez. Bu adım root `/`
+  public cutover yapmaz ve public frontend hattına dokunmaz. Değişen dosyalar: `server.js`,
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı,
+  258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları
+  görüldü. Production commit/deploy/smoke kanıtı bu kayıt deploy sonrası güncellenecektir.
+
 - **Yayın Hazırlık Kuyruğu eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
   `Yayın Hazırlık Kuyruğu` alt ekranı eklendi. Bu ekran yalnız `yayina_hazir` durumundaki
   public arşiv adaylarını çeker ve adayları normal aday havuzundan ayrı bir son hazırlık

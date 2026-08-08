@@ -447,6 +447,13 @@ if (
   !server.includes("app.delete('/api/archive-ops/publish-tasks/:id'") ||
   !server.includes("app.get('/api/archive-ops/public-candidates'") ||
   !server.includes("app.post('/api/archive-ops/public-candidates/:kind/:id/decision'") ||
+  !server.includes("app.get('/api/archive-ops/release-packages'") ||
+  !server.includes("app.post('/api/archive-ops/release-packages'") ||
+  !server.includes("app.put('/api/archive-ops/release-packages/:id'") ||
+  !server.includes("app.delete('/api/archive-ops/release-packages/:id'") ||
+  !server.includes('ARCHIVE_OPS_RELEASE_PACKAGES_KEY') ||
+  !server.includes('function listArchiveReleasePackages') ||
+  !server.includes('function updateArchiveReleasePackage') ||
   !server.includes('ARCHIVE_PUBLIC_CANDIDATE_STATUSES') ||
   !server.includes('function updateArchivePublicCandidateDecision') ||
   !server.includes('function listArchivePublicCandidates') ||
@@ -521,6 +528,16 @@ if (
   !html.includes("params.set('status','yayina_hazir')") ||
   !html.includes('function setArchiveReadyDecision') ||
   !html.includes('Yayın Hazırlık Kuyruğu') ||
+  !html.includes('data-ops-view="packages"') ||
+  !html.includes('Yayın Paketleri') ||
+  !html.includes('id="archiveReleasePackageTitle"') ||
+  !html.includes('id="archiveReleasePackageList"') ||
+  !html.includes('id="archiveReleasePackageDetail"') ||
+  !html.includes('id="archiveReleaseReadyList"') ||
+  !html.includes('function loadArchiveReleasePackages') ||
+  !html.includes('function addSelectedReadyToReleasePackage') ||
+  !html.includes("api('GET',`/api/archive-ops/release-packages") ||
+  !html.includes("api('GET',`/api/archive-ops/public-candidates?${params}`)") ||
   !html.includes('function loadArchiveCandidates') ||
   !html.includes('function setArchiveCandidateDecision') ||
   !html.includes('function openArchiveCandidateRecord') ||

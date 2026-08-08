@@ -2,6 +2,18 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde yeni paketleme ekranı eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
+  Yayın Paketleri` ekranı artık `yayina_hazir` durumundaki public arşiv adaylarını yayın öncesi
+  paketlerde gruplamak için kullanılabilir. Paket başlığı, durum ve not tutulur; paketlerde
+  arama/durum filtresi vardır; yayına hazır kaynak, çalışma ve yayın görevi adayları seçilip
+  pakete eklenebilir veya paketten tek tek çıkarılabilir. Paketler şimdilik
+  `settings.archive_ops_release_packages` JSON anahtarında saklanır; yeni DB/schema migration
+  yoktur ve aday kayıtlarının durumunu otomatik değiştirmez. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı,
+  258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları
+  görüldü. Commit/deploy/smoke henüz tamamlanmadı.
+
 - Yerelde yeni kuyruk eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Yayın
   Hazırlık Kuyruğu` ekranı artık `yayina_hazir` durumundaki public arşiv adaylarını ayrı
   bir çalışma alanında gösterir. Bu ekran yalnız yayına hazır kayıtları çeker; kaynak,
