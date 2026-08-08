@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Yayın Paketi Çıktı Merkezi eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
+  `Paket Çıktı Merkezi` alt ekranı eklendi. Bu ekran yalnız kilitlenmiş, `Hazır` durumundaki
+  ve paket son kontrolü tamamlanmış yayın paketlerinden çıktı üretir. Süper admin hazır
+  paketleri arayabilir, paket kontrol durumunu görebilir ve seçili paket için JSON, Markdown
+  veya CSV çıktısı oluşturup kopyalayabilir ya da indirebilir. Backend'e süper admin korumalı
+  `GET /api/archive-ops/release-packages/:id/output` endpoint'i eklendi. Çıktı üretimi yalnız
+  paket özetindeki kısa ön izlemeyi değil, kaynak/çalışma/yayın görevi kayıtlarının tam metnini
+  kullanır. Hazır olmayan, kilitlenmemiş veya kontrolü eksik paketler için çıktı üretimi
+  frontend ve backend tarafında engellenir. Bu adım DB/schema/root `/` veya public frontend
+  hattına dokunmaz. Değişen dosyalar: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 - **Yayın Paketleri son hazırlık kilidi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Yayın Paketleri` akışı artık paket içindeki her kayıt için ayrı paket son
   kontrol durumu tutar: `Kontrol bekliyor`, `Kontrol edildi`, `Revizyon gerekli`, `Beklet`.

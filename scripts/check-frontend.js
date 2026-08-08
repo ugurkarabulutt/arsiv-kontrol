@@ -453,11 +453,15 @@ if (
   !server.includes("app.post('/api/archive-ops/release-packages/:id/items/:itemId/review'") ||
   !server.includes("app.post('/api/archive-ops/release-packages/:id/lock'") ||
   !server.includes("app.post('/api/archive-ops/release-packages/:id/unlock'") ||
+  !server.includes("app.get('/api/archive-ops/release-packages/:id/output'") ||
   !server.includes("app.delete('/api/archive-ops/release-packages/:id'") ||
   !server.includes('ARCHIVE_OPS_RELEASE_PACKAGES_KEY') ||
   !server.includes('function archiveReleasePackageReadiness') ||
   !server.includes('function archiveReleaseItemReadiness') ||
   !server.includes('function archiveReleasePackageLockReadiness') ||
+  !server.includes('function archiveReleasePackageOutputManifest') ||
+  !server.includes('function archiveReleasePackageOutputMarkdown') ||
+  !server.includes('function archiveReleasePackageOutputCsv') ||
   !server.includes('function updateArchiveReleasePackageItemReview') ||
   !server.includes('function lockArchiveReleasePackage') ||
   !server.includes('function unlockArchiveReleasePackage') ||
@@ -549,6 +553,13 @@ if (
   !html.includes('function addSelectedReadyToReleasePackage') ||
   !html.includes('function archiveReleasePackageReview') ||
   !html.includes('function archiveReleasePackageLockReview') ||
+  !html.includes('data-ops-view="packageOutput"') ||
+  !html.includes('Paket Çıktı Merkezi') ||
+  !html.includes('id="archiveOutputPackageList"') ||
+  !html.includes('function loadArchiveOutputPackages') ||
+  !html.includes('function generateArchivePackageOutput') ||
+  !html.includes('function downloadArchivePackageOutput') ||
+  !html.includes('/output?format=') ||
   !html.includes('function setArchiveReleasePackageItemReview') ||
   !html.includes('function lockArchiveReleasePackageUi') ||
   !html.includes('function unlockArchiveReleasePackageUi') ||

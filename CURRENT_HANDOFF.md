@@ -2,6 +2,18 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde Yayın Paketi Çıktı Merkezi eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
+  Paket Çıktı Merkezi` ekranı artık kilitli, `Hazır` durumundaki ve paket son kontrolü
+  tamamlanmış yayın paketlerinden JSON, Markdown veya CSV çıktı üretebilir. Süper admin hazır
+  paketleri arayabilir, seçili paketin hazırlık durumunu görebilir, çıktı formatını seçebilir,
+  çıktıyı kopyalayabilir veya indirebilir. Backend'e süper admin korumalı
+  `GET /api/archive-ops/release-packages/:id/output` endpoint'i eklendi. Çıktı üretimi paket
+  özetindeki kısa ön izlemeden değil, kaynak/çalışma/yayın görevi kayıtlarının tam metninden
+  yapılır. Hazır olmayan, kilitlenmemiş veya kontrolü eksik paketlerde çıktı üretimi frontend
+  ve backend tarafında engellenir. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public
+  frontend hattına dokunulmadı. Yerel doğrulama henüz son kez tekrar çalıştırılacak.
+
 - Yerelde Yayın Paketleri son hazırlık kilidi eklendi: `/admin` süper admin `Arşiv
   Operasyon Merkezi > Yayın Paketleri` ekranında paket içindeki her kayıt artık paket içi son
   kontrol durumuna sahiptir: `Kontrol bekliyor`, `Kontrol edildi`, `Revizyon gerekli`,

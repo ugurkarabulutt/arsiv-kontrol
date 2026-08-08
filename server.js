@@ -2138,6 +2138,224 @@ function publicArchiveReleasePackage(pkg = {}) {
   };
 }
 
+function archiveReleaseOutputStatus(pkg = {}) {
+  const clean = publicArchiveReleasePackage(pkg);
+  const blockers = [];
+  const lockReadiness = archiveReleasePackageLockReadiness(clean);
+  if (!clean.locked) {
+    blockers.push({ scope: 'package', label: 'Son hazırlık kilidi', help: 'Çıktı oluşturmak için paket kilitlenmiş olmalı.' });
+  }
+  if (normalizeArchiveReleasePackageStatus(clean.status) !== 'hazir') {
+    blockers.push({ scope: 'package', label: 'Paket durumu', help: 'Çıktı oluşturmak için paket Hazır durumunda olmalı.' });
+  }
+  blockers.push(...(lockReadiness.blockers || []));
+  return {
+    ready: blockers.length === 0,
+    blockers,
+    warnings: lockReadiness.warnings || [],
+    itemCount: clean.items.length,
+    reviewedCount: lockReadiness.reviewedCount || 0
+  };
+}
+
+async function loadArchiveReleaseOutputRecord(item = {}) {
+  if (item.kind === 'source') {
+    const source = await getArchiveOpsSource(item.recordId);
+    if (!source) return null;
+    const full = publicArchiveSource(source, { full: true });
+    return {
+      title: full.title || item.title,
+      category: full.category || item.category,
+      topics: Array.isArray(full.tags) ? full.tags : item.topics || [],
+      sourceTitle: full.title || item.sourceTitle,
+      sourceUrl: full.sourceUrl || '',
+      text: full.sourceText || item.textPreview || '',
+      summary: full.note || ''
+    };
+  }
+  if (item.kind === 'work') {
+    const work = await getArchiveWorkItem(item.recordId);
+    if (!work) return null;
+    const full = publicArchiveWorkItem(work, { full: true });
+    const sections = [
+      full.question ? `Soru:\n${full.question}` : '',
+      full.answerDraft ? `Cevap:\n${full.answerDraft}` : ''
+    ].filter(Boolean);
+    return {
+      title: full.title || item.title,
+      category: full.category || item.category,
+      topics: Array.isArray(full.topics) ? full.topics : item.topics || [],
+      sourceTitle: full.sourceTitle || item.sourceTitle,
+      sourceUrl: '',
+      text: sections.join('\n\n') || full.textPreview || item.textPreview || '',
+      summary: full.note || ''
+    };
+  }
+  if (item.kind === 'publish') {
+    const task = await getArchivePublishTask(item.recordId);
+    if (!task) return null;
+    const full = publicArchivePublishTask(task, { full: true });
+    return {
+      title: full.title || item.title,
+      category: full.category || item.category,
+      topics: Array.isArray(full.topics) ? full.topics : item.topics || [],
+      sourceTitle: full.sourceTitle || item.sourceTitle,
+      sourceUrl: full.publicationUrl || item.publicationUrl || '',
+      text: full.description || full.textPreview || item.textPreview || '',
+      summary: full.note || ''
+    };
+  }
+  return null;
+}
+
+async function archiveReleasePackageOutputManifest(pkg = {}) {
+  const clean = publicArchiveReleasePackage(pkg);
+  const outputStatus = archiveReleaseOutputStatus(clean);
+  if (!outputStatus.ready) {
+    throw httpError('Paket çıktısı için paket hazır ve kilitli olmalı.', 409);
+  }
+  const items = [];
+  for (const [index, item] of clean.items.entries()) {
+    const record = await loadArchiveReleaseOutputRecord(item);
+    items.push({
+      order: index + 1,
+      id: item.id,
+      kind: item.kind,
+      recordId: item.recordId,
+      title: record?.title || item.title,
+      category: record?.category || item.category || '',
+      topics: Array.isArray(record?.topics) ? record.topics : item.topics || [],
+      sourceTitle: record?.sourceTitle || item.sourceTitle || item.workItemTitle || '',
+      sourceUrl: record?.sourceUrl || item.publicationUrl || '',
+      summary: record?.summary || '',
+      text: record?.text || item.textPreview || '',
+      textLength: String(record?.text || item.textPreview || '').length,
+      reviewStatus: item.reviewStatus,
+      reviewedAt: item.reviewedAt || '',
+      reviewedBy: item.reviewedBy || '',
+      updatedAt: item.updatedAt || ''
+    });
+  }
+  return {
+    exportVersion: 1,
+    generatedAt: new Date().toISOString(),
+    packageId: clean.id,
+    title: clean.title,
+    status: clean.status,
+    statusLabel: clean.statusLabel,
+    locked: clean.locked,
+    lockedAt: clean.lockedAt,
+    lockedBy: clean.lockedBy,
+    note: clean.note,
+    itemCount: items.length,
+    totalTextLength: items.reduce((sum, item) => sum + item.textLength, 0),
+    readiness: outputStatus,
+    items
+  };
+}
+
+function archiveReleaseMarkdownMeta(label, value) {
+  const text = Array.isArray(value) ? value.filter(Boolean).join(', ') : String(value || '').trim();
+  return text ? `- ${label}: ${text}` : '';
+}
+
+function archiveReleasePackageOutputMarkdown(manifest = {}) {
+  const lines = [
+    `# ${manifest.title || 'Yayın Paketi'}`,
+    '',
+    archiveReleaseMarkdownMeta('Paket ID', manifest.packageId),
+    archiveReleaseMarkdownMeta('Durum', manifest.statusLabel),
+    archiveReleaseMarkdownMeta('Kilit tarihi', manifest.lockedAt),
+    archiveReleaseMarkdownMeta('Kilitleyen', manifest.lockedBy),
+    archiveReleaseMarkdownMeta('Oluşturulma', manifest.generatedAt),
+    archiveReleaseMarkdownMeta('Kayıt sayısı', manifest.itemCount),
+    '',
+    manifest.note ? `> ${manifest.note}` : '',
+    ''
+  ].filter(line => line !== '');
+  for (const item of manifest.items || []) {
+    lines.push(`## ${item.order}. ${item.title || 'Başlıksız kayıt'}`);
+    lines.push('');
+    lines.push(archiveReleaseMarkdownMeta('Tür', item.kind));
+    lines.push(archiveReleaseMarkdownMeta('Kategori', item.category));
+    lines.push(archiveReleaseMarkdownMeta('Kavramlar', item.topics));
+    lines.push(archiveReleaseMarkdownMeta('Kaynak', item.sourceTitle));
+    lines.push(archiveReleaseMarkdownMeta('Bağlantı', item.sourceUrl));
+    lines.push('');
+    if (item.summary) {
+      lines.push(`Özet: ${item.summary}`);
+      lines.push('');
+    }
+    lines.push(String(item.text || '').trim() || 'Metin yok.');
+    lines.push('');
+  }
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+function csvEscape(value = '') {
+  const text = String(value ?? '');
+  return /[",\r\n;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function archiveReleasePackageOutputCsv(manifest = {}) {
+  const header = ['order', 'title', 'kind', 'category', 'topics', 'sourceTitle', 'sourceUrl', 'summary', 'text'];
+  const rows = (manifest.items || []).map(item => [
+    item.order,
+    item.title,
+    item.kind,
+    item.category,
+    Array.isArray(item.topics) ? item.topics.join('|') : '',
+    item.sourceTitle,
+    item.sourceUrl,
+    item.summary,
+    item.text
+  ].map(csvEscape).join(','));
+  return [header.join(','), ...rows].join('\n') + '\n';
+}
+
+function archiveReleaseOutputFileName(title = 'yayin-paketi', extension = 'json') {
+  const slug = String(title || 'yayin-paketi')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 72) || 'yayin-paketi';
+  return `${slug}.${extension}`;
+}
+
+async function getArchiveReleasePackageOutput(id = '', format = 'json') {
+  const packages = await loadArchiveReleasePackages();
+  const pkg = packages.find(item => item.id === id);
+  if (!pkg) return null;
+  const manifest = await archiveReleasePackageOutputManifest(pkg);
+  const normalizedFormat = ['json', 'markdown', 'csv'].includes(String(format || '').trim()) ? String(format || '').trim() : 'json';
+  if (normalizedFormat === 'markdown') {
+    return {
+      format: 'markdown',
+      contentType: 'text/markdown; charset=utf-8',
+      filename: archiveReleaseOutputFileName(manifest.title, 'md'),
+      content: archiveReleasePackageOutputMarkdown(manifest),
+      manifest
+    };
+  }
+  if (normalizedFormat === 'csv') {
+    return {
+      format: 'csv',
+      contentType: 'text/csv; charset=utf-8',
+      filename: archiveReleaseOutputFileName(manifest.title, 'csv'),
+      content: archiveReleasePackageOutputCsv(manifest),
+      manifest
+    };
+  }
+  return {
+    format: 'json',
+    contentType: 'application/json; charset=utf-8',
+    filename: archiveReleaseOutputFileName(manifest.title, 'json'),
+    content: JSON.stringify(manifest, null, 2),
+    manifest
+  };
+}
+
 async function loadArchiveReleasePackages() {
   const packages = await loadJsonSetting(ARCHIVE_OPS_RELEASE_PACKAGES_KEY, []);
   return Array.isArray(packages) ? packages : [];
@@ -3832,6 +4050,14 @@ app.get('/api/archive-ops/release-packages', auth, admin, superAdmin, async (req
     const result = await listArchiveReleasePackages(req.query);
     res.json({ ready: true, counts: result.counts, packages: result.packages });
   } catch (e) { res.status(e.statusCode || 500).json({ ready: false, error: e.message }); }
+});
+
+app.get('/api/archive-ops/release-packages/:id/output', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const output = await getArchiveReleasePackageOutput(req.params.id, req.query.format);
+    if (!output) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, ...output });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/archive-ops/release-packages', auth, admin, superAdmin, async (req, res) => {
