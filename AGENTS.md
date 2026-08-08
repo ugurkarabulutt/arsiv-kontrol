@@ -132,7 +132,14 @@ tespit edilir).
   `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
   `node --check server.js`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı,
   258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları
-  görüldü. Production commit/deploy/smoke kanıtı bu kayıt deploy sonrası güncellenecektir.
+  görüldü. Runtime commit `9e3147d` GitHub'a push edildi ve production'a alındı. Production
+  deploy: `https://arsiv-kontrol-fy73775lo-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_7aaPH2LWgQ3EsDPawt1cNmCrqbUC`, canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest,
+  `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store doğru.
+  `/api/archive-ops/release-packages` oturumsuz erişimde `401` döndü. Canlı HTML'de
+  `Yayın Paketleri`, `archiveReleasePackageTitle`, `loadArchiveReleasePackages` ve
+  `/api/archive-ops/release-packages` mevcut; eski geçici `adminRouteProbe` yok.
 
 - **Yayın Hazırlık Kuyruğu eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi içine
   `Yayın Hazırlık Kuyruğu` alt ekranı eklendi. Bu ekran yalnız `yayina_hazir` durumundaki
