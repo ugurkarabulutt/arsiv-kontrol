@@ -2,6 +2,21 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde Yayın Paketleri son hazırlık kilidi eklendi: `/admin` süper admin `Arşiv
+  Operasyon Merkezi > Yayın Paketleri` ekranında paket içindeki her kayıt artık paket içi son
+  kontrol durumuna sahiptir: `Kontrol bekliyor`, `Kontrol edildi`, `Revizyon gerekli`,
+  `Beklet`. Paket ancak temel hazırlık kontrolleri eksiksizse ve paketteki tüm kayıtlar
+  `Kontrol edildi` ise `Son Hazırlığa Kilitle` ile kilitlenebilir. Kilitli paketlerde başlık,
+  not, durum, kayıt ekleme/çıkarma, kayıt kontrol durumu değiştirme ve paket silme frontend
+  ve backend tarafında engellenir; süper admin kilidi kaldırırsa paket yeniden `Son kontrol`
+  durumuna döner. Yeni API'ler süper admin korumalıdır:
+  `POST /api/archive-ops/release-packages/:id/items/:itemId/review`,
+  `POST /api/archive-ops/release-packages/:id/lock`,
+  `POST /api/archive-ops/release-packages/:id/unlock`. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public
+  frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; 258/258 test geçti.
+
 - Yerelde Yayın Paketleri son kontrol katmanı eklendi: `/admin` süper admin `Arşiv
   Operasyon Merkezi > Yayın Paketleri` detay ekranı artık yalnız paket listesi değil, paket
   yayına hazır mı değil mi gösteren kontrol merkezidir. Paket başlığı, paket içeriği, yayın

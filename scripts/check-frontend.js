@@ -450,11 +450,19 @@ if (
   !server.includes("app.get('/api/archive-ops/release-packages'") ||
   !server.includes("app.post('/api/archive-ops/release-packages'") ||
   !server.includes("app.put('/api/archive-ops/release-packages/:id'") ||
+  !server.includes("app.post('/api/archive-ops/release-packages/:id/items/:itemId/review'") ||
+  !server.includes("app.post('/api/archive-ops/release-packages/:id/lock'") ||
+  !server.includes("app.post('/api/archive-ops/release-packages/:id/unlock'") ||
   !server.includes("app.delete('/api/archive-ops/release-packages/:id'") ||
   !server.includes('ARCHIVE_OPS_RELEASE_PACKAGES_KEY') ||
   !server.includes('function archiveReleasePackageReadiness') ||
   !server.includes('function archiveReleaseItemReadiness') ||
+  !server.includes('function archiveReleasePackageLockReadiness') ||
+  !server.includes('function updateArchiveReleasePackageItemReview') ||
+  !server.includes('function lockArchiveReleasePackage') ||
+  !server.includes('function unlockArchiveReleasePackage') ||
   !server.includes('Paket hazır durumuna alınamaz') ||
+  !server.includes('son hazırlık için kilitli') ||
   !server.includes('function listArchiveReleasePackages') ||
   !server.includes('function updateArchiveReleasePackage') ||
   !server.includes('ARCHIVE_PUBLIC_CANDIDATE_STATUSES') ||
@@ -540,10 +548,17 @@ if (
   !html.includes('function loadArchiveReleasePackages') ||
   !html.includes('function addSelectedReadyToReleasePackage') ||
   !html.includes('function archiveReleasePackageReview') ||
+  !html.includes('function archiveReleasePackageLockReview') ||
+  !html.includes('function setArchiveReleasePackageItemReview') ||
+  !html.includes('function lockArchiveReleasePackageUi') ||
+  !html.includes('function unlockArchiveReleasePackageUi') ||
   !html.includes('function archiveReleaseItemChecksHtml') ||
   !html.includes('function openArchiveReleaseItemRecord') ||
   !html.includes('archive-release-review') ||
   !html.includes('archive-release-checks') ||
+  !html.includes('archive-release-lock-panel') ||
+  !html.includes('Paket son kontrolü') ||
+  !html.includes('Son Hazırlığa Kilitle') ||
   !html.includes('Paket hazır değil') ||
   !html.includes("api('GET',`/api/archive-ops/release-packages") ||
   !html.includes("api('GET',`/api/archive-ops/public-candidates?${params}`)") ||

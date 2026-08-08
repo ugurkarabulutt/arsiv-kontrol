@@ -592,6 +592,7 @@ const ARCHIVE_PUBLISH_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_RELEASE_PACKAGE_LIMIT = 80;
 const ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT = 200;
 const ARCHIVE_RELEASE_PACKAGE_STATUSES = ['taslak', 'son_kontrol', 'hazir', 'beklet'];
+const ARCHIVE_RELEASE_PACKAGE_ITEM_REVIEW_STATUSES = ['bekliyor', 'kontrol_edildi', 'revizyon', 'beklet'];
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -1976,6 +1977,20 @@ function archiveReleasePackageStatusLabel(status = '') {
   }[status] || status || 'Taslak';
 }
 
+function normalizeArchiveReleaseItemReviewStatus(value) {
+  const status = String(value || '').trim();
+  return ARCHIVE_RELEASE_PACKAGE_ITEM_REVIEW_STATUSES.includes(status) ? status : 'bekliyor';
+}
+
+function archiveReleaseItemReviewStatusLabel(status = '') {
+  return {
+    bekliyor: 'Kontrol bekliyor',
+    kontrol_edildi: 'Kontrol edildi',
+    revizyon: 'Revizyon gerekli',
+    beklet: 'Beklet'
+  }[status] || 'Kontrol bekliyor';
+}
+
 function archiveReleaseItemReadiness(item = {}) {
   const topics = Array.isArray(item.topics) ? item.topics.filter(Boolean) : [];
   const textLength = Number(item.textLength || 0);
@@ -2024,6 +2039,11 @@ function sanitizeArchiveReleasePackageItem(item = {}) {
     publicationUrl: String(item.publicationUrl || '').trim().slice(0, 700),
     textLength: Number(item.textLength || 0) || 0,
     textPreview: archiveTextPreview(item.textPreview || '', 520),
+    reviewStatus: normalizeArchiveReleaseItemReviewStatus(item.reviewStatus),
+    reviewStatusLabel: archiveReleaseItemReviewStatusLabel(item.reviewStatus),
+    reviewNote: String(item.reviewNote || '').trim().slice(0, 1000),
+    reviewedAt: String(item.reviewedAt || '').trim().slice(0, 40),
+    reviewedBy: String(item.reviewedBy || '').trim().slice(0, 160),
     updatedAt: String(item.updatedAt || '').trim().slice(0, 40),
     createdAt: String(item.createdAt || '').trim().slice(0, 40)
   };
@@ -2055,6 +2075,25 @@ function archiveReleasePackageReadiness(pkg = {}) {
   };
 }
 
+function archiveReleasePackageLockReadiness(pkg = {}) {
+  const base = archiveReleasePackageReadiness(pkg);
+  const items = Array.isArray(pkg.items) ? pkg.items.map(sanitizeArchiveReleasePackageItem).filter(Boolean) : [];
+  const unreviewed = items.filter(item => normalizeArchiveReleaseItemReviewStatus(item.reviewStatus) !== 'kontrol_edildi');
+  const reviewBlockers = unreviewed.map(item => ({
+    scope: 'item',
+    itemId: item.id,
+    title: item.title,
+    label: 'Paket son kontrolü'
+  }));
+  return {
+    ready: base.ready && reviewBlockers.length === 0,
+    blockers: [...base.blockers, ...reviewBlockers],
+    warnings: base.warnings,
+    reviewedCount: items.length - unreviewed.length,
+    itemCount: items.length
+  };
+}
+
 function normalizeArchiveReleasePackageInput(input = {}, existing = {}) {
   const seen = new Set();
   const items = (Array.isArray(input.items) ? input.items : existing.items || [])
@@ -2077,6 +2116,7 @@ function normalizeArchiveReleasePackageInput(input = {}, existing = {}) {
 function publicArchiveReleasePackage(pkg = {}) {
   const items = Array.isArray(pkg.items) ? pkg.items.map(sanitizeArchiveReleasePackageItem).filter(Boolean) : [];
   const readiness = archiveReleasePackageReadiness({ ...pkg, items });
+  const lockReadiness = archiveReleasePackageLockReadiness({ ...pkg, items });
   return {
     id: pkg.id,
     title: pkg.title || 'Başlıksız yayın paketi',
@@ -2087,6 +2127,10 @@ function publicArchiveReleasePackage(pkg = {}) {
     totalTextLength: items.reduce((sum, item) => sum + Number(item.textLength || 0), 0),
     items,
     readiness,
+    lockReadiness,
+    locked: Boolean(pkg.locked),
+    lockedAt: pkg.lockedAt || null,
+    lockedBy: pkg.lockedBy || '',
     createdAt: pkg.createdAt || null,
     updatedAt: pkg.updatedAt || null,
     createdBy: pkg.createdBy || '',
@@ -2172,6 +2216,9 @@ async function updateArchiveReleasePackage(id = '', input = {}, actor = 'Sistem'
   const index = packages.findIndex(pkg => pkg.id === id);
   if (index < 0) return null;
   const existing = packages[index];
+  if (existing.locked) {
+    throw httpError('Bu yayın paketi son hazırlık için kilitli. Düzenlemek için önce kilidi kaldırın.', 409);
+  }
   const clean = normalizeArchiveReleasePackageInput(input, existing);
   if (!clean.title) throw httpError('Yayın paketi için başlık gerekli.', 400);
   if (clean.status === 'hazir' && !archiveReleasePackageReadiness(clean).ready) {
@@ -2188,8 +2235,87 @@ async function updateArchiveReleasePackage(id = '', input = {}, actor = 'Sistem'
   return publicArchiveReleasePackage(updated);
 }
 
+async function updateArchiveReleasePackageItemReview(packageId = '', itemId = '', input = {}, actor = 'Sistem') {
+  const packages = await loadArchiveReleasePackages();
+  const index = packages.findIndex(pkg => pkg.id === packageId);
+  if (index < 0) return null;
+  const existing = packages[index];
+  if (existing.locked) {
+    throw httpError('Bu yayın paketi son hazırlık için kilitli. Kayıt kontrolünü değiştirmek için önce kilidi kaldırın.', 409);
+  }
+  const items = Array.isArray(existing.items) ? existing.items.map(sanitizeArchiveReleasePackageItem).filter(Boolean) : [];
+  const itemIndex = items.findIndex(item => item.id === itemId);
+  if (itemIndex < 0) throw httpError('Paket içindeki kayıt bulunamadı.', 404);
+  const now = new Date().toISOString();
+  items[itemIndex] = {
+    ...items[itemIndex],
+    reviewStatus: normalizeArchiveReleaseItemReviewStatus(input.status),
+    reviewStatusLabel: archiveReleaseItemReviewStatusLabel(input.status),
+    reviewNote: String(input.note || '').trim().slice(0, 1000),
+    reviewedAt: now,
+    reviewedBy: actor
+  };
+  const updated = {
+    ...existing,
+    items,
+    updatedAt: now,
+    updatedBy: actor
+  };
+  packages[index] = updated;
+  await saveArchiveReleasePackages(packages);
+  return publicArchiveReleasePackage(updated);
+}
+
+async function lockArchiveReleasePackage(id = '', actor = 'Sistem') {
+  const packages = await loadArchiveReleasePackages();
+  const index = packages.findIndex(pkg => pkg.id === id);
+  if (index < 0) return null;
+  const existing = publicArchiveReleasePackage(packages[index]);
+  if (existing.locked) return existing;
+  const lockReadiness = archiveReleasePackageLockReadiness(existing);
+  if (!lockReadiness.ready) {
+    throw httpError('Paket kilitlenemez. Önce paket eksiklerini tamamlayın ve paketteki her kaydı kontrol edildi olarak işaretleyin.', 400);
+  }
+  const now = new Date().toISOString();
+  const updated = {
+    ...existing,
+    status: 'hazir',
+    locked: true,
+    lockedAt: now,
+    lockedBy: actor,
+    updatedAt: now,
+    updatedBy: actor
+  };
+  packages[index] = updated;
+  await saveArchiveReleasePackages(packages);
+  return publicArchiveReleasePackage(updated);
+}
+
+async function unlockArchiveReleasePackage(id = '', actor = 'Sistem') {
+  const packages = await loadArchiveReleasePackages();
+  const index = packages.findIndex(pkg => pkg.id === id);
+  if (index < 0) return null;
+  const existing = packages[index];
+  const updated = {
+    ...existing,
+    locked: false,
+    lockedAt: null,
+    lockedBy: '',
+    status: normalizeArchiveReleasePackageStatus(existing.status) === 'hazir' ? 'son_kontrol' : normalizeArchiveReleasePackageStatus(existing.status),
+    updatedAt: new Date().toISOString(),
+    updatedBy: actor
+  };
+  packages[index] = updated;
+  await saveArchiveReleasePackages(packages);
+  return publicArchiveReleasePackage(updated);
+}
+
 async function deleteArchiveReleasePackage(id = '') {
   const packages = await loadArchiveReleasePackages();
+  const existing = packages.find(pkg => pkg.id === id);
+  if (existing?.locked) {
+    throw httpError('Bu yayın paketi son hazırlık için kilitli. Silmek için önce kilidi kaldırın.', 409);
+  }
   const next = packages.filter(pkg => pkg.id !== id);
   if (next.length === packages.length) return null;
   await saveArchiveReleasePackages(next);
@@ -3720,6 +3846,33 @@ app.put('/api/archive-ops/release-packages/:id', auth, admin, superAdmin, async 
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await updateArchiveReleasePackage(req.params.id, req.body || {}, actor);
+    if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, package: pkg });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/release-packages/:id/items/:itemId/review', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const pkg = await updateArchiveReleasePackageItemReview(req.params.id, req.params.itemId, req.body || {}, actor);
+    if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, package: pkg });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/release-packages/:id/lock', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const pkg = await lockArchiveReleasePackage(req.params.id, actor);
+    if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    res.json({ success: true, package: pkg });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/release-packages/:id/unlock', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const actor = req.session.name || req.session.username || 'Sistem';
+    const pkg = await unlockArchiveReleasePackage(req.params.id, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }

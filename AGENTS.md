@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Yayın Paketleri son hazırlık kilidi eklendi:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içindeki `Yayın Paketleri` akışı artık paket içindeki her kayıt için ayrı paket son
+  kontrol durumu tutar: `Kontrol bekliyor`, `Kontrol edildi`, `Revizyon gerekli`, `Beklet`.
+  Paket ancak temel hazırlık kontrolleri eksiksizse ve paketteki tüm kayıtlar `Kontrol edildi`
+  ise `Son Hazırlığa Kilitle` ile kilitlenebilir. Kilitli pakette başlık, not, durum, kayıt
+  ekleme/çıkarma, kayıt kontrol durumu değiştirme ve paket silme frontend ve backend tarafında
+  engellenir; süper admin gerekirse kilidi kaldırınca paket `Son kontrol` durumuna döner.
+  Yeni süper admin korumalı API'ler: `POST /api/archive-ops/release-packages/:id/items/:itemId/review`,
+  `POST /api/archive-ops/release-packages/:id/lock`, `POST /api/archive-ops/release-packages/:id/unlock`.
+  Bu adım DB/schema/root `/` veya public frontend hattına dokunmaz. Değişen dosyalar:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js` ve
+  `npm.cmd run check` başarılı; 258/258 test geçti.
+
 - **Yayın Paketleri son kontrol katmanı eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Yayın Paketleri` detay ekranı artık yayın öncesi paketleri yalnız gruplamaz;
   paket yayına hazır mı değil mi kontrol eder. Paket başlığı, paket içeriği, yayın notu ve
