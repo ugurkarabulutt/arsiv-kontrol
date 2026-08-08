@@ -133,9 +133,15 @@ tespit edilir).
   ve `Public JSON İndir` aksiyonları eklendi. Değişen dosyalar: `server.js`, `index.html`,
   `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
   `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
-  `npm.cmd run check` başarılı; 262/262 test geçti. Bu kayıt anında commit/push/deploy
-  yapılmadı; workspace'te diğer sohbetin public preview dosyalarıyla karışma riski olduğu için
-  canlıya alma ayrı temiz patch/deploy adımı gerektirir.
+  `npm.cmd run check` başarılı; temiz branch'te 86/86 test geçti. Runtime commit `471d09e`
+  GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-aw1nx17w4-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `value="public-json"`,
+  `Public Kayıt Sözleşmesi` ve `prepareArchivePublicRecordsOutput` mevcut; eski geçici
+  `adminRouteProbe` ve public preview marker'ı yok. Oturumsuz public-json output endpoint'i
+  `401` döndü.
 
 - **Paket Çıktı Merkezi yayın takibi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Paket Çıktı Merkezi` artık yalnız JSON/Markdown/CSV çıktı üretmez; çıktı

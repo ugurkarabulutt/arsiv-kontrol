@@ -13,8 +13,16 @@
   Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattına dokunulmadı. Yerel
   doğrulama: `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check`
-  ve `npm.cmd run check` başarılı; 262/262 test geçti. Bu değişiklik temiz
-  `codex/admin-public-json-output` branch/worktree üzerinde commit ve deploy için ayrıştırıldı.
+  ve `npm.cmd run check` başarılı; temiz branch'te 86/86 test geçti. Değişiklik temiz
+  `codex/admin-public-json-output` branch/worktree üzerinde ayrıştırıldı. Runtime commit
+  `471d09e` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-aw1nx17w4-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `value="public-json"`,
+  `Public Kayıt Sözleşmesi` ve `prepareArchivePublicRecordsOutput` mevcut; eski geçici
+  `adminRouteProbe` ve public preview marker'ı yok. Oturumsuz public-json output endpoint'i
+  `401` döndü.
 
 - Yerelde Paket Çıktı Merkezi yayın takibi eklendi: `/admin` süper admin `Arşiv Operasyon
   Merkezi > Paket Çıktı Merkezi` ekranı artık kilitli ve hazır paketlerden çıktı üretmenin
