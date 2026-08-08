@@ -33,6 +33,7 @@ const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 70000);
 const OPENAI_RETRY_DELAYS_MS = [800, 1800];
 const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
 const ADMIN_PARALLEL_ROUTE_ENABLED = process.env.ADMIN_PARALLEL_ROUTE_ENABLED !== '0';
+const PUBLIC_ARCHIVE_PREVIEW_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_PREVIEW_ENABLED || '').toLowerCase());
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
@@ -6514,9 +6515,39 @@ function sendAdminIndex(req, res) {
   res.sendFile(path.join(__dirname, 'index.html'));
 }
 
+function sendPublicArchivePreviewDisabled(req, res) {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.status(404).type('html').send(`<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Sayfa bulunamadı</title>
+</head>
+<body>
+  <main>
+    <h1>Sayfa bulunamadı.</h1>
+    <p>Aradığınız içerik şu anda görünmüyor.</p>
+  </main>
+</body>
+</html>`);
+}
 if (ADMIN_PARALLEL_ROUTE_ENABLED) {
   app.get(['/admin', '/admin/'], sendAdminIndex);
   app.get('/admin/*', sendAdminIndex);
+}
+app.use('/public-preview', (req, res, next) => {
+  if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);
+  next();
+});
+
+if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
+  const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
+  app.use('/public-preview', createPublicArchivePreviewRouter({
+    cssFile: path.join(__dirname, 'public-archive.css')
+  }));
 }
 
 if (process.env.PUBLIC_ARCHIVE_DEMO === '1') {
