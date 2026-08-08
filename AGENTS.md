@@ -134,6 +134,14 @@ tespit edilir).
   `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
   Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js` ve
   `npm.cmd run check` başarılı; 258/258 test geçti.
+  Runtime commit `2a7c868` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-la84ec20y-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Son Hazırlığa Kilitle`,
+  `Paket son kontrolü`, `lockArchiveReleasePackageUi` ve release package API markerları mevcut;
+  eski geçici `adminRouteProbe` yok. Oturumsuz release package ve item review API erişimleri
+  `401` döndü.
 
 - **Yayın Paketleri son kontrol katmanı eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Yayın Paketleri` detay ekranı artık yayın öncesi paketleri yalnız gruplamaz;
