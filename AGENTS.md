@@ -131,7 +131,15 @@ tespit edilir).
   kullanır. Hazır olmayan, kilitlenmemiş veya kontrolü eksik paketler için çıktı üretimi
   frontend ve backend tarafında engellenir. Bu adım DB/schema/root `/` veya public frontend
   hattına dokunmaz. Değişen dosyalar: `server.js`, `index.html`, `scripts/check-frontend.js`,
-  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  258/258 test geçti. Runtime commit `9778806` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-2ea67lvbt-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru. Canlı HTML'de `Paket Çıktı Merkezi`,
+  `archiveOutputPackageList`, `generateArchivePackageOutput` ve `/output?format=` mevcut;
+  eski geçici `adminRouteProbe` yok. Oturumsuz çıktı endpoint'i `401` döndü.
 
 - **Yayın Paketleri son hazırlık kilidi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Yayın Paketleri` akışı artık paket içindeki her kayıt için ayrı paket son
