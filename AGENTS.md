@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-08
+- **Public JSON kalite kapisi eklendi:** `/admin` super admin Arsiv Operasyon Merkezi
+  icindeki `Paket Cikti Merkezi`, public on yuz icin JSON uretmeden once artik ikinci bir
+  yayin uygunluk kontrolu calistirir. Backend `validateArchivePublicRecords` ile her public
+  kayitta baslik, metin, slug, kaynak izi, tekrar slug ve public alanda gorunmemesi gereken ic
+  surec ifadelerini (`AI`, `admin`, `prompt`, `model`, `denetim`, `kalite kontrol`,
+  `onay kuyrugu`, `test verisi`) kontrol eder. Bloklayici hata varsa `public-json` ciktisi
+  bos doner, `blocked:true` ve `publicReadiness` raporu gelir; frontend `Public yayin
+  kontrolu` kartinda engel/uyari listesini gosterir ve Public JSON kopyalama/indirme
+  aksiyonlarini kapatir. Uyarilar bloklamaz ama super adminin kayit bazinda son kontrol
+  yapmasini saglar. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. DB/schema/root `/` ve public frontend hattina
+  dokunulmaz.
+
 - **Public kayıt JSON sözleşmesi eklendi:** `/admin` süper admin Arşiv Operasyon Merkezi
   içindeki `Paket Çıktı Merkezi` artık kilitli, `Hazır` durumundaki ve paket son kontrolü
   tamamlanmış yayın paketlerinden public ön yüz için temiz kayıt sözleşmesi üretebilir.

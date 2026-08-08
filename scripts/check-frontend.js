@@ -465,6 +465,9 @@ if (
   !server.includes('function archiveReleasePackageOutputMarkdown') ||
   !server.includes('function archiveReleasePackageOutputCsv') ||
   !server.includes('ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION') ||
+  !server.includes('ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS') ||
+  !server.includes('function validateArchivePublicRecords') ||
+  !server.includes('publicReadiness') ||
   !server.includes('function archiveReleasePackagePublicRecords') ||
   !server.includes("format: 'public-json'") ||
   !server.includes('function updateArchiveReleasePackagePublication') ||
@@ -564,6 +567,10 @@ if (
   !html.includes('id="archiveOutputPackageList"') ||
   !html.includes('id="archiveOutputPublicationUrl"') ||
   !html.includes('value="public-json"') ||
+  !html.includes('archive-public-readiness') ||
+  !html.includes('function archiveOutputPublicReadinessHtml') ||
+  !html.includes('Public yayın kontrolü') ||
+  !html.includes('Public JSON kalite kontrolünden geçmedi') ||
   !html.includes('Yayın Takibi') ||
   !html.includes('function loadArchiveOutputPackages') ||
   !html.includes('function generateArchivePackageOutput') ||

@@ -2,6 +2,18 @@
 
 ## 2026-08-08 Codex Güncel Durum
 
+- Yerelde Public JSON kalite kapisi eklendi: `/admin` super admin `Arsiv Operasyon Merkezi >
+  Paket Cikti Merkezi` ekrani artik public on yuz icin JSON uretmeden once kayit bazli yayin
+  uygunluk kontrolu calistirir. Backend `validateArchivePublicRecords` ile her public kaydin
+  baslik, metin, slug, kaynak izi, tekrar slug ve public alanda gorunmemesi gereken ic surec
+  ifadelerini kontrol eder. Bloklayici hata varsa `public-json` ciktisi bos doner,
+  `blocked:true` ve `publicReadiness` raporu gelir; frontend `Public yayin kontrolu` kartinda
+  engel/uyari listesini gosterir ve Public JSON kopyalama/indirme aksiyonlarini kapatir.
+  Uyarilar bloklamaz, fakat super adminin kayit bazinda son kontrol yapmasini saglar. Kapsam:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  DB/schema/root `/` ve public frontend hattina dokunulmadi. Henuz commit/push/deploy
+  yapilmadi; yerel dogrulama siradaki adimdir.
+
 - Yerelde Public kayıt JSON sözleşmesi eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi >
   Paket Çıktı Merkezi` ekranı artık kilitli, `Hazır` durumundaki ve paket son kontrolü
   tamamlanmış yayın paketlerinden public ön yüz için temiz JSON kayıt sözleşmesi üretebilir.

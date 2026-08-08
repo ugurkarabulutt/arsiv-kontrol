@@ -2460,8 +2460,116 @@ function archiveReleasePublicRecordFromItem(item = {}, manifest = {}) {
   };
 }
 
+const ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS = [
+  { label: 'AI', pattern: /\bAI\b/i },
+  { label: 'admin', pattern: /\badmin\b/i },
+  { label: 'prompt', pattern: /\bprompt\b/i },
+  { label: 'model', pattern: /\bmodel\b/i },
+  { label: 'denetim', pattern: /\bdenetim\b/i },
+  { label: 'kalite kontrol', pattern: /kalite\s+kontrol/i },
+  { label: 'onay kuyrugu', pattern: /onay\s+kuyru[ğg]u/i },
+  { label: 'test verisi', pattern: /test\s+verisi/i }
+];
+
+function archivePublicIssue(record = {}, type = 'warning', field = '', message = '') {
+  return {
+    type,
+    recordId: record.id || '',
+    slug: record.slug || '',
+    title: record.title || '',
+    field,
+    message
+  };
+}
+
+function archivePublicVisibleFields(record = {}) {
+  return [
+    ['baslik', record.title],
+    ['ozet', record.summary],
+    ['soru', record.question],
+    ['cevap', record.answer],
+    ['metin', record.body],
+    ['kategori', record.category],
+    ['kavramlar', Array.isArray(record.topics) ? record.topics.join(' ') : record.topics],
+    ['kaynak', record.source?.title],
+    ['kaynak_izi', record.source?.trace]
+  ].map(([field, value]) => [field, String(value || '').trim()]);
+}
+
+function archivePublicRecordReadiness(record = {}, slugCounts = new Map()) {
+  const blockers = [];
+  const warnings = [];
+  const title = String(record.title || '').trim();
+  const body = String(record.body || record.answer || '').trim();
+  const category = String(record.category || '').trim();
+  const topics = Array.isArray(record.topics) ? record.topics.filter(Boolean) : [];
+  const sourceRecord = record.sourceRecord || {};
+  const hasSourceTrace = Boolean(sourceRecord.kind || sourceRecord.recordId || record.source?.title || record.source?.trace || record.source?.url);
+
+  if (!title || title === 'Arsiv kaydi' || title === 'Arşiv kaydı') {
+    blockers.push(archivePublicIssue(record, 'blocker', 'title', 'Baslik eksik veya otomatik varsayilan baslik kullaniliyor.'));
+  }
+  if (!body) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'body', 'Public kayit metni bos.'));
+  }
+  if (!record.slug) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'slug', 'Public URL slug olusmadi.'));
+  } else if ((slugCounts.get(record.slug) || 0) > 1) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'slug', 'Ayni slug birden fazla kayitta kullaniliyor.'));
+  }
+  if (!hasSourceTrace) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'source', 'Kaynak izi bulunamadi.'));
+  }
+
+  if (!record.question) warnings.push(archivePublicIssue(record, 'warning', 'question', 'Soru alani ayrismadi; metin arsiv kaydi olarak kalacak.'));
+  if (!record.summary || String(record.summary).trim().length < 40) warnings.push(archivePublicIssue(record, 'warning', 'summary', 'Ozet kisa veya eksik gorunuyor.'));
+  if (!category || category === 'Genel') warnings.push(archivePublicIssue(record, 'warning', 'category', 'Kategori genel gorunuyor; gerekirse net kategori secilmeli.'));
+  if (!topics.length) warnings.push(archivePublicIssue(record, 'warning', 'topics', 'Kavram/etiket bilgisi yok.'));
+  if (!record.source?.url) warnings.push(archivePublicIssue(record, 'warning', 'source.url', 'Kaynak linki yok; metin kaynak iziyle yayinlanacak.'));
+
+  for (const [field, value] of archivePublicVisibleFields(record)) {
+    if (!value) continue;
+    for (const term of ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS) {
+      if (term.pattern.test(value)) {
+        blockers.push(archivePublicIssue(record, 'blocker', field, `Public kayitta ic surec ifadesi gorunuyor: ${term.label}`));
+      }
+    }
+  }
+
+  return {
+    recordId: record.id || '',
+    slug: record.slug || '',
+    title: record.title || '',
+    blockerCount: blockers.length,
+    warningCount: warnings.length,
+    blockers,
+    warnings
+  };
+}
+
+function validateArchivePublicRecords(records = []) {
+  const slugCounts = new Map();
+  for (const record of records) {
+    if (!record?.slug) continue;
+    slugCounts.set(record.slug, (slugCounts.get(record.slug) || 0) + 1);
+  }
+  const recordReports = records.map(record => archivePublicRecordReadiness(record, slugCounts));
+  const blockers = recordReports.flatMap(report => report.blockers);
+  const warnings = recordReports.flatMap(report => report.warnings);
+  return {
+    ready: blockers.length === 0,
+    recordCount: records.length,
+    blockerCount: blockers.length,
+    warningCount: warnings.length,
+    blockers,
+    warnings,
+    records: recordReports
+  };
+}
+
 function archiveReleasePackagePublicRecords(manifest = {}) {
   const records = (manifest.items || []).map(item => archiveReleasePublicRecordFromItem(item, manifest));
+  const readiness = validateArchivePublicRecords(records);
   return {
     schemaVersion: ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION,
     generatedAt: manifest.generatedAt || new Date().toISOString(),
@@ -2477,8 +2585,10 @@ function archiveReleasePackagePublicRecords(manifest = {}) {
       purpose: 'public_archive_frontend',
       language: 'tr',
       excludesInternalWorkflow: true,
+      excludes: ['AI', 'admin', 'prompt', 'model', 'denetim', 'kalite kontrol', 'onay kuyrugu', 'test verisi'],
       recordFields: ['id', 'slug', 'title', 'summary', 'question', 'answer', 'body', 'category', 'topics', 'source', 'publication', 'seo', 'reading', 'updatedAt']
     },
+    readiness,
     records
   };
 }
@@ -2509,13 +2619,16 @@ async function getArchiveReleasePackageOutput(id = '', format = 'json') {
   }
   if (normalizedFormat === 'public-json') {
     const publicRecords = archiveReleasePackagePublicRecords(manifest);
+    const blocked = !publicRecords.readiness.ready;
     return {
       format: 'public-json',
       contentType: 'application/json; charset=utf-8',
       filename: archiveReleaseOutputFileName(`${manifest.title || 'yayin-paketi'}-public-kayitlar`, 'json'),
-      content: JSON.stringify(publicRecords, null, 2),
+      content: blocked ? '' : JSON.stringify(publicRecords, null, 2),
       manifest,
-      publicRecords
+      publicRecords,
+      publicReadiness: publicRecords.readiness,
+      blocked
     };
   }
   return {

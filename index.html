@@ -526,6 +526,18 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-output-publication-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:8px;}
 .archive-output-publication-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;}
 .archive-output-publication-actions button{min-width:0;white-space:normal;}
+.archive-output-publication .badge,.archive-public-readiness .badge{position:static;width:auto;height:auto;min-width:auto;border-radius:999px;padding:5px 8px;background:rgba(var(--gold-rgb),.14);border:1px solid rgba(var(--gold-rgb),.38);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.1;white-space:nowrap;}
+.archive-public-readiness .badge.danger{background:rgba(var(--red-rgb),.12);border-color:rgba(var(--red-rgb),.42);color:var(--red);}
+.archive-public-readiness{border:1px solid var(--border);background:var(--surface-strong);padding:10px;margin-top:10px;display:grid;gap:8px;min-width:0;}
+.archive-public-readiness-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
+.archive-public-readiness-title{font-size:12px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;}
+.archive-public-readiness-counts{display:flex;gap:6px;flex-wrap:wrap;}
+.archive-public-readiness-list{display:grid;gap:6px;max-height:260px;overflow:auto;min-width:0;}
+.archive-public-readiness-item{border:1px solid var(--border);background:var(--bg);padding:8px;font-size:12px;line-height:1.45;color:var(--ink2);min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+.archive-public-readiness-item.blocker{border-color:rgba(var(--red-rgb),.55);background:rgba(var(--red-rgb),.06);}
+.archive-public-readiness-item.warning{border-color:rgba(var(--gold-rgb),.55);background:rgba(var(--gold-rgb),.07);}
+.archive-public-readiness-item strong{display:block;color:var(--ink);font-size:12px;margin-bottom:2px;overflow-wrap:anywhere;}
+.archive-public-readiness-item span{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);overflow-wrap:anywhere;}
 .ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
@@ -592,7 +604,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
 @media(max-width:900px){.archive-output-layout{grid-template-columns:1fr}.archive-output-package-list{max-height:none;overflow:visible}}
-@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks{grid-template-columns:1fr}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
+@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks{grid-template-columns:1fr}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -7131,7 +7143,8 @@ function archiveOutputPublicationHtml(pkg={},outputBelongs=false,readiness={read
   `;
 }
 function archiveOutputPublicContractHtml(pkg={},outputBelongs=false,readiness={ready:false}){
-  const publicOutputReady=outputBelongs&&archiveOutputState.output?.format==='public-json';
+  const publicOutputReady=outputBelongs&&archiveOutputState.output?.format==='public-json'&&archiveOutputState.output?.content&&!archiveOutputState.output?.blocked;
+  const publicReadiness=outputBelongs&&archiveOutputState.output?.format==='public-json'?archiveOutputState.output?.publicReadiness:null;
   return `
     <div class="archive-output-publication">
       <div class="archive-output-publication-head">
@@ -7151,9 +7164,52 @@ function archiveOutputPublicContractHtml(pkg={},outputBelongs=false,readiness={r
         <button class="btn-sec" onclick="copyArchivePackageOutput()" ${publicOutputReady?'':'disabled'}>Public JSON Kopyala</button>
         <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${publicOutputReady?'':'disabled'}>Public JSON İndir</button>
       </div>
+      ${archiveOutputPublicReadinessHtml(publicReadiness)}
       <div class="ops-help-text">
         Bu çıktı kullanıcıya admin, denetim, prompt veya iç süreç bilgisini göstermez; yalnız başlık, soru, cevap, özet, kategori, kavramlar ve kaynak izini taşır.
       </div>
+    </div>
+  `;
+}
+function archiveOutputPublicReadinessHtml(readiness=null){
+  if(!readiness){
+    return `
+      <div class="archive-public-readiness">
+        <div class="archive-public-readiness-head">
+          <div class="archive-public-readiness-title">Public yayın kontrolü</div>
+          <span class="badge">Henüz kontrol edilmedi</span>
+        </div>
+        <div class="ops-status">Public kayıtları hazırladığınızda başlık, metin, kaynak izi ve iç süreç ifadeleri burada kontrol edilir.</div>
+      </div>
+    `;
+  }
+  const blockers=Array.isArray(readiness.blockers)?readiness.blockers:[];
+  const warnings=Array.isArray(readiness.warnings)?readiness.warnings:[];
+  const issues=[...blockers.slice(0,8),...warnings.slice(0,Math.max(0,8-blockers.length))];
+  const hidden=Math.max(0,Number(readiness.blockerCount||0)+Number(readiness.warningCount||0)-issues.length);
+  return `
+    <div class="archive-public-readiness">
+      <div class="archive-public-readiness-head">
+        <div>
+          <div class="archive-public-readiness-title">Public yayın kontrolü</div>
+          <div class="archive-output-publication-meta">${Number(readiness.recordCount||0).toLocaleString('tr-TR')} kayıt incelendi</div>
+        </div>
+        <div class="archive-public-readiness-counts">
+          <span class="badge ${Number(readiness.blockerCount||0)?'danger':''}">${Number(readiness.blockerCount||0).toLocaleString('tr-TR')} engel</span>
+          <span class="badge">${Number(readiness.warningCount||0).toLocaleString('tr-TR')} uyarı</span>
+        </div>
+      </div>
+      ${readiness.ready
+        ? '<div class="ops-status ok">Public JSON hazır. Kopyalanabilir veya indirilebilir.</div>'
+        : '<div class="ops-status err">Public JSON hazırlanmadı. Önce aşağıdaki engeller düzeltilmeli.</div>'}
+      ${issues.length?`<div class="archive-public-readiness-list">${issues.map(issue=>`
+        <div class="archive-public-readiness-item ${issue.type==='blocker'?'blocker':'warning'}">
+          <strong>${esc(issue.title||issue.slug||'Kayıt')}</strong>
+          <span>${esc(issue.field||'alan')} · ${esc(issue.type==='blocker'?'Engel':'Uyarı')}</span>
+          <div>${esc(issue.message||'Kontrol notu yok.')}</div>
+        </div>
+      `).join('')}</div>`:''}
+      ${hidden?`<div class="ops-status">${hidden.toLocaleString('tr-TR')} ek kontrol notu daha var.</div>`:''}
     </div>
   `;
 }
@@ -7167,6 +7223,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   const readiness=archiveOutputPackageReady(pkg);
   const output=archiveOutputState.output;
   const outputBelongs=output?.packageId===pkg.id&&output?.format===archiveOutputState.format;
+  const outputReady=outputBelongs&&output?.content&&!output?.blocked;
   box.innerHTML=`
     <div class="ops-detail-head">
       <div>
@@ -7185,11 +7242,11 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
       ${archiveOutputChecksHtml(pkg)}
       <div class="archive-output-actions">
         <button class="btn-main" onclick="generateArchivePackageOutput()" ${readiness.ready?'':'disabled'}>${archiveOutputState.generating?'Hazırlanıyor...':'Çıktıyı Oluştur'}</button>
-        <button class="btn-sec" onclick="copyArchivePackageOutput()" ${outputBelongs?'':'disabled'}>Kopyala</button>
-        <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${outputBelongs?'':'disabled'}>İndir</button>
+        <button class="btn-sec" onclick="copyArchivePackageOutput()" ${outputReady?'':'disabled'}>Kopyala</button>
+        <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${outputReady?'':'disabled'}>İndir</button>
       </div>
       ${readiness.ready?'<div class="ops-status ok">Paket çıktı oluşturmaya hazır.</div>':`<div class="ops-status err">Çıktı için önce paket kilidi ve son kontrol eksikleri tamamlanmalı.</div>`}
-      <div class="archive-output-preview">${outputBelongs?esc(output.content):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
+      <div class="archive-output-preview">${outputBelongs?(output?.blocked?'Public JSON kalite kontrolünden geçmedi. Engel listesi aşağıda görünüyor.':esc(output.content)):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
       ${archiveOutputPublicContractHtml(pkg,outputBelongs,readiness)}
       ${archiveOutputPublicationHtml(pkg,outputBelongs,readiness)}
     </div>
@@ -7262,8 +7319,20 @@ async function generateArchivePackageOutput(){
     setArchiveOutputStatus(data.error,'err');
     return showSystemAlert('Çıktı oluşturulamadı',data.error,'danger');
   }
-  archiveOutputState.output={packageId:pkg.id,format:data.format,content:data.content||'',filename:data.filename||'yayin-paketi.json',contentType:data.contentType||'text/plain'};
+  archiveOutputState.output={
+    packageId:pkg.id,
+    format:data.format,
+    content:data.content||'',
+    filename:data.filename||'yayin-paketi.json',
+    contentType:data.contentType||'text/plain',
+    publicReadiness:data.publicReadiness||data.publicRecords?.readiness||null,
+    blocked:Boolean(data.blocked)
+  };
   renderArchiveOutputDetail();
+  if(data.blocked){
+    setArchiveOutputStatus('Public JSON hazırlanmadı. Engel listesi kontrol edilmeli.','err');
+    return showSystemAlert('Public JSON hazır değil','Bu pakette public ön yüze taşınmadan önce düzeltilmesi gereken kayıtlar var. Engel listesi ekranda görünüyor.','danger');
+  }
   setArchiveOutputStatus('Paket çıktısı hazırlandı.','ok');
 }
 async function prepareArchivePublicRecordsOutput(){
@@ -7274,13 +7343,13 @@ async function prepareArchivePublicRecordsOutput(){
 }
 async function copyArchivePackageOutput(){
   const output=archiveOutputState.output;
-  if(!output?.content)return;
+  if(!output?.content||output?.blocked)return;
   await navigator.clipboard.writeText(output.content);
   setArchiveOutputStatus('Çıktı panoya kopyalandı.','ok');
 }
 function downloadArchivePackageOutput(){
   const output=archiveOutputState.output;
-  if(!output?.content)return;
+  if(!output?.content||output?.blocked)return;
   const blob=new Blob([output.content],{type:output.contentType||'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
