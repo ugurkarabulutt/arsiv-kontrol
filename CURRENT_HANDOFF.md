@@ -11,7 +11,13 @@
   `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Backend/DB/schema/root `/`
   ve public frontend hattına dokunulmadı. Yerel doğrulama: `npm.cmd run check` başarılı,
   258/258 test geçti; `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
-  uyarıları görüldü. Henüz commit/push/deploy bilgisi bu maddeye eklenmedi.
+  uyarıları görüldü. Runtime commit `f1052d4` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-nhrwlycof-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_B8vX5285Fo7g2ecqaseNdxNtzeZn`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  manifest, `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store doğru. Canlı
+  HTML'de `candidate-review-grid`, `archiveCandidateChecklistHtml`, `Public görünüm ön izlemesi`
+  ve `Yayın öncesi durum` mevcut; eski geçici `adminRouteProbe` yok.
 
 - Yerelde yeni akış eklendi: `/admin` süper admin `Arşiv Operasyon Merkezi > Public Arşiv
   Adayları` ekranında aday kayıtlar artık karar durumuna göre filtrelenebilir ve seçili aday
