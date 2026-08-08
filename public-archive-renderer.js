@@ -248,7 +248,8 @@ function trustBand() {
       <div>
         <p class="pa-kicker">Güvenilir kaynak, sade anlatım</p>
         <h2>Arşiv, kısa cevap ile derin okuma arasında sakin bir yol sunar.</h2>
-        <p>Cevaplar; soru, kavram ve kategori bağlantılarıyla birlikte okunacak şekilde düzenlenir. Amaç, doğru bilgiye sade ve huzurlu bir okuma deneyimiyle ulaşmaktır.</p>
+        <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)} Bu ekranda kayıt alınmıyor; yalnızca arayüz davranışı gösteriliyor.</p>
+                <p>Cevaplar; soru, kavram ve kategori bağlantılarıyla birlikte okunacak şekilde düzenlenir. Amaç, doğru bilgiye sade ve huzurlu bir okuma deneyimiyle ulaşmaktır.</p>
       </div>
       ${stillLife()}
     </section>
@@ -390,6 +391,7 @@ function renderQuestion(slug) {
               ${entry.publishedAt ? `<span>Yayın tarihi: ${escapeHtml(formatDate(entry.publishedAt))}</span>` : ''}
               ${entry.updatedAt ? `<span>Son güncelleme: ${escapeHtml(formatDate(entry.updatedAt))}</span>` : ''}
               ${entry.readTime ? `<span>${entry.readTime} dk okuma</span>` : ''}
+              ${publicArchiveFixtures.brand.answererLabel ? `<span>${escapeHtml(publicArchiveFixtures.brand.answererLabel)}</span>` : ''}
             </div>
             <section class="pa-reading-block">
               <h2>Orijinal Soru</h2>
@@ -509,7 +511,7 @@ function renderAsk() {
           <div class="pa-form-copy">
             <p class="pa-kicker">Soru Sor</p>
             <h1>Sorunuzu kısa ve açık yazın.</h1>
-            <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} Bu ekranda kayıt alınmıyor; yalnızca arayüz davranışı gösteriliyor.</p>
+            <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)} Bu ekranda kayıt alınmıyor; yalnızca arayüz davranışı gösteriliyor.</p>
             <div class="pa-note-box" id="gizlilik">
               <strong>Gizlilik notu</strong>
               <p>Kişisel bilgi, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar paylaşmayın.</p>

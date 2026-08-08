@@ -2,7 +2,10 @@ const publicArchiveFixtures = {
   brand: {
     name: 'Dini Sorular ve Cevaplar Arşivi',
     logoLines: ['Dini Sorular', 've Cevaplar Arşivi'],
-    sentence: 'Sorularınız Kur’ân ışığında cevaplanır.'
+    sentence: 'Sorularınız Kur’ân ışığında cevaplanır.',
+    authorName: 'Dr. Abdulcabbar Boran',
+    authorLine: 'Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.',
+    answererLabel: 'Yanıtlayan: Dr. Abdulcabbar Boran'
   },
   categories: [
     {

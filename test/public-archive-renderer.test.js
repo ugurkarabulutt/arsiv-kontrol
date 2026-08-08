@@ -4,7 +4,12 @@ const { ROUTE_PATHS, renderPublicArchivePreviewRoute } = require('../public-arch
 
 const forbiddenSnippets = [
   'hocamız',
+  'hoca',
+  'uzmanlar',
+  'uzman ekip',
   'uzmanlar inceler',
+  'alanında uzman',
+  'cevaplandırılması için hocamıza aktarılır',
   'uygun görülen sorular',
   'source_history_id',
   'text_hash',
@@ -42,6 +47,16 @@ test('public preview routes render isolated noindex pages', () => {
     assert.match(rendered.html, /Sorularınız Kur’ân ışığında cevaplanır\./);
     assert.doesNotMatch(rendered.html, /\/api\//);
   }
+});
+
+test('public preview shows direct authorship without broad expert language', () => {
+  const home = renderPublicArchivePreviewRoute('/public-preview').html;
+  const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
+  const ask = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
+
+  assert.match(home, /Sorular Dr\. Abdulcabbar Boran tarafından yanıtlanır\./);
+  assert.match(detail, /Yanıtlayan: Dr\. Abdulcabbar Boran/);
+  assert.match(ask, /Sorular Dr\. Abdulcabbar Boran tarafından yanıtlanır\./);
 });
 
 test('public preview output avoids internal and fake feature language', () => {

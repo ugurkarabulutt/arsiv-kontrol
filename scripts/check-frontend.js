@@ -36,7 +36,13 @@ function publicForbiddenWordHits(content, options = {}) {
 
 const PUBLIC_PREVIEW_FORBIDDEN_SNIPPETS = [
   'hocamız',
+  'hoca',
+  'uzmanlar',
+  'uzman ekip',
   'uzmanlar inceler',
+  'alanında uzman',
+  'alanında uzman kişiler',
+  'cevaplandırılması için hocamıza aktarılır',
   'uygun görülen sorular arşive eklenir',
   'uygun görülen sorular arşive eklenebilir',
   'history',
@@ -766,6 +772,7 @@ const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const marker of ['Öne Çıkan Sorular', 'Kavramlar', 'Kategoriler', 'Aklınızda bir soru mu var?', 'Güvenilir kaynak, sade anlatım']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' }).html;
 assert(searchPreview.includes('Namaz kılarken akla gelen kötü düşünceler'), 'Public search fixture data ile sonuc dondurmeli.');
 const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' }).html;
@@ -774,6 +781,7 @@ const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/orne
 for (const marker of ['Orijinal Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
   assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);
 }
+assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html;
@@ -781,6 +789,7 @@ assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h
 assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kategorideki Sorular'), 'Kategori sayfasi kavramdan ayri public yapi olmali.');
 const askPreview = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
 assert(askPreview.includes('data-static-question-form') && askPreview.includes('disabled>Bu ekranda kayıt alınmaz'), 'Soru Sor Phase 1 statik ve non-submitting olmali.');
+assert(askPreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Soru Sor author context eksik.');
 const notFoundPreview = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
 assert(notFoundPreview.status === 404 && notFoundPreview.html.includes('Sayfa bulunamadı.'), 'Gizli veya eksik public icerik 404 state dondurmeli.');
 
