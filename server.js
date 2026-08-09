@@ -6169,6 +6169,30 @@ app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, s
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data: batch, error: batchError } = await supabase.from('history_tag_import_batches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (batchError) throw new Error(batchError.message);
+    if (!batch) return res.status(404).json({ error: 'Etiket aktarım partisi bulunamadı.' });
+
+    const { error: matchesError } = await supabase.from('history_tag_import_matches')
+      .delete()
+      .eq('batch_id', req.params.id);
+    if (matchesError) throw new Error(matchesError.message);
+
+    const { error: deleteError } = await supabase.from('history_tag_import_batches')
+      .delete()
+      .eq('id', req.params.id);
+    if (deleteError) throw new Error(deleteError.message);
+
+    res.json({ success: true, batch: publicHistoryTagImportBatch(batch) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply', auth, admin, superAdmin, async (req, res) => {
   try {
     if (!ensureHistoryTagImportReady(res)) return;

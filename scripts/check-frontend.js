@@ -325,6 +325,7 @@ if (
   !server.includes('TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH') ||
   !server.includes('function historyTagImportSelectColumns()') ||
   !server.includes("app.get('/api/history-tags/import-batches'") ||
+  !server.includes("app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})'") ||
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
   !server.includes("const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
@@ -342,7 +343,9 @@ if (
   !html.includes('/api/history-tags/import/upload/complete') ||
   !html.includes('readHistoryTagImportUploadResponse') ||
   !html.includes('applyHistoryTagImportMatch') ||
-  !html.includes('applyReadyHistoryTagImportMatches')
+  !html.includes('applyReadyHistoryTagImportMatches') ||
+  !html.includes('deleteHistoryTagImportBatch') ||
+  !html.includes('Seçili Aktarımı Sil')
 ) {
   throw new Error('Excel etiket aktarimi icin super admin ekrani, import APIleri ve DB semasi korunmali.');
 }
