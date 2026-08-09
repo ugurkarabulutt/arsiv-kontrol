@@ -323,6 +323,7 @@ if (
   !server.includes("app.post('/api/history-tags/import/upload/chunk'") ||
   !server.includes("app.post('/api/history-tags/import/upload/complete'") ||
   !server.includes('TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH') ||
+  !server.includes('function historyTagImportSelectColumns()') ||
   !server.includes("app.get('/api/history-tags/import-batches'") ||
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||

@@ -1115,6 +1115,29 @@ function publicHistoryTagImportHistory(row = {}) {
   };
 }
 
+function historyTagImportSelectColumns() {
+  const columns = [
+    'id',
+    'user_id',
+    'username',
+    'name',
+    'filename',
+    'status',
+    'score',
+    'total_errors',
+    'cat_counts',
+    'summary',
+    'corrected_text',
+    'approved_by',
+    'approved_at',
+    'created_at'
+  ];
+  if (HAS_ORIGINAL_TEXT) columns.splice(10, 0, 'original_text');
+  if (HAS_HISTORY_TAGS) columns.splice(columns.indexOf('created_at'), 0, 'tags');
+  if (HAS_ANALYSIS_META) columns.splice(columns.indexOf('created_at'), 0, 'prompt_version', 'rules_hash');
+  return columns.join(',');
+}
+
 function archiveComparableText(value = '') {
   return normalizeText(value).replace(/\s+/g, ' ').toLocaleLowerCase('tr-TR');
 }
@@ -5849,7 +5872,7 @@ async function refreshHistoryTagImportBatchCounts(batchId) {
 
 async function fetchHistoryTagImportHistoryRows() {
   const rows = await fetchAllPages(() => supabase.from('history')
-    .select('id,user_id,username,name,filename,status,score,total_errors,cat_counts,summary,original_text,corrected_text,approved_by,approved_at,tags,prompt_version,rules_hash,created_at')
+    .select(historyTagImportSelectColumns())
     .order('created_at', { ascending: false }), 1000);
   return (rows || [])
     .map(row => tagImportHistoryCandidate(row))
@@ -5891,7 +5914,7 @@ async function attachHistoryToTagImportMatches(rows = []) {
   const historyIds = [...new Set((rows || []).map(row => row.history_id).filter(Boolean))];
   if (!historyIds.length) return rows || [];
   const { data, error } = await supabase.from('history')
-    .select('id,user_id,username,name,filename,status,score,total_errors,cat_counts,summary,original_text,corrected_text,approved_by,approved_at,tags,prompt_version,rules_hash,created_at')
+    .select(historyTagImportSelectColumns())
     .in('id', historyIds);
   if (error) throw new Error(error.message);
   const byId = new Map((data || []).map(row => [row.id, row]));
