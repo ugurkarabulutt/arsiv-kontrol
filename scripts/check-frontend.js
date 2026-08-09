@@ -332,6 +332,8 @@ if (
   !server.includes('TAG_IMPORT_APPLY_CHUNK_SIZE') ||
   !server.includes('function historyTagImportApplyLimit') ||
   !server.includes('async function applyHistoryTagImportBatchChunk') ||
+  server.includes(".order('updated_at', { ascending: true })\r\n    .limit(safeLimit)") ||
+  server.includes(".order('updated_at', { ascending: true })\n    .limit(safeLimit)") ||
   !server.includes('remaining,') ||
   !server.includes('done: remaining === 0') ||
   !server.includes("const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||

@@ -6049,7 +6049,7 @@ async function applyHistoryTagImportBatchChunk({ batchId, matchStatus, minConfid
     .eq('batch_id', batchId)
     .eq('match_status', matchStatus)
     .order('confidence', { ascending: false })
-    .order('updated_at', { ascending: true })
+    .order('id', { ascending: true })
     .limit(safeLimit);
   if (Number.isFinite(minConfidence)) query = query.gte('confidence', minConfidence);
   const { data: rows, error } = await query;

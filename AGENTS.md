@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Etiket aktarımı toplu uygulama canlı şema uyumsuzluğu düzeltildi:** `/admin` süper admin
+  Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında `Güvenli Eşleşmeleri Uygula`
+  işlemi canlıda önce bazı kayıtları uygulayıp sonra
+  `column history_tag_import_matches.updated_at does not exist` hatasına düşebiliyordu. Kök
+  sebep, parça parça uygulama sorgusunun `history_tag_import_matches` tablosunda bulunmayan
+  `updated_at` kolonuyla sıralama istemesiydi. Sorgu artık canlı şemada kesin bulunan
+  `confidence` ve `id` sıralamasıyla çalışır; daha önce uygulanmış kayıtlar korunur ve kalan
+  kayıtlar kaldığı yerden uygulanabilir. `scripts/check-frontend.js` bu yanlış sıralamanın geri
+  gelmesini engelleyen guard içerir. SQL/DB migration gerekmedi; root `/` public cutover ve
+  public frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  86/86 test geçti.
+
 - **Etiket aktarımı toplu uygulama zaman aşımı düzeltildi:** `/admin` süper admin Arşiv
   Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında `Güvenli Eşleşmeleri Uygula`
   aksiyonu 2.000+ kaydı tek sunucu isteğinde uygulamaya çalıştığı için canlıda uzun süre

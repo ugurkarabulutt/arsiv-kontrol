@@ -2,6 +2,17 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde etiket aktarımı toplu uygulama canlı şema uyumsuzluğu düzeltildi. Canlıda
+  `Güvenli Eşleşmeleri Uygula` işleminin ilk parçaları uygulanmış, sonraki parça
+  `column history_tag_import_matches.updated_at does not exist` hatasına düşmüştü. Kök sebep:
+  parça parça uygulama sorgusu eşleşme tablosunda bulunmayan `updated_at` kolonuna göre
+  sıralama istiyordu. Sorgu artık canlı şemada kesin bulunan `confidence` ve `id` sıralamasıyla
+  çalışır; daha önce uygulanan kayıtlar korunur, kalan güvenli/kontrol kayıtları kaldığı yerden
+  devam edebilir. Yeni kontrol scripti bu yanlış `updated_at` sıralamasının geri gelmesini
+  engeller. SQL/DB migration gerekmedi; root `/` public cutover ve public frontend hattına
+  dokunulmadı. Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 - Yerelde etiket aktarımı toplu uygulama zaman aşımı düzeltildi. Canlıda `Güvenli Eşleşmeleri
   Uygula` 2.000+ hazır kaydı tek istekle uygulamaya çalıştığında uzun süre bekleyip
   `Sunucu beklenmeyen bir yanıt verdi` uyarısı oluşturabiliyordu. Toplu uygulama artık 60
