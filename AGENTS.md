@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Etiket aktarımı kullanıcı dili sadeleştirildi:** `/admin` süper admin Arşiv Operasyon
+  Merkezi içindeki `Etiket Aktarımı` ekranında teknik `parti` ifadesi görünür kullanıcı
+  dilinden çıkarıldı. Ekip için daha anlaşılır olması amacıyla ekranda artık `aktarım listesi`
+  veya kısaca `liste` dili kullanılır. `Yüksek Güvenlileri Uygula` butonu
+  `Güvenli Eşleşmeleri Uygula`, `Partileri Yenile` butonu `Listeyi Yenile`, `Aktarım
+  partileri` başlığı `Aktarım listeleri` olarak değiştirildi. Backend hata mesajları ve
+  frontend uyarıları da aynı sade dile çekildi; `scripts/check-frontend.js` eski teknik
+  etiketlerin geri sızmasını engelleyen guard içerir. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`. SQL/DB migration gerekmedi; root `/` public cutover ve public
+  frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  86/86 test geçti. Runtime commit `0956960` GitHub'a push edildi.
+
 - **Etiket aktarımı eski dosya/parti temizleme eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Etiket Aktarımı` ekranında `Yenile` ve `Partileri Yenile` yalnız listeyi
   tazelediği için kullanıcı eski Excel aktarımını ekrandan kaldıramıyordu. Ekrana `Seçili

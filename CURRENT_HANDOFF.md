@@ -2,6 +2,18 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde etiket aktarımı kullanıcı dili sadeleştirildi. `/admin > Arşiv Operasyon Merkezi >
+  Etiket Aktarımı` ekranında teknik `parti` ifadesi görünür dilden çıkarıldı; ekip dilinde
+  `aktarım listesi` / `liste` kullanılır. `Yüksek Güvenlileri Uygula` artık
+  `Güvenli Eşleşmeleri Uygula`, `Partileri Yenile` artık `Listeyi Yenile`, `Aktarım partileri`
+  artık `Aktarım listeleri` olarak görünür. Backend hata mesajları ve frontend uyarıları da
+  aynı dile çekildi; frontend guard eski teknik etiketlerin geri sızmasını engeller. Kapsam:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  SQL/DB migration gerekmedi; root `/` public cutover ve public frontend hattına dokunulmadı.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit
+  `0956960` GitHub'a push edildi.
+
 - Canlıda etiket aktarımı eski dosya/parti temizleme eklendi. `/admin > Arşiv Operasyon
   Merkezi > Etiket Aktarımı` ekranında `Yenile` ve `Partileri Yenile` yalnız listeyi tazelediği
   için kullanıcı eski Excel aktarımını temizleyemiyordu. Ekrana `Seçili Aktarımı Sil` aksiyonu
