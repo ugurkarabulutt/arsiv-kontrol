@@ -7583,7 +7583,7 @@ async function uploadHistoryTagImportFile(file){
   form.append('file',file);
   try{
     const res=await fetch('/api/history-tags/import/preview',{method:'POST',body:form,cache:'no-store'});
-    const data=await res.json().catch(()=>({error:'Sunucu yanıtı okunamadı.'}));
+    const data=await readHistoryTagImportUploadResponse(res);
     if(!res.ok||data.error)throw new Error(data.error||'Etiket aktarımı başlatılamadı.');
     historyTagImportState.activeBatch=data.batch||null;
     historyTagImportState.matches=data.matches||[];
@@ -7597,6 +7597,16 @@ async function uploadHistoryTagImportFile(file){
   }finally{
     historyTagImportState.uploading=false;
   }
+}
+async function readHistoryTagImportUploadResponse(res){
+  const contentType=res.headers.get('content-type')||'';
+  if(contentType.includes('application/json')){
+    return await res.json().catch(()=>({error:`Sunucu yanıtı eksik geldi. Lütfen sayfayı yenileyip tekrar deneyin. (${res.status})`}));
+  }
+  const text=await res.text().catch(()=>'');
+  const clean=text.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const suffix=clean?` Detay: ${clean.slice(0,180)}`:'';
+  return {error:`Sunucu etiket aktarımı için beklenen cevabı veremedi. Lütfen tekrar deneyin. (${res.status})${suffix}`};
 }
 async function loadHistoryTagImportBatches(options={}){
   if(!canUseArchiveOps())return;

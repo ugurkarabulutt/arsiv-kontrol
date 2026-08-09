@@ -533,6 +533,9 @@ const SUBMITTED_PART_STATUS = 'submitted_part';
 const SUBMITTED_CORRECTED_HASH_PREFIX = 'submitted_corrected_hash:';
 const HIDDEN_HISTORY_STATUSES = [CHUNK_DRAFT_STATUS, SUBMITTED_PART_STATUS];
 const ADMIN_HIDDEN_HISTORY_STATUSES = ['taslak', ...HIDDEN_HISTORY_STATUSES];
+const TAG_IMPORT_HISTORY_TEXT_LIMIT = 18000;
+const TAG_IMPORT_INITIAL_DETAIL_LIMIT = 120;
+const TAG_IMPORT_INSERT_CHUNK_SIZE = 180;
 
 function isChunkFilename(filename = '') {
   return /\s-\sParça\s+\d+\/\d+$/u.test(String(filename || '').trim());
@@ -945,7 +948,8 @@ function tagImportHistoryCandidate(history = {}) {
   const original = history.original_text || '';
   const corrected = history.corrected_text || '';
   const summary = history.summary || '';
-  const text = [original, corrected, summary].filter(Boolean).join('\n');
+  const fullText = [original, corrected, summary].filter(Boolean).join('\n');
+  const text = fullText.slice(0, TAG_IMPORT_HISTORY_TEXT_LIMIT);
   return {
     id: history.id,
     userId: history.user_id,
@@ -961,7 +965,7 @@ function tagImportHistoryCandidate(history = {}) {
     correctedText: corrected,
     normalizedText: normalizeTagImportText(text),
     tokens: tagImportTokens(text, 240),
-    textLength: text.length
+    textLength: fullText.length
   };
 }
 
@@ -1067,7 +1071,33 @@ function publicHistoryTagImportMatch(row = {}) {
     reason: row.match_reason || '',
     appliedAt: row.applied_at,
     appliedBy: row.applied_by || '',
-    history: row.history ? mapHistory(row.history) : null,
+    history: row.history ? publicHistoryTagImportHistory(row.history) : null,
+    createdAt: row.created_at
+  };
+}
+
+function publicHistoryTagImportHistory(row = {}) {
+  const original = String(row.original_text || '');
+  const corrected = String(row.corrected_text || '');
+  const summary = String(row.summary || '');
+  return {
+    id: row.id,
+    userId: row.user_id,
+    username: row.username || '',
+    name: row.name || '',
+    filename: row.filename || '',
+    score: row.score,
+    totalErrors: row.total_errors,
+    catCounts: row.cat_counts || {},
+    summary,
+    originalText: archiveTextPreview(original, 700),
+    correctedText: archiveTextPreview(corrected || original || summary, 900),
+    status: row.status || 'bekliyor',
+    approvedBy: row.approved_by,
+    approvedAt: row.approved_at,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    promptVersion: row.prompt_version,
+    rulesHash: row.rules_hash,
     createdAt: row.created_at
   };
 }
@@ -5805,7 +5835,9 @@ async function refreshHistoryTagImportBatchCounts(batchId) {
 }
 
 async function fetchHistoryTagImportHistoryRows() {
-  const rows = await fetchAllPages(() => supabase.from('history').select('*').order('created_at', { ascending: false }), 1000);
+  const rows = await fetchAllPages(() => supabase.from('history')
+    .select('id,user_id,username,name,filename,status,score,total_errors,cat_counts,summary,original_text,corrected_text,approved_by,approved_at,tags,prompt_version,rules_hash,created_at')
+    .order('created_at', { ascending: false }), 1000);
   return (rows || [])
     .map(row => tagImportHistoryCandidate(row))
     .filter(row => !isHiddenHistoryForRole({ status: row.status, filename: row.filename }, ROLES.ADMIN))
@@ -5846,11 +5878,19 @@ async function attachHistoryToTagImportMatches(rows = []) {
   const historyIds = [...new Set((rows || []).map(row => row.history_id).filter(Boolean))];
   if (!historyIds.length) return rows || [];
   const { data, error } = await supabase.from('history')
-    .select('*')
+    .select('id,user_id,username,name,filename,status,score,total_errors,cat_counts,summary,original_text,corrected_text,approved_by,approved_at,tags,prompt_version,rules_hash,created_at')
     .in('id', historyIds);
   if (error) throw new Error(error.message);
   const byId = new Map((data || []).map(row => [row.id, row]));
   return (rows || []).map(row => ({ ...row, history: byId.get(row.history_id) || null }));
+}
+
+async function insertHistoryTagImportMatches(batchId, matches = []) {
+  for (let i = 0; i < matches.length; i += TAG_IMPORT_INSERT_CHUNK_SIZE) {
+    const chunk = matches.slice(i, i + TAG_IMPORT_INSERT_CHUNK_SIZE).map(row => ({ ...row, batch_id: batchId }));
+    const { error } = await supabase.from('history_tag_import_matches').insert(chunk);
+    if (error) throw new Error(error.message);
+  }
 }
 
 async function applyHistoryTagImportMatchRow(matchId, actorName) {
@@ -5924,17 +5964,13 @@ app.post('/api/history-tags/import/preview', auth, admin, superAdmin, tagImportU
       .select('*')
       .single();
     if (batchError) throw new Error(batchError.message);
-    if (matches.length) {
-      const { error: matchError } = await supabase.from('history_tag_import_matches')
-        .insert(matches.map(row => ({ ...row, batch_id: batch.id })));
-      if (matchError) throw new Error(matchError.message);
-    }
+    if (matches.length) await insertHistoryTagImportMatches(batch.id, matches);
     const refreshed = await refreshHistoryTagImportBatchCounts(batch.id);
     const { data: detailRows, error: detailError } = await supabase.from('history_tag_import_matches')
       .select('*')
       .eq('batch_id', batch.id)
       .order('confidence', { ascending: false })
-      .limit(300);
+      .limit(TAG_IMPORT_INITIAL_DETAIL_LIMIT);
     if (detailError) throw new Error(detailError.message);
     const rowsWithHistory = await attachHistoryToTagImportMatches(detailRows || []);
     res.json({ batch: refreshed, matches: rowsWithHistory.map(publicHistoryTagImportMatch) });
