@@ -149,7 +149,7 @@ function searchBox(value = '', label = 'Arşivde ara') {
   return `
     <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama">
       <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
-      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Sorunuzu yazın veya konu arayın..." autocomplete="off">
+      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Sorunuzu veya kavramınızı yazın..." autocomplete="off">
       <button type="submit" aria-label="Ara">
         <span class="pa-search-icon" aria-hidden="true"></span>
       </button>
@@ -215,8 +215,11 @@ function topicCard(topic) {
 function categoryCard(category) {
   return `
     <a class="pa-category-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">
-      <strong>${escapeHtml(category.name)}</strong>
-      <span>${entriesForCategory(category.slug).length} soru</span>
+      <span class="pa-category-mark" aria-hidden="true"></span>
+      <span class="pa-category-copy">
+        <strong>${escapeHtml(category.name)}</strong>
+        <span>${entriesForCategory(category.slug).length} soru</span>
+      </span>
     </a>
   `;
 }
@@ -235,7 +238,7 @@ function ctaBand() {
     <section class="pa-cta-band">
       <div>
         <h2>Aklınızda bir soru mu var?</h2>
-        <p>Aradığınız cevabı bulamadığınızda soru ekranını inceleyebilirsiniz.</p>
+        <p>Cevabını bulamadığınız sorular için Soru Sor ekranını inceleyebilirsiniz.</p>
       </div>
       <a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
     </section>
@@ -248,7 +251,7 @@ function trustBand() {
       <div>
         <p class="pa-kicker">Güvenilir kaynak, sade anlatım</p>
         <h2>Arşiv, kısa cevap ile derin okuma arasında sakin bir yol sunar.</h2>
-        <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)} Bu ekranda kayıt alınmıyor; yalnızca arayüz davranışı gösteriliyor.</p>
+        <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)}</p>
                 <p>Cevaplar; soru, kavram ve kategori bağlantılarıyla birlikte okunacak şekilde düzenlenir. Amaç, doğru bilgiye sade ve huzurlu bir okuma deneyimiyle ulaşmaktır.</p>
       </div>
       ${stillLife()}
@@ -271,7 +274,7 @@ function renderHome() {
           <div class="pa-hero-copy">
             <p class="pa-kicker">${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
             <h1>Merak ettiğiniz sorunun cevabını bulun.</h1>
-            <p>Dini konulardaki sorular için sade, güvenilir ve okuma odaklı bir arşiv deneyimi.</p>
+            <p>Arşivdeki soru, cevap ve kavramlar arasında sade bir şekilde arayın.</p>
             ${searchBox()}
           </div>
           ${stillLife()}
@@ -503,15 +506,15 @@ function renderAsk() {
   return renderShell({
     active: 'ask',
     title: 'Soru Sor',
-    description: 'Soru sorma ekranı için statik ön izleme.',
+    description: 'Soru sorma ekranı.',
     content: `
       <main class="pa-main pa-form-main">
         ${breadcrumb([{ label: 'Soru Sor' }])}
         <section class="pa-form-layout">
           <div class="pa-form-copy">
             <p class="pa-kicker">Soru Sor</p>
-            <h1>Sorunuzu kısa ve açık yazın.</h1>
-            <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)} Bu ekranda kayıt alınmıyor; yalnızca arayüz davranışı gösteriliyor.</p>
+            <h1>Aklınızda bir soru mu var?</h1>
+            <p>Sorunuzu kısa ve açık şekilde yazabilirsiniz. ${escapeHtml(publicArchiveFixtures.brand.authorLine)}</p>
             <div class="pa-note-box" id="gizlilik">
               <strong>Gizlilik notu</strong>
               <p>Kişisel bilgi, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar paylaşmayın.</p>
@@ -533,7 +536,7 @@ function renderAsk() {
               <input type="checkbox">
               <span>Kişisel bilgi paylaşmadığımı anladım.</span>
             </label>
-            <button class="pa-button" type="submit" disabled>Bu ekranda kayıt alınmaz</button>
+            <button class="pa-button" type="submit" disabled aria-disabled="true">Soruyu Gönder</button>
           </form>
         </section>
       </main>

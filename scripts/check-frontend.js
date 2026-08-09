@@ -45,6 +45,9 @@ const PUBLIC_PREVIEW_FORBIDDEN_SNIPPETS = [
   'cevaplandırılması için hocamıza aktarılır',
   'uygun görülen sorular arşive eklenir',
   'uygun görülen sorular arşive eklenebilir',
+  'Bu ekranda kayıt alınmıyor',
+  'yalnızca arayüz davranışı gösteriliyor',
+  'Bu ekranda kayıt alınmaz',
   'history',
   'source_history_id',
   'text_hash',
@@ -788,7 +791,9 @@ const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategor
 assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Tevekkül'), 'Kavram sayfasi kategori gibi sunulmamali.');
 assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kategorideki Sorular'), 'Kategori sayfasi kavramdan ayri public yapi olmali.');
 const askPreview = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
-assert(askPreview.includes('data-static-question-form') && askPreview.includes('disabled>Bu ekranda kayıt alınmaz'), 'Soru Sor Phase 1 statik ve non-submitting olmali.');
+assert(askPreview.includes('data-static-question-form') && askPreview.includes('disabled aria-disabled="true">Soruyu Gönder'), 'Soru Sor Phase 1 statik ve non-submitting olmali.');
+assert(askPreview.includes('Sorunuzu kısa ve açık şekilde yazabilirsiniz.'), 'Soru Sor public mikrocopy eksik.');
+assert(!askPreview.includes('Bu ekranda kayıt alınmıyor') && !askPreview.includes('yalnızca arayüz davranışı gösteriliyor') && !askPreview.includes('Bu ekranda kayıt alınmaz'), 'Soru Sor teknik preview dili gostermemeli.');
 assert(askPreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Soru Sor author context eksik.');
 const notFoundPreview = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
 assert(notFoundPreview.status === 404 && notFoundPreview.html.includes('Sayfa bulunamadı.'), 'Gizli veya eksik public icerik 404 state dondurmeli.');

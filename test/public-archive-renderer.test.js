@@ -104,5 +104,7 @@ test('question, topic, category, and ask pages keep Phase 1 boundaries', () => {
 
   const ask = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
   assert.match(ask, /data-static-question-form/);
-  assert.match(ask, /disabled>Bu ekranda kayıt alınmaz/);
+  assert.match(ask, /disabled aria-disabled="true">Soruyu Gönder/);
+  assert.match(ask, /Sorunuzu kısa ve açık şekilde yazabilirsiniz./);
+  assert.doesNotMatch(ask, /Bu ekranda kayıt alınmıyor|yalnızca arayüz davranışı gösteriliyor|Bu ekranda kayıt alınmaz/);
 });
