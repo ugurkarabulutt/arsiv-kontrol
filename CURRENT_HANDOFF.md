@@ -11,6 +11,16 @@
   sayacıyla sade bilgi verir. DB/schema migration gerekmedi; root `/` public cutover ve public
   frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`,
   `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Doğrulama: `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check`
+  ve `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `9cd8eb5` GitHub'a push
+  edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-7mdutzbz4-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru; oturumsuz soru aktarımı başlangıç endpoint'i `401`
+  döndü. Canlı Excel soru aktarımı arka plandan tamamlandı: `Arşiv Data.xlsx` listesindeki
+  2.800 uygulanmış eşleşmenin 2.798'inde soru alanı dolu; 389 boş soru alanı dolduruldu,
+  2 kayıt Excel'de soru hücresi boş geldiği için güvenle uydurulmadı.
 
 - Canlıda Excel soru aktarımı ekran kapanmasına dayanıklı hale getirildi. `/admin > Arşiv
   Operasyon Merkezi > Etiket Aktarımı > Excel Sorularını Ekle` artık telefon ekranı kapanınca,
