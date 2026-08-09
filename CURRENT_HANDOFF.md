@@ -2,7 +2,7 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
-- Yerelde Excel soru aktarımı ekran kapanmasına dayanıklı hale getirildi. `/admin > Arşiv
+- Canlıda Excel soru aktarımı ekran kapanmasına dayanıklı hale getirildi. `/admin > Arşiv
   Operasyon Merkezi > Etiket Aktarımı > Excel Sorularını Ekle` artık telefon ekranı kapanınca,
   kullanıcı başka uygulamaya geçince veya tarayıcı bağlantısı kısa süreli kesilince tek uzun
   frontend isteğine bağlı kalmaz. Soru aktarımı sunucu tarafında `settings` içinde kayıtlı,
@@ -14,9 +14,17 @@
   `GET /api/history-tags/import-batches/:id/backfill-questions/status`. Eski
   `/backfill-questions` endpoint'i uyumluluk için korunur. DB/schema migration gerekmedi; root
   `/` public cutover ve public frontend hattına dokunulmadı. Kapsam: `server.js`,
-  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
   doğrulama: `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check`
-  ve `npm.cmd run check` başarılı; 86/86 test geçti.
+  ve `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `d4b88d1` GitHub'a
+  push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-bkj94n47f-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `/backfill-questions/start`,
+  `/backfill-questions/status`, `archive-question-backfill-pending` ve
+  `Soru Aktarımı Sürüyor` mevcut; public preview marker'ı yok. Oturumsuz soru aktarımı
+  başlangıç endpoint'i `401` döndü.
 
 - Yerelde soru-cevap soru alanı ve Excel soru aktarımı eklendi. Denetim sonucunda kullanıcı artık
   `Onaya Gönder` öncesinde cevaba bağlı `Soru` metnini ve virgülle ayrılmış `Etiketler` bilgisini
