@@ -130,7 +130,15 @@ tespit edilir).
   altyapı `Kontrol Gerekenleri Uygula` aksiyonunda da kullanılır. Tekil `Etiketi Bu Kayda
   Uygula` akışı korunur. SQL/DB migration gerekmedi; root `/` public cutover ve public
   frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`,
-  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `cdf81c0` GitHub'a push
+  edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-3t0plkpzr-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me` başarılı; `/admin` header'ları noindex/no-store doğru.
+  Canlı HTML'de `applyHistoryTagImportMatchesInSteps`, `historyTagImportApplyReadyBtn`,
+  `historyTagImportApplyReviewBtn` ve `limit:60` mevcut.
 
 - **Etiket aktarımı kontrol grubu toplu uygulaması eklendi:** `/admin` süper admin Arşiv
   Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında durum filtresi `Kontrol gerekenler`
