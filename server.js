@@ -539,12 +539,15 @@ const TAG_IMPORT_HISTORY_TEXT_LIMIT = 18000;
 const TAG_IMPORT_INITIAL_DETAIL_LIMIT = 120;
 const TAG_IMPORT_INSERT_CHUNK_SIZE = 180;
 const TAG_IMPORT_APPLY_CHUNK_SIZE = 60;
+const TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE = 250;
+const TAG_IMPORT_QUESTION_BACKFILL_UPSERT_CHUNK_SIZE = 120;
+const TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS = 8500;
+const TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS = 4500;
 const TAG_IMPORT_UPLOAD_KEY_PREFIX = 'history_tag_import_upload';
 const TAG_IMPORT_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
 const TAG_IMPORT_MAX_UPLOAD_CHUNKS = 160;
 const TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH = 900000;
 const TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX = 'history_tag_import_question_backfill';
-const TAG_IMPORT_QUESTION_BACKFILL_STEP_BUDGET = 18;
 const TAG_IMPORT_QUESTION_BACKFILL_STALE_MS = 15000;
 const activeQuestionBackfillJobs = new Set();
 
@@ -6154,13 +6157,13 @@ async function fetchHistoryQuestionRowsByIds(historyIds = []) {
   return out;
 }
 
-async function backfillHistoryTagImportQuestionsChunk({ batchId, limit }) {
-  if (!HAS_HISTORY_QUESTION_TEXT) {
-    const err = new Error('Denetim kayıtlarında soru alanı aktif değil. schema.sql içindeki history.question_text SQL satırı uygulanmalı.');
-    err.statusCode = 400;
-    throw err;
-  }
-  const safeLimit = historyTagImportApplyLimit(limit);
+function historyTagImportQuestionLimit(value) {
+  const requested = Number(value || 0);
+  if (!Number.isFinite(requested) || requested <= 0) return TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE;
+  return Math.min(TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE, Math.max(1, Math.floor(requested)));
+}
+
+async function collectHistoryTagImportQuestionTargets(batchId) {
   const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')
     .select('id,batch_id,history_id,excel_question,confidence,match_status')
     .eq('batch_id', batchId)
@@ -6184,27 +6187,57 @@ async function backfillHistoryTagImportQuestionsChunk({ batchId, limit }) {
     return !current;
   });
 
-  const rows = missing.slice(0, safeLimit);
+  return {
+    uniqueMatches,
+    missing,
+    skippedExisting: Math.max(0, uniqueMatches.length - missing.length)
+  };
+}
+
+async function updateHistoryQuestionsBulk(rows = []) {
   let updated = 0;
   const errors = [];
-  for (const row of rows) {
-    try {
-      const { error } = await supabase.from('history')
-        .update({ question_text: row.question })
-        .eq('id', row.history_id);
-      if (error) throw new Error(error.message);
-      updated++;
-    } catch (error) {
-      errors.push(error.message);
+  for (let i = 0; i < rows.length; i += TAG_IMPORT_QUESTION_BACKFILL_UPSERT_CHUNK_SIZE) {
+    const chunk = rows.slice(i, i + TAG_IMPORT_QUESTION_BACKFILL_UPSERT_CHUNK_SIZE);
+    const payload = chunk.map(row => ({ id: row.history_id, question_text: row.question }));
+    const { error } = await supabase.from('history').upsert(payload, { onConflict: 'id' });
+    if (!error) {
+      updated += chunk.length;
+      continue;
+    }
+
+    for (const row of chunk) {
+      try {
+        const { error: rowError } = await supabase.from('history')
+          .update({ question_text: row.question })
+          .eq('id', row.history_id);
+        if (rowError) throw new Error(rowError.message);
+        updated++;
+      } catch (rowError) {
+        errors.push(rowError.message);
+      }
     }
   }
+  return { updated, errors };
+}
+
+async function backfillHistoryTagImportQuestionsChunk({ batchId, limit }) {
+  if (!HAS_HISTORY_QUESTION_TEXT) {
+    const err = new Error('Denetim kayıtlarında soru alanı aktif değil. schema.sql içindeki history.question_text SQL satırı uygulanmalı.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const safeLimit = historyTagImportQuestionLimit(limit);
+  const { uniqueMatches, missing, skippedExisting } = await collectHistoryTagImportQuestionTargets(batchId);
+  const rows = missing.slice(0, safeLimit);
+  const { updated, errors } = await updateHistoryQuestionsBulk(rows);
 
   const remaining = Math.max(0, missing.length - updated);
   const batch = await refreshHistoryTagImportBatchCounts(batchId);
   return {
     success: errors.length === 0,
     updated,
-    skippedExisting: Math.max(0, uniqueMatches.length - missing.length),
+    skippedExisting,
     errors,
     batch,
     remaining,
@@ -6264,29 +6297,37 @@ function isHistoryTagImportQuestionBackfillActive(job) {
   return job && job.status === 'running';
 }
 
-async function runHistoryTagImportQuestionBackfillJob(batchId) {
+async function runHistoryTagImportQuestionBackfillJob(batchId, options = {}) {
   if (!batchId || activeQuestionBackfillJobs.has(batchId)) return loadHistoryTagImportQuestionBackfillJob(batchId);
   activeQuestionBackfillJobs.add(batchId);
+  const budgetMs = Math.max(1000, Number(options.budgetMs || TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS));
+  const deadline = Date.now() + budgetMs;
   let job = await loadHistoryTagImportQuestionBackfillJob(batchId);
   try {
     if (!isHistoryTagImportQuestionBackfillActive(job)) return job;
     job = await saveHistoryTagImportQuestionBackfillJob(batchId, { needsResume: false, lastError: '' });
 
-    for (let step = 0; step < TAG_IMPORT_QUESTION_BACKFILL_STEP_BUDGET; step++) {
+    do {
       const result = await backfillHistoryTagImportQuestionsChunk({
         batchId,
-        limit: TAG_IMPORT_APPLY_CHUNK_SIZE
+        limit: TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE
       });
       const hasErrors = Boolean(result.errors?.length);
       const stalled = !result.done && !hasErrors && Number(result.updated || 0) <= 0;
       const updatedTotal = Number(job.updatedTotal || 0) + Number(result.updated || 0);
+      const remaining = Number(result.remaining || 0);
+      const totalMissing = Math.max(
+        Number(job.totalMissing || 0),
+        Number(result.totalMissing || 0),
+        updatedTotal + remaining
+      );
       job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
         status: hasErrors ? 'failed' : (result.done || stalled ? 'completed' : 'running'),
         completedAt: result.done || stalled ? new Date().toISOString() : null,
         updatedTotal,
-        remaining: Number(result.remaining || 0),
-        totalMissing: Number(result.totalMissing || 0),
-        skippedExisting: Number(result.skippedExisting || 0),
+        remaining,
+        totalMissing,
+        skippedExisting: Number(result.skippedExisting || job.skippedExisting || 0),
         steps: Number(job.steps || 0) + 1,
         needsResume: !hasErrors && !result.done && !stalled,
         lastError: hasErrors
@@ -6295,11 +6336,10 @@ async function runHistoryTagImportQuestionBackfillJob(batchId) {
         batch: result.batch || job.batch || null
       });
       if (hasErrors || result.done || stalled) break;
-    }
+    } while (Date.now() < deadline);
 
     if (job.status === 'running') {
       job = await saveHistoryTagImportQuestionBackfillJob(batchId, { needsResume: true });
-      scheduleHistoryTagImportQuestionBackfillJob(batchId);
     }
   } catch (error) {
     job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
@@ -6315,7 +6355,7 @@ async function runHistoryTagImportQuestionBackfillJob(batchId) {
 
 function scheduleHistoryTagImportQuestionBackfillJob(batchId) {
   setTimeout(() => {
-    runHistoryTagImportQuestionBackfillJob(batchId).catch(error => {
+    runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS }).catch(error => {
       console.error('Soru aktarımı devam işi tamamlanamadı:', error.message);
     });
   }, 0);
@@ -6324,10 +6364,9 @@ function scheduleHistoryTagImportQuestionBackfillJob(batchId) {
 async function startHistoryTagImportQuestionBackfillJob(batchId, actorName = '') {
   const existing = await loadHistoryTagImportQuestionBackfillJob(batchId);
   if (isHistoryTagImportQuestionBackfillActive(existing)) {
-    scheduleHistoryTagImportQuestionBackfillJob(batchId);
-    return existing;
+    return runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS });
   }
-  const job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
+  await saveHistoryTagImportQuestionBackfillJob(batchId, {
     status: 'running',
     actorName,
     startedAt: new Date().toISOString(),
@@ -6340,8 +6379,7 @@ async function startHistoryTagImportQuestionBackfillJob(batchId, actorName = '')
     needsResume: true,
     lastError: ''
   });
-  scheduleHistoryTagImportQuestionBackfillJob(batchId);
-  return job;
+  return runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS });
 }
 
 async function getHistoryTagImportQuestionBackfillStatus(batchId) {
@@ -6349,7 +6387,7 @@ async function getHistoryTagImportQuestionBackfillStatus(batchId) {
   if (!isHistoryTagImportQuestionBackfillActive(job)) return job;
   const updatedAt = Date.parse(job.updatedAt || job.startedAt || '');
   const stale = !Number.isFinite(updatedAt) || Date.now() - updatedAt > TAG_IMPORT_QUESTION_BACKFILL_STALE_MS || job.needsResume;
-  if (stale) scheduleHistoryTagImportQuestionBackfillJob(batchId);
+  if (stale) return runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS });
   return job;
 }
 

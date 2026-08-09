@@ -7861,7 +7861,7 @@ function renderHistoryTagImport(){
     const job=historyTagImportState.questionBackfillJob;
     const jobRunning=job&&job.batchId===historyTagImportState.activeBatch?.id&&job.status==='running';
     questionBackfillBtn.disabled=historyTagImportState.applying||jobRunning||!appliedCount;
-    questionBackfillBtn.textContent=jobRunning?'Soru Aktarımı Sürüyor':'Excel Sorularını Ekle';
+    questionBackfillBtn.textContent=jobRunning?'Sorular Arka Planda Ekleniyor':'Excel Sorularını Ekle';
   }
   const batchList=el('historyTagImportBatchList');
   if(batchList){
@@ -8054,7 +8054,7 @@ function historyTagImportQuestionJobStatusText(job){
   if(job.status==='failed')return job.lastError||'Soru aktarımı tamamlanamadı.';
   const totalText=total?` / ${total.toLocaleString('tr-TR')}`:'';
   const remainText=remaining?`, ${remaining.toLocaleString('tr-TR')} kaldı`:'';
-  return `Soru aktarımı sürüyor: ${updated.toLocaleString('tr-TR')}${totalText} tamamlandı${remainText}.`;
+  return `Soru aktarımı ilerliyor: ${updated.toLocaleString('tr-TR')}${totalText} boş soru alanı tamamlandı${remainText}.`;
 }
 function stopHistoryTagImportQuestionPolling(){
   if(historyTagImportState.questionBackfillPoll){
@@ -8122,10 +8122,29 @@ async function resumePendingHistoryTagImportQuestions(){
     setHistoryTagImportStatus('Soru aktarımı bağlantı bekliyor. Sayfaya döndüğünüzde sistem tekrar kontrol edecek.','');
     return null;
   }
-  applyHistoryTagImportQuestionJob(data.job||null);
-  setHistoryTagImportStatus('Soru aktarımı kayıt altında. Sayfadan ayrılsanız bile durum korunur.','ok');
+  const job=data.job||null;
+  applyHistoryTagImportQuestionJob(job);
+  if(job?.status==='completed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    if(job.batch)historyTagImportState.activeBatch=job.batch;
+    renderHistoryTagImport();
+    await loadHistoryTagImportBatches({keepActive:true});
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'ok');
+    return job;
+  }
+  if(job?.status==='failed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'err');
+    return job;
+  }
+  setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job)||'Soru aktarımı kayıt altında. Sayfadan ayrılsanız bile durum korunur.','ok');
   startHistoryTagImportQuestionPolling(batch.id);
-  return data.job||null;
+  return job;
 }
 async function backfillHistoryTagImportQuestions(){
   const batch=historyTagImportState.activeBatch;
@@ -8159,8 +8178,27 @@ async function backfillHistoryTagImportQuestions(){
     setHistoryTagImportStatus(data.error,'err');
     return showSystemAlert('Soru aktarımı başlatılamadı',data.error,'danger');
   }
-  applyHistoryTagImportQuestionJob(data.job||null);
-  setHistoryTagImportStatus('Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.','ok');
+  const job=data.job||null;
+  applyHistoryTagImportQuestionJob(job);
+  if(job?.status==='completed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    if(job.batch)historyTagImportState.activeBatch=job.batch;
+    renderHistoryTagImport();
+    await loadHistoryTagImportBatches({keepActive:true});
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'ok');
+    return;
+  }
+  if(job?.status==='failed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'err');
+    return showSystemAlert('Soru aktarımı tamamlanamadı',historyTagImportQuestionJobStatusText(job),'danger');
+  }
+  setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job)||'Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.','ok');
   startHistoryTagImportQuestionPolling(batch.id);
 }
 document.addEventListener('visibilitychange',()=>{

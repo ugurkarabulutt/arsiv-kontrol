@@ -314,9 +314,13 @@ if (
   !server.includes('const importedQuestion = normalizeHistoryQuestion(match.excel_question)') ||
   !server.includes('if (!existingQuestion && importedQuestion) historyUpdate.question_text = importedQuestion;') ||
   !server.includes('function fetchHistoryQuestionRowsByIds') ||
+  !server.includes('function historyTagImportQuestionLimit') ||
+  !server.includes('function updateHistoryQuestionsBulk') ||
   !server.includes('function backfillHistoryTagImportQuestionsChunk') ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
   !server.includes('TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS') ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
   !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
   !server.includes('questionText: h.question_text') ||
@@ -333,7 +337,8 @@ if (
   !html.includes('id="historyTagImportBackfillQuestionsBtn"') ||
   !html.includes('backfillHistoryTagImportQuestions') ||
   !html.includes('Excel Sorularını Ekle') ||
-  !html.includes('Soru Aktarımı Sürüyor') ||
+  !html.includes('Sorular Arka Planda Ekleniyor') ||
+  !html.includes('boş soru alanı tamamlandı') ||
   !html.includes('Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.') ||
   !html.includes('archive-question-backfill-pending') ||
   !html.includes('resumePendingHistoryTagImportQuestions') ||
@@ -368,6 +373,10 @@ if (
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
   !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
   !server.includes('async function runHistoryTagImportQuestionBackfillJob') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS') ||
+  !server.includes('function historyTagImportQuestionLimit') ||
+  !server.includes('async function updateHistoryQuestionsBulk') ||
   !server.includes('TAG_IMPORT_APPLY_CHUNK_SIZE') ||
   !server.includes('function historyTagImportApplyLimit') ||
   !server.includes('async function applyHistoryTagImportBatchChunk') ||

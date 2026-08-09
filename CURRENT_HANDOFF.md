@@ -2,6 +2,16 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Excel soru aktarımı ikinci kez kökten güçlendirildi. `/admin > Arşiv Operasyon Merkezi >
+  Etiket Aktarımı > Excel Sorularını Ekle` artık telefon ekranına veya açık tarayıcı oturumuna
+  bağımlı davranmaz. `start` ve `status` istekleri sunucu tarafında işi gerçekten ilerletir;
+  eksik `history.question_text` alanları toplu yazılır, mevcut soru alanları korunur ve işlem
+  `settings` kaydıyla kaldığı yerden devam eder. Frontend tamamlanan işi anında kapatır, devam
+  eden işi `Sorular Arka Planda Ekleniyor` olarak gösterir ve `boş soru alanı tamamlandı`
+  sayacıyla sade bilgi verir. DB/schema migration gerekmedi; root `/` public cutover ve public
+  frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 - Canlıda Excel soru aktarımı ekran kapanmasına dayanıklı hale getirildi. `/admin > Arşiv
   Operasyon Merkezi > Etiket Aktarımı > Excel Sorularını Ekle` artık telefon ekranı kapanınca,
   kullanıcı başka uygulamaya geçince veya tarayıcı bağlantısı kısa süreli kesilince tek uzun

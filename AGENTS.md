@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Excel soru aktarımı sunucu tarafında gerçekten ilerleyen hale getirildi:** `/admin`
+  süper admin Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı > Excel Sorularını Ekle`
+  akışı ikinci kez güçlendirildi. Kök sebep, önceki iyileştirmeye rağmen Vercel serverless
+  ortamında devam işinin `setTimeout` ile arka planda sürmeye çalışması ve soru yazımlarının
+  satır satır ilerlemesiydi; mobilde ekran uyuyunca veya kullanıcı uygulamadan çıkınca sayaç
+  ekranda kalabiliyordu. Artık `start` ve `status` istekleri kendi güvenli süreleri içinde işi
+  gerçekten ilerletir, eksik `history.question_text` alanları toplu `upsert` ile yazılır, mevcut
+  soru alanları korunur ve iş durumu `settings` altında kaldığı yerden devam edecek şekilde
+  saklanır. Frontend tamamlanan işi anında kapatır, devam eden işi `Sorular Arka Planda
+  Ekleniyor` olarak gösterir ve `boş soru alanı tamamlandı` sayacıyla kullanıcıya sade bilgi
+  verir. DB/schema migration gerekmedi; root `/` public cutover ve public frontend hattına
+  dokunulmadı. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`.
+
 - **Excel soru aktarımı ekran kapanmasına dayanıklı hale getirildi:** `/admin` süper admin
   Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı > Excel Sorularını Ekle` akışı artık
   telefon ekranı kapanınca, kullanıcı başka uygulamaya geçince veya tarayıcı bağlantısı
