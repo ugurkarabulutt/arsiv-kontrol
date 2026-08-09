@@ -2,6 +2,25 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Canlıda etiket aktarımı eski dosya/parti temizleme eklendi. `/admin > Arşiv Operasyon
+  Merkezi > Etiket Aktarımı` ekranında `Yenile` ve `Partileri Yenile` yalnız listeyi tazelediği
+  için kullanıcı eski Excel aktarımını temizleyemiyordu. Ekrana `Seçili Aktarımı Sil` aksiyonu
+  eklendi; sistem içi onay penceresi bu işlemin denetim kayıtlarını silmeyeceğini ve daha önce
+  uygulanmış etiketleri geri almayacağını açıkça belirtir. Backend'e süper admin korumalı
+  `DELETE /api/history-tags/import-batches/:id` endpoint'i eklendi. Endpoint yalnız seçili
+  aktarım partisini ve ona ait eşleşme önerilerini siler; `history` kayıtlarına ve uygulanmış
+  etiketlere dokunmaz. Aktif parti silindikten sonra frontend eski seçimi elde tutmaz; varsa
+  sonraki parti açılır, yoksa ekran boş parti durumuna döner. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`. SQL/DB migration gerekmedi; root `/` public cutover ve public
+  frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı; 86/86
+  test geçti. Runtime commit `9ab6532` GitHub'a push edildi ve production'a alındı. Production
+  deploy: `https://arsiv-kontrol-44w0dpfy4-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru; canlı HTML'de `Seçili Aktarımı Sil` ve
+  `deleteHistoryTagImportBatch` mevcut; oturumsuz silme endpoint'i `401` döndü.
+
 - Canlıda etiket aktarımı sayaç uyumsuzluğu düzeltildi. `Arşiv Data.xlsx` importundan sonra
   ekranda `2.991 Denetim Kaydı` görünmesine rağmen `Hazır + Kontrol + Eşleşmedi` toplamı
   yalnız `1.000` ediyordu. Kök sebep: `refreshHistoryTagImportBatchCounts` fonksiyonu
