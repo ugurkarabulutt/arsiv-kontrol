@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Etiket aktarımı toplu uygulama zaman aşımı düzeltildi:** `/admin` süper admin Arşiv
+  Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında `Güvenli Eşleşmeleri Uygula`
+  aksiyonu 2.000+ kaydı tek sunucu isteğinde uygulamaya çalıştığı için canlıda uzun süre
+  `uygulanıyor` durumunda kalıp `Sunucu beklenmeyen bir yanıt verdi` uyarısına düşebiliyordu.
+  Toplu uygulama artık 60 kayıtlık güvenli adımlarla çalışır; her adım kısa sunucu cevabı
+  döner, ekranda kaç kaydın uygulandığı ve kaç kaydın kaldığı görünür. Aynı parça parça
+  altyapı `Kontrol Gerekenleri Uygula` aksiyonunda da kullanılır. Tekil `Etiketi Bu Kayda
+  Uygula` akışı korunur. SQL/DB migration gerekmedi; root `/` public cutover ve public
+  frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 - **Etiket aktarımı kontrol grubu toplu uygulaması eklendi:** `/admin` süper admin Arşiv
   Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında durum filtresi `Kontrol gerekenler`
   seçildiğinde üst aksiyon alanında `Kontrol Gerekenleri Uygula` butonu görünür. Bu aksiyon

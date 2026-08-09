@@ -2,6 +2,15 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde etiket aktarımı toplu uygulama zaman aşımı düzeltildi. Canlıda `Güvenli Eşleşmeleri
+  Uygula` 2.000+ hazır kaydı tek istekle uygulamaya çalıştığında uzun süre bekleyip
+  `Sunucu beklenmeyen bir yanıt verdi` uyarısı oluşturabiliyordu. Toplu uygulama artık 60
+  kayıtlık küçük adımlarla çalışır; ekranda uygulanan/kalan kayıt sayısı ilerleme olarak
+  görünür. Aynı dayanıklı akış `Kontrol Gerekenleri Uygula` için de geçerlidir. Tekil
+  `Etiketi Bu Kayda Uygula` akışı korunur. SQL/DB migration gerekmedi; root `/` public cutover
+  ve public frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 - Yerelde etiket aktarımı `Kontrol gerekenler` grubu için toplu uygulama aksiyonu eklendi.
   `/admin > Arşiv Operasyon Merkezi > Etiket Aktarımı` ekranında durum filtresi
   `Kontrol gerekenler` seçildiğinde üst aksiyon alanında `Kontrol Gerekenleri Uygula` butonu

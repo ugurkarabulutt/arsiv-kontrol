@@ -537,6 +537,7 @@ const ADMIN_HIDDEN_HISTORY_STATUSES = ['taslak', ...HIDDEN_HISTORY_STATUSES];
 const TAG_IMPORT_HISTORY_TEXT_LIMIT = 18000;
 const TAG_IMPORT_INITIAL_DETAIL_LIMIT = 120;
 const TAG_IMPORT_INSERT_CHUNK_SIZE = 180;
+const TAG_IMPORT_APPLY_CHUNK_SIZE = 60;
 const TAG_IMPORT_UPLOAD_KEY_PREFIX = 'history_tag_import_upload';
 const TAG_IMPORT_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
 const TAG_IMPORT_MAX_UPLOAD_CHUNKS = 160;
@@ -5986,7 +5987,7 @@ async function createHistoryTagImportPreviewFromBuffer(buffer, fileName, actorNa
   return { batch: refreshed, matches: rowsWithHistory.map(publicHistoryTagImportMatch) };
 }
 
-async function applyHistoryTagImportMatchRow(matchId, actorName) {
+async function applyHistoryTagImportMatchRow(matchId, actorName, options = {}) {
   const { data: match, error } = await supabase.from('history_tag_import_matches')
     .select('*')
     .eq('id', matchId)
@@ -6031,8 +6032,51 @@ async function applyHistoryTagImportMatchRow(matchId, actorName) {
     .select('*')
     .maybeSingle();
   if (matchError) throw new Error(matchError.message);
-  await refreshHistoryTagImportBatchCounts(match.batch_id);
+  if (options.refreshBatch !== false) await refreshHistoryTagImportBatchCounts(match.batch_id);
   return updatedMatch || match;
+}
+
+function historyTagImportApplyLimit(value) {
+  const requested = Number(value || 0);
+  if (!Number.isFinite(requested) || requested <= 0) return TAG_IMPORT_APPLY_CHUNK_SIZE;
+  return Math.min(TAG_IMPORT_APPLY_CHUNK_SIZE, Math.max(1, Math.floor(requested)));
+}
+
+async function applyHistoryTagImportBatchChunk({ batchId, matchStatus, minConfidence, limit, actorName }) {
+  const safeLimit = historyTagImportApplyLimit(limit);
+  let query = supabase.from('history_tag_import_matches')
+    .select('id')
+    .eq('batch_id', batchId)
+    .eq('match_status', matchStatus)
+    .order('confidence', { ascending: false })
+    .order('updated_at', { ascending: true })
+    .limit(safeLimit);
+  if (Number.isFinite(minConfidence)) query = query.gte('confidence', minConfidence);
+  const { data: rows, error } = await query;
+  if (error) throw new Error(error.message);
+
+  let applied = 0;
+  const errors = [];
+  for (const row of rows || []) {
+    try {
+      await applyHistoryTagImportMatchRow(row.id, actorName, { refreshBatch: false });
+      applied++;
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+
+  const batch = await refreshHistoryTagImportBatchCounts(batchId);
+  const remaining = matchStatus === 'ready' ? Number(batch.readyCount || 0) : Number(batch.reviewCount || 0);
+  return {
+    success: errors.length === 0,
+    applied,
+    errors,
+    batch,
+    remaining,
+    done: remaining === 0,
+    limit: safeLimit
+  };
 }
 
 app.post('/api/history-tags/import/preview', auth, admin, superAdmin, tagImportUpload.single('file'), async (req, res) => {
@@ -6231,45 +6275,27 @@ app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/skip', auth, ad
 app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready', auth, admin, superAdmin, async (req, res) => {
   try {
     if (!ensureHistoryTagImportReady(res)) return;
-    const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')
-      .select('id')
-      .eq('batch_id', req.params.id)
-      .eq('match_status', 'ready')
-      .gte('confidence', 86), 500);
-    let applied = 0;
-    const errors = [];
-    for (const row of rows || []) {
-      try {
-        await applyHistoryTagImportMatchRow(row.id, req.session.name || req.session.username || '');
-        applied++;
-      } catch (error) {
-        errors.push(error.message);
-      }
-    }
-    const batch = await refreshHistoryTagImportBatchCounts(req.params.id);
-    res.json({ success: errors.length === 0, applied, errors, batch });
+    const result = await applyHistoryTagImportBatchChunk({
+      batchId: req.params.id,
+      matchStatus: 'ready',
+      minConfidence: 86,
+      limit: req.body?.limit,
+      actorName: req.session.name || req.session.username || ''
+    });
+    res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review', auth, admin, superAdmin, async (req, res) => {
   try {
     if (!ensureHistoryTagImportReady(res)) return;
-    const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')
-      .select('id')
-      .eq('batch_id', req.params.id)
-      .eq('match_status', 'review'), 500);
-    let applied = 0;
-    const errors = [];
-    for (const row of rows || []) {
-      try {
-        await applyHistoryTagImportMatchRow(row.id, req.session.name || req.session.username || '');
-        applied++;
-      } catch (error) {
-        errors.push(error.message);
-      }
-    }
-    const batch = await refreshHistoryTagImportBatchCounts(req.params.id);
-    res.json({ success: errors.length === 0, applied, errors, batch });
+    const result = await applyHistoryTagImportBatchChunk({
+      batchId: req.params.id,
+      matchStatus: 'review',
+      limit: req.body?.limit,
+      actorName: req.session.name || req.session.username || ''
+    });
+    res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

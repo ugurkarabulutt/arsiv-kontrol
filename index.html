@@ -2010,7 +2010,7 @@ canvas{width:100%!important;}
           <input type="file" id="historyTagImportFile" hidden accept=".xlsx,.xls,.csv,.tsv" onchange="uploadHistoryTagImportFile(this.files&&this.files[0]);this.value='';">
           <div class="ops-filter-row tag-import-actions">
             <button class="btn-primary" onclick="triggerHistoryTagImportPicker()">Excel Seç ve Eşleştir</button>
-            <button class="btn-sec" onclick="applyReadyHistoryTagImportMatches()">Güvenli Eşleşmeleri Uygula</button>
+            <button class="btn-sec" id="historyTagImportApplyReadyBtn" onclick="applyReadyHistoryTagImportMatches()">Güvenli Eşleşmeleri Uygula</button>
             <button class="btn-sec" id="historyTagImportApplyReviewBtn" onclick="applyReviewHistoryTagImportMatches()" hidden>Kontrol Gerekenleri Uygula</button>
             <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Listeyi Yenile</button>
             <button class="btn-danger" onclick="deleteHistoryTagImportBatch()">Seçili Aktarımı Sil</button>
@@ -7784,6 +7784,11 @@ function renderHistoryTagImport(){
   if(status&&status.value!==historyTagImportState.status)status.value=historyTagImportState.status;
   const summary=el('historyTagImportSummary');
   if(summary)summary.innerHTML=historyTagImportSummaryHtml(historyTagImportState.activeBatch);
+  const readyBulkBtn=el('historyTagImportApplyReadyBtn');
+  if(readyBulkBtn){
+    const readyCount=Number(historyTagImportState.activeBatch?.readyCount||0);
+    readyBulkBtn.disabled=historyTagImportState.applying||!readyCount;
+  }
   const reviewBulkBtn=el('historyTagImportApplyReviewBtn');
   if(reviewBulkBtn){
     const reviewCount=Number(historyTagImportState.activeBatch?.reviewCount||0);
@@ -7864,6 +7869,44 @@ async function deleteHistoryTagImportBatch(){
   await loadHistoryTagImportBatches();
   setHistoryTagImportStatus('Aktarım kaydı kaldırıldı. Yeni Excel seçerek temiz başlayabilirsiniz.','ok');
 }
+function waitForHistoryTagImportStep(ms=90){
+  return new Promise(resolve=>setTimeout(resolve,ms));
+}
+async function applyHistoryTagImportMatchesInSteps({batch, endpoint, total, startedMessage, progressLabel, doneLabel, failTitle}){
+  historyTagImportState.applying=true;
+  renderHistoryTagImport();
+  let appliedTotal=0;
+  let remaining=Number(total||0);
+  const errors=[];
+  try{
+    for(let step=0;step<500;step++){
+      setHistoryTagImportStatus(`${progressLabel}: ${appliedTotal.toLocaleString('tr-TR')} / ${Number(total||0).toLocaleString('tr-TR')} uygulandı...`,'');
+      const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/${endpoint}`,{limit:60});
+      if(data.error)throw new Error(data.error);
+      appliedTotal+=Number(data.applied||0);
+      remaining=Number(data.remaining||0);
+      if(data.batch)historyTagImportState.activeBatch=data.batch;
+      if(data.errors?.length)errors.push(...data.errors);
+      setHistoryTagImportStatus(`${progressLabel}: ${appliedTotal.toLocaleString('tr-TR')} uygulandı, ${remaining.toLocaleString('tr-TR')} kaldı...`,'');
+      if(data.errors?.length||data.done||remaining<=0||Number(data.applied||0)<=0)break;
+      await waitForHistoryTagImportStep();
+    }
+  }catch(error){
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    const message=error.message||'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.';
+    setHistoryTagImportStatus(message,'err');
+    return showSystemAlert(failTitle,message,'danger');
+  }
+  historyTagImportState.applying=false;
+  await loadHistoryTagImportBatches({keepActive:true});
+  const suffix=remaining>0?` ${remaining.toLocaleString('tr-TR')} kayıt kaldı.`:'';
+  setHistoryTagImportStatus(`${appliedTotal.toLocaleString('tr-TR')} ${doneLabel}.${suffix}`,'ok');
+  if(errors.length){
+    await showSystemAlert('Bazı kayıtlar uygulanamadı',errors.slice(0,6).join('\n'),'danger');
+  }
+  return {applied:appliedTotal,remaining,errors};
+}
 async function applyReadyHistoryTagImportMatches(){
   const batch=historyTagImportState.activeBatch;
   if(!batch)return showSystemAlert('Aktarım seçilmedi','Toplu uygulama için önce bir etiket aktarım listesi seçin.','danger');
@@ -7878,20 +7921,14 @@ async function applyReadyHistoryTagImportMatches(){
     tone:'success'
   });
   if(!ok)return;
-  historyTagImportState.applying=true;
-  setHistoryTagImportStatus('Yüksek güvenli etiketler uygulanıyor...','');
-  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/apply-ready`,{});
-  historyTagImportState.applying=false;
-  if(data.error){
-    setHistoryTagImportStatus(data.error,'err');
-    return showSystemAlert('Toplu uygulama tamamlanamadı',data.error,'danger');
-  }
-  if(data.batch)historyTagImportState.activeBatch=data.batch;
-  await loadHistoryTagImportBatches({keepActive:true});
-  setHistoryTagImportStatus(`${Number(data.applied||0).toLocaleString('tr-TR')} eşleşme uygulandı.${data.errors?.length?' Bazı kayıtlar uygulanamadı.':''}`,'ok');
-  if(data.errors?.length){
-    await showSystemAlert('Bazı kayıtlar uygulanamadı',data.errors.slice(0,6).join('\n'),'danger');
-  }
+  return applyHistoryTagImportMatchesInSteps({
+    batch,
+    endpoint:'apply-ready',
+    total:readyCount,
+    progressLabel:'Güvenli eşleşmeler uygulanıyor',
+    doneLabel:'güvenli eşleşme uygulandı',
+    failTitle:'Toplu uygulama tamamlanamadı'
+  });
 }
 async function applyReviewHistoryTagImportMatches(){
   const batch=historyTagImportState.activeBatch;
@@ -7908,22 +7945,14 @@ async function applyReviewHistoryTagImportMatches(){
     tone:'success'
   });
   if(!ok)return;
-  historyTagImportState.applying=true;
-  renderHistoryTagImport();
-  setHistoryTagImportStatus('Kontrol gereken etiketler uygulanıyor...','');
-  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/apply-review`,{});
-  historyTagImportState.applying=false;
-  if(data.error){
-    renderHistoryTagImport();
-    setHistoryTagImportStatus(data.error,'err');
-    return showSystemAlert('Toplu uygulama tamamlanamadı',data.error,'danger');
-  }
-  if(data.batch)historyTagImportState.activeBatch=data.batch;
-  await loadHistoryTagImportBatches({keepActive:true});
-  setHistoryTagImportStatus(`${Number(data.applied||0).toLocaleString('tr-TR')} kontrol gereken eşleşme uygulandı.${data.errors?.length?' Bazı kayıtlar uygulanamadı.':''}`,'ok');
-  if(data.errors?.length){
-    await showSystemAlert('Bazı kayıtlar uygulanamadı',data.errors.slice(0,6).join('\n'),'danger');
-  }
+  return applyHistoryTagImportMatchesInSteps({
+    batch,
+    endpoint:'apply-review',
+    total:reviewCount,
+    progressLabel:'Kontrol gerekenler uygulanıyor',
+    doneLabel:'kontrol gereken eşleşme uygulandı',
+    failTitle:'Toplu uygulama tamamlanamadı'
+  });
 }
 function archiveWorkStatusLabel(status){
   return {

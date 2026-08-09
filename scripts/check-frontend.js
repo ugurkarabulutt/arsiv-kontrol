@@ -329,9 +329,14 @@ if (
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review'") ||
+  !server.includes('TAG_IMPORT_APPLY_CHUNK_SIZE') ||
+  !server.includes('function historyTagImportApplyLimit') ||
+  !server.includes('async function applyHistoryTagImportBatchChunk') ||
+  !server.includes('remaining,') ||
+  !server.includes('done: remaining === 0') ||
   !server.includes("const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
   !server.includes('const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);') ||
-  !server.includes("const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
+  server.includes("const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')\n      .select('id')\n      .eq('batch_id', req.params.id)\n      .eq('match_status', 'ready')") ||
   !server.includes('TAG_IMPORT_INITIAL_DETAIL_LIMIT') ||
   !server.includes('insertHistoryTagImportMatches') ||
   !server.includes('publicHistoryTagImportHistory') ||
@@ -344,8 +349,10 @@ if (
   !html.includes('/api/history-tags/import/upload/complete') ||
   !html.includes('readHistoryTagImportUploadResponse') ||
   !html.includes('applyHistoryTagImportMatch') ||
+  !html.includes('applyHistoryTagImportMatchesInSteps') ||
   !html.includes('applyReadyHistoryTagImportMatches') ||
   !html.includes('applyReviewHistoryTagImportMatches') ||
+  !html.includes('historyTagImportApplyReadyBtn') ||
   !html.includes('historyTagImportApplyReviewBtn') ||
   !html.includes('deleteHistoryTagImportBatch') ||
   !html.includes('Seçili Aktarımı Sil') ||
