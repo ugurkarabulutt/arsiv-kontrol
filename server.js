@@ -5843,10 +5843,9 @@ function ensureHistoryTagImportReady(res) {
 }
 
 async function refreshHistoryTagImportBatchCounts(batchId) {
-  const { data: matches, error } = await supabase.from('history_tag_import_matches')
+  const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')
     .select('match_status')
-    .eq('batch_id', batchId);
-  if (error) throw new Error(error.message);
+    .eq('batch_id', batchId), 1000);
   const counts = { ready: 0, review: 0, unmatched: 0, applied: 0, skipped: 0 };
   (matches || []).forEach(row => {
     const key = row.match_status || 'review';
@@ -6139,6 +6138,7 @@ app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, s
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!batch) return res.status(404).json({ error: 'Etiket aktarım partisi bulunamadı.' });
+    const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);
     const status = String(req.query.status || '').trim();
     const q = String(req.query.q || '').trim().toLocaleLowerCase('tr-TR');
     let query = supabase.from('history_tag_import_matches')
@@ -6165,7 +6165,7 @@ app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, s
         ...(item.currentTags || [])
       ].join(' ').toLocaleLowerCase('tr-TR').includes(q));
     }
-    res.json({ batch: publicHistoryTagImportBatch(batch), matches });
+    res.json({ batch: refreshedBatch, matches });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

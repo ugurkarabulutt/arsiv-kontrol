@@ -327,6 +327,8 @@ if (
   !server.includes("app.get('/api/history-tags/import-batches'") ||
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
+  !server.includes("const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
+  !server.includes('const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);') ||
   !server.includes("const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
   !server.includes('TAG_IMPORT_INITIAL_DETAIL_LIMIT') ||
   !server.includes('insertHistoryTagImportMatches') ||
