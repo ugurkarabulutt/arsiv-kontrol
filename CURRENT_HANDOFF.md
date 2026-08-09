@@ -13,9 +13,19 @@
   yalnız yüksek güvenli hazır eşleşmeler toplu uygulanabilir. Toplu uygulama backend'de
   sayfalı çalışır; 500 kayıtla sınırlı kalmaz. Kapsam: `server.js`, `index.html`,
   `schema.sql`, `scripts/check-frontend.js`, `package.json`, `package-lock.json`,
-  `AGENTS.md`, `CURRENT_HANDOFF.md`. Canlıya almadan önce Supabase'de `schema.sql` içindeki
-  `history.tags`, `history_tag_import_batches` ve `history_tag_import_matches` blokları
-  uygulanmış olmalı. DB/root `/` public cutover ve public frontend hattına dokunulmadı.
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Supabase'de gereken `history.tags`,
+  `history_tag_import_batches` ve `history_tag_import_matches` blokları kullanıcı tarafından
+  başarıyla uygulandı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, inline script syntax kontrolü, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `39632bd` GitHub'a push
+  edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-g20iz8gfg-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Etiket Aktarımı`,
+  `/api/history-tags/import/preview` ve `id="submitApprovalTags"` mevcut; eski geçici
+  `adminRouteProbe` ve public preview marker'ı yok. Oturumsuz import preview endpoint'i
+  `401` döndü. DB/root `/` public cutover ve public frontend hattına dokunulmadı.
 
 - Yerelde desktop `/admin` süper admin menü görünürlüğü düzeltildi: `Arşiv Operasyon Merkezi`
   grubu desktop sidebar'da `Geri Bildirim` altından alınıp `Operasyon` bölümünde `İş Panosu`
