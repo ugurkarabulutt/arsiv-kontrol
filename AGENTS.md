@@ -132,7 +132,14 @@ tespit edilir).
   `scripts/check-frontend.js`. SQL/DB migration gerekmedi; root `/` public cutover ve public
   frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
   `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
-  86/86 test geçti. Runtime commit `0956960` GitHub'a push edildi.
+  86/86 test geçti. Runtime commit `0956960` GitHub'a push edildi ve proje notlarına işlendi.
+  Production deploy: `https://arsiv-kontrol-6889s8jsp-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru. Canlı HTML'de `Güvenli Eşleşmeleri Uygula`,
+  `Listeyi Yenile`, `Aktarım listeleri` ve `Seçili Aktarımı Sil` mevcut; eski
+  `Yüksek Güvenlileri Uygula`, `Partileri Yenile`, `Aktarım partileri` ve geçici
+  `adminRouteProbe` yok.
 
 - **Etiket aktarımı eski dosya/parti temizleme eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Etiket Aktarımı` ekranında `Yenile` ve `Partileri Yenile` yalnız listeyi
