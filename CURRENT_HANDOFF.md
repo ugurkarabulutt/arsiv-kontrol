@@ -2,6 +2,21 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Canlıda etiket aktarımı opsiyonel `history` kolonlarına dayanıklı hale getirildi. Büyük
+  Excel upload 13 parçaya bölünerek Vercel yük sınırını geçti, fakat canlı DB'de
+  `history.prompt_version` kolonu olmadığı için eşleştirme aşamasında
+  `column history.prompt_version does not exist` hatası oluştu. Etiket aktarımı artık
+  `original_text`, `tags`, `prompt_version` ve `rules_hash` gibi sonradan eklenen kolonları
+  canlı şema tespitine göre seçer; olmayan kolonları sorguya eklemez. Kapsam: `server.js`,
+  `scripts/check-frontend.js`. SQL/DB migration gerekmedi; root `/` public cutover ve public
+  frontend hattına dokunulmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  86/86 test geçti. Runtime commit `75d2a55` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-1et3fa4c5-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı;
+  oturumsuz upload start endpoint'i `401` döndü ve eski geçici `adminRouteProbe` yok.
+
 - Canlıda etiket aktarımı büyük Excel yükleme sınırı çözüldü. `/admin > Arşiv Operasyon
   Merkezi > Etiket Aktarımı` ekranında büyük Excel dosyası tek istekle gönderilince görülen
   `413 Request Entity Too Large` / `FUNCTION_PAYLOAD_TOO_LARGE` hatası için upload akışı parça
