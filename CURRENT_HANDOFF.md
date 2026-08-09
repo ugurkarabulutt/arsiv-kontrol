@@ -2,6 +2,23 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Canlıda etiket aktarımı upload akışı sağlamlaştırıldı. `/admin > Arşiv Operasyon Merkezi >
+  Etiket Aktarımı` ekranında Excel yükleme sırasında görülen `Sunucu yanıtı okunamadı` hatası
+  için backend artık history kayıtlarında yalnız gerekli kolonları çeker, uzun metinlerde
+  eşleştirme aday metnini sınırlar, eşleşme insertlerini parçalara böler ve ilk cevabı kısa ön
+  izleme ile döndürür. Frontend JSON dışı/eksik cevaplarda HTTP durumunu içeren okunabilir hata
+  verir. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`. DB/schema, root `/`
+  public cutover ve public frontend hattına dokunulmadı. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `4a5de61` GitHub'a push edildi
+  ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-7siqlcblu-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Etiket Aktarımı` ve
+  `readHistoryTagImportUploadResponse` mevcut; eski geçici `adminRouteProbe` yok. Oturumsuz
+  import preview endpoint'i `401` döndü.
+
 - Yerelde soru-cevap etiketleri ve Excel etiket aktarımı hazırlandı. Kullanıcı `Onaya Gönder`
   öncesinde virgülle ayrılmış etiket girebilir; admin/süper admin onay modalında etiketleri
   görüp düzelterek onaylayabilir. `history.tags` alanı denetim geçmişi, onay listesi ve CSV

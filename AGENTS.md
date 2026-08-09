@@ -121,6 +121,26 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Etiket aktarımı upload akışı sağlamlaştırıldı:** `/admin` süper admin `Arşiv Operasyon
+  Merkezi > Etiket Aktarımı` ekranında Excel yükleme sırasında görülen `Sunucu yanıtı
+  okunamadı` hatası için import API'si inceltildi. Upload endpoint'i artık history kayıtlarında
+  yalnız gerekli kolonları çeker, uzun metinlerde eşleştirme aday metnini kontrollü sınırlar,
+  eşleşmeleri tek büyük insert yerine küçük parçalara bölerek yazar ve ilk cevapta tam denetim
+  metinleri yerine kısa ön izleme döndürür. Frontend JSON dışı/eksik cevaplarda kör hata yerine
+  HTTP durumunu içeren okunabilir hata mesajı gösterir. Bu adım etiket eşleştirme kararını
+  otomatik uygulamaz; yine süper admin ön izleme sonrası tek tek veya yüksek güvenli kayıtları
+  toplu uygular. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`. DB/schema,
+  root `/` public cutover ve public frontend hattına dokunulmadı. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `4a5de61` GitHub'a push
+  edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-7siqlcblu-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Etiket Aktarımı` ve
+  `readHistoryTagImportUploadResponse` mevcut; eski geçici `adminRouteProbe` yok. Oturumsuz
+  import preview endpoint'i `401` döndü.
+
 - **Soru-cevap etiketleri ve Excel etiket aktarımı hazırlandı:** Denetim sonucu onaya
   gönderilirken kullanıcı artık virgülle ayrılmış sınırsız etiket girebilir; Türkçe karakterler
   korunur ve etiket alanı denetim motoruna sokulmaz. Admin/süper admin onay modalında bu
