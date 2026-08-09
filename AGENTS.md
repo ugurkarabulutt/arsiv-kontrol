@@ -131,7 +131,13 @@ tespit edilir).
   gerekmedi; root `/` public cutover ve public frontend hattına dokunulmadı. Kapsam:
   `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
   Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
-  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit
+  `d3fb222` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-pmw7r50gz-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Kontrol Gerekenleri Uygula` ve
+  `apply-review` mevcut; eski geçici `adminRouteProbe` yok.
 
 - **Etiket aktarımı kullanıcı dili sadeleştirildi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Etiket Aktarımı` ekranında teknik `parti` ifadesi görünür kullanıcı
