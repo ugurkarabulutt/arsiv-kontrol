@@ -1776,8 +1776,8 @@ canvas{width:100%!important;}
 
       <div class="ops-module-page archive-ops-section" data-ops-view="import" hidden>
         <div class="ops-module-kicker">İçe aktarım</div>
-        <div class="ops-module-title">Google dosyalarından gelen kayıtlar kalıcı içe aktarım partilerinde takip edilecek.</div>
-        <div class="ops-module-copy">Dosyalar artık yalnız tarayıcı hafızasında kalmaz. Her aktarım bir partiye bağlanır; dosya metni, durum, not ve kaynak kaydına dönüşme adımı aynı ekranda takip edilir.</div>
+        <div class="ops-module-title">Google dosyalarından gelen kayıtlar kalıcı içe aktarım listelerinde takip edilecek.</div>
+        <div class="ops-module-copy">Dosyalar artık yalnız tarayıcı hafızasında kalmaz. Her aktarım bir listeye bağlanır; dosya metni, durum, not ve kaynak kaydına dönüşme adımı aynı ekranda takip edilir.</div>
         <div class="ops-module-list">
           <div class="ops-module-item"><strong>Ön izleme</strong>Aktarılan satırlar kalıcı kayda dönüşmeden kontrol edilir.</div>
           <div class="ops-module-item"><strong>Çakışma kontrolü</strong>Aynı link, aynı metin veya benzer başlıklar işaretlenir.</div>
@@ -1786,13 +1786,13 @@ canvas{width:100%!important;}
         <div class="ops-import-workspace">
           <div class="ops-import-batch-bar">
             <div>
-              <input class="ops-field" id="archiveImportBatchTitle" placeholder="Parti başlığı: Örn. 6 Ağustos hadis dokümanları">
+              <input class="ops-field" id="archiveImportBatchTitle" placeholder="Liste başlığı: Örn. 6 Ağustos hadis dokümanları">
               <textarea class="ops-field" id="archiveImportBatchNote" placeholder="Kısa not" style="margin-top:8px;min-height:70px;resize:vertical"></textarea>
             </div>
-            <button class="btn-primary" onclick="createArchiveImportBatch()">Parti Oluştur</button>
+            <button class="btn-primary" onclick="createArchiveImportBatch()">Liste Oluştur</button>
           </div>
           <div class="ops-import-batch-list" id="archiveImportBatchList">
-            <div class="empty-state">İçe aktarım partileri yükleniyor...</div>
+            <div class="empty-state">İçe aktarım listeleri yükleniyor...</div>
           </div>
           <div class="ops-import-flow" aria-label="İçe aktarım adımları">
             <div class="ops-import-flow-step"><strong>1. Dosya seç</strong><span>DOCX, TXT, MD, CSV, TSV veya JSON ekleyin.</span></div>
@@ -2010,8 +2010,8 @@ canvas{width:100%!important;}
           <input type="file" id="historyTagImportFile" hidden accept=".xlsx,.xls,.csv,.tsv" onchange="uploadHistoryTagImportFile(this.files&&this.files[0]);this.value='';">
           <div class="ops-filter-row tag-import-actions">
             <button class="btn-primary" onclick="triggerHistoryTagImportPicker()">Excel Seç ve Eşleştir</button>
-            <button class="btn-sec" onclick="applyReadyHistoryTagImportMatches()">Yüksek Güvenlileri Uygula</button>
-            <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Partileri Yenile</button>
+            <button class="btn-sec" onclick="applyReadyHistoryTagImportMatches()">Güvenli Eşleşmeleri Uygula</button>
+            <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Listeyi Yenile</button>
             <button class="btn-danger" onclick="deleteHistoryTagImportBatch()">Seçili Aktarımı Sil</button>
           </div>
           <div class="ops-status" id="historyTagImportStatusMsg"></div>
@@ -2030,15 +2030,15 @@ canvas{width:100%!important;}
           </div>
           <div class="tag-import-layout">
             <div>
-              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Aktarım partileri</div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Aktarım listeleri</div>
               <div class="tag-import-batch-list" id="historyTagImportBatchList">
-                <div class="archive-release-empty">Etiket aktarım partileri yükleniyor...</div>
+                <div class="archive-release-empty">Etiket aktarım listeleri yükleniyor...</div>
               </div>
             </div>
             <div>
               <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Eşleşme kontrolü</div>
               <div class="tag-import-match-list" id="historyTagImportMatchList">
-                <div class="empty-state">Bir parti seçildiğinde eşleşmeler burada görünür.</div>
+                <div class="empty-state">Bir aktarım listesi seçildiğinde eşleşmeler burada görünür.</div>
               </div>
             </div>
           </div>
@@ -7643,7 +7643,7 @@ async function loadHistoryTagImportBatches(options={}){
   if(!canUseArchiveOps())return;
   historyTagImportState.loading=true;
   const list=el('historyTagImportBatchList');
-  if(list&&!historyTagImportState.batches.length)list.innerHTML='<div class="archive-release-empty">Etiket aktarım partileri yükleniyor...</div>';
+  if(list&&!historyTagImportState.batches.length)list.innerHTML='<div class="archive-release-empty">Etiket aktarım listeleri yükleniyor...</div>';
   const data=await api('GET','/api/history-tags/import-batches');
   historyTagImportState.loading=false;
   if(data.error){
@@ -7723,7 +7723,7 @@ function historyTagImportBatchCardHtml(batch){
 }
 function historyTagImportSummaryHtml(batch){
   if(!batch)return `
-    <div class="ops-file-summary-item"><strong>0</strong><span>Parti</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Liste</span></div>
     <div class="ops-file-summary-item"><strong>0</strong><span>Hazır</span></div>
     <div class="ops-file-summary-item"><strong>0</strong><span>Kontrol</span></div>
     <div class="ops-file-summary-item"><strong>0</strong><span>Eşleşmedi</span></div>
@@ -7787,14 +7787,14 @@ function renderHistoryTagImport(){
   if(batchList){
     batchList.innerHTML=historyTagImportState.batches.length
       ? historyTagImportState.batches.map(historyTagImportBatchCardHtml).join('')
-      : '<div class="archive-release-empty">Henüz etiket aktarım partisi yok. Excel dosyası seçerek başlayın.</div>';
+      : '<div class="archive-release-empty">Henüz etiket aktarım listesi yok. Excel dosyası seçerek başlayın.</div>';
   }
   const matchList=el('historyTagImportMatchList');
   if(matchList){
     if(historyTagImportState.loading){
       matchList.innerHTML='<div class="empty-state">Eşleşmeler yükleniyor...</div>';
     }else if(!historyTagImportState.activeBatch){
-      matchList.innerHTML='<div class="empty-state">Bir parti seçildiğinde eşleşmeler burada görünür.</div>';
+      matchList.innerHTML='<div class="empty-state">Bir aktarım listesi seçildiğinde eşleşmeler burada görünür.</div>';
     }else if(!historyTagImportState.matches.length){
       matchList.innerHTML='<div class="empty-state">Bu filtrede eşleşme yok.</div>';
     }else{
@@ -7833,12 +7833,12 @@ async function skipHistoryTagImportMatch(id,button){
 }
 async function deleteHistoryTagImportBatch(){
   const batch=historyTagImportState.activeBatch;
-  if(!batch)return showSystemAlert('Aktarım seçilmedi','Silmek için önce bir Excel aktarım partisi seçin.','danger');
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Silmek için önce bir Excel aktarım listesi seçin.','danger');
   const ok=await openSystemConfirm({
     title:'Bu aktarım kaldırılsın mı?',
     badge:'Etiket aktarımı',
     message:`${batch.filename||'Seçili Excel aktarımı'} ekrandaki aktarım listesinden kaldırılacak.`,
-    detail:'Bu işlem denetim kayıtlarını silmez. Daha önce uygulanmış etiketleri geri almaz. Yalnız bu Excel aktarım partisini ve ona ait eşleşme önerilerini temizler.',
+    detail:'Bu işlem denetim kayıtlarını silmez. Daha önce uygulanmış etiketleri geri almaz. Yalnız bu Excel aktarım listesini ve ona ait eşleşme önerilerini temizler.',
     confirmText:'Aktarımı Sil',
     tone:'danger'
   });
@@ -7858,9 +7858,9 @@ async function deleteHistoryTagImportBatch(){
 }
 async function applyReadyHistoryTagImportMatches(){
   const batch=historyTagImportState.activeBatch;
-  if(!batch)return showSystemAlert('Parti seçilmedi','Toplu uygulama için önce bir etiket aktarım partisi seçin.','danger');
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Toplu uygulama için önce bir etiket aktarım listesi seçin.','danger');
   const readyCount=Number(batch.readyCount||0);
-  if(!readyCount)return showSystemAlert('Hazır eşleşme yok','Bu partide yüksek güvenli hazır eşleşme bulunmuyor. Kontrol gerekenleri tek tek inceleyin.','danger');
+  if(!readyCount)return showSystemAlert('Hazır eşleşme yok','Bu listede güvenli hazır eşleşme bulunmuyor. Kontrol gerekenleri tek tek inceleyin.','danger');
   const ok=await openSystemConfirm({
     title:'Yüksek güvenli etiketler uygulansın mı?',
     badge:'Etiket aktarımı',
@@ -8610,7 +8610,7 @@ function renderArchiveImportBatches(){
   const list=el('archiveImportBatchList');
   if(!list)return;
   if(!archiveImportState.batches.length){
-    list.innerHTML='<div class="empty-state">Henüz kalıcı içe aktarım partisi yok. Dosya seçtiğinizde sistem otomatik parti açabilir veya üstten başlık vererek parti oluşturabilirsiniz.</div>';
+    list.innerHTML='<div class="empty-state">Henüz kalıcı içe aktarım listesi yok. Dosya seçtiğinizde sistem otomatik liste açabilir veya üstten başlık vererek liste oluşturabilirsiniz.</div>';
     return;
   }
   list.innerHTML=archiveImportState.batches.map(batch=>{
@@ -8632,7 +8632,7 @@ async function loadArchiveImportBatches(){
   if(!canUseArchiveOps())return;
   if(archiveImportState.loading)return;
   archiveImportState.loading=true;
-  setArchiveImportStatus('İçe aktarım partileri yükleniyor...');
+  setArchiveImportStatus('İçe aktarım listeleri yükleniyor...');
   const data=await api('GET','/api/archive-ops/import-batches');
   archiveImportState.loading=false;
   if(data.error){
@@ -8655,7 +8655,7 @@ async function loadArchiveImportBatches(){
     archiveImportState.activeBatch=null;
     archiveImportState.items=[];
     renderArchiveImportQueue();
-    setArchiveImportStatus('Kalıcı parti açıldığında dosyalar burada saklanır.');
+    setArchiveImportStatus('Kalıcı liste açıldığında dosyalar burada saklanır.');
   }
 }
 async function createArchiveImportBatch(title=null,note=null){
@@ -8664,7 +8664,7 @@ async function createArchiveImportBatch(title=null,note=null){
     title:String(title??el('archiveImportBatchTitle')?.value??'').trim()||archiveImportTodayTitle(),
     note:String(note??el('archiveImportBatchNote')?.value??'').trim()
   };
-  setArchiveImportStatus('İçe aktarım partisi oluşturuluyor...');
+  setArchiveImportStatus('İçe aktarım listesi oluşturuluyor...');
   const data=await api('POST','/api/archive-ops/import-batches',payload);
   if(data.error){
     setArchiveImportStatus(data.error,'err');
@@ -8676,7 +8676,7 @@ async function createArchiveImportBatch(title=null,note=null){
   archiveImportState.activeBatchId=data.batch.id;
   renderArchiveImportBatches();
   await loadArchiveImportBatchDetail(data.batch.id);
-  setArchiveImportStatus('Kalıcı içe aktarım partisi açıldı. Dosyaları bu partiye ekleyebilirsiniz.','ok');
+  setArchiveImportStatus('Kalıcı içe aktarım listesi açıldı. Dosyaları bu listeye ekleyebilirsiniz.','ok');
   return data.batch;
 }
 async function ensureArchiveImportBatch(){
@@ -8703,7 +8703,7 @@ async function loadArchiveImportBatchDetail(id){
   renderArchiveImportBatches();
   renderArchiveImportQueue();
   const total=archiveImportState.items.length;
-  setArchiveImportStatus(total?`${total} dosya bu partide kayıtlı.`:'Bu parti boş. Dosya seçerek başlayabilirsiniz.',total?'ok':'');
+  setArchiveImportStatus(total?`${total} dosya bu listede kayıtlı.`:'Bu liste boş. Dosya seçerek başlayabilirsiniz.',total?'ok':'');
 }
 function archiveImportDrag(event,active){
   event.preventDefault();
@@ -8748,7 +8748,7 @@ async function handleArchiveImportFiles(fileList){
   const batchId=await ensureArchiveImportBatch();
   if(!batchId)return;
   archiveImportState.processing=true;
-  setArchiveImportStatus(`${files.length} dosya aktif partiye ekleniyor...`);
+  setArchiveImportStatus(`${files.length} dosya aktif listeye ekleniyor...`);
   for(const file of files){
     const tempId=`tmp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
     const item={
@@ -8992,7 +8992,7 @@ function renderArchiveImportQueue(){
   const preview=el('archiveImportPreview');
   if(!list||!preview)return;
   if(!archiveImportState.items.length){
-    list.innerHTML='<div class="empty-state">Aktif partide dosya yok.</div>';
+    list.innerHTML='<div class="empty-state">Aktif listede dosya yok.</div>';
     preview.innerHTML='<div class="empty-state">Bir dosya seçildiğinde çıkarılan metin, durum ve kayıt önerisi burada görünür.</div>';
     return;
   }

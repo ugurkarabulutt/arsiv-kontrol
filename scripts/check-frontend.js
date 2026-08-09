@@ -345,7 +345,12 @@ if (
   !html.includes('applyHistoryTagImportMatch') ||
   !html.includes('applyReadyHistoryTagImportMatches') ||
   !html.includes('deleteHistoryTagImportBatch') ||
-  !html.includes('Seçili Aktarımı Sil')
+  !html.includes('Seçili Aktarımı Sil') ||
+  !html.includes('Güvenli Eşleşmeleri Uygula') ||
+  !html.includes('Listeyi Yenile') ||
+  html.includes('Yüksek Güvenlileri Uygula') ||
+  html.includes('Partileri Yenile') ||
+  html.includes('Aktarım partileri')
 ) {
   throw new Error('Excel etiket aktarimi icin super admin ekrani, import APIleri ve DB semasi korunmali.');
 }

@@ -3436,7 +3436,7 @@ function archiveImportBatchFromDbRow(row = {}, counts = {}) {
 
 function normalizeArchiveImportBatchInput(input = {}, existing = {}) {
   const title = String(input.title ?? existing.title ?? '').trim().slice(0, 180);
-  if (!title) throw httpError('İçe aktarım partisi için başlık gerekli.', 400);
+  if (!title) throw httpError('İçe aktarım listesi için başlık gerekli.', 400);
   return {
     ...existing,
     title,
@@ -4343,7 +4343,7 @@ async function seed() {
   const { error: archiveImportBatchesErr } = await supabase.from('archive_import_batches').select('id').limit(1);
   const { error: archiveImportItemsErr } = await supabase.from('archive_import_items').select('id').limit(1);
   HAS_ARCHIVE_IMPORT_TABLES = !archiveImportBatchesErr && !archiveImportItemsErr;
-  if (!HAS_ARCHIVE_IMPORT_TABLES) console.warn('⚠ archive import tabloları yok — kalıcı içe aktarım partileri pasif.');
+  if (!HAS_ARCHIVE_IMPORT_TABLES) console.warn('⚠ archive import tabloları yok — kalıcı içe aktarım listeleri pasif.');
 
   const { error: archiveWorkErr } = await supabase.from('archive_work_items').select('id').limit(1);
   HAS_ARCHIVE_WORK_TABLES = !archiveWorkErr;
@@ -4986,7 +4986,7 @@ app.post('/api/archive-ops/import-batches', auth, admin, superAdmin, async (req,
 app.get('/api/archive-ops/import-batches/:id', auth, admin, superAdmin, async (req, res) => {
   try {
     const result = await getArchiveImportBatch(req.params.id);
-    if (!result) return res.status(404).json({ error: 'İçe aktarım partisi bulunamadı.' });
+    if (!result) return res.status(404).json({ error: 'İçe aktarım listesi bulunamadı.' });
     res.json({
       batch: result.batch,
       items: result.items.map(item => publicArchiveImportItem(item, { full: true }))
@@ -4998,7 +4998,7 @@ app.post('/api/archive-ops/import-batches/:id/items', auth, admin, superAdmin, a
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const item = await createArchiveImportItem(req.params.id, req.body || {}, actor);
-    if (!item) return res.status(404).json({ error: 'İçe aktarım partisi bulunamadı.' });
+    if (!item) return res.status(404).json({ error: 'İçe aktarım listesi bulunamadı.' });
     res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -6137,7 +6137,7 @@ app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, s
       .eq('id', req.params.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!batch) return res.status(404).json({ error: 'Etiket aktarım partisi bulunamadı.' });
+    if (!batch) return res.status(404).json({ error: 'Etiket aktarım listesi bulunamadı.' });
     const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);
     const status = String(req.query.status || '').trim();
     const q = String(req.query.q || '').trim().toLocaleLowerCase('tr-TR');
@@ -6177,7 +6177,7 @@ app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin
       .eq('id', req.params.id)
       .maybeSingle();
     if (batchError) throw new Error(batchError.message);
-    if (!batch) return res.status(404).json({ error: 'Etiket aktarım partisi bulunamadı.' });
+    if (!batch) return res.status(404).json({ error: 'Etiket aktarım listesi bulunamadı.' });
 
     const { error: matchesError } = await supabase.from('history_tag_import_matches')
       .delete()
