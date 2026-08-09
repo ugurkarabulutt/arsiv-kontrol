@@ -259,6 +259,12 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .approval-submit-title{font-weight:800;font-size:13px;color:var(--ink);}
 .approval-submit-text{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;max-width:680px;}
 .approval-submit-panel .btn-submit-approval{min-width:150px;text-align:center;}
+.approval-submit-content{flex:1;min-width:280px;}
+.approval-submit-fields{width:100%;display:grid;grid-template-columns:1.15fr 1fr;gap:12px;margin-top:12px;}
+.history-question-field{margin-top:12px;}
+.history-question-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
+.history-question-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:12px 13px;font-size:14px;line-height:1.55;resize:vertical;min-height:92px;}
+.history-question-display{border:1px solid var(--border);background:var(--surface2);color:var(--ink2);padding:11px 13px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
 .work-audit-context{margin:0 0 14px;padding:13px 14px;border:1px solid rgba(var(--ai-rgb),.35);border-left:4px solid var(--ai);background:linear-gradient(135deg,rgba(var(--ai-rgb),.09),var(--surface));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:var(--soft-shadow);}
 .work-audit-context-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;}
 .work-audit-context-text{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;max-width:720px;}
@@ -278,6 +284,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .history-tags-preview{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
 .history-tag-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.32);padding:4px 7px;}
 .history-tags-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.history-question-inline{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:7px;border-left:2px solid var(--gold);padding-left:8px;word-break:break-word;}
 .corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
 .corrected-body{padding:22px 128px 24px 18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
@@ -299,7 +306,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
 @media(max-width:760px){.compare-head{align-items:flex-start}.scroll-lock-control{width:100%;justify-content:space-between}}
-@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
+@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-content,.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%;min-width:0}.approval-submit-fields{grid-template-columns:1fr}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
 @media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
@@ -2012,6 +2019,7 @@ canvas{width:100%!important;}
             <button class="btn-primary" onclick="triggerHistoryTagImportPicker()">Excel Seç ve Eşleştir</button>
             <button class="btn-sec" id="historyTagImportApplyReadyBtn" onclick="applyReadyHistoryTagImportMatches()">Güvenli Eşleşmeleri Uygula</button>
             <button class="btn-sec" id="historyTagImportApplyReviewBtn" onclick="applyReviewHistoryTagImportMatches()" hidden>Kontrol Gerekenleri Uygula</button>
+            <button class="btn-sec" id="historyTagImportBackfillQuestionsBtn" onclick="backfillHistoryTagImportQuestions()">Excel Sorularını Ekle</button>
             <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Listeyi Yenile</button>
             <button class="btn-danger" onclick="deleteHistoryTagImportBatch()">Seçili Aktarımı Sil</button>
           </div>
@@ -2285,10 +2293,15 @@ canvas{width:100%!important;}
       <div class="feedback-label">Son kontrol</div>
       <div class="submit-confirm-warning">Sistem denetimi tamamladı. Onaya Gönder dediğinizde sonuç onay kuyruğuna iletilir.</div>
       <div class="submit-confirm-summary" id="submitApprovalSummary"></div>
+      <div class="history-question-field">
+        <label for="submitApprovalQuestion">Soru (zorunlu)</label>
+        <textarea class="history-question-input" id="submitApprovalQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın."></textarea>
+        <div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div>
+      </div>
       <div class="history-tags-field">
-        <label for="submitApprovalTags">Etiketler</label>
+        <label for="submitApprovalTags">Etiketler (zorunlu)</label>
         <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview()"></textarea>
-        <div class="history-tags-help">Etiketleri virgülle ayırın. Türkçe karakter kullanabilirsiniz. Bu alan denetlenmez.</div>
+        <div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div>
         <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
       </div>
       <div class="form-err" id="submitApprovalErr"></div>
@@ -3067,10 +3080,19 @@ function historyTagsChips(tags){
 function historyTagsChipItems(tags){
   return parseHistoryTags(tags).map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('');
 }
-function renderSubmitTagsPreview(){
-  const box=el('submitApprovalTagsPreview');
+function normalizeHistoryQuestionUi(value){
+  return String(value||'')
+    .replace(/\r\n?/g,'\n')
+    .split('\n')
+    .map(line=>line.replace(/[ \t]+/g,' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .slice(0,8000);
+}
+function renderSubmitTagsPreview(target='modal'){
+  const box=el(target==='main'?'submitApprovalTagsPreviewMain':'submitApprovalTagsPreview');
   if(!box)return;
-  box.innerHTML=historyTagsChipItems(v('submitApprovalTags'));
+  box.innerHTML=historyTagsChipItems(v(target==='main'?'submitApprovalTagsMain':'submitApprovalTags'));
 }
 function renderDetailTagsPreview(){
   const box=el('detailHistoryTagsPreview');
@@ -3082,6 +3104,7 @@ function resetSubmitApprovalModalState(){
   submitApprovalInFlight=false;
   el('submitApprovalModal')?.classList.remove('open');
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
+  if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value='';
   if(el('submitApprovalTags'))el('submitApprovalTags').value='';
   if(el('submitApprovalTagsPreview'))el('submitApprovalTagsPreview').innerHTML='';
   const btn=el('submitApprovalBtn');
@@ -3109,10 +3132,17 @@ function renderApprovalSubmitPanel(d){
   const title=sent?'Onay sürecinde':'Sonuç hazırlandı';
   const text=sent
     ?'Sonuç onay sürecine iletildi. Yeni bir metin denetlemeye başlayabilirsiniz.'
-    :'Denetim tamamlandı. Sonucu onay sürecine iletmek için Onaya Gönder’i kullanabilirsiniz.';
-  const extra='';
+    :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
+  const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
+  const tagsValue=historyTagsText(d.tags||[]);
+  const questionField=sent
+    ? `<div class="history-question-field"><label>Soru</label>${questionValue?`<div class="history-question-display">${esc(questionValue)}</div>`:`<div class="history-tags-help">Soru eklenmedi.</div>`}</div>`
+    : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
+  const tagsField=sent
+    ? `<div class="history-tags-field"><label>Etiketler</label>${historyTagsChips(tagsValue)||'<div class="history-tags-help">Etiket eklenmedi.</div>'}</div>`
+    : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
-    <div><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}${extra}</div></div>
+    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div><div class="approval-submit-fields">${questionField}${tagsField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
   </div>`;
 }
@@ -3135,7 +3165,12 @@ function openSubmitApprovalModal(){
     <div><strong>Skor:</strong> ${Number(d.score||0)}/100</div>
     <div><strong>Bulgu:</strong> ${Number(d.totalErrors||0)} sorun</div>
   `;
-  if(el('submitApprovalTags'))el('submitApprovalTags').value=historyTagsText(d.tags||[]);
+  const questionMain=el('submitApprovalQuestionMain');
+  const tagsMain=el('submitApprovalTagsMain');
+  const questionText=questionMain?normalizeHistoryQuestionUi(questionMain.value):normalizeHistoryQuestionUi(d.questionText||'');
+  const tagsText=tagsMain?tagsMain.value:historyTagsText(d.tags||[]);
+  if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value=questionText;
+  if(el('submitApprovalTags'))el('submitApprovalTags').value=tagsText;
   renderSubmitTagsPreview();
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   el('submitApprovalModal')?.classList.add('open');
@@ -3262,14 +3297,25 @@ async function confirmSubmitApproval(){
   const err=el('submitApprovalErr');
   const btn=el('submitApprovalBtn');
   if(!d?.id)return;
-  let submitted=false;
-  const waitTimers=[];
-  submitApprovalInFlight=true;
-  if(btn){btn.disabled=true;btn.textContent='Gönderiliyor...';}
   if(err)err.textContent='';
   const oldId=d.id;
   const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
   const tags=parseHistoryTags(v('submitApprovalTags'));
+  const questionText=normalizeHistoryQuestionUi(v('submitApprovalQuestion'));
+  if(!questionText){
+    if(err)err.textContent='Onaya göndermeden önce soru alanını doldurun.';
+    el('submitApprovalQuestion')?.focus();
+    return;
+  }
+  if(!tags.length){
+    if(err)err.textContent='Onaya göndermeden önce en az bir etiket ekleyin.';
+    el('submitApprovalTags')?.focus();
+    return;
+  }
+  let submitted=false;
+  const waitTimers=[];
+  submitApprovalInFlight=true;
+  if(btn){btn.disabled=true;btn.textContent='Gönderiliyor...';}
   try{
     waitTimers.push(setTimeout(()=>{if(err)err.textContent='Gönderim kontrol ediliyor. Lütfen pencereyi kapatmayın.';},4000));
     waitTimers.push(setTimeout(()=>{if(err)err.textContent='İşlem normalden uzun sürdü. Metin korunuyor; sonucu bekleyin, sayfayı yenilemeyin.';},16000));
@@ -3285,8 +3331,9 @@ async function confirmSubmitApproval(){
       categories:submitCategoryCounts(d.categories||{}),
       summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
       analysisMeta:d.analysisMeta||{},
+      questionText,
       tags
-    }:{tags};
+    }:{questionText,tags};
     const r=await api('POST',endpoint,body);
     if(r.error){if(err)err.textContent=r.error;return;}
     const newId=r.id||d.id;
@@ -3299,6 +3346,7 @@ async function confirmSubmitApproval(){
     d.id=newId;
     d.status='bekliyor';
     d.tags=Array.isArray(r.tags)?r.tags:tags;
+    d.questionText=typeof r.questionText==='string'?r.questionText:questionText;
     submitted=true;
     if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
     if(isMerged)d.sourceIds=[];
@@ -3309,7 +3357,7 @@ async function confirmSubmitApproval(){
     if(linkedWorkUpdate?.item)d.archiveWorkLinkedTitle=linkedWorkUpdate.item.title||archiveWorkAuditContext?.title||'Çalışma kaydı';
     if(linkedWorkUpdate?.error)d.archiveWorkLinkError=linkedWorkUpdate.error;
     historyRows=historyRows.map(h=>{
-      if(h.id===oldId)return {...h,id:newId,status:'bekliyor'};
+      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText};
       if(sourceIds.includes(h.id))return {...h,status:'submitted_part'};
       return h;
     }).filter(h=>h.status!=='submitted_part'&&h.status!=='chunk_draft');
@@ -3698,7 +3746,7 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
+    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -3783,17 +3831,21 @@ async function showDetail(id){
   if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
   const text=item.correctedText||'';
   const tagsValue=historyTagsText(item.tags||[]);
+  const questionValue=normalizeHistoryQuestionUi(item.questionText||'');
+  const questionBlock=hasAdminRole(me?.role)
+    ? `<div class="history-question-field" style="margin:0 0 14px"><label for="detailHistoryQuestion">Soru</label><textarea class="history-question-input" id="detailHistoryQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde soru da kaydedilir.</div></div>`
+    : (questionValue?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionValue)}</div>`:'');
   const tagsBlock=hasAdminRole(me?.role)
     ? `<div class="history-tags-field" style="margin:0 0 14px"><label for="detailHistoryTags">Etiketler</label><textarea class="history-tags-input" id="detailHistoryTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderDetailTagsPreview()">${esc(tagsValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde etiketler de kaydedilir.</div><div class="history-tags-preview" id="detailHistoryTagsPreview">${historyTagsChipItems(tagsValue)}</div></div>`
     : historyTagsChips(tagsValue);
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`${tagsBlock}<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').innerHTML=`${tagsBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
   renderDetailTagsPreview();
   window._detailText=text;
@@ -3839,7 +3891,7 @@ async function rejectItem(id,btn){return setApprovalAction(id,'reject',btn);}
 async function approveDetailFromModal(btn){
   const id=window._detailHistoryId;
   if(!id){setApprovalStatus('Onaylanacak kayıt bulunamadı.','err');return;}
-  const ok=await setApprovalAction(id,'approve',btn,{tags:parseHistoryTags(v('detailHistoryTags'))});
+  const ok=await setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))});
   if(ok){
     window._detailHistoryStatus='onaylandi';
     if(btn){btn.disabled=true;btn.textContent='Onaylandı';}
@@ -4159,11 +4211,14 @@ async function loadOnay(){
   function card(h){
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const questionPreview=normalizeHistoryQuestionUi(h.questionText||'');
+      const questionHtml=questionPreview?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionPreview.slice(0,180))}${questionPreview.length>180?'…':''}</div>`:'';
       if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<div class="work-card">
         <div class="work-top"><div class="work-name">${esc(h.name||'—')}</div><span class="score-pill ${pc}">${sc}</span></div>
         <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
         <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
+        ${questionHtml}
         ${historyTagsChips(h.tags||[])}
         <div class="work-actions">
           ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
@@ -7796,6 +7851,11 @@ function renderHistoryTagImport(){
     reviewBulkBtn.hidden=!showReviewBulk;
     reviewBulkBtn.disabled=historyTagImportState.applying||!showReviewBulk;
   }
+  const questionBackfillBtn=el('historyTagImportBackfillQuestionsBtn');
+  if(questionBackfillBtn){
+    const appliedCount=Number(historyTagImportState.activeBatch?.appliedCount||0);
+    questionBackfillBtn.disabled=historyTagImportState.applying||!appliedCount;
+  }
   const batchList=el('historyTagImportBatchList');
   if(batchList){
     batchList.innerHTML=historyTagImportState.batches.length
@@ -7953,6 +8013,61 @@ async function applyReviewHistoryTagImportMatches(){
     doneLabel:'kontrol gereken eşleşme uygulandı',
     failTitle:'Toplu uygulama tamamlanamadı'
   });
+}
+async function backfillHistoryTagImportQuestions(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Soruları eklemek için önce bir Excel aktarım listesi seçin.','danger');
+  const appliedCount=Number(batch.appliedCount||0);
+  if(!appliedCount)return showSystemAlert('Uygulanmış eşleşme yok','Soruları eklemek için önce güvenli veya kontrol edilen eşleşmeleri uygulayın.','danger');
+  const ok=await openSystemConfirm({
+    title:'Excel soruları kayıtlara eklensin mi?',
+    badge:'Soru aktarımı',
+    message:`Bu işlem uygulanmış ${appliedCount.toLocaleString('tr-TR')} eşleşmede boş kalan Soru alanlarını Excel’deki soru bilgisiyle tamamlar.`,
+    detail:'Daha önce elle yazılmış sorular korunur. Etiketlere, cevaplara veya denetim metinlerine dokunulmaz.',
+    confirmText:'Soruları Ekle',
+    tone:'success'
+  });
+  if(!ok)return;
+  historyTagImportState.applying=true;
+  renderHistoryTagImport();
+  let updatedTotal=0;
+  let remaining=appliedCount;
+  let totalMissing=null;
+  const errors=[];
+  try{
+    for(let step=0;step<500;step++){
+      const shownTotal=Number(totalMissing ?? appliedCount);
+      setHistoryTagImportStatus(`Sorular ekleniyor: ${updatedTotal.toLocaleString('tr-TR')} / ${shownTotal.toLocaleString('tr-TR')} tamamlandı...`,'');
+      const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions`,{limit:60});
+      if(data.error)throw new Error(data.error);
+      updatedTotal+=Number(data.updated||0);
+      remaining=Number(data.remaining||0);
+      if(Number.isFinite(Number(data.totalMissing)))totalMissing=Number(data.totalMissing);
+      if(data.batch)historyTagImportState.activeBatch=data.batch;
+      if(data.errors?.length)errors.push(...data.errors);
+      setHistoryTagImportStatus(`Sorular ekleniyor: ${updatedTotal.toLocaleString('tr-TR')} eklendi, ${remaining.toLocaleString('tr-TR')} kaldı...`,'');
+      if(data.errors?.length||data.done||remaining<=0||Number(data.updated||0)<=0)break;
+      await waitForHistoryTagImportStep();
+    }
+  }catch(error){
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    const message=error.message||'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.';
+    setHistoryTagImportStatus(message,'err');
+    return showSystemAlert('Soru aktarımı tamamlanamadı',message,'danger');
+  }
+  historyTagImportState.applying=false;
+  await loadHistoryTagImportBatches({keepActive:true});
+  if(errors.length){
+    setHistoryTagImportStatus(`${updatedTotal.toLocaleString('tr-TR')} soru eklendi; bazı kayıtlar uygulanamadı.`,'err');
+    await showSystemAlert('Bazı sorular eklenemedi',errors.slice(0,6).join('\n'),'danger');
+  }else if(updatedTotal>0){
+    setHistoryTagImportStatus(`${updatedTotal.toLocaleString('tr-TR')} soru ilgili denetim kayıtlarına eklendi.`,'ok');
+    await showSystemAlert('Sorular eklendi',`${updatedTotal.toLocaleString('tr-TR')} kayıtta boş kalan Soru alanı Excel bilgisiyle tamamlandı.`,'success');
+  }else{
+    setHistoryTagImportStatus('Eklenecek boş soru alanı kalmadı. Daha önce yazılmış sorular korundu.','ok');
+    await showSystemAlert('Sorular zaten hazır','Bu aktarımda boş kalan Soru alanı bulunmadı. Daha önce yazılmış sorular korundu.','success');
+  }
 }
 function archiveWorkStatusLabel(status){
   return {

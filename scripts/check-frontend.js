@@ -298,20 +298,47 @@ if (!html.includes('function setApprovalAction') || !html.includes("await loadOn
 }
 if (
   !schema.includes("tags jsonb not null default '[]'::jsonb") ||
+  !schema.includes('question_text  text') ||
   !schema.includes('history_tags_idx') ||
   !server.includes('HAS_HISTORY_TAGS') ||
+  !server.includes('HAS_HISTORY_QUESTION_TEXT') ||
   !server.includes('function normalizeHistoryTags') ||
+  !server.includes('function normalizeHistoryQuestion') ||
+  !server.includes('function requireApprovalQuestionAndTags') ||
   !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/tags'") ||
-  !server.includes("updateRow.tags = normalizeHistoryTags(req.body?.tags)") ||
-  !server.includes('mergedRow.tags = normalizeHistoryTags(req.body?.tags)') ||
+  !server.includes('const approvalMeta = requireApprovalQuestionAndTags(req.body)') ||
+  !server.includes('updateRow.tags = approvalMeta.tags') ||
+  !server.includes('updateRow.question_text = approvalMeta.questionText') ||
+  !server.includes('mergedRow.tags = approvalMeta.tags') ||
+  !server.includes('mergedRow.question_text = approvalMeta.questionText') ||
+  !server.includes('const importedQuestion = normalizeHistoryQuestion(match.excel_question)') ||
+  !server.includes('if (!existingQuestion && importedQuestion) historyUpdate.question_text = importedQuestion;') ||
+  !server.includes('function fetchHistoryQuestionRowsByIds') ||
+  !server.includes('function backfillHistoryTagImportQuestionsChunk') ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
+  !server.includes('questionText: h.question_text') ||
   !server.includes('Soru Etiketleri') ||
+  !server.includes('Soru') ||
+  !html.includes('normalizeHistoryQuestionUi') ||
+  !html.includes('id="submitApprovalQuestionMain"') ||
+  !html.includes('id="submitApprovalQuestion"') ||
   !html.includes('id="submitApprovalTags"') ||
+  !html.includes('Soru (zorunlu)') ||
+  !html.includes('Etiketler (zorunlu)') ||
+  !html.includes('Onaya göndermeden önce soru alanını doldurun.') ||
+  !html.includes('Onaya göndermeden önce en az bir etiket ekleyin.') ||
+  !html.includes('id="historyTagImportBackfillQuestionsBtn"') ||
+  !html.includes('backfillHistoryTagImportQuestions') ||
+  !html.includes('Excel Sorularını Ekle') ||
+  !html.includes('Daha önce elle yazılmış sorular korunur') ||
   !html.includes('renderSubmitTagsPreview') ||
+  !html.includes('id="detailHistoryQuestion"') ||
   !html.includes('id="detailHistoryTags"') ||
-  !html.includes("setApprovalAction(id,'approve',btn,{tags:parseHistoryTags(v('detailHistoryTags'))})") ||
+  !html.includes("setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))})") ||
+  !html.includes('h.questionText') ||
   !html.includes('historyTagsChips(h.tags||[])')
 ) {
-  throw new Error('Soru-cevap etiketleri onaya gonderme, admin onay duzeltmesi, CSV ve DB semasinda korunmali.');
+  throw new Error('Soru-cevap soru ve etiket alanlari onaya gonderme, admin onay duzeltmesi, Excel aktarimi, CSV ve DB semasinda korunmali.');
 }
 if (
   !schema.includes('history_tag_import_batches') ||
@@ -329,9 +356,11 @@ if (
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
   !server.includes('TAG_IMPORT_APPLY_CHUNK_SIZE') ||
   !server.includes('function historyTagImportApplyLimit') ||
   !server.includes('async function applyHistoryTagImportBatchChunk') ||
+  !server.includes('async function backfillHistoryTagImportQuestionsChunk') ||
   server.includes(".order('updated_at', { ascending: true })\r\n    .limit(safeLimit)") ||
   server.includes(".order('updated_at', { ascending: true })\n    .limit(safeLimit)") ||
   !server.includes('remaining,') ||
@@ -354,12 +383,15 @@ if (
   !html.includes('applyHistoryTagImportMatchesInSteps') ||
   !html.includes('applyReadyHistoryTagImportMatches') ||
   !html.includes('applyReviewHistoryTagImportMatches') ||
+  !html.includes('backfillHistoryTagImportQuestions') ||
   !html.includes('historyTagImportApplyReadyBtn') ||
   !html.includes('historyTagImportApplyReviewBtn') ||
+  !html.includes('historyTagImportBackfillQuestionsBtn') ||
   !html.includes('deleteHistoryTagImportBatch') ||
   !html.includes('Seçili Aktarımı Sil') ||
   !html.includes('Güvenli Eşleşmeleri Uygula') ||
   !html.includes('Kontrol Gerekenleri Uygula') ||
+  !html.includes('Excel Sorularını Ekle') ||
   !html.includes('Listeyi Yenile') ||
   html.includes('Yüksek Güvenlileri Uygula') ||
   html.includes('Partileri Yenile') ||

@@ -504,6 +504,7 @@ const mapHistory = h => ({
   id: h.id, userId: h.user_id, username: h.username, name: h.name,
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
   catCounts: h.cat_counts || {}, summary: h.summary, originalText: h.original_text, correctedText: h.corrected_text,
+  questionText: h.question_text || '',
   status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
   tags: Array.isArray(h.tags) ? h.tags : [],
   promptVersion: h.prompt_version, rulesHash: h.rules_hash,
@@ -840,6 +841,37 @@ function normalizeHistoryTags(value) {
   return tags;
 }
 
+function normalizeHistoryQuestion(value) {
+  return String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => line.replace(/[ \t]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .slice(0, 8000);
+}
+
+function requireApprovalQuestionAndTags(body = {}) {
+  if (!HAS_HISTORY_QUESTION_TEXT || !HAS_HISTORY_TAGS) {
+    const err = new Error('Soru ve etiket alanları aktif değil. Lütfen gerekli SQL güncellemesini uygulayın.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const questionText = normalizeHistoryQuestion(body.questionText);
+  const tags = normalizeHistoryTags(body.tags);
+  if (!questionText) {
+    const err = new Error('Onaya göndermeden önce soru alanını doldurun.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (!tags.length) {
+    const err = new Error('Onaya göndermeden önce en az bir etiket ekleyin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  return { questionText, tags };
+}
+
 function normalizeImportTags(value) {
   return normalizeHistoryTags(String(value || '').replace(/[;\n\r]+/g, ','));
 }
@@ -1110,6 +1142,7 @@ function publicHistoryTagImportHistory(row = {}) {
     approvedBy: row.approved_by,
     approvedAt: row.approved_at,
     tags: Array.isArray(row.tags) ? row.tags : [],
+    questionText: row.question_text || '',
     promptVersion: row.prompt_version,
     rulesHash: row.rules_hash,
     createdAt: row.created_at
@@ -1135,6 +1168,7 @@ function historyTagImportSelectColumns() {
   ];
   if (HAS_ORIGINAL_TEXT) columns.splice(10, 0, 'original_text');
   if (HAS_HISTORY_TAGS) columns.splice(columns.indexOf('created_at'), 0, 'tags');
+  if (HAS_HISTORY_QUESTION_TEXT) columns.splice(columns.indexOf('created_at'), 0, 'question_text');
   if (HAS_ANALYSIS_META) columns.splice(columns.indexOf('created_at'), 0, 'prompt_version', 'rules_hash');
   return columns.join(',');
 }
@@ -4309,6 +4343,10 @@ async function seed() {
   HAS_HISTORY_TAGS = !historyTagsErr;
   if (!HAS_HISTORY_TAGS) console.warn('⚠ history.tags kolonu yok — onay etiketleri saklanmayacak. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
 
+  const { error: historyQuestionTextErr } = await supabase.from('history').select('question_text').limit(1);
+  HAS_HISTORY_QUESTION_TEXT = !historyQuestionTextErr;
+  if (!HAS_HISTORY_QUESTION_TEXT) console.warn('⚠ history.question_text kolonu yok — soru alanı saklanmayacak. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
+
   const { error: tagImportBatchErr } = await supabase.from('history_tag_import_batches').select('id').limit(1);
   const { error: tagImportMatchErr } = await supabase.from('history_tag_import_matches').select('id').limit(1);
   HAS_HISTORY_TAG_IMPORT_TABLES = !tagImportBatchErr && !tagImportMatchErr;
@@ -5533,9 +5571,10 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
     }
     if (historyStatusForApproval(history.status)) {
-      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true });
+      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '' });
     }
     if (history.status !== 'taslak') return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
+    const approvalMeta = requireApprovalQuestionAndTags(req.body);
     if (await submittedDuplicateExists(req, history.text_hash, history.id)) {
       return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
     }
@@ -5545,21 +5584,22 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       return res.status(400).json({ error: 'Bu düzeltilmiş metnin onaya gönderilmiş veya onaylanmış bir kaydı zaten var.' });
     }
     const updateRow = { status: 'bekliyor', approved_by: null, approved_at: null };
-    if (HAS_HISTORY_TAGS) updateRow.tags = normalizeHistoryTags(req.body?.tags);
+    updateRow.tags = approvalMeta.tags;
+    updateRow.question_text = approvalMeta.questionText;
     const { data, error: updateError } = await supabase.from('history')
       .update(updateRow)
       .eq('id', history.id)
       .eq('user_id', req.session.userId)
       .eq('status', 'taslak')
-      .select('id,status')
+      .select('*')
       .single();
     if (updateError) throw new Error(updateError.message);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
-    res.json({ success: true, id: data.id, status: data.status, tags: updateRow.tags || [] });
+    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
-    res.status(500).json({ error: e.message });
+    res.status(e.statusCode || 500).json({ error: e.message });
   }
 });
 
@@ -5623,6 +5663,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
     const sourceIds = safeUuidList(req.body?.sourceIds);
     await loadValidChunkSources(req, sourceIds);
     const payload = mergedHistoryPayloadFromBody(req, 'Metin denetlendi ve sonuç onay sürecine iletildi.');
+    const approvalMeta = requireApprovalQuestionAndTags(req.body);
     if (await submittedDuplicateExists(req, payload.hash)) {
       return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
     }
@@ -5644,7 +5685,8 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       corrected_text: payload.correctedText,
       status: 'bekliyor'
     };
-    if (HAS_HISTORY_TAGS) mergedRow.tags = normalizeHistoryTags(req.body?.tags);
+    mergedRow.tags = approvalMeta.tags;
+    mergedRow.question_text = approvalMeta.questionText;
     if (HAS_ORIGINAL_TEXT) mergedRow.original_text = payload.originalText;
     if (HAS_TEXT_HASH) mergedRow.text_hash = payload.hash;
     if (HAS_ANALYSIS_META) {
@@ -5652,7 +5694,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       mergedRow.rules_hash = payload.analysisMeta?.rulesHash || null;
     }
 
-    const { data, error: insertError } = await supabase.from('history').insert(mergedRow).select('id,status').single();
+    const { data, error: insertError } = await supabase.from('history').insert(mergedRow).select('*').single();
     if (insertError) throw new Error(insertError.message);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     const { error: hideError } = await supabase.from('history')
@@ -5662,7 +5704,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
     if (hideError) console.warn('Birlesik onay sonrasi parca gizleme uyarisi:', hideError.message);
     await maybeCreateLowScoreAlert(req, data.id, payload.score, payload.filename);
-    res.json({ success: true, id: data.id, status: data.status, tags: mergedRow.tags || [] });
+    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || mergedRow.tags || [], questionText: data.question_text || mergedRow.question_text || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);
     res.status(e.statusCode || 500).json({ error: e.message });
@@ -5768,7 +5810,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
   try {
   const { data, error } = await supabase.from('history').select('*').order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket Hatası', 'Yapı', 'Durum', 'Onaylayan', 'Soru Etiketleri', 'Prompt Sürümü', 'Kural Hash']];
+  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket Hatası', 'Yapı', 'Durum', 'Onaylayan', 'Soru', 'Soru Etiketleri', 'Prompt Sürümü', 'Kural Hash']];
   (data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, ROLES.ADMIN)).forEach(h => {
     rows.push([
       new Date(h.createdAt).toLocaleString('tr-TR'),
@@ -5776,7 +5818,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
       h.score || 0, h.totalErrors || 0,
       h.catCounts?.sozluk || 0, h.catCounts?.imla || 0,
       h.catCounts?.noktalama || 0, h.catCounts?.etiket || 0, h.catCounts?.yapi || 0,
-      h.status || 'bekliyor', h.approvedBy || '', (h.tags || []).join(', '),
+      h.status || 'bekliyor', h.approvedBy || '', h.questionText || '', (h.tags || []).join(', '),
       h.promptVersion || '', h.rulesHash || ''
     ]);
   });
@@ -5804,12 +5846,15 @@ async function setApproval(req, res, status) {
     if (HAS_HISTORY_TAGS && Object.prototype.hasOwnProperty.call(req.body || {}, 'tags')) {
       updateRow.tags = normalizeHistoryTags(req.body?.tags);
     }
-    const { data, error } = await supabase.from('history').update(updateRow).eq('id', req.params.id).select('id,tags');
+    if (HAS_HISTORY_QUESTION_TEXT && Object.prototype.hasOwnProperty.call(req.body || {}, 'questionText')) {
+      updateRow.question_text = normalizeHistoryQuestion(req.body?.questionText);
+    }
+    const { data, error } = await supabase.from('history').update(updateRow).eq('id', req.params.id).select('*');
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
     if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
-    res.json({ success: true });
+    res.json({ success: true, history: mapHistory(data[0]) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
 app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req, res, 'onaylandi'));
@@ -6010,10 +6055,22 @@ async function applyHistoryTagImportMatchRow(matchId, actorName, options = {}) {
     err.statusCode = 400;
     throw err;
   }
+  const historyUpdate = {};
+  if (HAS_HISTORY_TAGS) historyUpdate.tags = tags;
+  if (HAS_HISTORY_QUESTION_TEXT) {
+    const { data: existingHistory, error: existingHistoryError } = await supabase.from('history')
+      .select('question_text')
+      .eq('id', match.history_id)
+      .maybeSingle();
+    if (existingHistoryError) throw new Error(existingHistoryError.message);
+    const importedQuestion = normalizeHistoryQuestion(match.excel_question);
+    const existingQuestion = normalizeHistoryQuestion(existingHistory?.question_text || '');
+    if (!existingQuestion && importedQuestion) historyUpdate.question_text = importedQuestion;
+  }
   const { data: updatedHistory, error: historyError } = await supabase.from('history')
-    .update({ tags })
+    .update(historyUpdate)
     .eq('id', match.history_id)
-    .select('id,tags')
+    .select('*')
     .maybeSingle();
   if (historyError) throw new Error(historyError.message);
   if (!updatedHistory) {
@@ -6023,7 +6080,7 @@ async function applyHistoryTagImportMatchRow(matchId, actorName, options = {}) {
   }
   const { data: updatedMatch, error: matchError } = await supabase.from('history_tag_import_matches')
     .update({
-      current_tags: tags,
+      current_tags: updatedHistory.tags || tags,
       match_status: 'applied',
       applied_at: new Date().toISOString(),
       applied_by: actorName || ''
@@ -6074,6 +6131,80 @@ async function applyHistoryTagImportBatchChunk({ batchId, matchStatus, minConfid
     errors,
     batch,
     remaining,
+    done: remaining === 0,
+    limit: safeLimit
+  };
+}
+
+async function fetchHistoryQuestionRowsByIds(historyIds = []) {
+  const out = new Map();
+  const ids = [...new Set((historyIds || []).filter(Boolean))];
+  for (let i = 0; i < ids.length; i += 250) {
+    const chunk = ids.slice(i, i + 250);
+    const { data, error } = await supabase.from('history')
+      .select('id,question_text')
+      .in('id', chunk);
+    if (error) throw new Error(error.message);
+    (data || []).forEach(row => out.set(row.id, row));
+  }
+  return out;
+}
+
+async function backfillHistoryTagImportQuestionsChunk({ batchId, limit }) {
+  if (!HAS_HISTORY_QUESTION_TEXT) {
+    const err = new Error('Denetim kayıtlarında soru alanı aktif değil. schema.sql içindeki history.question_text SQL satırı uygulanmalı.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const safeLimit = historyTagImportApplyLimit(limit);
+  const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')
+    .select('id,batch_id,history_id,excel_question,confidence,match_status')
+    .eq('batch_id', batchId)
+    .eq('match_status', 'applied')
+    .not('history_id', 'is', null)
+    .not('excel_question', 'is', null)
+    .order('confidence', { ascending: false })
+    .order('id', { ascending: true }), 1000);
+
+  const byHistory = new Map();
+  for (const match of matches || []) {
+    const question = normalizeHistoryQuestion(match.excel_question);
+    if (!question || !match.history_id) continue;
+    if (!byHistory.has(match.history_id)) byHistory.set(match.history_id, { ...match, question });
+  }
+
+  const uniqueMatches = [...byHistory.values()];
+  const historyById = await fetchHistoryQuestionRowsByIds(uniqueMatches.map(match => match.history_id));
+  const missing = uniqueMatches.filter(match => {
+    const current = normalizeHistoryQuestion(historyById.get(match.history_id)?.question_text || '');
+    return !current;
+  });
+
+  const rows = missing.slice(0, safeLimit);
+  let updated = 0;
+  const errors = [];
+  for (const row of rows) {
+    try {
+      const { error } = await supabase.from('history')
+        .update({ question_text: row.question })
+        .eq('id', row.history_id);
+      if (error) throw new Error(error.message);
+      updated++;
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+
+  const remaining = Math.max(0, missing.length - updated);
+  const batch = await refreshHistoryTagImportBatchCounts(batchId);
+  return {
+    success: errors.length === 0,
+    updated,
+    skippedExisting: Math.max(0, uniqueMatches.length - missing.length),
+    errors,
+    batch,
+    remaining,
+    totalMissing: missing.length,
     done: remaining === 0,
     limit: safeLimit
   };
@@ -6297,6 +6428,17 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review', 
     });
     res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const result = await backfillHistoryTagImportQuestionsChunk({
+      batchId: req.params.id,
+      limit: req.body?.limit
+    });
+    res.json(result);
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.get('/api/alerts', auth, admin, async (req, res) => {
@@ -7466,6 +7608,7 @@ let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu
 let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
 let HAS_HISTORY_TAGS = false; // startup'ta tespit edilir (history.tags kolonu)
+let HAS_HISTORY_QUESTION_TEXT = false; // startup'ta tespit edilir (history.question_text kolonu)
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
 let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş içerik düzeltme kayıt defteri)

@@ -121,6 +121,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Soru-cevap soru alanı ve Excel soru aktarımı eklendi:** `/admin` denetim akışında kullanıcı
+  artık denetim sonucunu onaya göndermeden önce cevaba bağlı `Soru` metnini ve virgülle ayrılmış
+  `Etiketler` bilgisini elle eklemek zorundadır; soru veya en az bir etiket yoksa kayıt onay
+  kuyruğuna gönderilmez. Bu iki alan denetim motoruna sokulmaz; onay ve yayın hazırlığı için
+  kayıtla birlikte saklanır. İş Panosu detay penceresinde admin/süper admin bu
+  soruyu ve etiketleri görüp onaydan önce düzeltebilir; onay işlemi bu son değerleri kaydeder.
+  Excel etiket aktarımında eşleşen kayıtlar için Excel'deki soru metnini `history.question_text`
+  alanına taşıyan yeni kontrollü akış eklendi. `Excel Sorularını Ekle` yalnız daha önce uygulanmış
+  eşleşmelerde boş kalan soru alanlarını doldurur; kullanıcı/admin tarafından elle yazılmış sorular
+  korunur, etiketlere ve cevap metnine dokunmaz. Backend endpoint'i:
+  `POST /api/history-tags/import-batches/:id/backfill-questions`. Canlı DB için
+  `schema.sql` içindeki `alter table public.history add column if not exists question_text text;`
+  satırı uygulanmalıdır. Root `/` public cutover ve public frontend hattına dokunulmadı. Kapsam:
+  `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`.
+
 - **Etiket aktarımı toplu uygulama canlı şema uyumsuzluğu düzeltildi:** `/admin` süper admin
   Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında `Güvenli Eşleşmeleri Uygula`
   işlemi canlıda önce bazı kayıtları uygulayıp sonra

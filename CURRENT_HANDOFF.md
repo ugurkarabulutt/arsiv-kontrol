@@ -2,6 +2,19 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde soru-cevap soru alanı ve Excel soru aktarımı eklendi. Denetim sonucunda kullanıcı artık
+  `Onaya Gönder` öncesinde cevaba bağlı `Soru` metnini ve virgülle ayrılmış `Etiketler` bilgisini
+  elle eklemek zorundadır; soru veya en az bir etiket yoksa kayıt onay kuyruğuna gönderilmez.
+  Bu alanlar denetim motoruna dahil edilmez; onay ve yayın hazırlığı için saklanır.
+  İş Panosu detayında admin/süper admin soru ve etiketleri görüp onaydan önce
+  düzeltebilir; onay son değerleri kaydeder. Excel aktarım tarafında `Excel Sorularını Ekle`
+  aksiyonu eklendi: yalnız uygulanmış eşleşmelerde boş kalan `Soru` alanlarını Excel'deki soru
+  bilgisiyle tamamlar, elle yazılmış soruları korur, etiketlere ve cevap metnine dokunmaz.
+  Backend endpoint'i: `POST /api/history-tags/import-batches/:id/backfill-questions`. Canlı DB'de
+  `history.question_text` için `schema.sql` satırı uygulanmış olmalıdır. Root `/` public cutover ve
+  public frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`, `schema.sql`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 - Yerelde etiket aktarımı toplu uygulama canlı şema uyumsuzluğu düzeltildi. Canlıda
   `Güvenli Eşleşmeleri Uygula` işleminin ilk parçaları uygulanmış, sonraki parça
   `column history_tag_import_matches.updated_at does not exist` hatasına düşmüştü. Kök sebep:
