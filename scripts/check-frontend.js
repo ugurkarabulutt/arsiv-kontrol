@@ -316,6 +316,9 @@ if (
   !server.includes('function fetchHistoryQuestionRowsByIds') ||
   !server.includes('function backfillHistoryTagImportQuestionsChunk') ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX') ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
+  !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
   !server.includes('questionText: h.question_text') ||
   !server.includes('Soru Etiketleri') ||
   !server.includes('Soru') ||
@@ -330,6 +333,11 @@ if (
   !html.includes('id="historyTagImportBackfillQuestionsBtn"') ||
   !html.includes('backfillHistoryTagImportQuestions') ||
   !html.includes('Excel Sorularını Ekle') ||
+  !html.includes('Soru Aktarımı Sürüyor') ||
+  !html.includes('Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.') ||
+  !html.includes('archive-question-backfill-pending') ||
+  !html.includes('resumePendingHistoryTagImportQuestions') ||
+  !html.includes('document.addEventListener(\'visibilitychange\'') ||
   !html.includes('Daha önce elle yazılmış sorular korunur') ||
   !html.includes('renderSubmitTagsPreview') ||
   !html.includes('id="detailHistoryQuestion"') ||
@@ -357,6 +365,9 @@ if (
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
+  !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
+  !server.includes('async function runHistoryTagImportQuestionBackfillJob') ||
   !server.includes('TAG_IMPORT_APPLY_CHUNK_SIZE') ||
   !server.includes('function historyTagImportApplyLimit') ||
   !server.includes('async function applyHistoryTagImportBatchChunk') ||
@@ -384,6 +395,10 @@ if (
   !html.includes('applyReadyHistoryTagImportMatches') ||
   !html.includes('applyReviewHistoryTagImportMatches') ||
   !html.includes('backfillHistoryTagImportQuestions') ||
+  !html.includes('/backfill-questions/start') ||
+  !html.includes('/backfill-questions/status') ||
+  !html.includes('archive-question-backfill-pending') ||
+  !html.includes('visibilitychange') ||
   !html.includes('historyTagImportApplyReadyBtn') ||
   !html.includes('historyTagImportApplyReviewBtn') ||
   !html.includes('historyTagImportBackfillQuestionsBtn') ||

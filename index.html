@@ -2340,7 +2340,7 @@ let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:''
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
-let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false};
+let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','tagImport'];
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
@@ -7741,6 +7741,10 @@ async function openHistoryTagImportBatch(id,options={}){
   historyTagImportState.matches=data.matches||[];
   renderHistoryTagImport();
   if(!options.silent)setHistoryTagImportStatus('Eşleşmeler listelendi.','ok');
+  refreshHistoryTagImportQuestionStatus({silent:true,reload:false}).then(job=>{
+    if(job?.status==='running')startHistoryTagImportQuestionPolling(id);
+    else if(hasHistoryTagImportQuestionPending(id))resumePendingHistoryTagImportQuestions();
+  }).catch(()=>{});
 }
 function setHistoryTagImportFilter(){
   historyTagImportState.query=el('historyTagImportSearch')?.value||'';
@@ -7854,7 +7858,10 @@ function renderHistoryTagImport(){
   const questionBackfillBtn=el('historyTagImportBackfillQuestionsBtn');
   if(questionBackfillBtn){
     const appliedCount=Number(historyTagImportState.activeBatch?.appliedCount||0);
-    questionBackfillBtn.disabled=historyTagImportState.applying||!appliedCount;
+    const job=historyTagImportState.questionBackfillJob;
+    const jobRunning=job&&job.batchId===historyTagImportState.activeBatch?.id&&job.status==='running';
+    questionBackfillBtn.disabled=historyTagImportState.applying||jobRunning||!appliedCount;
+    questionBackfillBtn.textContent=jobRunning?'Soru Aktarımı Sürüyor':'Excel Sorularını Ekle';
   }
   const batchList=el('historyTagImportBatchList');
   if(batchList){
@@ -8014,6 +8021,112 @@ async function applyReviewHistoryTagImportMatches(){
     failTitle:'Toplu uygulama tamamlanamadı'
   });
 }
+function applyHistoryTagImportQuestionJob(job){
+  historyTagImportState.questionBackfillJob=job||null;
+  if(job?.batch)historyTagImportState.activeBatch=job.batch;
+  renderHistoryTagImport();
+}
+function historyTagImportQuestionPendingKey(batchId){
+  return `archive-question-backfill-pending:${batchId}`;
+}
+function setHistoryTagImportQuestionPending(batchId){
+  if(!batchId)return;
+  try{localStorage.setItem(historyTagImportQuestionPendingKey(batchId),String(Date.now()));}catch{}
+}
+function clearHistoryTagImportQuestionPending(batchId){
+  if(!batchId)return;
+  try{localStorage.removeItem(historyTagImportQuestionPendingKey(batchId));}catch{}
+}
+function hasHistoryTagImportQuestionPending(batchId){
+  if(!batchId)return false;
+  try{return Boolean(localStorage.getItem(historyTagImportQuestionPendingKey(batchId)));}catch{return false;}
+}
+function historyTagImportQuestionJobStatusText(job){
+  if(!job)return '';
+  const updated=Number(job.updatedTotal||0);
+  const total=Number(job.totalMissing||0);
+  const remaining=Number(job.remaining||0);
+  if(job.status==='completed'){
+    return updated>0
+      ? `${updated.toLocaleString('tr-TR')} soru denetim kayıtlarına eklendi.`
+      : 'Eklenecek boş soru alanı kalmadı. Daha önce yazılmış sorular korundu.';
+  }
+  if(job.status==='failed')return job.lastError||'Soru aktarımı tamamlanamadı.';
+  const totalText=total?` / ${total.toLocaleString('tr-TR')}`:'';
+  const remainText=remaining?`, ${remaining.toLocaleString('tr-TR')} kaldı`:'';
+  return `Soru aktarımı sürüyor: ${updated.toLocaleString('tr-TR')}${totalText} tamamlandı${remainText}.`;
+}
+function stopHistoryTagImportQuestionPolling(){
+  if(historyTagImportState.questionBackfillPoll){
+    clearTimeout(historyTagImportState.questionBackfillPoll);
+    historyTagImportState.questionBackfillPoll=null;
+  }
+}
+async function refreshHistoryTagImportQuestionStatus(options={}){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return null;
+  const data=await api('GET',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions/status`);
+  if(data.error){
+    if(!options.silent){
+      setHistoryTagImportStatus('Soru aktarımı kayıt altında. Sayfaya döndüğünüzde durum tekrar kontrol edilecek.','');
+    }
+    return null;
+  }
+  const job=data.job||null;
+  applyHistoryTagImportQuestionJob(job);
+  if(job?.status==='completed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    if(options.reload!==false)await loadHistoryTagImportBatches({keepActive:true});
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'ok');
+  }else if(job?.status==='failed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'err');
+  }else if(job?.status==='running'){
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'');
+  }
+  return job;
+}
+function startHistoryTagImportQuestionPolling(batchId){
+  stopHistoryTagImportQuestionPolling();
+  const tick=async()=>{
+    if(!historyTagImportState.activeBatch||historyTagImportState.activeBatch.id!==batchId){
+      stopHistoryTagImportQuestionPolling();
+      return;
+    }
+    if(document.hidden){
+      historyTagImportState.questionBackfillPoll=setTimeout(tick,5000);
+      return;
+    }
+    const job=await refreshHistoryTagImportQuestionStatus({silent:true});
+    if(job?.status==='running'){
+      historyTagImportState.questionBackfillPoll=setTimeout(tick,2500);
+    }
+  };
+  historyTagImportState.questionBackfillPoll=setTimeout(tick,1200);
+}
+async function resumePendingHistoryTagImportQuestions(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch||!hasHistoryTagImportQuestionPending(batch.id))return null;
+  const current=await refreshHistoryTagImportQuestionStatus({silent:true,reload:false}).catch(()=>null);
+  if(current?.status==='running'){
+    startHistoryTagImportQuestionPolling(batch.id);
+    return current;
+  }
+  if(current?.status==='completed'||current?.status==='failed')return current;
+  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions/start`,{});
+  if(data.error){
+    setHistoryTagImportStatus('Soru aktarımı bağlantı bekliyor. Sayfaya döndüğünüzde sistem tekrar kontrol edecek.','');
+    return null;
+  }
+  applyHistoryTagImportQuestionJob(data.job||null);
+  setHistoryTagImportStatus('Soru aktarımı kayıt altında. Sayfadan ayrılsanız bile durum korunur.','ok');
+  startHistoryTagImportQuestionPolling(batch.id);
+  return data.job||null;
+}
 async function backfillHistoryTagImportQuestions(){
   const batch=historyTagImportState.activeBatch;
   if(!batch)return showSystemAlert('Aktarım seçilmedi','Soruları eklemek için önce bir Excel aktarım listesi seçin.','danger');
@@ -8023,52 +8136,44 @@ async function backfillHistoryTagImportQuestions(){
     title:'Excel soruları kayıtlara eklensin mi?',
     badge:'Soru aktarımı',
     message:`Bu işlem uygulanmış ${appliedCount.toLocaleString('tr-TR')} eşleşmede boş kalan Soru alanlarını Excel’deki soru bilgisiyle tamamlar.`,
-    detail:'Daha önce elle yazılmış sorular korunur. Etiketlere, cevaplara veya denetim metinlerine dokunulmaz.',
+    detail:'Daha önce elle yazılmış sorular korunur. İşlem kayıt altında ilerler; sayfadan ayrılsanız bile durum sonradan devam ettirilebilir.',
     confirmText:'Soruları Ekle',
     tone:'success'
   });
   if(!ok)return;
   historyTagImportState.applying=true;
   renderHistoryTagImport();
-  let updatedTotal=0;
-  let remaining=appliedCount;
-  let totalMissing=null;
-  const errors=[];
-  try{
-    for(let step=0;step<500;step++){
-      const shownTotal=Number(totalMissing ?? appliedCount);
-      setHistoryTagImportStatus(`Sorular ekleniyor: ${updatedTotal.toLocaleString('tr-TR')} / ${shownTotal.toLocaleString('tr-TR')} tamamlandı...`,'');
-      const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions`,{limit:60});
-      if(data.error)throw new Error(data.error);
-      updatedTotal+=Number(data.updated||0);
-      remaining=Number(data.remaining||0);
-      if(Number.isFinite(Number(data.totalMissing)))totalMissing=Number(data.totalMissing);
-      if(data.batch)historyTagImportState.activeBatch=data.batch;
-      if(data.errors?.length)errors.push(...data.errors);
-      setHistoryTagImportStatus(`Sorular ekleniyor: ${updatedTotal.toLocaleString('tr-TR')} eklendi, ${remaining.toLocaleString('tr-TR')} kaldı...`,'');
-      if(data.errors?.length||data.done||remaining<=0||Number(data.updated||0)<=0)break;
-      await waitForHistoryTagImportStep();
-    }
-  }catch(error){
+  setHistoryTagImportStatus('Soru aktarımı başlatılıyor...','');
+  setHistoryTagImportQuestionPending(batch.id);
+  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions/start`,{});
+  if(data.error){
+    const maybeJob=await resumePendingHistoryTagImportQuestions().catch(()=>null);
+    if(maybeJob?.status==='running'||maybeJob?.status==='completed')return;
     historyTagImportState.applying=false;
     renderHistoryTagImport();
-    const message=error.message||'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.';
-    setHistoryTagImportStatus(message,'err');
-    return showSystemAlert('Soru aktarımı tamamlanamadı',message,'danger');
+    if(String(data.error||'').includes('Bağlantı tamamlanamadı')){
+      setHistoryTagImportStatus('Soru aktarımı isteği kayıt altında kontrol edilecek. Sayfaya döndüğünüzde sistem otomatik devam etmeyi dener.','');
+      return;
+    }
+    clearHistoryTagImportQuestionPending(batch.id);
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Soru aktarımı başlatılamadı',data.error,'danger');
   }
-  historyTagImportState.applying=false;
-  await loadHistoryTagImportBatches({keepActive:true});
-  if(errors.length){
-    setHistoryTagImportStatus(`${updatedTotal.toLocaleString('tr-TR')} soru eklendi; bazı kayıtlar uygulanamadı.`,'err');
-    await showSystemAlert('Bazı sorular eklenemedi',errors.slice(0,6).join('\n'),'danger');
-  }else if(updatedTotal>0){
-    setHistoryTagImportStatus(`${updatedTotal.toLocaleString('tr-TR')} soru ilgili denetim kayıtlarına eklendi.`,'ok');
-    await showSystemAlert('Sorular eklendi',`${updatedTotal.toLocaleString('tr-TR')} kayıtta boş kalan Soru alanı Excel bilgisiyle tamamlandı.`,'success');
-  }else{
-    setHistoryTagImportStatus('Eklenecek boş soru alanı kalmadı. Daha önce yazılmış sorular korundu.','ok');
-    await showSystemAlert('Sorular zaten hazır','Bu aktarımda boş kalan Soru alanı bulunmadı. Daha önce yazılmış sorular korundu.','success');
-  }
+  applyHistoryTagImportQuestionJob(data.job||null);
+  setHistoryTagImportStatus('Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.','ok');
+  startHistoryTagImportQuestionPolling(batch.id);
 }
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  if(historyTagImportState.activeBatch&&hasHistoryTagImportQuestionPending(historyTagImportState.activeBatch.id)){
+    resumePendingHistoryTagImportQuestions();
+    return;
+  }
+  if(historyTagImportState.questionBackfillJob?.status==='running'){
+    refreshHistoryTagImportQuestionStatus({silent:true});
+    startHistoryTagImportQuestionPolling(historyTagImportState.questionBackfillJob.batchId);
+  }
+});
 function archiveWorkStatusLabel(status){
   return {
     taslak:'Taslak',

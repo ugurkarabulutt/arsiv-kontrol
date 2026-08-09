@@ -2,6 +2,22 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde Excel soru aktarımı ekran kapanmasına dayanıklı hale getirildi. `/admin > Arşiv
+  Operasyon Merkezi > Etiket Aktarımı > Excel Sorularını Ekle` artık telefon ekranı kapanınca,
+  kullanıcı başka uygulamaya geçince veya tarayıcı bağlantısı kısa süreli kesilince tek uzun
+  frontend isteğine bağlı kalmaz. Soru aktarımı sunucu tarafında `settings` içinde kayıtlı,
+  devam edebilir bir iş olarak başlatılır; frontend yalnız durumu izler. Kullanıcı sayfadan
+  ayrılırsa işlem kaydı korunur, geri dönünce durum otomatik kontrol edilir ve gerekirse iş
+  kaldığı yerden yeniden tetiklenir. Bağlantı kopması artık doğrudan kırmızı hata penceresine
+  düşmez; sistem bekleyen aktarımı hatırlar. Yeni endpoint'ler:
+  `POST /api/history-tags/import-batches/:id/backfill-questions/start` ve
+  `GET /api/history-tags/import-batches/:id/backfill-questions/status`. Eski
+  `/backfill-questions` endpoint'i uyumluluk için korunur. DB/schema migration gerekmedi; root
+  `/` public cutover ve public frontend hattına dokunulmadı. Kapsam: `server.js`,
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel
+  doğrulama: `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check`
+  ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 - Yerelde soru-cevap soru alanı ve Excel soru aktarımı eklendi. Denetim sonucunda kullanıcı artık
   `Onaya Gönder` öncesinde cevaba bağlı `Soru` metnini ve virgülle ayrılmış `Etiketler` bilgisini
   elle eklemek zorundadır; soru veya en az bir etiket yoksa kayıt onay kuyruğuna gönderilmez.

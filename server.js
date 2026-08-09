@@ -543,6 +543,10 @@ const TAG_IMPORT_UPLOAD_KEY_PREFIX = 'history_tag_import_upload';
 const TAG_IMPORT_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
 const TAG_IMPORT_MAX_UPLOAD_CHUNKS = 160;
 const TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH = 900000;
+const TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX = 'history_tag_import_question_backfill';
+const TAG_IMPORT_QUESTION_BACKFILL_STEP_BUDGET = 18;
+const TAG_IMPORT_QUESTION_BACKFILL_STALE_MS = 15000;
+const activeQuestionBackfillJobs = new Set();
 
 function isChunkFilename(filename = '') {
   return /\s-\sParça\s+\d+\/\d+$/u.test(String(filename || '').trim());
@@ -6210,6 +6214,145 @@ async function backfillHistoryTagImportQuestionsChunk({ batchId, limit }) {
   };
 }
 
+function historyTagImportQuestionBackfillJobKey(batchId) {
+  return `${TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX}:${batchId}`;
+}
+
+function normalizeHistoryTagImportQuestionBackfillJob(job, batchId = '') {
+  const raw = job && typeof job === 'object' && !Array.isArray(job) ? job : {};
+  const status = ['running', 'completed', 'failed'].includes(raw.status) ? raw.status : '';
+  return {
+    batchId: String(raw.batchId || batchId || ''),
+    status,
+    actorName: String(raw.actorName || ''),
+    startedAt: raw.startedAt || null,
+    updatedAt: raw.updatedAt || null,
+    completedAt: raw.completedAt || null,
+    updatedTotal: Number(raw.updatedTotal || 0),
+    remaining: Number(raw.remaining || 0),
+    totalMissing: Number(raw.totalMissing || 0),
+    skippedExisting: Number(raw.skippedExisting || 0),
+    steps: Number(raw.steps || 0),
+    needsResume: Boolean(raw.needsResume),
+    lastError: String(raw.lastError || ''),
+    batch: raw.batch || null
+  };
+}
+
+async function loadHistoryTagImportQuestionBackfillJob(batchId) {
+  const job = await loadJsonSetting(historyTagImportQuestionBackfillJobKey(batchId), null);
+  return job ? normalizeHistoryTagImportQuestionBackfillJob(job, batchId) : null;
+}
+
+async function saveHistoryTagImportQuestionBackfillJob(batchId, patch = {}) {
+  const now = new Date().toISOString();
+  const current = normalizeHistoryTagImportQuestionBackfillJob(
+    await loadJsonSetting(historyTagImportQuestionBackfillJobKey(batchId), null),
+    batchId
+  );
+  const next = normalizeHistoryTagImportQuestionBackfillJob({
+    ...current,
+    ...patch,
+    batchId,
+    updatedAt: now
+  }, batchId);
+  await saveJsonSetting(historyTagImportQuestionBackfillJobKey(batchId), next);
+  return next;
+}
+
+function isHistoryTagImportQuestionBackfillActive(job) {
+  return job && job.status === 'running';
+}
+
+async function runHistoryTagImportQuestionBackfillJob(batchId) {
+  if (!batchId || activeQuestionBackfillJobs.has(batchId)) return loadHistoryTagImportQuestionBackfillJob(batchId);
+  activeQuestionBackfillJobs.add(batchId);
+  let job = await loadHistoryTagImportQuestionBackfillJob(batchId);
+  try {
+    if (!isHistoryTagImportQuestionBackfillActive(job)) return job;
+    job = await saveHistoryTagImportQuestionBackfillJob(batchId, { needsResume: false, lastError: '' });
+
+    for (let step = 0; step < TAG_IMPORT_QUESTION_BACKFILL_STEP_BUDGET; step++) {
+      const result = await backfillHistoryTagImportQuestionsChunk({
+        batchId,
+        limit: TAG_IMPORT_APPLY_CHUNK_SIZE
+      });
+      const hasErrors = Boolean(result.errors?.length);
+      const stalled = !result.done && !hasErrors && Number(result.updated || 0) <= 0;
+      const updatedTotal = Number(job.updatedTotal || 0) + Number(result.updated || 0);
+      job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
+        status: hasErrors ? 'failed' : (result.done || stalled ? 'completed' : 'running'),
+        completedAt: result.done || stalled ? new Date().toISOString() : null,
+        updatedTotal,
+        remaining: Number(result.remaining || 0),
+        totalMissing: Number(result.totalMissing || 0),
+        skippedExisting: Number(result.skippedExisting || 0),
+        steps: Number(job.steps || 0) + 1,
+        needsResume: !hasErrors && !result.done && !stalled,
+        lastError: hasErrors
+          ? result.errors.slice(0, 3).join(' | ')
+          : (stalled ? 'Eklenecek uygun soru kalmadı. Daha önce yazılmış sorular korunmuş olabilir.' : ''),
+        batch: result.batch || job.batch || null
+      });
+      if (hasErrors || result.done || stalled) break;
+    }
+
+    if (job.status === 'running') {
+      job = await saveHistoryTagImportQuestionBackfillJob(batchId, { needsResume: true });
+      scheduleHistoryTagImportQuestionBackfillJob(batchId);
+    }
+  } catch (error) {
+    job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
+      status: 'failed',
+      needsResume: false,
+      lastError: error.message || 'Soru aktarımı tamamlanamadı.'
+    });
+  } finally {
+    activeQuestionBackfillJobs.delete(batchId);
+  }
+  return job;
+}
+
+function scheduleHistoryTagImportQuestionBackfillJob(batchId) {
+  setTimeout(() => {
+    runHistoryTagImportQuestionBackfillJob(batchId).catch(error => {
+      console.error('Soru aktarımı devam işi tamamlanamadı:', error.message);
+    });
+  }, 0);
+}
+
+async function startHistoryTagImportQuestionBackfillJob(batchId, actorName = '') {
+  const existing = await loadHistoryTagImportQuestionBackfillJob(batchId);
+  if (isHistoryTagImportQuestionBackfillActive(existing)) {
+    scheduleHistoryTagImportQuestionBackfillJob(batchId);
+    return existing;
+  }
+  const job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
+    status: 'running',
+    actorName,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    updatedTotal: 0,
+    remaining: 0,
+    totalMissing: 0,
+    skippedExisting: 0,
+    steps: 0,
+    needsResume: true,
+    lastError: ''
+  });
+  scheduleHistoryTagImportQuestionBackfillJob(batchId);
+  return job;
+}
+
+async function getHistoryTagImportQuestionBackfillStatus(batchId) {
+  const job = await loadHistoryTagImportQuestionBackfillJob(batchId);
+  if (!isHistoryTagImportQuestionBackfillActive(job)) return job;
+  const updatedAt = Date.parse(job.updatedAt || job.startedAt || '');
+  const stale = !Number.isFinite(updatedAt) || Date.now() - updatedAt > TAG_IMPORT_QUESTION_BACKFILL_STALE_MS || job.needsResume;
+  if (stale) scheduleHistoryTagImportQuestionBackfillJob(batchId);
+  return job;
+}
+
 app.post('/api/history-tags/import/preview', auth, admin, superAdmin, tagImportUpload.single('file'), async (req, res) => {
   try {
     if (!ensureHistoryTagImportReady(res)) return;
@@ -6363,6 +6506,7 @@ app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin
       .delete()
       .eq('id', req.params.id);
     if (deleteError) throw new Error(deleteError.message);
+    await deleteSettingsByKeys([historyTagImportQuestionBackfillJobKey(req.params.id)]);
 
     res.json({ success: true, batch: publicHistoryTagImportBatch(batch) });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -6428,6 +6572,25 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review', 
     });
     res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const job = await startHistoryTagImportQuestionBackfillJob(
+      req.params.id,
+      req.session.name || req.session.username || ''
+    );
+    res.json({ success: true, job });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const job = await getHistoryTagImportQuestionBackfillStatus(req.params.id);
+    res.json({ success: true, job });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions', auth, admin, superAdmin, async (req, res) => {
