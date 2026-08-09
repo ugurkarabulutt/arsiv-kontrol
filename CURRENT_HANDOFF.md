@@ -2,6 +2,23 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Canlıda etiket aktarımı sayaç uyumsuzluğu düzeltildi. `Arşiv Data.xlsx` importundan sonra
+  ekranda `2.991 Denetim Kaydı` görünmesine rağmen `Hazır + Kontrol + Eşleşmedi` toplamı
+  yalnız `1.000` ediyordu. Kök sebep: `refreshHistoryTagImportBatchCounts` fonksiyonu
+  `history_tag_import_matches` satırlarını sayarken Supabase'in varsayılan 1000 satır cevabına
+  takılıyordu. Sayaç yenileme artık `fetchAllPages` ile tüm eşleşme satırlarını sayar; ayrıca
+  mevcut bir aktarım partisi açıldığında parti sayaçları yeniden hesaplanıp kayda yazılır.
+  Böylece mevcut parti dosyayı yeniden yüklemeden, parti yenilenince doğru toplamları
+  göstermelidir. Kapsam: `server.js`, `scripts/check-frontend.js`. SQL/DB migration gerekmedi;
+  root `/` public cutover ve public frontend hattına dokunulmadı. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti. Runtime commit `2fdeb3f` GitHub'a push edildi
+  ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-m1bw5lweh-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı; oturumsuz
+  import batch endpoint'i `401` döndü.
+
 - Canlıda etiket aktarımı opsiyonel `history` kolonlarına dayanıklı hale getirildi. Büyük
   Excel upload 13 parçaya bölünerek Vercel yük sınırını geçti, fakat canlı DB'de
   `history.prompt_version` kolonu olmadığı için eşleştirme aşamasında
