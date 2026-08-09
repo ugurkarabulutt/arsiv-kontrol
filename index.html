@@ -2332,6 +2332,7 @@ const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=200000;
+const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
@@ -7574,17 +7575,46 @@ function historyTagImportStatusClass(status){
 function triggerHistoryTagImportPicker(){
   el('historyTagImportFile')?.click();
 }
+function historyTagImportBytesToBase64(bytes){
+  let binary='';
+  const step=0x8000;
+  for(let i=0;i<bytes.length;i+=step){
+    binary+=String.fromCharCode(...bytes.subarray(i,i+step));
+  }
+  return btoa(binary);
+}
+async function postHistoryTagImportUploadJson(url,payload){
+  const data=await api('POST',url,payload);
+  if(data.error)throw new Error(data.error);
+  return data;
+}
 async function uploadHistoryTagImportFile(file){
   if(!file)return;
   if(historyTagImportState.uploading)return;
   historyTagImportState.uploading=true;
-  setHistoryTagImportStatus('Excel okunuyor ve denetim geçmişiyle eşleştiriliyor...','');
-  const form=new FormData();
-  form.append('file',file);
+  setHistoryTagImportStatus('Excel güvenli şekilde hazırlanıyor...','');
   try{
-    const res=await fetch('/api/history-tags/import/preview',{method:'POST',body:form,cache:'no-store'});
-    const data=await readHistoryTagImportUploadResponse(res);
-    if(!res.ok||data.error)throw new Error(data.error||'Etiket aktarımı başlatılamadı.');
+    const totalChunks=Math.max(1,Math.ceil(file.size/HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES));
+    const start=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/start',{
+      fileName:file.name,
+      fileSize:file.size,
+      totalChunks
+    });
+    const buffer=await file.arrayBuffer();
+    for(let index=0;index<totalChunks;index++){
+      const begin=index*HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES;
+      const end=Math.min(buffer.byteLength,begin+HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES);
+      const chunk=historyTagImportBytesToBase64(new Uint8Array(buffer.slice(begin,end)));
+      setHistoryTagImportStatus(`Dosya aktarılıyor: ${index+1}/${totalChunks} parça...`,'');
+      await postHistoryTagImportUploadJson('/api/history-tags/import/upload/chunk',{
+        uploadId:start.uploadId,
+        index,
+        totalChunks,
+        chunk
+      });
+    }
+    setHistoryTagImportStatus('Dosya alındı. Etiketler denetim geçmişiyle eşleştiriliyor...','');
+    const data=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/complete',{uploadId:start.uploadId});
     historyTagImportState.activeBatch=data.batch||null;
     historyTagImportState.matches=data.matches||[];
     historyTagImportState.status='ready';

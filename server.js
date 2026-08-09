@@ -4,6 +4,7 @@ const cookieSession = require('cookie-session');
 const bcrypt   = require('bcryptjs');
 const multer   = require('multer');
 const path     = require('path');
+const crypto   = require('crypto');
 const mammoth  = require('mammoth');
 const XLSX     = require('xlsx');
 const PDFDocument = require('pdfkit');
@@ -536,6 +537,10 @@ const ADMIN_HIDDEN_HISTORY_STATUSES = ['taslak', ...HIDDEN_HISTORY_STATUSES];
 const TAG_IMPORT_HISTORY_TEXT_LIMIT = 18000;
 const TAG_IMPORT_INITIAL_DETAIL_LIMIT = 120;
 const TAG_IMPORT_INSERT_CHUNK_SIZE = 180;
+const TAG_IMPORT_UPLOAD_KEY_PREFIX = 'history_tag_import_upload';
+const TAG_IMPORT_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
+const TAG_IMPORT_MAX_UPLOAD_CHUNKS = 160;
+const TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH = 900000;
 
 function isChunkFilename(filename = '') {
   return /\s-\sParça\s+\d+\/\d+$/u.test(String(filename || '').trim());
@@ -755,6 +760,14 @@ async function loadJsonSetting(key, fallback) {
 async function saveJsonSetting(key, value) {
   const { error } = await supabase.from('settings').upsert({ key, value: JSON.stringify(value) });
   if (error) throw new Error(error.message);
+}
+
+async function deleteSettingsByKeys(keys = []) {
+  const cleanKeys = [...new Set(keys.filter(Boolean))];
+  for (let i = 0; i < cleanKeys.length; i += 100) {
+    const { error } = await supabase.from('settings').delete().in('key', cleanKeys.slice(i, i + 100));
+    if (error) throw new Error(error.message);
+  }
 }
 
 function parseJsonSettingValue(value, fallback) {
@@ -5893,6 +5906,64 @@ async function insertHistoryTagImportMatches(batchId, matches = []) {
   }
 }
 
+function tagImportUploadMetaKey(uploadId) {
+  return `${TAG_IMPORT_UPLOAD_KEY_PREFIX}:${uploadId}:meta`;
+}
+
+function tagImportUploadChunkKey(uploadId, index) {
+  return `${TAG_IMPORT_UPLOAD_KEY_PREFIX}:${uploadId}:chunk:${index}`;
+}
+
+function createTagImportUploadId() {
+  return `tiu-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+}
+
+function isValidTagImportUploadId(uploadId = '') {
+  return /^tiu-\d{10,}-[a-f0-9]{12}$/i.test(String(uploadId || ''));
+}
+
+async function cleanupTagImportUpload(uploadId, totalChunks = 0) {
+  if (!isValidTagImportUploadId(uploadId)) return;
+  const keys = [tagImportUploadMetaKey(uploadId)];
+  for (let i = 0; i < Number(totalChunks || 0); i++) keys.push(tagImportUploadChunkKey(uploadId, i));
+  await deleteSettingsByKeys(keys);
+}
+
+async function createHistoryTagImportPreviewFromBuffer(buffer, fileName, actorName) {
+  const parsed = parseHistoryTagImportWorkbook(buffer, fileName || 'Etiket dosyası');
+  if (!parsed.usableRows) {
+    const err = new Error('Dosyada etiketli soru-cevap satırı bulunamadı. Soru, Etiket/Sınıf ve Cevap sütunlarını kontrol edin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const historyRows = await fetchHistoryTagImportHistoryRows();
+  const matches = buildHistoryTagImportMatches(historyRows, parsed.items);
+  const { data: batch, error: batchError } = await supabase.from('history_tag_import_batches')
+    .insert({
+      filename: parsed.fileName,
+      sheet_name: parsed.sheetName,
+      total_rows: parsed.totalRows,
+      usable_rows: parsed.usableRows,
+      history_count: historyRows.length,
+      status: 'preview',
+      note: `Excel etiketi ön izlemesi: ${parsed.fileName}`,
+      created_by: actorName || ''
+    })
+    .select('*')
+    .single();
+  if (batchError) throw new Error(batchError.message);
+  if (matches.length) await insertHistoryTagImportMatches(batch.id, matches);
+  const refreshed = await refreshHistoryTagImportBatchCounts(batch.id);
+  const { data: detailRows, error: detailError } = await supabase.from('history_tag_import_matches')
+    .select('*')
+    .eq('batch_id', batch.id)
+    .order('confidence', { ascending: false })
+    .limit(TAG_IMPORT_INITIAL_DETAIL_LIMIT);
+  if (detailError) throw new Error(detailError.message);
+  const rowsWithHistory = await attachHistoryToTagImportMatches(detailRows || []);
+  return { batch: refreshed, matches: rowsWithHistory.map(publicHistoryTagImportMatch) };
+}
+
 async function applyHistoryTagImportMatchRow(matchId, actorName) {
   const { data: match, error } = await supabase.from('history_tag_import_matches')
     .select('*')
@@ -5946,34 +6017,81 @@ app.post('/api/history-tags/import/preview', auth, admin, superAdmin, tagImportU
   try {
     if (!ensureHistoryTagImportReady(res)) return;
     if (!req.file?.buffer) return res.status(400).json({ error: 'Etiket aktarımı için Excel dosyası seçin.' });
-    const parsed = parseHistoryTagImportWorkbook(req.file.buffer, req.file.originalname || 'Etiket dosyası');
-    if (!parsed.usableRows) return res.status(400).json({ error: 'Dosyada etiketli soru-cevap satırı bulunamadı. Soru, Etiket/Sınıf ve Cevap sütunlarını kontrol edin.' });
-    const historyRows = await fetchHistoryTagImportHistoryRows();
-    const matches = buildHistoryTagImportMatches(historyRows, parsed.items);
-    const { data: batch, error: batchError } = await supabase.from('history_tag_import_batches')
-      .insert({
-        filename: parsed.fileName,
-        sheet_name: parsed.sheetName,
-        total_rows: parsed.totalRows,
-        usable_rows: parsed.usableRows,
-        history_count: historyRows.length,
-        status: 'preview',
-        note: `Excel etiketi ön izlemesi: ${parsed.fileName}`,
-        created_by: req.session.name || req.session.username || ''
-      })
-      .select('*')
-      .single();
-    if (batchError) throw new Error(batchError.message);
-    if (matches.length) await insertHistoryTagImportMatches(batch.id, matches);
-    const refreshed = await refreshHistoryTagImportBatchCounts(batch.id);
-    const { data: detailRows, error: detailError } = await supabase.from('history_tag_import_matches')
-      .select('*')
-      .eq('batch_id', batch.id)
-      .order('confidence', { ascending: false })
-      .limit(TAG_IMPORT_INITIAL_DETAIL_LIMIT);
-    if (detailError) throw new Error(detailError.message);
-    const rowsWithHistory = await attachHistoryToTagImportMatches(detailRows || []);
-    res.json({ batch: refreshed, matches: rowsWithHistory.map(publicHistoryTagImportMatch) });
+    const payload = await createHistoryTagImportPreviewFromBuffer(
+      req.file.buffer,
+      req.file.originalname || 'Etiket dosyası',
+      req.session.name || req.session.username || ''
+    );
+    res.json(payload);
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import/upload/start', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const fileName = String(req.body?.fileName || req.body?.filename || 'Etiket dosyası').trim().slice(0, 220) || 'Etiket dosyası';
+    const fileSize = Number(req.body?.fileSize || req.body?.size || 0);
+    const totalChunks = Number(req.body?.totalChunks || 0);
+    if (!Number.isFinite(fileSize) || fileSize <= 0) return res.status(400).json({ error: 'Dosya boyutu okunamadı. Lütfen dosyayı yeniden seçin.' });
+    if (fileSize > TAG_IMPORT_MAX_UPLOAD_SIZE) return res.status(413).json({ error: 'Etiket dosyası çok büyük. Lütfen dosyayı sadeleştirip tekrar deneyin.' });
+    if (!Number.isInteger(totalChunks) || totalChunks < 1 || totalChunks > TAG_IMPORT_MAX_UPLOAD_CHUNKS) return res.status(400).json({ error: 'Dosya parçaları hazırlanamadı. Lütfen sayfayı yenileyip tekrar deneyin.' });
+    const uploadId = createTagImportUploadId();
+    await saveJsonSetting(tagImportUploadMetaKey(uploadId), {
+      uploadId,
+      fileName,
+      fileSize,
+      totalChunks,
+      createdBy: req.session.name || req.session.username || '',
+      createdAt: new Date().toISOString()
+    });
+    res.json({ uploadId, totalChunks });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import/upload/chunk', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const uploadId = String(req.body?.uploadId || '').trim();
+    const index = Number(req.body?.index);
+    const totalChunks = Number(req.body?.totalChunks);
+    const chunk = String(req.body?.chunk || '');
+    if (!isValidTagImportUploadId(uploadId)) return res.status(400).json({ error: 'Yükleme oturumu bulunamadı. Lütfen dosyayı yeniden seçin.' });
+    const meta = await loadJsonSetting(tagImportUploadMetaKey(uploadId), null);
+    if (!meta) return res.status(404).json({ error: 'Yükleme oturumu süresi dolmuş. Lütfen dosyayı yeniden seçin.' });
+    if (!Number.isInteger(index) || index < 0 || index >= meta.totalChunks) return res.status(400).json({ error: 'Dosya parçası sırası okunamadı.' });
+    if (totalChunks !== meta.totalChunks) return res.status(400).json({ error: 'Dosya parça sayısı değişti. Lütfen dosyayı yeniden seçin.' });
+    if (!chunk || chunk.length > TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH) return res.status(413).json({ error: 'Dosya parçası çok büyük. Lütfen sayfayı yenileyip tekrar deneyin.' });
+    await saveJsonSetting(tagImportUploadChunkKey(uploadId, index), { index, chunk, receivedAt: new Date().toISOString() });
+    res.json({ success: true, index, received: index + 1, totalChunks: meta.totalChunks });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import/upload/complete', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const uploadId = String(req.body?.uploadId || '').trim();
+    if (!isValidTagImportUploadId(uploadId)) return res.status(400).json({ error: 'Yükleme oturumu bulunamadı. Lütfen dosyayı yeniden seçin.' });
+    const meta = await loadJsonSetting(tagImportUploadMetaKey(uploadId), null);
+    if (!meta) return res.status(404).json({ error: 'Yükleme oturumu süresi dolmuş. Lütfen dosyayı yeniden seçin.' });
+    const totalChunks = Number(meta.totalChunks || 0);
+    if (!Number.isInteger(totalChunks) || totalChunks < 1 || totalChunks > TAG_IMPORT_MAX_UPLOAD_CHUNKS) return res.status(400).json({ error: 'Dosya parça bilgisi okunamadı. Lütfen dosyayı yeniden seçin.' });
+    const keys = Array.from({ length: totalChunks }, (_, index) => tagImportUploadChunkKey(uploadId, index));
+    const { data, error } = await supabase.from('settings').select('key,value').in('key', keys);
+    if (error) throw new Error(error.message);
+    const byKey = new Map((data || []).map(row => [row.key, parseJsonSettingValue(row.value, null)]));
+    const missing = keys.filter(key => !byKey.get(key)?.chunk);
+    if (missing.length) return res.status(400).json({ error: 'Dosyanın bazı parçaları eksik kaldı. Lütfen dosyayı yeniden seçip tekrar deneyin.' });
+    const buffer = Buffer.concat(keys.map(key => Buffer.from(String(byKey.get(key).chunk || ''), 'base64')));
+    if (meta.fileSize && Math.abs(buffer.length - Number(meta.fileSize)) > 2) {
+      return res.status(400).json({ error: 'Dosya eksik aktarılmış görünüyor. Lütfen dosyayı yeniden seçip tekrar deneyin.' });
+    }
+    const payload = await createHistoryTagImportPreviewFromBuffer(
+      buffer,
+      meta.fileName || 'Etiket dosyası',
+      req.session.name || req.session.username || ''
+    );
+    await cleanupTagImportUpload(uploadId, totalChunks);
+    res.json(payload);
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 

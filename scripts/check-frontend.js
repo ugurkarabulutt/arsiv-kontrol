@@ -319,6 +319,10 @@ if (
   !server.includes('function parseHistoryTagImportWorkbook') ||
   !server.includes('function ensureHistoryTagImportReady') ||
   !server.includes("app.post('/api/history-tags/import/preview'") ||
+  !server.includes("app.post('/api/history-tags/import/upload/start'") ||
+  !server.includes("app.post('/api/history-tags/import/upload/chunk'") ||
+  !server.includes("app.post('/api/history-tags/import/upload/complete'") ||
+  !server.includes('TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH') ||
   !server.includes("app.get('/api/history-tags/import-batches'") ||
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
@@ -329,10 +333,13 @@ if (
   !html.includes('data-ops-view="tagImport"') ||
   !html.includes('id="historyTagImportFile"') ||
   !html.includes('uploadHistoryTagImportFile') ||
+  !html.includes('HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES') ||
+  !html.includes('/api/history-tags/import/upload/start') ||
+  !html.includes('/api/history-tags/import/upload/chunk') ||
+  !html.includes('/api/history-tags/import/upload/complete') ||
   !html.includes('readHistoryTagImportUploadResponse') ||
   !html.includes('applyHistoryTagImportMatch') ||
-  !html.includes('applyReadyHistoryTagImportMatches') ||
-  !html.includes('/api/history-tags/import/preview')
+  !html.includes('applyReadyHistoryTagImportMatches')
 ) {
   throw new Error('Excel etiket aktarimi icin super admin ekrani, import APIleri ve DB semasi korunmali.');
 }
