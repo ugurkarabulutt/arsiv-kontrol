@@ -121,6 +121,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Soru-cevap etiketleri ve Excel etiket aktarımı hazırlandı:** Denetim sonucu onaya
+  gönderilirken kullanıcı artık virgülle ayrılmış sınırsız etiket girebilir; Türkçe karakterler
+  korunur ve etiket alanı denetim motoruna sokulmaz. Admin/süper admin onay modalında bu
+  etiketleri görüp düzelterek onaylayabilir; denetim geçmişi, onay listesi ve CSV çıktısı
+  etiketleri taşır. Süper admin `Arşiv Operasyon Merkezi > Etiket Aktarımı` ekranında mevcut
+  Excel arşiv dosyasını yükleyip `Soru`, `Etiket/Sınıf` ve `Cevap` kolonlarını geçmiş denetim
+  kayıtlarıyla kontrollü eşleştirebilir. Sistem her geçmiş denetim kaydı için en yakın Excel
+  satırını önerir; mevcut etiketler kırmızı, Excel'den gelecek etiketler yeşil gösterilir.
+  Eşleşmeler `Hazır`, `Kontrol gerekli`, `Eşleşmedi`, `Uygulandı` ve `Atlandı` durumlarıyla
+  ayrılır. Süper admin tek tek uygulayabilir veya yalnız yüksek güvenli hazır eşleşmeleri
+  toplu uygulayabilir; toplu işlem backend tarafında sayfalı çalışır ve 500 kayıtla yarım
+  kalmaz. Kapsam: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
+  `package.json`, `package-lock.json`. Kalıcı kullanım için `schema.sql` içindeki
+  `history.tags`, `history_tag_import_batches` ve `history_tag_import_matches` SQL blokları
+  canlı Supabase'de uygulanmalıdır. Root `/` public arşive çevrilmedi ve public frontend
+  workstream'ine dokunulmadı.
+
 - **Desktop Arşiv Operasyon Merkezi menü görünürlüğü düzeltildi:** `/admin` süper admin
   desktop sol menüsünde `Arşiv Operasyon Merkezi` grubu `Geri Bildirim` bölümünün altında
   kaldığı için küçük ekran yüksekliğinde görünmüyor gibi algılanabiliyordu. Desktop sidebar

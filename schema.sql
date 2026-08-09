@@ -37,17 +37,63 @@ create table if not exists public.history (
   text_hash      text,                    -- tekrar-gönderim kontrolü (normalize metnin SHA-256 özeti)
   prompt_version text,
   rules_hash     text,
+  tags           jsonb not null default '[]'::jsonb,
   created_at     timestamptz not null default now()
 );
 create index if not exists history_created_at_idx on public.history (created_at desc);
 create index if not exists history_user_id_idx    on public.history (user_id);
 create index if not exists history_text_hash_idx  on public.history (user_id, text_hash);
+create index if not exists history_tags_idx       on public.history using gin (tags);
 
 -- Mevcut bir veritabanına sonradan eklemek için (history zaten varsa):
 alter table public.history add column if not exists text_hash text;
 alter table public.history add column if not exists original_text text;
 alter table public.history add column if not exists prompt_version text;
 alter table public.history add column if not exists rules_hash text;
+alter table public.history add column if not exists tags jsonb not null default '[]'::jsonb;
+create index if not exists history_tags_idx on public.history using gin (tags);
+
+-- Excel/e-tablo etiket aktarimi icin guvenli onizleme kayitlari.
+-- Bu tablolar dogrudan history guncellemez; once eslesme onizlemesi uretir.
+create table if not exists public.history_tag_import_batches (
+  id              uuid primary key default gen_random_uuid(),
+  filename        text,
+  sheet_name      text,
+  total_rows      integer not null default 0,
+  usable_rows     integer not null default 0,
+  history_count   integer not null default 0,
+  ready_count     integer not null default 0,
+  review_count    integer not null default 0,
+  unmatched_count integer not null default 0,
+  applied_count   integer not null default 0,
+  skipped_count   integer not null default 0,
+  status          text not null default 'preview',
+  note            text,
+  created_by      text,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+create table if not exists public.history_tag_import_matches (
+  id             uuid primary key default gen_random_uuid(),
+  batch_id       uuid references public.history_tag_import_batches(id) on delete cascade,
+  history_id     uuid references public.history(id) on delete set null,
+  excel_row      integer,
+  excel_question text,
+  answer_preview text,
+  tags           jsonb not null default '[]'::jsonb,
+  confidence     numeric not null default 0,
+  match_status   text not null default 'review',
+  match_reason   text,
+  current_tags   jsonb not null default '[]'::jsonb,
+  applied_at     timestamptz,
+  applied_by     text,
+  created_at     timestamptz not null default now()
+);
+
+create index if not exists history_tag_import_batches_status_idx on public.history_tag_import_batches (status, updated_at desc);
+create index if not exists history_tag_import_matches_batch_idx on public.history_tag_import_matches (batch_id, match_status, confidence desc);
+create index if not exists history_tag_import_matches_history_idx on public.history_tag_import_matches (history_id);
 
 -- Kullanıcı son aktiflik takibi:
 alter table public.users add column if not exists last_seen_at timestamptz;

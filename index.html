@@ -271,6 +271,13 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .submit-confirm-summary{border:1px solid var(--border);background:var(--surface2);padding:12px 14px;margin:12px 0;font-size:13px;line-height:1.6;color:var(--ink2);}
 .submit-confirm-summary strong{color:var(--ink);}
 .submit-confirm-warning{border-left:3px solid var(--gold);background:var(--grn-bg);padding:11px 13px;font-size:13px;line-height:1.6;color:var(--ink2);}
+.history-tags-field{margin-top:12px;}
+.history-tags-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
+.history-tags-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:12px 13px;font-size:14px;line-height:1.5;resize:vertical;min-height:48px;}
+.history-tags-help{font-size:11px;color:var(--ink3);line-height:1.5;margin-top:6px;}
+.history-tags-preview{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.history-tag-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.32);padding:4px 7px;}
+.history-tags-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
 .corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
 .corrected-body{padding:22px 128px 24px 18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
@@ -519,6 +526,34 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-output-check.blocked .archive-output-check-dot{border-color:var(--red);background:var(--red-bg);}
 .archive-output-check strong{display:block;color:var(--ink);font-size:12px;overflow-wrap:anywhere;}
 .archive-output-check span{display:block;color:var(--ink3);overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-actions{grid-template-columns:1fr 1fr 1fr;}
+.tag-import-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:12px;align-items:start;margin-top:12px;}
+.tag-import-batch-list,.tag-import-match-list{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tag-import-batch-list{max-height:520px;overflow:auto;}
+.tag-import-batch-card,.tag-import-match-card{border:1px solid var(--border);background:var(--bg);padding:12px;color:var(--ink);min-width:0;}
+.tag-import-batch-card{width:100%;text-align:left;cursor:pointer;}
+.tag-import-batch-card:hover,.tag-import-batch-card.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.tag-import-batch-title,.tag-import-match-title{font-size:14px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.tag-import-badge{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding:4px 7px;white-space:nowrap;}
+.tag-import-badge.ready{border-color:rgba(var(--green-rgb),.42);background:var(--grn-bg);color:var(--green);}
+.tag-import-badge.review{border-color:rgba(var(--gold-rgb),.42);background:var(--gold-bg);color:var(--gold);}
+.tag-import-badge.unmatched,.tag-import-badge.skipped{border-color:rgba(var(--red-rgb),.38);background:var(--red-bg);color:var(--red);}
+.tag-import-badge.applied{border-color:rgba(var(--green-rgb),.42);background:rgba(var(--green-rgb),.12);color:var(--green);}
+.tag-import-match-card.ready{border-left:3px solid var(--green);}
+.tag-import-match-card.review{border-left:3px solid var(--gold);}
+.tag-import-match-card.unmatched,.tag-import-match-card.skipped{border-left:3px solid var(--red);}
+.tag-import-match-card.applied{border-left:3px solid var(--green);opacity:.86;}
+.tag-import-score{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);border:1px solid var(--border);background:var(--surface);padding:5px 8px;white-space:nowrap;}
+.tag-import-match-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.tag-import-preview{font-size:12px;line-height:1.55;color:var(--ink2);border:1px solid var(--border);background:var(--surface);padding:10px;margin:9px 0;max-height:170px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-map{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;margin:10px 0;}
+.tag-import-old,.tag-import-new{border:1px solid var(--border);padding:9px 10px;min-height:42px;line-height:1.45;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-old{background:var(--red-bg);color:var(--red);}
+.tag-import-new{background:var(--grn-bg);color:var(--green);font-weight:800;}
+.tag-import-arrow{font-family:'JetBrains Mono',monospace;color:var(--ink3);}
+.tag-import-actions-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.tag-import-actions-row button{white-space:nowrap;}
 .archive-output-publication{border:1px solid rgba(var(--gold-rgb),.38);background:linear-gradient(135deg,rgba(var(--gold-rgb),.08),rgba(var(--green-rgb),.05));padding:12px;margin:12px 0;min-width:0;}
 .archive-output-publication-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;min-width:0;}
 .archive-output-publication-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;}
@@ -603,8 +638,8 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .work-actions{display:flex;gap:4px;flex-wrap:wrap;}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
-@media(max-width:900px){.archive-output-layout{grid-template-columns:1fr}.archive-output-package-list{max-height:none;overflow:visible}}
-@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks{grid-template-columns:1fr}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
+@media(max-width:900px){.archive-output-layout,.tag-import-layout{grid-template-columns:1fr}.archive-output-package-list,.tag-import-batch-list{max-height:none;overflow:visible}.tag-import-actions{grid-template-columns:1fr}}
+@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions,.tag-import-actions-row{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button,.tag-import-actions-row button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head,.tag-import-match-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks,.tag-import-map{grid-template-columns:1fr}.tag-import-arrow{text-align:center}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -1065,6 +1100,7 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Yayın Hazırlık Kuyruğu</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packages" onclick="mArchiveOps('packages')">Yayın Paketleri</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packageOutput" onclick="mArchiveOps('packageOutput')">Paket Çıktı Merkezi</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="tagImport" onclick="mArchiveOps('tagImport')">Etiket Aktarımı</button>
         </div>
       </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
@@ -1102,6 +1138,7 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Yayın Hazırlık Kuyruğu</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packages" onclick="openArchiveOps('packages')"><span>Yayın Paketleri</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packageOutput" onclick="openArchiveOps('packageOutput')"><span>Paket Çıktı Merkezi</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="tagImport" onclick="openArchiveOps('tagImport')"><span>Etiket Aktarımı</span></button>
       </div>
     </div>
 
@@ -1957,6 +1994,56 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="tagImport" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Etiket Aktarımı</div>
+            <div class="ops-panel-sub">Excel dosyasındaki Etiket/Sınıf bilgisini geçmiş denetim kayıtlarıyla kontrollü eşleştirin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="archive-ready-hero">
+            <strong>Bu ekran toplu ve kontrollü etiket taşıma alanıdır.</strong>
+            <span>Excel yüklenince sistem denetim kayıtlarıyla eşleşme önerir. Süper admin, etiketleri tek tek ya da yalnız yüksek güvenli eşleşmeleri toplu uygulayabilir.</span>
+          </div>
+          <input type="file" id="historyTagImportFile" hidden accept=".xlsx,.xls,.csv,.tsv" onchange="uploadHistoryTagImportFile(this.files&&this.files[0]);this.value='';">
+          <div class="ops-filter-row tag-import-actions">
+            <button class="btn-primary" onclick="triggerHistoryTagImportPicker()">Excel Seç ve Eşleştir</button>
+            <button class="btn-sec" onclick="applyReadyHistoryTagImportMatches()">Yüksek Güvenlileri Uygula</button>
+            <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Partileri Yenile</button>
+          </div>
+          <div class="ops-status" id="historyTagImportStatusMsg"></div>
+          <div class="ops-file-summary" id="historyTagImportSummary"></div>
+          <div class="ops-filter-row">
+            <input class="ops-field" id="historyTagImportSearch" placeholder="Kullanıcı, dosya, soru, cevap veya etikette ara..." oninput="setHistoryTagImportFilter()">
+            <select class="ops-field" id="historyTagImportStatusFilter" onchange="setHistoryTagImportFilter()">
+              <option value="ready">Hazır eşleşmeler</option>
+              <option value="review">Kontrol gerekenler</option>
+              <option value="unmatched">Eşleşmeyenler</option>
+              <option value="applied">Uygulananlar</option>
+              <option value="skipped">Atlananlar</option>
+              <option value="">Tüm kayıtlar</option>
+            </select>
+            <button class="btn-sec" onclick="clearHistoryTagImportFilters()">Filtreyi Temizle</button>
+          </div>
+          <div class="tag-import-layout">
+            <div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Aktarım partileri</div>
+              <div class="tag-import-batch-list" id="historyTagImportBatchList">
+                <div class="archive-release-empty">Etiket aktarım partileri yükleniyor...</div>
+              </div>
+            </div>
+            <div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Eşleşme kontrolü</div>
+              <div class="tag-import-match-list" id="historyTagImportMatchList">
+                <div class="empty-state">Bir parti seçildiğinde eşleşmeler burada görünür.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="ops-flow archive-ops-section" data-ops-view="overview">
         <div class="ops-step"><div class="ops-step-num">01</div><strong>Kaynak girer</strong><span>Yayın, transkript, hadis, slayt veya standart sisteme alınır.</span></div>
         <div class="ops-step"><div class="ops-step-num">02</div><strong>Görev atanır</strong><span>Kişi, tarih, durum ve çalışma notu belirlenir.</span></div>
@@ -2196,6 +2283,12 @@ canvas{width:100%!important;}
       <div class="feedback-label">Son kontrol</div>
       <div class="submit-confirm-warning">Sistem denetimi tamamladı. Onaya Gönder dediğinizde sonuç onay kuyruğuna iletilir.</div>
       <div class="submit-confirm-summary" id="submitApprovalSummary"></div>
+      <div class="history-tags-field">
+        <label for="submitApprovalTags">Etiketler</label>
+        <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview()"></textarea>
+        <div class="history-tags-help">Etiketleri virgülle ayırın. Türkçe karakter kullanabilirsiniz. Bu alan denetlenmez.</div>
+        <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
+      </div>
       <div class="form-err" id="submitApprovalErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
     </div>
@@ -2232,7 +2325,8 @@ let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:''
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput'];
+let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false};
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','tagImport'];
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -2589,6 +2683,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchiveReleaseReadyCandidates();
   }
   if(archiveOpsState.view==='packageOutput')loadArchiveOutputPackages();
+  if(archiveOpsState.view==='tagImport')loadHistoryTagImportBatches();
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
@@ -2945,11 +3040,47 @@ function approvalStatusText(d){
   if(status==='reddedildi')return 'Reddedildi';
   return 'Onaya Gönder';
 }
+function parseHistoryTags(value){
+  const raw=Array.isArray(value)?value.join(','):String(value||'');
+  const seen=new Set();
+  const tags=[];
+  raw.split(',').forEach(part=>{
+    const tag=String(part||'').replace(/\s+/g,' ').trim();
+    if(!tag)return;
+    const key=tag.toLocaleLowerCase('tr-TR');
+    if(seen.has(key))return;
+    seen.add(key);
+    tags.push(tag.slice(0,96));
+  });
+  return tags;
+}
+function historyTagsText(tags){
+  return parseHistoryTags(tags).join(', ');
+}
+function historyTagsChips(tags){
+  const parsed=parseHistoryTags(tags);
+  return parsed.length?`<div class="history-tags-inline">${parsed.map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('')}</div>`:'';
+}
+function historyTagsChipItems(tags){
+  return parseHistoryTags(tags).map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('');
+}
+function renderSubmitTagsPreview(){
+  const box=el('submitApprovalTagsPreview');
+  if(!box)return;
+  box.innerHTML=historyTagsChipItems(v('submitApprovalTags'));
+}
+function renderDetailTagsPreview(){
+  const box=el('detailHistoryTagsPreview');
+  if(!box)return;
+  box.innerHTML=historyTagsChipItems(v('detailHistoryTags'));
+}
 function resetSubmitApprovalModalState(){
   pendingApprovalPayload=null;
   submitApprovalInFlight=false;
   el('submitApprovalModal')?.classList.remove('open');
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
+  if(el('submitApprovalTags'))el('submitApprovalTags').value='';
+  if(el('submitApprovalTagsPreview'))el('submitApprovalTagsPreview').innerHTML='';
   const btn=el('submitApprovalBtn');
   if(btn){btn.disabled=false;btn.textContent='Onaya Gönder';}
 }
@@ -3001,6 +3132,8 @@ function openSubmitApprovalModal(){
     <div><strong>Skor:</strong> ${Number(d.score||0)}/100</div>
     <div><strong>Bulgu:</strong> ${Number(d.totalErrors||0)} sorun</div>
   `;
+  if(el('submitApprovalTags'))el('submitApprovalTags').value=historyTagsText(d.tags||[]);
+  renderSubmitTagsPreview();
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   el('submitApprovalModal')?.classList.add('open');
 }
@@ -3133,6 +3266,7 @@ async function confirmSubmitApproval(){
   if(err)err.textContent='';
   const oldId=d.id;
   const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
+  const tags=parseHistoryTags(v('submitApprovalTags'));
   try{
     waitTimers.push(setTimeout(()=>{if(err)err.textContent='Gönderim kontrol ediliyor. Lütfen pencereyi kapatmayın.';},4000));
     waitTimers.push(setTimeout(()=>{if(err)err.textContent='İşlem normalden uzun sürdü. Metin korunuyor; sonucu bekleyin, sayfayı yenilemeyin.';},16000));
@@ -3147,8 +3281,9 @@ async function confirmSubmitApproval(){
       totalErrors:d.totalErrors||0,
       categories:submitCategoryCounts(d.categories||{}),
       summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
-      analysisMeta:d.analysisMeta||{}
-    }:null;
+      analysisMeta:d.analysisMeta||{},
+      tags
+    }:{tags};
     const r=await api('POST',endpoint,body);
     if(r.error){if(err)err.textContent=r.error;return;}
     const newId=r.id||d.id;
@@ -3160,6 +3295,7 @@ async function confirmSubmitApproval(){
     }
     d.id=newId;
     d.status='bekliyor';
+    d.tags=Array.isArray(r.tags)?r.tags:tags;
     submitted=true;
     if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
     if(isMerged)d.sourceIds=[];
@@ -3559,7 +3695,7 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.score,h.totalErrors,status].join(' ').toLocaleLowerCase('tr-TR');
+    const haystack=[h.filename,h.name,h.username,h.summary,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -3643,15 +3779,20 @@ async function showDetail(id){
   const item=await api('GET',`/api/history/${id}`);
   if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
   const text=item.correctedText||'';
+  const tagsValue=historyTagsText(item.tags||[]);
+  const tagsBlock=hasAdminRole(me?.role)
+    ? `<div class="history-tags-field" style="margin:0 0 14px"><label for="detailHistoryTags">Etiketler</label><textarea class="history-tags-input" id="detailHistoryTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderDetailTagsPreview()">${esc(tagsValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde etiketler de kaydedilir.</div><div class="history-tags-preview" id="detailHistoryTagsPreview">${historyTagsChipItems(tagsValue)}</div></div>`
+    : historyTagsChips(tagsValue);
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${tagsBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').textContent=text||'Bu kayıt için düzeltilmiş metin bulunmuyor.';
+    el('detailBody').innerHTML=`${tagsBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
+  renderDetailTagsPreview();
   window._detailText=text;
   window._detailHistoryId=item.id||id;
   window._detailHistoryStatus=item.status||'';
@@ -3673,11 +3814,11 @@ function setApprovalStatus(msg,type){
   s.className='status-msg'+(type?' '+type:'');
   if(msg)setTimeout(()=>{s.textContent='';s.className='status-msg';},3200);
 }
-async function setApprovalAction(id,action,btn){
+async function setApprovalAction(id,action,btn,body=null){
   const oldText=btn?.textContent;
   if(btn){btn.disabled=true;btn.textContent='İşleniyor...';}
   try{
-    const r=await api('POST',`/api/history/${id}/${action}`);
+    const r=await api('POST',`/api/history/${id}/${action}`,body||undefined);
     if(r.error)throw new Error(r.error);
     setApprovalStatus(action==='approve'?'✓ Kayıt onaylandı.':'✓ Kayıt reddedildi.','ok');
     await loadOnay();
@@ -3695,7 +3836,7 @@ async function rejectItem(id,btn){return setApprovalAction(id,'reject',btn);}
 async function approveDetailFromModal(btn){
   const id=window._detailHistoryId;
   if(!id){setApprovalStatus('Onaylanacak kayıt bulunamadı.','err');return;}
-  const ok=await setApprovalAction(id,'approve',btn);
+  const ok=await setApprovalAction(id,'approve',btn,{tags:parseHistoryTags(v('detailHistoryTags'))});
   if(ok){
     window._detailHistoryStatus='onaylandi';
     if(btn){btn.disabled=true;btn.textContent='Onaylandı';}
@@ -4020,6 +4161,7 @@ async function loadOnay(){
         <div class="work-top"><div class="work-name">${esc(h.name||'—')}</div><span class="score-pill ${pc}">${sc}</span></div>
         <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
         <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
+        ${historyTagsChips(h.tags||[])}
         <div class="work-actions">
           ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
           ${h.status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
@@ -7410,6 +7552,268 @@ function openArchiveOutputFromReleasePackage(){
   archiveOutputState.activePackage=pkg;
   archiveOutputState.output=null;
   openArchiveOps('packageOutput');
+}
+function setHistoryTagImportStatus(message='',kind=''){
+  const box=el('historyTagImportStatusMsg');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function historyTagImportStatusLabel(status){
+  return {
+    ready:'Hazır',
+    review:'Kontrol gerekli',
+    unmatched:'Eşleşmedi',
+    applied:'Uygulandı',
+    skipped:'Atlandı'
+  }[status]||'Kontrol gerekli';
+}
+function historyTagImportStatusClass(status){
+  return ['ready','review','unmatched','applied','skipped'].includes(status)?status:'review';
+}
+function triggerHistoryTagImportPicker(){
+  el('historyTagImportFile')?.click();
+}
+async function uploadHistoryTagImportFile(file){
+  if(!file)return;
+  if(historyTagImportState.uploading)return;
+  historyTagImportState.uploading=true;
+  setHistoryTagImportStatus('Excel okunuyor ve denetim geçmişiyle eşleştiriliyor...','');
+  const form=new FormData();
+  form.append('file',file);
+  try{
+    const res=await fetch('/api/history-tags/import/preview',{method:'POST',body:form,cache:'no-store'});
+    const data=await res.json().catch(()=>({error:'Sunucu yanıtı okunamadı.'}));
+    if(!res.ok||data.error)throw new Error(data.error||'Etiket aktarımı başlatılamadı.');
+    historyTagImportState.activeBatch=data.batch||null;
+    historyTagImportState.matches=data.matches||[];
+    historyTagImportState.status='ready';
+    await loadHistoryTagImportBatches({keepActive:true});
+    renderHistoryTagImport();
+    setHistoryTagImportStatus('Ön izleme hazır. Yalnız doğru eşleşmeleri uygulayın.','ok');
+  }catch(e){
+    setHistoryTagImportStatus(e.message||'Etiket aktarımı tamamlanamadı.','err');
+    await showSystemAlert('Etiket aktarımı tamamlanamadı',e.message||'Dosya okunamadı veya eşleştirme yapılamadı.','danger');
+  }finally{
+    historyTagImportState.uploading=false;
+  }
+}
+async function loadHistoryTagImportBatches(options={}){
+  if(!canUseArchiveOps())return;
+  historyTagImportState.loading=true;
+  const list=el('historyTagImportBatchList');
+  if(list&&!historyTagImportState.batches.length)list.innerHTML='<div class="archive-release-empty">Etiket aktarım partileri yükleniyor...</div>';
+  const data=await api('GET','/api/history-tags/import-batches');
+  historyTagImportState.loading=false;
+  if(data.error){
+    if(list)list.innerHTML=`<div class="archive-release-empty">${esc(data.error)}</div>`;
+    setHistoryTagImportStatus(data.error,'err');
+    return;
+  }
+  historyTagImportState.batches=data.batches||[];
+  if(historyTagImportState.activeBatch){
+    historyTagImportState.activeBatch=historyTagImportState.batches.find(batch=>batch.id===historyTagImportState.activeBatch.id)||historyTagImportState.activeBatch;
+  }else if(historyTagImportState.batches.length){
+    historyTagImportState.activeBatch=historyTagImportState.batches[0];
+  }
+  renderHistoryTagImport();
+  if(historyTagImportState.activeBatch&&!options.keepMatches){
+    await openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
+  }
+}
+async function openHistoryTagImportBatch(id,options={}){
+  if(!id)return;
+  historyTagImportState.activeBatch=historyTagImportState.batches.find(batch=>batch.id===id)||historyTagImportState.activeBatch;
+  historyTagImportState.loading=true;
+  renderHistoryTagImport();
+  const params=new URLSearchParams();
+  if(historyTagImportState.status)params.set('status',historyTagImportState.status);
+  if(historyTagImportState.query.trim())params.set('q',historyTagImportState.query.trim());
+  const data=await api('GET',`/api/history-tags/import-batches/${encodeURIComponent(id)}?${params.toString()}`);
+  historyTagImportState.loading=false;
+  if(data.error){
+    setHistoryTagImportStatus(data.error,'err');
+    renderHistoryTagImport();
+    return;
+  }
+  historyTagImportState.activeBatch=data.batch||historyTagImportState.activeBatch;
+  historyTagImportState.matches=data.matches||[];
+  renderHistoryTagImport();
+  if(!options.silent)setHistoryTagImportStatus('Eşleşmeler listelendi.','ok');
+}
+function setHistoryTagImportFilter(){
+  historyTagImportState.query=el('historyTagImportSearch')?.value||'';
+  historyTagImportState.status=el('historyTagImportStatusFilter')?.value||'';
+  if(historyTagImportState.activeBatch)openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
+  else renderHistoryTagImport();
+}
+function clearHistoryTagImportFilters(){
+  historyTagImportState.query='';
+  historyTagImportState.status='ready';
+  if(el('historyTagImportSearch'))el('historyTagImportSearch').value='';
+  if(el('historyTagImportStatusFilter'))el('historyTagImportStatusFilter').value='ready';
+  if(historyTagImportState.activeBatch)openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
+  else renderHistoryTagImport();
+}
+function historyTagImportBatchCardHtml(batch){
+  const active=historyTagImportState.activeBatch?.id===batch.id?' active':'';
+  const dateText=batch.updatedAt?new Date(batch.updatedAt).toLocaleString('tr-TR'):'Tarih yok';
+  return `
+    <button class="tag-import-batch-card${active}" onclick="openHistoryTagImportBatch(${attrJson(batch.id)})">
+      <div class="tag-import-batch-title">${esc(batch.filename||'Etiket dosyası')}</div>
+      <div class="tag-import-meta">
+        <span>${esc(batch.sheetName||'Sayfa')}</span>
+        <span>${Number(batch.usableRows||0).toLocaleString('tr-TR')} Excel satırı</span>
+        <span>${Number(batch.historyCount||0).toLocaleString('tr-TR')} denetim kaydı</span>
+        <span>${esc(dateText)}</span>
+      </div>
+      <div class="tag-import-meta">
+        <span class="tag-import-badge ready">${Number(batch.readyCount||0).toLocaleString('tr-TR')} hazır</span>
+        <span class="tag-import-badge review">${Number(batch.reviewCount||0).toLocaleString('tr-TR')} kontrol</span>
+        <span class="tag-import-badge unmatched">${Number(batch.unmatchedCount||0).toLocaleString('tr-TR')} eşleşmedi</span>
+        <span class="tag-import-badge applied">${Number(batch.appliedCount||0).toLocaleString('tr-TR')} uygulandı</span>
+      </div>
+    </button>
+  `;
+}
+function historyTagImportSummaryHtml(batch){
+  if(!batch)return `
+    <div class="ops-file-summary-item"><strong>0</strong><span>Parti</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Hazır</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Kontrol</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Eşleşmedi</span></div>
+  `;
+  return `
+    <div class="ops-file-summary-item"><strong>${Number(batch.historyCount||0).toLocaleString('tr-TR')}</strong><span>Denetim kaydı</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(batch.readyCount||0).toLocaleString('tr-TR')}</strong><span>Hazır</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(batch.reviewCount||0).toLocaleString('tr-TR')}</strong><span>Kontrol</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(batch.unmatchedCount||0).toLocaleString('tr-TR')}</strong><span>Eşleşmedi</span></div>
+  `;
+}
+function historyTagImportMatchCardHtml(item){
+  const statusClass=historyTagImportStatusClass(item.status);
+  const history=item.history||{};
+  const title=history.filename||history.summary||item.question||'Denetim kaydı';
+  const currentTags=historyTagsChips(item.currentTags||[]);
+  const newTags=historyTagsChips(item.tags||[]);
+  const canApply=['ready','review'].includes(item.status)&&item.historyId&&Array.isArray(item.tags)&&item.tags.length;
+  const canSkip=!['applied','skipped'].includes(item.status);
+  return `
+    <div class="tag-import-match-card ${statusClass}">
+      <div class="tag-import-match-head">
+        <div>
+          <div class="tag-import-match-title">${esc(title)}</div>
+          <div class="tag-import-meta">
+            <span>${esc(history.name||history.username||'Kullanıcı yok')}</span>
+            <span>${esc(history.status||'durum yok')}</span>
+            <span>${item.excelRow?`${Number(item.excelRow).toLocaleString('tr-TR')}. Excel satırı`:'Excel eşleşmesi yok'}</span>
+          </div>
+        </div>
+        <div class="tag-import-score">%${Number(item.confidence||0).toLocaleString('tr-TR')} güven</div>
+      </div>
+      <div class="tag-import-meta">
+        <span class="tag-import-badge ${statusClass}">${historyTagImportStatusLabel(item.status)}</span>
+        <span>${esc(item.reason||'Eşleşme notu yok')}</span>
+      </div>
+      <div class="tag-import-map">
+        <div class="tag-import-old">${currentTags||'<span>Mevcut etiket yok</span>'}</div>
+        <div class="tag-import-arrow">→</div>
+        <div class="tag-import-new">${newTags||'<span>Excel etiketi yok</span>'}</div>
+      </div>
+      <div class="tag-import-preview"><strong>Excel soru/cevap ön izlemesi</strong><br>${esc([item.question,item.answerPreview].filter(Boolean).join('\n\n')||'Ön izleme yok.')}</div>
+      ${history.correctedText?`<div class="tag-import-preview"><strong>Denetim kaydı ön izlemesi</strong><br>${esc(history.correctedText.slice(0,520))}${history.correctedText.length>520?'...':''}</div>`:''}
+      <div class="tag-import-actions-row">
+        <button class="btn-mini primary" onclick="applyHistoryTagImportMatch(${attrJson(item.id)},this)" ${canApply?'':'disabled'}>Etiketi Bu Kayda Uygula</button>
+        <button class="btn-mini" onclick="skipHistoryTagImportMatch(${attrJson(item.id)},this)" ${canSkip?'':'disabled'}>Atla</button>
+        ${item.historyId?`<button class="btn-mini" onclick="showDetail(${attrJson(item.historyId)})">Denetim Kaydını Aç</button>`:''}
+      </div>
+      ${item.appliedAt?`<div class="ops-status ok" style="margin-top:9px">Uygulandı: ${esc(new Date(item.appliedAt).toLocaleString('tr-TR'))}${item.appliedBy?` · ${esc(item.appliedBy)}`:''}</div>`:''}
+    </div>
+  `;
+}
+function renderHistoryTagImport(){
+  const search=el('historyTagImportSearch');
+  const status=el('historyTagImportStatusFilter');
+  if(search&&search.value!==historyTagImportState.query)search.value=historyTagImportState.query;
+  if(status&&status.value!==historyTagImportState.status)status.value=historyTagImportState.status;
+  const summary=el('historyTagImportSummary');
+  if(summary)summary.innerHTML=historyTagImportSummaryHtml(historyTagImportState.activeBatch);
+  const batchList=el('historyTagImportBatchList');
+  if(batchList){
+    batchList.innerHTML=historyTagImportState.batches.length
+      ? historyTagImportState.batches.map(historyTagImportBatchCardHtml).join('')
+      : '<div class="archive-release-empty">Henüz etiket aktarım partisi yok. Excel dosyası seçerek başlayın.</div>';
+  }
+  const matchList=el('historyTagImportMatchList');
+  if(matchList){
+    if(historyTagImportState.loading){
+      matchList.innerHTML='<div class="empty-state">Eşleşmeler yükleniyor...</div>';
+    }else if(!historyTagImportState.activeBatch){
+      matchList.innerHTML='<div class="empty-state">Bir parti seçildiğinde eşleşmeler burada görünür.</div>';
+    }else if(!historyTagImportState.matches.length){
+      matchList.innerHTML='<div class="empty-state">Bu filtrede eşleşme yok.</div>';
+    }else{
+      matchList.innerHTML=historyTagImportState.matches.map(historyTagImportMatchCardHtml).join('');
+    }
+  }
+}
+async function applyHistoryTagImportMatch(id,button){
+  if(!id)return;
+  if(button)button.disabled=true;
+  setHistoryTagImportStatus('Etiket bu denetim kaydına uygulanıyor...','');
+  const data=await api('POST',`/api/history-tags/import-matches/${encodeURIComponent(id)}/apply`,{});
+  if(data.error){
+    if(button)button.disabled=false;
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Etiket uygulanamadı',data.error,'danger');
+  }
+  historyTagImportState.matches=(historyTagImportState.matches||[]).map(item=>item.id===id?data.match:item);
+  await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
+  renderHistoryTagImport();
+  setHistoryTagImportStatus('Etiket uygulandı.','ok');
+}
+async function skipHistoryTagImportMatch(id,button){
+  if(!id)return;
+  if(button)button.disabled=true;
+  const data=await api('POST',`/api/history-tags/import-matches/${encodeURIComponent(id)}/skip`,{});
+  if(data.error){
+    if(button)button.disabled=false;
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Kayıt atlanamadı',data.error,'danger');
+  }
+  historyTagImportState.matches=(historyTagImportState.matches||[]).map(item=>item.id===id?data.match:item);
+  await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
+  renderHistoryTagImport();
+  setHistoryTagImportStatus('Eşleşme atlandı.','ok');
+}
+async function applyReadyHistoryTagImportMatches(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return showSystemAlert('Parti seçilmedi','Toplu uygulama için önce bir etiket aktarım partisi seçin.','danger');
+  const readyCount=Number(batch.readyCount||0);
+  if(!readyCount)return showSystemAlert('Hazır eşleşme yok','Bu partide yüksek güvenli hazır eşleşme bulunmuyor. Kontrol gerekenleri tek tek inceleyin.','danger');
+  const ok=await openSystemConfirm({
+    title:'Yüksek güvenli etiketler uygulansın mı?',
+    badge:'Etiket aktarımı',
+    message:`Bu işlem yalnız hazır görünen ${readyCount.toLocaleString('tr-TR')} eşleşmeye Excel etiketlerini uygular.`,
+    detail:'Kontrol gereken veya eşleşmeyen kayıtlar değişmez. Uygulanan kayıtlar listede Uygulandı olarak görünür.',
+    confirmText:'Uygula',
+    tone:'success'
+  });
+  if(!ok)return;
+  historyTagImportState.applying=true;
+  setHistoryTagImportStatus('Yüksek güvenli etiketler uygulanıyor...','');
+  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/apply-ready`,{});
+  historyTagImportState.applying=false;
+  if(data.error){
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Toplu uygulama tamamlanamadı',data.error,'danger');
+  }
+  if(data.batch)historyTagImportState.activeBatch=data.batch;
+  await loadHistoryTagImportBatches({keepActive:true});
+  setHistoryTagImportStatus(`${Number(data.applied||0).toLocaleString('tr-TR')} eşleşme uygulandı.${data.errors?.length?' Bazı kayıtlar uygulanamadı.':''}`,'ok');
+  if(data.errors?.length){
+    await showSystemAlert('Bazı kayıtlar uygulanamadı',data.errors.slice(0,6).join('\n'),'danger');
+  }
 }
 function archiveWorkStatusLabel(status){
   return {

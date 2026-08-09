@@ -2,6 +2,21 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde soru-cevap etiketleri ve Excel etiket aktarımı hazırlandı. Kullanıcı `Onaya Gönder`
+  öncesinde virgülle ayrılmış etiket girebilir; admin/süper admin onay modalında etiketleri
+  görüp düzelterek onaylayabilir. `history.tags` alanı denetim geçmişi, onay listesi ve CSV
+  çıktısına taşınır. Süper admin `Arşiv Operasyon Merkezi > Etiket Aktarımı` ekranından
+  `Arşiv Data.xlsx` gibi Excel dosyalarını yükleyebilir; sistem `Soru`, `Etiket/Sınıf` ve
+  `Cevap` kolonlarını geçmiş denetim kayıtlarıyla eşleştirir. Ekran hazır/kontrol
+  gerekli/eşleşmedi/uygulandı/atlandı durumlarını ayrı gösterir; mevcut etiketler kırmızı,
+  Excel'den gelecek etiketler yeşil gösterilir. Tek kayıt uygulanabilir, atlanabilir veya
+  yalnız yüksek güvenli hazır eşleşmeler toplu uygulanabilir. Toplu uygulama backend'de
+  sayfalı çalışır; 500 kayıtla sınırlı kalmaz. Kapsam: `server.js`, `index.html`,
+  `schema.sql`, `scripts/check-frontend.js`, `package.json`, `package-lock.json`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Canlıya almadan önce Supabase'de `schema.sql` içindeki
+  `history.tags`, `history_tag_import_batches` ve `history_tag_import_matches` blokları
+  uygulanmış olmalı. DB/root `/` public cutover ve public frontend hattına dokunulmadı.
+
 - Yerelde desktop `/admin` süper admin menü görünürlüğü düzeltildi: `Arşiv Operasyon Merkezi`
   grubu desktop sidebar'da `Geri Bildirim` altından alınıp `Operasyon` bölümünde `İş Panosu`
   satırının hemen altına taşındı. Mobil menü, süper admin yetki koşulu ve `/admin` route koruması

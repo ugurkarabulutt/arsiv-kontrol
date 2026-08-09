@@ -296,6 +296,42 @@ if (html.includes('corrected-btns') || html.includes('onclick="downloadPDF()"') 
 if (!html.includes('function setApprovalAction') || !html.includes("await loadOnay();") || !html.includes("approveItem('${h.id}',this)") || !html.includes("rejectItem('${h.id}',this)")) {
   throw new Error('Is Panosu onay/red sonrasi paneli yenilemeli ve buton islemini gorunur sekilde kilitlemeli.');
 }
+if (
+  !schema.includes("tags jsonb not null default '[]'::jsonb") ||
+  !schema.includes('history_tags_idx') ||
+  !server.includes('HAS_HISTORY_TAGS') ||
+  !server.includes('function normalizeHistoryTags') ||
+  !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/tags'") ||
+  !server.includes("updateRow.tags = normalizeHistoryTags(req.body?.tags)") ||
+  !server.includes('mergedRow.tags = normalizeHistoryTags(req.body?.tags)') ||
+  !server.includes('Soru Etiketleri') ||
+  !html.includes('id="submitApprovalTags"') ||
+  !html.includes('renderSubmitTagsPreview') ||
+  !html.includes('id="detailHistoryTags"') ||
+  !html.includes("setApprovalAction(id,'approve',btn,{tags:parseHistoryTags(v('detailHistoryTags'))})") ||
+  !html.includes('historyTagsChips(h.tags||[])')
+) {
+  throw new Error('Soru-cevap etiketleri onaya gonderme, admin onay duzeltmesi, CSV ve DB semasinda korunmali.');
+}
+if (
+  !schema.includes('history_tag_import_batches') ||
+  !schema.includes('history_tag_import_matches') ||
+  !server.includes('function parseHistoryTagImportWorkbook') ||
+  !server.includes('function ensureHistoryTagImportReady') ||
+  !server.includes("app.post('/api/history-tags/import/preview'") ||
+  !server.includes("app.get('/api/history-tags/import-batches'") ||
+  !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
+  !server.includes("const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
+  !html.includes('data-ops-view="tagImport"') ||
+  !html.includes('id="historyTagImportFile"') ||
+  !html.includes('uploadHistoryTagImportFile') ||
+  !html.includes('applyHistoryTagImportMatch') ||
+  !html.includes('applyReadyHistoryTagImportMatches') ||
+  !html.includes('/api/history-tags/import/preview')
+) {
+  throw new Error('Excel etiket aktarimi icin super admin ekrani, import APIleri ve DB semasi korunmali.');
+}
 if (!html.includes('openSubmitApprovalFromHistory') || !html.includes('value="taslak"')) {
   throw new Error('Kullanici gecmisindeki taslaklari filtreleme ve onaya gonderme akisi eksik.');
 }
