@@ -6251,6 +6251,28 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready', a
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')
+      .select('id')
+      .eq('batch_id', req.params.id)
+      .eq('match_status', 'review'), 500);
+    let applied = 0;
+    const errors = [];
+    for (const row of rows || []) {
+      try {
+        await applyHistoryTagImportMatchRow(row.id, req.session.name || req.session.username || '');
+        applied++;
+      } catch (error) {
+        errors.push(error.message);
+      }
+    }
+    const batch = await refreshHistoryTagImportBatchCounts(req.params.id);
+    res.json({ success: errors.length === 0, applied, errors, batch });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/alerts', auth, admin, async (req, res) => {
   try {
     const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);

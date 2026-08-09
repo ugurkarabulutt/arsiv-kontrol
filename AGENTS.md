@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-09
+- **Etiket aktarımı kontrol grubu toplu uygulaması eklendi:** `/admin` süper admin Arşiv
+  Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında durum filtresi `Kontrol gerekenler`
+  seçildiğinde üst aksiyon alanında `Kontrol Gerekenleri Uygula` butonu görünür. Bu aksiyon
+  yalnız seçili aktarım listesindeki `review` eşleşmelerini uygular; hazır, eşleşmeyen, atlanan
+  veya uygulanmış kayıtlara dokunmaz. İşlemden önce sistem içi onay penceresi etkilenecek kayıt
+  sayısını gösterir. Backend'e süper admin korumalı
+  `POST /api/history-tags/import-batches/:id/apply-review` endpoint'i eklendi. SQL/DB migration
+  gerekmedi; root `/` public cutover ve public frontend hattına dokunulmadı. Kapsam:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 - **Etiket aktarımı kullanıcı dili sadeleştirildi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Etiket Aktarımı` ekranında teknik `parti` ifadesi görünür kullanıcı
   dilinden çıkarıldı. Ekip için daha anlaşılır olması amacıyla ekranda artık `aktarım listesi`

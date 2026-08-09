@@ -328,6 +328,7 @@ if (
   !server.includes("app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})'") ||
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review'") ||
   !server.includes("const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
   !server.includes('const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);') ||
   !server.includes("const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
@@ -344,9 +345,12 @@ if (
   !html.includes('readHistoryTagImportUploadResponse') ||
   !html.includes('applyHistoryTagImportMatch') ||
   !html.includes('applyReadyHistoryTagImportMatches') ||
+  !html.includes('applyReviewHistoryTagImportMatches') ||
+  !html.includes('historyTagImportApplyReviewBtn') ||
   !html.includes('deleteHistoryTagImportBatch') ||
   !html.includes('Seçili Aktarımı Sil') ||
   !html.includes('Güvenli Eşleşmeleri Uygula') ||
+  !html.includes('Kontrol Gerekenleri Uygula') ||
   !html.includes('Listeyi Yenile') ||
   html.includes('Yüksek Güvenlileri Uygula') ||
   html.includes('Partileri Yenile') ||

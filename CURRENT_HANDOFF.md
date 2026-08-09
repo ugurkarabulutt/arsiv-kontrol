@@ -2,6 +2,17 @@
 
 ## 2026-08-09 Codex Güncel Durum
 
+- Yerelde etiket aktarımı `Kontrol gerekenler` grubu için toplu uygulama aksiyonu eklendi.
+  `/admin > Arşiv Operasyon Merkezi > Etiket Aktarımı` ekranında durum filtresi
+  `Kontrol gerekenler` seçildiğinde üst aksiyon alanında `Kontrol Gerekenleri Uygula` butonu
+  görünür. Bu buton yalnız seçili aktarım listesindeki `review` grubunu uygular; `Hazır`,
+  `Eşleşmeyen`, `Atlanan` veya daha önce `Uygulanan` kayıtlara dokunmaz. İşlemden önce sistem
+  içi onay penceresi kaç kaydın etkileneceğini açıkça gösterir. Backend'e süper admin korumalı
+  `POST /api/history-tags/import-batches/:id/apply-review` endpoint'i eklendi. SQL/DB migration
+  gerekmedi; root `/` public cutover ve public frontend hattına dokunulmadı. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti.
+
 - Yerelde etiket aktarımı kullanıcı dili sadeleştirildi. `/admin > Arşiv Operasyon Merkezi >
   Etiket Aktarımı` ekranında teknik `parti` ifadesi görünür dilden çıkarıldı; ekip dilinde
   `aktarım listesi` / `liste` kullanılır. `Yüksek Güvenlileri Uygula` artık
