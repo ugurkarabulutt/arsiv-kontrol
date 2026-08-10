@@ -776,6 +776,7 @@ for (const marker of ['Öne Çıkan Sorular', 'Kavramlar', 'Kategoriler', 'Aklı
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
+assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' }).html;
 assert(searchPreview.includes('Namaz kılarken akla gelen kötü düşünceler'), 'Public search fixture data ile sonuc dondurmeli.');
 const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' }).html;

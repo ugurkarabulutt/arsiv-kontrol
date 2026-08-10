@@ -108,9 +108,10 @@ function previewActionNav(active) {
 function header(active) {
   const nav = [
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
-    ['Arşiv', `${PREVIEW_BASE}/arama`, 'archive'],
-    ['Konular', `${PREVIEW_BASE}/konu/ornek-kavram`, 'topics'],
-    ['Soru Sor', `${PREVIEW_BASE}/soru-sor`, 'ask']
+    ['Ar\u015fiv', PREVIEW_BASE + '/arama', 'archive'],
+    ['Konular', PREVIEW_BASE + '/konu/ornek-kavram', 'topics'],
+    ['Kategoriler', PREVIEW_BASE + '/kategori/ornek-kategori', 'categories'],
+    ['Soru Sor', PREVIEW_BASE + '/soru-sor', 'ask']
   ];
   const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
@@ -119,9 +120,15 @@ function header(active) {
       <nav class="pa-desktop-nav" aria-label="Ana gezinme">
         ${nav.map(([label, url, key]) => `<a class="${active === key || (active === 'search' && key === 'archive') ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
       </nav>
-      <button class="pa-theme-toggle" type="button" data-theme-toggle aria-label="Tema değiştir">
-        <span class="pa-theme-toggle-icon" aria-hidden="true"></span>
-      </button>
+      <div class="pa-header-actions">
+        <button class="pa-account-button" type="button" aria-label="Hesab\u0131m" data-account-placeholder>
+          <span class="pa-account-icon" aria-hidden="true"></span>
+          <span class="pa-account-text">Hesab\u0131m</span>
+        </button>
+        <button class="pa-theme-toggle" type="button" data-theme-toggle aria-label="Tema de\u011fi\u015ftir">
+          <span class="pa-theme-toggle-icon" aria-hidden="true"></span>
+        </button>
+      </div>
     </header>
   `;
 }
@@ -476,7 +483,7 @@ function renderCategory(slug) {
     .map(topicSlug => bySlug(publicArchiveFixtures.topics, topicSlug))
     .filter(Boolean);
   return renderShell({
-    active: 'archive',
+    active: 'categories',
     title: category.name,
     description: category.description,
     content: `

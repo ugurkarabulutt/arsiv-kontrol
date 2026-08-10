@@ -44,6 +44,7 @@ test('public preview routes render isolated noindex pages', () => {
     assert.match(rendered.html, /<meta name="robots" content="noindex,nofollow">/);
     assert.match(rendered.html, /Dini Sorular/);
     assert.match(rendered.html, /ve Cevaplar Arşivi/);
+    assert.match(rendered.html, /Hesab\u0131m/);
     assert.match(rendered.html, /Sorularınız Kur’ân ışığında cevaplanır\./);
     assert.doesNotMatch(rendered.html, /\/api\//);
   }
