@@ -1,0 +1,386 @@
+[
+  {
+    "name": "Metinde olmayan bulgu skora girmez",
+    "sourceText": "Allah razi olsun. Bu metin temizdir.",
+    "modelResult": {
+      "correctedText": "Allah razi olsun. Bu metin temizdir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "olmayan kelime", "fixed": "olmayan kelime duzeltme", "rule": "Kaynakta yok" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah razi olsun. Bu metin temizdir." }
+  },
+  {
+    "name": "Ayni gorunen apostrof farki hata sayilmaz",
+    "sourceText": "Allah'in izniyle bu is tamamlanir.",
+    "modelResult": {
+      "correctedText": "Allah\u2019in izniyle bu is tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Allah'in", "fixed": "Allah\u2019in", "rule": "Apostrof tipi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah'in izniyle bu is tamamlanir." }
+  },
+  {
+    "name": "Muminun kelime ici parca yakalama reddedilir",
+    "sourceText": "Muminun Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "Mu'min Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Mumin", "fixed": "Mu'min", "rule": "Kelime ici yanlis yakalama" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0 }
+  },
+  {
+    "name": "Tabii ki korumali ifade degistirilmez",
+    "sourceText": "Tabi\u00ee ki bu cevap korunmalidir.",
+    "modelResult": {
+      "correctedText": "T\u00e2b\u00ee ki bu cevap korunmalidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Tabi\u00ee ki", "fixed": "T\u00e2b\u00ee ki", "rule": "Korumali ifade" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Tabi\u00ee ki bu cevap korunmalidir." }
+  },
+  {
+    "name": "Derecat korumali ifade degistirilmez",
+    "sourceText": "Derecat kelimesi bu metinde bilerek kullanildi.",
+    "modelResult": {
+      "correctedText": "Derece kelimesi bu metinde bilerek kullanildi.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Derecat", "fixed": "Derece", "rule": "Korumali ifade" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Derecat kelimesi bu metinde bilerek kullanildi." }
+  },
+  {
+    "name": "Gercek kaynak bulgusu skorlanir",
+    "sourceText": "Bu metinde ayet kelimesi geciyor.",
+    "modelResult": {
+      "correctedText": "Bu metinde \u00e2yet kelimesi geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "ayet", "fixed": "\u00e2yet", "rule": "Sozluk" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "Bu metinde \u00e2yet kelimesi geciyor." }
+  },
+  {
+    "name": "Din kelimesi artik din olarak korunur",
+    "sourceText": "Din bu cevapta temel kavramdir.",
+    "modelResult": {
+      "correctedText": "D\u00een bu cevapta temel kavramdir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Din", "fixed": "D\u00een", "rule": "Eski sozluk yonu" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Din bu cevapta temel kavramdir." }
+  },
+  {
+    "name": "Herşey artik birlesik olarak korunur",
+    "sourceText": "Her\u015fey Allah'in izniyle tamamlanir.",
+    "modelResult": {
+      "correctedText": "Her \u015fey Allah'in izniyle tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Her\u015fey", "fixed": "Her \u015fey", "rule": "Eski imla yonu" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
+  },
+  {
+    "name": "Din yeni sozluk yonunde duzeltilir",
+    "sourceText": "D\u00een bu cevapta temel kavramdir.",
+    "modelResult": {
+      "correctedText": "Din bu cevapta temel kavramdir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "D\u00een", "fixed": "Din", "rule": "Yeni sozluk karari" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "Din bu cevapta temel kavramdir." }
+  },
+  {
+    "name": "Her sey yeni sozluk yonunde birlesir",
+    "sourceText": "Her \u015fey Allah'in izniyle tamamlanir.",
+    "modelResult": {
+      "correctedText": "Her\u015fey Allah'in izniyle tamamlanir.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Her \u015fey", "fixed": "Her\u015fey", "rule": "Yeni imla karari" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 96, "totalErrors": 1, "correctedText": "Her\u015fey Allah'in izniyle tamamlanir." }
+  },
+  {
+    "name": "Muminun sure adi yeni listeye gore duzeltilir",
+    "sourceText": "Muminun Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Muminun", "fixed": "MU'M\u0130N\u00dbN", "rule": "Sure adi standardi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 95, "totalErrors": 1, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Muminun sure adini mumin kelimesine indirgeme reddedilir",
+    "sourceText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "m\u00fc'min Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "MU'M\u0130N\u00dbN", "fixed": "m\u00fc'min", "rule": "Yanlis parca yakalama" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "MU'M\u0130N\u00dbN Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Zumer sure adi sadece buyuk harfe cevrildigi icin hata sayilmaz",
+    "sourceText": "Zumer Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "ZUMER Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Zumer", "fixed": "ZUMER", "rule": "Sure adi standardi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Zumer Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Zumer sure adini Zumer yerine Zumer umlautlu yapma reddedilir",
+    "sourceText": "ZUMER Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "Z\u00fcmer Suresi bu bolumde geciyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "ZUMER", "fixed": "Z\u00fcmer", "rule": "Yanlis sure yazimi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "ZUMER Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Sure adinda sadece buyuk harf donusumu hata sayilmaz",
+    "sourceText": "Muzzemmil Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MUZZEMM\u0130L Suresi bu bolumde geciyor.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Muzzemmil", "fixed": "MUZZEMM\u0130L", "rule": "Sure adi case" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Muzzemmil Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Fatiha sapkali ama kucuk yazildi diye hata sayilmaz",
+    "sourceText": "F\u00e2tiha Suresi okunuyor.",
+    "modelResult": {
+      "correctedText": "F\u00c2T\u0130HA Suresi okunuyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "F\u00e2tiha", "fixed": "F\u00c2T\u0130HA", "rule": "Sure adi case" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "F\u00e2tiha Suresi okunuyor." }
+  },
+  {
+    "name": "Mulk sadece buyuk harfe cevrildigi icin hata sayilmaz",
+    "sourceText": "Mulk Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "MULK Suresi bu bolumde geciyor.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Mulk", "fixed": "MULK", "rule": "Sure adi case" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Mulk Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Rum sure adinda sapka gerekiyorsa imla olarak skorlanir",
+    "sourceText": "Rum Suresi bu bolumde geciyor.",
+    "modelResult": {
+      "correctedText": "R\u00fbm Suresi bu bolumde geciyor.",
+      "categories": {
+        "imla": {
+          "issues": [
+            { "original": "Rum", "fixed": "R\u00fbm", "rule": "Sure adi imla" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 96, "totalErrors": 1, "correctedText": "R\u00fbm Suresi bu bolumde geciyor." }
+  },
+  {
+    "name": "Tabi anlamindaki tabi kelimesi tabi olmak diye yorumlanmaz",
+    "sourceText": "Tabi bu konu istisare ile neticelenir.",
+    "modelResult": {
+      "correctedText": "T\u00e2b\u00ee bu konu istisare ile neticelenir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Tabi", "fixed": "T\u00e2b\u00ee", "rule": "Baglam yanlisi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Tabi bu konu istisare ile neticelenir." }
+  },
+  {
+    "name": "Tabii kelimesi tabi olmak anlamina cevrilmez",
+    "sourceText": "Yapabilir tabi\u00ee, ama konu farklidir.",
+    "modelResult": {
+      "correctedText": "Yapabilir t\u00e2b\u00ee, ama konu farklidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "tabi\u00ee", "fixed": "t\u00e2b\u00ee", "rule": "Baglam yanlisi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Yapabilir tabi\u00ee, ama konu farklidir." }
+  },
+  {
+    "name": "Sure kelimesi sure adi sanilip sapkalanmaz",
+    "sourceText": "Bu s\u00fcreyi belirleyen kisinin gayretidir.",
+    "modelResult": {
+      "correctedText": "Bu s\u00fbreyi belirleyen kisinin gayretidir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "s\u00fcreyi", "fixed": "s\u00fbreyi", "rule": "Baglam yanlisi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Bu s\u00fcreyi belirleyen kisinin gayretidir." }
+  },
+  {
+    "name": "Afet kelimesi sapkali afete cevrilmez",
+    "sourceText": "Nefsin afetleriyle davranmasi derecat kaybettirir.",
+    "modelResult": {
+      "correctedText": "Nefsin \u00e2fetleriyle davranmasi derecat kaybettirir.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "afetleriyle", "fixed": "\u00e2fetleriyle", "rule": "Yanlis sapka" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Nefsin afetleriyle davranmasi derecat kaybettirir." }
+  },
+  {
+    "name": "Zahid kelimesi sapkali zahide cevrilmez",
+    "sourceText": "Bu kisi zahidlerden kilar.",
+    "modelResult": {
+      "correctedText": "Bu kisi z\u00e2hidlerden kilar.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "zahidlerden", "fixed": "z\u00e2hidlerden", "rule": "Yanlis sapka" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Bu kisi zahidlerden kilar." }
+  },
+  {
+    "name": "Efendimiz kelimesine tek basina SAV eklenmez",
+    "sourceText": "Bu nazardan kurtulacaklarini Efendimiz bildiriyor.",
+    "modelResult": {
+      "correctedText": "Bu nazardan kurtulacaklarini Efendimiz (S.A.V) bildiriyor.",
+      "categories": {
+        "sozluk": {
+          "issues": [
+            { "original": "Efendimiz", "fixed": "Efendimiz (S.A.V)", "rule": "Baglam varsayimi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Bu nazardan kurtulacaklarini Efendimiz bildiriyor." }
+  },
+  {
+    "name": "SAV kisaltmasina fazladan nokta eklenmez",
+    "sourceText": "Peygamber Efendimiz (S.A.V)'e gelerek sordu.",
+    "modelResult": {
+      "correctedText": "Peygamber Efendimiz (S.A.V.)'e gelerek sordu.",
+      "categories": {
+        "noktalama": {
+          "issues": [
+            { "original": "Efendimiz (S.A.V)'e", "fixed": "Efendimiz (S.A.V.)'e", "rule": "Kisaltma noktasi" }
+          ]
+        }
+      }
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Peygamber Efendimiz (S.A.V)'e gelerek sordu." }
+  },
+  {
+    "name": "Sifir hata sonucunda model metni gizlice degistiremez",
+    "sourceText": "Allah\u00fb Teal\u00e2 ve \u00e2yet kelimeleri dogru yazildi.",
+    "modelResult": {
+      "correctedText": "Allah Teala ve ayet kelimeleri dogru yazildi.",
+      "categories": {}
+    },
+    "expected": { "score": 100, "totalErrors": 0, "correctedText": "Allah\u00fb Teal\u00e2 ve \u00e2yet kelimeleri dogru yazildi." }
+  }
+]

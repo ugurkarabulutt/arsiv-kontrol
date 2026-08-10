@@ -1,0 +1,26 @@
+diff --git a/vercel.json b/vercel.json
+--- a/vercel.json
++++ b/vercel.json
+@@ -55,6 +55,22 @@
+     {
+       "src": "/favicon.ico",
+       "dest": "/icons/favicon.ico"
+     },
++    {
++      "src": "/admin",
++      "headers": {
++        "X-Robots-Tag": "noindex, nofollow",
++        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
++      },
++      "dest": "/index.html"
++    },
++    {
++      "src": "/admin/(.*)",
++      "headers": {
++        "X-Robots-Tag": "noindex, nofollow",
++        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
++      },
++      "dest": "/index.html"
++    },
+     {
+       "src": "/(.*)",
