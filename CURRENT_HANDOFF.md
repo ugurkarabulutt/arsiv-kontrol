@@ -1,5 +1,36 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-11 Codex Güncel Durum
+
+- Yerelde `/admin` süper admin `Arşiv Operasyon Merkezi` alanı, ekip liderinin Drive / kişi
+  e-tablosu düzenine daha yakın olacak şekilde ilk UX fazında sadeleştirildi. Görünen ana başlık
+  `Arşiv Çalışmaları` oldu; alt menü adları `Dosyalar`, `Yeni Kaynak`, `Kaynak Dosyaları`,
+  `Yayın Linkleri`, `Çalışma Tabloları`, `Hadisler ve Slaytlar`, `Dosya Yükle`,
+  `Yayına Hazır Kayıtlar`, `Son Kontrol`, `Yayın Dosyaları`, `Çıktılar` ve `Excel Etiketleri`
+  olarak sadeleştirildi. Genel bakış kartları ekip liderinin dokümanındaki klasör yapısına göre
+  `Çalışma Tabloları`, `Yayın Linkleri`, `Hadisler`, `Slayt Metinleri`, `Standartlar`,
+  `Youtube Dökümanları` ve `Dosya Yükle` odağına çekildi.
+- `/admin > Arşiv Çalışmaları > Çalışma Tabloları` ekranına `Kişi Dosyaları` alanı eklendi.
+  Mevcut `archive_work_items.assignedTo` ve `archive_publish_tasks.assignedTo` verilerinden kişi
+  kartları üretilir; kişi seçildiğinde çalışma satırları ve yayın linkleri aynı kişi adına göre
+  süzülür. Seçili kişi için `Yayın Linkleri` paneli, link başlığı, durum, yayın tarihi, platform,
+  URL ve notu gösterir. Panel API dönüşünü beklemeden mevcut yüklü veriden anında güncellenir;
+  API başarılı dönünce liste aynı filtreyle tazelenir.
+- Bu fazda DB/schema migration yapılmadı, public root `/` veya public frontend dosyalarına
+  dokunulmadı. Değişen dosyalar: `index.html`, `scripts/check-frontend.js`, `server.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı; 86/86
+  test geçti. Ek görsel/viewport kontrolü için repo dosyası değiştirmeden lokal test sayfası
+  kullanıldı: 1440x1000 PC ve 390x900 mobil ölçekte `Kişi Dosyaları`, kişi seçimi ve `Yayın
+  Linkleri` paneli doğrulandı; yatay taşma veya eski teknik başlık görünmedi. Runtime commit
+  `444e786` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-q0cms9c9u-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Arşiv Çalışmaları`, `Kişi Dosyaları`,
+  `Yayın Linkleri` ve `Çalışma Tabloları` mevcut; eski `Arşiv Operasyon Merkezi`,
+  `Yayın Görevleri`, `Çalışma Kayıtları`, `adminRouteProbe` ve public preview marker'ı yok.
+
 ## 2026-08-10 Codex Güncel Durum
 
 - Yerelde `/admin` onay akışı hızlandırıldı ve onaylayan yetkili bilgisi admin yüzüne eklendi.

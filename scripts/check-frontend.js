@@ -554,12 +554,12 @@ if (
   throw new Error('/admin route guard ve PWA root acilisinda admin route a alma korumasi bozulmamali.');
 }
 if (
-  !html.includes('Arşiv Operasyon Merkezi') ||
+  !html.includes('Arşiv Çalışmaları') ||
   !html.includes('tabContent-archiveOps') ||
   !html.includes('admin-route-only') ||
   !html.includes('function canUseArchiveOps') ||
   !html.includes("if(name==='archiveOps'&&!canUseArchiveOps())name='analiz'") ||
-  !html.includes('Kaynak Kayıt Sistemi') ||
+  !html.includes('Yeni Kaynak') ||
   !html.includes('archiveSourceText') ||
   !html.includes('function loadArchiveOpsSources') ||
   !html.includes('function saveArchiveSource(forceSave=false,changeConfirmed=false)') ||
@@ -576,7 +576,7 @@ if (
   !html.includes('data-ops-view="sources"') ||
   !html.includes('data-ops-view="library"') ||
   !html.includes('data-ops-view="files"') ||
-  !html.includes('Dosya Merkezi') ||
+  !html.includes('Dosyalar') ||
   !html.includes('archiveFileSearch') ||
   !html.includes('ops-file-grid') ||
   !html.includes('function renderArchiveFileCenter') ||
@@ -717,9 +717,9 @@ if (
   !html.includes('function loadArchiveReadyQueue') ||
   !html.includes("params.set('status','yayina_hazir')") ||
   !html.includes('function setArchiveReadyDecision') ||
-  !html.includes('Yayın Hazırlık Kuyruğu') ||
+  !html.includes('Son Kontrol') ||
   !html.includes('data-ops-view="packages"') ||
-  !html.includes('Yayın Paketleri') ||
+  !html.includes('Yayın Dosyaları') ||
   !html.includes('id="archiveReleasePackageTitle"') ||
   !html.includes('id="archiveReleasePackageList"') ||
   !html.includes('id="archiveReleasePackageDetail"') ||
@@ -729,7 +729,7 @@ if (
   !html.includes('function archiveReleasePackageReview') ||
   !html.includes('function archiveReleasePackageLockReview') ||
   !html.includes('data-ops-view="packageOutput"') ||
-  !html.includes('Paket Çıktı Merkezi') ||
+  !html.includes('Çıktılar') ||
   !html.includes('id="archiveOutputPackageList"') ||
   !html.includes('id="archiveOutputPublicationUrl"') ||
   !html.includes('value="public-json"') ||
@@ -753,9 +753,9 @@ if (
   !html.includes('archive-release-review') ||
   !html.includes('archive-release-checks') ||
   !html.includes('archive-release-lock-panel') ||
-  !html.includes('Paket son kontrolü') ||
+  !html.includes('Yayın dosyası son kontrolü') ||
   !html.includes('Son Hazırlığa Kilitle') ||
-  !html.includes('Paket hazır değil') ||
+  !html.includes('Yayın dosyası hazır değil') ||
   !html.includes("api('GET',`/api/archive-ops/release-packages") ||
   !html.includes("api('GET',`/api/archive-ops/public-candidates?${params}`)") ||
   !html.includes('function loadArchiveCandidates') ||
@@ -769,8 +769,13 @@ if (
   !html.includes("api('GET',`/api/archive-ops/public-candidates") ||
   !html.includes("/api/archive-ops/public-candidates/${encodeURIComponent(item.kind)}/${encodeURIComponent(item.recordId)}/decision") ||
   !html.includes('Yayına Hazır') ||
-  !html.includes('Yayın Görevini Sakla') ||
-  !html.includes('Yayın Görevleri') ||
+  !html.includes('Yayın Linkini Sakla') ||
+  !html.includes('Yayın Linkleri') ||
+  !html.includes('Kişi Dosyaları') ||
+  !html.includes('id="archiveTeamFolders"') ||
+  !html.includes('id="archiveSelectedMemberLinks"') ||
+  !html.includes('function archiveSelectTeamMember') ||
+  !html.includes('function renderArchiveTeamFolders') ||
   !html.includes('id="archiveWorkTitle"') ||
   !html.includes('id="archiveWorkSourceId"') ||
   !html.includes('function loadArchiveWorkItems') ||
@@ -781,13 +786,13 @@ if (
   !html.includes('function markArchiveWorkSubmittedAfterApproval') ||
   !html.includes('Çalışma kaydından denetleniyor') ||
   !html.includes('Denetime Aktar') ||
-  !html.includes('Çalışma Kaydını Sakla') ||
+  !html.includes('Çalışma Satırını Sakla') ||
   !html.includes('Kaynağı Aç') ||
   !html.includes('.ops-work-layout') ||
   !html.includes("api('DELETE',`/api/archive-ops/import-items/") ||
   !html.includes('Kaynak Olarak Kaydet') ||
   !html.includes('Formda Düzenle') ||
-  !html.includes('Kaynak Havuzunda Aç') ||
+  !html.includes('Kaynak Dosyalarında Aç') ||
   !html.includes("tone:'danger'") ||
   !html.includes('archiveImportCanTransfer') ||
   !html.includes('.ops-import-workspace{margin-top:18px') ||

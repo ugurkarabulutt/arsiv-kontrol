@@ -4447,7 +4447,7 @@ async function seed() {
   const { error: archiveVersionsErr } = await supabase.from('archive_source_versions').select('id').limit(1);
   const { error: archiveEventsErr } = await supabase.from('archive_source_events').select('id').limit(1);
   HAS_ARCHIVE_SOURCE_TABLES = !archiveSourcesErr && !archiveVersionsErr && !archiveEventsErr;
-  if (!HAS_ARCHIVE_SOURCE_TABLES) console.warn('⚠ archive source tabloları yok — Arşiv Operasyon Merkezi pilot JSON deposuyla çalışacak.');
+  if (!HAS_ARCHIVE_SOURCE_TABLES) console.warn('⚠ archive source tabloları yok — Arşiv Çalışmaları pilot JSON deposuyla çalışacak.');
 
   const { error: archiveImportBatchesErr } = await supabase.from('archive_import_batches').select('id').limit(1);
   const { error: archiveImportItemsErr } = await supabase.from('archive_import_items').select('id').limit(1);

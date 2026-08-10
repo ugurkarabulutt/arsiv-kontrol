@@ -120,6 +120,33 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-11
+- **Arşiv Çalışmaları ilk ekip-uyum UX fazı eklendi:** `/admin` süper admin arşiv çalışma
+  alanı ekip liderinin Drive / kişi e-tablosu düzenine daha yakın olacak şekilde sadeleştirildi.
+  Görünen ana başlık `Arşiv Çalışmaları` oldu; alt menü adları `Dosyalar`, `Yeni Kaynak`,
+  `Kaynak Dosyaları`, `Yayın Linkleri`, `Çalışma Tabloları`, `Hadisler ve Slaytlar`,
+  `Dosya Yükle`, `Yayına Hazır Kayıtlar`, `Son Kontrol`, `Yayın Dosyaları`, `Çıktılar`
+  ve `Excel Etiketleri` olarak güncellendi. Genel bakış kartları ekip liderinin dokümanındaki
+  klasör yapısına göre `Çalışma Tabloları`, `Yayın Linkleri`, `Hadisler`, `Slayt Metinleri`,
+  `Standartlar`, `Youtube Dökümanları` ve `Dosya Yükle` başlıklarına çekildi.
+  `Çalışma Tabloları` ekranına `Kişi Dosyaları` alanı eklendi: mevcut çalışma satırları ve
+  yayın linkleri `assignedTo` alanına göre kişi kartlarında özetlenir; kişi seçilince çalışma
+  satırları ve yayın linkleri aynı kişi adına göre süzülür ve seçili kişinin yayın linkleri
+  panelde URL, durum, yayın tarihi, platform ve notla görünür. Bu fazda DB/schema migration
+  yapılmadı, root `/` public cutover yapılmadı ve public frontend dosyalarına dokunulmadı.
+  Değişen dosyalar: `index.html`, `scripts/check-frontend.js`, `server.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti. Ek lokal görsel/viewport
+  testinde 1440x1000 PC ve 390x900 mobil ölçekte `Kişi Dosyaları` ve seçili kişi `Yayın Linkleri`
+  paneli doğrulandı; yatay taşma veya eski teknik başlık görünmedi. Runtime commit `444e786`
+  GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-q0cms9c9u-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `Arşiv Çalışmaları`, `Kişi Dosyaları`,
+  `Yayın Linkleri` ve `Çalışma Tabloları` mevcut; eski `Arşiv Operasyon Merkezi`,
+  `Yayın Görevleri`, `Çalışma Kayıtları`, `adminRouteProbe` ve public preview marker'ı yok.
+
 ### 2026-08-10
 - **Admin onay akışı hızlandırıldı ve onaylayan yetkili görünür oldu:** `/admin` onay/red
   işleminde kullanıcı 15 saniye civarı `İşleniyor...` bekleyebiliyordu; kök sebep frontend'in

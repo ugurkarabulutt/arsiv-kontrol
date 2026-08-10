@@ -408,6 +408,15 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-folder-card:hover{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
 .ops-folder-title{font-size:13px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;}
 .ops-folder-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-top:5px;}
+.ops-team-board{border:1px solid var(--bord2);background:var(--bg);padding:12px;margin-bottom:12px;min-width:0;max-width:100%;box-sizing:border-box;}
+.ops-team-board-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;min-width:0;}
+.ops-team-board-head>div{min-width:0;}
+.ops-team-board-head .btn-sec{white-space:nowrap;}
+.ops-folder-card.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.12);box-shadow:0 0 0 2px rgba(var(--gold-rgb),.08) inset;}
+.ops-member-links{display:grid;gap:8px;max-height:260px;overflow:auto;}
+.ops-member-link{border:1px solid var(--border);background:var(--bg);padding:10px;min-width:0;}
+.ops-member-link-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
+.ops-member-link-url{font-size:12px;line-height:1.45;margin-top:5px;overflow-wrap:anywhere;word-break:break-word;}
 .ops-file-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;}
 .ops-file-card{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;color:var(--ink);cursor:pointer;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;}
 .ops-file-card:hover{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
@@ -639,7 +648,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-team-board{padding:10px}.ops-team-board-head{display:grid;grid-template-columns:1fr;gap:8px}.ops-team-board-head .btn-sec{width:100%;white-space:normal}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 @media(max-width:640px){.candidate-review-grid{grid-template-columns:1fr}.candidate-trace-row{grid-template-columns:1fr;gap:2px}.candidate-public-preview{padding:12px}.candidate-public-preview h4{font-size:16px}.candidate-review-card{padding:12px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
@@ -1103,21 +1112,21 @@ canvas{width:100%!important;}
       <button class="btn-mobile admin-only" onclick="mNav('kullanici')" style="display:none">Kullanıcılar</button>
       <button class="btn-mobile admin-only" onclick="mNav('kurallar')" style="display:none">Kurallar</button>
       <div class="mobile-menu-group archive-ops-menu-group super-admin-only admin-route-only" style="display:none">
-        <button class="mobile-menu-label archive-ops-parent" data-tab="archiveOps" onclick="toggleArchiveOpsMenu()"><span>Arşiv Operasyon Merkezi</span><span class="side-caret" aria-hidden="true"></span></button>
+        <button class="mobile-menu-label archive-ops-parent" data-tab="archiveOps" onclick="toggleArchiveOpsMenu()"><span>Arşiv Çalışmaları</span><span class="side-caret" aria-hidden="true"></span></button>
         <div class="mobile-subnav">
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="overview" onclick="mArchiveOps('overview')">Genel Bakış</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="files" onclick="mArchiveOps('files')">Dosya Merkezi</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="sources" onclick="mArchiveOps('sources')">Kaynak Kayıtları</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="library" onclick="mArchiveOps('library')">Kaynak Havuzu</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="publishing" onclick="mArchiveOps('publishing')">Yayın Görevleri</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="work" onclick="mArchiveOps('work')">Çalışma Kayıtları</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="texts" onclick="mArchiveOps('texts')">Hadis ve Slayt Metinleri</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="import" onclick="mArchiveOps('import')">İçe Aktarım Merkezi</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="candidates" onclick="mArchiveOps('candidates')">Public Arşiv Adayları</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Yayın Hazırlık Kuyruğu</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packages" onclick="mArchiveOps('packages')">Yayın Paketleri</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packageOutput" onclick="mArchiveOps('packageOutput')">Paket Çıktı Merkezi</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="tagImport" onclick="mArchiveOps('tagImport')">Etiket Aktarımı</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="files" onclick="mArchiveOps('files')">Dosyalar</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="sources" onclick="mArchiveOps('sources')">Yeni Kaynak</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="library" onclick="mArchiveOps('library')">Kaynak Dosyaları</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="publishing" onclick="mArchiveOps('publishing')">Yayın Linkleri</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="work" onclick="mArchiveOps('work')">Çalışma Tabloları</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="texts" onclick="mArchiveOps('texts')">Hadisler ve Slaytlar</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="import" onclick="mArchiveOps('import')">Dosya Yükle</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="candidates" onclick="mArchiveOps('candidates')">Yayına Hazır Kayıtlar</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Son Kontrol</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packages" onclick="mArchiveOps('packages')">Yayın Dosyaları</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packageOutput" onclick="mArchiveOps('packageOutput')">Çıktılar</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="tagImport" onclick="mArchiveOps('tagImport')">Excel Etiketleri</button>
         </div>
       </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
@@ -1139,23 +1148,23 @@ canvas{width:100%!important;}
     <button class="side-link admin-only" data-tab="ai" onclick="showTab('ai')" style="display:none"><span>AI Asistan ve Raporlar</span></button>
     <button class="side-link admin-only" data-tab="onay" onclick="showTab('onay')" style="display:none"><span>&#304;&#351; Panosu</span><span class="badge" id="sideOnayBadge" style="display:none">0</span></button>
 
-    <div class="side-section-label super-admin-only admin-route-only" style="display:none">Arşiv Operasyonu</div>
+    <div class="side-section-label super-admin-only admin-route-only" style="display:none">Arşiv Çalışmaları</div>
     <div class="side-group archive-ops-menu-group super-admin-only admin-route-only" style="display:none">
-      <button class="side-link side-group-main archive-ops-parent" data-tab="archiveOps" onclick="toggleArchiveOpsMenu()"><span>Arşiv Operasyon Merkezi</span><span class="side-caret" aria-hidden="true"></span></button>
+      <button class="side-link side-group-main archive-ops-parent" data-tab="archiveOps" onclick="toggleArchiveOpsMenu()"><span>Arşiv Çalışmaları</span><span class="side-caret" aria-hidden="true"></span></button>
       <div class="side-subnav">
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="overview" onclick="openArchiveOps('overview')"><span>Genel Bakış</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="files" onclick="openArchiveOps('files')"><span>Dosya Merkezi</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="sources" onclick="openArchiveOps('sources')"><span>Kaynak Kayıtları</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="library" onclick="openArchiveOps('library')"><span>Kaynak Havuzu</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="publishing" onclick="openArchiveOps('publishing')"><span>Yayın Görevleri</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="work" onclick="openArchiveOps('work')"><span>Çalışma Kayıtları</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="texts" onclick="openArchiveOps('texts')"><span>Hadis ve Slayt Metinleri</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="import" onclick="openArchiveOps('import')"><span>İçe Aktarım Merkezi</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="candidates" onclick="openArchiveOps('candidates')"><span>Public Arşiv Adayları</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Yayın Hazırlık Kuyruğu</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packages" onclick="openArchiveOps('packages')"><span>Yayın Paketleri</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packageOutput" onclick="openArchiveOps('packageOutput')"><span>Paket Çıktı Merkezi</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="tagImport" onclick="openArchiveOps('tagImport')"><span>Etiket Aktarımı</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="files" onclick="openArchiveOps('files')"><span>Dosyalar</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="sources" onclick="openArchiveOps('sources')"><span>Yeni Kaynak</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="library" onclick="openArchiveOps('library')"><span>Kaynak Dosyaları</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="publishing" onclick="openArchiveOps('publishing')"><span>Yayın Linkleri</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="work" onclick="openArchiveOps('work')"><span>Çalışma Tabloları</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="texts" onclick="openArchiveOps('texts')"><span>Hadisler ve Slaytlar</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="import" onclick="openArchiveOps('import')"><span>Dosya Yükle</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="candidates" onclick="openArchiveOps('candidates')"><span>Yayına Hazır Kayıtlar</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Son Kontrol</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packages" onclick="openArchiveOps('packages')"><span>Yayın Dosyaları</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packageOutput" onclick="openArchiveOps('packageOutput')"><span>Çıktılar</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="tagImport" onclick="openArchiveOps('tagImport')"><span>Excel Etiketleri</span></button>
       </div>
     </div>
 
@@ -1368,26 +1377,26 @@ canvas{width:100%!important;}
     </div>
 
     <div class="tab-content admin-route-only super-admin-only" id="tabContent-archiveOps" style="display:none">
-      <div class="page-title">Arşiv Operasyon Merkezi</div>
-      <div class="page-sub">Drive, e-tablo ve dokümanlarda yürüyen arşiv işlerini online sisteme taşıma pilotu</div>
+      <div class="page-title">Arşiv Çalışmaları</div>
+      <div class="page-sub">Drive klasörleri, kişi tabloları, yayın linkleri ve doküman metinlerini aynı yerde takip etme alanı</div>
       <div class="divider"></div>
 
       <div class="ops-hero archive-ops-section" data-ops-view="overview">
-        <div class="ops-kicker">Süper admin pilot alanı</div>
-        <div class="ops-title">Kaynak kayıtları artık sistem içinde metin olarak tutulmaya başlıyor.</div>
+        <div class="ops-kicker">Süper admin çalışma alanı</div>
+        <div class="ops-title">Sorular ve Cevaplar Arşivi artık Drive düzenine yakın bir yapıyla sistem içinde takip ediliyor.</div>
         <div class="ops-copy">
-          Bu alan Drive, e-tablo ve dokümanlarda yürüyen kaynak toplama işini adım adım online hale getirmek için açıldı. Şimdilik yalnız süper admin görür; kullanıcı ekranlarına ve public arşive açılmaz.
+          Bu alan ekip liderinin kullandığı klasör, kişi tablosu, yayın linki, hadis, slayt ve standart dokümanı düzenini online hale getirmek için açıldı. Şimdilik yalnız süper admin görür; kullanıcı ekranlarına ve public arşive açılmaz.
         </div>
         <div class="ops-search">
           <span>⌕</span>
-          <input id="archiveSourceSearch" placeholder="Kaynak, yayın linki, hadis, slayt, kategori veya not ara..." oninput="setArchiveSourceSearch(null,'library')">
+          <input id="archiveSourceSearch" placeholder="Soru, cevap, kişi, yayın linki, hadis, slayt, kategori veya not ara..." oninput="setArchiveSourceSearch(null,'library')">
         </div>
       </div>
 
       <div class="ops-panel archive-ops-section" data-ops-view="files" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Dosya Merkezi</div>
+            <div class="ops-panel-title">Dosyalar</div>
             <div class="ops-panel-sub">Kaynakları Drive mantığıyla dosya, klasör, tür ve durum üzerinden hızlıca bulun.</div>
           </div>
           <button class="btn-sec" onclick="renderArchiveOpsView('import')">Dosya Ekle</button>
@@ -1427,7 +1436,7 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="sources" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Kaynak Kayıt Sistemi</div>
+            <div class="ops-panel-title">Yeni Kaynak</div>
             <div class="ops-panel-sub">Transkript, hadis, slayt ve doküman metinlerini burada kaydedip arayabiliriz.</div>
           </div>
           <button class="btn-sec" onclick="clearArchiveSourceForm()">Yeni Kayıt</button>
@@ -1478,7 +1487,7 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="library" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Kaynak Havuzu</div>
+            <div class="ops-panel-title">Kaynak Dosyaları</div>
             <div class="ops-panel-sub">Kayıtlar başlık, metin, kategori, link, not ve kavramlara göre aranır.</div>
           </div>
         </div>
@@ -1518,32 +1527,32 @@ canvas{width:100%!important;}
 
       <div class="ops-grid archive-ops-section" data-ops-view="overview">
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Dosya Merkezi</div><span class="ops-pill">Yeni</span></div>
-          <p>Kaynak kayıtları Drive benzeri dosya kartları ve klasör başlıklarıyla aranabilir, açılabilir ve düzenleme akışına bağlanabilir.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Çalışma Tabloları</div><span class="ops-pill">Kişi</span></div>
+          <p>Drive'daki kişiye özel e-tabloların karşılığıdır. Soru, etiket, cevap, tarih, yayın linki, program ve notlar aynı satır mantığında tutulur.</p>
         </div>
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Kaynak Havuzu</div><span class="ops-pill">Başladı</span></div>
-          <p>YouTube dökümleri, hadis metinleri, slayt metinleri ve standart dokümanları metin olarak kaydedilip aranabilir hale geliyor.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Yayın Linkleri</div><span class="ops-pill">Takip</span></div>
+          <p>Her YouTube linki yayın tarihi, kişi, durum ve not bilgisiyle takip edilir; gerekiyorsa çalışma satırına bağlanır.</p>
         </div>
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Yayın Görevleri</div><span class="ops-pill">Planlandı</span></div>
-          <p>Her yayın linki, tarih, atanan kişi, durum ve not bilgisiyle kullanıcıya görev olarak bağlanacak.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Hadisler</div><span class="ops-pill">Metin</span></div>
+          <p>Hadis dokümanları sadece link olarak değil, sistem içinde okunabilir ve aranabilir tam metin olarak tutulur.</p>
         </div>
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Çalışma Kayıtları</div><span class="ops-pill">Planlandı</span></div>
-          <p>Soru, etiket, cevap, program, yayın linki ve notlar tek çalışma kaydında tutulacak.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Slayt Metinleri</div><span class="ops-pill">Metin</span></div>
+          <p>Slayt kaynakları klasörlerde kaybolmadan metin halinde açılır, kontrol edilir ve arşiv çalışmasına bağlanır.</p>
         </div>
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Hadis ve Slayt Metinleri</div><span class="ops-pill">Metin</span></div>
-          <p>Bu kaynaklar sadece bağlantı olarak değil, sistem içinde okunabilir ve seçilebilir metin olarak yer alacak.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Standartlar</div><span class="ops-pill">Kural</span></div>
+          <p>İmla rehberi, etiket standardı, program yazım kılavuzu ve süreç dokümanları ekip için aynı yerde erişilebilir olur.</p>
         </div>
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">İçe Aktarım Merkezi</div><span class="ops-pill">Kontrollü</span></div>
-          <p>Google dosyalarından gelen satırlar önce ön izlemede kontrol edilecek, sonra kayıt açılacak.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Youtube Dökümanları</div><span class="ops-pill">Kaynak</span></div>
+          <p>Kişi klasörlerinde duran dökümler dosya olarak alınır, metni çıkarılır ve çalışma tablosuna bağlanır.</p>
         </div>
         <div class="ops-card">
-          <div class="ops-card-head"><div class="ops-card-title">Public Arşiv Adayı</div><span class="ops-pill">Son Faz</span></div>
-          <p>Onaylanan çalışmalar ileride public soru-cevap arşivine aday veri olarak bağlanacak.</p>
+          <div class="ops-card-head"><div class="ops-card-title">Dosya Yükle</div><span class="ops-pill">Kontrol</span></div>
+          <p>DOCX, TXT ve tablo benzeri dosyalar önce ön izlemede kontrol edilir; doğruysa kaynak dosyalarına kaydedilir.</p>
         </div>
       </div>
 
@@ -1551,15 +1560,15 @@ canvas{width:100%!important;}
         <div class="ops-panel">
           <div class="ops-panel-head">
             <div>
-              <div class="ops-card-title">Yayın Görevleri</div>
-              <p>Yayın linki, tarih, atanacak kişi, kaynak, çalışma kaydı ve notları tek takip ekranında yönetin.</p>
+              <div class="ops-card-title">Yayın Linkleri</div>
+              <p>Yayın linki, tarih, kişi, durum, kaynak, çalışma satırı ve notları tek takip ekranında yönetin.</p>
             </div>
-            <button class="btn-sec" onclick="clearArchivePublishForm()">Yeni Yayın Görevi</button>
+            <button class="btn-sec" onclick="clearArchivePublishForm()">Yeni Yayın Linki</button>
           </div>
           <div class="ops-panel-body">
             <div class="ops-work-layout">
               <div class="ops-work-form">
-                <input class="ops-field" id="archivePublishTitle" placeholder="Yayın görevi başlığı">
+                <input class="ops-field" id="archivePublishTitle" placeholder="Yayın linki başlığı">
                 <div class="ops-form-grid two" style="margin-top:10px">
                   <select class="ops-field" id="archivePublishStatus">
                     <option value="planlandi">Planlandı</option>
@@ -1598,29 +1607,29 @@ canvas{width:100%!important;}
                   <select class="ops-field" id="archivePublishSourceId" onchange="selectArchivePublishSource(this.value)">
                     <option value="">Kaynak seçilmedi</option>
                   </select>
-                  <div class="ops-status" id="archivePublishSourceHint">Kaynak seçildiğinde yayın görevi o metne bağlanır.</div>
+                  <div class="ops-status" id="archivePublishSourceHint">Kaynak seçildiğinde yayın linki o metne bağlanır.</div>
                 </div>
                 <div class="ops-source-picker" style="margin-top:10px">
                   <input class="ops-field" id="archivePublishWorkSearch" placeholder="Çalışma kayıtlarında ara..." oninput="renderArchivePublishWorkPicker()">
                   <select class="ops-field" id="archivePublishWorkId" onchange="selectArchivePublishWork(this.value)">
                     <option value="">Çalışma kaydı seçilmedi</option>
                   </select>
-                  <div class="ops-status" id="archivePublishWorkHint">İsterseniz bu yayın görevini hazırlanmış bir soru-cevap çalışmasına bağlayın.</div>
+                  <div class="ops-status" id="archivePublishWorkHint">İsterseniz bu yayın linkini hazırlanmış bir soru-cevap çalışmasına bağlayın.</div>
                 </div>
-                <textarea class="ops-field" id="archivePublishDescription" placeholder="Yayın görevi açıklaması" style="margin-top:10px;min-height:100px;resize:vertical"></textarea>
+                <textarea class="ops-field" id="archivePublishDescription" placeholder="Yayın linki açıklaması" style="margin-top:10px;min-height:100px;resize:vertical"></textarea>
                 <textarea class="ops-field" id="archivePublishNote" placeholder="Not, kontrol ihtiyacı veya ekip açıklaması" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
                 <div class="ops-source-actions">
-                  <button class="btn-main" onclick="saveArchivePublishTask()">Yayın Görevini Sakla</button>
+                  <button class="btn-main" onclick="saveArchivePublishTask()">Yayın Linkini Sakla</button>
                   <button class="btn-sec" onclick="clearArchivePublishForm()">Temizle</button>
                   <button class="btn-sec" id="archivePublishOpenSourceBtn" onclick="openArchivePublishSource()" disabled>Kaynağı Aç</button>
                   <button class="btn-sec" id="archivePublishOpenWorkBtn" onclick="openArchivePublishWork()" disabled>Çalışmayı Aç</button>
-                  <button class="btn-danger" id="archivePublishDeleteBtn" onclick="deleteArchivePublishTaskUi()" disabled>Görevi Sil</button>
+                  <button class="btn-danger" id="archivePublishDeleteBtn" onclick="deleteArchivePublishTaskUi()" disabled>Linki Sil</button>
                 </div>
                 <div class="ops-status" id="archivePublishStatusMsg"></div>
               </div>
               <div class="ops-work-list-wrap">
                 <div class="ops-filter-row">
-                  <input class="ops-field" id="archivePublishSearch" placeholder="Yayın, link, kişi, kaynak, çalışma veya not ara..." oninput="setArchivePublishSearch(this.value)">
+                  <input class="ops-field" id="archivePublishSearch" placeholder="Yayın linki, kişi, kaynak, çalışma veya not ara..." oninput="setArchivePublishSearch(this.value)">
                   <select class="ops-field" id="archivePublishStatusFilter" onchange="setArchivePublishFilter()">
                     <option value="">Tüm durumlar</option>
                     <option value="planlandi">Planlandı</option>
@@ -1643,9 +1652,9 @@ canvas{width:100%!important;}
                   </select>
                 </div>
                 <div class="ops-file-summary" id="archivePublishSummary"></div>
-                <div class="ops-source-list" id="archivePublishList"><div class="empty-state">Yayın görevleri yükleniyor...</div></div>
+                <div class="ops-source-list" id="archivePublishList"><div class="empty-state">Yayın linkleri yükleniyor...</div></div>
                 <div class="ops-detail" id="archivePublishDetail">
-                  <div class="empty-state">Bir yayın görevi seçildiğinde link, kaynak, çalışma ve not bilgisi burada açılır.</div>
+                  <div class="empty-state">Bir yayın linki seçildiğinde link, kaynak, çalışma ve not bilgisi burada açılır.</div>
                 </div>
               </div>
             </div>
@@ -1657,15 +1666,26 @@ canvas{width:100%!important;}
         <div class="ops-panel">
           <div class="ops-panel-head">
             <div>
-              <div class="ops-card-title">Çalışma Kayıtları</div>
-              <p>Soru, cevap taslağı, kaynak, atama ve notları tek iş kaydında takip edin.</p>
+              <div class="ops-card-title">Çalışma Tabloları</div>
+              <p>Kişiye göre soru, etiket, cevap, tarih, yayın linki, program ve notları tablo satırı gibi takip edin.</p>
             </div>
-            <button class="btn-sec" onclick="clearArchiveWorkForm()">Yeni Çalışma</button>
+            <button class="btn-sec" onclick="clearArchiveWorkForm()">Yeni Çalışma Satırı</button>
           </div>
           <div class="ops-panel-body">
+            <div class="ops-team-board">
+              <div class="ops-team-board-head">
+                <div>
+                  <div class="ops-panel-title">Kişi Dosyaları</div>
+                  <div class="ops-panel-sub">Drive'daki kişiye özel çalışma tabloları gibi; kişi seçilince çalışma satırları ve yayın linkleri birlikte süzülür.</div>
+                </div>
+                <button class="btn-sec" onclick="clearArchiveTeamMemberFilter()">Tümünü Göster</button>
+              </div>
+              <div class="ops-folder-strip" id="archiveTeamFolders"></div>
+              <div class="ops-detail" id="archiveSelectedMemberLinks" style="min-height:auto"></div>
+            </div>
             <div class="ops-work-layout">
               <div class="ops-work-form">
-                <input class="ops-field" id="archiveWorkTitle" placeholder="Çalışma başlığı">
+                <input class="ops-field" id="archiveWorkTitle" placeholder="Çalışma satırı başlığı">
                 <div class="ops-form-grid two" style="margin-top:10px">
                   <select class="ops-field" id="archiveWorkStatus">
                     <option value="taslak">Taslak</option>
@@ -1698,13 +1718,13 @@ canvas{width:100%!important;}
                   <select class="ops-field" id="archiveWorkSourceId" onchange="selectArchiveWorkSource(this.value)">
                     <option value="">Kaynak seçilmedi</option>
                   </select>
-                  <div class="ops-status" id="archiveWorkSourceHint">Kaynak seçildiğinde çalışma kaydı o metne bağlanır.</div>
+                  <div class="ops-status" id="archiveWorkSourceHint">Kaynak seçildiğinde çalışma satırı o metne bağlanır.</div>
                 </div>
-                <textarea class="ops-field" id="archiveWorkQuestion" placeholder="Soru veya çalışma konusu" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
-                <textarea class="ops-field ops-source-text" id="archiveWorkAnswer" placeholder="Cevap taslağı veya hazırlanacak metin"></textarea>
+                <textarea class="ops-field" id="archiveWorkQuestion" placeholder="Soru" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
+                <textarea class="ops-field ops-source-text" id="archiveWorkAnswer" placeholder="Cevap"></textarea>
                 <textarea class="ops-field" id="archiveWorkNote" placeholder="Not, kontrol ihtiyacı veya ekip açıklaması" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
                 <div class="ops-source-actions">
-                  <button class="btn-main" onclick="saveArchiveWorkItem()">Çalışma Kaydını Sakla</button>
+                  <button class="btn-main" onclick="saveArchiveWorkItem()">Çalışma Satırını Sakla</button>
                   <button class="btn-sec" id="archiveWorkAuditBtn" onclick="transferArchiveWorkToAudit()">Denetime Aktar</button>
                   <button class="btn-sec" onclick="clearArchiveWorkForm()">Temizle</button>
                   <button class="btn-sec" id="archiveWorkOpenSourceBtn" onclick="openArchiveWorkSource()" disabled>Kaynağı Aç</button>
@@ -1736,9 +1756,9 @@ canvas{width:100%!important;}
                   </select>
                 </div>
                 <div class="ops-file-summary" id="archiveWorkSummary"></div>
-                <div class="ops-source-list" id="archiveWorkList"><div class="empty-state">Çalışmalar yükleniyor...</div></div>
+                <div class="ops-source-list" id="archiveWorkList"><div class="empty-state">Çalışma satırları yükleniyor...</div></div>
                 <div class="ops-detail" id="archiveWorkDetail">
-                  <div class="empty-state">Bir çalışma seçildiğinde kaynak, soru, cevap ve not bilgisi burada açılır.</div>
+                  <div class="empty-state">Bir çalışma satırı seçildiğinde kaynak, soru, cevap ve not bilgisi burada açılır.</div>
                 </div>
               </div>
             </div>
@@ -1814,13 +1834,13 @@ canvas{width:100%!important;}
           <div class="ops-import-flow" aria-label="İçe aktarım adımları">
             <div class="ops-import-flow-step"><strong>1. Dosya seç</strong><span>DOCX, TXT, MD, CSV, TSV veya JSON ekleyin.</span></div>
             <div class="ops-import-flow-step"><strong>2. Metni kontrol et</strong><span>Çıkarılan metin sağ tarafta ön izlenir.</span></div>
-            <div class="ops-import-flow-step"><strong>3. Kaynak olarak kaydet</strong><span>Uygunsa tek tuşla Kaynak Havuzu’na alınır.</span></div>
+            <div class="ops-import-flow-step"><strong>3. Kaynak olarak kaydet</strong><span>Uygunsa tek tuşla Kaynak Dosyaları’na alınır.</span></div>
             <div class="ops-import-flow-step"><strong>4. Havuzda ara</strong><span>Kaydedilen kaynaklar aranabilir ve düzenlenebilir.</span></div>
           </div>
           <div class="ops-import-drop" id="archiveImportDrop" ondragover="archiveImportDrag(event,true)" ondragleave="archiveImportDrag(event,false)" ondrop="handleArchiveImportDrop(event)">
             <div>
               <strong>Dosyaları içe aktarım kuyruğuna alın</strong>
-              <span>Dosya seçildiğinde metin çıkarılır. Uygunsa Kaynak Olarak Kaydet ile Kaynak Havuzu’na alınır. Detay değiştirmek için Formda Düzenle, yanlış dosya için Kuyruktan Sil kullanılır.</span>
+              <span>Dosya seçildiğinde metin çıkarılır. Uygunsa Kaynak Olarak Kaydet ile Kaynak Dosyaları’na alınır. Detay değiştirmek için Formda Düzenle, yanlış dosya için Kuyruktan Sil kullanılır.</span>
             </div>
             <div class="ops-import-actions">
               <input id="archiveImportFiles" type="file" multiple hidden accept=".docx,.txt,.md,.csv,.tsv,.json" onchange="handleArchiveImportFiles(this.files);this.value='';">
@@ -1843,8 +1863,8 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="candidates" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Public Arşiv Adayları</div>
-            <div class="ops-panel-sub">Kaynak, çalışma ve yayın görevlerinden arşiv adayı olan kayıtları tek yerde kontrol edin.</div>
+            <div class="ops-panel-title">Yayına Hazır Kayıtlar</div>
+            <div class="ops-panel-sub">Kaynak, çalışma ve yayın linklerinden arşiv adayı olan kayıtları tek yerde kontrol edin.</div>
           </div>
           <button class="btn-sec" onclick="loadArchiveCandidates()">Yenile</button>
         </div>
@@ -1855,7 +1875,7 @@ canvas{width:100%!important;}
               <option value="">Tüm adaylar</option>
               <option value="source">Kaynak kayıtları</option>
               <option value="work">Çalışma kayıtları</option>
-              <option value="publish">Yayın görevleri</option>
+              <option value="publish">Yayın linkleri</option>
             </select>
             <select class="ops-field" id="archiveCandidateStatusFilter" onchange="setArchiveCandidateFilter()">
               <option value="">Tüm karar durumları</option>
@@ -1885,8 +1905,8 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="ready" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Yayın Hazırlık Kuyruğu</div>
-            <div class="ops-panel-sub">Yayına hazır işaretlenen adayları son kez ayrı bir kuyrukta kontrol edin.</div>
+            <div class="ops-panel-title">Son Kontrol</div>
+            <div class="ops-panel-sub">Yayına hazır işaretlenen kayıtları son kez ayrı bir ekranda kontrol edin.</div>
           </div>
           <button class="btn-sec" onclick="loadArchiveReadyQueue()">Yenile</button>
         </div>
@@ -1901,7 +1921,7 @@ canvas{width:100%!important;}
               <option value="">Tüm türler</option>
               <option value="source">Kaynak kayıtları</option>
               <option value="work">Çalışma kayıtları</option>
-              <option value="publish">Yayın görevleri</option>
+              <option value="publish">Yayın linkleri</option>
             </select>
             <button class="btn-sec" onclick="clearArchiveReadyFilters()">Filtreyi Temizle</button>
           </div>
@@ -1921,33 +1941,33 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="packages" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Yayın Paketleri</div>
-            <div class="ops-panel-sub">Yayına hazır kayıtları kontrollü paketler halinde toplayıp son çıkış hazırlığına alın.</div>
+            <div class="ops-panel-title">Yayın Dosyaları</div>
+            <div class="ops-panel-sub">Yayına hazır kayıtları kontrollü yayın dosyaları halinde toplayıp son çıkış hazırlığına alın.</div>
           </div>
           <button class="btn-sec" onclick="loadArchiveReleasePackages()">Yenile</button>
         </div>
         <div class="ops-panel-body">
           <div class="archive-ready-hero">
-            <strong>Paketler public yayına alma işlemi değildir.</strong>
-            <span>Bu alan, yayına hazır adayları bir araya getirip son kontrol, içerik gruplama ve ekip içi hazırlık için kullanılır. Kayıtların mevcut durumunu tek başına değiştirmez.</span>
+            <strong>Yayın dosyaları canlı yayına alma işlemi değildir.</strong>
+            <span>Bu alan, yayına hazır kayıtları bir araya getirip son kontrol, içerik gruplama ve ekip içi hazırlık için kullanılır. Kayıtların mevcut durumunu tek başına değiştirmez.</span>
           </div>
           <div class="ops-form-grid">
-            <input class="ops-field" id="archiveReleasePackageTitle" placeholder="Paket başlığı">
+            <input class="ops-field" id="archiveReleasePackageTitle" placeholder="Yayın dosyası başlığı">
             <select class="ops-field" id="archiveReleasePackageStatus">
               <option value="taslak">Taslak</option>
               <option value="son_kontrol">Son kontrol</option>
               <option value="hazir">Hazır</option>
               <option value="beklet">Beklet</option>
             </select>
-            <button class="btn-sec" onclick="newArchiveReleasePackage()">Yeni Paket</button>
+            <button class="btn-sec" onclick="newArchiveReleasePackage()">Yeni Yayın Dosyası</button>
           </div>
-          <textarea class="ops-field" id="archiveReleasePackageNote" placeholder="Paket notu" style="min-height:86px;resize:vertical;margin-bottom:10px"></textarea>
+          <textarea class="ops-field" id="archiveReleasePackageNote" placeholder="Yayın dosyası notu" style="min-height:86px;resize:vertical;margin-bottom:10px"></textarea>
           <div class="archive-release-actions">
-            <button class="btn-main" onclick="saveArchiveReleasePackage()">Paketi Sakla</button>
-            <button class="btn-sec" onclick="deleteArchiveReleasePackageUi()">Paketi Sil</button>
+            <button class="btn-main" onclick="saveArchiveReleasePackage()">Yayın Dosyasını Sakla</button>
+            <button class="btn-sec" onclick="deleteArchiveReleasePackageUi()">Yayın Dosyasını Sil</button>
           </div>
           <div class="ops-filter-row" style="margin-top:14px">
-            <input class="ops-field" id="archiveReleasePackageSearch" placeholder="Paketlerde ara..." oninput="setArchiveReleasePackageSearch(this.value)">
+            <input class="ops-field" id="archiveReleasePackageSearch" placeholder="Yayın dosyalarında ara..." oninput="setArchiveReleasePackageSearch(this.value)">
             <select class="ops-field" id="archiveReleasePackageStatusFilter" onchange="setArchiveReleasePackageFilter()">
               <option value="">Tüm durumlar</option>
               <option value="taslak">Taslak</option>
@@ -1961,13 +1981,13 @@ canvas{width:100%!important;}
           <div class="ops-status" id="archiveReleasePackageStatusMsg"></div>
           <div class="archive-release-layout">
             <div>
-              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Paketler</div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Yayın dosyaları</div>
               <div class="archive-release-package-list" id="archiveReleasePackageList">
-                <div class="archive-release-empty">Yayın paketleri yükleniyor...</div>
+                <div class="archive-release-empty">Yayın dosyaları yükleniyor...</div>
               </div>
             </div>
             <div class="ops-detail" id="archiveReleasePackageDetail">
-              <div class="empty-state">Bir paket seçildiğinde içindeki kayıtlar ve yayına hazır aday seçici burada açılır.</div>
+              <div class="empty-state">Bir yayın dosyası seçildiğinde içindeki kayıtlar ve yayına hazır aday seçici burada açılır.</div>
             </div>
           </div>
         </div>
@@ -1976,18 +1996,18 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="packageOutput" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Paket Çıktı Merkezi</div>
-            <div class="ops-panel-sub">Kilitlenmiş yayın paketlerini public arşive aktarılabilecek temiz çıktı haline getirin.</div>
+            <div class="ops-panel-title">Çıktılar</div>
+            <div class="ops-panel-sub">Kilitlenmiş yayın dosyalarını arşive aktarılabilecek temiz çıktı haline getirin.</div>
           </div>
           <button class="btn-sec" onclick="loadArchiveOutputPackages()">Yenile</button>
         </div>
         <div class="ops-panel-body">
           <div class="archive-ready-hero">
             <strong>Bu ekran yalnız çıktı hazırlığı yapar.</strong>
-            <span>Public yayına alma işlemi değildir. Paket kilitli ve hazır durumdaysa JSON, Markdown veya CSV çıktısı oluşturulabilir.</span>
+            <span>Canlı yayına alma işlemi değildir. Yayın dosyası kilitli ve hazır durumdaysa JSON, Markdown veya CSV çıktısı oluşturulabilir.</span>
           </div>
           <div class="ops-filter-row">
-            <input class="ops-field" id="archiveOutputSearch" placeholder="Çıktı paketlerinde ara..." oninput="setArchiveOutputSearch(this.value)">
+            <input class="ops-field" id="archiveOutputSearch" placeholder="Çıktılarda ara..." oninput="setArchiveOutputSearch(this.value)">
             <select class="ops-field" id="archiveOutputFormat" onchange="setArchiveOutputFormat(this.value)">
               <option value="json">JSON</option>
               <option value="markdown">Markdown</option>
@@ -1999,13 +2019,13 @@ canvas{width:100%!important;}
           <div class="ops-status" id="archiveOutputStatusMsg"></div>
           <div class="archive-output-layout">
             <div>
-              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Kilitli paketler</div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Kilitli yayın dosyaları</div>
               <div class="archive-output-package-list" id="archiveOutputPackageList">
-                <div class="archive-release-empty">Çıktı paketleri yükleniyor...</div>
+                <div class="archive-release-empty">Çıktılar yükleniyor...</div>
               </div>
             </div>
             <div class="ops-detail" id="archiveOutputDetail">
-              <div class="empty-state">Kilitli bir paket seçildiğinde çıktı kontrolleri ve ön izleme burada açılır.</div>
+              <div class="empty-state">Kilitli bir yayın dosyası seçildiğinde çıktı kontrolleri ve ön izleme burada açılır.</div>
             </div>
           </div>
         </div>
@@ -2014,7 +2034,7 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="tagImport" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Etiket Aktarımı</div>
+            <div class="ops-panel-title">Excel Etiketleri</div>
             <div class="ops-panel-sub">Excel dosyasındaki Etiket/Sınıf bilgisini geçmiş denetim kayıtlarıyla kontrollü eşleştirin.</div>
           </div>
           <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Yenile</button>
@@ -2345,7 +2365,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveTeamState={activeMember:'',members:[]},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
@@ -2700,6 +2720,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   if(archiveOpsState.view==='work'){
     loadArchiveOpsSources({ignoreFilters:true});
     loadArchiveWorkItems();
+    loadArchivePublishTasks({silent:true});
   }
   if(archiveOpsState.view==='import')loadArchiveImportBatches();
   if(archiveOpsState.view==='candidates')loadArchiveCandidates();
@@ -5586,7 +5607,7 @@ function renderArchiveFileCenter(){
   if(folders)folders.innerHTML=archiveFolderCardsHtml(items);
   if(!grid)return;
   if(!archiveOpsState.sources.length){
-    grid.innerHTML='<div class="empty-state">Henüz kaynak dosyası yok. İçe Aktarım Merkezi veya Kaynak Kayıtları ekranından dosya ekleyebilirsiniz.</div>';
+    grid.innerHTML='<div class="empty-state">Henüz kaynak dosyası yok. Dosya Yükle veya Yeni Kaynak ekranından dosya ekleyebilirsiniz.</div>';
     return;
   }
   if(!items.length){
@@ -5720,7 +5741,7 @@ function renderArchiveTextDetail(source){
       <div class="ops-source-actions">
         <button class="btn-sec" onclick="copyArchiveTextSource()">Metni Kopyala</button>
         <button class="btn-sec" onclick="editArchiveTextSource(${attrJson(source.id)})">Düzenle</button>
-        <button class="btn-sec" onclick="openArchiveTextInLibrary(${attrJson(source.id)})">Kaynak Havuzunda Aç</button>
+        <button class="btn-sec" onclick="openArchiveTextInLibrary(${attrJson(source.id)})">Kaynak Dosyalarında Aç</button>
       </div>
       <div class="ops-preview-text" style="margin-top:12px">${esc(source.sourceText||source.textPreview||'')}</div>
     </div>
@@ -5821,7 +5842,7 @@ function setArchivePublishStatus(message='',kind=''){
 function archivePublishSummaryHtml(counts={}){
   const byStatus=counts.byStatus||{};
   return `
-    <div class="ops-file-summary-item"><strong>${counts.total||0}</strong><span>Toplam görev</span></div>
+    <div class="ops-file-summary-item"><strong>${counts.total||0}</strong><span>Toplam link</span></div>
     <div class="ops-file-summary-item"><strong>${counts.filtered||0}</strong><span>Görünen kayıt</span></div>
     <div class="ops-file-summary-item"><strong>${byStatus.kontrol||0}</strong><span>Kontrolde</span></div>
     <div class="ops-file-summary-item"><strong>${byStatus.arsiv_adayi||0}</strong><span>Arşiv adayı</span></div>
@@ -5848,7 +5869,7 @@ function renderArchivePublishSourcePicker(){
   if(current&&sources.some(source=>source.id===current))select.value=current;
   if(hint){
     const source=(archiveOpsState.sources||[]).find(item=>item.id===select.value);
-    hint.textContent=source?`${source.title} kaynağına bağlı. ${Number(source.textLength||0).toLocaleString('tr-TR')} karakter.`:'Kaynak seçildiğinde yayın görevi o metne bağlanır.';
+    hint.textContent=source?`${source.title} kaynağına bağlı. ${Number(source.textLength||0).toLocaleString('tr-TR')} karakter.`:'Kaynak seçildiğinde yayın linki o metne bağlanır.';
     hint.className=`ops-status ${source?'ok':''}`.trim();
   }
 }
@@ -5882,7 +5903,7 @@ function renderArchivePublishWorkPicker(){
   if(current&&items.some(item=>item.id===current))select.value=current;
   if(hint){
     const item=(archiveWorkState.items||[]).find(entry=>entry.id===select.value);
-    hint.textContent=item?`${item.title} çalışmasına bağlı. ${archiveWorkStatusLabel(item.status)}.`:'İsterseniz bu yayın görevini hazırlanmış bir soru-cevap çalışmasına bağlayın.';
+    hint.textContent=item?`${item.title} çalışmasına bağlı. ${archiveWorkStatusLabel(item.status)}.`:'İsterseniz bu yayın linkini hazırlanmış bir soru-cevap çalışmasına bağlayın.';
     hint.className=`ops-status ${item?'ok':''}`.trim();
   }
 }
@@ -5940,13 +5961,131 @@ function archivePublishPayload(){
     note:v('archivePublishNote')
   };
 }
+function archiveTeamPerson(value){
+  return String(value||'').trim();
+}
+function archiveTeamRows(){
+  const rows=new Map();
+  const touch=(name,kind,item)=>{
+    const member=archiveTeamPerson(name);
+    if(!member)return;
+    if(!rows.has(member)){
+      rows.set(member,{name:member,workCount:0,linkCount:0,doneLinks:0,openLinks:0,latestDate:'',latestTitle:''});
+    }
+    const row=rows.get(member);
+    if(kind==='work')row.workCount+=1;
+    if(kind==='link'){
+      row.linkCount+=1;
+      if(item.status==='tamamlandi')row.doneLinks+=1;
+      else row.openLinks+=1;
+      const date=String(item.publishDate||item.dueDate||'');
+      if(date&&date>row.latestDate){
+        row.latestDate=date;
+        row.latestTitle=item.title||item.publicationUrl||'Yayın linki';
+      }
+    }
+  };
+  (archiveWorkState.items||[]).forEach(item=>touch(item.assignedTo,'work',item));
+  (archivePublishState.tasks||[]).forEach(task=>touch(task.assignedTo,'link',task));
+  const currentRows=[...rows.values()].sort((a,b)=>a.name.localeCompare(b.name,'tr'));
+  if(!archiveTeamState.activeMember&&currentRows.length)archiveTeamState.members=currentRows;
+  return archiveTeamState.members.length?archiveTeamState.members:currentRows;
+}
+function archiveTeamCardHtml(row){
+  const active=archiveTeamState.activeMember===row.name?' active':'';
+  const meta=[
+    `${Number(row.workCount||0).toLocaleString('tr-TR')} çalışma satırı`,
+    `${Number(row.linkCount||0).toLocaleString('tr-TR')} yayın linki`
+  ];
+  if(row.openLinks)meta.push(`${Number(row.openLinks).toLocaleString('tr-TR')} açık`);
+  if(row.doneLinks)meta.push(`${Number(row.doneLinks).toLocaleString('tr-TR')} tamam`);
+  return `
+    <button class="ops-folder-card${active}" onclick="archiveSelectTeamMember(${attrJson(row.name)})">
+      <div class="ops-folder-title">${esc(row.name)}</div>
+      <div class="ops-folder-meta">${meta.map(esc).join(' · ')}</div>
+    </button>
+  `;
+}
+function archiveMemberPublishLinksHtml(member){
+  const boxTitle=member?`${member} - Yayın Linkleri`:'Yayın Linkleri';
+  if(!member){
+    return `
+      <div class="ops-detail-body">
+        <div class="ops-detail-title">${esc(boxTitle)}</div>
+        <p class="ops-status" style="margin-top:8px">Bir kişi dosyası seçildiğinde o kişiye ait yayın linkleri ve çalışma satırları burada birlikte görünür.</p>
+      </div>
+    `;
+  }
+  const links=(archivePublishState.tasks||[]).filter(task=>archiveTeamPerson(task.assignedTo)===member);
+  const works=(archiveWorkState.items||[]).filter(item=>archiveTeamPerson(item.assignedTo)===member);
+  const linkRows=links.length?links.map(task=>{
+    const url=String(task.publicationUrl||'').trim();
+    return `
+      <div class="ops-member-link">
+        <div class="ops-member-link-title">${esc(task.title||url||'Başlıksız yayın linki')}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archivePublishStatusLabel(task.status))}</span>
+          <span>Yayın: ${archivePublishDate(task.publishDate)}</span>
+          ${task.platform?`<span>${esc(task.platform)}</span>`:''}
+        </div>
+        ${url?`<div class="ops-member-link-url"><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a></div>`:''}
+        ${task.note?`<div class="ops-work-preview">${esc(task.note)}</div>`:''}
+      </div>
+    `;
+  }).join(''):'<div class="empty-state">Bu kişiye bağlı yayın linki yok.</div>';
+  return `
+    <div class="ops-detail-head">
+      <div>
+        <div class="ops-detail-title">${esc(boxTitle)}</div>
+        <div class="ops-source-meta">
+          <span>${works.length.toLocaleString('tr-TR')} çalışma satırı</span>
+          <span>${links.length.toLocaleString('tr-TR')} yayın linki</span>
+          <span>${links.filter(task=>task.status==='tamamlandi').length.toLocaleString('tr-TR')} tamam</span>
+        </div>
+      </div>
+      <button class="btn-mini" onclick="clearArchiveTeamMemberFilter()">Tümü</button>
+    </div>
+    <div class="ops-detail-body">
+      <div class="ops-member-links">${linkRows}</div>
+    </div>
+  `;
+}
+function renderArchiveTeamFolders(){
+  const strip=el('archiveTeamFolders');
+  const detail=el('archiveSelectedMemberLinks');
+  if(!strip&&!detail)return;
+  const rows=archiveTeamRows();
+  if(strip){
+    strip.innerHTML=rows.length?rows.map(archiveTeamCardHtml).join(''):'<div class="empty-state">Henüz kişiye atanmış çalışma satırı veya yayın linki yok.</div>';
+  }
+  if(detail)detail.innerHTML=archiveMemberPublishLinksHtml(archiveTeamState.activeMember);
+}
+function archiveSelectTeamMember(name){
+  archiveTeamState.activeMember=archiveTeamPerson(name);
+  archiveWorkState.query=archiveTeamState.activeMember;
+  archivePublishState.query=archiveTeamState.activeMember;
+  const workSearch=el('archiveWorkSearch');if(workSearch)workSearch.value=archiveWorkState.query;
+  const publishSearch=el('archivePublishSearch');if(publishSearch)publishSearch.value=archivePublishState.query;
+  renderArchiveTeamFolders();
+  loadArchiveWorkItems();
+  loadArchivePublishTasks({silent:true});
+}
+function clearArchiveTeamMemberFilter(){
+  archiveTeamState.activeMember='';
+  archiveWorkState.query='';
+  archivePublishState.query='';
+  const workSearch=el('archiveWorkSearch');if(workSearch)workSearch.value='';
+  const publishSearch=el('archivePublishSearch');if(publishSearch)publishSearch.value='';
+  loadArchiveWorkItems();
+  loadArchivePublishTasks({silent:true});
+}
 function archivePublishCardHtml(task){
   const active=archivePublishState.activeTask?.id===task.id?' active':'';
   const priorityClass=task.priority==='kritik'?' critical':task.priority==='onemli'?' important':'';
   const topics=(task.topics||[]).slice(0,3).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
   return `
     <button class="ops-work-card${active}${priorityClass}" onclick="openArchivePublishTask(${attrJson(task.id)})">
-      <div class="ops-work-title">${esc(task.title||'Başlıksız yayın görevi')}</div>
+      <div class="ops-work-title">${esc(task.title||'Başlıksız yayın linki')}</div>
       <div class="ops-source-meta">
         <span>${esc(archivePublishStatusLabel(task.status))}</span>
         <span>${esc(archivePublishPriorityLabel(task.priority))}</span>
@@ -5969,9 +6108,10 @@ function renderArchivePublishList(){
   const summary=el('archivePublishSummary');
   if(summary)summary.innerHTML=archivePublishSummaryHtml(archivePublishState.counts||{});
   const list=el('archivePublishList');
+  renderArchiveTeamFolders();
   if(!list)return;
   if(!archivePublishState.tasks.length){
-    list.innerHTML='<div class="empty-state">Henüz yayın görevi yok. Yeni Yayın Görevi ile ilk kaydı açabilirsiniz.</div>';
+    list.innerHTML='<div class="empty-state">Henüz yayın linki yok. Yeni Yayın Linki ile ilk kaydı açabilirsiniz.</div>';
     return;
   }
   list.innerHTML=archivePublishState.tasks.map(archivePublishCardHtml).join('');
@@ -5980,7 +6120,7 @@ function renderArchivePublishDetail(task){
   const box=el('archivePublishDetail');
   if(!box)return;
   if(!task){
-    box.innerHTML='<div class="empty-state">Bir yayın görevi seçildiğinde link, kaynak, çalışma ve not bilgisi burada açılır.</div>';
+    box.innerHTML='<div class="empty-state">Bir yayın linki seçildiğinde link, kaynak, çalışma ve not bilgisi burada açılır.</div>';
     return;
   }
   const topics=(task.topics||[]).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
@@ -5988,7 +6128,7 @@ function renderArchivePublishDetail(task){
   box.innerHTML=`
     <div class="ops-detail-head">
       <div>
-        <div class="ops-detail-title">${esc(task.title||'Başlıksız yayın görevi')}</div>
+        <div class="ops-detail-title">${esc(task.title||'Başlıksız yayın linki')}</div>
         <div class="ops-source-meta">
           <span>${esc(archivePublishStatusLabel(task.status))}</span>
           <span>${esc(archivePublishPriorityLabel(task.priority))}</span>
@@ -6016,7 +6156,7 @@ function renderArchivePublishDetail(task){
     </div>
   `;
 }
-async function loadArchivePublishTasks(){
+async function loadArchivePublishTasks(options={}){
   if(!canUseArchiveOps())return;
   archivePublishState.loading=true;
   const params=new URLSearchParams();
@@ -6024,12 +6164,14 @@ async function loadArchivePublishTasks(){
   if(archivePublishState.status)params.set('status',archivePublishState.status);
   if(archivePublishState.priority)params.set('priority',archivePublishState.priority);
   const list=el('archivePublishList');
-  if(list&&!archivePublishState.tasks.length)list.innerHTML='<div class="empty-state">Yayın görevleri yükleniyor...</div>';
+  if(!options.silent&&list&&!archivePublishState.tasks.length)list.innerHTML='<div class="empty-state">Yayın linkleri yükleniyor...</div>';
   const data=await api('GET',`/api/archive-ops/publish-tasks${params.toString()?`?${params}`:''}`);
   archivePublishState.loading=false;
   if(data.error){
-    if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
-    setArchivePublishStatus(data.error,'err');
+    if(!options.silent){
+      if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+      setArchivePublishStatus(data.error,'err');
+    }
     return;
   }
   archivePublishState.tasks=data.tasks||[];
@@ -6037,6 +6179,7 @@ async function loadArchivePublishTasks(){
   renderArchivePublishList();
 }
 function setArchivePublishSearch(value){
+  archiveTeamState.activeMember='';
   archivePublishState.query=String(value||'');
   loadArchivePublishTasks();
 }
@@ -6047,7 +6190,7 @@ function setArchivePublishFilter(){
 }
 async function openArchivePublishTask(id){
   const data=await api('GET',`/api/archive-ops/publish-tasks/${encodeURIComponent(id)}`);
-  if(data.error){await showSystemAlert('Yayın görevi açılamadı',data.error,'danger');return;}
+  if(data.error){await showSystemAlert('Yayın linki açılamadı',data.error,'danger');return;}
   archivePublishState.activeTask=data.task;
   renderArchivePublishList();
   renderArchivePublishDetail(data.task);
@@ -6080,7 +6223,7 @@ function editArchivePublishTask(id,scroll=true){
   renderArchivePublishWorkPicker();
   renderArchivePublishDetail(task);
   renderArchivePublishList();
-  setArchivePublishStatus('Yayın görevi forma alındı. Değişiklikleri saklayabilirsiniz.','ok');
+  setArchivePublishStatus('Yayın linki forma alındı. Değişiklikleri saklayabilirsiniz.','ok');
   if(scroll)el('archivePublishTitle')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function saveArchivePublishTask(){
@@ -6088,11 +6231,11 @@ async function saveArchivePublishTask(){
   if(archivePublishState.submitInFlight)return;
   const payload=archivePublishPayload();
   if(!payload.title){
-    payload.title=payload.publicationUrl||payload.description.slice(0,120)||'Başlıksız yayın görevi';
+    payload.title=payload.publicationUrl||payload.description.slice(0,120)||'Başlıksız yayın linki';
     if(el('archivePublishTitle'))el('archivePublishTitle').value=payload.title;
   }
   archivePublishState.submitInFlight=true;
-  setArchivePublishStatus('Yayın görevi saklanıyor...');
+  setArchivePublishStatus('Yayın linki saklanıyor...');
   const id=archivePublishState.activeTask?.id;
   const data=await api(id?'PUT':'POST',id?`/api/archive-ops/publish-tasks/${encodeURIComponent(id)}`:'/api/archive-ops/publish-tasks',payload);
   archivePublishState.submitInFlight=false;
@@ -6103,17 +6246,17 @@ async function saveArchivePublishTask(){
   archivePublishState.activeTask=data.task;
   await loadArchivePublishTasks();
   renderArchivePublishDetail(data.task);
-  setArchivePublishStatus(id?'Yayın görevi güncellendi.':'Yayın görevi oluşturuldu.','ok');
+  setArchivePublishStatus(id?'Yayın linki güncellendi.':'Yayın linki oluşturuldu.','ok');
 }
 async function deleteArchivePublishTaskUi(){
   const task=archivePublishState.activeTask;
   if(!task?.id)return;
   const ok=await openSystemConfirm({
-    title:'Yayın görevi silinsin mi?',
-    badge:'Yayın Görevleri',
-    message:`${task.title||'Bu yayın görevi'} silinecek.`,
-    detail:'Bu işlem yalnız yayın görevini kaldırır. Bağlı kaynak ve çalışma kayıtları sistemde kalır.',
-    confirmText:'Görevi Sil',
+    title:'Yayın linki silinsin mi?',
+    badge:'Yayın Linkleri',
+    message:`${task.title||'Bu yayın linki'} silinecek.`,
+    detail:'Bu işlem yalnız yayın linkini kaldırır. Bağlı kaynak ve çalışma satırları sistemde kalır.',
+    confirmText:'Linki Sil',
     cancelText:'Vazgeç',
     tone:'danger'
   });
@@ -6125,12 +6268,12 @@ async function deleteArchivePublishTaskUi(){
   }
   clearArchivePublishForm();
   await loadArchivePublishTasks();
-  setArchivePublishStatus('Yayın görevi silindi.','ok');
+  setArchivePublishStatus('Yayın linki silindi.','ok');
 }
 async function openArchivePublishSource(){
   const sourceId=archivePublishState.activeTask?.sourceId||el('archivePublishSourceId')?.value||'';
   if(!sourceId){
-    setArchivePublishStatus('Bu yayın görevi için bağlı kaynak seçilmedi.','err');
+    setArchivePublishStatus('Bu yayın linki için bağlı kaynak seçilmedi.','err');
     return;
   }
   renderArchiveOpsView('library');
@@ -6140,7 +6283,7 @@ async function openArchivePublishSource(){
 async function openArchivePublishWork(){
   const workId=archivePublishState.activeTask?.workItemId||el('archivePublishWorkId')?.value||'';
   if(!workId){
-    setArchivePublishStatus('Bu yayın görevi için bağlı çalışma seçilmedi.','err');
+    setArchivePublishStatus('Bu yayın linki için bağlı çalışma satırı seçilmedi.','err');
     return;
   }
   renderArchiveOpsView('work');
@@ -6148,7 +6291,7 @@ async function openArchivePublishWork(){
   window.setTimeout(()=>el('archiveWorkDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
 }
 function archiveCandidateKindLabel(kind){
-  return {source:'Kaynak kaydı',work:'Çalışma kaydı',publish:'Yayın görevi'}[kind]||'Aday kayıt';
+  return {source:'Kaynak dosyası',work:'Çalışma satırı',publish:'Yayın linki'}[kind]||'Aday kayıt';
 }
 function archiveCandidateStatusLabel(item){
   if(!item)return '';
@@ -6497,7 +6640,7 @@ function archiveReadySummaryHtml(){
     <div class="ops-file-summary-item"><strong>${Number(items.length||0).toLocaleString('tr-TR')}</strong><span>Yayına hazır</span></div>
     <div class="ops-file-summary-item"><strong>${Number(sources).toLocaleString('tr-TR')}</strong><span>Kaynak</span></div>
     <div class="ops-file-summary-item"><strong>${Number(works).toLocaleString('tr-TR')}</strong><span>Çalışma</span></div>
-    <div class="ops-file-summary-item"><strong>${Number(publishes).toLocaleString('tr-TR')}</strong><span>Yayın görevi</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(publishes).toLocaleString('tr-TR')}</strong><span>Yayın linki</span></div>
     <div class="ops-file-summary-item"><strong>${Number(needsReview).toLocaleString('tr-TR')}</strong><span>Eksik kontrol</span></div>
   `;
 }
@@ -6707,8 +6850,8 @@ function setArchiveReleasePackageStatus(message='',kind=''){
 function archiveReleasePackageSummaryHtml(counts={}){
   const byStatus=counts.byStatus||{};
   return `
-    <div class="ops-file-summary-item"><strong>${Number(counts.total||0).toLocaleString('tr-TR')}</strong><span>Toplam paket</span></div>
-    <div class="ops-file-summary-item"><strong>${Number(counts.filtered||0).toLocaleString('tr-TR')}</strong><span>Görünen paket</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts.total||0).toLocaleString('tr-TR')}</strong><span>Toplam dosya</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts.filtered||0).toLocaleString('tr-TR')}</strong><span>Görünen dosya</span></div>
     <div class="ops-file-summary-item"><strong>${Number(byStatus.son_kontrol||0).toLocaleString('tr-TR')}</strong><span>Son kontrol</span></div>
     <div class="ops-file-summary-item"><strong>${Number(byStatus.hazir||0).toLocaleString('tr-TR')}</strong><span>Hazır</span></div>
   `;
@@ -6726,7 +6869,7 @@ function archiveReleaseItemReadiness(item={}){
     {key:'topics',label:'Kavramlar',ok:topics.length>0,severity:'warning',help:'Kavramlar arama ve benzer içerik bağlantısını güçlendirir.'}
   ];
   if(item.kind==='publish'){
-    checks.push({key:'publicationUrl',label:'Yayın linki',ok:Boolean(String(item.publicationUrl||'').trim()),severity:'warning',help:'Yayın görevi için link son kontrolde faydalı olur.'});
+    checks.push({key:'publicationUrl',label:'Yayın linki',ok:Boolean(String(item.publicationUrl||'').trim()),severity:'warning',help:'Yayın linki son kontrolde faydalı olur.'});
   }
   const blockers=checks.filter(entry=>!entry.ok&&entry.severity==='blocker');
   const warnings=checks.filter(entry=>!entry.ok&&entry.severity!=='blocker');
@@ -6735,9 +6878,9 @@ function archiveReleaseItemReadiness(item={}){
 function archiveReleasePackageReview(pkg={}){
   const items=Array.isArray(pkg.items)?pkg.items:[];
   const packageChecks=[
-    {key:'packageTitle',label:'Paket başlığı',ok:Boolean(String(pkg.title||'').trim()),severity:'blocker',help:'Paketin ne için hazırlandığı belli olmalı.'},
-    {key:'packageItems',label:'Paket içeriği',ok:items.length>0,severity:'blocker',help:'Hazır demeden önce pakete en az bir kayıt eklenmeli.'},
-    {key:'packageNote',label:'Yayın notu',ok:Boolean(String(pkg.note||'').trim()),severity:'warning',help:'Paketin amacı ve kontrol notu yazılırsa ekip takibi kolaylaşır.'}
+    {key:'packageTitle',label:'Yayın dosyası başlığı',ok:Boolean(String(pkg.title||'').trim()),severity:'blocker',help:'Yayın dosyasının ne için hazırlandığı belli olmalı.'},
+    {key:'packageItems',label:'Yayın dosyası içeriği',ok:items.length>0,severity:'blocker',help:'Hazır demeden önce dosyaya en az bir kayıt eklenmeli.'},
+    {key:'packageNote',label:'Yayın notu',ok:Boolean(String(pkg.note||'').trim()),severity:'warning',help:'Yayın dosyasının amacı ve kontrol notu yazılırsa ekip takibi kolaylaşır.'}
   ];
   const itemReviews=items.map(item=>({itemId:item.id,title:item.title,...archiveReleaseItemReadiness(item)}));
   const blockers=[
@@ -6763,7 +6906,7 @@ function archiveReleasePackageLockReview(pkg={}){
   const unreviewed=items.filter(item=>(item.reviewStatus||'bekliyor')!=='kontrol_edildi');
   return {
     ready:base.ready&&unreviewed.length===0,
-    blockers:[...base.blockers,...unreviewed.map(item=>({scope:'item',itemId:item.id,title:item.title,label:'Paket son kontrolü',help:'Bu kayıt paket içinde Kontrol edildi olarak işaretlenmeli.'}))],
+    blockers:[...base.blockers,...unreviewed.map(item=>({scope:'item',itemId:item.id,title:item.title,label:'Yayın dosyası son kontrolü',help:'Bu kayıt yayın dosyası içinde Kontrol edildi olarak işaretlenmeli.'}))],
     warnings:base.warnings,
     reviewedCount:items.length-unreviewed.length,
     itemCount:items.length
@@ -6779,8 +6922,8 @@ function archiveReleasePackageLockPanelHtml(pkg={}){
     <div class="archive-release-lock-panel${locked?' locked':''}">
       <div class="archive-release-lock-head">
         <div>
-          <div class="archive-release-lock-title">${locked?'Paket son hazırlık için kilitli':'Son hazırlık kilidi'}</div>
-          <p class="archive-release-lock-text">${locked?`Bu paket yayın öncesi sabitlendi.${esc(lockedMeta)}${lockedBy}`:`Kilitlemeden önce paketteki her kayıt ayrı ayrı Kontrol edildi olarak işaretlenmelidir. ${Number(lockReview.reviewedCount||0).toLocaleString('tr-TR')}/${Number(lockReview.itemCount||0).toLocaleString('tr-TR')} kayıt kontrol edildi.`}</p>
+          <div class="archive-release-lock-title">${locked?'Yayın dosyası son hazırlık için kilitli':'Son hazırlık kilidi'}</div>
+          <p class="archive-release-lock-text">${locked?`Bu yayın dosyası yayın öncesi sabitlendi.${esc(lockedMeta)}${lockedBy}`:`Kilitlemeden önce dosyadaki her kayıt ayrı ayrı Kontrol edildi olarak işaretlenmelidir. ${Number(lockReview.reviewedCount||0).toLocaleString('tr-TR')}/${Number(lockReview.itemCount||0).toLocaleString('tr-TR')} kayıt kontrol edildi.`}</p>
         </div>
         <span class="archive-release-badge${locked?' locked':''}">${locked?'Kilitli':lockReview.ready?'Kilide hazır':`${Number(missing).toLocaleString('tr-TR')} eksik`}</span>
       </div>
@@ -6793,12 +6936,12 @@ function archiveReleasePackageLockPanelHtml(pkg={}){
 function archiveReleasePackageReviewHtml(pkg,review=archiveReleasePackageReview(pkg)){
   const rows=[];
   if(!review.blockers.length&&!review.warnings.length){
-    rows.push(`<div class="archive-release-risk"><span class="archive-release-risk-dot" aria-hidden="true"></span><span><strong>Paket son kontrole uygun</strong><span>Yine de metin ve kaynak izi son kez okunmalı.</span></span></div>`);
+    rows.push(`<div class="archive-release-risk"><span class="archive-release-risk-dot" aria-hidden="true"></span><span><strong>Yayın dosyası son kontrole uygun</strong><span>Yine de metin ve kaynak izi son kez okunmalı.</span></span></div>`);
   }else{
     rows.push(...review.blockers.slice(0,8).map(entry=>`
       <div class="archive-release-risk blocker">
         <span class="archive-release-risk-dot" aria-hidden="true"></span>
-        <span><strong>${esc(entry.scope==='item'?`${entry.title||'Kayıt'}: ${entry.label}`:entry.label)}</strong><span>${esc(entry.help||'Bu alan tamamlanmadan paket hazır yapılamaz.')}</span></span>
+        <span><strong>${esc(entry.scope==='item'?`${entry.title||'Kayıt'}: ${entry.label}`:entry.label)}</strong><span>${esc(entry.help||'Bu alan tamamlanmadan yayın dosyası hazır yapılamaz.')}</span></span>
       </div>
     `));
     rows.push(...review.warnings.slice(0,6).map(entry=>`
@@ -6811,7 +6954,7 @@ function archiveReleasePackageReviewHtml(pkg,review=archiveReleasePackageReview(
   return `
     <div class="archive-release-review">
       <div class="archive-release-review-head">
-        <div class="archive-release-review-title">${review.ready?'Paket hazır durumuna alınabilir.':'Paket hazır değil; önce eksikler tamamlanmalı.'}</div>
+        <div class="archive-release-review-title">${review.ready?'Yayın dosyası hazır durumuna alınabilir.':'Yayın dosyası hazır değil; önce eksikler tamamlanmalı.'}</div>
         <div class="archive-release-review-score">${Number(review.done||0).toLocaleString('tr-TR')}/${Number(review.total||0).toLocaleString('tr-TR')} kontrol</div>
       </div>
       <div class="archive-release-risk-list">${rows.join('')}</div>
@@ -6879,7 +7022,7 @@ function archiveReleasePackageCardHtml(pkg){
   const dateText=pkg.updatedAt?new Date(pkg.updatedAt).toLocaleString('tr-TR'):'Tarih yok';
   return `
     <button class="archive-release-card${active}${locked}" onclick="openArchiveReleasePackage(${attrJson(pkg.id)})">
-      <div class="archive-release-title">${esc(pkg.title||'Başlıksız yayın paketi')} ${pkg.locked?'<span class="archive-release-badge locked">Kilitli</span>':''}</div>
+      <div class="archive-release-title">${esc(pkg.title||'Başlıksız yayın dosyası')} ${pkg.locked?'<span class="archive-release-badge locked">Kilitli</span>':''}</div>
       <div class="ops-source-meta">
         <span>${esc(archiveReleasePackageStatusLabel(pkg.status))}</span>
         <span>${Number(pkg.itemCount||0).toLocaleString('tr-TR')} kayıt</span>
@@ -6900,7 +7043,7 @@ function renderArchiveReleasePackageList(){
   const list=el('archiveReleasePackageList');
   if(!list)return;
   if(!archiveReleasePackageState.packages.length){
-    list.innerHTML='<div class="archive-release-empty">Bu filtreye uygun yayın paketi yok.</div>';
+    list.innerHTML='<div class="archive-release-empty">Bu filtreye uygun yayın dosyası yok.</div>';
     return;
   }
   list.innerHTML=archiveReleasePackageState.packages.map(archiveReleasePackageCardHtml).join('');
@@ -6909,7 +7052,7 @@ function renderArchiveReleaseReadyList(){
   const list=el('archiveReleaseReadyList');
   if(!list)return;
   if(archiveReleasePackageState.activePackage?.locked){
-    list.innerHTML='<div class="archive-release-empty">Bu paket kilitli olduğu için yeni aday eklenemez. Düzenlemek için önce kilidi kaldırın.</div>';
+    list.innerHTML='<div class="archive-release-empty">Bu yayın dosyası kilitli olduğu için yeni aday eklenemez. Düzenlemek için önce kilidi kaldırın.</div>';
     return;
   }
   if(!archiveReleasePackageState.readyItems.length){
@@ -6931,7 +7074,7 @@ function renderArchiveReleaseReadyList(){
             <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
             <span>${esc(item.category||'Kategori yok')}</span>
             <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
-            ${disabled?'<span>Pakette var</span>':''}
+            ${disabled?'<span>Dosyada var</span>':''}
           </span>
           <span class="archive-release-preview">${esc(item.textPreview||'Ön izleme yok.')}</span>
           ${topics?`<span class="ops-tags">${topics}</span>`:''}
@@ -6944,7 +7087,7 @@ function renderArchiveReleasePackageDetail(pkg=archiveReleasePackageState.active
   const box=el('archiveReleasePackageDetail');
   if(!box)return;
   if(!pkg){
-    box.innerHTML='<div class="empty-state">Bir paket seçildiğinde içindeki kayıtlar ve yayına hazır aday seçici burada açılır.</div>';
+    box.innerHTML='<div class="empty-state">Bir yayın dosyası seçildiğinde içindeki kayıtlar ve yayına hazır aday seçici burada açılır.</div>';
     return;
   }
   const items=Array.isArray(pkg.items)?pkg.items:[];
@@ -6971,11 +7114,11 @@ function renderArchiveReleasePackageDetail(pkg=archiveReleasePackageState.active
         <div class="archive-release-checks">${archiveReleaseItemChecksHtml(item)}</div>
         <div class="archive-release-item-review">
           <div class="archive-release-review-row">
-            <strong>Paket son kontrolü</strong>
+            <strong>Yayın dosyası son kontrolü</strong>
             <span>${esc(archiveReleaseItemReviewStatusLabel(item.reviewStatus))}${item.reviewedBy?` · ${esc(item.reviewedBy)}`:''}${item.reviewedAt?` · ${esc(new Date(item.reviewedAt).toLocaleString('tr-TR'))}`:''}</span>
           </div>
           ${item.reviewNote?`<div class="archive-release-preview" style="margin-top:6px">${esc(item.reviewNote)}</div>`:''}
-          ${locked?'<div class="archive-release-review-row" style="margin-top:8px"><span>Paket kilitli; kontrol durumu değiştirilemez.</span></div>':`
+          ${locked?'<div class="archive-release-review-row" style="margin-top:8px"><span>Yayın dosyası kilitli; kontrol durumu değiştirilemez.</span></div>':`
           <div class="archive-release-review-actions">
             <button class="btn-mini${packageReviewed?' active':''}" onclick="setArchiveReleasePackageItemReview(${attrJson(item.id)},'kontrol_edildi')">Kontrol Edildi</button>
             <button class="btn-mini danger${item.reviewStatus==='revizyon'?' active':''}" onclick="setArchiveReleasePackageItemReview(${attrJson(item.id)},'revizyon')">Revizyon</button>
@@ -6988,11 +7131,11 @@ function renderArchiveReleasePackageDetail(pkg=archiveReleasePackageState.active
         </div>
       </div>
     `;
-  }).join(''):'<div class="archive-release-empty">Bu pakete henüz kayıt eklenmedi.</div>';
+  }).join(''):'<div class="archive-release-empty">Bu yayın dosyasına henüz kayıt eklenmedi.</div>';
   box.innerHTML=`
     <div class="ops-detail-head">
       <div>
-        <div class="ops-detail-title">${esc(pkg.title||'Başlıksız yayın paketi')}</div>
+        <div class="ops-detail-title">${esc(pkg.title||'Başlıksız yayın dosyası')}</div>
         <div class="ops-source-meta">
           <span>${esc(archiveReleasePackageStatusLabel(pkg.status))}</span>
           ${pkg.locked?'<span>Kilitli</span>':''}
@@ -7008,24 +7151,24 @@ function renderArchiveReleasePackageDetail(pkg=archiveReleasePackageState.active
       ${pkg.note?`<div class="ops-note">${esc(pkg.note)}</div>`:''}
       <div class="candidate-review-grid">
         <div class="candidate-review-card">
-          <h4>Paket içeriği</h4>
-          <p>${review.ready?'Paket içindeki kayıtlar yayına hazırlık için uygundur.':'Eksik işaretlenen kayıtlar düzeltilmeden paket hazır yapılamaz.'}</p>
+          <h4>Yayın dosyası içeriği</h4>
+          <p>${review.ready?'Yayın dosyasındaki kayıtlar yayına hazırlık için uygundur.':'Eksik işaretlenen kayıtlar düzeltilmeden yayın dosyası hazır yapılamaz.'}</p>
           <div class="archive-release-item-list">${itemHtml}</div>
         </div>
         <div class="candidate-review-card">
           <h4>Yayına hazır aday ekle</h4>
-          ${pkg.locked?'<p class="archive-release-lock-text">Bu paket kilitli. Yeni aday eklemek için önce kilidi kaldırın.</p>':''}
+          ${pkg.locked?'<p class="archive-release-lock-text">Bu yayın dosyası kilitli. Yeni aday eklemek için önce kilidi kaldırın.</p>':''}
           <div class="ops-filter-row" style="grid-template-columns:1fr .7fr;margin-bottom:8px">
             <input class="ops-field" id="archiveReleaseReadySearch" placeholder="Adaylarda ara..." value="${escAttr(archiveReleasePackageState.readyQuery)}" oninput="setArchiveReleaseReadySearch(this.value)"${pkg.locked?' disabled':''}>
             <select class="ops-field" id="archiveReleaseReadyKindFilter" onchange="setArchiveReleaseReadyFilter()"${pkg.locked?' disabled':''}>
               <option value="">Tüm türler</option>
               <option value="source"${archiveReleasePackageState.readyKind==='source'?' selected':''}>Kaynak</option>
               <option value="work"${archiveReleasePackageState.readyKind==='work'?' selected':''}>Çalışma</option>
-              <option value="publish"${archiveReleasePackageState.readyKind==='publish'?' selected':''}>Yayın görevi</option>
+              <option value="publish"${archiveReleasePackageState.readyKind==='publish'?' selected':''}>Yayın linki</option>
             </select>
           </div>
           <div class="archive-release-actions" style="margin-bottom:10px">
-            <button class="btn-main" onclick="addSelectedReadyToReleasePackage()"${pkg.locked?' disabled':''}>Seçilenleri Pakete Ekle</button>
+            <button class="btn-main" onclick="addSelectedReadyToReleasePackage()"${pkg.locked?' disabled':''}>Seçilenleri Yayın Dosyasına Ekle</button>
             <button class="btn-sec" onclick="loadArchiveReleaseReadyCandidates()"${pkg.locked?' disabled':''}>Adayları Yenile</button>
           </div>
           <div class="archive-release-ready-list" id="archiveReleaseReadyList"></div>
@@ -7045,7 +7188,7 @@ async function setArchiveReleasePackageItemReview(itemId,status){
   const pkg=archiveReleasePackageState.activePackage;
   if(!pkg)return;
   if(pkg.locked){
-    await showSystemAlert('Paket kilitli','Bu paket son hazırlık için kilitli. Kayıt kontrolünü değiştirmek için önce kilidi kaldırın.','danger');
+    await showSystemAlert('Yayın dosyası kilitli','Bu yayın dosyası son hazırlık için kilitli. Kayıt kontrolünü değiştirmek için önce kilidi kaldırın.','danger');
     return;
   }
   const data=await api('POST',`/api/archive-ops/release-packages/${encodeURIComponent(pkg.id)}/items/${encodeURIComponent(itemId)}/review`,{status});
@@ -7061,16 +7204,16 @@ async function setArchiveReleasePackageItemReview(itemId,status){
 }
 async function lockArchiveReleasePackageUi(){
   const pkg=archiveReleasePackageState.activePackage;
-  if(!pkg)return showSystemAlert('Paket seçilmedi','Kilitlemek için önce bir yayın paketi seçin.','danger');
+  if(!pkg)return showSystemAlert('Yayın dosyası seçilmedi','Kilitlemek için önce bir yayın dosyası seçin.','danger');
   const lockReview=archiveReleasePackageLockReview(pkg);
   if(!lockReview.ready){
-    await showSystemAlert('Paket kilitlenemez','Önce kırmızı eksikleri tamamlayın ve paketteki her kaydı Kontrol edildi olarak işaretleyin.','danger');
+    await showSystemAlert('Yayın dosyası kilitlenemez','Önce kırmızı eksikleri tamamlayın ve dosyadaki her kaydı Kontrol edildi olarak işaretleyin.','danger');
     return;
   }
   const ok=await openSystemConfirm({
-    title:'Paket son hazırlığa kilitlensin mi?',
-    badge:'Yayın Paketi',
-    message:'Bu paket yayın öncesi sabitlenecek. Kilitliyken başlık, not, durum ve paket içeriği değiştirilemez.',
+    title:'Yayın dosyası son hazırlığa kilitlensin mi?',
+    badge:'Yayın Dosyası',
+    message:'Bu yayın dosyası yayın öncesi sabitlenecek. Kilitliyken başlık, not, durum ve içerik değiştirilemez.',
     detail:'Gerekirse süper admin kilidi kaldırıp yeniden düzenleyebilir.',
     confirmText:'Kilitle',
     cancelText:'Vazgeç',
@@ -7085,16 +7228,16 @@ async function lockArchiveReleasePackageUi(){
   archiveReleasePackageState.activePackage=data.package;
   fillArchiveReleasePackageForm(data.package);
   await loadArchiveReleasePackages();
-  setArchiveReleasePackageStatus('Paket son hazırlık için kilitlendi.','ok');
+  setArchiveReleasePackageStatus('Yayın dosyası son hazırlık için kilitlendi.','ok');
 }
 async function unlockArchiveReleasePackageUi(){
   const pkg=archiveReleasePackageState.activePackage;
   if(!pkg)return;
   const ok=await openSystemConfirm({
     title:'Paket kilidi kaldırılsın mı?',
-    badge:'Yayın Paketi',
+    badge:'Yayın Dosyası',
     message:'Paket yeniden düzenlenebilir hale gelecek.',
-    detail:'Kilidi kaldırınca paket Son kontrol durumuna alınır.',
+    detail:'Kilidi kaldırınca yayın dosyası Son kontrol durumuna alınır.',
     confirmText:'Kilidi Kaldır',
     cancelText:'Vazgeç',
     tone:'danger'
@@ -7117,7 +7260,7 @@ async function loadArchiveReleasePackages(){
   if(archiveReleasePackageState.query)params.set('q',archiveReleasePackageState.query);
   if(archiveReleasePackageState.status)params.set('status',archiveReleasePackageState.status);
   const list=el('archiveReleasePackageList');
-  if(list&&!archiveReleasePackageState.packages.length)list.innerHTML='<div class="archive-release-empty">Yayın paketleri yükleniyor...</div>';
+  if(list&&!archiveReleasePackageState.packages.length)list.innerHTML='<div class="archive-release-empty">Yayın dosyaları yükleniyor...</div>';
   const data=await api('GET',`/api/archive-ops/release-packages?${params}`);
   archiveReleasePackageState.loading=false;
   if(data.error){
@@ -7133,7 +7276,7 @@ async function loadArchiveReleasePackages(){
   }
   renderArchiveReleasePackageList();
   renderArchiveReleasePackageDetail(archiveReleasePackageState.activePackage);
-  setArchiveReleasePackageStatus(archiveReleasePackageState.packages.length?'Yayın paketleri listelendi.':'Henüz yayın paketi yok.','ok');
+  setArchiveReleasePackageStatus(archiveReleasePackageState.packages.length?'Yayın dosyaları listelendi.':'Henüz yayın dosyası yok.','ok');
 }
 async function loadArchiveReleaseReadyCandidates(){
   if(!canUseArchiveOps())return;
@@ -7189,17 +7332,17 @@ function newArchiveReleasePackage(){
   fillArchiveReleasePackageForm(null);
   renderArchiveReleasePackageList();
   renderArchiveReleasePackageDetail(null);
-  setArchiveReleasePackageStatus('Yeni paket için başlık girip Paketi Sakla düğmesini kullanın.','');
+  setArchiveReleasePackageStatus('Yeni yayın dosyası için başlık girip Yayın Dosyasını Sakla düğmesini kullanın.','');
 }
 async function saveArchiveReleasePackage(){
   if(archiveReleasePackageState.submitInFlight)return;
   if(archiveReleasePackageState.activePackage?.locked){
-    await showSystemAlert('Paket kilitli','Bu paket son hazırlık için kilitli. Düzenlemek için önce kilidi kaldırın.','danger');
+    await showSystemAlert('Yayın dosyası kilitli','Bu yayın dosyası son hazırlık için kilitli. Düzenlemek için önce kilidi kaldırın.','danger');
     return null;
   }
   const payload=archiveReleasePackagePayload();
   if(!payload.title){
-    await showSystemAlert('Başlık gerekli','Yayın paketi oluşturmak için paket başlığı yazın.','danger');
+    await showSystemAlert('Başlık gerekli','Yayın dosyası oluşturmak için dosya başlığı yazın.','danger');
     return null;
   }
   const nextPackage={...(archiveReleasePackageState.activePackage||{}),...payload};
@@ -7208,11 +7351,11 @@ async function saveArchiveReleasePackage(){
     const currentStatus=archiveReleasePackageState.activePackage?.status||'taslak';
     if(el('archiveReleasePackageStatus'))el('archiveReleasePackageStatus').value=currentStatus;
     renderArchiveReleasePackageDetail({...nextPackage,status:currentStatus});
-    await showSystemAlert('Paket hazır değil','Eksik alanlar tamamlanmadan paket Hazır durumuna alınamaz. Kırmızı işaretli kontrolleri tamamlayın.','danger');
+    await showSystemAlert('Yayın dosyası hazır değil','Eksik alanlar tamamlanmadan yayın dosyası Hazır durumuna alınamaz. Kırmızı işaretli kontrolleri tamamlayın.','danger');
     return null;
   }
   archiveReleasePackageState.submitInFlight=true;
-  setArchiveReleasePackageStatus('Paket kaydediliyor...','');
+  setArchiveReleasePackageStatus('Yayın dosyası kaydediliyor...','');
   const activeId=archiveReleasePackageState.activePackage?.id;
   const data=activeId
     ? await api('PUT',`/api/archive-ops/release-packages/${encodeURIComponent(activeId)}`,payload)
@@ -7220,25 +7363,25 @@ async function saveArchiveReleasePackage(){
   archiveReleasePackageState.submitInFlight=false;
   if(data.error){
     setArchiveReleasePackageStatus(data.error,'err');
-    await showSystemAlert('Paket kaydedilemedi',data.error,'danger');
+    await showSystemAlert('Yayın dosyası kaydedilemedi',data.error,'danger');
     return null;
   }
   archiveReleasePackageState.activePackage=data.package;
   fillArchiveReleasePackageForm(data.package);
   await loadArchiveReleasePackages();
-  setArchiveReleasePackageStatus('Yayın paketi kaydedildi.','ok');
+  setArchiveReleasePackageStatus('Yayın dosyası kaydedildi.','ok');
   return data.package;
 }
 async function deleteArchiveReleasePackageUi(){
   const pkg=archiveReleasePackageState.activePackage;
-  if(!pkg)return showSystemAlert('Paket seçilmedi','Silmek için önce bir yayın paketi seçin.','danger');
-  if(pkg.locked)return showSystemAlert('Paket kilitli','Kilitli paket silinemez. Silmek için önce kilidi kaldırın.','danger');
+  if(!pkg)return showSystemAlert('Yayın dosyası seçilmedi','Silmek için önce bir yayın dosyası seçin.','danger');
+  if(pkg.locked)return showSystemAlert('Yayın dosyası kilitli','Kilitli yayın dosyası silinemez. Silmek için önce kilidi kaldırın.','danger');
   const ok=await openSystemConfirm({
-    title:'Yayın paketi silinsin mi?',
-    badge:'Yayın Paketi',
-    message:`${pkg.title||'Seçili paket'} silinecek.`,
-    detail:'Bu işlem yalnız paket kaydını siler; paketteki kaynak, çalışma veya yayın görevi kayıtlarını silmez.',
-    confirmText:'Paketi Sil',
+    title:'Yayın dosyası silinsin mi?',
+    badge:'Yayın Dosyası',
+    message:`${pkg.title||'Seçili yayın dosyası'} silinecek.`,
+    detail:'Bu işlem yalnız yayın dosyasını siler; içindeki kaynak, çalışma veya yayın linki kayıtlarını silmez.',
+    confirmText:'Yayın Dosyasını Sil',
     cancelText:'Vazgeç',
     tone:'danger'
   });
@@ -7246,13 +7389,13 @@ async function deleteArchiveReleasePackageUi(){
   const data=await api('DELETE',`/api/archive-ops/release-packages/${encodeURIComponent(pkg.id)}`);
   if(data.error){
     setArchiveReleasePackageStatus(data.error,'err');
-    return showSystemAlert('Paket silinemedi',data.error,'danger');
+    return showSystemAlert('Yayın dosyası silinemedi',data.error,'danger');
   }
   archiveReleasePackageState.activePackage=null;
   fillArchiveReleasePackageForm(null);
   renderArchiveReleasePackageDetail(null);
   await loadArchiveReleasePackages();
-  setArchiveReleasePackageStatus('Yayın paketi silindi.','ok');
+  setArchiveReleasePackageStatus('Yayın dosyası silindi.','ok');
 }
 function toggleArchiveReleaseReadySelection(id,checked){
   if(checked)archiveReleasePackageState.selectedReadyIds.add(id);
@@ -7260,16 +7403,16 @@ function toggleArchiveReleaseReadySelection(id,checked){
 }
 async function addSelectedReadyToReleasePackage(){
   if(!archiveReleasePackageState.activePackage){
-    await showSystemAlert('Paket seçilmedi','Aday eklemek için önce paket oluşturun veya mevcut bir paket seçin.','danger');
+    await showSystemAlert('Yayın dosyası seçilmedi','Aday eklemek için önce yayın dosyası oluşturun veya mevcut bir dosya seçin.','danger');
     return;
   }
   if(archiveReleasePackageState.activePackage.locked){
-    await showSystemAlert('Paket kilitli','Bu paket son hazırlık için kilitli. Yeni aday eklemek için önce kilidi kaldırın.','danger');
+    await showSystemAlert('Yayın dosyası kilitli','Bu yayın dosyası son hazırlık için kilitli. Yeni aday eklemek için önce kilidi kaldırın.','danger');
     return;
   }
   const selected=[...archiveReleasePackageState.selectedReadyIds];
   if(!selected.length){
-    await showSystemAlert('Aday seçilmedi','Pakete eklemek için en az bir yayına hazır aday seçin.','danger');
+    await showSystemAlert('Aday seçilmedi','Yayın dosyasına eklemek için en az bir yayına hazır aday seçin.','danger');
     return;
   }
   const existing=new Map((archiveReleasePackageState.activePackage.items||[]).map(item=>[item.id,item]));
@@ -7284,7 +7427,7 @@ async function addSelectedReadyToReleasePackage(){
 async function removeArchiveReleasePackageItem(id){
   if(!archiveReleasePackageState.activePackage)return;
   if(archiveReleasePackageState.activePackage.locked){
-    await showSystemAlert('Paket kilitli','Bu paket son hazırlık için kilitli. Kayıt çıkarmak için önce kilidi kaldırın.','danger');
+    await showSystemAlert('Yayın dosyası kilitli','Bu yayın dosyası son hazırlık için kilitli. Kayıt çıkarmak için önce kilidi kaldırın.','danger');
     return;
   }
   archiveReleasePackageState.activePackage={
@@ -7296,7 +7439,7 @@ async function removeArchiveReleasePackageItem(id){
 async function setArchiveReleasePackageStatusQuick(status){
   if(!archiveReleasePackageState.activePackage)return;
   if(archiveReleasePackageState.activePackage.locked){
-    await showSystemAlert('Paket kilitli','Bu paket son hazırlık için kilitli. Durum değiştirmek için önce kilidi kaldırın.','danger');
+    await showSystemAlert('Yayın dosyası kilitli','Bu yayın dosyası son hazırlık için kilitli. Durum değiştirmek için önce kilidi kaldırın.','danger');
     return;
   }
   const payload={...archiveReleasePackagePayload(),status};
@@ -7306,7 +7449,7 @@ async function setArchiveReleasePackageStatusQuick(status){
     const currentStatus=archiveReleasePackageState.activePackage.status||'taslak';
     if(el('archiveReleasePackageStatus'))el('archiveReleasePackageStatus').value=currentStatus;
     renderArchiveReleasePackageDetail({...nextPackage,status:currentStatus});
-    await showSystemAlert('Paket hazır değil','Bu paket hazır durumuna alınmadan önce kırmızı işaretli eksikler tamamlanmalı. Gerekirse kaydı açıp düzenleyin.','danger');
+    await showSystemAlert('Yayın dosyası hazır değil','Bu yayın dosyası hazır durumuna alınmadan önce kırmızı işaretli eksikler tamamlanmalı. Gerekirse kaydı açıp düzenleyin.','danger');
     return;
   }
   if(el('archiveReleasePackageStatus'))el('archiveReleasePackageStatus').value=status;
@@ -7320,8 +7463,8 @@ function setArchiveOutputStatus(message='',kind=''){
 }
 function archiveOutputPackageReady(pkg={}){
   const blockers=[];
-  if(!pkg.locked)blockers.push({label:'Son hazırlık kilidi',help:'Çıktı için paket kilitlenmiş olmalı.'});
-  if((pkg.status||'')!=='hazir')blockers.push({label:'Paket durumu',help:'Çıktı için paket Hazır durumunda olmalı.'});
+  if(!pkg.locked)blockers.push({label:'Son hazırlık kilidi',help:'Çıktı için yayın dosyası kilitlenmiş olmalı.'});
+  if((pkg.status||'')!=='hazir')blockers.push({label:'Yayın dosyası durumu',help:'Çıktı için yayın dosyası Hazır durumunda olmalı.'});
   const lockBlockers=Array.isArray(pkg.lockReadiness?.blockers)?pkg.lockReadiness.blockers:[];
   return {ready:blockers.length===0&&lockBlockers.length===0,blockers:[...blockers,...lockBlockers]};
 }
@@ -7332,7 +7475,7 @@ function archiveOutputPackageCardHtml(pkg){
   const dateText=pkg.lockedAt?new Date(pkg.lockedAt).toLocaleString('tr-TR'):(pkg.updatedAt?new Date(pkg.updatedAt).toLocaleString('tr-TR'):'Tarih yok');
   return `
     <button class="archive-output-card${active}${klass}" onclick="openArchiveOutputPackage(${attrJson(pkg.id)})">
-      <div class="archive-output-title">${esc(pkg.title||'Başlıksız yayın paketi')}</div>
+      <div class="archive-output-title">${esc(pkg.title||'Başlıksız yayın dosyası')}</div>
       <div class="ops-source-meta">
         <span>${pkg.locked?'Kilitli':'Kilit bekliyor'}</span>
         <span>${esc(archiveReleasePackageStatusLabel(pkg.status))}</span>
@@ -7360,7 +7503,7 @@ function renderArchiveOutputPackages(){
       .includes(q);
   });
   if(!packages.length){
-    list.innerHTML='<div class="archive-release-empty">Çıktı için uygun paket bulunamadı. Önce Yayın Paketleri ekranında paketi son hazırlığa kilitleyin.</div>';
+    list.innerHTML='<div class="archive-release-empty">Çıktı için uygun yayın dosyası bulunamadı. Önce Yayın Dosyaları ekranında dosyayı son hazırlığa kilitleyin.</div>';
     return;
   }
   list.innerHTML=packages.map(archiveOutputPackageCardHtml).join('');
@@ -7370,7 +7513,7 @@ function archiveOutputChecksHtml(pkg={}){
   const rows=[
     {ok:Boolean(pkg.locked),label:'Son hazırlık kilidi',help:pkg.locked?'Paket sabitlenmiş.':'Paket kilitlenmeden çıktı oluşturulmaz.'},
     {ok:(pkg.status||'')==='hazir',label:'Hazır durumu',help:(pkg.status||'')==='hazir'?'Paket Hazır durumunda.':'Paket Hazır durumunda değil.'},
-    {ok:Number(pkg.itemCount||0)>0,label:'Paket içeriği',help:Number(pkg.itemCount||0)>0?`${Number(pkg.itemCount||0).toLocaleString('tr-TR')} kayıt var.`:'Paket boş.'},
+    {ok:Number(pkg.itemCount||0)>0,label:'Yayın dosyası içeriği',help:Number(pkg.itemCount||0)>0?`${Number(pkg.itemCount||0).toLocaleString('tr-TR')} kayıt var.`:'Yayın dosyası boş.'},
     {ok:readiness.ready,label:'Kayıt son kontrolleri',help:readiness.ready?'Tüm kayıtlar çıktı için uygun.':`${Number(readiness.blockers.length||0).toLocaleString('tr-TR')} engel var.`}
   ];
   return `<div class="archive-output-checks">${rows.map(row=>`
@@ -7403,7 +7546,7 @@ function archiveOutputPublicationHtml(pkg={},outputBelongs=false,readiness={read
         <button class="btn-main" onclick="setArchivePackagePublicationStatus('arsive_aktarildi')" ${disabled}>Arşive Aktarıldı</button>
         <button class="btn-sec danger" onclick="setArchivePackagePublicationStatus('geri_alindi')">Geri Alındı</button>
       </div>
-      <div class="ops-status ${readiness.ready?'ok':'err'}">${readiness.ready?'Paket yayın takibine alınabilir.':'Yayın takibi için paket önce hazır ve kilitli olmalı.'}${outputBelongs?' Çıktı ön izlemesi bu paket için hazır.':''}</div>
+      <div class="ops-status ${readiness.ready?'ok':'err'}">${readiness.ready?'Yayın dosyası yayın takibine alınabilir.':'Yayın takibi için yayın dosyası önce hazır ve kilitli olmalı.'}${outputBelongs?' Çıktı ön izlemesi bu yayın dosyası için hazır.':''}</div>
     </div>
   `;
 }
@@ -7421,8 +7564,8 @@ function archiveOutputPublicContractHtml(pkg={},outputBelongs=false,readiness={r
       </div>
       <div class="ops-status ${readiness.ready?'ok':'err'}">
         ${readiness.ready
-          ? 'Bu paket public arşiv ön yüzüne aktarılabilecek temiz JSON kayıtlarına çevrilebilir.'
-          : 'Public kayıt sözleşmesi için paket önce hazır, kilitli ve son kontrolü tamamlanmış olmalı.'}
+          ? 'Bu yayın dosyası public arşiv ön yüzüne aktarılabilecek temiz JSON kayıtlarına çevrilebilir.'
+          : 'Public kayıt sözleşmesi için yayın dosyası önce hazır, kilitli ve son kontrolü tamamlanmış olmalı.'}
       </div>
       <div class="archive-output-publication-actions">
         <button class="btn-main" onclick="prepareArchivePublicRecordsOutput()" ${readiness.ready?'':'disabled'}>Public Kayıtları Hazırla</button>
@@ -7482,7 +7625,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   const box=el('archiveOutputDetail');
   if(!box)return;
   if(!pkg){
-    box.innerHTML='<div class="empty-state">Kilitli bir paket seçildiğinde çıktı kontrolleri ve ön izleme burada açılır.</div>';
+    box.innerHTML='<div class="empty-state">Kilitli bir yayın dosyası seçildiğinde çıktı kontrolleri ve ön izleme burada açılır.</div>';
     return;
   }
   const readiness=archiveOutputPackageReady(pkg);
@@ -7492,7 +7635,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   box.innerHTML=`
     <div class="ops-detail-head">
       <div>
-        <div class="ops-detail-title">${esc(pkg.title||'Başlıksız yayın paketi')}</div>
+        <div class="ops-detail-title">${esc(pkg.title||'Başlıksız yayın dosyası')}</div>
         <div class="ops-source-meta">
           <span>${pkg.locked?'Kilitli':'Kilit bekliyor'}</span>
           <span>${esc(archiveReleasePackageStatusLabel(pkg.status))}</span>
@@ -7501,7 +7644,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
           <span>${Number(pkg.totalTextLength||0).toLocaleString('tr-TR')} karakter</span>
         </div>
       </div>
-      <button class="btn-mini" onclick="openArchiveOps('packages'); openArchiveReleasePackage(${attrJson(pkg.id)});">Paketi Aç</button>
+      <button class="btn-mini" onclick="openArchiveOps('packages'); openArchiveReleasePackage(${attrJson(pkg.id)});">Yayın Dosyasını Aç</button>
     </div>
     <div class="ops-detail-body">
       ${archiveOutputChecksHtml(pkg)}
@@ -7510,7 +7653,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
         <button class="btn-sec" onclick="copyArchivePackageOutput()" ${outputReady?'':'disabled'}>Kopyala</button>
         <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${outputReady?'':'disabled'}>İndir</button>
       </div>
-      ${readiness.ready?'<div class="ops-status ok">Paket çıktı oluşturmaya hazır.</div>':`<div class="ops-status err">Çıktı için önce paket kilidi ve son kontrol eksikleri tamamlanmalı.</div>`}
+      ${readiness.ready?'<div class="ops-status ok">Yayın dosyası çıktı oluşturmaya hazır.</div>':`<div class="ops-status err">Çıktı için önce yayın dosyası kilidi ve son kontrol eksikleri tamamlanmalı.</div>`}
       <div class="archive-output-preview">${outputBelongs?(output?.blocked?'Public JSON kalite kontrolünden geçmedi. Engel listesi aşağıda görünüyor.':esc(output.content)):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
       ${archiveOutputPublicContractHtml(pkg,outputBelongs,readiness)}
       ${archiveOutputPublicationHtml(pkg,outputBelongs,readiness)}
@@ -7521,7 +7664,7 @@ async function loadArchiveOutputPackages(){
   if(!canUseArchiveOps())return;
   archiveOutputState.loading=true;
   const list=el('archiveOutputPackageList');
-  if(list&&!archiveOutputState.packages.length)list.innerHTML='<div class="archive-release-empty">Çıktı paketleri yükleniyor...</div>';
+  if(list&&!archiveOutputState.packages.length)list.innerHTML='<div class="archive-release-empty">Çıktılar yükleniyor...</div>';
   const data=await api('GET','/api/archive-ops/release-packages?status=hazir');
   archiveOutputState.loading=false;
   if(data.error){
@@ -7535,7 +7678,7 @@ async function loadArchiveOutputPackages(){
   }
   renderArchiveOutputPackages();
   renderArchiveOutputDetail();
-  setArchiveOutputStatus(archiveOutputState.packages.length?'Hazır paketler listelendi.':'Çıktı için hazır paket yok.','ok');
+  setArchiveOutputStatus(archiveOutputState.packages.length?'Hazır yayın dosyaları listelendi.':'Çıktı için hazır yayın dosyası yok.','ok');
 }
 function openArchiveOutputPackage(id){
   const pkg=archiveOutputState.packages.find(item=>item.id===id);
@@ -7571,9 +7714,9 @@ function clearArchiveOutput(){
 }
 async function generateArchivePackageOutput(){
   const pkg=archiveOutputState.activePackage;
-  if(!pkg)return showSystemAlert('Paket seçilmedi','Çıktı oluşturmak için önce kilitli bir paket seçin.','danger');
+  if(!pkg)return showSystemAlert('Yayın dosyası seçilmedi','Çıktı oluşturmak için önce kilitli bir yayın dosyası seçin.','danger');
   const readiness=archiveOutputPackageReady(pkg);
-  if(!readiness.ready)return showSystemAlert('Çıktı oluşturulamaz','Paket hazır ve kilitli değil. Önce Yayın Paketleri ekranında son kontrol kilidini tamamlayın.','danger');
+  if(!readiness.ready)return showSystemAlert('Çıktı oluşturulamaz','Yayın dosyası hazır ve kilitli değil. Önce Yayın Dosyaları ekranında son kontrol kilidini tamamlayın.','danger');
   archiveOutputState.generating=true;
   renderArchiveOutputDetail();
   const data=await api('GET',`/api/archive-ops/release-packages/${encodeURIComponent(pkg.id)}/output?format=${encodeURIComponent(archiveOutputState.format)}`);
@@ -7588,7 +7731,7 @@ async function generateArchivePackageOutput(){
     packageId:pkg.id,
     format:data.format,
     content:data.content||'',
-    filename:data.filename||'yayin-paketi.json',
+    filename:data.filename||'yayin-dosyasi.json',
     contentType:data.contentType||'text/plain',
     publicReadiness:data.publicReadiness||data.publicRecords?.readiness||null,
     blocked:Boolean(data.blocked)
@@ -7596,7 +7739,7 @@ async function generateArchivePackageOutput(){
   renderArchiveOutputDetail();
   if(data.blocked){
     setArchiveOutputStatus('Public JSON hazırlanmadı. Engel listesi kontrol edilmeli.','err');
-    return showSystemAlert('Public JSON hazır değil','Bu pakette public ön yüze taşınmadan önce düzeltilmesi gereken kayıtlar var. Engel listesi ekranda görünüyor.','danger');
+    return showSystemAlert('Public JSON hazır değil','Bu yayın dosyasında public ön yüze taşınmadan önce düzeltilmesi gereken kayıtlar var. Engel listesi ekranda görünüyor.','danger');
   }
   setArchiveOutputStatus('Paket çıktısı hazırlandı.','ok');
 }
@@ -7619,7 +7762,7 @@ function downloadArchivePackageOutput(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download=output.filename||'yayin-paketi.txt';
+  a.download=output.filename||'yayin-dosyasi.txt';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -7628,10 +7771,10 @@ function downloadArchivePackageOutput(){
 }
 async function setArchivePackagePublicationStatus(status){
   const pkg=archiveOutputState.activePackage;
-  if(!pkg)return showSystemAlert('Paket seçilmedi','Yayın takibi için önce bir paket seçin.','danger');
+  if(!pkg)return showSystemAlert('Yayın dosyası seçilmedi','Yayın takibi için önce bir yayın dosyası seçin.','danger');
   const readiness=archiveOutputPackageReady(pkg);
   if(['yayinda','arsive_aktarildi'].includes(status)&&!readiness.ready){
-    return showSystemAlert('Yayın takibi yapılamaz','Paket hazır ve kilitli değil. Önce paket son kontrolünü tamamlayın.','danger');
+    return showSystemAlert('Yayın takibi yapılamaz','Yayın dosyası hazır ve kilitli değil. Önce yayın dosyası son kontrolünü tamamlayın.','danger');
   }
   const payload={
     status,
@@ -8429,7 +8572,7 @@ function renderArchiveWorkSourcePicker(){
   if(current&&sources.some(source=>source.id===current))select.value=current;
   if(hint){
     const source=(archiveOpsState.sources||[]).find(item=>item.id===select.value);
-    hint.textContent=source?`${source.title} kaynağına bağlı. ${Number(source.textLength||0).toLocaleString('tr-TR')} karakter.`:'Kaynak seçildiğinde çalışma kaydı o metne bağlanır.';
+    hint.textContent=source?`${source.title} kaynağına bağlı. ${Number(source.textLength||0).toLocaleString('tr-TR')} karakter.`:'Kaynak seçildiğinde çalışma satırı o metne bağlanır.';
     hint.className=`ops-status ${source?'ok':''}`.trim();
   }
 }
@@ -8507,7 +8650,7 @@ function renderArchiveWorkAuditContext(){
   box.innerHTML=`
     <div>
       <div class="work-audit-context-title">Çalışma kaydından denetleniyor</div>
-      <div class="work-audit-context-text">${esc(title)}${esc(source)}. Sonuç onaya gönderilirse bağlı çalışma kaydı da takip durumuna alınır.</div>
+      <div class="work-audit-context-text">${esc(title)}${esc(source)}. Sonuç onaya gönderilirse bağlı çalışma satırı da takip durumuna alınır.</div>
     </div>
     <div class="work-audit-context-actions">
       <button class="btn-sec" onclick="returnToArchiveWorkFromAudit()">Çalışmaya Dön</button>
@@ -8632,9 +8775,10 @@ function renderArchiveWorkList(){
   const summary=el('archiveWorkSummary');
   if(summary)summary.innerHTML=archiveWorkSummaryHtml(archiveWorkState.counts||{});
   const list=el('archiveWorkList');
+  renderArchiveTeamFolders();
   if(!list)return;
   if(!archiveWorkState.items.length){
-    list.innerHTML='<div class="empty-state">Henüz çalışma kaydı yok. Yeni Çalışma ile ilk kaydı açabilirsiniz.</div>';
+    list.innerHTML='<div class="empty-state">Henüz çalışma satırı yok. Yeni Çalışma Satırı ile ilk kaydı açabilirsiniz.</div>';
     return;
   }
   list.innerHTML=archiveWorkState.items.map(archiveWorkCardHtml).join('');
@@ -8643,7 +8787,7 @@ function renderArchiveWorkDetail(item){
   const box=el('archiveWorkDetail');
   if(!box)return;
   if(!item){
-    box.innerHTML='<div class="empty-state">Bir çalışma seçildiğinde kaynak, soru, cevap ve not bilgisi burada açılır.</div>';
+    box.innerHTML='<div class="empty-state">Bir çalışma satırı seçildiğinde kaynak, soru, cevap ve not bilgisi burada açılır.</div>';
     return;
   }
   const topics=(item.topics||[]).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
@@ -8697,11 +8841,13 @@ async function loadArchiveWorkItems(options={}){
   archiveWorkState.counts=data.counts||null;
   if(options.silent){
     renderArchivePublishWorkPicker();
+    renderArchiveTeamFolders();
   }else{
     renderArchiveWorkList();
   }
 }
 function setArchiveWorkSearch(value){
+  archiveTeamState.activeMember='';
   archiveWorkState.query=String(value||'');
   loadArchiveWorkItems();
 }
@@ -8769,9 +8915,9 @@ async function deleteArchiveWorkItemUi(){
   if(!item?.id)return;
   const ok=await openSystemConfirm({
     title:'Çalışma kaydı silinsin mi?',
-    badge:'Çalışma Kayıtları',
+    badge:'Çalışma Tabloları',
     message:`${item.title||'Bu çalışma'} kaydı silinecek.`,
-    detail:'Bu işlem yalnız çalışma kaydını kaldırır. Bağlı kaynak metni Kaynak Havuzu içinde kalır.',
+    detail:'Bu işlem yalnız çalışma satırını kaldırır. Bağlı kaynak metni Kaynak Dosyaları içinde kalır.',
     confirmText:'Kaydı Sil',
     cancelText:'Vazgeç',
     tone:'danger'
@@ -9301,7 +9447,7 @@ function archiveImportSourcePayload(item,forceSave=false){
     sourceDate:item?.sourceDate||'',
     sourceUrl:item?.sourceUrl||'',
     tags:Array.isArray(item?.tags)?item.tags:[],
-    note:item?.note||`İçe Aktarım Merkezi üzerinden "${item?.fileName||item?.name||'Kaynak dosyası'}" dosyasından kaynak oluşturuldu.`,
+    note:item?.note||`Dosya Yükle üzerinden "${item?.fileName||item?.name||'Kaynak dosyası'}" dosyasından kaynak oluşturuldu.`,
     sourceText:text,
     forceSave:Boolean(forceSave)
   };
@@ -9349,7 +9495,7 @@ async function createArchiveSourceFromImportItem(id,forceSave=false,confirmed=fa
     const ok=await openSystemConfirm({
       title:'Kaynak havuzuna kaydedilsin mi?',
       badge:'Son kontrol',
-      message:'Bu dosyadan kaynak kaydı oluşturulacak. Kayıt Kaynak Havuzu içinde aranabilir olacak.',
+      message:'Bu dosyadan kaynak kaydı oluşturulacak. Kayıt Kaynak Dosyaları içinde aranabilir olacak.',
       detail:`Başlık: ${payload.title}\nTür: ${payload.sourceType}\nKategori: ${payload.category||'Belirtilmedi'}\nMetin: ${payload.sourceText.length.toLocaleString('tr-TR')} karakter`,
       confirmText:'Kaynak Olarak Kaydet',
       cancelText:'Vazgeç'
@@ -9382,7 +9528,7 @@ async function createArchiveSourceFromImportItem(id,forceSave=false,confirmed=fa
       archiveOpsState.activeSource=data.source;
       await updateArchiveImportItemStatus(id,'source_created',{sourceId:data.source?.id||''});
       await loadArchiveOpsSources();
-      setArchiveImportStatus('Kaynak kaydı oluşturuldu. Kaynak Havuzu içinde aranabilir.','ok');
+      setArchiveImportStatus('Kaynak kaydı oluşturuldu. Kaynak Dosyaları içinde aranabilir.','ok');
       renderArchiveImportQueue();
     }
   }finally{
@@ -9454,7 +9600,7 @@ function archiveImportItemHtml(item){
       <div class="ops-source-actions">
         <button class="btn-mini primary" onclick="event.stopPropagation();createArchiveSourceFromImportItem(${attrJson(item.id)})" ${canSave?'':'disabled'}>Kaynak Olarak Kaydet</button>
         <button class="btn-mini" onclick="event.stopPropagation();sendArchiveImportToSourceForm(${attrJson(item.id)})" ${isReady?'':'disabled'}>Formda Düzenle</button>
-        ${hasSource?`<button class="btn-mini" onclick="event.stopPropagation();openArchiveSourceFromImportItem(${attrJson(item.id)})">Kaynak Havuzunda Aç</button>`:''}
+        ${hasSource?`<button class="btn-mini" onclick="event.stopPropagation();openArchiveSourceFromImportItem(${attrJson(item.id)})">Kaynak Dosyalarında Aç</button>`:''}
         <button class="btn-mini" onclick="event.stopPropagation();skipArchiveImportItem(${attrJson(item.id)})" ${canSkip?'':'disabled'}>İşlem Dışı Bırak</button>
         <button class="btn-mini" onclick="event.stopPropagation();deleteArchiveImportItem(${attrJson(item.id)})">Kuyruktan Sil</button>
       </div>
@@ -9498,14 +9644,14 @@ function renderArchiveImportQueue(){
       <div class="ops-source-actions" style="margin-top:0">
         <button class="btn-mini primary" onclick="createArchiveSourceFromImportItem(${attrJson(selected.id)})" ${canSave?'':'disabled'}>Kaynak Olarak Kaydet</button>
         <button class="btn-mini" onclick="sendArchiveImportToSourceForm(${attrJson(selected.id)})" ${canTransfer?'':'disabled'}>Formda Düzenle</button>
-        ${hasSource?`<button class="btn-mini" onclick="openArchiveSourceFromImportItem(${attrJson(selected.id)})">Kaynak Havuzunda Aç</button>`:''}
+        ${hasSource?`<button class="btn-mini" onclick="openArchiveSourceFromImportItem(${attrJson(selected.id)})">Kaynak Dosyalarında Aç</button>`:''}
         <button class="btn-mini" onclick="deleteArchiveImportItem(${attrJson(selected.id)})">Kuyruktan Sil</button>
       </div>
     </div>
     <div class="ops-detail-body">
       ${selected.status==='error'?`<div class="ops-status err">${esc(selected.errorMessage)}</div>`:''}
       ${selected.status==='skipped'?'<div class="ops-status err">Bu dosya işlem dışı bırakıldı. İsterseniz formda düzenleyebilir veya kuyruktan silebilirsiniz.</div>':''}
-      ${selected.status==='source_created'?'<div class="ops-status ok">Bu dosyadan kaynak kaydı oluşturuldu. Kaynak Havuzu’nda açabilirsiniz.</div>':''}
+      ${selected.status==='source_created'?'<div class="ops-status ok">Bu dosyadan kaynak kaydı oluşturuldu. Kaynak Dosyaları’nda açabilirsiniz.</div>':''}
       ${selected.status==='reading'?'<div class="ops-status">Metin çıkarılıyor...</div>':''}
       ${text?`<p class="ops-import-suggestion"><strong>Kayıt adımı:</strong> Metni kontrol edin. Uygunsa <strong>Kaynak Olarak Kaydet</strong> ile doğrudan havuza alın. Detay değiştirmek gerekiyorsa <strong>Formda Düzenle</strong> kullanın. Yanlış dosyaysa <strong>Kuyruktan Sil</strong> ile kaldırın.</p><div class="ops-import-preview-text">${esc(text.slice(0,12000))}${text.length>12000?'\n\n... Önizleme ilk 12.000 karakterle sınırlandı. Kaynak kaydında tam metin kullanılacak.':''}</div>`:''}
     </div>
@@ -9522,7 +9668,7 @@ async function sendArchiveImportToSourceForm(id){
   el('archiveSourceCategory').value=item.category||'İçe aktarım';
   el('archiveSourceTags').value=(item.tags||[]).join(', ');
   el('archiveSourceText').value=text;
-  el('archiveSourceNote').value=item.note||`İçe Aktarım Merkezi üzerinden "${item.fileName||item.name}" dosyasından forma alındı.`;
+  el('archiveSourceNote').value=item.note||`Dosya Yükle üzerinden "${item.fileName||item.name}" dosyasından forma alındı.`;
   archiveImportState.pendingSourceItemId=id;
   await updateArchiveImportItemStatus(id,'form');
   updateArchiveSourceCount();
