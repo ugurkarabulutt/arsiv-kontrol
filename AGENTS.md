@@ -121,6 +121,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-10
+- **Admin onay akışı hızlandırıldı ve onaylayan yetkili görünür oldu:** `/admin` onay/red
+  işleminde kullanıcı 15 saniye civarı `İşleniyor...` bekleyebiliyordu; kök sebep frontend'in
+  onay POST'u bittikten sonra onay panosu, tüm denetim geçmişi ve rozet yenilemeyi sırayla
+  beklemesi ve backend'in onay yanıtında büyük metin alanlarını geri seçmesiydi. Onay endpoint'i
+  artık yalnız admin UI için gereken hafif alanları döndürür; onay panosu liste sorgusu da
+  `original_text` / `corrected_text` gibi büyük alanları çekmez. Frontend POST başarılı olur
+  olmaz butonu `Onaylandı` / `Reddedildi` durumuna alır, pano/rozet yenilemeyi arka planda yapar.
+  `approved_by` değeri artık `Ad (kullanıcı adı)` formatında saklanır ve yalnız admin/süper admin
+  yüzünde onay panosu, denetim geçmişi ve detay modalında gösterilir. Normal kullanıcı
+  `/api/history` ve `/api/history/:id/approval-status` yanıtlarında `approvedBy/approvedAt`
+  bilgisi almaz; public/root çıktısına onaylayan yetkili bilgisi taşınmaz. Kapsam: `server.js`,
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 - **Etiket Aktarımı eşleşmeyen kayıtlar için Excel aday seçimi tamamlandı:** `/admin` süper
   admin Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında eşleşmeyen kayıtlar için
   `Excel Adayları` paneli eklendi. Panel, canlı aktarım listesine bağlı Excel satır havuzundan

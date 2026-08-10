@@ -2,6 +2,19 @@
 
 ## 2026-08-10 Codex Güncel Durum
 
+- Yerelde `/admin` onay akışı hızlandırıldı ve onaylayan yetkili bilgisi admin yüzüne eklendi.
+  Onay/red POST'u artık büyük `original_text` / `corrected_text` alanlarını geri seçmez; onay
+  panosu liste sorgusu da yalnız kart için gereken hafif alanları ister. Frontend onay/red POST'u
+  biter bitmez butonu `Onaylandı` / `Reddedildi` durumuna alır, ağır pano/rozet yenilemesini
+  arka planda yapar; böylece kullanıcı `İşleniyor...` yazısını tüm liste yenilemeleri bitene kadar
+  beklemez. `approved_by` artık `Ad (kullanıcı adı)` formatıyla saklanır ve admin onay panosu,
+  denetim geçmişi ve detay modalında görünür. Normal kullanıcı `/api/history` ve
+  `/approval-status` yanıtlarında `approvedBy/approvedAt` almaz; public/root çıktısına bu bilgi
+  taşınmaz. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 - Yerelde `/admin > Arşiv Operasyon Merkezi > Etiket Aktarımı` için 192 eşleşmeyen kaydı
   çözmeye yarayan `Excel Adayları` akışı tamamlandı. Eşleşmeyen kayıtta `Excel Adayları`
   açıldığında sistem batch'e bağlı Excel satır havuzundan en yakın adayları listeler; aday

@@ -285,6 +285,8 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .history-tag-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.32);padding:4px 7px;}
 .history-tags-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
 .history-question-inline{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:7px;border-left:2px solid var(--gold);padding-left:8px;word-break:break-word;}
+.history-approval-meta{font-size:11px;color:var(--ink3);line-height:1.45;margin-top:7px;border-left:2px solid var(--green);padding-left:8px;word-break:break-word;}
+.history-approval-meta.compact{margin-top:5px;font-size:10px;}
 .corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
 .corrected-body{padding:22px 128px 24px 18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
@@ -3088,6 +3090,37 @@ function historyTagsChips(tags){
 function historyTagsChipItems(tags){
   return parseHistoryTags(tags).map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('');
 }
+function approvalActionPersonLabel(status){
+  if(status==='reddedildi')return 'Reddeden';
+  if(status==='onaylandi')return 'Onaylayan';
+  return 'İşleyen';
+}
+function approvalActorHtml(item,compact=false){
+  if(!hasAdminRole(me?.role)||(!item?.approvedBy&&!item?.approvedAt))return '';
+  const dt=item.approvedAt?new Date(item.approvedAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const who=item.approvedBy||'Yetkili kullanıcı';
+  const text=`${approvalActionPersonLabel(item.status)}: ${who}${dt?` · ${dt}`:''}`;
+  return `<div class="history-approval-meta${compact?' compact':''}">${esc(text)}</div>`;
+}
+function mergeApprovalHistoryRow(updated){
+  if(!updated?.id)return;
+  let found=false;
+  historyRows=historyRows.map(row=>{
+    if(row.id!==updated.id)return row;
+    found=true;
+    return {
+      ...row,
+      ...updated,
+      originalText:updated.originalText===undefined?row.originalText:updated.originalText,
+      correctedText:updated.correctedText===undefined?row.correctedText:updated.correctedText
+    };
+  });
+  if(currentResult?.id===updated.id)currentResult={...currentResult,...updated};
+  if(found&&el('tabContent-gecmis')?.classList.contains('active'))renderHistory();
+}
+function refreshApprovalViewsInBackground(){
+  Promise.allSettled([loadOnay(),refreshBadges()]).catch(()=>{});
+}
 function normalizeHistoryQuestionUi(value){
   return String(value||'')
     .replace(/\r\n?/g,'\n')
@@ -3771,6 +3804,7 @@ function renderHistory(){
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
       const stCls=status==='onaylandi'?'sb-ok':status==='reddedildi'?'sb-no':status==='taslak'?'sb-draft':'sb-wait';
       const statusText=status==='onaylandi'?'Onaylandı':status==='reddedildi'?'Reddedildi':status==='taslak'?'Taslak':'Bekliyor';
+      const approvalMeta=isAdmin?approvalActorHtml(h,true):'';
       const draftAction=!isAdmin&&status==='taslak'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Onaya Gönder</button>`:'';
       const withdrawAction=!isAdmin&&status==='bekliyor'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="withdrawApprovalFromHistory('${h.id}')">Geri Çek</button>`:'';
       if(h.correctedText)_textStore[h.id]=h.correctedText;
@@ -3780,7 +3814,7 @@ function renderHistory(){
         <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename)}">${esc(h.filename)}</td>
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
-        <td><span class="status-badge ${stCls}">${statusText}</span>${draftAction}${withdrawAction}</td>
+        <td><span class="status-badge ${stCls}">${statusText}</span>${approvalMeta}${draftAction}${withdrawAction}</td>
         <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">✗</button>`:''}
@@ -3840,6 +3874,7 @@ async function showDetail(id){
   const text=item.correctedText||'';
   const tagsValue=historyTagsText(item.tags||[]);
   const questionValue=normalizeHistoryQuestionUi(item.questionText||'');
+  const approvalBlock=approvalActorHtml(item);
   const questionBlock=hasAdminRole(me?.role)
     ? `<div class="history-question-field" style="margin:0 0 14px"><label for="detailHistoryQuestion">Soru</label><textarea class="history-question-input" id="detailHistoryQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde soru da kaydedilir.</div></div>`
     : (questionValue?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionValue)}</div>`:'');
@@ -3848,12 +3883,12 @@ async function showDetail(id){
     : historyTagsChips(tagsValue);
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
+    el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
   renderDetailTagsPreview();
   window._detailText=text;
@@ -3883,10 +3918,12 @@ async function setApprovalAction(id,action,btn,body=null){
   try{
     const r=await api('POST',`/api/history/${id}/${action}`,body||undefined);
     if(r.error)throw new Error(r.error);
+    const status=action==='approve'?'onaylandi':'reddedildi';
+    const updated=r.history||{id,status};
+    mergeApprovalHistoryRow(updated);
+    if(btn){btn.disabled=true;btn.textContent=action==='approve'?'Onaylandı':'Reddedildi';}
     setApprovalStatus(action==='approve'?'✓ Kayıt onaylandı.':'✓ Kayıt reddedildi.','ok');
-    await loadOnay();
-    await loadHistory();
-    await refreshBadges();
+    refreshApprovalViewsInBackground();
     return true;
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent=oldText;}
@@ -4221,15 +4258,16 @@ async function loadOnay(){
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       const questionPreview=normalizeHistoryQuestionUi(h.questionText||'');
       const questionHtml=questionPreview?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionPreview.slice(0,180))}${questionPreview.length>180?'…':''}</div>`:'';
-      if(h.correctedText)_textStore[h.id]=h.correctedText;
+      const approvalMeta=approvalActorHtml(h);
       return `<div class="work-card">
         <div class="work-top"><div class="work-name">${esc(h.name||'—')}</div><span class="score-pill ${pc}">${sc}</span></div>
         <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
         <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
+        ${approvalMeta}
         ${questionHtml}
         ${historyTagsChips(h.tags||[])}
         <div class="work-actions">
-          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
+          <button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>
           ${h.status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
           ${h.status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
         </div>

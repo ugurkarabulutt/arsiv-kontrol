@@ -293,8 +293,28 @@ if (!html.includes("renderApprovalActionButton(d,'panel')") || !html.includes('c
 if (html.includes('corrected-btns') || html.includes('onclick="downloadPDF()"') || html.includes('${renderApprovalActionButton(d)}')) {
   throw new Error('Duzeltilmis metin basliginda ikinci onay, PDF indir veya eski aksiyon satiri gorunmemeli.');
 }
-if (!html.includes('function setApprovalAction') || !html.includes("await loadOnay();") || !html.includes("approveItem('${h.id}',this)") || !html.includes("rejectItem('${h.id}',this)")) {
-  throw new Error('Is Panosu onay/red sonrasi paneli yenilemeli ve buton islemini gorunur sekilde kilitlemeli.');
+if (
+  !html.includes('function setApprovalAction') ||
+  !html.includes('refreshApprovalViewsInBackground();') ||
+  !html.includes('mergeApprovalHistoryRow(updated)') ||
+  html.includes("await loadOnay();\n    await loadHistory();\n    await refreshBadges();") ||
+  !html.includes("approveItem('${h.id}',this)") ||
+  !html.includes("rejectItem('${h.id}',this)")
+) {
+  throw new Error('Is Panosu onay/red sonrasi butonu hizli kapatmali ve agir yenilemeyi arka planda yapmali.');
+}
+if (
+  !html.includes('function approvalActorHtml') ||
+  !html.includes('history-approval-meta') ||
+  !html.includes('approvalActorHtml(h') ||
+  !server.includes('function approvalActorName') ||
+  !server.includes('approvalActorName(req)') ||
+  !server.includes('function mapHistoryForRole') ||
+  !server.includes('delete mapped.approvedBy') ||
+  !server.includes('delete mapped.approvedAt') ||
+  !server.includes('APPROVAL_BOARD_SELECT_COLUMNS')
+) {
+  throw new Error('Onaylayan bilgisi yalniz admin yuzunde gorunmeli ve normal kullanici API yanitindan ayrilmali.');
 }
 if (
   !schema.includes("tags jsonb not null default '[]'::jsonb") ||

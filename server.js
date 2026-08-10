@@ -510,6 +510,14 @@ const mapHistory = h => ({
   promptVersion: h.prompt_version, rulesHash: h.rules_hash,
   createdAt: h.created_at
 });
+function mapHistoryForRole(row = {}, role = ROLES.USER) {
+  const mapped = mapHistory(row);
+  if (!isAdminRole(role)) {
+    delete mapped.approvedBy;
+    delete mapped.approvedAt;
+  }
+  return mapped;
+}
 const mapAlert   = a => ({
   id: a.id, type: a.type, message: a.message, userId: a.user_id,
   historyId: a.history_id, score: a.score, read: a.read,
@@ -569,6 +577,13 @@ function isHiddenHistoryForRole(row = {}, role = ROLES.USER) {
   return isAdminRole(role) && status === 'taslak';
 }
 
+function approvalActorName(req) {
+  const name = String(req.session?.name || '').trim();
+  const username = String(req.session?.username || '').trim();
+  if (name && username && name !== username) return `${name} (${username})`;
+  return name || username || 'Admin';
+}
+
 async function fetchAllPages(makeQuery, pageSize = 1000) {
   const rows = [];
   for (let from = 0; ; from += pageSize) {
@@ -581,10 +596,28 @@ async function fetchAllPages(makeQuery, pageSize = 1000) {
   return rows;
 }
 
+const APPROVAL_BOARD_SELECT_COLUMNS = [
+  'id',
+  'user_id',
+  'username',
+  'name',
+  'filename',
+  'score',
+  'total_errors',
+  'cat_counts',
+  'summary',
+  'status',
+  'approved_by',
+  'approved_at',
+  'question_text',
+  'tags',
+  'created_at'
+].join(',');
+
 async function loadApprovalGroup(filterQuery) {
   const { data, error, count } = await filterQuery(
     supabase.from('history')
-      .select('*', { count: 'exact' })
+      .select(APPROVAL_BOARD_SELECT_COLUMNS, { count: 'exact' })
       .order('created_at', { ascending: false })
       .limit(80)
   );
@@ -5329,7 +5362,7 @@ app.get('/api/history', auth, async (req, res) => {
       else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       return q;
     });
-    res.json((data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, req.session.role)));
+    res.json((data || []).map(row => mapHistoryForRole(row, req.session.role)).filter(h => !isHiddenHistoryForRole(h, req.session.role)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -5357,7 +5390,7 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-    const mapped = mapHistory(data);
+    const mapped = mapHistoryForRole(data, req.session.role);
     if (data.user_id !== req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
@@ -5377,13 +5410,16 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})/approval-status', auth, async (req, 
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-    res.json({
+    const payload = {
       id: data.id,
       status: data.status || 'bekliyor',
-      submitted: historyStatusForApproval(data.status) || data.status === 'onaylandi',
-      approvedBy: data.approved_by,
-      approvedAt: data.approved_at
-    });
+      submitted: historyStatusForApproval(data.status) || data.status === 'onaylandi'
+    };
+    if (isAdminRole(req.session.role)) {
+      payload.approvedBy = data.approved_by;
+      payload.approvedAt = data.approved_at;
+    }
+    res.json(payload);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -5870,7 +5906,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
 async function setApproval(req, res, status) {
   try {
     const { data: current, error: currentError } = await supabase.from('history')
-      .select('*')
+      .select('id,user_id,status,filename,corrected_text')
       .eq('id', req.params.id)
       .maybeSingle();
     if (currentError) throw new Error(currentError.message);
@@ -5878,7 +5914,7 @@ async function setApproval(req, res, status) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
     const updateRow = {
-      status, approved_by: req.session.name, approved_at: new Date().toISOString()
+      status, approved_by: approvalActorName(req), approved_at: new Date().toISOString()
     };
     if (HAS_HISTORY_TAGS && Object.prototype.hasOwnProperty.call(req.body || {}, 'tags')) {
       updateRow.tags = normalizeHistoryTags(req.body?.tags);
@@ -5886,7 +5922,10 @@ async function setApproval(req, res, status) {
     if (HAS_HISTORY_QUESTION_TEXT && Object.prototype.hasOwnProperty.call(req.body || {}, 'questionText')) {
       updateRow.question_text = normalizeHistoryQuestion(req.body?.questionText);
     }
-    const { data, error } = await supabase.from('history').update(updateRow).eq('id', req.params.id).select('*');
+    const { data, error } = await supabase.from('history')
+      .update(updateRow)
+      .eq('id', req.params.id)
+      .select(APPROVAL_BOARD_SELECT_COLUMNS);
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
