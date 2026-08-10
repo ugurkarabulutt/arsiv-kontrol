@@ -57,6 +57,22 @@
       "dest": "/icons/favicon.ico"
     },
     {
+      "src": "/public-preview",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
+      "dest": "/server.js"
+    },
+    {
+      "src": "/public-preview/(.*)",
+      "headers": {
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+      },
+      "dest": "/server.js"
+    },
+    {
       "src": "/admin",
       "headers": {
         "X-Robots-Tag": "noindex, nofollow",

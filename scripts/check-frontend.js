@@ -7,6 +7,8 @@ const schema = fs.readFileSync(path.join(__dirname, '..', 'schema.sql'), 'utf8')
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
 const script = html.match(/<script>([\s\S]*?)<\/script>/);
 const root = path.join(__dirname, '..');
+const publicCss = fs.readFileSync(path.join(root, 'public-archive.css'), 'utf8');
+const { ROUTE_PATHS, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -30,6 +32,64 @@ function publicForbiddenWordHits(content, options = {}) {
     scan = scan.replace(/^\s*(?:Disallow|Allow):\s*\/admin\/?\s*$/gmi, '');
   }
   return PUBLIC_FORBIDDEN_WORDS.filter(word => new RegExp(`(^|[^\\p{L}\\p{N}_])${escapeRegex(word)}([^\\p{L}\\p{N}_]|$)`, 'iu').test(scan));
+}
+
+const PUBLIC_PREVIEW_FORBIDDEN_SNIPPETS = [
+  'hocamız',
+  'hoca',
+  'uzmanlar',
+  'uzman ekip',
+  'uzmanlar inceler',
+  'alanında uzman',
+  'alanında uzman kişiler',
+  'cevaplandırılması için hocamıza aktarılır',
+  'uygun görülen sorular arşive eklenir',
+  'uygun görülen sorular arşive eklenebilir',
+  'Bu ekranda kayıt alınmıyor',
+  'yalnızca arayüz davranışı gösteriliyor',
+  'Bu ekranda kayıt alınmaz',
+  'history',
+  'source_history_id',
+  'text_hash',
+  'prompt_version',
+  'rules_hash',
+  'approved_by',
+  'approved_at',
+  'score',
+  'total_errors',
+  'cat_counts',
+  'chunk_draft',
+  'submitted_part',
+  'taslak',
+  'bekliyor',
+  'onaylandi',
+  'reddedildi',
+  'Arşiv Kontrol AI',
+  'Metin Denetimi',
+  'Yayın Paketi',
+  'Onaya Gönder',
+  'Profil',
+  'Kaydedilen',
+  'Bildirim',
+  'görüntülenme',
+  'view count',
+  'helpful voting'
+];
+
+function normalizePublicPreviewScan(content) {
+  return String(content || '')
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('tr-TR');
+}
+
+function assertNoPublicPreviewLeaks(route, content) {
+  const wordHits = publicForbiddenWordHits(content);
+  const normalized = normalizePublicPreviewScan(content);
+  const snippetHits = PUBLIC_PREVIEW_FORBIDDEN_SNIPPETS.filter(term =>
+    normalized.includes(String(term).toLocaleLowerCase('tr-TR'))
+  );
+  const hits = [...new Set([...wordHits, ...snippetHits])];
+  assert(hits.length === 0, `${route} public cikti yasakli dil/veri iceriyor: ${hits.join(', ')}`);
 }
 
 if (!script) throw new Error('index.html içinde inline script bulunamadı.');
@@ -139,12 +199,25 @@ assert(server.includes("app.get('/admin/*', sendAdminIndex)"), '/admin/* deep li
 
 const lastApiRouteIndex = [...server.matchAll(/app\.(?:get|post|put|patch|delete)\('\/api\//g)].pop()?.index ?? -1;
 const adminRouteIndex = indexOfRequired(server, "app.get(['/admin', '/admin/'], sendAdminIndex)", 'Explicit /admin route');
+const publicPreviewFlagIndex = indexOfRequired(server, 'const PUBLIC_ARCHIVE_PREVIEW_ENABLED', 'Public archive preview flag');
+const publicPreviewDisabledIndex = indexOfRequired(server, 'function sendPublicArchivePreviewDisabled', 'Public archive preview disabled handler');
+const publicPreviewGateIndex = indexOfRequired(server, "app.use('/public-preview', (req, res, next) => {", 'Public archive preview gate');
+const publicPreviewRouterRequireIndex = indexOfRequired(server, "const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');", 'Public archive preview lazy require');
 const publicArchiveDemoIndex = indexOfRequired(server, "if (process.env.PUBLIC_ARCHIVE_DEMO === '1')", 'Public archive demo gate');
 const publicArchiveDemoRequireIndex = indexOfRequired(server, "const { createPublicArchiveRouter } = require('./public-archive-demo');", 'Public archive demo lazy require');
 const errorHandlerIndex = indexOfRequired(server, 'app.use((err, req, res, next) => {', 'Express error handler');
 const rootFallbackIndex = indexOfRequired(server, rootFallback, 'Root legacy fallback');
 assert(lastApiRouteIndex > -1 && lastApiRouteIndex < adminRouteIndex, '/api route lari /admin fallback tarafindan yutulmamali.');
 assert(adminRouteIndex < publicArchiveDemoIndex, '/admin fallback public archive router dan once kayit edilmeli.');
+assert(publicPreviewFlagIndex < publicPreviewGateIndex, 'PUBLIC_ARCHIVE_PREVIEW_ENABLED gate kullanilmadan once okunmali.');
+assert(publicPreviewDisabledIndex < publicPreviewGateIndex, 'Public preview kapali handler route tanimindan once bulunmali.');
+assert(adminRouteIndex < publicPreviewGateIndex, '/admin fallback public preview route undan once korunmali.');
+assert(publicPreviewGateIndex < publicPreviewRouterRequireIndex, 'Public preview router yalniz gate sonrasinda lazy yuklenmeli.');
+assert(publicPreviewRouterRequireIndex < publicArchiveDemoIndex, 'Yeni public preview eski PUBLIC_ARCHIVE_DEMO mekanizmasindan ayrilmali.');
+assert(publicPreviewGateIndex < errorHandlerIndex, '/public-preview route error handler dan once kayit edilmeli.');
+assert(publicPreviewGateIndex < rootFallbackIndex, '/public-preview final root fallback a dusmemeli.');
+assert(server.includes("if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);"), 'Preview gate kapaliyken /public-preview 404 donmeli.');
+assert(server.includes("cssFile: path.join(__dirname, 'public-archive.css')"), 'Public preview CSS yalniz public-preview router icinden servis edilmeli.');
 assert(publicArchiveDemoIndex < publicArchiveDemoRequireIndex, 'Public archive demo modulu yalniz PUBLIC_ARCHIVE_DEMO flag icinde yuklenmeli.');
 assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
 assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');
@@ -183,6 +256,26 @@ for (const [src, dest, label] of preAdminRoutes) {
   assert(route && route.dest === dest, `${label} Vercel hedefi korunmali.`);
   assert(index < adminVercelIndex && index < adminDeepVercelIndex, `${label} Vercel admin route larindan once kalmali.`);
 }
+
+const previewVercelRoutes = [
+  routeBySrc('/public-preview'),
+  routeBySrc('/public-preview/(.*)')
+];
+const previewVercelIndexes = [
+  routeIndex('/public-preview'),
+  routeIndex('/public-preview/(.*)')
+];
+assert(previewVercelRoutes.every(Boolean), 'Vercel public preview route lari explicit tanimli olmali.');
+for (const [i, route] of previewVercelRoutes.entries()) {
+  assert(route.dest === '/server.js', 'Vercel public preview route server.js uzerinden gate e gitmeli.');
+  assert(previewVercelIndexes[i] < adminVercelIndex && previewVercelIndexes[i] < finalIndexRouteIndex, 'Vercel public preview route final catch-all ve admin route larindan once kalmali.');
+  assert(route.headers?.['X-Robots-Tag'] === 'noindex, nofollow', 'Vercel public preview route noindex,nofollow header almali.');
+  const cacheControl = String(route.headers?.['Cache-Control'] || '');
+  for (const token of ['no-store', 'no-cache', 'must-revalidate', 'proxy-revalidate']) {
+    assert(cacheControl.includes(token), `Vercel public preview route Cache-Control ${token} icermeli.`);
+  }
+}
+assert(routeIndex('/public-preview') < routeIndex('/public-preview/(.*)'), 'Vercel /public-preview route deep route tanimindan once kalmali.');
 
 assert(adminVercelIndex < adminDeepVercelIndex, '/admin Vercel route /admin/(.*) route undan once kalmali.');
 assert(adminVercelIndex < finalIndexRouteIndex, '/admin Vercel route final index catch-all dan once kalmali.');
@@ -642,4 +735,67 @@ if (
 ) {
   throw new Error('Tarayici confirm/alert/prompt yerine tema uyumlu sistem ici onay penceresi kullanilmali.');
 }
+assert(!html.includes('/public-preview/public-archive.css'), 'Admin index.html public preview CSS dosyasini yuklememeli.');
+assert(!html.includes('public-archive-renderer'), 'Admin index.html public preview JS/render dosyasina baglanmamali.');
+assert(publicCss.includes('--pa-bg: #FFFFFF') && publicCss.includes('--pa-bg: #0D0F12'), 'Public preview light/dark tokenlari bulunmali.');
+assert(publicCss.includes('--pa-mint: #BDEBD6') && publicCss.includes('--pa-mint: #7EDBB8'), 'Public preview mint tokenlari light/dark palete bagli olmali.');
+assert(!/--(?:bg|ink|gold)\b/.test(publicCss), 'Public CSS eski admin tokenlarina baglanmamali.');
+assert(!/#[0-9A-Fa-f]{3,6}/.test(publicCss.replace(/#FFFFFF|#F7F7F7|#F0F0F0|#111111|#5A5A5A|#8E8E8E|#E5E5E5|#EFE9DE|#BDEBD6|#0D0F12|#15181D|#1E2127|#F5F6F7|#A1A6AD|#7C828B|#2E2E31|#2A231B|#7EDBB8/g, '')), 'Public CSS final palet disinda hex renk icermemeli.');
+for (const marker of [
+  'overflow-x: hidden',
+  '@media (max-width: 430px)',
+  'env(safe-area-inset-bottom)',
+  'grid-template-columns: repeat(5, minmax(0, 1fr))',
+  'width: calc(100% - 24px)',
+  'minmax(0, 1fr)',
+  'backdrop-filter: blur(24px)'
+]) {
+  assert(publicCss.includes(marker), `390px ve mobil alt gezinme guard eksik: ${marker}`);
+}
+
+const publicRenderCases = [
+  ...ROUTE_PATHS.map(route => ({ route, query: route.endsWith('/arama') ? { q: 'namaz' } : {} })),
+  { route: '/public-preview/arama', query: { q: 'bulunmayan-kelime' } },
+  { route: '/public-preview/soru/gizli-icerik' },
+  { route: '/public-preview/konu/yok' },
+  { route: '/public-preview/kategori/yok' }
+];
+
+for (const item of publicRenderCases) {
+  const rendered = renderPublicArchivePreviewRoute(item.route, item.query || {});
+  assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
+  assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
+  assert(rendered.html.includes('Sorularınız Kur’ân ışığında cevaplanır.'), `${item.route} ana public cumleyi icermeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css'), `${item.route} yalniz public CSS yuklemeli.`);
+  assert(!rendered.html.includes('/api/'), `${item.route} public preview gercek API cagrisina baglanmamali.`);
+  assertNoPublicPreviewLeaks(item.route, rendered.html);
+}
+
+const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
+for (const marker of ['Öne Çıkan Sorular', 'Kavramlar', 'Kategoriler', 'Aklınızda bir soru mu var?', 'Güvenilir kaynak, sade anlatım']) {
+  assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
+}
+assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
+const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' }).html;
+assert(searchPreview.includes('Namaz kılarken akla gelen kötü düşünceler'), 'Public search fixture data ile sonuc dondurmeli.');
+const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' }).html;
+assert(noResultPreview.includes('Sonuç bulunamadı.') && noResultPreview.includes('Aklınızda bir soru mu var?'), 'Public search no-results state soru CTA ile gorunmeli.');
+const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
+for (const marker of ['Orijinal Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
+  assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);
+}
+assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
+assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
+const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html;
+const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html;
+assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Tevekkül'), 'Kavram sayfasi kategori gibi sunulmamali.');
+assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kategorideki Sorular'), 'Kategori sayfasi kavramdan ayri public yapi olmali.');
+const askPreview = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
+assert(askPreview.includes('data-static-question-form') && askPreview.includes('disabled aria-disabled="true">Soruyu Gönder'), 'Soru Sor Phase 1 statik ve non-submitting olmali.');
+assert(askPreview.includes('Sorunuzu kısa ve açık şekilde yazabilirsiniz.'), 'Soru Sor public mikrocopy eksik.');
+assert(!askPreview.includes('Bu ekranda kayıt alınmıyor') && !askPreview.includes('yalnızca arayüz davranışı gösteriliyor') && !askPreview.includes('Bu ekranda kayıt alınmaz'), 'Soru Sor teknik preview dili gostermemeli.');
+assert(askPreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Soru Sor author context eksik.');
+const notFoundPreview = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
+assert(notFoundPreview.status === 404 && notFoundPreview.html.includes('Sayfa bulunamadı.'), 'Gizli veya eksik public icerik 404 state dondurmeli.');
+
 console.log('Frontend/PWA doğrulaması: başarılı');
