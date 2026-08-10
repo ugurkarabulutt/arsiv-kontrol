@@ -1,4 +1,4 @@
-# Admin Arşiv Operasyon Merkezi Mimari Planı
+# Admin Arşiv Çalışmaları Mimari Planı
 
 Tarih: 2026-08-05
 Kapsam: Google Drive, Google E-Tablolar ve Google Dokümanlar üzerinde yürüyen manuel arşiv çalışma sisteminin Arşiv Kontrol AI admin paneline taşınması.
@@ -81,7 +81,7 @@ Bu yapı kurulursa kullanıcı dosya aramak yerine işini takip eder; admin de k
 
 ## 5. Ana Modüller
 
-### 5.1 Arşiv Operasyon Merkezi
+### 5.1 Arşiv Çalışmaları
 
 Yeni sistemin süper admin ana ekranı.
 
@@ -132,7 +132,7 @@ Her kaynakta bulunması gereken bilgiler:
 
 Hadis, slayt ve transkriptlerde `metin içeriği` zorunlu olmalı.
 
-### 5.3 Yayın Görevleri
+### 5.3 Yayın Linkleri
 
 Google E-Tablolardaki `Yayın Linkleri` sayfasının online karşılığı.
 
@@ -272,7 +272,7 @@ Aksiyonlar:
 - Mükerrer İşaretle
 - Arşive Hazırla
 
-### 5.9 İçe Aktarım Merkezi
+### 5.9 Dosya Yükle
 
 Google Drive/Sheets/Docs verileri sisteme kontrollü taşınmalı.
 
@@ -503,21 +503,21 @@ Yeni sistemin tasarımı şu ilkelere uymalı:
 
 Navigasyon önerisi:
 
-- Arşiv Operasyon Merkezi
-- Kaynaklar
-- Yayın Görevleri
-- Çalışma Kayıtları
+- Arşiv Çalışmaları
+- Kaynak Dosyaları
+- Yayın Linkleri
+- Çalışma Tabloları
 - Hadis Arşivi
 - Slayt Metinleri
 - Standartlar
-- İçe Aktarım
+- Dosya Yükle
 - Onay Süreci
 
 ## 10. Kullanım Senaryoları
 
-### Senaryo A: Süper admin yayın atar
+### Senaryo A: Seçili ekip lideri yayın linki atar
 
-1. Süper admin Yayın Görevleri ekranını açar.
+1. Seçili ekip lideri Yayın Linkleri ekranını açar.
 2. YouTube linkini girer.
 3. Yayın tarihini girer.
 4. Kullanıcı seçer.
@@ -534,6 +534,7 @@ Navigasyon önerisi:
 6. Kaynak metni seçip çalışma kaydına metin olarak ekler.
 7. Denetim yapar.
 8. Son halini onaya gönderir.
+9. Kendisine atanmış yayın linki işi bittiyse `Tamam` durumunu elle işaretler.
 
 ### Senaryo C: Admin onaylar
 
@@ -545,7 +546,7 @@ Navigasyon önerisi:
 
 ### Senaryo D: Süper admin eski Google verisini içe aktarır
 
-1. Süper admin İçe Aktarım Merkezi'ni açar.
+1. Süper admin Dosya Yükle ekranını açar.
 2. CSV/XLSX/DOCX/TXT dosyası yükler.
 3. Alanları eşleştirir.
 4. Sistem mükerrer olabilecek kayıtları gösterir.
@@ -595,8 +596,8 @@ Public yayınlama bu fazda yapılmayacak.
 ### Faz 1: Süper admin-only kabuk
 
 - `/admin` içinde sadece süper adminin göreceği menü eklenir
-- Arşiv Operasyon Merkezi boş/kabuk ekran olarak kurulur
-- Kaynaklar, Yayın Görevleri, Çalışma Kayıtları ve İçe Aktarım ekranları taslak olarak görünür
+- Arşiv Çalışmaları boş/kabuk ekran olarak kurulur
+- Kaynak Dosyaları, Yayın Linkleri, Çalışma Tabloları ve Dosya Yükle ekranları taslak olarak görünür
 - normal kullanıcı/admin görmez
 
 ### Faz 2: Kaynak Havuzu MVP
@@ -608,7 +609,7 @@ Public yayınlama bu fazda yapılmayacak.
 - kaynak metni okuma ekranı
 - temel arama
 
-### Faz 3: Yayın Görevleri MVP
+### Faz 3: Yayın Linkleri MVP
 
 - YouTube linki ekleme
 - kullanıcıya atama
@@ -698,11 +699,20 @@ Kodlamadan önce netleşmesi gereken kararlar:
 6. Yayın görevi atama yetkisi pilot sonrası adminlere açılacak mı?
 7. Standartlar denetim motoruna otomatik mi bağlanacak, yoksa süper admin onayı şart mı olacak?
 
+2026-08-11 itibarıyla netleşen kararlar:
+
+- 36 kişinin isim listesi mevcut kullanıcılarla birebir aynıdır.
+- Yayın linklerini tüm adminler değil, seçili ekip liderleri atayacaktır.
+- Yayın linkindeki `Tamam` işareti otomatik değil, işi yapan kişi tarafından elle işaretlenecektir.
+- `Arşiv Çalışmaları` şimdilik sadece `super_admin` rolüne görünür; normal `admin` rolüne açılmayacaktır.
+- Görünen ürün dili teknik olmayacak: ekip alışkanlığına yakın `Yayın Linkleri`, `Çalışma Tabloları`,
+  `Kişi Dosyaları`, `Yayın Dosyaları` gibi sade isimler kullanılacaktır.
+
 ## 17. İlk Kodlama Dilimi Önerisi
 
 İlk güvenli kodlama dilimi:
 
-1. `/admin` içinde sadece `super_admin` rolünün göreceği `Arşiv Operasyon Merkezi` menü öğesi eklenir.
+1. `/admin` içinde sadece `super_admin` rolünün göreceği `Arşiv Çalışmaları` menü öğesi eklenir.
 2. Boş veri yazmayan bir kabuk ekran hazırlanır.
 3. Ekranda modül kartları ve hedef akış görünür.
 4. Normal kullanıcı ve admin bu ekranı görmez.
@@ -715,7 +725,7 @@ Bu dilim veri yazmadığı için en güvenli başlangıçtır.
 
 Önce bu plan gözden geçirilmeli. Sonra Faz 1 uygulanmalı:
 
-`Sadece süper adminin göreceği Arşiv Operasyon Merkezi kabuğu`
+`Sadece süper adminin göreceği Arşiv Çalışmaları kabuğu`
 
 Tam veri modeli, import ve kullanıcı ekranları daha sonra parça parça eklenmeli.
 

@@ -808,6 +808,26 @@ if (
 ) {
   throw new Error('Arsiv Operasyon Merkezi super admin kaynak kayit akisi ve /admin korumasi ile korunmali.');
 }
+const archiveOpsSuperAdminMarkers = [
+  '<div class="mobile-menu-group archive-ops-menu-group super-admin-only admin-route-only"',
+  '<div class="side-section-label super-admin-only admin-route-only"',
+  '<div class="side-group archive-ops-menu-group super-admin-only admin-route-only"',
+  '<div class="tab-content admin-route-only super-admin-only" id="tabContent-archiveOps"',
+  "function hasSuperAdminRole(role){return role==='super_admin';}",
+  'function canUseArchiveOps(user=me){return Boolean(user&&hasSuperAdminRole(user.role)&&isAdminRoute());}',
+];
+const archiveOpsApiRoutes = server
+  .split(/\r?\n/)
+  .filter(line => line.includes("app.") && line.includes("'/api/archive-ops"));
+if (
+  archiveOpsSuperAdminMarkers.some(marker => !html.includes(marker)) ||
+  /archive-ops-menu-group\s+admin-only/.test(html) ||
+  /class="tab-content(?:(?!super-admin-only).)*"\s+id="tabContent-archiveOps"/.test(html) ||
+  archiveOpsApiRoutes.length < 20 ||
+  archiveOpsApiRoutes.some(line => !line.includes('superAdmin'))
+) {
+  throw new Error('Arsiv Calismalari simdilik yalniz super admin tarafinda gorunmeli ve API rotalari superAdmin korumasinda kalmali.');
+}
 if (
   html.includes('adminRouteProbe') ||
   html.includes('super-admin-admin-route-only') ||

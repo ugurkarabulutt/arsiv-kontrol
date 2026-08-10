@@ -121,6 +121,27 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Arşiv Çalışmaları erişim kararı ve public yayın sözleşmesi kayda alındı:** Kullanıcı
+  kararıyla `Arşiv Çalışmaları` şimdilik yalnız `super_admin` rolüne görünür kalacak; normal
+  `admin` rolü bu menüyü, ana ekranı ve `/api/archive-ops/*` iş akışını kullanmayacak.
+  Frontend regresyon kontrolü artık mobil menü, masaüstü menü, ana tab ve `canUseArchiveOps`
+  fonksiyonunun `super_admin + /admin` şartını koruduğunu; backend arşiv operasyon API
+  rotalarının `superAdmin` koruması taşıdığını açıkça denetler. Ekip lideri kararları da
+  kayda alındı: 36 kişilik isim listesi mevcut kullanıcılarla birebir aynı; yayın linklerini
+  seçili ekip liderleri atayacak; `Tamam` işareti otomatik değil, işi yapan kişi tarafından
+  elle işaretlenecek. Public ön yüz koduna/root yayına alma hattına dokunmadan
+  `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md` eklendi. Bu belge onaylı soru,
+  cevap ve etiketlerin admin son kontrolünden sonra public ön yüze hangi temiz JSON/API
+  sözleşmesiyle taşınacağını, hangi iç alanların public'e sızmayacağını ve kalan işleri tarif eder.
+  `docs/project/ADMIN_ARCHIVE_OPERATIONS_CENTER_ARCHITECTURE_PLAN.md` de sade görünen isimler,
+  seçili ekip lideri ataması ve elle `Tamam` akışına göre güncellendi. Bu adımda runtime davranışı,
+  DB/schema, root `/` ve public frontend dosyaları değiştirilmedi. Kapsam:
+  `scripts/check-frontend.js`, `docs/project/ADMIN_ARCHIVE_OPERATIONS_CENTER_ARCHITECTURE_PLAN.md`,
+  `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test geçti. `git diff --check`
+  yalnız mevcut CRLF uyarılarını gösterdi.
+
 - **Arşiv Çalışmaları ilk ekip-uyum UX fazı eklendi:** `/admin` süper admin arşiv çalışma
   alanı ekip liderinin Drive / kişi e-tablosu düzenine daha yakın olacak şekilde sadeleştirildi.
   Görünen ana başlık `Arşiv Çalışmaları` oldu; alt menü adları `Dosyalar`, `Yeni Kaynak`,

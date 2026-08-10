@@ -2,6 +2,34 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- Kullanıcı kararıyla `/admin > Arşiv Çalışmaları` şimdilik sadece `super_admin` rolüne görünür
+  kalacak; normal `admin` rolüne açılmayacak. Mevcut HTML/JS zaten mobil menü, masaüstü menü ve
+  ana tabı `super-admin-only admin-route-only` sınıflarıyla ve `canUseArchiveOps(user)` içinde
+  `super_admin + /admin` şartıyla koruyor. Backend tarafında `/api/archive-ops/*` rotaları
+  `auth, admin, superAdmin` zincirinde kalıyor. Bu turda runtime davranışı değiştirilmedi; bu
+  şartların gevşemesini yakalamak için `scripts/check-frontend.js` içine açık regresyon kontrolü
+  eklendi.
+- Ekip lideri cevapları kayda alındı: 36 kişinin isim listesi mevcut kullanıcılarla birebir aynı;
+  yayın linklerini tüm adminler değil, seçili ekip liderleri atayacak; yayın linkindeki `Tamam`
+  işareti otomatik değil, işi yapan kişi tarafından elle işaretlenecek. Bu kararlar
+  `docs/project/ADMIN_ARCHIVE_OPERATIONS_CENTER_ARCHITECTURE_PLAN.md` içine işlendi.
+- Public yayına çıkacak soru-cevapların admin tarafında nasıl hazırlanacağını tarif eden
+  `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md` eklendi. Bu plan public ön yüz
+  implementasyonu değildir; root `/` cutover, DB migration, canlı veri yazımı veya public frontend
+  dosya değişikliği içermez. Karar: public ön yüz `history` tablosunu doğrudan okumayacak; admin
+  tarafında onay, son kontrol ve çıktı sürecinden geçen temiz `public-json`/ileride `public_qa`
+  sözleşmesini alacak. Public çıktıya kullanıcı, onaylayan yetkili, admin notu, skor, prompt,
+  model ve iç audit bilgisi taşınmayacak.
+- Bu turdaki doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test geçti. `git diff --check`
+  yalnız mevcut CRLF uyarılarını gösterdi.
+- Sıradaki admin işleri: seçili ekip lideri yetki modelini sade şekilde tasarlamak; yayın linki
+  atama ve kişinin elle `Tamam` işaretleme akışını audit bilgisiyle kurmak; 36 kullanıcı/kişi
+  eşleştirmesini canlı kullanıcılarla doğrulamak; Çalışma Tabloları satırlarını ekip alışkanlığına
+  göre soru, etiket/sınıf, cevap, işleme tarihi, yayın linki, program ve not odağında sadeleştirmek;
+  hadis/slayt/YouTube dökümanı/standartlar akışını kaynak metin olarak daha kullanışlı bağlamak;
+  public JSON için zorunlu alan/yasak alan ve 390px mobil kabul testlerini eklemek.
+
 - Yerelde `/admin` süper admin `Arşiv Operasyon Merkezi` alanı, ekip liderinin Drive / kişi
   e-tablosu düzenine daha yakın olacak şekilde ilk UX fazında sadeleştirildi. Görünen ana başlık
   `Arşiv Çalışmaları` oldu; alt menü adları `Dosyalar`, `Yeni Kaynak`, `Kaynak Dosyaları`,
@@ -1857,9 +1885,15 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 ## Sonraki güvenli adım
 
-1. PR [#1](https://github.com/ugurkarabulutt/arsiv-kontrol/pull/1) incelenip kullanıcı onayıyla `main`'e merge edilsin (otomatik merge yok).
-2. Geçerli ekip kullanıcısıyla geçmiş Gör ve PDF akışını kullanıcı arayüzünden doğrula.
-3. Vercel GitHub bağlantısı tamamlanınca branch-scoped Preview env değişkenleri eklensin.
+1. `Arşiv Çalışmaları` alanı normal `admin` rolüne açılmayacak; yeni arşiv/Drive dönüşümü
+   işleri önce `super_admin` altında tamamlanıp test edilecek.
+2. Seçili ekip lideri yetki modeli kurulacak: yayın linklerini yalnız seçili ekip liderleri
+   atayacak, tüm adminlere otomatik açılmayacak.
+3. Yayın linki satırında `Tamam` durumunu işi yapan kişi elle işaretleyecek; sistem bunu kim/ne
+   zaman bilgisiyle admin içinde saklayacak.
+4. 36 kişilik kişi dosyası modeli mevcut kullanıcılarla birebir eşleştirilecek.
+5. Public soru-cevap yayını için bu admin iş hattında yalnız veri sözleşmesi ve çıktı kalitesi
+   hazırlanacak; public ön yüz implementasyonu/root cutover ayrı sohbet/workstream içinde kalacak.
 
 ## Vercel ortam durumu
 
