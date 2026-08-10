@@ -167,9 +167,19 @@ function searchBox(value = '', label = 'Arşivde ara') {
 function stillLife() {
   return `
     <div class="pa-still-life" aria-hidden="true">
-      <div class="pa-branch"><span></span><span></span><span></span><span></span></div>
-      <div class="pa-vase"></div>
-      <div class="pa-books"><span></span><span></span><span></span><span></span></div>
+      <div class="pa-shelf-arch">
+        <div class="pa-shelf-row is-top">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="pa-shelf-row is-middle">
+          <span></span><span></span><span></span>
+          <i class="pa-shelf-vase"></i>
+          <span></span><span></span>
+        </div>
+        <div class="pa-shelf-row is-bottom">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
     </div>
   `;
 }
