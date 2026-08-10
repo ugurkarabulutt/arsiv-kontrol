@@ -1,0 +1,196 @@
+{
+  "390-mobile-light": {
+    "viewport": [
+      390,
+      844
+    ],
+    "page_padding_x": 20,
+    "header": {
+      "h": 56,
+      "logo": [
+        20,
+        19,
+        188,
+        38
+      ],
+      "account": [
+        274,
+        22,
+        44,
+        44
+      ],
+      "theme": [
+        326,
+        22,
+        44,
+        44
+      ]
+    },
+    "hero": {
+      "rect": [
+        20,
+        92,
+        350,
+        416
+      ],
+      "radius": 24,
+      "padding": [
+        28,
+        24,
+        24,
+        24
+      ],
+      "asset": "hero-bookshelf-light-mobile.webp",
+      "image_width_pct": 43,
+      "object_position": "72% 50%",
+      "safe_zone_left_pct": 57
+    },
+    "search": {
+      "rect": [
+        44,
+        426,
+        302,
+        58
+      ],
+      "radius": 18,
+      "submit": "arrow-right"
+    },
+    "section1": {
+      "x": 20,
+      "y": 546,
+      "font": 28
+    },
+    "question_card": {
+      "rect": [
+        20,
+        588,
+        350,
+        154
+      ],
+      "padding": 18,
+      "radius": 18
+    },
+    "bottom_nav": {
+      "x": 16,
+      "width": 358,
+      "height": 76,
+      "radius": 30,
+      "bottom": "calc(env(safe-area-inset-bottom) + 12px)"
+    },
+    "footer": {
+      "top_gap": 48,
+      "bottom_padding": "calc(128px + env(safe-area-inset-bottom))"
+    }
+  },
+  "390-mobile-dark": {
+    "inherits": "390-mobile-light",
+    "hero_asset": "hero-bookshelf-dark-mobile.webp",
+    "geometry_parity": "exact"
+  },
+  "430-mobile": {
+    "page_padding_x": 22,
+    "header_h": 58,
+    "hero": [
+      22,
+      96,
+      386,
+      424
+    ],
+    "question_card_w": 386,
+    "bottom_nav_w": 394
+  },
+  "768-tablet": {
+    "page_padding_x": 32,
+    "header_h": 64,
+    "hero_h": 400,
+    "content_columns": 2,
+    "bottom_nav": "enabled through 899px"
+  },
+  "1280-desktop-light": {
+    "viewport": [
+      1280,
+      900
+    ],
+    "container_w": 1184,
+    "page_padding_x": 48,
+    "header": {
+      "h": 64,
+      "logo": [
+        48,
+        22,
+        210,
+        40
+      ],
+      "account": [
+        1080,
+        22,
+        104,
+        40
+      ],
+      "theme": [
+        1192,
+        22,
+        40,
+        40
+      ]
+    },
+    "hero": {
+      "rect": [
+        48,
+        98,
+        1184,
+        392
+      ],
+      "radius": 24,
+      "padding": [
+        46,
+        44,
+        40,
+        52
+      ],
+      "asset": "hero-bookshelf-light-desktop.webp",
+      "image_width_pct": 38,
+      "object_position": "82% 50%",
+      "safe_zone_left_pct": 62
+    },
+    "search": {
+      "rect": [
+        100,
+        372,
+        650,
+        60
+      ],
+      "radius": 18,
+      "submit": "arrow-right"
+    },
+    "section1": {
+      "x": 48,
+      "y": 530,
+      "font": 32
+    },
+    "question_card": {
+      "layout": "3-column",
+      "w": 384,
+      "h": 146,
+      "gap": 16,
+      "padding": 20,
+      "radius": 18
+    },
+    "footer": {
+      "top_gap": 56,
+      "bottom_padding": 32
+    }
+  },
+  "1280-desktop-dark": {
+    "inherits": "1280-desktop-light",
+    "hero_asset": "hero-bookshelf-dark-desktop.webp",
+    "geometry_parity": "exact"
+  },
+  "1600-wide": {
+    "container_w": 1440,
+    "page_padding_x": 80,
+    "header_h": 68,
+    "hero_h": 430,
+    "question_columns": 3
+  }
+}

@@ -1,4 +1,4 @@
-const assert = require('node:assert/strict');
+﻿const assert = require('node:assert/strict');
 const test = require('node:test');
 const { ROUTE_PATHS, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
 
@@ -75,6 +75,17 @@ test('public preview output avoids internal and fake feature language', () => {
   }
 });
 
+test('public preview uses final handoff assets and icon system', () => {
+  const home = renderPublicArchivePreviewRoute('/public-preview').html;
+  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-light-mobile\.webp/);
+  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-dark-mobile\.webp/);
+  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-light-desktop\.webp/);
+  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-dark-desktop\.webp/);
+  assert.match(home, /class="pa-svg-icon"/);
+  assert.match(home, /data-account-toast/);
+  assert.match(home, /Hesap özelliği yakında kullanılabilir olacak\./);
+  assert.match(home, />Ar\u015fiv<\/span>/);
+});
 test('public preview search and missing states are deterministic', () => {
   const result = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' });
   assert.equal(result.status, 200);

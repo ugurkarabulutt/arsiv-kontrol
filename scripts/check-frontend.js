@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
@@ -8,6 +8,8 @@ const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'verc
 const script = html.match(/<script>([\s\S]*?)<\/script>/);
 const root = path.join(__dirname, '..');
 const publicCss = fs.readFileSync(path.join(root, 'public-archive.css'), 'utf8');
+const publicRendererSource = fs.readFileSync(path.join(root, 'public-archive-renderer.js'), 'utf8');
+const publicAssetRoot = path.join(root, 'public-archive-assets');
 const { ROUTE_PATHS, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
 
 function assert(condition, message) {
@@ -739,6 +741,34 @@ assert(!html.includes('/public-preview/public-archive.css'), 'Admin index.html p
 assert(!html.includes('public-archive-renderer'), 'Admin index.html public preview JS/render dosyasina baglanmamali.');
 assert(publicCss.includes('--pa-bg: #FFFFFF') && publicCss.includes('--pa-bg: #0D0F12'), 'Public preview light/dark tokenlari bulunmali.');
 assert(publicCss.includes('--pa-mint: #BDEBD6') && publicCss.includes('--pa-mint: #7EDBB8'), 'Public preview mint tokenlari light/dark palete bagli olmali.');
+for (const asset of [
+  'assets/hero-bookshelf-light-desktop.webp',
+  'assets/hero-bookshelf-dark-desktop.webp',
+  'assets/hero-bookshelf-light-mobile.webp',
+  'assets/hero-bookshelf-dark-mobile.webp',
+  'icons/search.svg',
+  'icons/arrow-right.svg',
+  'icons/user.svg',
+  'icons/home.svg',
+  'icons/topics.svg',
+  'icons/ask-question.svg'
+]) {
+  assert(fs.existsSync(path.join(publicAssetRoot, asset)), `Public preview handoff asset missing: ${asset}`);
+}
+for (const marker of [
+  'public-archive-assets',
+  'hero-bookshelf-light-desktop.webp',
+  'hero-bookshelf-dark-desktop.webp',
+  'hero-bookshelf-light-mobile.webp',
+  'hero-bookshelf-dark-mobile.webp',
+  "iconSvg('search')",
+  "iconSvg('arrow-right')",
+  "iconSvg('user')"
+]) {
+  assert(publicRendererSource.includes(marker), `Public renderer final handoff marker missing: ${marker}`);
+}
+assert(publicCss.includes('.pa-hero-asset') && publicCss.includes('object-position: 72% 50%') && publicCss.includes('object-position: 82% 50%'), 'Public CSS real hero asset geometry markers missing.');
+assert(publicCss.includes('.pa-shelf-arch') && publicCss.includes('display: none !important'), 'Public CSS old placeholder shelf graphics must be disabled.');
 assert(!/--(?:bg|ink|gold)\b/.test(publicCss), 'Public CSS eski admin tokenlarina baglanmamali.');
 assert(!/#[0-9A-Fa-f]{3,6}/.test(publicCss.replace(/#FFFFFF|#F7F7F7|#F0F0F0|#111111|#5A5A5A|#8E8E8E|#E5E5E5|#EFE9DE|#BDEBD6|#0D0F12|#15181D|#1E2127|#F5F6F7|#A1A6AD|#7C828B|#2E2E31|#2A231B|#7EDBB8/g, '')), 'Public CSS final palet disinda hex renk icermemeli.');
 for (const marker of [
@@ -772,6 +802,14 @@ for (const item of publicRenderCases) {
 }
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
+for (const assetUrl of [
+  '/public-preview/assets/hero-bookshelf-light-desktop.webp',
+  '/public-preview/assets/hero-bookshelf-dark-desktop.webp',
+  '/public-preview/assets/hero-bookshelf-light-mobile.webp',
+  '/public-preview/assets/hero-bookshelf-dark-mobile.webp'
+]) {
+  assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
+}
 for (const marker of ['Öne Çıkan Sorular', 'Kavramlar', 'Kategoriler', 'Aklınızda bir soru mu var?', 'Güvenilir kaynak, sade anlatım']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }

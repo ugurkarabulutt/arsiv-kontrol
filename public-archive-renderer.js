@@ -1,9 +1,12 @@
-const express = require('express');
+﻿const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const { publicArchiveFixtures } = require('./public-archive-fixtures');
 
 const PREVIEW_BASE = '/public-preview';
 const CSS_PATH = `${PREVIEW_BASE}/public-archive.css`;
+const ASSET_PATH = `${PREVIEW_BASE}/assets`;
+const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 
 const ROUTE_PATHS = [
   PREVIEW_BASE,
@@ -89,6 +92,65 @@ function pageTitle(title) {
   return title ? `${title} | ${brand}` : brand;
 }
 
+const svgIconCache = new Map();
+
+const BOTTOM_NAV_ICONS = {
+  home: 'home',
+  archive: 'archive',
+  search: 'search',
+  topics: 'topics',
+  ask: 'ask-question'
+};
+
+const CATEGORY_ICONS = {
+  'ornek-kategori': 'ibadet',
+  iman: 'iman',
+  ahlak: 'ahlak',
+  'aile-ve-toplum': 'aile',
+  'mali-konular': 'muamelat'
+};
+
+const TOPIC_ICONS = {
+  'ornek-kavram': 'takva',
+  iman: 'tevhid',
+  namaz: 'ibadet',
+  dua: 'dua',
+  sabir: 'sabir',
+  sukur: 'sukur',
+  zekat: 'rizik',
+  sadaka: 'sukur',
+  'kul-hakki': 'ahlak',
+  aile: 'aile'
+};
+
+function iconSvg(name, className = 'pa-svg-icon') {
+  const safeName = String(name || '').replace(/[^a-z0-9-]/gi, '');
+  if (!safeName) return '';
+  if (!svgIconCache.has(safeName)) {
+    try {
+      const svg = fs.readFileSync(path.join(ICON_DIR, safeName + '.svg'), 'utf8');
+      const openTag = '<svg class=\"' + className + '\" aria-hidden=\"true\" focusable=\"false\" ';
+      svgIconCache.set(safeName, svg.replace('<svg ', openTag));
+    } catch (error) {
+      svgIconCache.set(safeName, '');
+    }
+  }
+  return svgIconCache.get(safeName);
+}
+
+function categoryIconName(category) {
+  return CATEGORY_ICONS[category?.slug] || 'diger';
+}
+
+function topicIconName(topic) {
+  return TOPIC_ICONS[topic?.slug] || 'topics';
+}
+
+function questionIconName(entry, category, topics) {
+  const primaryTopic = (topics || [])[0];
+  return topicIconName(primaryTopic) || categoryIconName(category) || 'help-circle';
+}
+
 function previewActionNav(active) {
   const items = [
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
@@ -99,7 +161,7 @@ function previewActionNav(active) {
   ];
   return items.map(([label, url, key]) => `
     <a class="pa-bottom-link${active === key ? ' is-active' : ''}" href="${escapeHtml(url)}">
-      <span class="pa-bottom-icon pa-icon-${escapeHtml(key)}" aria-hidden="true"></span>
+      <span class="pa-bottom-icon">${iconSvg(BOTTOM_NAV_ICONS[key] || key)}</span>
       <span>${escapeHtml(label)}</span>
     </a>
   `).join('');
@@ -122,11 +184,11 @@ function header(active) {
       </nav>
       <div class="pa-header-actions">
         <button class="pa-account-button" type="button" aria-label="Hesab\u0131m" data-account-placeholder>
-          <span class="pa-account-icon" aria-hidden="true"></span>
+          <span class="pa-account-icon">${iconSvg('user')}</span>
           <span class="pa-account-text">Hesab\u0131m</span>
         </button>
         <button class="pa-theme-toggle" type="button" data-theme-toggle aria-label="Tema de\u011fi\u015ftir">
-          <span class="pa-theme-toggle-icon" aria-hidden="true"></span>
+          <span class="pa-theme-toggle-icon"><span class="pa-theme-sun">${iconSvg('sun')}</span><span class="pa-theme-moon">${iconSvg('moon')}</span></span>
         </button>
       </div>
     </header>
@@ -156,9 +218,10 @@ function searchBox(value = '', label = 'Arşivde ara') {
   return `
     <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama">
       <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
+      <span class="pa-search-leading">${iconSvg('search')}</span>
       <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Sorunuzu veya kavramınızı yazın..." autocomplete="off">
       <button type="submit" aria-label="Ara">
-        <span class="pa-search-icon" aria-hidden="true"></span>
+        <span class="pa-search-icon">${iconSvg('arrow-right')}</span>
       </button>
     </form>
   `;
@@ -167,19 +230,14 @@ function searchBox(value = '', label = 'Arşivde ara') {
 function stillLife() {
   return `
     <div class="pa-still-life" aria-hidden="true">
-      <div class="pa-shelf-arch">
-        <div class="pa-shelf-row is-top">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <div class="pa-shelf-row is-middle">
-          <span></span><span></span><span></span>
-          <i class="pa-shelf-vase"></i>
-          <span></span><span></span>
-        </div>
-        <div class="pa-shelf-row is-bottom">
-          <span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
-      </div>
+      <picture class="pa-hero-asset pa-hero-asset-light">
+        <source media="(max-width: 899px)" srcset="${ASSET_PATH}/hero-bookshelf-light-mobile.webp" type="image/webp">
+        <img src="${ASSET_PATH}/hero-bookshelf-light-desktop.webp" alt="" loading="eager" decoding="async">
+      </picture>
+      <picture class="pa-hero-asset pa-hero-asset-dark">
+        <source media="(max-width: 899px)" srcset="${ASSET_PATH}/hero-bookshelf-dark-mobile.webp" type="image/webp">
+        <img src="${ASSET_PATH}/hero-bookshelf-dark-desktop.webp" alt="" loading="eager" decoding="async">
+      </picture>
     </div>
   `;
 }
@@ -188,7 +246,7 @@ function sectionHeader(title, actionText, actionHref) {
   return `
     <div class="pa-section-head">
       <h2>${escapeHtml(title)}</h2>
-      ${actionHref ? `<a href="${escapeHtml(actionHref)}">${escapeHtml(actionText || 'Tümünü Gör')} <span aria-hidden="true">›</span></a>` : ''}
+      ${actionHref ? `<a href="${escapeHtml(actionHref)}">${escapeHtml(actionText || 'T?m?n? G?r')} ${iconSvg('chevron-right', 'pa-inline-chevron')}</a>` : ''}
     </div>
   `;
 }
@@ -202,19 +260,19 @@ function chip(label, hrefValue) {
 function questionCard(entry, compact = false) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
-  const meta = [
-    entry.updatedAt ? `Güncellendi: ${formatDate(entry.updatedAt)}` : '',
-    entry.readTime ? `${entry.readTime} dk okuma` : ''
-  ].filter(Boolean).join(' · ');
+  const dateLabel = entry.updatedAt ? formatDate(entry.updatedAt) : '';
+  const readLabel = entry.readTime ? `${entry.readTime} dk okuma` : '';
   return `
     <article class="pa-question-card${compact ? ' is-compact' : ''}">
+      <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}">${escapeHtml(entry.title)}</a>
-      <p>${escapeHtml(entry.excerpt || entry.summary)}</p>
+      <p class="pa-question-excerpt">${escapeHtml(entry.excerpt || entry.summary)}</p>
       <div class="pa-card-meta">
         ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
         ${topics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
       </div>
-      ${meta ? `<p class="pa-card-foot">${escapeHtml(meta)}</p>` : ''}
+      ${(dateLabel || readLabel) ? `<p class="pa-card-foot">${dateLabel ? `<span>${iconSvg('calendar', 'pa-meta-icon')}${escapeHtml(dateLabel)}</span>` : ''}${readLabel ? `<span>${iconSvg('clock', 'pa-meta-icon')}${escapeHtml(readLabel)}</span>` : ''}</p>` : ''}
+      <span class="pa-card-chevron">${iconSvg('chevron-right')}</span>
     </article>
   `;
 }
@@ -222,7 +280,7 @@ function questionCard(entry, compact = false) {
 function topicCard(topic) {
   return `
     <a class="pa-topic-card" href="${PREVIEW_BASE}/konu/${escapeHtml(topic.slug)}">
-      <span class="pa-topic-mark" aria-hidden="true"></span>
+      <span class="pa-topic-mark">${iconSvg(topicIconName(topic))}</span>
       <strong>${escapeHtml(topic.name)}</strong>
       <span>${entriesForTopic(topic.slug).length} soru</span>
     </a>
@@ -232,7 +290,7 @@ function topicCard(topic) {
 function categoryCard(category) {
   return `
     <a class="pa-category-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">
-      <span class="pa-category-mark" aria-hidden="true"></span>
+      <span class="pa-category-mark">${iconSvg(categoryIconName(category))}</span>
       <span class="pa-category-copy">
         <strong>${escapeHtml(category.name)}</strong>
         <span>${entriesForCategory(category.slug).length} soru</span>
@@ -253,11 +311,12 @@ function breadcrumb(items) {
 function ctaBand() {
   return `
     <section class="pa-cta-band">
+      <span class="pa-cta-icon">${iconSvg('help-circle')}</span>
       <div>
         <h2>Aklınızda bir soru mu var?</h2>
-        <p>Cevabını bulamadığınız sorular için Soru Sor ekranını inceleyebilirsiniz.</p>
+        <p>Sorunuzu kısa ve açık şekilde yazabilirsiniz.</p>
       </div>
-      <a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+      <a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor ${iconSvg('arrow-right', 'pa-button-icon')}</a>
     </section>
   `;
 }
@@ -598,6 +657,9 @@ function renderShell({ title, description, active, content, status = 200 }) {
   <meta name="description" content="${escapeHtml(safeDescription)}">
   <meta name="theme-color" content="#FFFFFF">
   <title>${escapeHtml(safeTitle)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${CSS_PATH}">
   <script>
     (function(){
@@ -620,8 +682,24 @@ function renderShell({ title, description, active, content, status = 200 }) {
   <nav class="pa-mobile-nav" aria-label="Mobil alt gezinme">
     ${previewActionNav(active)}
   </nav>
+  <div class="pa-toast" role="status" aria-live="polite" hidden data-account-toast>Hesap özelliği yakında kullanılabilir olacak.</div>
   <script>
     (function(){
+      var accountToastTimer;
+      document.querySelectorAll('[data-account-placeholder]').forEach(function(button){
+        button.addEventListener('click', function(){
+          var toast = document.querySelector('[data-account-toast]');
+          if (!toast) return;
+          toast.hidden = false;
+          requestAnimationFrame(function(){ toast.classList.add('is-visible'); });
+          clearTimeout(accountToastTimer);
+          accountToastTimer = setTimeout(function(){
+            toast.classList.remove('is-visible');
+            setTimeout(function(){ toast.hidden = true; }, 180);
+          }, 2200);
+        });
+      });
+
       function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
@@ -694,11 +772,17 @@ function sendRendered(res, rendered) {
 function createPublicArchivePreviewRouter(options = {}) {
   const router = express.Router();
   const cssFile = options.cssFile || path.join(__dirname, 'public-archive.css');
+  const assetDir = options.assetDir || path.join(__dirname, 'public-archive-assets', 'assets');
   router.use((req, res, next) => {
     res.set('X-Robots-Tag', 'noindex, nofollow');
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     next();
   });
+  router.use('/assets', express.static(assetDir, {
+    etag: false,
+    index: false,
+    maxAge: 0
+  }));
   router.get('/public-archive.css', (req, res) => {
     res.type('text/css').sendFile(cssFile);
   });
