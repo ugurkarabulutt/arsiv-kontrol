@@ -312,7 +312,7 @@ if (
   !server.includes('mergedRow.tags = approvalMeta.tags') ||
   !server.includes('mergedRow.question_text = approvalMeta.questionText') ||
   !server.includes('const importedQuestion = normalizeHistoryQuestion(match.excel_question)') ||
-  !server.includes('if (!existingQuestion && importedQuestion) historyUpdate.question_text = importedQuestion;') ||
+  !server.includes("if (importedQuestion && (!existingQuestion || options.replaceQuestion === true))") ||
   !server.includes('function fetchHistoryQuestionRowsByIds') ||
   !server.includes('function historyTagImportQuestionLimit') ||
   !server.includes('function updateHistoryQuestionsBulk') ||
@@ -369,10 +369,16 @@ if (
   !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review'") ||
+  !server.includes("app.get('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/candidates'") ||
+  !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/select-candidate'") ||
+  !server.includes('replaceQuestion: true') ||
+  !server.includes("applied: applyNow") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
   !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
   !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
   !server.includes('async function runHistoryTagImportQuestionBackfillJob') ||
+  !server.includes('function loadHistoryTagImportExcelItems') ||
+  !server.includes('function findHistoryTagImportCandidatesForMatch') ||
   !server.includes('TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS') ||
   !server.includes('TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS') ||
   !server.includes('function historyTagImportQuestionLimit') ||
@@ -412,6 +418,13 @@ if (
   !html.includes('historyTagImportApplyReviewBtn') ||
   !html.includes('historyTagImportBackfillQuestionsBtn') ||
   !html.includes('deleteHistoryTagImportBatch') ||
+  !html.includes('toggleHistoryTagImportCandidates') ||
+  !html.includes('selectHistoryTagImportCandidate') ||
+  !html.includes('tag-import-candidate-panel') ||
+  !html.includes('Excel Adayları') ||
+  !html.includes('Bu Satırı Seç') ||
+  !html.includes('{rowNumber,applyNow}') ||
+  !html.includes('soru ve etiketler kayda uygulandı') ||
   !html.includes('Seçili Aktarımı Sil') ||
   !html.includes('Güvenli Eşleşmeleri Uygula') ||
   !html.includes('Kontrol Gerekenleri Uygula') ||

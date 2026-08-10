@@ -1,5 +1,23 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-10 Codex Güncel Durum
+
+- Yerelde `/admin > Arşiv Operasyon Merkezi > Etiket Aktarımı` için 192 eşleşmeyen kaydı
+  çözmeye yarayan `Excel Adayları` akışı tamamlandı. Eşleşmeyen kayıtta `Excel Adayları`
+  açıldığında sistem batch'e bağlı Excel satır havuzundan en yakın adayları listeler; aday
+  kartında soru, cevap ön izlemesi, etiketler, güven skoru ve eşleşme nedeni görünür. `Bu
+  Satırı Seç` seçilen satırı ilgili denetim kaydına uygular: etiketler yazılır, manuel seçim
+  olduğu için `history.question_text` seçilen Excel sorusuyla güncellenebilir ve match
+  `applied` durumuna alınır. Normal toplu uygulama hâlâ daha önce elle yazılmış soru alanlarını
+  korur. Yeni Excel aktarım listelerinde Excel satır havuzu `settings` içinde cache'lenir ve
+  liste silinirse cache de temizlenir. Mevcut canlı batch
+  `b46a4689-15b5-4db8-a917-cdb33ed6be3c` için `Arşiv Data.xlsx` dosyasından 3.779 kullanılabilir
+  Excel satırı 69 parça olarak canlı `settings` cache'ine yazıldı. Root `/` public cutover ve
+  public frontend hattına dokunulmadı. Kapsam: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 ## 2026-08-09 Codex Güncel Durum
 
 - Excel soru aktarımı ikinci kez kökten güçlendirildi. `/admin > Arşiv Operasyon Merkezi >

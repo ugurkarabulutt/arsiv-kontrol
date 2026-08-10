@@ -548,6 +548,9 @@ const TAG_IMPORT_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
 const TAG_IMPORT_MAX_UPLOAD_CHUNKS = 160;
 const TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH = 900000;
 const TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX = 'history_tag_import_question_backfill';
+const TAG_IMPORT_EXCEL_CACHE_KEY_PREFIX = 'history_tag_import_excel_items';
+const TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE = 55;
+const TAG_IMPORT_CANDIDATE_LIMIT = 12;
 const TAG_IMPORT_QUESTION_BACKFILL_STALE_MS = 15000;
 const activeQuestionBackfillJobs = new Set();
 
@@ -936,6 +939,28 @@ function tagImportCellValue(row, aliases = []) {
   return '';
 }
 
+function makeHistoryTagImportExcelItem(row = {}) {
+  const question = String(row.question || '').trim();
+  const answer = String(row.answer || '').trim();
+  const combined = `${question}\n${answer}`;
+  const tags = normalizeHistoryTags(row.tags || []);
+  return {
+    rowNumber: Number(row.rowNumber || 0),
+    inheritedQuestionRow: row.inheritedQuestionRow || null,
+    question,
+    answer,
+    answerPreview: archiveTextPreview(answer || question, 320),
+    sourceUrl: String(row.sourceUrl || '').trim(),
+    program: String(row.program || '').trim(),
+    note: String(row.note || '').trim(),
+    tags,
+    normalizedText: normalizeTagImportText(combined),
+    questionTokens: tagImportTokens(question, 80),
+    answerTokens: tagImportTokens(answer, 160),
+    tokens: tagImportTokens(combined, 200)
+  };
+}
+
 function parseHistoryTagImportWorkbook(buffer, fileName = '') {
   let workbook;
   try {
@@ -953,6 +978,7 @@ function parseHistoryTagImportWorkbook(buffer, fileName = '') {
   }
   const sheet = workbook.Sheets[sheetName];
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+  let lastStandaloneQuestion = null;
   const items = rows.map((row, index) => {
     const question = String(tagImportCellValue(row, ['soru']) || '').trim();
     const tagText = tagImportCellValue(row, ['etiketsinif', 'etiketsınıf', 'etiket', 'sinif', 'sınıf']);
@@ -961,21 +987,25 @@ function parseHistoryTagImportWorkbook(buffer, fileName = '') {
     const program = String(tagImportCellValue(row, ['program']) || '').trim();
     const note = String(tagImportCellValue(row, ['notlar', 'not']) || '').trim();
     const tags = normalizeImportTags(tagText);
-    const combined = `${question}\n${answer}`;
-    return {
+    let effectiveQuestion = question;
+    let inheritedQuestionRow = null;
+    if (question && !answer && !tags.length) {
+      lastStandaloneQuestion = { question, rowNumber: index + 2 };
+    } else if (!question && answer && tags.length && lastStandaloneQuestion?.question) {
+      effectiveQuestion = lastStandaloneQuestion.question;
+      inheritedQuestionRow = lastStandaloneQuestion.rowNumber;
+    }
+    if (question && answer) lastStandaloneQuestion = null;
+    return makeHistoryTagImportExcelItem({
       rowNumber: index + 2,
-      question,
+      inheritedQuestionRow,
+      question: effectiveQuestion,
       answer,
-      answerPreview: archiveTextPreview(answer || question, 320),
       sourceUrl,
       program,
       note,
-      tags,
-      normalizedText: normalizeTagImportText(combined),
-      questionTokens: tagImportTokens(question, 80),
-      answerTokens: tagImportTokens(answer, 160),
-      tokens: tagImportTokens(combined, 200)
-    };
+      tags
+    });
   });
   return {
     fileName,
@@ -5981,6 +6011,127 @@ async function insertHistoryTagImportMatches(batchId, matches = []) {
   }
 }
 
+function historyTagImportExcelCacheMetaKey(batchId) {
+  return `${TAG_IMPORT_EXCEL_CACHE_KEY_PREFIX}:${batchId}:meta`;
+}
+
+function historyTagImportExcelCacheChunkKey(batchId, index) {
+  return `${TAG_IMPORT_EXCEL_CACHE_KEY_PREFIX}:${batchId}:chunk:${index}`;
+}
+
+async function historyTagImportExcelCacheKeys(batchId) {
+  const keys = [historyTagImportExcelCacheMetaKey(batchId)];
+  const meta = await loadJsonSetting(historyTagImportExcelCacheMetaKey(batchId), null);
+  const chunkCount = Number(meta?.chunkCount || 0);
+  for (let i = 0; i < chunkCount; i++) keys.push(historyTagImportExcelCacheChunkKey(batchId, i));
+  return keys;
+}
+
+function publicTagImportExcelItemForCache(item = {}) {
+  const answer = String(item.answer || '').slice(0, TAG_IMPORT_HISTORY_TEXT_LIMIT);
+  return {
+    rowNumber: Number(item.rowNumber || 0),
+    inheritedQuestionRow: item.inheritedQuestionRow || null,
+    question: item.question || '',
+    answer,
+    answerPreview: item.answerPreview || archiveTextPreview(answer || item.question || '', 320),
+    sourceUrl: item.sourceUrl || '',
+    program: item.program || '',
+    note: item.note || '',
+    tags: normalizeHistoryTags(item.tags || [])
+  };
+}
+
+function hydrateTagImportExcelItem(item = {}) {
+  return makeHistoryTagImportExcelItem({
+    rowNumber: item.rowNumber,
+    inheritedQuestionRow: item.inheritedQuestionRow || null,
+    question: item.question || '',
+    answer: item.answer || '',
+    sourceUrl: item.sourceUrl || '',
+    program: item.program || '',
+    note: item.note || '',
+    tags: item.tags || []
+  });
+}
+
+async function saveHistoryTagImportExcelItems(batchId, items = []) {
+  const cleanItems = (items || [])
+    .map(publicTagImportExcelItemForCache)
+    .filter(item => item.rowNumber && item.tags.length && (item.question || item.answer));
+  const previousKeys = await historyTagImportExcelCacheKeys(batchId);
+  await deleteSettingsByKeys(previousKeys);
+  const chunkCount = Math.ceil(cleanItems.length / TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE);
+  for (let i = 0; i < chunkCount; i++) {
+    const chunk = cleanItems.slice(i * TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE, (i + 1) * TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE);
+    await saveJsonSetting(historyTagImportExcelCacheChunkKey(batchId, i), chunk);
+  }
+  await saveJsonSetting(historyTagImportExcelCacheMetaKey(batchId), {
+    batchId,
+    count: cleanItems.length,
+    chunkCount,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+async function loadHistoryTagImportExcelItems(batchId) {
+  const meta = await loadJsonSetting(historyTagImportExcelCacheMetaKey(batchId), null);
+  const chunkCount = Number(meta?.chunkCount || 0);
+  if (!Number.isInteger(chunkCount) || chunkCount < 1) return [];
+  const keys = Array.from({ length: chunkCount }, (_, index) => historyTagImportExcelCacheChunkKey(batchId, index));
+  const rows = await fetchAllPages(() => supabase.from('settings').select('key,value').in('key', keys), 1000);
+  const byKey = new Map((rows || []).map(row => [row.key, parseJsonSettingValue(row.value, [])]));
+  return keys
+    .flatMap(key => Array.isArray(byKey.get(key)) ? byKey.get(key) : [])
+    .map(hydrateTagImportExcelItem)
+    .filter(item => item.rowNumber && item.tags.length && (item.question || item.answer));
+}
+
+function publicHistoryTagImportCandidate(item = {}, score = {}) {
+  return {
+    rowNumber: Number(item.rowNumber || 0),
+    inheritedQuestionRow: item.inheritedQuestionRow || null,
+    question: item.question || '',
+    answerPreview: item.answerPreview || '',
+    tags: normalizeHistoryTags(item.tags || []),
+    confidence: Number(score.confidence || 0),
+    reason: score.reason || '',
+    sourceUrl: item.sourceUrl || '',
+    program: item.program || '',
+    note: item.note || ''
+  };
+}
+
+function tagImportCandidateSearchHaystack(item = {}) {
+  return normalizeTagImportText([
+    item.question,
+    item.answer,
+    item.answerPreview,
+    item.sourceUrl,
+    item.program,
+    item.note,
+    ...(item.tags || [])
+  ].join(' '));
+}
+
+function findHistoryTagImportCandidatesForMatch(match = {}, historyRow = {}, items = [], q = '') {
+  const history = tagImportHistoryCandidate(historyRow || {});
+  const search = normalizeTagImportText(q);
+  let candidates = items || [];
+  if (search) candidates = candidates.filter(item => tagImportCandidateSearchHaystack(item).includes(search));
+  const anchor = Number(match.excel_row || 0);
+  const scored = candidates
+    .map(item => ({ item, score: scoreTagImportMatch(history, item) }))
+    .filter(entry => search || entry.score.confidence > 0)
+    .sort((a, b) => {
+      if (b.score.confidence !== a.score.confidence) return b.score.confidence - a.score.confidence;
+      if (anchor) return Math.abs(anchor - Number(a.item.rowNumber || 0)) - Math.abs(anchor - Number(b.item.rowNumber || 0));
+      return Number(a.item.rowNumber || 0) - Number(b.item.rowNumber || 0);
+    })
+    .slice(0, TAG_IMPORT_CANDIDATE_LIMIT);
+  return scored.map(entry => publicHistoryTagImportCandidate(entry.item, entry.score));
+}
+
 function tagImportUploadMetaKey(uploadId) {
   return `${TAG_IMPORT_UPLOAD_KEY_PREFIX}:${uploadId}:meta`;
 }
@@ -6028,6 +6179,7 @@ async function createHistoryTagImportPreviewFromBuffer(buffer, fileName, actorNa
     .single();
   if (batchError) throw new Error(batchError.message);
   if (matches.length) await insertHistoryTagImportMatches(batch.id, matches);
+  await saveHistoryTagImportExcelItems(batch.id, parsed.items);
   const refreshed = await refreshHistoryTagImportBatchCounts(batch.id);
   const { data: detailRows, error: detailError } = await supabase.from('history_tag_import_matches')
     .select('*')
@@ -6072,7 +6224,9 @@ async function applyHistoryTagImportMatchRow(matchId, actorName, options = {}) {
     if (existingHistoryError) throw new Error(existingHistoryError.message);
     const importedQuestion = normalizeHistoryQuestion(match.excel_question);
     const existingQuestion = normalizeHistoryQuestion(existingHistory?.question_text || '');
-    if (!existingQuestion && importedQuestion) historyUpdate.question_text = importedQuestion;
+    if (importedQuestion && (!existingQuestion || options.replaceQuestion === true)) {
+      historyUpdate.question_text = importedQuestion;
+    }
   }
   const { data: updatedHistory, error: historyError } = await supabase.from('history')
     .update(historyUpdate)
@@ -6544,10 +6698,86 @@ app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin
       .delete()
       .eq('id', req.params.id);
     if (deleteError) throw new Error(deleteError.message);
-    await deleteSettingsByKeys([historyTagImportQuestionBackfillJobKey(req.params.id)]);
+    const cacheKeys = await historyTagImportExcelCacheKeys(req.params.id);
+    await deleteSettingsByKeys([historyTagImportQuestionBackfillJobKey(req.params.id), ...cacheKeys]);
 
     res.json({ success: true, batch: publicHistoryTagImportBatch(batch) });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/candidates', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data: match, error } = await supabase.from('history_tag_import_matches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!match) return res.status(404).json({ error: 'Etiket aktarım kaydı bulunamadı.' });
+    const [matchWithHistory] = await attachHistoryToTagImportMatches([match]);
+    if (!matchWithHistory?.history) return res.status(400).json({ error: 'Bu aktarım kaydı bir denetim kaydıyla bağlı değil.' });
+    const excelItems = await loadHistoryTagImportExcelItems(match.batch_id);
+    if (!excelItems.length) {
+      return res.status(409).json({ error: 'Excel satır havuzu bulunamadı. Bu eski aktarım için Excel dosyasını tekrar seçip yeni liste oluşturun.' });
+    }
+    const candidates = findHistoryTagImportCandidatesForMatch(match, matchWithHistory.history, excelItems, req.query.q || '');
+    res.json({ success: true, match: publicHistoryTagImportMatch(matchWithHistory), candidates });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/select-candidate', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const rowNumber = Number(req.body?.rowNumber || 0);
+    const applyNow = req.body?.applyNow === true;
+    const actorName = req.session.name || req.session.username || '';
+    if (!Number.isFinite(rowNumber) || rowNumber <= 0) return res.status(400).json({ error: 'Seçilecek Excel satırı bulunamadı.' });
+    const { data: match, error } = await supabase.from('history_tag_import_matches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!match) return res.status(404).json({ error: 'Etiket aktarım kaydı bulunamadı.' });
+    if (['applied', 'skipped'].includes(match.match_status)) {
+      return res.status(400).json({ error: 'Bu kayıt zaten tamamlanmış; Excel adayı değiştirilemez.' });
+    }
+    const [matchWithHistory] = await attachHistoryToTagImportMatches([match]);
+    if (!matchWithHistory?.history) return res.status(400).json({ error: 'Bu aktarım kaydı bir denetim kaydıyla bağlı değil.' });
+    const excelItems = await loadHistoryTagImportExcelItems(match.batch_id);
+    if (!excelItems.length) {
+      return res.status(409).json({ error: 'Excel satır havuzu bulunamadı. Bu eski aktarım için Excel dosyasını tekrar seçip yeni liste oluşturun.' });
+    }
+    const selectedItem = excelItems.find(item => Number(item.rowNumber || 0) === rowNumber);
+    if (!selectedItem) return res.status(404).json({ error: 'Seçilen Excel satırı bulunamadı.' });
+    const score = scoreTagImportMatch(tagImportHistoryCandidate(matchWithHistory.history), selectedItem);
+    const selectedStatus = score.confidence >= 86 ? 'ready' : 'review';
+    const { data: updated, error: updateError } = await supabase.from('history_tag_import_matches')
+      .update({
+        excel_row: selectedItem.rowNumber,
+        excel_question: selectedItem.question || '',
+        answer_preview: selectedItem.answerPreview || '',
+        tags: selectedItem.tags || [],
+        confidence: score.confidence,
+        match_status: selectedStatus,
+        match_reason: `Elle Excel satırı seçildi${applyNow ? ' ve uygulandı' : ''}; ${score.reason || 'aday satır seçildi'}`,
+        current_tags: Array.isArray(matchWithHistory.history?.tags) ? matchWithHistory.history.tags : []
+      })
+      .eq('id', req.params.id)
+      .select('*')
+      .maybeSingle();
+    if (updateError) throw new Error(updateError.message);
+    if (!updated) return res.status(404).json({ error: 'Etiket aktarım kaydı güncellenemedi.' });
+    let finalMatch = updated;
+    if (applyNow) {
+      finalMatch = await applyHistoryTagImportMatchRow(updated.id, actorName, {
+        refreshBatch: false,
+        replaceQuestion: true
+      });
+    }
+    const refreshedBatch = await refreshHistoryTagImportBatchCounts(match.batch_id);
+    const [rowWithHistory] = await attachHistoryToTagImportMatches([finalMatch]);
+    res.json({ success: true, applied: applyNow, batch: refreshedBatch, match: publicHistoryTagImportMatch(rowWithHistory) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply', auth, admin, superAdmin, async (req, res) => {

@@ -120,6 +120,23 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-10
+- **Etiket Aktarımı eşleşmeyen kayıtlar için Excel aday seçimi tamamlandı:** `/admin` süper
+  admin Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında eşleşmeyen kayıtlar için
+  `Excel Adayları` paneli eklendi. Panel, canlı aktarım listesine bağlı Excel satır havuzundan
+  en yakın adayları getirir; aday kartında Excel satırı, soru, cevap ön izlemesi, etiketler,
+  güven skoru ve eşleşme nedeni görünür. Süper admin `Bu Satırı Seç` dediğinde seçilen Excel
+  satırındaki soru ve etiketler ilgili denetim kaydına uygulanır; manuel seçimde soru alanı
+  seçilen Excel sorusuyla güncellenebilir, normal toplu uygulama ise daha önce elle yazılmış
+  soruları korumaya devam eder. Yeni batch oluşturulurken Excel satır havuzu `settings` altında
+  parça parça cache'lenir; eski batch silinirse bu cache kayıtları da temizlenir. Mevcut canlı
+  batch `b46a4689-15b5-4db8-a917-cdb33ed6be3c` için `Arşiv Data.xlsx` dosyasından 3.779
+  kullanılabilir Excel satırı 69 cache parçası olarak canlı `settings` tablosuna yazıldı.
+  Bu adım root `/` public cutover veya public frontend hattına dokunmaz. Kapsam: `server.js`,
+  `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+
 ### 2026-08-09
 - **Excel soru aktarımı sunucu tarafında gerçekten ilerleyen hale getirildi:** `/admin`
   süper admin Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı > Excel Sorularını Ekle`

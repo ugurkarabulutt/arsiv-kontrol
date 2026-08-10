@@ -561,6 +561,14 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .tag-import-arrow{font-family:'JetBrains Mono',monospace;color:var(--ink3);}
 .tag-import-actions-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
 .tag-import-actions-row button{white-space:nowrap;}
+.tag-import-candidate-panel{border:1px solid rgba(var(--gold-rgb),.36);background:var(--surface-strong);padding:10px;margin-top:10px;display:grid;gap:8px;min-width:0;}
+.tag-import-candidate-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;}
+.tag-import-candidate-list{display:grid;gap:8px;max-height:420px;overflow:auto;min-width:0;}
+.tag-import-candidate-card{border:1px solid var(--border);background:var(--bg);padding:10px;display:grid;gap:8px;min-width:0;}
+.tag-import-candidate-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;min-width:0;}
+.tag-import-candidate-title{font-size:12px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-candidate-preview{font-size:12px;line-height:1.5;color:var(--ink2);white-space:pre-wrap;max-height:130px;overflow:auto;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-candidate-tags{display:flex;gap:6px;flex-wrap:wrap;}
 .archive-output-publication{border:1px solid rgba(var(--gold-rgb),.38);background:linear-gradient(135deg,rgba(var(--gold-rgb),.08),rgba(var(--green-rgb),.05));padding:12px;margin:12px 0;min-width:0;}
 .archive-output-publication-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;min-width:0;}
 .archive-output-publication-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;}
@@ -646,7 +654,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
 @media(max-width:900px){.archive-output-layout,.tag-import-layout{grid-template-columns:1fr}.archive-output-package-list,.tag-import-batch-list{max-height:none;overflow:visible}.tag-import-actions{grid-template-columns:1fr}}
-@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions,.tag-import-actions-row{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button,.tag-import-actions-row button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head,.tag-import-match-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks,.tag-import-map{grid-template-columns:1fr}.tag-import-arrow{text-align:center}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
+@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions,.tag-import-actions-row{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button,.tag-import-actions-row button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head,.tag-import-match-head,.tag-import-candidate-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks,.tag-import-map,.tag-import-candidate-tools{grid-template-columns:1fr}.tag-import-arrow{text-align:center}.tag-import-candidate-list{max-height:none}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -2340,7 +2348,7 @@ let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:''
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
-let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null};
+let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','tagImport'];
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
@@ -7675,6 +7683,7 @@ async function uploadHistoryTagImportFile(file){
     historyTagImportState.activeBatch=data.batch||null;
     historyTagImportState.matches=data.matches||[];
     historyTagImportState.status='ready';
+    historyTagImportState.candidatePanels={};
     await loadHistoryTagImportBatches({keepActive:true});
     renderHistoryTagImport();
     setHistoryTagImportStatus('Ön izleme hazır. Yalnız doğru eşleşmeleri uygulayın.','ok');
@@ -7739,6 +7748,7 @@ async function openHistoryTagImportBatch(id,options={}){
   }
   historyTagImportState.activeBatch=data.batch||historyTagImportState.activeBatch;
   historyTagImportState.matches=data.matches||[];
+  if(!options.keepCandidatePanels)historyTagImportState.candidatePanels={};
   renderHistoryTagImport();
   if(!options.silent)setHistoryTagImportStatus('Eşleşmeler listelendi.','ok');
   refreshHistoryTagImportQuestionStatus({silent:true,reload:false}).then(job=>{
@@ -7749,12 +7759,14 @@ async function openHistoryTagImportBatch(id,options={}){
 function setHistoryTagImportFilter(){
   historyTagImportState.query=el('historyTagImportSearch')?.value||'';
   historyTagImportState.status=el('historyTagImportStatusFilter')?.value||'';
+  historyTagImportState.candidatePanels={};
   if(historyTagImportState.activeBatch)openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
   else renderHistoryTagImport();
 }
 function clearHistoryTagImportFilters(){
   historyTagImportState.query='';
   historyTagImportState.status='ready';
+  historyTagImportState.candidatePanels={};
   if(el('historyTagImportSearch'))el('historyTagImportSearch').value='';
   if(el('historyTagImportStatusFilter'))el('historyTagImportStatusFilter').value='ready';
   if(historyTagImportState.activeBatch)openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
@@ -7795,6 +7807,98 @@ function historyTagImportSummaryHtml(batch){
     <div class="ops-file-summary-item"><strong>${Number(batch.unmatchedCount||0).toLocaleString('tr-TR')}</strong><span>Eşleşmedi</span></div>
   `;
 }
+function updateHistoryTagImportMatchInState(match){
+  if(!match?.id)return;
+  historyTagImportState.matches=(historyTagImportState.matches||[]).map(item=>item.id===match.id?match:item);
+}
+function historyTagImportCandidateCardHtml(matchId,candidate){
+  const tags=historyTagsChips(candidate.tags||[]);
+  const inherited=candidate.inheritedQuestionRow?` · soru ${Number(candidate.inheritedQuestionRow).toLocaleString('tr-TR')}. satırdan alındı`:'';
+  return `
+    <div class="tag-import-candidate-card">
+      <div class="tag-import-candidate-head">
+        <div>
+          <div class="tag-import-candidate-title">${Number(candidate.rowNumber||0).toLocaleString('tr-TR')}. Excel satırı${esc(inherited)}</div>
+          <div class="tag-import-meta">
+            <span>%${Number(candidate.confidence||0).toLocaleString('tr-TR')} güven</span>
+            <span>${esc(candidate.reason||'Aday eşleşme')}</span>
+          </div>
+        </div>
+        <button class="btn-mini primary" onclick="selectHistoryTagImportCandidate(${attrJson(matchId)},${Number(candidate.rowNumber||0)},true,this)">Bu Satırı Seç</button>
+      </div>
+      ${candidate.question?`<div class="tag-import-candidate-preview"><strong>Soru</strong><br>${esc(candidate.question)}</div>`:''}
+      <div class="tag-import-candidate-preview"><strong>Cevap ön izlemesi</strong><br>${esc(candidate.answerPreview||'Ön izleme yok.')}</div>
+      <div class="tag-import-candidate-tags">${tags||'<span class="tag-import-badge">Etiket yok</span>'}</div>
+    </div>
+  `;
+}
+function historyTagImportCandidatePanelHtml(item){
+  const panel=historyTagImportState.candidatePanels?.[item.id];
+  if(!panel?.open)return '';
+  const candidates=panel.candidates||[];
+  return `
+    <div class="tag-import-candidate-panel">
+      <div class="tag-import-candidate-tools">
+        <input class="ops-field" value="${esc(panel.query||'')}" placeholder="Excel soru, cevap veya etikette ara..." oninput="setHistoryTagImportCandidateQuery(${attrJson(item.id)},this.value)">
+        <button class="btn-mini" onclick="loadHistoryTagImportCandidates(${attrJson(item.id)},this)">Adayları Yenile</button>
+      </div>
+      <div class="ops-status ${panel.error?'err':''}">${esc(panel.loading?'Excel adayları aranıyor...':(panel.error||`${candidates.length.toLocaleString('tr-TR')} aday gösteriliyor.`))}</div>
+      <div class="tag-import-candidate-list">
+        ${candidates.length?candidates.map(candidate=>historyTagImportCandidateCardHtml(item.id,candidate)).join(''):'<div class="empty-state">Bu aramaya uygun Excel adayı bulunamadı.</div>'}
+      </div>
+    </div>
+  `;
+}
+function setHistoryTagImportCandidateQuery(id,value){
+  const panel=historyTagImportState.candidatePanels[id]||{open:true,candidates:[]};
+  historyTagImportState.candidatePanels[id]={...panel,query:value||''};
+}
+async function toggleHistoryTagImportCandidates(id){
+  if(!id)return;
+  const current=historyTagImportState.candidatePanels[id]||{open:false,candidates:[],query:''};
+  if(current.open){
+    historyTagImportState.candidatePanels[id]={...current,open:false};
+    return renderHistoryTagImport();
+  }
+  historyTagImportState.candidatePanels[id]={...current,open:true,loading:true,error:''};
+  renderHistoryTagImport();
+  await loadHistoryTagImportCandidates(id);
+}
+async function loadHistoryTagImportCandidates(id,button){
+  if(!id)return;
+  if(button)button.disabled=true;
+  const panel=historyTagImportState.candidatePanels[id]||{open:true,candidates:[],query:''};
+  historyTagImportState.candidatePanels[id]={...panel,open:true,loading:true,error:''};
+  renderHistoryTagImport();
+  const params=new URLSearchParams();
+  if((panel.query||'').trim())params.set('q',(panel.query||'').trim());
+  const data=await api('GET',`/api/history-tags/import-matches/${encodeURIComponent(id)}/candidates${params.toString()?`?${params.toString()}`:''}`);
+  if(button)button.disabled=false;
+  if(data.error){
+    historyTagImportState.candidatePanels[id]={...panel,open:true,loading:false,error:data.error,candidates:[]};
+    renderHistoryTagImport();
+    return showSystemAlert('Excel adayı alınamadı',data.error,'danger');
+  }
+  historyTagImportState.candidatePanels[id]={...panel,open:true,loading:false,error:'',candidates:data.candidates||[]};
+  renderHistoryTagImport();
+}
+async function selectHistoryTagImportCandidate(id,rowNumber,applyNow=false,button){
+  if(!id||!rowNumber)return;
+  if(typeof applyNow==='object'){
+    button=applyNow;
+    applyNow=false;
+  }
+  if(button)button.disabled=true;
+  const data=await api('POST',`/api/history-tags/import-matches/${encodeURIComponent(id)}/select-candidate`,{rowNumber,applyNow});
+  if(button)button.disabled=false;
+  if(data.error)return showSystemAlert('Excel satırı seçilemedi',data.error,'danger');
+  updateHistoryTagImportMatchInState(data.match);
+  if(data.batch)historyTagImportState.activeBatch=data.batch;
+  if(historyTagImportState.candidatePanels[id])historyTagImportState.candidatePanels[id]={...historyTagImportState.candidatePanels[id],open:false};
+  await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
+  renderHistoryTagImport();
+  setHistoryTagImportStatus(data.applied?'Excel satırı seçildi; soru ve etiketler kayda uygulandı.':'Excel adayı seçildi. Kontrol edip bu kayda uygulayabilirsiniz.','ok');
+}
 function historyTagImportMatchCardHtml(item){
   const statusClass=historyTagImportStatusClass(item.status);
   const history=item.history||{};
@@ -7827,7 +7931,9 @@ function historyTagImportMatchCardHtml(item){
       </div>
       <div class="tag-import-preview"><strong>Excel soru/cevap ön izlemesi</strong><br>${esc([item.question,item.answerPreview].filter(Boolean).join('\n\n')||'Ön izleme yok.')}</div>
       ${history.correctedText?`<div class="tag-import-preview"><strong>Denetim kaydı ön izlemesi</strong><br>${esc(history.correctedText.slice(0,520))}${history.correctedText.length>520?'...':''}</div>`:''}
+      ${historyTagImportCandidatePanelHtml(item)}
       <div class="tag-import-actions-row">
+        <button class="btn-mini" onclick="toggleHistoryTagImportCandidates(${attrJson(item.id)})" ${canSkip?'':'disabled'}>Excel Adayları</button>
         <button class="btn-mini primary" onclick="applyHistoryTagImportMatch(${attrJson(item.id)},this)" ${canApply?'':'disabled'}>Etiketi Bu Kayda Uygula</button>
         <button class="btn-mini" onclick="skipHistoryTagImportMatch(${attrJson(item.id)},this)" ${canSkip?'':'disabled'}>Atla</button>
         ${item.historyId?`<button class="btn-mini" onclick="showDetail(${attrJson(item.historyId)})">Denetim Kaydını Aç</button>`:''}
@@ -7892,7 +7998,8 @@ async function applyHistoryTagImportMatch(id,button){
     setHistoryTagImportStatus(data.error,'err');
     return showSystemAlert('Etiket uygulanamadı',data.error,'danger');
   }
-  historyTagImportState.matches=(historyTagImportState.matches||[]).map(item=>item.id===id?data.match:item);
+  updateHistoryTagImportMatchInState(data.match);
+  if(historyTagImportState.candidatePanels[id])delete historyTagImportState.candidatePanels[id];
   await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
   renderHistoryTagImport();
   setHistoryTagImportStatus('Etiket uygulandı.','ok');
@@ -7906,7 +8013,8 @@ async function skipHistoryTagImportMatch(id,button){
     setHistoryTagImportStatus(data.error,'err');
     return showSystemAlert('Kayıt atlanamadı',data.error,'danger');
   }
-  historyTagImportState.matches=(historyTagImportState.matches||[]).map(item=>item.id===id?data.match:item);
+  updateHistoryTagImportMatchInState(data.match);
+  if(historyTagImportState.candidatePanels[id])delete historyTagImportState.candidatePanels[id];
   await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
   renderHistoryTagImport();
   setHistoryTagImportStatus('Eşleşme atlandı.','ok');
@@ -7932,6 +8040,7 @@ async function deleteHistoryTagImportBatch(){
   historyTagImportState.batches=(historyTagImportState.batches||[]).filter(item=>item.id!==batch.id);
   historyTagImportState.activeBatch=historyTagImportState.batches[0]||null;
   historyTagImportState.matches=[];
+  historyTagImportState.candidatePanels={};
   renderHistoryTagImport();
   await loadHistoryTagImportBatches();
   setHistoryTagImportStatus('Aktarım kaydı kaldırıldı. Yeni Excel seçerek temiz başlayabilirsiniz.','ok');
