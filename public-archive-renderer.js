@@ -415,10 +415,12 @@ function renderSearch(query = '') {
         <section class="pa-search-page">
           <p class="pa-kicker">Arşivde ara</p>
           <h1>Aradığınız cevaba en kısa yoldan ulaşın.</h1>
+          <p class="pa-page-intro">Soru başlıkları, cevap özetleri, kavramlar ve kategoriler içinde sade bir arama yapabilirsiniz.</p>
           ${searchBox(cleanQuery)}
         </section>
         <section class="pa-section">
           ${sectionHeader(cleanQuery ? `"${cleanQuery}" araması` : 'Arşivdeki Sorular')}
+          <p class="pa-result-count">${results.length ? `${results.length} kayıt listeleniyor.` : 'Eşleşen kayıt bulunamadı.'}</p>
           ${results.length
             ? `<div class="pa-list">${results.map(entry => questionCard(entry, true)).join('')}</div>`
             : renderNoResults(cleanQuery)}
@@ -527,6 +529,10 @@ function renderTopic(slug) {
           <p class="pa-kicker">Kavram</p>
           <h1>${escapeHtml(topic.name)}</h1>
           <p>${escapeHtml(topic.description)}</p>
+          <div class="pa-collection-meta">
+            <span>${entries.length} ilgili soru</span>
+            ${related.length ? `<span>${related.length} ilişkili kavram</span>` : ''}
+          </div>
           ${category ? `<a class="pa-inline-link" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">Kategori: ${escapeHtml(category.name)}</a>` : ''}
         </section>
         <section class="pa-section">
@@ -562,6 +568,10 @@ function renderCategory(slug) {
           <p class="pa-kicker">Kategori</p>
           <h1>${escapeHtml(category.name)}</h1>
           <p>${escapeHtml(category.description)}</p>
+          <div class="pa-collection-meta">
+            <span>${entries.length} ilgili soru</span>
+            ${topics.length ? `<span>${topics.length} kavram</span>` : ''}
+          </div>
         </section>
         <section class="pa-section">
           ${sectionHeader('Bu Kategorideki Sorular')}
