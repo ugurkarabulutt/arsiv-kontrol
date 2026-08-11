@@ -135,7 +135,17 @@ tespit edilir).
   `docs/project/PUBLIC_QA_TRANSFER_AND_CATEGORY_DECISION_2026-08-11.md` ve
   `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md`. Yerel doğrulama:
   `node --check server.js`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı;
-  86/86 test geçti. `git diff --check` yalnız mevcut CRLF uyarılarını gösterdi.
+  86/86 test geçti. `git diff --check` yalnız mevcut CRLF uyarılarını gösterdi. Runtime commit
+  `18a24e5` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-80whu939b-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_533Asvx4uLqA2xbxBQdQuWYSaBBs`, canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest,
+  `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store doğru. Canlı HTML'de
+  `id="submitApprovalCategory"`, `id="submitApprovalCategoryMain"`,
+  `id="submitApprovalRelatedCategories"` ve `id="submitApprovalRelatedCategoriesMain"` yok;
+  `id="detailPublicCategory"`, `loadArchiveCategoryScan` ve `data-ops-view="categories"` mevcut.
+  Oturumsuz `/api/history/public-category-scan` `401` döndü; `/public-preview`,
+  `publicArchiveRenderer` ve `adminRouteProbe` görünmedi.
 
 - **Kategori öneri altyapısı başlatıldı:** Onaya giden soru-cevaplar için public arşiv kategorisi
   admin hattında önerilmeye ve saklanmaya başladı. Backend'e `PUBLIC_CATEGORY_RULES_KEY`,

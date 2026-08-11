@@ -10,6 +10,13 @@
   üretir ve saklar; öneri yalnız admin/süper admin onay detayında ve süper admin `Kategoriler`
   ekranında görünür/değiştirilebilir. Yerel doğrulama: `node --check server.js`,
   `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+  Runtime commit `18a24e5` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-80whu939b-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_533Asvx4uLqA2xbxBQdQuWYSaBBs`, canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest,
+  `sw.js` ve favicon başarılı. `/admin` noindex/no-store doğru. Canlı HTML'de kullanıcıya ait
+  kategori input ID'leri yok; `detailPublicCategory`, `loadArchiveCategoryScan` ve
+  `data-ops-view="categories"` mevcut. Oturumsuz `/api/history/public-category-scan` `401` döndü.
 - Bu değişiklik root `/` public cutover yapmadı, public frontend hattına dokunmadı ve normal
   kullanıcı için yeni bir kategori işi açmadı. Soru + etiket zorunluluğu aynen devam eder.
 
