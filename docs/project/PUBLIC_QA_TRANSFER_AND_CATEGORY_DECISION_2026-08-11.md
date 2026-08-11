@@ -1,7 +1,21 @@
 # Public Soru-Cevap Aktarımı ve Kategori Karar Notu
 
 Tarih: 2026-08-11
-Durum: İstişare ve geçiş planı. Kod, DB migration, root cutover veya public frontend değişikliği değildir.
+Durum: İstişare notu + admin kategori öneri altyapısı. DB migration, root cutover veya public frontend yayını değildir.
+
+## 2026-08-11 Uygulanan Admin Altyapısı
+
+Bu kararın ilk altyapı adımı admin hattında kuruldu:
+
+- Onaya gönderilen her yeni kayıt için sistem soru, etiket, cevap ve özetten ana kategori önerisi üretir.
+- Kategori kullanıcı için yeni bir zorunluluk değildir; soru ve etiket zorunlu kalır.
+- Admin/süper admin onay detayında ana kategoriyi ve bağlı kategorileri değiştirebilir.
+- Manuel kategori kararı `settings` içinde `history_public_category_meta:*` anahtarıyla saklanır.
+- Audit bilgisi admin içinde kalır; public çıktıya kullanıcı, onaylayan kişi veya iç süreç bilgisi taşınmaz.
+- `/admin > Arşiv Çalışmaları > Kategoriler` ekranı mevcut onay bekleyen/onaylanan kayıtları tarar,
+  kategori dağılımını, önerilemeyen örnekleri ve yoğun etiketlerden yeni kategori adaylarını gösterir.
+
+Bu adım public root cutover, DB migration veya public frontend yayını değildir.
 
 ## Neden Bu Not Var?
 

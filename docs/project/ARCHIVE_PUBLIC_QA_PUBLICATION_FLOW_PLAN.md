@@ -26,6 +26,10 @@ kararı ayrıca kayda alındı:
   dışarıdan verilmeyecek; yoğun etiketlerden `Zikir`, `Mürşid`, `Hidayet`, `Nefs` gibi ana
   kategori adayları çıkarılacak, daha dar kavramlar ve yazım varyantları etiket/konu olarak
   bağlanacaktır.
+- Admin altyapısında kategori önerisi başlatıldı: onaya gönderilen her yeni kayıt için sistem soru
+  ve etiketlerden ana kategori + bağlı kategori önerir; yetkili onay detayında bunu değiştirebilir.
+- `/admin > Arşiv Çalışmaları > Kategoriler` ekranı mevcut onay bekleyen/onaylanan kayıtları tarayıp
+  kategori dağılımını ve yeni kategori adayı yoğun etiketleri gösterir.
 - Bugünkü hızlı entegrasyon için öneri `public-json`; kalıcı yayın sistemi için öneri ayrı
   `public_qa` veri katmanıdır.
 
@@ -62,14 +66,15 @@ kararı ayrıca kayda alındı:
 1. Ekip üyesi cevabı hazırlar.
 2. Denetim yapar.
 3. Onaya göndermeden önce soru ve etiketleri doldurur.
-4. Admin veya süper admin onay ekranında soru, cevap ve etiketleri görür.
-5. Yetkili gerekirse soru/etiketi düzeltir.
-6. Kayıt onaylanır.
-7. Onaylı kayıt Arşiv Çalışmaları tarafında yayına hazır aday olabilir.
-8. Süper admin son kontrol yapar.
-9. Uygun kayıtlar Yayın Dosyası içinde toplanır.
-10. Çıktılar ekranında `public-json` üretimi yapılır.
-11. Public ön yüz bu temiz JSON/API sözleşmesinden beslenir.
+4. Sistem soru ve etiketlerden ana kategori + bağlı kategori önerir.
+5. Admin veya süper admin onay ekranında soru, cevap, etiket ve kategori önerisini görür.
+6. Yetkili gerekirse soru/etiket/kategoriyi düzeltir.
+7. Kayıt onaylanır.
+8. Onaylı kayıt Arşiv Çalışmaları tarafında yayına hazır aday olabilir.
+9. Süper admin son kontrol yapar.
+10. Uygun kayıtlar Yayın Dosyası içinde toplanır.
+11. Çıktılar ekranında `public-json` üretimi yapılır.
+12. Public ön yüz bu temiz JSON/API sözleşmesinden beslenir.
 
 ## Public Kayıt Sözleşmesi
 

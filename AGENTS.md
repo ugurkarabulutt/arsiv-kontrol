@@ -121,6 +121,24 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Kategori öneri altyapısı başlatıldı:** Onaya giden soru-cevaplar için public arşiv kategorisi
+  admin hattında önerilmeye ve saklanmaya başladı. Backend'e `PUBLIC_CATEGORY_RULES_KEY`,
+  `history_public_category_meta:*` settings meta kaydı, kategori öneri motoru, kayıt zenginleştirme
+  ve süper admin korumalı `GET /api/history/public-category-scan` endpoint'i eklendi. Yeni kayıt
+  onaya gönderilirken sistem soru, etiket, cevap ve özetten ana kategori + bağlı kategori önerisi
+  üretir; admin/süper admin detay onay penceresinde ana kategoriyi ve bağlı kategorileri
+  değiştirebilir. Manuel karar `settings` altında yetkili iziyle saklanır; bu audit bilgisi normal
+  kullanıcı API cevabına ve public çıktıya taşınmaz. `/admin > Arşiv Çalışmaları` menüsüne sadece
+  süper admin için `Kategoriler` ekranı eklendi; bu ekran onay bekleyen/onaylanan kayıtları tarar,
+  kategori dağılımını, önerilemeyen örnekleri ve yoğun etiketlerden yeni kategori adaylarını gösterir.
+  Bu adım DB migration, root `/` cutover veya public frontend yayını yapmaz. Değişen dosyalar:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`,
+  `docs/project/PUBLIC_QA_TRANSFER_AND_CATEGORY_DECISION_2026-08-11.md` ve
+  `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; 86/86 test geçti. `git diff --check` yalnız mevcut CRLF
+  uyarılarını gösterdi.
+
 - **Public soru-cevap aktarımı ve kategori karar notu kaydedildi:** Public ön yüz tasarımı onay
   aşamasına geldiği için bugünkü bekleyen/onaylı soru-cevapların nasıl public'e taşınacağı
   ayrıca dokümante edildi. Yeni belge:

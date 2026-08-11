@@ -322,9 +322,16 @@ if (
   !schema.includes('history_tags_idx') ||
   !server.includes('HAS_HISTORY_TAGS') ||
   !server.includes('HAS_HISTORY_QUESTION_TEXT') ||
+  !server.includes('PUBLIC_CATEGORY_RULES_KEY') ||
+  !server.includes('HISTORY_PUBLIC_CATEGORY_META_KEY_PREFIX') ||
   !server.includes('function normalizeHistoryTags') ||
   !server.includes('function normalizeHistoryQuestion') ||
   !server.includes('function requireApprovalQuestionAndTags') ||
+  !server.includes('function suggestPublicCategories') ||
+  !server.includes('function buildPublicCategoryMeta') ||
+  !server.includes('async function enrichHistoryPublicCategories') ||
+  !server.includes("app.get('/api/history/public-category-scan'") ||
+  !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/public-category'") ||
   !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/tags'") ||
   !server.includes('const approvalMeta = requireApprovalQuestionAndTags(req.body)') ||
   !server.includes('updateRow.tags = approvalMeta.tags') ||
@@ -350,8 +357,17 @@ if (
   !html.includes('id="submitApprovalQuestionMain"') ||
   !html.includes('id="submitApprovalQuestion"') ||
   !html.includes('id="submitApprovalTags"') ||
+  !html.includes('id="submitApprovalCategory"') ||
+  !html.includes('id="submitApprovalCategoryMain"') ||
+  !html.includes('id="detailPublicCategory"') ||
   !html.includes('Soru (zorunlu)') ||
   !html.includes('Etiketler (zorunlu)') ||
+  !html.includes('Önerilen ana kategori') ||
+  !html.includes('function suggestPublicCategoriesUi') ||
+  !html.includes('function publicCategoryInlineHtml') ||
+  !html.includes('publicRelatedCategories:parsePublicRelatedCategories') ||
+  !html.includes('data-ops-view="categories"') ||
+  !html.includes('loadArchiveCategoryScan') ||
   !html.includes('Onaya göndermeden önce soru alanını doldurun.') ||
   !html.includes('Onaya göndermeden önce en az bir etiket ekleyin.') ||
   !html.includes('id="historyTagImportBackfillQuestionsBtn"') ||
@@ -367,7 +383,7 @@ if (
   !html.includes('renderSubmitTagsPreview') ||
   !html.includes('id="detailHistoryQuestion"') ||
   !html.includes('id="detailHistoryTags"') ||
-  !html.includes("setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))})") ||
+  !html.includes("setApprovalAction(id,'approve',btn,{") ||
   !html.includes('h.questionText') ||
   !html.includes('historyTagsChips(h.tags||[])')
 ) {

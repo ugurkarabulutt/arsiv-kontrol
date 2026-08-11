@@ -285,6 +285,14 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .history-tag-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.32);padding:4px 7px;}
 .history-tags-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
 .history-question-inline{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:7px;border-left:2px solid var(--gold);padding-left:8px;word-break:break-word;}
+.history-category-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:12px;}
+.history-category-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
+.history-category-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:11px 12px;font-size:14px;line-height:1.45;min-height:44px;resize:vertical;box-sizing:border-box;}
+textarea.history-category-input{min-height:68px;}
+.history-category-suggestions{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.history-category-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);background:rgba(var(--green-rgb),.08);border:1px solid rgba(var(--green-rgb),.28);padding:4px 7px;max-width:100%;overflow-wrap:anywhere;}
+.history-category-chip.muted{color:var(--ink3);background:var(--surface);border-color:var(--border);}
+.history-category-inline{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:7px;border-left:2px solid var(--green);padding-left:8px;word-break:break-word;}
 .history-approval-meta{font-size:11px;color:var(--ink3);line-height:1.45;margin-top:7px;border-left:2px solid var(--green);padding-left:8px;word-break:break-word;}
 .history-approval-meta.compact{margin-top:5px;font-size:10px;}
 .corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
@@ -308,7 +316,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
 @media(max-width:760px){.compare-head{align-items:flex-start}.scroll-lock-control{width:100%;justify-content:space-between}}
-@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-content,.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%;min-width:0}.approval-submit-fields{grid-template-columns:1fr}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
+@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-content,.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%;min-width:0}.approval-submit-fields,.history-category-grid{grid-template-columns:1fr}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
 @media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
@@ -601,6 +609,14 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-output-publication-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;}
 .archive-output-publication-actions button{min-width:0;white-space:normal;}
 .archive-output-publication .badge,.archive-public-readiness .badge{position:static;width:auto;height:auto;min-width:auto;border-radius:999px;padding:5px 8px;background:rgba(var(--gold-rgb),.14);border:1px solid rgba(var(--gold-rgb),.38);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.1;white-space:nowrap;}
+.archive-category-layout{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:12px;align-items:start;margin-top:12px;}
+.archive-category-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;min-width:0;}
+.archive-category-card{border:1px solid var(--border);background:var(--bg);padding:11px 12px;color:var(--ink);min-width:0;}
+.archive-category-card strong{display:block;font-size:14px;line-height:1.35;overflow-wrap:anywhere;}
+.archive-category-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);line-height:1.5;margin-top:4px;overflow-wrap:anywhere;}
+.archive-category-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.archive-category-section{border:1px solid var(--border);background:var(--bg);padding:12px;margin-bottom:10px;min-width:0;}
+.archive-category-section h4{font-size:13px;margin:0 0 8px;color:var(--ink);}
 .archive-public-readiness .badge.danger{background:rgba(var(--red-rgb),.12);border-color:rgba(var(--red-rgb),.42);color:var(--red);}
 .archive-public-readiness{border:1px solid var(--border);background:var(--surface-strong);padding:10px;margin-top:10px;display:grid;gap:8px;min-width:0;}
 .archive-public-readiness-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
@@ -677,7 +693,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .work-actions{display:flex;gap:4px;flex-wrap:wrap;}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
-@media(max-width:900px){.archive-output-layout,.tag-import-layout{grid-template-columns:1fr}.archive-output-package-list,.tag-import-batch-list{max-height:none;overflow:visible}.tag-import-actions{grid-template-columns:1fr}}
+@media(max-width:900px){.archive-output-layout,.archive-category-layout,.tag-import-layout{grid-template-columns:1fr}.archive-output-package-list,.archive-category-list,.tag-import-batch-list{max-height:none;overflow:visible}.tag-import-actions{grid-template-columns:1fr}}
 @media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions,.tag-import-actions-row{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button,.tag-import-actions-row button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head,.tag-import-match-head,.tag-import-candidate-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks,.tag-import-map,.tag-import-candidate-tools{grid-template-columns:1fr}.tag-import-arrow{text-align:center}.tag-import-candidate-list{max-height:none}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1139,6 +1155,7 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Son Kontrol</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packages" onclick="mArchiveOps('packages')">Yayın Dosyaları</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packageOutput" onclick="mArchiveOps('packageOutput')">Çıktılar</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="categories" onclick="mArchiveOps('categories')">Kategoriler</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="tagImport" onclick="mArchiveOps('tagImport')">Excel Etiketleri</button>
         </div>
       </div>
@@ -1177,6 +1194,7 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Son Kontrol</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packages" onclick="openArchiveOps('packages')"><span>Yayın Dosyaları</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packageOutput" onclick="openArchiveOps('packageOutput')"><span>Çıktılar</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="categories" onclick="openArchiveOps('categories')"><span>Kategoriler</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="tagImport" onclick="openArchiveOps('tagImport')"><span>Excel Etiketleri</span></button>
       </div>
     </div>
@@ -2071,6 +2089,35 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="categories" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Kategoriler</div>
+            <div class="ops-panel-sub">Onay bekleyen ve onaylanan soru-cevaplardan kategori omurgasını çıkarın.</div>
+          </div>
+          <button class="btn-sec" onclick="loadArchiveCategoryScan()">Tara</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="archive-ready-hero">
+            <strong>Bu ekran yayınlama yapmaz.</strong>
+            <span>Soru ve etiketlerden ana kategori önerir; yoğun etiketlerden yeni kategori adaylarını gösterir. Son karar onay ekranında yetkilidedir.</span>
+          </div>
+          <div class="ops-status" id="archiveCategoryStatusMsg"></div>
+          <div class="ops-file-summary" id="archiveCategorySummary"></div>
+          <div class="archive-category-layout">
+            <div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Kategori dağılımı</div>
+              <div class="archive-category-list" id="archiveCategoryList">
+                <div class="archive-release-empty">Henüz tarama yapılmadı.</div>
+              </div>
+            </div>
+            <div class="ops-detail" id="archiveCategoryDetail">
+              <div class="empty-state">Tarama yapıldığında yeni kategori adayları ve önerilemeyen kayıt örnekleri burada görünür.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="ops-panel archive-ops-section" data-ops-view="tagImport" hidden>
         <div class="ops-panel-head">
           <div>
@@ -2365,20 +2412,35 @@ canvas{width:100%!important;}
       <div class="submit-confirm-summary" id="submitApprovalSummary"></div>
       <div class="history-question-field">
         <label for="submitApprovalQuestion">Soru (zorunlu)</label>
-        <textarea class="history-question-input" id="submitApprovalQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın."></textarea>
+        <textarea class="history-question-input" id="submitApprovalQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın." oninput="renderSubmitCategorySuggestion()"></textarea>
         <div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div>
       </div>
       <div class="history-tags-field">
         <label for="submitApprovalTags">Etiketler (zorunlu)</label>
-        <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview()"></textarea>
+        <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview();renderSubmitCategorySuggestion()"></textarea>
         <div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div>
         <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
+      </div>
+      <div class="history-category-grid">
+        <div class="history-category-field">
+          <label for="submitApprovalCategory">Önerilen ana kategori</label>
+          <input class="history-category-input" id="submitApprovalCategory" list="publicCategoryOptions" placeholder="Sistem önerir; gerekirse değiştirilebilir.">
+          <div class="history-tags-help">Zorunlu değildir. Sistem soru ve etiketlere göre doldurur; yetkili onayda değiştirebilir.</div>
+          <div class="history-category-suggestions" id="submitApprovalCategorySuggestions"></div>
+        </div>
+        <div class="history-category-field">
+          <label for="submitApprovalRelatedCategories">Bağlı kategoriler</label>
+          <textarea class="history-category-input" id="submitApprovalRelatedCategories" placeholder="Birden çok kategori varsa virgülle ayırın."></textarea>
+          <div class="history-tags-help">Sorunun bağlamına göre ikinci veya üçüncü kategori burada kalır.</div>
+        </div>
       </div>
       <div class="form-err" id="submitApprovalErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
     </div>
   </div>
 </div>
+
+<datalist id="publicCategoryOptions"></datalist>
 
 <div class="modal-overlay" id="systemConfirmModal">
   <div class="modal feedback-modal system-confirm-modal" id="systemConfirmDialog" data-tone="default">
@@ -2410,8 +2472,35 @@ let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:''
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
+let archiveCategoryState={scan:null,loading:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','tagImport'];
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','categories','tagImport'];
+const PUBLIC_CATEGORY_RULES=[
+  {name:'Zikir',aliases:['zikir','daimi zikir','zikr']},
+  {name:'Mürşid',aliases:['mürşid','mürşit','mursid','mursit','mürşid-i kâmil','mürşidi kâmil']},
+  {name:'Nefs',aliases:['nefs','nefis','nefsin']},
+  {name:'Hidayet',aliases:['hidayet','hidâyet','hidayete ermek']},
+  {name:"Allah'a Ulaşmayı Dilemek",aliases:["allah'a ulaşmayı dilemek",'allah’a ulaşmayı dilemek','allaha ulaşmayı dilemek',"allah'a ulaşmak",'allah’a ulaşmak']},
+  {name:'Tövbe',aliases:['tövbe','tevbe','tövbe etmek']},
+  {name:'Tebliğ',aliases:['tebliğ','tebliğ etmek','davet']},
+  {name:'Ruh',aliases:['ruh','ruhun allah’a ulaşması',"ruhun allah'a ulaşması"]},
+  {name:'Hacet Namazı',aliases:['hacet namazı','hacet namazi']},
+  {name:'Tasavvuf',aliases:['tasavvuf','tasavvufi']},
+  {name:'Sevgi',aliases:['sevgi','sevmek','muhabbet']},
+  {name:'Devrin İmamı',aliases:['devrin imamı','devrin imami']},
+  {name:'Teslimiyet',aliases:['teslimiyet','teslim olmak','teslim']},
+  {name:'Dua',aliases:['dua','dua etmek']},
+  {name:'Namaz',aliases:['namaz','salât','salat']},
+  {name:'Cennet',aliases:['cennet','cennete girmek']},
+  {name:"Kur'ân",aliases:["kur'ân",'kur’an','kuran','kurani kerim','kur’ân-ı kerim']},
+  {name:'Nefs Tezkiyesi',aliases:['nefs tezkiyesi','tezkiye','nefsin tezkiyesi']},
+  {name:'Takva',aliases:['takva','takva sahibi']},
+  {name:'İslâm',aliases:['islâm','islam','islam olmak']},
+  {name:'Îmân',aliases:['îmân','iman','mümin','mü’min']},
+  {name:'Salâvât',aliases:['salâvât','salavat','salavat getirmek']},
+  {name:'Sohbet',aliases:['sohbet','sohbet dinlemek']},
+  {name:'Günah',aliases:['günah','günahlar']}
+];
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt','standart','youtube']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -2678,6 +2767,7 @@ function enterApp(user){
   el('pAvatar').textContent=user.name.charAt(0).toUpperCase();
   el('pName').textContent=user.name;
   el('pRole').textContent=roleLabel(user.role);
+  syncPublicCategoryDatalist();
   showTab('analiz');
   restoreWorkDraft();
   if(hasAdminRole(user.role))refreshBadges();
@@ -2773,6 +2863,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchiveReleaseReadyCandidates();
   }
   if(archiveOpsState.view==='packageOutput')loadArchiveOutputPackages();
+  if(archiveOpsState.view==='categories')loadArchiveCategoryScan();
   if(archiveOpsState.view==='tagImport')loadHistoryTagImportBatches();
 }
 function openArchiveOps(view='overview'){
@@ -3154,6 +3245,99 @@ function historyTagsChips(tags){
 function historyTagsChipItems(tags){
   return parseHistoryTags(tags).map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('');
 }
+function normalizePublicCategoryNameUi(value){
+  return String(value||'').replace(/\s+/g,' ').trim().slice(0,96);
+}
+function publicCategoryTextKeyUi(value){
+  return String(value||'')
+    .normalize('NFC')
+    .replace(/[\u2018\u2019\u201B\u02BC\u2032\u00B4`]/g,"'")
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function parsePublicRelatedCategories(value,mainCategory=''){
+  const raw=Array.isArray(value)?value.join(','):String(value||'');
+  const mainKey=publicCategoryTextKeyUi(mainCategory);
+  const seen=new Set();
+  const out=[];
+  raw.split(',').forEach(part=>{
+    const name=normalizePublicCategoryNameUi(part);
+    const key=publicCategoryTextKeyUi(name);
+    if(!name||!key||key===mainKey||seen.has(key))return;
+    seen.add(key);
+    out.push(name);
+  });
+  return out.slice(0,6);
+}
+function publicCategoryRuleScore(rule,context={}){
+  const questionKey=publicCategoryTextKeyUi(context.questionText||'');
+  const answerKey=publicCategoryTextKeyUi(context.correctedText||context.originalText||'');
+  const summaryKey=publicCategoryTextKeyUi(context.summary||'');
+  const filenameKey=publicCategoryTextKeyUi(context.filename||'');
+  const tags=parseHistoryTags(context.tags||[]).map(tag=>({tag,key:publicCategoryTextKeyUi(tag)})).filter(item=>item.key);
+  const aliasKeys=[...new Set([rule.name,...(rule.aliases||[])].map(publicCategoryTextKeyUi).filter(Boolean))];
+  let score=0;
+  const reasons=[];
+  const addReason=reason=>{if(reason&&!reasons.includes(reason)&&reasons.length<4)reasons.push(reason);};
+  aliasKeys.forEach(aliasKey=>{
+    const exact=tags.find(item=>item.key===aliasKey);
+    if(exact){score+=120;addReason(`Etiket: ${exact.tag}`);return;}
+    const partial=tags.find(item=>aliasKey.length>=4&&(item.key.includes(aliasKey)||aliasKey.includes(item.key)));
+    if(partial){score+=84;addReason(`Yakın etiket: ${partial.tag}`);}
+    if(questionKey&&questionKey.includes(aliasKey)){score+=46;addReason('Soru metninde geçiyor');}
+    if(answerKey&&answerKey.includes(aliasKey)){score+=18;addReason('Cevap metninde geçiyor');}
+    if(summaryKey&&summaryKey.includes(aliasKey)){score+=10;addReason('Özette geçiyor');}
+    if(filenameKey&&filenameKey.includes(aliasKey)){score+=8;addReason('Dosya adında geçiyor');}
+  });
+  return {score:Math.min(score,240),reasons};
+}
+function suggestPublicCategoriesUi(context={}){
+  return PUBLIC_CATEGORY_RULES.map(rule=>{
+    const scored=publicCategoryRuleScore(rule,context);
+    return {category:rule.name,score:scored.score,confidence:scored.score>=100?'yüksek':scored.score>=46?'orta':'düşük',reasons:scored.reasons};
+  }).filter(item=>item.score>=18).sort((a,b)=>b.score-a.score||a.category.localeCompare(b.category,'tr')).slice(0,7);
+}
+function publicCategoryDefaults(d={},questionText='',tagsText=''){
+  const tags=parseHistoryTags(tagsText||d.tags||[]);
+  const suggestions=Array.isArray(d.publicCategorySuggestions)&&d.publicCategorySuggestions.length
+    ? d.publicCategorySuggestions
+    : suggestPublicCategoriesUi({
+      filename:d.filename||'',
+      questionText:questionText||d.questionText||'',
+      tags,
+      correctedText:d.correctedText||correctedText||'',
+      originalText:d.originalText||currentOriginalText||'',
+      summary:d.summary||''
+    });
+  const category=normalizePublicCategoryNameUi(d.publicCategory||suggestions[0]?.category||'');
+  const related=Array.isArray(d.publicRelatedCategories)&&d.publicRelatedCategories.length
+    ? parsePublicRelatedCategories(d.publicRelatedCategories,category)
+    : parsePublicRelatedCategories(suggestions.map(item=>item.category),category).slice(0,4);
+  return {category,related,suggestions};
+}
+function publicCategorySuggestionsHtml(suggestions=[]){
+  if(!suggestions.length)return '<span class="history-category-chip muted">Öneri yok</span>';
+  return suggestions.slice(0,4).map(item=>{
+    const why=Array.isArray(item.reasons)&&item.reasons.length?` title="${escAttr(item.reasons.join(' · '))}"`:'';
+    return `<span class="history-category-chip"${why}>${esc(item.category)}</span>`;
+  }).join('');
+}
+function publicCategoryInlineHtml(item={}){
+  const category=normalizePublicCategoryNameUi(item.publicCategory||'');
+  const related=parsePublicRelatedCategories(item.publicRelatedCategories||[],category);
+  if(!category&&!related.length)return '';
+  return `<div class="history-category-inline"><strong>Kategori:</strong> ${esc(category||'Belirlenmedi')}${related.length?`<br><strong>Bağlı:</strong> ${esc(related.join(', '))}`:''}</div>`;
+}
+function syncPublicCategoryDatalist(){
+  const list=el('publicCategoryOptions');
+  if(!list)return;
+  list.innerHTML=PUBLIC_CATEGORY_RULES.map(rule=>`<option value="${escAttr(rule.name)}"></option>`).join('');
+}
 function approvalActionPersonLabel(status){
   if(status==='reddedildi')return 'Reddeden';
   if(status==='onaylandi')return 'Onaylayan';
@@ -3198,11 +3382,42 @@ function renderSubmitTagsPreview(target='modal'){
   const box=el(target==='main'?'submitApprovalTagsPreviewMain':'submitApprovalTagsPreview');
   if(!box)return;
   box.innerHTML=historyTagsChipItems(v(target==='main'?'submitApprovalTagsMain':'submitApprovalTags'));
+  renderSubmitCategorySuggestion(target);
 }
 function renderDetailTagsPreview(){
   const box=el('detailHistoryTagsPreview');
   if(!box)return;
   box.innerHTML=historyTagsChipItems(v('detailHistoryTags'));
+  renderDetailCategorySuggestion();
+}
+function renderSubmitCategorySuggestion(target='modal'){
+  const d=pendingApprovalPayload||currentResult||{};
+  const questionId=target==='main'?'submitApprovalQuestionMain':'submitApprovalQuestion';
+  const tagsId=target==='main'?'submitApprovalTagsMain':'submitApprovalTags';
+  const categoryId=target==='main'?'submitApprovalCategoryMain':'submitApprovalCategory';
+  const relatedId=target==='main'?'submitApprovalRelatedCategoriesMain':'submitApprovalRelatedCategories';
+  const suggestId=target==='main'?'submitApprovalCategorySuggestionsMain':'submitApprovalCategorySuggestions';
+  const categoryEl=el(categoryId);
+  const relatedEl=el(relatedId);
+  const suggestionsEl=el(suggestId);
+  if(!categoryEl&&!relatedEl&&!suggestionsEl)return;
+  const questionText=normalizeHistoryQuestionUi(v(questionId));
+  const tagsText=v(tagsId);
+  const defaults=publicCategoryDefaults(d,questionText,tagsText);
+  if(categoryEl&&!normalizePublicCategoryNameUi(categoryEl.value))categoryEl.value=defaults.category;
+  if(relatedEl&&!normalizePublicCategoryNameUi(relatedEl.value))relatedEl.value=defaults.related.join(', ');
+  if(suggestionsEl)suggestionsEl.innerHTML=publicCategorySuggestionsHtml(defaults.suggestions);
+}
+function renderDetailCategorySuggestion(){
+  const categoryEl=el('detailPublicCategory');
+  const relatedEl=el('detailPublicRelatedCategories');
+  const suggestionsEl=el('detailPublicCategorySuggestions');
+  if(!categoryEl&&!relatedEl&&!suggestionsEl)return;
+  const item=window._detailHistoryItem||{};
+  const defaults=publicCategoryDefaults(item,normalizeHistoryQuestionUi(v('detailHistoryQuestion')),v('detailHistoryTags'));
+  if(categoryEl&&!normalizePublicCategoryNameUi(categoryEl.value))categoryEl.value=defaults.category;
+  if(relatedEl&&!normalizePublicCategoryNameUi(relatedEl.value))relatedEl.value=defaults.related.join(', ');
+  if(suggestionsEl)suggestionsEl.innerHTML=publicCategorySuggestionsHtml(defaults.suggestions);
 }
 function resetSubmitApprovalModalState(){
   pendingApprovalPayload=null;
@@ -3211,7 +3426,10 @@ function resetSubmitApprovalModalState(){
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value='';
   if(el('submitApprovalTags'))el('submitApprovalTags').value='';
+  if(el('submitApprovalCategory'))el('submitApprovalCategory').value='';
+  if(el('submitApprovalRelatedCategories'))el('submitApprovalRelatedCategories').value='';
   if(el('submitApprovalTagsPreview'))el('submitApprovalTagsPreview').innerHTML='';
+  if(el('submitApprovalCategorySuggestions'))el('submitApprovalCategorySuggestions').innerHTML='';
   const btn=el('submitApprovalBtn');
   if(btn){btn.disabled=false;btn.textContent='Onaya Gönder';}
 }
@@ -3240,14 +3458,20 @@ function renderApprovalSubmitPanel(d){
     :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
   const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
   const tagsValue=historyTagsText(d.tags||[]);
+  const categoryDefaults=publicCategoryDefaults(d,questionValue,tagsValue);
+  const categoryValue=categoryDefaults.category;
+  const relatedValue=categoryDefaults.related.join(', ');
   const questionField=sent
     ? `<div class="history-question-field"><label>Soru</label>${questionValue?`<div class="history-question-display">${esc(questionValue)}</div>`:`<div class="history-tags-help">Soru eklenmedi.</div>`}</div>`
-    : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
+    : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın." oninput="renderSubmitCategorySuggestion('main')">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
   const tagsField=sent
     ? `<div class="history-tags-field"><label>Etiketler</label>${historyTagsChips(tagsValue)||'<div class="history-tags-help">Etiket eklenmedi.</div>'}</div>`
     : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
+  const categoryField=sent
+    ? `<div class="history-category-field"><label>Kategori</label>${categoryValue||relatedValue?publicCategoryInlineHtml({publicCategory:categoryValue,publicRelatedCategories:categoryDefaults.related}):'<div class="history-tags-help">Kategori önerisi yok.</div>'}</div>`
+    : `<div class="history-category-field"><label for="submitApprovalCategoryMain">Önerilen ana kategori</label><input class="history-category-input" id="submitApprovalCategoryMain" list="publicCategoryOptions" value="${escAttr(categoryValue)}" placeholder="Sistem önerir; gerekirse değiştirilebilir."><div class="history-tags-help">Zorunlu değildir; yetkili onayda değiştirebilir.</div><div class="history-category-suggestions" id="submitApprovalCategorySuggestionsMain">${publicCategorySuggestionsHtml(categoryDefaults.suggestions)}</div><label for="submitApprovalRelatedCategoriesMain" style="margin-top:10px">Bağlı kategoriler</label><textarea class="history-category-input" id="submitApprovalRelatedCategoriesMain" placeholder="Birden çok kategori varsa virgülle ayırın.">${esc(relatedValue)}</textarea></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
-    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div><div class="approval-submit-fields">${questionField}${tagsField}</div></div>
+    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div><div class="approval-submit-fields">${questionField}${tagsField}${categoryField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
   </div>`;
 }
@@ -3272,11 +3496,19 @@ function openSubmitApprovalModal(){
   `;
   const questionMain=el('submitApprovalQuestionMain');
   const tagsMain=el('submitApprovalTagsMain');
+  const categoryMain=el('submitApprovalCategoryMain');
+  const relatedMain=el('submitApprovalRelatedCategoriesMain');
   const questionText=questionMain?normalizeHistoryQuestionUi(questionMain.value):normalizeHistoryQuestionUi(d.questionText||'');
   const tagsText=tagsMain?tagsMain.value:historyTagsText(d.tags||[]);
+  const categoryDefaults=publicCategoryDefaults(d,questionText,tagsText);
+  const categoryText=categoryMain?normalizePublicCategoryNameUi(categoryMain.value):(d.publicCategory||categoryDefaults.category||'');
+  const relatedText=relatedMain?relatedMain.value:parsePublicRelatedCategories(d.publicRelatedCategories?.length?d.publicRelatedCategories:categoryDefaults.related,categoryText).join(', ');
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value=questionText;
   if(el('submitApprovalTags'))el('submitApprovalTags').value=tagsText;
+  if(el('submitApprovalCategory'))el('submitApprovalCategory').value=categoryText;
+  if(el('submitApprovalRelatedCategories'))el('submitApprovalRelatedCategories').value=relatedText;
   renderSubmitTagsPreview();
+  renderSubmitCategorySuggestion();
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   el('submitApprovalModal')?.classList.add('open');
 }
@@ -3407,6 +3639,8 @@ async function confirmSubmitApproval(){
   const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
   const tags=parseHistoryTags(v('submitApprovalTags'));
   const questionText=normalizeHistoryQuestionUi(v('submitApprovalQuestion'));
+  const publicCategory=normalizePublicCategoryNameUi(v('submitApprovalCategory'));
+  const publicRelatedCategories=parsePublicRelatedCategories(v('submitApprovalRelatedCategories'),publicCategory);
   if(!questionText){
     if(err)err.textContent='Onaya göndermeden önce soru alanını doldurun.';
     el('submitApprovalQuestion')?.focus();
@@ -3437,8 +3671,10 @@ async function confirmSubmitApproval(){
       summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
       analysisMeta:d.analysisMeta||{},
       questionText,
-      tags
-    }:{questionText,tags};
+      tags,
+      publicCategory,
+      publicRelatedCategories
+    }:{questionText,tags,publicCategory,publicRelatedCategories};
     const r=await api('POST',endpoint,body);
     if(r.error){if(err)err.textContent=r.error;return;}
     const newId=r.id||d.id;
@@ -3452,6 +3688,9 @@ async function confirmSubmitApproval(){
     d.status='bekliyor';
     d.tags=Array.isArray(r.tags)?r.tags:tags;
     d.questionText=typeof r.questionText==='string'?r.questionText:questionText;
+    d.publicCategory=typeof r.publicCategory==='string'?r.publicCategory:publicCategory;
+    d.publicRelatedCategories=Array.isArray(r.publicRelatedCategories)?r.publicRelatedCategories:publicRelatedCategories;
+    d.publicCategorySuggestions=Array.isArray(r.publicCategorySuggestions)?r.publicCategorySuggestions:(d.publicCategorySuggestions||[]);
     submitted=true;
     if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
     if(isMerged)d.sourceIds=[];
@@ -3462,7 +3701,7 @@ async function confirmSubmitApproval(){
     if(linkedWorkUpdate?.item)d.archiveWorkLinkedTitle=linkedWorkUpdate.item.title||archiveWorkAuditContext?.title||'Çalışma kaydı';
     if(linkedWorkUpdate?.error)d.archiveWorkLinkError=linkedWorkUpdate.error;
     historyRows=historyRows.map(h=>{
-      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText};
+      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText,publicCategory:d.publicCategory,publicRelatedCategories:d.publicRelatedCategories,publicCategorySuggestions:d.publicCategorySuggestions};
       if(sourceIds.includes(h.id))return {...h,status:'submitted_part'};
       return h;
     }).filter(h=>h.status!=='submitted_part'&&h.status!=='chunk_draft');
@@ -3851,7 +4090,7 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
+    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.publicCategory,...parsePublicRelatedCategories(h.publicRelatedCategories||[]),h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -3933,11 +4172,16 @@ async function showDetail(id){
   if(approveBtn){approveBtn.style.display='none';approveBtn.disabled=true;approveBtn.textContent='Onayla';}
   window._detailHistoryId='';
   window._detailHistoryStatus='';
+  window._detailHistoryItem=null;
   const item=await api('GET',`/api/history/${id}`);
   if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
+  window._detailHistoryItem=item;
   const text=item.correctedText||'';
   const tagsValue=historyTagsText(item.tags||[]);
   const questionValue=normalizeHistoryQuestionUi(item.questionText||'');
+  const categoryDefaults=publicCategoryDefaults(item,questionValue,tagsValue);
+  const categoryValue=categoryDefaults.category;
+  const relatedValue=categoryDefaults.related.join(', ');
   const approvalBlock=approvalActorHtml(item);
   const questionBlock=hasAdminRole(me?.role)
     ? `<div class="history-question-field" style="margin:0 0 14px"><label for="detailHistoryQuestion">Soru</label><textarea class="history-question-input" id="detailHistoryQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde soru da kaydedilir.</div></div>`
@@ -3945,16 +4189,20 @@ async function showDetail(id){
   const tagsBlock=hasAdminRole(me?.role)
     ? `<div class="history-tags-field" style="margin:0 0 14px"><label for="detailHistoryTags">Etiketler</label><textarea class="history-tags-input" id="detailHistoryTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderDetailTagsPreview()">${esc(tagsValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde etiketler de kaydedilir.</div><div class="history-tags-preview" id="detailHistoryTagsPreview">${historyTagsChipItems(tagsValue)}</div></div>`
     : historyTagsChips(tagsValue);
+  const categoryBlock=hasAdminRole(me?.role)
+    ? `<div class="history-category-grid" style="margin:0 0 14px"><div class="history-category-field"><label for="detailPublicCategory">Ana kategori</label><input class="history-category-input" id="detailPublicCategory" list="publicCategoryOptions" value="${escAttr(categoryValue)}" placeholder="Sistem önerir; gerekirse değiştirin."><div class="history-category-suggestions" id="detailPublicCategorySuggestions">${publicCategorySuggestionsHtml(categoryDefaults.suggestions)}</div><div class="history-tags-help">Bu bilgi admin içinde kalır; public çıkışta temiz kategori olarak kullanılır.</div></div><div class="history-category-field"><label for="detailPublicRelatedCategories">Bağlı kategoriler</label><textarea class="history-category-input" id="detailPublicRelatedCategories" placeholder="Birden çok kategori varsa virgülle ayırın.">${esc(relatedValue)}</textarea><div class="history-tags-help">Soru birden çok konuyla ilgiliyse burada kalır.</div></div></div>`
+    : publicCategoryInlineHtml({publicCategory:categoryValue,publicRelatedCategories:categoryDefaults.related});
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}${categoryBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
+    el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}${categoryBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
   renderDetailTagsPreview();
+  renderDetailCategorySuggestion();
   window._detailText=text;
   window._detailHistoryId=item.id||id;
   window._detailHistoryStatus=item.status||'';
@@ -4000,7 +4248,13 @@ async function rejectItem(id,btn){return setApprovalAction(id,'reject',btn);}
 async function approveDetailFromModal(btn){
   const id=window._detailHistoryId;
   if(!id){setApprovalStatus('Onaylanacak kayıt bulunamadı.','err');return;}
-  const ok=await setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))});
+  const publicCategory=normalizePublicCategoryNameUi(v('detailPublicCategory'));
+  const ok=await setApprovalAction(id,'approve',btn,{
+    questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),
+    tags:parseHistoryTags(v('detailHistoryTags')),
+    publicCategory,
+    publicRelatedCategories:parsePublicRelatedCategories(v('detailPublicRelatedCategories'),publicCategory)
+  });
   if(ok){
     window._detailHistoryStatus='onaylandi';
     if(btn){btn.disabled=true;btn.textContent='Onaylandı';}
@@ -4322,6 +4576,7 @@ async function loadOnay(){
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       const questionPreview=normalizeHistoryQuestionUi(h.questionText||'');
       const questionHtml=questionPreview?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionPreview.slice(0,180))}${questionPreview.length>180?'…':''}</div>`:'';
+      const categoryHtml=publicCategoryInlineHtml(h);
       const approvalMeta=approvalActorHtml(h);
       return `<div class="work-card">
         <div class="work-top"><div class="work-name">${esc(h.name||'—')}</div><span class="score-pill ${pc}">${sc}</span></div>
@@ -4329,6 +4584,7 @@ async function loadOnay(){
         <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
         ${approvalMeta}
         ${questionHtml}
+        ${categoryHtml}
         ${historyTagsChips(h.tags||[])}
         <div class="work-actions">
           <button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>
@@ -8091,6 +8347,78 @@ function openArchiveOutputFromReleasePackage(){
   archiveOutputState.activePackage=pkg;
   archiveOutputState.output=null;
   openArchiveOps('packageOutput');
+}
+function setArchiveCategoryStatus(message='',kind=''){
+  const box=el('archiveCategoryStatusMsg');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function archiveCategorySummaryHtml(scan={}){
+  return `
+    <div class="ops-file-summary-item"><strong>${Number(scan.total||0).toLocaleString('tr-TR')}</strong><span>İncelenen kayıt</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(scan.suggested||0).toLocaleString('tr-TR')}</strong><span>Kategori önerildi</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(scan.needsReview||0).toLocaleString('tr-TR')}</strong><span>Elle bakılacak</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(scan.tagCandidates?.length||0).toLocaleString('tr-TR')}</strong><span>Yeni aday</span></div>
+  `;
+}
+function archiveCategoryCardHtml(item={}){
+  const tags=(item.sampleTags||[]).slice(0,6).map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('');
+  return `<div class="archive-category-card">
+    <strong>${esc(item.category||'Kategori')}</strong>
+    <div class="archive-category-meta">${Number(item.count||0).toLocaleString('tr-TR')} kayıt · ${Number(item.manual||0).toLocaleString('tr-TR')} manuel karar · ${Number(item.relatedCount||0).toLocaleString('tr-TR')} bağlı kategori izi</div>
+    ${tags?`<div class="archive-category-tags">${tags}</div>`:''}
+  </div>`;
+}
+function renderArchiveCategoryScan(){
+  const scan=archiveCategoryState.scan;
+  const summary=el('archiveCategorySummary');
+  const list=el('archiveCategoryList');
+  const detail=el('archiveCategoryDetail');
+  if(!scan){
+    if(summary)summary.innerHTML='';
+    if(list)list.innerHTML='<div class="archive-release-empty">Henüz tarama yapılmadı.</div>';
+    if(detail)detail.innerHTML='<div class="empty-state">Tarama yapıldığında yeni kategori adayları ve önerilemeyen kayıt örnekleri burada görünür.</div>';
+    return;
+  }
+  if(summary)summary.innerHTML=archiveCategorySummaryHtml(scan);
+  if(list)list.innerHTML=(scan.categories||[]).length
+    ? scan.categories.map(archiveCategoryCardHtml).join('')
+    : '<div class="archive-release-empty">Kategori önerisi oluşmadı.</div>';
+  const candidates=(scan.tagCandidates||[]).slice(0,24);
+  const unmatched=(scan.unmatchedSamples||[]).slice(0,12);
+  if(detail)detail.innerHTML=`
+    <div class="ops-detail-body">
+      <div class="archive-category-section">
+        <h4>Yeni kategori adayı etiketler</h4>
+        ${candidates.length?`<div class="archive-category-tags">${candidates.map(item=>`<span class="history-category-chip">${esc(item.tag)} (${Number(item.count||0).toLocaleString('tr-TR')})</span>`).join('')}</div>`:'<div class="empty-state">Şimdilik yeni yoğun aday yok.</div>'}
+      </div>
+      <div class="archive-category-section">
+        <h4>Elle bakılacak örnekler</h4>
+        ${unmatched.length?unmatched.map(item=>`
+          <div class="archive-category-card">
+            <strong>${esc(item.filename||'Metin Girişi')}</strong>
+            <div class="archive-category-meta">${esc(item.status||'bekliyor')} · ${esc((item.tags||[]).join(', ')||'Etiket yok')}</div>
+            <div class="ops-help-text">${esc(item.questionPreview||'Soru/özet ön izlemesi yok.')}</div>
+            <button class="btn-mini" onclick="showDetail(${attrJson(item.id)})">Kaydı Aç</button>
+          </div>
+        `).join(''):'<div class="empty-state">Önerilemeyen örnek yok.</div>'}
+      </div>
+    </div>`;
+}
+async function loadArchiveCategoryScan(){
+  if(!canUseArchiveOps())return;
+  archiveCategoryState.loading=true;
+  setArchiveCategoryStatus('Kayıtlar taranıyor...');
+  const data=await api('GET','/api/history/public-category-scan');
+  archiveCategoryState.loading=false;
+  if(data.error){
+    setArchiveCategoryStatus(data.error,'err');
+    return;
+  }
+  archiveCategoryState.scan=data;
+  renderArchiveCategoryScan();
+  setArchiveCategoryStatus(`${Number(data.total||0).toLocaleString('tr-TR')} kayıt tarandı. ${Number(data.suggested||0).toLocaleString('tr-TR')} kayıt için kategori önerisi var.`,'ok');
 }
 function setHistoryTagImportStatus(message='',kind=''){
   const box=el('historyTagImportStatusMsg');

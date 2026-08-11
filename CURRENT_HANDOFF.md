@@ -2,6 +2,20 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- Kategori öneri altyapısı admin hattında kodlandı. Yeni kayıt onaya gönderilirken sistem soru,
+  etiket, cevap ve özetten `Ana kategori` + `Bağlı kategoriler` önerir; kategori kullanıcı için
+  zorunlu alan değildir, soru ve etiket zorunluluğu aynen kalır. Admin/süper admin detay onay
+  penceresinde kategori alanını değiştirebilir; onayla dediğinde karar `settings` altında
+  `history_public_category_meta:*` anahtarıyla saklanır. Audit bilgisi admin içinde kalır, normal
+  kullanıcı API cevabına ve public çıktıya taşınmaz.
+- `/admin > Arşiv Çalışmaları` menüsüne sadece süper admin için `Kategoriler` ekranı eklendi. Ekran
+  onay bekleyen ve onaylanan kayıtları tarar, kategori dağılımını, elle bakılacak örnekleri ve yoğun
+  etiketlerden yeni kategori adaylarını gösterir. Backend endpoint'i:
+  `GET /api/history/public-category-scan`. Bu adım DB migration, root `/` cutover veya public
+  frontend yayını yapmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test
+  geçti. `git diff --check` yalnız mevcut CRLF uyarılarını gösterdi.
+
 - Public ön yüz tasarımı onay aşamasına geldiği için onaylanacak soru-cevapların public'e aktarımı
   ve kategori/konu yapısı ayrıca kayda alındı. Yeni belge:
   `docs/project/PUBLIC_QA_TRANSFER_AND_CATEGORY_DECISION_2026-08-11.md`. Mevcut

@@ -505,6 +505,9 @@ const mapHistory = h => ({
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
   catCounts: h.cat_counts || {}, summary: h.summary, originalText: h.original_text, correctedText: h.corrected_text,
   questionText: h.question_text || '',
+  publicCategory: h.public_category || '',
+  publicRelatedCategories: Array.isArray(h.public_related_categories) ? h.public_related_categories : [],
+  publicCategorySuggestions: Array.isArray(h.public_category_suggestions) ? h.public_category_suggestions : [],
   status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
   tags: Array.isArray(h.tags) ? h.tags : [],
   promptVersion: h.prompt_version, rulesHash: h.rules_hash,
@@ -622,9 +625,10 @@ async function loadApprovalGroup(filterQuery) {
       .limit(80)
   );
   if (error) throw new Error(error.message);
+  const items = await enrichHistoryPublicCategories((data || []).map(mapHistory));
   return {
     count: count || 0,
-    items: (data || []).map(mapHistory)
+    items
   };
 }
 const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
@@ -637,6 +641,35 @@ const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
 const ARCHIVE_OPS_TEAM_LEADERS_KEY = 'archive_ops_team_leaders';
 const ARCHIVE_OPS_PUBLISH_TASK_META_KEY = 'archive_ops_publish_task_meta';
 const ARCHIVE_OPS_RELEASE_PACKAGES_KEY = 'archive_ops_release_packages';
+const PUBLIC_CATEGORY_RULES_KEY = 'public_category_rules';
+const HISTORY_PUBLIC_CATEGORY_META_KEY_PREFIX = 'history_public_category_meta:';
+const PUBLIC_CATEGORY_RULES_VERSION = '2026-08-11-v1';
+const DEFAULT_PUBLIC_CATEGORY_RULES = Object.freeze([
+  { name: 'Zikir', aliases: ['zikir', 'daimi zikir', 'zikr'] },
+  { name: 'Mürşid', aliases: ['mürşid', 'mürşit', 'mursid', 'mursit', 'mürşid-i kâmil', 'mürşidi kâmil'] },
+  { name: 'Nefs', aliases: ['nefs', 'nefis', 'nefsin'] },
+  { name: 'Hidayet', aliases: ['hidayet', 'hidâyet', 'hidayete ermek'] },
+  { name: "Allah'a Ulaşmayı Dilemek", aliases: ["allah'a ulaşmayı dilemek", 'allah’a ulaşmayı dilemek', 'allaha ulaşmayı dilemek', "allah'a ulaşmak", 'allah’a ulaşmak'] },
+  { name: 'Tövbe', aliases: ['tövbe', 'tevbe', 'tövbe etmek'] },
+  { name: 'Tebliğ', aliases: ['tebliğ', 'tebliğ etmek', 'davet'] },
+  { name: 'Ruh', aliases: ['ruh', 'ruhun allah’a ulaşması', "ruhun allah'a ulaşması"] },
+  { name: 'Hacet Namazı', aliases: ['hacet namazı', 'hacet namazi'] },
+  { name: 'Tasavvuf', aliases: ['tasavvuf', 'tasavvufi'] },
+  { name: 'Sevgi', aliases: ['sevgi', 'sevmek', 'muhabbet'] },
+  { name: 'Devrin İmamı', aliases: ['devrin imamı', 'devrin imami'] },
+  { name: 'Teslimiyet', aliases: ['teslimiyet', 'teslim olmak', 'teslim'] },
+  { name: 'Dua', aliases: ['dua', 'dua etmek'] },
+  { name: 'Namaz', aliases: ['namaz', 'salât', 'salat'] },
+  { name: 'Cennet', aliases: ['cennet', 'cennete girmek'] },
+  { name: "Kur'ân", aliases: ["kur'ân", 'kur’an', 'kuran', 'kurani kerim', 'kur’ân-ı kerim'] },
+  { name: 'Nefs Tezkiyesi', aliases: ['nefs tezkiyesi', 'tezkiye', 'nefsin tezkiyesi'] },
+  { name: 'Takva', aliases: ['takva', 'takva sahibi'] },
+  { name: 'İslâm', aliases: ['islâm', 'islam', 'islam olmak'] },
+  { name: 'Îmân', aliases: ['îmân', 'iman', 'mümin', 'mü’min'] },
+  { name: 'Salâvât', aliases: ['salâvât', 'salavat', 'salavat getirmek'] },
+  { name: 'Sohbet', aliases: ['sohbet', 'sohbet dinlemek'] },
+  { name: 'Günah', aliases: ['günah', 'günahlar'] }
+]);
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'youtube', 'dokuman', 'standart', 'not'];
@@ -917,6 +950,231 @@ function requireApprovalQuestionAndTags(body = {}) {
     throw err;
   }
   return { questionText, tags };
+}
+
+function normalizePublicCategoryName(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 96);
+}
+
+function publicCategoryTextKey(value = '') {
+  return normalizeText(value)
+    .replace(/[\u2018\u2019\u201B\u02BC\u2032\u00B4`]/g, "'")
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizePublicRelatedCategories(value, mainCategory = '') {
+  const raw = Array.isArray(value) ? value.join(',') : String(value || '');
+  const mainKey = publicCategoryTextKey(mainCategory);
+  const seen = new Set();
+  const out = [];
+  raw.split(',').forEach(part => {
+    const name = normalizePublicCategoryName(part);
+    const key = publicCategoryTextKey(name);
+    if (!name || !key || key === mainKey || seen.has(key)) return;
+    seen.add(key);
+    out.push(name);
+  });
+  return out.slice(0, 6);
+}
+
+function normalizePublicCategoryRules(value) {
+  const raw = Array.isArray(value) && value.length ? value : DEFAULT_PUBLIC_CATEGORY_RULES;
+  const seen = new Set();
+  const rules = [];
+  raw.forEach(rule => {
+    const name = normalizePublicCategoryName(rule?.name);
+    const key = publicCategoryTextKey(name);
+    if (!name || !key || seen.has(key)) return;
+    seen.add(key);
+    const aliases = [...new Set([name, ...(Array.isArray(rule.aliases) ? rule.aliases : [])]
+      .map(normalizePublicCategoryName)
+      .filter(Boolean))].slice(0, 16);
+    rules.push({ name, aliases });
+  });
+  return rules.length ? rules : DEFAULT_PUBLIC_CATEGORY_RULES.map(rule => ({ ...rule, aliases: [...rule.aliases] }));
+}
+
+async function loadPublicCategoryRules() {
+  return normalizePublicCategoryRules(await loadJsonSetting(PUBLIC_CATEGORY_RULES_KEY, DEFAULT_PUBLIC_CATEGORY_RULES));
+}
+
+function pushPublicCategoryReason(reasons, reason) {
+  if (!reason || reasons.includes(reason) || reasons.length >= 4) return;
+  reasons.push(reason);
+}
+
+function scorePublicCategoryRule(rule, context = {}) {
+  const questionKey = publicCategoryTextKey(context.questionText || '');
+  const answerKey = publicCategoryTextKey(context.correctedText || context.originalText || '');
+  const summaryKey = publicCategoryTextKey(context.summary || '');
+  const filenameKey = publicCategoryTextKey(context.filename || '');
+  const tagEntries = normalizeHistoryTags(context.tags || []).map(tag => ({ tag, key: publicCategoryTextKey(tag) })).filter(item => item.key);
+  const aliasKeys = [...new Set([rule.name, ...(rule.aliases || [])].map(publicCategoryTextKey).filter(Boolean))];
+  let score = 0;
+  const reasons = [];
+
+  aliasKeys.forEach(aliasKey => {
+    const exactTag = tagEntries.find(item => item.key === aliasKey);
+    if (exactTag) {
+      score += 120;
+      pushPublicCategoryReason(reasons, `Etiket: ${exactTag.tag}`);
+      return;
+    }
+    const partialTag = tagEntries.find(item => aliasKey.length >= 4 && (item.key.includes(aliasKey) || aliasKey.includes(item.key)));
+    if (partialTag) {
+      score += 84;
+      pushPublicCategoryReason(reasons, `Yakın etiket: ${partialTag.tag}`);
+    }
+    if (questionKey && questionKey.includes(aliasKey)) {
+      score += 46;
+      pushPublicCategoryReason(reasons, 'Soru metninde geçiyor');
+    }
+    if (answerKey && answerKey.includes(aliasKey)) {
+      score += 18;
+      pushPublicCategoryReason(reasons, 'Cevap metninde geçiyor');
+    }
+    if (summaryKey && summaryKey.includes(aliasKey)) {
+      score += 10;
+      pushPublicCategoryReason(reasons, 'Özette geçiyor');
+    }
+    if (filenameKey && filenameKey.includes(aliasKey)) {
+      score += 8;
+      pushPublicCategoryReason(reasons, 'Dosya adında geçiyor');
+    }
+  });
+
+  return { score: Math.min(score, 240), reasons };
+}
+
+function suggestPublicCategories(context = {}, rules = DEFAULT_PUBLIC_CATEGORY_RULES) {
+  return normalizePublicCategoryRules(rules)
+    .map(rule => {
+      const result = scorePublicCategoryRule(rule, context);
+      return {
+        category: rule.name,
+        score: result.score,
+        confidence: result.score >= 100 ? 'yüksek' : result.score >= 46 ? 'orta' : 'düşük',
+        reasons: result.reasons
+      };
+    })
+    .filter(item => item.score >= 18)
+    .sort((a, b) => b.score - a.score || a.category.localeCompare(b.category, 'tr'))
+    .slice(0, 7);
+}
+
+function historyPublicCategoryMetaKey(historyId) {
+  return `${HISTORY_PUBLIC_CATEGORY_META_KEY_PREFIX}${historyId}`;
+}
+
+function normalizePublicCategoryMeta(value = {}) {
+  const publicCategory = normalizePublicCategoryName(value.publicCategory || value.category);
+  const publicRelatedCategories = normalizePublicRelatedCategories(value.publicRelatedCategories || value.relatedCategories, publicCategory);
+  const suggestions = Array.isArray(value.publicCategorySuggestions || value.suggestions)
+    ? (value.publicCategorySuggestions || value.suggestions).slice(0, 7).map(item => ({
+      category: normalizePublicCategoryName(item.category),
+      score: Math.max(0, Math.min(240, Math.round(Number(item.score || 0)))),
+      confidence: ['yüksek', 'orta', 'düşük'].includes(item.confidence) ? item.confidence : 'düşük',
+      reasons: Array.isArray(item.reasons) ? item.reasons.map(reason => String(reason || '').slice(0, 80)).filter(Boolean).slice(0, 4) : []
+    })).filter(item => item.category)
+    : [];
+  return {
+    publicCategory,
+    publicRelatedCategories,
+    publicCategorySuggestions: suggestions,
+    source: value.source === 'manual' ? 'manual' : 'auto',
+    updatedBy: String(value.updatedBy || '').slice(0, 120),
+    updatedAt: normalizeIsoDate(value.updatedAt) || new Date().toISOString(),
+    rulesVersion: value.rulesVersion || PUBLIC_CATEGORY_RULES_VERSION
+  };
+}
+
+function buildPublicCategoryMeta(context = {}, options = {}) {
+  const suggestions = suggestPublicCategories(context, options.rules || DEFAULT_PUBLIC_CATEGORY_RULES);
+  const requestedCategory = normalizePublicCategoryName(options.publicCategory);
+  const publicCategory = requestedCategory || suggestions[0]?.category || '';
+  const explicitRelated = normalizePublicRelatedCategories(options.publicRelatedCategories, publicCategory);
+  const suggestedRelated = suggestions
+    .map(item => item.category)
+    .filter(category => publicCategoryTextKey(category) !== publicCategoryTextKey(publicCategory));
+  const publicRelatedCategories = explicitRelated.length ? explicitRelated : normalizePublicRelatedCategories(suggestedRelated, publicCategory).slice(0, 4);
+  return normalizePublicCategoryMeta({
+    publicCategory,
+    publicRelatedCategories,
+    publicCategorySuggestions: suggestions,
+    source: options.source || (requestedCategory ? 'manual' : 'auto'),
+    updatedBy: options.updatedBy || '',
+    updatedAt: new Date().toISOString(),
+    rulesVersion: PUBLIC_CATEGORY_RULES_VERSION
+  });
+}
+
+function publicCategoryFieldsForHistory(history = {}, meta = null, rules = DEFAULT_PUBLIC_CATEGORY_RULES) {
+  const suggestions = suggestPublicCategories(history, rules);
+  const saved = meta ? normalizePublicCategoryMeta(meta) : null;
+  const publicCategory = saved?.publicCategory || suggestions[0]?.category || '';
+  const publicRelatedCategories = saved?.publicRelatedCategories?.length
+    ? saved.publicRelatedCategories
+    : normalizePublicRelatedCategories(suggestions.map(item => item.category), publicCategory).slice(0, 4);
+  return {
+    publicCategory,
+    publicRelatedCategories,
+    publicCategorySuggestions: suggestions,
+    publicCategorySource: saved?.source || (publicCategory ? 'auto' : '')
+  };
+}
+
+async function loadHistoryPublicCategoryMetaByIds(ids = []) {
+  const cleanIds = safeUuidList(ids, 5000);
+  const out = new Map();
+  for (let i = 0; i < cleanIds.length; i += 100) {
+    const chunk = cleanIds.slice(i, i + 100);
+    const keys = chunk.map(historyPublicCategoryMetaKey);
+    const { data, error } = await supabase.from('settings').select('key,value').in('key', keys);
+    if (error) throw new Error(error.message);
+    (data || []).forEach(row => {
+      const id = String(row.key || '').slice(HISTORY_PUBLIC_CATEGORY_META_KEY_PREFIX.length);
+      try {
+        out.set(id, normalizePublicCategoryMeta(JSON.parse(row.value || '{}')));
+      } catch {
+        // Bozuk meta kaydı öneri üretimini durdurmasın.
+      }
+    });
+  }
+  return out;
+}
+
+async function saveHistoryPublicCategoryMeta(historyId, meta) {
+  if (!historyId) return null;
+  const clean = normalizePublicCategoryMeta(meta);
+  await saveJsonSetting(historyPublicCategoryMetaKey(historyId), clean);
+  return clean;
+}
+
+async function enrichHistoryPublicCategories(items) {
+  const list = Array.isArray(items) ? items : [items].filter(Boolean);
+  if (!list.length) return Array.isArray(items) ? [] : items;
+  const [rules, metaMap] = await Promise.all([
+    loadPublicCategoryRules(),
+    loadHistoryPublicCategoryMetaByIds(list.map(item => item.id).filter(Boolean))
+  ]);
+  list.forEach(item => {
+    Object.assign(item, publicCategoryFieldsForHistory(item, metaMap.get(item.id), rules));
+  });
+  return Array.isArray(items) ? list : list[0];
 }
 
 function normalizeImportTags(value) {
@@ -5787,7 +6045,8 @@ app.get('/api/history', auth, async (req, res) => {
       else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       return q;
     });
-    res.json((data || []).map(row => mapHistoryForRole(row, req.session.role)).filter(h => !isHiddenHistoryForRole(h, req.session.role)));
+    const rows = (data || []).map(row => mapHistoryForRole(row, req.session.role)).filter(h => !isHiddenHistoryForRole(h, req.session.role));
+    res.json(await enrichHistoryPublicCategories(rows));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -5808,6 +6067,108 @@ app.get('/api/history/approval-board', auth, admin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get('/api/history/public-category-scan', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const rules = await loadPublicCategoryRules();
+    const knownCategoryKeys = new Set();
+    normalizePublicCategoryRules(rules).forEach(rule => {
+      [rule.name, ...(rule.aliases || [])].forEach(value => {
+        const key = publicCategoryTextKey(value);
+        if (key) knownCategoryKeys.add(key);
+      });
+    });
+    const rows = await fetchAllPages(() => supabase.from('history')
+      .select('id,user_id,username,name,filename,summary,status,question_text,tags,created_at')
+      .or('status.is.null,status.in.(bekliyor,onaylandi)')
+      .order('created_at', { ascending: false }), 1000);
+    const items = (rows || []).filter(row => !isChunkHistoryRow(row)).map(mapHistory);
+    const metaMap = await loadHistoryPublicCategoryMetaByIds(items.map(item => item.id));
+    const categoryMap = new Map();
+    const tagMap = new Map();
+    const unmatchedSamples = [];
+    let withQuestion = 0;
+    let withTags = 0;
+    let suggested = 0;
+    let manual = 0;
+    let saved = 0;
+
+    items.forEach(item => {
+      if (normalizeHistoryQuestion(item.questionText)) withQuestion++;
+      const tags = normalizeHistoryTags(item.tags || []);
+      if (tags.length) withTags++;
+      tags.forEach(tag => {
+        const key = publicCategoryTextKey(tag);
+        if (!key) return;
+        const current = tagMap.get(key) || { tag, key, count: 0 };
+        current.count++;
+        tagMap.set(key, current);
+      });
+      const meta = metaMap.get(item.id);
+      if (meta) saved++;
+      const fields = publicCategoryFieldsForHistory(item, meta, rules);
+      if (fields.publicCategory) {
+        suggested++;
+        if (fields.publicCategorySource === 'manual') manual++;
+        const key = publicCategoryTextKey(fields.publicCategory);
+        const current = categoryMap.get(key) || {
+          category: fields.publicCategory,
+          count: 0,
+          manual: 0,
+          relatedCount: 0,
+          sampleTags: []
+        };
+        current.count++;
+        if (fields.publicCategorySource === 'manual') current.manual++;
+        current.relatedCount += fields.publicRelatedCategories.length;
+        tags.slice(0, 4).forEach(tag => {
+          if (!current.sampleTags.includes(tag) && current.sampleTags.length < 8) current.sampleTags.push(tag);
+        });
+        categoryMap.set(key, current);
+      } else if (unmatchedSamples.length < 24) {
+        unmatchedSamples.push({
+          id: item.id,
+          status: item.status || 'bekliyor',
+          filename: item.filename || 'Metin Girişi',
+          questionPreview: archiveTextPreview(item.questionText || item.summary || '', 180),
+          tags
+        });
+      }
+    });
+
+    const tagCandidates = [...tagMap.values()]
+      .filter(item => item.count >= 8)
+      .filter(item => {
+        for (const known of knownCategoryKeys) {
+          if (item.key === known || (known.length >= 4 && item.key.includes(known)) || (item.key.length >= 4 && known.includes(item.key))) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'tr'))
+      .slice(0, 40)
+      .map(({ tag, count }) => ({ tag, count }));
+
+    const categories = [...categoryMap.values()]
+      .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category, 'tr'))
+      .slice(0, 80);
+
+    res.json({
+      ready: true,
+      rulesVersion: PUBLIC_CATEGORY_RULES_VERSION,
+      ruleCount: rules.length,
+      total: items.length,
+      withQuestion,
+      withTags,
+      suggested,
+      saved,
+      manual,
+      needsReview: Math.max(0, items.length - suggested),
+      categories,
+      tagCandidates,
+      unmatchedSamples
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
   try {
     let query = supabase.from('history').select('*').eq('id', req.params.id);
@@ -5822,7 +6183,7 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     if (data.user_id === req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
-    res.json(mapped);
+    res.json(await enrichHistoryPublicCategories(mapped));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -6069,7 +6430,19 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
     }
     if (historyStatusForApproval(history.status)) {
-      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '' });
+      const existing = await enrichHistoryPublicCategories(mapHistory(history));
+      return res.json({
+        success: true,
+        id: history.id,
+        status: 'bekliyor',
+        alreadySubmitted: true,
+        tags: existing.tags || [],
+        questionText: existing.questionText || '',
+        publicCategory: existing.publicCategory || '',
+        publicRelatedCategories: existing.publicRelatedCategories || [],
+        publicCategorySuggestions: existing.publicCategorySuggestions || [],
+        publicCategorySource: existing.publicCategorySource || ''
+      });
     }
     if (history.status !== 'taslak') return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
     const approvalMeta = requireApprovalQuestionAndTags(req.body);
@@ -6092,9 +6465,35 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       .select('*')
       .single();
     if (updateError) throw new Error(updateError.message);
+    const categoryRules = await loadPublicCategoryRules();
+    const publicCategoryMeta = buildPublicCategoryMeta({
+      filename: data.filename || history.filename,
+      questionText: approvalMeta.questionText,
+      tags: approvalMeta.tags,
+      correctedText: data.corrected_text || history.corrected_text || '',
+      originalText: data.original_text || history.original_text || '',
+      summary: data.summary || history.summary || ''
+    }, {
+      rules: categoryRules,
+      publicCategory: req.body?.publicCategory,
+      publicRelatedCategories: req.body?.publicRelatedCategories,
+      source: 'auto',
+      updatedBy: approvalActorName(req)
+    });
+    if (publicCategoryMeta.publicCategory || publicCategoryMeta.publicRelatedCategories.length || publicCategoryMeta.publicCategorySuggestions.length) {
+      await saveHistoryPublicCategoryMeta(data.id, publicCategoryMeta);
+    }
+    const publicCategoryFields = publicCategoryFieldsForHistory(mapHistory(data), publicCategoryMeta, categoryRules);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
-    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '' });
+    res.json({
+      success: true,
+      id: data.id,
+      status: data.status,
+      tags: data.tags || updateRow.tags || [],
+      questionText: data.question_text || updateRow.question_text || '',
+      ...publicCategoryFields
+    });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
     res.status(e.statusCode || 500).json({ error: e.message });
@@ -6194,6 +6593,25 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
 
     const { data, error: insertError } = await supabase.from('history').insert(mergedRow).select('*').single();
     if (insertError) throw new Error(insertError.message);
+    const categoryRules = await loadPublicCategoryRules();
+    const publicCategoryMeta = buildPublicCategoryMeta({
+      filename: data.filename || mergedRow.filename,
+      questionText: approvalMeta.questionText,
+      tags: approvalMeta.tags,
+      correctedText: data.corrected_text || payload.correctedText || '',
+      originalText: data.original_text || payload.originalText || '',
+      summary: data.summary || payload.summary || ''
+    }, {
+      rules: categoryRules,
+      publicCategory: req.body?.publicCategory,
+      publicRelatedCategories: req.body?.publicRelatedCategories,
+      source: 'auto',
+      updatedBy: approvalActorName(req)
+    });
+    if (publicCategoryMeta.publicCategory || publicCategoryMeta.publicRelatedCategories.length || publicCategoryMeta.publicCategorySuggestions.length) {
+      await saveHistoryPublicCategoryMeta(data.id, publicCategoryMeta);
+    }
+    const publicCategoryFields = publicCategoryFieldsForHistory(mapHistory(data), publicCategoryMeta, categoryRules);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     const { error: hideError } = await supabase.from('history')
       .update({ status: SUBMITTED_PART_STATUS })
@@ -6202,7 +6620,14 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
     if (hideError) console.warn('Birlesik onay sonrasi parca gizleme uyarisi:', hideError.message);
     await maybeCreateLowScoreAlert(req, data.id, payload.score, payload.filename);
-    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || mergedRow.tags || [], questionText: data.question_text || mergedRow.question_text || '' });
+    res.json({
+      success: true,
+      id: data.id,
+      status: data.status,
+      tags: data.tags || mergedRow.tags || [],
+      questionText: data.question_text || mergedRow.question_text || '',
+      ...publicCategoryFields
+    });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);
     res.status(e.statusCode || 500).json({ error: e.message });
@@ -6331,7 +6756,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
 async function setApproval(req, res, status) {
   try {
     const { data: current, error: currentError } = await supabase.from('history')
-      .select('id,user_id,status,filename,corrected_text')
+      .select('id,user_id,status,filename,corrected_text,summary,question_text,tags')
       .eq('id', req.params.id)
       .maybeSingle();
     if (currentError) throw new Error(currentError.message);
@@ -6341,21 +6766,42 @@ async function setApproval(req, res, status) {
     const updateRow = {
       status, approved_by: approvalActorName(req), approved_at: new Date().toISOString()
     };
+    let nextQuestionText = current.question_text || '';
+    let nextTags = Array.isArray(current.tags) ? current.tags : [];
     if (HAS_HISTORY_TAGS && Object.prototype.hasOwnProperty.call(req.body || {}, 'tags')) {
-      updateRow.tags = normalizeHistoryTags(req.body?.tags);
+      nextTags = normalizeHistoryTags(req.body?.tags);
+      updateRow.tags = nextTags;
     }
     if (HAS_HISTORY_QUESTION_TEXT && Object.prototype.hasOwnProperty.call(req.body || {}, 'questionText')) {
-      updateRow.question_text = normalizeHistoryQuestion(req.body?.questionText);
+      nextQuestionText = normalizeHistoryQuestion(req.body?.questionText);
+      updateRow.question_text = nextQuestionText;
     }
+    const categoryTouched = Object.prototype.hasOwnProperty.call(req.body || {}, 'publicCategory')
+      || Object.prototype.hasOwnProperty.call(req.body || {}, 'publicRelatedCategories');
+    const categoryRules = await loadPublicCategoryRules();
+    const publicCategoryMeta = categoryTouched ? buildPublicCategoryMeta({
+      filename: current.filename || '',
+      questionText: nextQuestionText,
+      tags: nextTags,
+      correctedText: current.corrected_text || '',
+      summary: current.summary || ''
+    }, {
+      rules: categoryRules,
+      publicCategory: req.body?.publicCategory,
+      publicRelatedCategories: req.body?.publicRelatedCategories,
+      source: 'manual',
+      updatedBy: approvalActorName(req)
+    }) : null;
     const { data, error } = await supabase.from('history')
       .update(updateRow)
       .eq('id', req.params.id)
       .select(APPROVAL_BOARD_SELECT_COLUMNS);
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    if (publicCategoryMeta) await saveHistoryPublicCategoryMeta(data[0].id, publicCategoryMeta);
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
     if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
-    res.json({ success: true, history: mapHistory(data[0]) });
+    res.json({ success: true, history: await enrichHistoryPublicCategories(mapHistory(data[0])) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
 app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req, res, 'onaylandi'));
@@ -6377,6 +6823,36 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/tags', auth, admin, async (req, res
 });
 
 // ── ALERTS ────────────────────────────────────────────────────────────────
+app.post('/api/history/:id([0-9a-fA-F-]{36})/public-category', auth, admin, async (req, res) => {
+  try {
+    const { data: history, error } = await supabase.from('history')
+      .select('id,filename,summary,corrected_text,original_text,question_text,tags,status,created_at')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!history || isHiddenHistoryForRole(mapHistory(history), ROLES.ADMIN)) {
+      return res.status(404).json({ error: 'KayÄ±t bulunamadÄ±.' });
+    }
+    const rules = await loadPublicCategoryRules();
+    const meta = buildPublicCategoryMeta({
+      filename: history.filename || '',
+      questionText: history.question_text || '',
+      tags: history.tags || [],
+      correctedText: history.corrected_text || '',
+      originalText: history.original_text || '',
+      summary: history.summary || ''
+    }, {
+      rules,
+      publicCategory: req.body?.publicCategory,
+      publicRelatedCategories: req.body?.publicRelatedCategories,
+      source: 'manual',
+      updatedBy: approvalActorName(req)
+    });
+    await saveHistoryPublicCategoryMeta(history.id, meta);
+    res.json({ success: true, id: history.id, ...publicCategoryFieldsForHistory(mapHistory(history), meta, rules) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 function ensureHistoryTagImportReady(res) {
   if (!HAS_HISTORY_TAGS) {
     res.status(400).json({ error: 'Denetim kayıtlarında etiket alanı aktif değil. schema.sql içindeki history.tags SQL satırı uygulanmalı.' });
