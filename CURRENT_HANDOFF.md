@@ -2,6 +2,25 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- Public ön yüz tasarımı onay aşamasına geldiği için onaylanacak soru-cevapların public'e aktarımı
+  ve kategori/konu yapısı ayrıca kayda alındı. Yeni belge:
+  `docs/project/PUBLIC_QA_TRANSFER_AND_CATEGORY_DECISION_2026-08-11.md`. Mevcut
+  `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md` de bu belgeye bağlandı. Salt-okunur
+  canlı Supabase sayımı: `taslak=249`, `bekliyor=3008`, `onaylandi=11`, `reddedildi=271`;
+  bekleyen kayıtların 2894'ünde soru, 2895'inde etiket var, 114 soru ve 113 etiket eksiği public
+  aktarım öncesi ayrıca kontrol edilmeli. Onaylı 11 kaydın tamamında soru ve etiket var.
+- Public aktarım kararı: kısa vadede kilitli `Yayın Dosyası` üzerinden `public-json` üretip public
+  frontend'e vermek en hızlı ve kontrollü yoldur. Kalıcı yayın sistemi için `public_qa`,
+  `public_categories`, `public_topics` ve `public_qa_topics` katmanı gereklidir. Etiketlerin tamamı
+  kategori olmayacak; kategori geniş ana raf, etiketler ise konu/kavram olacaktır. İlk kategori
+  taslağı yeni belgeye işlendi; `Zikir`, `Mürşid`, `Nefs`, `Hidayet`, `Tövbe`,
+  `Allah'a/Allah’a Ulaşmayı Dilemek`, `Kur’ân` gibi yoğun etiketlerde alias/normalizasyon
+  gereklidir.
+- Bu kayıt yalnız dokümantasyon/plan güncellemesidir; kod, DB migration, root `/`, deploy veya
+  public frontend dosyası değişmedi. Sıradaki güvenli iş: onaylar bittikten sonra canlı sayımı
+  tekrar almak, eksik soru/etiketli kayıtları ayırmak, etiket normalizasyon tablosu ve ilk kategori
+  eşleştirmesini hazırlamak.
+
 - `/admin > Arşiv Çalışmaları > Metin Kaynakları` ekranı hadis/slayt sınırlamasından çıkarıldı.
   Eski menü adı `Hadisler ve Slaytlar` yerine `Metin Kaynakları` oldu; ekran artık `hadis`,
   `slayt`, `standart` ve yeni `youtube` kaynak türlerini birlikte gösterir. Kaynak formu,

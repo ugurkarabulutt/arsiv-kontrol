@@ -12,6 +12,21 @@ hangi temiz sözleşmeyle alacağını netleştirmek.
 Temel karar: Public ön yüz `history` tablosunu doğrudan okumaz. Admin tarafı onay, son kontrol ve
 çıktı sürecinden geçen temiz public kayıtları üretir; public ön yüz yalnız bu temiz kayıtları alır.
 
+## 2026-08-11 Güncel Aktarım Notu
+
+Public ön yüz tasarımı onay aşamasına geldiği için bugünkü onaylanacak soru-cevapların aktarım
+kararı ayrıca kayda alındı:
+
+- Detaylı not: `docs/project/PUBLIC_QA_TRANSFER_AND_CATEGORY_DECISION_2026-08-11.md`
+- Canlı salt-okunur sayımda `bekliyor=3008`, `onaylandi=11`, `taslak=249`, `reddedildi=271`
+  görüldü.
+- Bekleyen kayıtların 2894'ünde soru, 2895'inde etiket var; 114 soru ve 113 etiket eksiği
+  public aktarım öncesi ayrı kontrol edilmelidir.
+- 2750 benzersiz etiket varyantı bulunduğu için etiketlerin tamamı kategori yapılmayacak;
+  az sayıda ana `public_categories`, çoklu kavram/etiket için `public_topics` kullanılacaktır.
+- Bugünkü hızlı entegrasyon için öneri `public-json`; kalıcı yayın sistemi için öneri ayrı
+  `public_qa` veri katmanıdır.
+
 ## Kapsam Sınırı
 
 - Bu çalışma admin projesinde kayıt ve sözleşme çalışmasıdır.
