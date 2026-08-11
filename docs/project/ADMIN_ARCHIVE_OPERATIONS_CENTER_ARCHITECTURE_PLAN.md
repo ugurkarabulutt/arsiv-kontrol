@@ -305,7 +305,7 @@ Arama gereken alanlar:
 - hadisler
 - slayt metinleri
 - YouTube transkriptleri
-- yayın görevleri
+- yayın linkleri
 - çalışma kayıtları
 - standartlar
 - onay kuyruğu
@@ -655,7 +655,7 @@ Normal kullanıcıya açmadan önce şunlar çalışmalı:
 
 - süper admin kaynak oluşturabilir
 - süper admin kaynaklarda arama yapabilir
-- süper admin yayın görevi oluşturabilir
+- süper admin yayın linki oluşturabilir
 - süper admin çalışma kaydı oluşturabilir
 - hadis/slayt metni çalışma kaydında gerçek metin olarak görünür
 - arama ana ekranlarda çalışır
@@ -696,7 +696,7 @@ Kodlamadan önce netleşmesi gereken kararlar:
 3. Google'dan içe aktarılan eski satırlar hangi statüyle başlayacak?
 4. Hadis/slayt kaynakları ilk fazda düz metin mi, zengin biçimli metin mi tutulacak?
 5. YouTube transkriptleri ilk fazda manuel yükleme/yapıştırma mı olacak?
-6. Yayın görevi atama yetkisi pilot sonrası adminlere açılacak mı?
+6. Yayın linki atama yetkisi pilot sonrası seçili ekip liderlerine nasıl açılacak?
 7. Standartlar denetim motoruna otomatik mi bağlanacak, yoksa süper admin onayı şart mı olacak?
 
 2026-08-11 itibarıyla netleşen kararlar:

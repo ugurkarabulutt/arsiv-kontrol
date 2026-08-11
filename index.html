@@ -417,6 +417,16 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-member-link{border:1px solid var(--border);background:var(--bg);padding:10px;min-width:0;}
 .ops-member-link-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
 .ops-member-link-url{font-size:12px;line-height:1.45;margin-top:5px;overflow-wrap:anywhere;word-break:break-word;}
+.ops-leader-panel{border:1px solid var(--border);background:var(--bg);padding:12px;margin-bottom:12px;min-width:0;}
+.ops-leader-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.ops-leader-head>div{min-width:0;}
+.ops-leader-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.35;}
+.ops-leader-copy{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:3px;}
+.ops-leader-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;max-height:220px;overflow:auto;}
+.ops-leader-choice{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--border);background:var(--surface);padding:9px;color:var(--ink);min-width:0;}
+.ops-leader-choice input{margin-top:2px;flex:0 0 auto;}
+.ops-leader-name{font-size:12px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;}
+.ops-leader-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);line-height:1.4;margin-top:2px;overflow-wrap:anywhere;}
 .ops-file-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;}
 .ops-file-card{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;color:var(--ink);cursor:pointer;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;}
 .ops-file-card:hover{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
@@ -648,7 +658,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-team-board{padding:10px}.ops-team-board-head{display:grid;grid-template-columns:1fr;gap:8px}.ops-team-board-head .btn-sec{width:100%;white-space:normal}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid,.ops-leader-list{grid-template-columns:1fr}.ops-team-board,.ops-leader-panel{padding:10px}.ops-team-board-head,.ops-leader-head{display:grid;grid-template-columns:1fr;gap:8px}.ops-team-board-head .btn-sec,.ops-leader-head .btn-sec{width:100%;white-space:normal}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 @media(max-width:640px){.candidate-review-grid{grid-template-columns:1fr}.candidate-trace-row{grid-template-columns:1fr;gap:2px}.candidate-public-preview{padding:12px}.candidate-public-preview h4{font-size:16px}.candidate-review-card{padding:12px}}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
@@ -1566,6 +1576,17 @@ canvas{width:100%!important;}
             <button class="btn-sec" onclick="clearArchivePublishForm()">Yeni Yayın Linki</button>
           </div>
           <div class="ops-panel-body">
+            <div class="ops-leader-panel">
+              <div class="ops-leader-head">
+                <div>
+                  <div class="ops-leader-title">Seçili Ekip Liderleri</div>
+                  <div class="ops-leader-copy">Yayın linki atama sorumluluğu bu listeden seçilen ekip liderlerinde tutulur. Bu alan şimdilik yalnız süper admin tarafından yönetilir.</div>
+                </div>
+                <button class="btn-sec" onclick="saveArchiveTeamLeaders()">Liderleri Sakla</button>
+              </div>
+              <div class="ops-leader-list" id="archiveTeamLeaderList"><div class="empty-state">Ekip liderleri yükleniyor...</div></div>
+              <div class="ops-status" id="archiveTeamLeaderStatus"></div>
+            </div>
             <div class="ops-work-layout">
               <div class="ops-work-form">
                 <input class="ops-field" id="archivePublishTitle" placeholder="Yayın linki başlığı">
@@ -1580,7 +1601,7 @@ canvas{width:100%!important;}
                     <option value="kaynak_eksik">Kaynak eksik</option>
                     <option value="revizyon_gerekli">Revizyon gerekli</option>
                     <option value="beklet">Beklet</option>
-                    <option value="tamamlandi">Tamamlandı</option>
+                    <option value="tamamlandi" disabled>Tamamlandı (Tamam İşaretle ile)</option>
                     <option value="iptal">İptal</option>
                   </select>
                   <select class="ops-field" id="archivePublishPriority">
@@ -1593,6 +1614,9 @@ canvas{width:100%!important;}
                   <input class="ops-field" id="archivePublishAssignedTo" placeholder="Atanan kişi">
                   <input class="ops-field" id="archivePublishDueDate" type="date" aria-label="Hedef tarih">
                 </div>
+                <select class="ops-field" id="archivePublishAssignedBy" style="margin-top:10px" aria-label="Atayan ekip lideri">
+                  <option value="">Atayan ekip lideri seçilmedi</option>
+                </select>
                 <div class="ops-form-grid two" style="margin-top:10px">
                   <input class="ops-field" id="archivePublishDate" type="date" aria-label="Yayın tarihi">
                   <input class="ops-field" id="archivePublishPlatform" placeholder="Platform / program">
@@ -2365,7 +2389,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveTeamState={activeMember:'',members:[]},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveTeamState={activeMember:'',members:[]},archiveTeamLeaderState={users:[],leaders:[],loading:false,saving:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
@@ -2713,6 +2737,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   else if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
   else if(archiveOpsState.view==='texts')loadArchiveTextSources();
   if(archiveOpsState.view==='publishing'){
+    loadArchiveTeamLeaders({silent:true});
     loadArchiveOpsSources({ignoreFilters:true});
     loadArchiveWorkItems({silent:true});
     loadArchivePublishTasks();
@@ -5839,6 +5864,79 @@ function setArchivePublishStatus(message='',kind=''){
   box.textContent=message;
   box.className=`ops-status ${kind||''}`.trim();
 }
+function setArchiveTeamLeaderStatus(message='',kind=''){
+  const box=el('archiveTeamLeaderStatus');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function archiveTeamLeaderIdSet(){
+  return new Set((archiveTeamLeaderState.leaders||[]).map(leader=>leader.userId).filter(Boolean));
+}
+function renderArchiveTeamLeaderOptions(){
+  const select=el('archivePublishAssignedBy');
+  if(!select)return;
+  const current=archivePublishState.activeTask?.assignedByUserId||select.value||'';
+  const leaders=archiveTeamLeaderState.leaders||[];
+  select.innerHTML='<option value="">Atayan ekip lideri seçilmedi</option>'+leaders.map(leader=>`<option value="${esc(leader.userId)}">${esc(leader.name||leader.username||'İsimsiz kullanıcı')}</option>`).join('');
+  if(current&&leaders.some(leader=>leader.userId===current))select.value=current;
+}
+function renderArchiveTeamLeaderList(){
+  const box=el('archiveTeamLeaderList');
+  if(!box)return;
+  const selected=archiveTeamLeaderIdSet();
+  const users=archiveTeamLeaderState.users||[];
+  if(archiveTeamLeaderState.loading){
+    box.innerHTML='<div class="empty-state">Ekip liderleri yükleniyor...</div>';
+    return;
+  }
+  if(!users.length){
+    box.innerHTML='<div class="empty-state">Aktif kullanıcı bulunamadı.</div>';
+    return;
+  }
+  box.innerHTML=users.map(user=>`
+    <label class="ops-leader-choice">
+      <input type="checkbox" class="archive-team-leader-choice" value="${esc(user.id)}" ${selected.has(user.id)?'checked':''}>
+      <span>
+        <span class="ops-leader-name">${esc(user.name||user.username||'İsimsiz kullanıcı')}</span>
+        <span class="ops-leader-meta">${esc(user.username||'kullanıcı adı yok')} · ${esc(roleShortLabel(user.role))}</span>
+      </span>
+    </label>
+  `).join('');
+  renderArchiveTeamLeaderOptions();
+}
+async function loadArchiveTeamLeaders(options={}){
+  if(!canUseArchiveOps())return;
+  archiveTeamLeaderState.loading=true;
+  if(!options.silent)renderArchiveTeamLeaderList();
+  const data=await api('GET','/api/archive-ops/team-leaders');
+  archiveTeamLeaderState.loading=false;
+  if(data.error){
+    renderArchiveTeamLeaderList();
+    setArchiveTeamLeaderStatus(data.error,'err');
+    return;
+  }
+  archiveTeamLeaderState.users=data.users||[];
+  archiveTeamLeaderState.leaders=data.leaders||[];
+  renderArchiveTeamLeaderList();
+  if(!options.silent)setArchiveTeamLeaderStatus(`${archiveTeamLeaderState.leaders.length.toLocaleString('tr-TR')} ekip lideri seçili.`,'ok');
+}
+async function saveArchiveTeamLeaders(){
+  if(!canUseArchiveOps()||archiveTeamLeaderState.saving)return;
+  const userIds=[...document.querySelectorAll('.archive-team-leader-choice:checked')].map(input=>input.value);
+  archiveTeamLeaderState.saving=true;
+  setArchiveTeamLeaderStatus('Ekip liderleri saklanıyor...');
+  const data=await api('POST','/api/archive-ops/team-leaders',{userIds});
+  archiveTeamLeaderState.saving=false;
+  if(data.error){
+    setArchiveTeamLeaderStatus(data.error,'err');
+    return;
+  }
+  archiveTeamLeaderState.users=data.users||[];
+  archiveTeamLeaderState.leaders=data.leaders||[];
+  renderArchiveTeamLeaderList();
+  setArchiveTeamLeaderStatus(`${archiveTeamLeaderState.leaders.length.toLocaleString('tr-TR')} ekip lideri saklandı.`,'ok');
+}
 function archivePublishSummaryHtml(counts={}){
   const byStatus=counts.byStatus||{};
   return `
@@ -5922,8 +6020,9 @@ function selectArchivePublishWork(id){
   renderArchivePublishWorkPicker();
 }
 function clearArchivePublishForm(){
-  ['archivePublishTitle','archivePublishAssignedTo','archivePublishDueDate','archivePublishDate','archivePublishPlatform','archivePublishUrl','archivePublishCategory','archivePublishTopics','archivePublishSourceSearch','archivePublishWorkSearch','archivePublishDescription','archivePublishNote'].forEach(id=>{const node=el(id);if(node)node.value='';});
+  ['archivePublishTitle','archivePublishAssignedTo','archivePublishAssignedBy','archivePublishDueDate','archivePublishDate','archivePublishPlatform','archivePublishUrl','archivePublishCategory','archivePublishTopics','archivePublishSourceSearch','archivePublishWorkSearch','archivePublishDescription','archivePublishNote'].forEach(id=>{const node=el(id);if(node)node.value='';});
   const status=el('archivePublishStatus');if(status)status.value='planlandi';
+  if(status)status.disabled=false;
   const priority=el('archivePublishPriority');if(priority)priority.value='normal';
   const source=el('archivePublishSourceId');if(source)source.value='';
   const work=el('archivePublishWorkId');if(work)work.value='';
@@ -5935,6 +6034,7 @@ function clearArchivePublishForm(){
   renderArchivePublishDetail(null);
   renderArchivePublishSourcePicker();
   renderArchivePublishWorkPicker();
+  renderArchiveTeamLeaderOptions();
   setArchivePublishStatus('');
 }
 function archivePublishPayload(){
@@ -5942,11 +6042,16 @@ function archivePublishPayload(){
   const source=(archiveOpsState.sources||[]).find(item=>item.id===sourceId);
   const workItemId=el('archivePublishWorkId')?.value||'';
   const work=(archiveWorkState.items||[]).find(item=>item.id===workItemId);
+  const assignedByUserId=el('archivePublishAssignedBy')?.value||'';
+  const assignedByLeader=(archiveTeamLeaderState.leaders||[]).find(leader=>leader.userId===assignedByUserId);
   return {
     title:v('archivePublishTitle'),
     status:el('archivePublishStatus')?.value||'planlandi',
     priority:el('archivePublishPriority')?.value||'normal',
     assignedTo:v('archivePublishAssignedTo'),
+    assignedBy:assignedByLeader?.name||'',
+    assignedByUserId:assignedByLeader?.userId||'',
+    assignedByUsername:assignedByLeader?.username||'',
     dueDate:el('archivePublishDueDate')?.value||'',
     publishDate:el('archivePublishDate')?.value||'',
     publicationUrl:v('archivePublishUrl'),
@@ -6006,6 +6111,27 @@ function archiveTeamCardHtml(row){
     </button>
   `;
 }
+function archivePublishDoneMeta(task={}){
+  const done=Boolean(task.completedAt)||task.status==='tamamlandi';
+  return {
+    done,
+    label: done?'Tamamlandı':'Açık',
+    by:task.completedBy||'',
+    at:task.completedAt?archivePublishDate(task.completedAt):'',
+    note:task.completionNote||''
+  };
+}
+function archivePublishDoneLine(task={}){
+  const meta=archivePublishDoneMeta(task);
+  if(!meta.done)return '<span>Tamam bekliyor</span>';
+  return `<span>Tamam: ${esc(meta.by||'İşaretleyen yok')}${meta.at?` · ${esc(meta.at)}`:''}</span>`;
+}
+function archivePublishCompletionButton(task={},mini=false){
+  const done=archivePublishDoneMeta(task).done;
+  const cls=mini?'btn-mini':'btn-sec';
+  const label=done?'Tamamı Geri Al':'Tamam İşaretle';
+  return `<button class="${cls}" onclick="setArchivePublishCompletion(${attrJson(task.id)},${done?'false':'true'})">${label}</button>`;
+}
 function archiveMemberPublishLinksHtml(member){
   const boxTitle=member?`${member} - Yayın Linkleri`:'Yayın Linkleri';
   if(!member){
@@ -6026,10 +6152,13 @@ function archiveMemberPublishLinksHtml(member){
         <div class="ops-source-meta">
           <span>${esc(archivePublishStatusLabel(task.status))}</span>
           <span>Yayın: ${archivePublishDate(task.publishDate)}</span>
+          ${task.assignedBy?`<span>Atayan: ${esc(task.assignedBy)}</span>`:''}
+          ${archivePublishDoneLine(task)}
           ${task.platform?`<span>${esc(task.platform)}</span>`:''}
         </div>
         ${url?`<div class="ops-member-link-url"><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a></div>`:''}
         ${task.note?`<div class="ops-work-preview">${esc(task.note)}</div>`:''}
+        <div class="ops-source-actions">${archivePublishCompletionButton(task,true)}<button class="btn-mini" onclick="openArchivePublishTask(${attrJson(task.id)})">Aç</button></div>
       </div>
     `;
   }).join(''):'<div class="empty-state">Bu kişiye bağlı yayın linki yok.</div>';
@@ -6090,6 +6219,8 @@ function archivePublishCardHtml(task){
         <span>${esc(archivePublishStatusLabel(task.status))}</span>
         <span>${esc(archivePublishPriorityLabel(task.priority))}</span>
         ${task.assignedTo?`<span>${esc(task.assignedTo)}</span>`:''}
+        ${task.assignedBy?`<span>Atayan: ${esc(task.assignedBy)}</span>`:''}
+        ${archivePublishDoneLine(task)}
         ${task.publishDate?`<span>Yayın: ${archivePublishDate(task.publishDate)}</span>`:''}
         ${task.sourceTitle?`<span>${esc(task.sourceTitle)}</span>`:''}
       </div>
@@ -6133,6 +6264,8 @@ function renderArchivePublishDetail(task){
           <span>${esc(archivePublishStatusLabel(task.status))}</span>
           <span>${esc(archivePublishPriorityLabel(task.priority))}</span>
           ${task.assignedTo?`<span>Atanan: ${esc(task.assignedTo)}</span>`:''}
+          ${task.assignedBy?`<span>Atayan: ${esc(task.assignedBy)}</span>`:''}
+          ${archivePublishDoneLine(task)}
           <span>Hedef: ${archivePublishDate(task.dueDate)}</span>
           <span>Yayın: ${archivePublishDate(task.publishDate)}</span>
         </div>
@@ -6142,6 +6275,8 @@ function renderArchivePublishDetail(task){
     <div class="ops-detail-body">
       ${url?`<p><strong>Yayın linki:</strong><br><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a></p>`:''}
       ${task.platform?`<p><strong>Platform / program:</strong> ${esc(task.platform)}</p>`:''}
+      ${task.assignedBy?`<p><strong>Atayan ekip lideri:</strong> ${esc(task.assignedBy)}</p>`:''}
+      ${task.completedAt?`<p><strong>Tamam bilgisi:</strong> ${esc(task.completedBy||'İşaretleyen yok')} · ${esc(archivePublishDate(task.completedAt))}${task.completionNote?`<br>${esc(task.completionNote)}`:''}</p>`:''}
       ${task.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(task.sourceTitle)}</p>`:''}
       ${task.workItemTitle?`<p><strong>Çalışma kaydı:</strong> ${esc(task.workItemTitle)}</p>`:''}
       ${task.category?`<p><strong>Kategori:</strong> ${esc(task.category)}</p>`:''}
@@ -6149,6 +6284,7 @@ function renderArchivePublishDetail(task){
       ${task.description?`<p><strong>Açıklama:</strong></p><div class="ops-preview-text">${esc(task.description)}</div>`:''}
       ${task.note?`<p><strong>Not:</strong><br>${esc(task.note)}</p>`:''}
       <div class="ops-source-actions">
+        ${archivePublishCompletionButton(task)}
         <button class="btn-sec" onclick="editArchivePublishTask(${attrJson(task.id)})">Düzenle</button>
         ${task.sourceId?`<button class="btn-sec" onclick="openArchivePublishSource()">Kaynağı Aç</button>`:''}
         ${task.workItemId?`<button class="btn-sec" onclick="openArchivePublishWork()">Çalışmayı Aç</button>`:''}
@@ -6201,9 +6337,13 @@ function editArchivePublishTask(id,scroll=true){
   if(!task)return;
   archivePublishState.activeTask=task;
   el('archivePublishTitle').value=task.title||'';
-  el('archivePublishStatus').value=task.status||'planlandi';
+  const statusSelect=el('archivePublishStatus');
+  statusSelect.value=task.status||'planlandi';
+  statusSelect.disabled=archivePublishDoneMeta(task).done;
   el('archivePublishPriority').value=task.priority||'normal';
   el('archivePublishAssignedTo').value=task.assignedTo||'';
+  const assignedBySelect=el('archivePublishAssignedBy');
+  if(assignedBySelect)assignedBySelect.value=task.assignedByUserId||'';
   el('archivePublishDueDate').value=task.dueDate?String(task.dueDate).slice(0,10):'';
   el('archivePublishDate').value=task.publishDate?String(task.publishDate).slice(0,10):'';
   el('archivePublishPlatform').value=task.platform||'';
@@ -6219,6 +6359,8 @@ function editArchivePublishTask(id,scroll=true){
   const openSourceBtn=el('archivePublishOpenSourceBtn');if(openSourceBtn)openSourceBtn.disabled=!task.sourceId;
   const openWorkBtn=el('archivePublishOpenWorkBtn');if(openWorkBtn)openWorkBtn.disabled=!task.workItemId;
   const deleteBtn=el('archivePublishDeleteBtn');if(deleteBtn)deleteBtn.disabled=false;
+  renderArchiveTeamLeaderOptions();
+  if(assignedBySelect&&task.assignedByUserId)assignedBySelect.value=task.assignedByUserId;
   renderArchivePublishSourcePicker();
   renderArchivePublishWorkPicker();
   renderArchivePublishDetail(task);
@@ -6247,6 +6389,35 @@ async function saveArchivePublishTask(){
   await loadArchivePublishTasks();
   renderArchivePublishDetail(data.task);
   setArchivePublishStatus(id?'Yayın linki güncellendi.':'Yayın linki oluşturuldu.','ok');
+}
+async function setArchivePublishCompletion(id,completed=true){
+  if(!canUseArchiveOps()||!id)return;
+  const task=archivePublishState.activeTask?.id===id?archivePublishState.activeTask:archivePublishState.tasks.find(entry=>entry.id===id);
+  const ok=await openSystemConfirm({
+    title:completed?'Yayın linki tamamlandı mı?':'Tamam işareti geri alınsın mı?',
+    badge:'Yayın Linkleri',
+    message:completed
+      ? `${task?.title||'Bu yayın linki'} için Tamam işareti konacak.`
+      : `${task?.title||'Bu yayın linki'} yeniden açık işlere alınacak.`,
+    detail:completed
+      ? 'Bu bilgi admin içinde kimin ve ne zaman tamamladığını göstermek için saklanır.'
+      : 'Tamam bilgisi silinmez; işlem geçmişi admin içinde kayıtlı kalır.',
+    confirmText:completed?'Tamam İşaretle':'Geri Al',
+    cancelText:'Vazgeç',
+    tone:completed?'default':'danger'
+  });
+  if(!ok)return;
+  setArchivePublishStatus(completed?'Tamam işareti kaydediliyor...':'Tamam işareti geri alınıyor...');
+  const data=await api('POST',`/api/archive-ops/publish-tasks/${encodeURIComponent(id)}/completion`,{completed});
+  if(data.error){
+    setArchivePublishStatus(data.error,'err');
+    return;
+  }
+  archivePublishState.activeTask=data.task;
+  await loadArchivePublishTasks({silent:true});
+  renderArchivePublishDetail(data.task);
+  editArchivePublishTask(data.task.id,false);
+  setArchivePublishStatus(completed?'Yayın linki Tamam olarak işaretlendi.':'Yayın linki yeniden açık işe alındı.','ok');
 }
 async function deleteArchivePublishTaskUi(){
   const task=archivePublishState.activeTask;

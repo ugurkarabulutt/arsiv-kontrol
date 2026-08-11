@@ -121,6 +121,30 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Yayın Linkleri ekip lideri seçimi ve elle Tamam akışı eklendi:** `/admin > Arşiv
+  Çalışmaları > Yayın Linkleri` ekranına `Seçili Ekip Liderleri` paneli eklendi. Süper admin,
+  mevcut aktif kullanıcı listesinden hangi kişilerin yayın linki atayabilecek ekip liderleri
+  olduğunu seçip saklayabilir; seçim `settings.archive_ops_team_leaders` altında tutulur ve
+  DB/schema migration gerektirmez. Yayın linki formuna `Atayan ekip lideri` alanı eklendi; kayıt
+  `assignedBy/assignedByUserId/assignedByUsername` bilgisiyle admin içinde izlenir. Yayın linkinde
+  `Tamam İşaretle` / `Tamamı Geri Al` aksiyonu eklendi; tamam bilgisi kim/ne zaman/not ve işlem
+  geçmişiyle `settings.archive_ops_publish_task_meta` altında saklanır. `Tamamlandı` durumu
+  formdan serbest seçilmez; tamamlanan kayıtta durum alanı kilitli kalır, geri alma ayrı butonla
+  yapılır. Liste, detay ve `Kişi Dosyaları` paneli `Atayan` ve `Tamam` bilgisini gösterir. Yeni
+  endpoint'ler `GET/POST /api/archive-ops/team-leaders` ve
+  `POST /api/archive-ops/publish-tasks/:id/completion` olup `auth, admin, superAdmin` zinciriyle
+  korunur; normal admin hâlâ `Arşiv Çalışmaları` alanını görmez ve bu API'leri kullanamaz.
+  Public JSON kalite kontrolü `atayan ekip lideri`, `tamam bilgisi` ve `işaretleyen` gibi iç audit
+  ifadelerini public görünür metinde engeller. Bu adım root `/`, public frontend ve schema
+  dosyalarına dokunmadı. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `docs/project/ADMIN_ARCHIVE_OPERATIONS_CENTER_ARCHITECTURE_PLAN.md`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı; 86/86
+  test geçti. Yerel `/admin` HTML smoke testinde `Seçili Ekip Liderleri`,
+  `archivePublishAssignedBy` ve `setArchivePublishCompletion` marker'ları göründü; yeni
+  `/api/archive-ops/team-leaders` endpoint'i oturumsuz `401` döndü ve public/root cutover
+  marker'ı görülmedi.
+
 - **Arşiv Çalışmaları erişim kararı ve public yayın sözleşmesi kayda alındı:** Kullanıcı
   kararıyla `Arşiv Çalışmaları` şimdilik yalnız `super_admin` rolüne görünür kalacak; normal
   `admin` rolü bu menüyü, ana ekranı ve `/api/archive-ops/*` iş akışını kullanmayacak.

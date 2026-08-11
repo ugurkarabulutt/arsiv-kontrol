@@ -610,6 +610,9 @@ if (
   !server.includes("app.get('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.post('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.put('/api/archive-ops/publish-tasks/:id'") ||
+  !server.includes("app.get('/api/archive-ops/team-leaders'") ||
+  !server.includes("app.post('/api/archive-ops/team-leaders'") ||
+  !server.includes("app.post('/api/archive-ops/publish-tasks/:id/completion'") ||
   !server.includes("app.delete('/api/archive-ops/publish-tasks/:id'") ||
   !server.includes("app.get('/api/archive-ops/public-candidates'") ||
   !server.includes("app.post('/api/archive-ops/public-candidates/:kind/:id/decision'") ||
@@ -700,10 +703,15 @@ if (
   !html.includes('archiveWorkState') ||
   !html.includes('archivePublishState') ||
   !html.includes('id="archivePublishTitle"') ||
+  !html.includes('id="archivePublishAssignedBy"') ||
+  !html.includes('id="archiveTeamLeaderList"') ||
   !html.includes('id="archivePublishSourceId"') ||
   !html.includes('id="archivePublishWorkId"') ||
   !html.includes('function loadArchivePublishTasks') ||
   !html.includes('function saveArchivePublishTask') ||
+  !html.includes('function loadArchiveTeamLeaders') ||
+  !html.includes('function saveArchiveTeamLeaders') ||
+  !html.includes('function setArchivePublishCompletion') ||
   !html.includes('function deleteArchivePublishTaskUi') ||
   !html.includes('id="archiveCandidateSearch"') ||
   !html.includes('id="archiveCandidateStatusFilter"') ||

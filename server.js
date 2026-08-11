@@ -633,6 +633,8 @@ const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
 const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
 const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
+const ARCHIVE_OPS_TEAM_LEADERS_KEY = 'archive_ops_team_leaders';
+const ARCHIVE_OPS_PUBLISH_TASK_META_KEY = 'archive_ops_publish_task_meta';
 const ARCHIVE_OPS_RELEASE_PACKAGES_KEY = 'archive_ops_release_packages';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
@@ -645,6 +647,7 @@ const ARCHIVE_WORK_PRIORITIES = ['normal', 'onemli', 'kritik'];
 const ARCHIVE_PUBLISH_TASK_LIMIT = 300;
 const ARCHIVE_PUBLISH_STATUSES = ['planlandi', 'hazirlaniyor', 'kontrol', 'kaynak_bekliyor', ...ARCHIVE_PUBLIC_CANDIDATE_STATUSES, 'tamamlandi', 'iptal'];
 const ARCHIVE_PUBLISH_PRIORITIES = ['normal', 'onemli', 'kritik'];
+const ARCHIVE_PUBLISH_COMPLETION_HISTORY_LIMIT = 20;
 const ARCHIVE_RELEASE_PACKAGE_LIMIT = 80;
 const ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT = 200;
 const ARCHIVE_RELEASE_PACKAGE_STATUSES = ['taslak', 'son_kontrol', 'hazir', 'beklet'];
@@ -2080,11 +2083,141 @@ function normalizeArchivePublishPriority(value) {
   return ARCHIVE_PUBLISH_PRIORITIES.includes(priority) ? priority : 'normal';
 }
 
+function archivePersonName(value = '') {
+  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+}
+
+function archiveActor(req = {}) {
+  return archivePersonName(req.session?.name || req.session?.username || 'Sistem') || 'Sistem';
+}
+
+function archiveActorUsername(req = {}) {
+  return String(req.session?.username || '').trim().slice(0, 120);
+}
+
+function normalizeArchivePublishMeta(value = {}, options = {}) {
+  const raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const completionHistory = Array.isArray(raw.completionHistory)
+    ? raw.completionHistory.slice(-ARCHIVE_PUBLISH_COMPLETION_HISTORY_LIMIT).map(item => ({
+      action: item?.action === 'reopened' ? 'reopened' : 'completed',
+      at: normalizeIsoDate(item?.at),
+      by: archivePersonName(item?.by),
+      username: archiveActorUsername({ session: { username: item?.username } }),
+      note: String(item?.note || '').trim().slice(0, 500),
+      previousStatus: normalizeArchivePublishStatus(item?.previousStatus),
+      nextStatus: normalizeArchivePublishStatus(item?.nextStatus)
+    })).filter(item => item.at)
+    : [];
+  const clean = {
+    assignedBy: archivePersonName(raw.assignedBy || raw.assigned_by),
+    assignedByUserId: String(raw.assignedByUserId || raw.assigned_by_user_id || '').trim().slice(0, 160),
+    assignedByUsername: String(raw.assignedByUsername || raw.assigned_by_username || '').trim().slice(0, 120),
+    assignedAt: normalizeIsoDate(raw.assignedAt || raw.assigned_at),
+    assignedUpdatedBy: archivePersonName(raw.assignedUpdatedBy || raw.assigned_updated_by),
+    completedAt: normalizeIsoDate(raw.completedAt || raw.completed_at),
+    completedBy: archivePersonName(raw.completedBy || raw.completed_by),
+    completedByUsername: String(raw.completedByUsername || raw.completed_by_username || '').trim().slice(0, 120),
+    completionNote: String(raw.completionNote || raw.completion_note || '').trim().slice(0, 500),
+    previousStatus: normalizeArchivePublishStatus(raw.previousStatus || raw.previous_status || 'hazirlaniyor')
+  };
+  clean.completed = Boolean(clean.completedAt);
+  if (options.full) clean.completionHistory = completionHistory;
+  return clean;
+}
+
+function archivePublishMetaHasValue(meta = {}) {
+  return Boolean(
+    meta.assignedBy ||
+    meta.assignedByUserId ||
+    meta.assignedByUsername ||
+    meta.assignedAt ||
+    meta.completedAt ||
+    meta.completedBy ||
+    meta.completedByUsername ||
+    meta.completionNote ||
+    (Array.isArray(meta.completionHistory) && meta.completionHistory.length)
+  );
+}
+
+async function loadArchivePublishTaskMetaMap() {
+  const value = await loadJsonSetting(ARCHIVE_OPS_PUBLISH_TASK_META_KEY, {});
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+async function saveArchivePublishTaskMetaMap(map = {}) {
+  const clean = {};
+  Object.entries(map || {}).slice(-ARCHIVE_PUBLISH_TASK_LIMIT).forEach(([id, meta]) => {
+    const taskId = String(id || '').trim();
+    if (!taskId) return;
+    const normalized = normalizeArchivePublishMeta(meta, { full: true });
+    if (archivePublishMetaHasValue(normalized)) clean[taskId] = normalized;
+  });
+  await saveJsonSetting(ARCHIVE_OPS_PUBLISH_TASK_META_KEY, clean);
+}
+
+function applyArchivePublishTaskMeta(task = {}, metaMap = {}, options = {}) {
+  if (!task?.id) return task;
+  const meta = normalizeArchivePublishMeta({ ...task, ...(metaMap[task.id] || {}) }, { full: options.full });
+  return {
+    ...task,
+    assignedBy: meta.assignedBy,
+    assignedByUserId: meta.assignedByUserId,
+    assignedByUsername: meta.assignedByUsername,
+    assignedAt: meta.assignedAt,
+    assignedUpdatedBy: meta.assignedUpdatedBy,
+    completed: meta.completed,
+    completedAt: meta.completedAt,
+    completedBy: meta.completedBy,
+    completedByUsername: meta.completedByUsername,
+    completionNote: meta.completionNote,
+    previousStatus: meta.previousStatus,
+    ...(options.full ? { completionHistory: meta.completionHistory || [] } : {})
+  };
+}
+
+async function updateArchivePublishTaskMeta(id, updater) {
+  const taskId = String(id || '').trim();
+  if (!taskId) return null;
+  const map = await loadArchivePublishTaskMetaMap();
+  const current = normalizeArchivePublishMeta(map[taskId], { full: true });
+  const next = normalizeArchivePublishMeta(typeof updater === 'function' ? updater(current) : updater, { full: true });
+  if (archivePublishMetaHasValue(next)) map[taskId] = next;
+  else delete map[taskId];
+  await saveArchivePublishTaskMetaMap(map);
+  return next;
+}
+
+async function syncArchivePublishAssignmentMeta(id, input = {}, existing = {}, actor = 'Sistem', now = new Date().toISOString()) {
+  const hasAssignedByInput = Object.prototype.hasOwnProperty.call(input, 'assignedBy')
+    || Object.prototype.hasOwnProperty.call(input, 'assigned_by')
+    || Object.prototype.hasOwnProperty.call(input, 'assignedByUserId')
+    || Object.prototype.hasOwnProperty.call(input, 'assigned_by_user_id');
+  if (!hasAssignedByInput) return null;
+  return updateArchivePublishTaskMeta(id, current => {
+    const nextAssignedBy = archivePersonName(input.assignedBy ?? input.assigned_by ?? existing.assignedBy ?? current.assignedBy);
+    const nextAssignedByUserId = String(input.assignedByUserId ?? input.assigned_by_user_id ?? existing.assignedByUserId ?? current.assignedByUserId ?? '').trim().slice(0, 160);
+    const nextAssignedByUsername = String(input.assignedByUsername ?? input.assigned_by_username ?? existing.assignedByUsername ?? current.assignedByUsername ?? '').trim().slice(0, 120);
+    const changed = nextAssignedBy !== current.assignedBy
+      || nextAssignedByUserId !== current.assignedByUserId
+      || nextAssignedByUsername !== current.assignedByUsername;
+    return {
+      ...current,
+      assignedBy: nextAssignedBy,
+      assignedByUserId: nextAssignedByUserId,
+      assignedByUsername: nextAssignedByUsername,
+      assignedAt: changed && nextAssignedBy ? now : current.assignedAt,
+      assignedUpdatedBy: changed ? actor : current.assignedUpdatedBy
+    };
+  });
+}
+
 function buildArchivePublishPreview(task = {}) {
   return archiveTextPreview([
     task.description,
     task.note,
     task.publicationUrl,
+    task.assignedBy,
+    task.completedBy,
     task.sourceTitle,
     task.workItemTitle
   ].filter(Boolean).join(' '), 320);
@@ -2096,6 +2229,8 @@ function buildArchivePublishSearchBlob(task = {}) {
     task.status,
     task.priority,
     task.assignedTo,
+    task.assignedBy,
+    task.completedBy,
     task.publicationUrl,
     task.platform,
     task.sourceTitle,
@@ -2116,13 +2251,16 @@ function normalizeArchivePublishInput(input = {}, existing = {}) {
   const note = String(input.note ?? existing.note ?? '').trim().slice(0, 10000);
   const publicationUrl = String(input.publicationUrl ?? input.publication_url ?? existing.publicationUrl ?? '').trim().slice(0, 700);
   const rawTitle = String(input.title ?? existing.title ?? '').trim();
-  const title = (rawTitle || publicationUrl || description.slice(0, 120) || 'Başlıksız yayın görevi').trim().slice(0, 180);
+  const title = (rawTitle || publicationUrl || description.slice(0, 120) || 'Başlıksız yayın linki').trim().slice(0, 180);
   return {
     ...existing,
     title,
     status: normalizeArchivePublishStatus(input.status ?? existing.status),
     priority: normalizeArchivePublishPriority(input.priority ?? existing.priority),
     assignedTo: String(input.assignedTo ?? input.assigned_to ?? existing.assignedTo ?? '').trim().slice(0, 120),
+    assignedBy: archivePersonName(input.assignedBy ?? input.assigned_by ?? existing.assignedBy),
+    assignedByUserId: String(input.assignedByUserId ?? input.assigned_by_user_id ?? existing.assignedByUserId ?? '').trim().slice(0, 160),
+    assignedByUsername: String(input.assignedByUsername ?? input.assigned_by_username ?? existing.assignedByUsername ?? '').trim().slice(0, 120),
     dueDate: normalizeIsoDate(input.dueDate ?? input.due_date ?? existing.dueDate),
     publishDate: normalizeIsoDate(input.publishDate ?? input.publish_date ?? existing.publishDate),
     publicationUrl,
@@ -2202,6 +2340,10 @@ function publicArchivePublishTask(task = {}, options = {}) {
     status: task.status || 'planlandi',
     priority: task.priority || 'normal',
     assignedTo: task.assignedTo || '',
+    assignedBy: task.assignedBy || '',
+    assignedByUserId: task.assignedByUserId || '',
+    assignedByUsername: task.assignedByUsername || '',
+    assignedAt: task.assignedAt || null,
     dueDate: task.dueDate || null,
     publishDate: task.publishDate || null,
     publicationUrl: task.publicationUrl || '',
@@ -2214,6 +2356,11 @@ function publicArchivePublishTask(task = {}, options = {}) {
     topics: Array.isArray(task.topics) ? task.topics : [],
     textPreview: task.textPreview || buildArchivePublishPreview(task),
     textLength: Number(task.textLength || archivePublishTextLength(task) || 0),
+    completed: Boolean(task.completedAt),
+    completedAt: task.completedAt || null,
+    completedBy: task.completedBy || '',
+    completedByUsername: task.completedByUsername || '',
+    completionNote: task.completionNote || '',
     createdAt: task.createdAt,
     updatedAt: task.updatedAt,
     createdBy: task.createdBy || '',
@@ -2222,6 +2369,7 @@ function publicArchivePublishTask(task = {}, options = {}) {
   if (options.full) {
     base.description = task.description || '';
     base.note = task.note || '';
+    base.completionHistory = Array.isArray(task.completionHistory) ? task.completionHistory : [];
   }
   return base;
 }
@@ -2271,7 +2419,7 @@ function publicArchiveCandidate(kind = '', record = {}) {
     id: `publish:${task.id}`,
     kind: 'publish',
     recordId: task.id,
-    title: task.title || 'Başlıksız yayın görevi',
+    title: task.title || 'Başlıksız yayın linki',
     status: task.status || 'arsiv_adayi',
     priority: task.priority || 'normal',
     assignedTo: task.assignedTo || '',
@@ -2905,6 +3053,9 @@ const ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS = [
   { label: 'model', pattern: /\bmodel\b/i },
   { label: 'denetim', pattern: /\bdenetim\b/i },
   { label: 'kalite kontrol', pattern: /kalite\s+kontrol/i },
+  { label: 'atayan ekip lideri', pattern: /atayan\s+ekip\s+lideri/i },
+  { label: 'tamam bilgisi', pattern: /tamam\s+bilgisi/i },
+  { label: 'isaretleyen', pattern: /işaretleyen|isaretleyen/i },
   { label: 'onay kuyrugu', pattern: /onay\s+kuyru[ğg]u/i },
   { label: 'test verisi', pattern: /test\s+verisi/i }
 ];
@@ -3326,8 +3477,9 @@ function filterArchivePublishTasks(tasks = [], query = {}) {
 }
 
 async function listArchivePublishTasks(query = {}) {
+  const metaMap = await loadArchivePublishTaskMetaMap();
   if (!HAS_ARCHIVE_PUBLISH_TABLES) {
-    const tasks = await loadArchivePublishTasks();
+    const tasks = (await loadArchivePublishTasks()).map(task => applyArchivePublishTaskMeta(task, metaMap));
     const filtered = filterArchivePublishTasks(tasks, query)
       .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
     return { storage: 'settings', tasks, filtered };
@@ -3343,7 +3495,6 @@ async function listArchivePublishTasks(query = {}) {
     .limit(ARCHIVE_PUBLISH_TASK_LIMIT);
   if (status) taskQuery = taskQuery.eq('status', status);
   if (priority) taskQuery = taskQuery.eq('priority', priority);
-  if (q) taskQuery = taskQuery.ilike('search_blob', `%${escapeSupabaseLikePattern(q)}%`);
   const { data, error, count } = await taskQuery;
   if (error) throw new Error(error.message);
 
@@ -3363,18 +3514,23 @@ async function listArchivePublishTasks(query = {}) {
     counts.byStatus[row.status || 'planlandi'] = (counts.byStatus[row.status || 'planlandi'] || 0) + 1;
     counts.byPriority[row.priority || 'normal'] = (counts.byPriority[row.priority || 'normal'] || 0) + 1;
   }
+  const rows = (data || []).map(row => applyArchivePublishTaskMeta(archivePublishTaskFromDbRow(row), metaMap));
+  const filtered = q ? filterArchivePublishTasks(rows, { q }) : rows;
+  counts.filtered = filtered.length;
   return {
     storage: 'database',
     counts,
-    filtered: (data || []).map(row => archivePublishTaskFromDbRow(row)),
+    filtered,
     tasks: []
   };
 }
 
 async function getArchivePublishTask(id) {
+  const metaMap = await loadArchivePublishTaskMetaMap();
   if (!HAS_ARCHIVE_PUBLISH_TABLES) {
     const tasks = await loadArchivePublishTasks();
-    return tasks.find(task => task.id === id) || null;
+    const task = tasks.find(task => task.id === id) || null;
+    return task ? applyArchivePublishTaskMeta(task, metaMap, { full: true }) : null;
   }
   const { data, error } = await supabase
     .from('archive_publish_tasks')
@@ -3382,7 +3538,7 @@ async function getArchivePublishTask(id) {
     .eq('id', id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? archivePublishTaskFromDbRow(data, { full: true }) : null;
+  return data ? applyArchivePublishTaskMeta(archivePublishTaskFromDbRow(data, { full: true }), metaMap, { full: true }) : null;
 }
 
 async function createArchivePublishTask(input = {}, actor = 'Sistem') {
@@ -3401,7 +3557,8 @@ async function createArchivePublishTask(input = {}, actor = 'Sistem') {
   if (!HAS_ARCHIVE_PUBLISH_TABLES) {
     const tasks = await loadArchivePublishTasks();
     await saveArchivePublishTasks([task, ...tasks]);
-    return task;
+    const meta = await syncArchivePublishAssignmentMeta(task.id, input, {}, actor, now);
+    return applyArchivePublishTaskMeta(task, { [task.id]: meta || {} }, { full: true });
   }
 
   const { data, error } = await supabase
@@ -3410,7 +3567,8 @@ async function createArchivePublishTask(input = {}, actor = 'Sistem') {
     .select(ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS)
     .single();
   if (error) throw new Error(error.message);
-  return archivePublishTaskFromDbRow(data, { full: true });
+  const meta = await syncArchivePublishAssignmentMeta(task.id, input, {}, actor, now);
+  return applyArchivePublishTaskMeta(archivePublishTaskFromDbRow(data, { full: true }), { [task.id]: meta || {} }, { full: true });
 }
 
 async function updateArchivePublishTask(id, input = {}, actor = 'Sistem') {
@@ -3430,7 +3588,8 @@ async function updateArchivePublishTask(id, input = {}, actor = 'Sistem') {
     updated.textLength = archivePublishTextLength(updated);
     tasks[index] = updated;
     await saveArchivePublishTasks(tasks);
-    return updated;
+    const meta = await syncArchivePublishAssignmentMeta(id, input, tasks[index], actor, updated.updatedAt);
+    return applyArchivePublishTaskMeta(updated, { [id]: meta || tasks[index] || {} }, { full: true });
   }
 
   const existing = await getArchivePublishTask(id);
@@ -3452,7 +3611,8 @@ async function updateArchivePublishTask(id, input = {}, actor = 'Sistem') {
     .select(ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS)
     .single();
   if (error) throw new Error(error.message);
-  return archivePublishTaskFromDbRow(data, { full: true });
+  const meta = await syncArchivePublishAssignmentMeta(id, input, existing, actor, updated.updatedAt);
+  return applyArchivePublishTaskMeta(archivePublishTaskFromDbRow(data, { full: true }), { [id]: meta || existing || {} }, { full: true });
 }
 
 async function deleteArchivePublishTask(id) {
@@ -3461,6 +3621,7 @@ async function deleteArchivePublishTask(id) {
     const next = tasks.filter(task => task.id !== id);
     if (next.length === tasks.length) return null;
     await saveArchivePublishTasks(next);
+    await updateArchivePublishTaskMeta(id, {});
     return { id };
   }
   const { data, error } = await supabase
@@ -3470,7 +3631,123 @@ async function deleteArchivePublishTask(id) {
     .select('id')
     .maybeSingle();
   if (error) throw new Error(error.message);
+  if (data) await updateArchivePublishTaskMeta(id, {});
   return data || null;
+}
+
+function publicArchiveTeamLeaderUser(user = {}) {
+  return {
+    id: user.id,
+    username: user.username || '',
+    name: user.name || user.username || '',
+    role: effectiveRole(user.username, user.role),
+    active: user.active !== false
+  };
+}
+
+function normalizeArchiveTeamLeaderEntry(user = {}, existing = {}, actor = 'Sistem', now = new Date().toISOString()) {
+  const clean = publicArchiveTeamLeaderUser(user);
+  return {
+    userId: clean.id,
+    username: clean.username,
+    name: clean.name,
+    selectedAt: normalizeIsoDate(existing.selectedAt) || now,
+    selectedBy: archivePersonName(existing.selectedBy || actor)
+  };
+}
+
+async function listArchiveTeamLeaderUsers() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id,username,name,role,active')
+    .eq('active', true)
+    .order('name', { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data || []).map(publicArchiveTeamLeaderUser);
+}
+
+async function loadArchiveTeamLeaders() {
+  const leaders = await loadJsonSetting(ARCHIVE_OPS_TEAM_LEADERS_KEY, []);
+  return Array.isArray(leaders)
+    ? leaders.map(item => ({
+      userId: String(item.userId || item.user_id || item.id || '').trim(),
+      username: String(item.username || '').trim(),
+      name: archivePersonName(item.name),
+      selectedAt: normalizeIsoDate(item.selectedAt || item.selected_at),
+      selectedBy: archivePersonName(item.selectedBy || item.selected_by)
+    })).filter(item => item.userId && item.name)
+    : [];
+}
+
+async function archiveTeamLeaderState() {
+  const [users, leaders] = await Promise.all([
+    listArchiveTeamLeaderUsers(),
+    loadArchiveTeamLeaders()
+  ]);
+  const userById = new Map(users.map(user => [user.id, user]));
+  const selected = leaders
+    .filter(leader => userById.has(leader.userId))
+    .map(leader => normalizeArchiveTeamLeaderEntry(userById.get(leader.userId), leader, leader.selectedBy || 'Sistem', leader.selectedAt || new Date().toISOString()));
+  return { users, leaders: selected };
+}
+
+async function saveArchiveTeamLeaders(userIds = [], actor = 'Sistem') {
+  const state = await archiveTeamLeaderState();
+  const currentById = new Map(state.leaders.map(leader => [leader.userId, leader]));
+  const userById = new Map(state.users.map(user => [user.id, user]));
+  const now = new Date().toISOString();
+  const selected = [];
+  const seen = new Set();
+  (Array.isArray(userIds) ? userIds : []).forEach(id => {
+    const userId = String(id || '').trim();
+    if (!userId || seen.has(userId) || !userById.has(userId)) return;
+    seen.add(userId);
+    selected.push(normalizeArchiveTeamLeaderEntry(userById.get(userId), currentById.get(userId), actor, now));
+  });
+  selected.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  await saveJsonSetting(ARCHIVE_OPS_TEAM_LEADERS_KEY, selected);
+  return { users: state.users, leaders: selected };
+}
+
+async function setArchivePublishTaskCompletion(id, input = {}, actor = 'Sistem', username = '') {
+  const existing = await getArchivePublishTask(id);
+  if (!existing) return null;
+  const now = new Date().toISOString();
+  const shouldComplete = input.completed !== false;
+  const note = String(input.note || input.completionNote || '').trim().slice(0, 500);
+  const currentStatus = normalizeArchivePublishStatus(existing.status);
+  const meta = await updateArchivePublishTaskMeta(id, current => {
+    const history = Array.isArray(current.completionHistory) ? current.completionHistory : [];
+    const previousStatus = shouldComplete
+      ? (currentStatus === 'tamamlandi' ? current.previousStatus || 'hazirlaniyor' : currentStatus)
+      : current.previousStatus || 'hazirlaniyor';
+    const nextStatus = shouldComplete
+      ? 'tamamlandi'
+      : normalizeArchivePublishStatus(input.status || previousStatus || 'hazirlaniyor');
+    const event = {
+      action: shouldComplete ? 'completed' : 'reopened',
+      at: now,
+      by: actor,
+      username,
+      note,
+      previousStatus: currentStatus,
+      nextStatus
+    };
+    return {
+      ...current,
+      previousStatus,
+      completedAt: shouldComplete ? now : null,
+      completedBy: shouldComplete ? actor : '',
+      completedByUsername: shouldComplete ? username : '',
+      completionNote: shouldComplete ? note : '',
+      completionHistory: [...history, event].slice(-ARCHIVE_PUBLISH_COMPLETION_HISTORY_LIMIT)
+    };
+  });
+  const nextStatus = shouldComplete
+    ? 'tamamlandi'
+    : normalizeArchivePublishStatus(input.status || meta.previousStatus || 'hazirlaniyor');
+  const task = await updateArchivePublishTask(id, { status: nextStatus }, actor);
+  return task ? applyArchivePublishTaskMeta(task, { [id]: meta }, { full: true }) : null;
 }
 
 function archiveImportBatchId() {
@@ -4460,7 +4737,7 @@ async function seed() {
 
   const { error: archivePublishErr } = await supabase.from('archive_publish_tasks').select('id').limit(1);
   HAS_ARCHIVE_PUBLISH_TABLES = !archivePublishErr;
-  if (!HAS_ARCHIVE_PUBLISH_TABLES) console.warn('⚠ archive_publish_tasks tablosu yok — yayın görevleri settings yedeğiyle çalışacak.');
+  if (!HAS_ARCHIVE_PUBLISH_TABLES) console.warn('⚠ archive_publish_tasks tablosu yok — yayın linkleri settings yedeğiyle çalışacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -5019,6 +5296,19 @@ app.delete('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (re
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
+app.get('/api/archive-ops/team-leaders', auth, admin, superAdmin, async (req, res) => {
+  try {
+    res.json(await archiveTeamLeaderState());
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/team-leaders', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const state = await saveArchiveTeamLeaders(req.body?.userIds || [], archiveActor(req));
+    res.json({ success: true, ...state });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
 app.get('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, res) => {
   try {
     const list = await listArchivePublishTasks(req.query);
@@ -5046,7 +5336,7 @@ app.get('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, r
 
 app.post('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, res) => {
   try {
-    const actor = req.session.name || req.session.username || 'Sistem';
+    const actor = archiveActor(req);
     const task = await createArchivePublishTask(req.body || {}, actor);
     res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
@@ -5055,16 +5345,24 @@ app.post('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, 
 app.get('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (req, res) => {
   try {
     const task = await getArchivePublishTask(req.params.id);
-    if (!task) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    if (!task) return res.status(404).json({ error: 'Yayın linki bulunamadı.' });
     res.json({ task: publicArchivePublishTask(task, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.put('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (req, res) => {
   try {
-    const actor = req.session.name || req.session.username || 'Sistem';
+    const actor = archiveActor(req);
     const task = await updateArchivePublishTask(req.params.id, req.body || {}, actor);
-    if (!task) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    if (!task) return res.status(404).json({ error: 'Yayın linki bulunamadı.' });
+    res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/archive-ops/publish-tasks/:id/completion', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const task = await setArchivePublishTaskCompletion(req.params.id, req.body || {}, archiveActor(req), archiveActorUsername(req));
+    if (!task) return res.status(404).json({ error: 'Yayın linki bulunamadı.' });
     res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -5072,7 +5370,7 @@ app.put('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (re
 app.delete('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (req, res) => {
   try {
     const deleted = await deleteArchivePublishTask(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    if (!deleted) return res.status(404).json({ error: 'Yayın linki bulunamadı.' });
     res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8087,7 +8385,7 @@ let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at 
 let HAS_ARCHIVE_SOURCE_TABLES = false; // startup'ta tespit edilir (kaynak kayıt tabloları)
 let HAS_ARCHIVE_IMPORT_TABLES = false; // startup'ta tespit edilir (kalıcı içe aktarım tabloları)
 let HAS_ARCHIVE_WORK_TABLES = false; // startup'ta tespit edilir (çalışma kayıtları)
-let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın görevleri)
+let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın linkleri)
 let HAS_HISTORY_TAG_IMPORT_TABLES = false; // startup'ta tespit edilir (Excel etiket aktarimi)
 let startupReady = Promise.resolve();
 

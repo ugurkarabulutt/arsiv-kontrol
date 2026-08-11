@@ -2,6 +2,21 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- `/admin > Arşiv Çalışmaları > Yayın Linkleri` için seçili ekip lideri ve manuel `Tamam` akışı
+  eklendi. Süper admin mevcut aktif kullanıcı listesinden `Seçili Ekip Liderleri`ni işaretleyip
+  saklayabilir; seçim `settings.archive_ops_team_leaders` altında tutulur, DB/schema migration
+  gerektirmez. Yayın linki formundaki `Atayan ekip lideri` alanı bu listeden beslenir.
+- Yayın linki detayında ve `Kişi Dosyaları` panelinde `Tamam İşaretle` / `Tamamı Geri Al` aksiyonu
+  var. Tamam bilgisi kim/ne zaman/not ve işlem geçmişiyle `settings.archive_ops_publish_task_meta`
+  altında saklanır. `Tamamlandı` durumu formdan serbest seçilmez; tamamlanan kayıtta durum alanı
+  kilitli kalır ve geri alma ayrı butonla yapılır. Liste, detay ve kişi panelinde `Atayan` ve
+  `Tamam` bilgisi görünür.
+- Yeni API'ler: `GET/POST /api/archive-ops/team-leaders` ve
+  `POST /api/archive-ops/publish-tasks/:id/completion`. Tamamı `auth, admin, superAdmin`
+  zinciriyle korunur; normal admin hâlâ `Arşiv Çalışmaları` alanını görmez ve bu API'leri
+  kullanamaz. Public JSON kalite kontrolüne `atayan ekip lideri`, `tamam bilgisi` ve
+  `işaretleyen` iç audit ifadeleri eklendi; bu alanlar public ön yüze taşınmamalıdır.
+
 - Kullanıcı kararıyla `/admin > Arşiv Çalışmaları` şimdilik sadece `super_admin` rolüne görünür
   kalacak; normal `admin` rolüne açılmayacak. Mevcut HTML/JS zaten mobil menü, masaüstü menü ve
   ana tabı `super-admin-only admin-route-only` sınıflarıyla ve `canUseArchiveOps(user)` içinde
@@ -22,13 +37,16 @@
   model ve iç audit bilgisi taşınmayacak.
 - Bu turdaki doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
   `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test geçti. `git diff --check`
-  yalnız mevcut CRLF uyarılarını gösterdi.
-- Sıradaki admin işleri: seçili ekip lideri yetki modelini sade şekilde tasarlamak; yayın linki
-  atama ve kişinin elle `Tamam` işaretleme akışını audit bilgisiyle kurmak; 36 kullanıcı/kişi
-  eşleştirmesini canlı kullanıcılarla doğrulamak; Çalışma Tabloları satırlarını ekip alışkanlığına
-  göre soru, etiket/sınıf, cevap, işleme tarihi, yayın linki, program ve not odağında sadeleştirmek;
-  hadis/slayt/YouTube dökümanı/standartlar akışını kaynak metin olarak daha kullanışlı bağlamak;
-  public JSON için zorunlu alan/yasak alan ve 390px mobil kabul testlerini eklemek.
+  yalnız mevcut CRLF uyarılarını gösterdi. Yerel `/admin` HTML smoke testinde `Seçili Ekip
+  Liderleri`, `archivePublishAssignedBy` ve `setArchivePublishCompletion` marker'ları göründü;
+  `/api/archive-ops/team-leaders` oturumsuz `401` döndü ve public/root cutover marker'ı
+  görülmedi.
+- Sıradaki admin işleri: 36 kullanıcı/kişi eşleştirmesini canlı kullanıcılarla doğrulamak; Çalışma
+  Tabloları satırlarını ekip alışkanlığına göre soru, etiket/sınıf, cevap, işleme tarihi, yayın
+  linki, program ve not odağında sadeleştirmek; hadis/slayt/YouTube dökümanı/standartlar akışını
+  kaynak metin olarak daha kullanışlı bağlamak; public JSON için zorunlu alan/yasak alan ve 390px
+  mobil kabul testlerini eklemek. Seçili ekip lideri ve elle `Tamam` akışının normal kullanıcılara
+  açılması ayrı pilot adımıdır; şu an `Arşiv Çalışmaları` hâlâ sadece süper admindir.
 
 - Yerelde `/admin` süper admin `Arşiv Operasyon Merkezi` alanı, ekip liderinin Drive / kişi
   e-tablosu düzenine daha yakın olacak şekilde ilk UX fazında sadeleştirildi. Görünen ana başlık
