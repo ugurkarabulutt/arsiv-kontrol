@@ -980,6 +980,27 @@ function publicCategoryTextKey(value = '') {
     .trim();
 }
 
+const PUBLIC_CATEGORY_GREETING_RE = /(^|\n)\s*sevgili\s+(kardeşlerimiz|kardeslerimiz|kardeşlerim|kardeslerim|izleyenler|dinleyenler)\s*[,.;:!\-–—]*/giu;
+
+function stripPublicCategoryBoilerplate(value = '') {
+  return String(value || '').replace(PUBLIC_CATEGORY_GREETING_RE, '\n');
+}
+
+function publicCategoryTextTokens(value = '') {
+  return publicCategoryTextKey(value).split(' ').filter(Boolean);
+}
+
+function publicCategoryTextHasAlias(textKey = '', aliasKey = '') {
+  const textTokens = publicCategoryTextTokens(textKey);
+  const aliasTokens = publicCategoryTextTokens(aliasKey);
+  if (!textTokens.length || !aliasTokens.length) return false;
+  if (aliasTokens.length === 1) return textTokens.includes(aliasTokens[0]);
+  for (let i = 0; i <= textTokens.length - aliasTokens.length; i += 1) {
+    if (aliasTokens.every((token, index) => textTokens[i + index] === token)) return true;
+  }
+  return false;
+}
+
 function normalizePublicRelatedCategories(value, mainCategory = '') {
   const raw = Array.isArray(value) ? value.join(',') : String(value || '');
   const mainKey = publicCategoryTextKey(mainCategory);
@@ -1023,7 +1044,7 @@ function pushPublicCategoryReason(reasons, reason) {
 
 function scorePublicCategoryRule(rule, context = {}) {
   const questionKey = publicCategoryTextKey(context.questionText || '');
-  const answerKey = publicCategoryTextKey(context.correctedText || context.originalText || '');
+  const answerKey = publicCategoryTextKey(stripPublicCategoryBoilerplate(context.correctedText || context.originalText || ''));
   const summaryKey = publicCategoryTextKey(context.summary || '');
   const filenameKey = publicCategoryTextKey(context.filename || '');
   const tagEntries = normalizeHistoryTags(context.tags || []).map(tag => ({ tag, key: publicCategoryTextKey(tag) })).filter(item => item.key);
@@ -1038,24 +1059,24 @@ function scorePublicCategoryRule(rule, context = {}) {
       pushPublicCategoryReason(reasons, `Etiket: ${exactTag.tag}`);
       return;
     }
-    const partialTag = tagEntries.find(item => aliasKey.length >= 4 && (item.key.includes(aliasKey) || aliasKey.includes(item.key)));
+    const partialTag = tagEntries.find(item => aliasKey.length >= 4 && (publicCategoryTextHasAlias(item.key, aliasKey) || publicCategoryTextHasAlias(aliasKey, item.key)));
     if (partialTag) {
       score += 84;
       pushPublicCategoryReason(reasons, `Yakın etiket: ${partialTag.tag}`);
     }
-    if (questionKey && questionKey.includes(aliasKey)) {
+    if (publicCategoryTextHasAlias(questionKey, aliasKey)) {
       score += 46;
       pushPublicCategoryReason(reasons, 'Soru metninde geçiyor');
     }
-    if (answerKey && answerKey.includes(aliasKey)) {
+    if (publicCategoryTextHasAlias(answerKey, aliasKey)) {
       score += 18;
       pushPublicCategoryReason(reasons, 'Cevap metninde geçiyor');
     }
-    if (summaryKey && summaryKey.includes(aliasKey)) {
+    if (publicCategoryTextHasAlias(summaryKey, aliasKey)) {
       score += 10;
       pushPublicCategoryReason(reasons, 'Özette geçiyor');
     }
-    if (filenameKey && filenameKey.includes(aliasKey)) {
+    if (publicCategoryTextHasAlias(filenameKey, aliasKey)) {
       score += 8;
       pushPublicCategoryReason(reasons, 'Dosya adında geçiyor');
     }
@@ -1078,6 +1099,17 @@ function suggestPublicCategories(context = {}, rules = DEFAULT_PUBLIC_CATEGORY_R
     .filter(item => item.score >= 18)
     .sort((a, b) => b.score - a.score || a.category.localeCompare(b.category, 'tr'))
     .slice(0, 7);
+}
+
+function strongPublicCategorySuggestions(suggestions = []) {
+  return (Array.isArray(suggestions) ? suggestions : []).filter(item => (
+    Number(item?.score || 0) >= 46
+    || (Array.isArray(item?.reasons) && item.reasons.some(reason => (
+      String(reason || '').startsWith('Etiket:')
+      || String(reason || '').startsWith('Yakın etiket:')
+      || String(reason || '').includes('Soru metninde')
+    )))
+  ));
 }
 
 function historyPublicCategoryMetaKey(historyId) {
@@ -1111,7 +1143,7 @@ function buildPublicCategoryMeta(context = {}, options = {}) {
   const requestedCategory = normalizePublicCategoryName(options.publicCategory);
   const publicCategory = requestedCategory || suggestions[0]?.category || '';
   const explicitRelated = normalizePublicRelatedCategories(options.publicRelatedCategories, publicCategory);
-  const suggestedRelated = suggestions
+  const suggestedRelated = strongPublicCategorySuggestions(suggestions)
     .map(item => item.category)
     .filter(category => publicCategoryTextKey(category) !== publicCategoryTextKey(publicCategory));
   const publicRelatedCategories = explicitRelated.length ? explicitRelated : normalizePublicRelatedCategories(suggestedRelated, publicCategory).slice(0, 4);
@@ -1129,15 +1161,16 @@ function buildPublicCategoryMeta(context = {}, options = {}) {
 function publicCategoryFieldsForHistory(history = {}, meta = null, rules = DEFAULT_PUBLIC_CATEGORY_RULES) {
   const suggestions = suggestPublicCategories(history, rules);
   const saved = meta ? normalizePublicCategoryMeta(meta) : null;
-  const publicCategory = saved?.publicCategory || suggestions[0]?.category || '';
-  const publicRelatedCategories = saved?.publicRelatedCategories?.length
+  const hasManualMeta = saved?.source === 'manual';
+  const publicCategory = hasManualMeta && saved?.publicCategory ? saved.publicCategory : suggestions[0]?.category || '';
+  const publicRelatedCategories = hasManualMeta && saved?.publicRelatedCategories?.length
     ? saved.publicRelatedCategories
-    : normalizePublicRelatedCategories(suggestions.map(item => item.category), publicCategory).slice(0, 4);
+    : normalizePublicRelatedCategories(strongPublicCategorySuggestions(suggestions).map(item => item.category), publicCategory).slice(0, 4);
   return {
     publicCategory,
     publicRelatedCategories,
     publicCategorySuggestions: suggestions,
-    publicCategorySource: saved?.source || (publicCategory ? 'auto' : '')
+    publicCategorySource: hasManualMeta ? 'manual' : (publicCategory ? 'auto' : '')
   };
 }
 

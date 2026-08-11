@@ -3247,6 +3247,23 @@ function publicCategoryTextKeyUi(value){
     .replace(/\s+/g,' ')
     .trim();
 }
+const PUBLIC_CATEGORY_GREETING_RE_UI=/(^|\n)\s*sevgili\s+(kardeşlerimiz|kardeslerimiz|kardeşlerim|kardeslerim|izleyenler|dinleyenler)\s*[,.;:!\-–—]*/giu;
+function stripPublicCategoryBoilerplateUi(value=''){
+  return String(value||'').replace(PUBLIC_CATEGORY_GREETING_RE_UI,'\n');
+}
+function publicCategoryTextTokensUi(value=''){
+  return publicCategoryTextKeyUi(value).split(' ').filter(Boolean);
+}
+function publicCategoryTextHasAliasUi(textKey='',aliasKey=''){
+  const textTokens=publicCategoryTextTokensUi(textKey);
+  const aliasTokens=publicCategoryTextTokensUi(aliasKey);
+  if(!textTokens.length||!aliasTokens.length)return false;
+  if(aliasTokens.length===1)return textTokens.includes(aliasTokens[0]);
+  for(let i=0;i<=textTokens.length-aliasTokens.length;i+=1){
+    if(aliasTokens.every((token,index)=>textTokens[i+index]===token))return true;
+  }
+  return false;
+}
 function parsePublicRelatedCategories(value,mainCategory=''){
   const raw=Array.isArray(value)?value.join(','):String(value||'');
   const mainKey=publicCategoryTextKeyUi(mainCategory);
@@ -3263,7 +3280,7 @@ function parsePublicRelatedCategories(value,mainCategory=''){
 }
 function publicCategoryRuleScore(rule,context={}){
   const questionKey=publicCategoryTextKeyUi(context.questionText||'');
-  const answerKey=publicCategoryTextKeyUi(context.correctedText||context.originalText||'');
+  const answerKey=publicCategoryTextKeyUi(stripPublicCategoryBoilerplateUi(context.correctedText||context.originalText||''));
   const summaryKey=publicCategoryTextKeyUi(context.summary||'');
   const filenameKey=publicCategoryTextKeyUi(context.filename||'');
   const tags=parseHistoryTags(context.tags||[]).map(tag=>({tag,key:publicCategoryTextKeyUi(tag)})).filter(item=>item.key);
@@ -3274,12 +3291,12 @@ function publicCategoryRuleScore(rule,context={}){
   aliasKeys.forEach(aliasKey=>{
     const exact=tags.find(item=>item.key===aliasKey);
     if(exact){score+=120;addReason(`Etiket: ${exact.tag}`);return;}
-    const partial=tags.find(item=>aliasKey.length>=4&&(item.key.includes(aliasKey)||aliasKey.includes(item.key)));
+    const partial=tags.find(item=>aliasKey.length>=4&&(publicCategoryTextHasAliasUi(item.key,aliasKey)||publicCategoryTextHasAliasUi(aliasKey,item.key)));
     if(partial){score+=84;addReason(`Yakın etiket: ${partial.tag}`);}
-    if(questionKey&&questionKey.includes(aliasKey)){score+=46;addReason('Soru metninde geçiyor');}
-    if(answerKey&&answerKey.includes(aliasKey)){score+=18;addReason('Cevap metninde geçiyor');}
-    if(summaryKey&&summaryKey.includes(aliasKey)){score+=10;addReason('Özette geçiyor');}
-    if(filenameKey&&filenameKey.includes(aliasKey)){score+=8;addReason('Dosya adında geçiyor');}
+    if(publicCategoryTextHasAliasUi(questionKey,aliasKey)){score+=46;addReason('Soru metninde geçiyor');}
+    if(publicCategoryTextHasAliasUi(answerKey,aliasKey)){score+=18;addReason('Cevap metninde geçiyor');}
+    if(publicCategoryTextHasAliasUi(summaryKey,aliasKey)){score+=10;addReason('Özette geçiyor');}
+    if(publicCategoryTextHasAliasUi(filenameKey,aliasKey)){score+=8;addReason('Dosya adında geçiyor');}
   });
   return {score:Math.min(score,240),reasons};
 }
@@ -3288,6 +3305,12 @@ function suggestPublicCategoriesUi(context={}){
     const scored=publicCategoryRuleScore(rule,context);
     return {category:rule.name,score:scored.score,confidence:scored.score>=100?'yüksek':scored.score>=46?'orta':'düşük',reasons:scored.reasons};
   }).filter(item=>item.score>=18).sort((a,b)=>b.score-a.score||a.category.localeCompare(b.category,'tr')).slice(0,7);
+}
+function strongPublicCategorySuggestionsUi(suggestions=[]){
+  return (Array.isArray(suggestions)?suggestions:[]).filter(item=>Number(item?.score||0)>=46||(Array.isArray(item?.reasons)&&item.reasons.some(reason=>{
+    const text=String(reason||'');
+    return text.startsWith('Etiket:')||text.startsWith('Yakın etiket:')||text.includes('Soru metninde');
+  })));
 }
 function publicCategoryDefaults(d={},questionText='',tagsText=''){
   const tags=parseHistoryTags(tagsText||d.tags||[]);
@@ -3304,7 +3327,7 @@ function publicCategoryDefaults(d={},questionText='',tagsText=''){
   const category=normalizePublicCategoryNameUi(d.publicCategory||suggestions[0]?.category||'');
   const related=Array.isArray(d.publicRelatedCategories)&&d.publicRelatedCategories.length
     ? parsePublicRelatedCategories(d.publicRelatedCategories,category)
-    : parsePublicRelatedCategories(suggestions.map(item=>item.category),category).slice(0,4);
+    : parsePublicRelatedCategories(strongPublicCategorySuggestionsUi(suggestions).map(item=>item.category),category).slice(0,4);
   return {category,related,suggestions};
 }
 function publicCategorySuggestionsHtml(suggestions=[]){

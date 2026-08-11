@@ -328,6 +328,9 @@ if (
   !server.includes('function normalizeHistoryQuestion') ||
   !server.includes('function requireApprovalQuestionAndTags') ||
   !server.includes('function suggestPublicCategories') ||
+  !server.includes('function stripPublicCategoryBoilerplate') ||
+  !server.includes('function publicCategoryTextHasAlias') ||
+  !server.includes('function strongPublicCategorySuggestions') ||
   !server.includes('function buildPublicCategoryMeta') ||
   !server.includes('async function enrichHistoryPublicCategories') ||
   !server.includes("app.get('/api/history/public-category-scan'") ||
@@ -361,6 +364,9 @@ if (
   !html.includes('Soru (zorunlu)') ||
   !html.includes('Etiketler (zorunlu)') ||
   !html.includes('function suggestPublicCategoriesUi') ||
+  !html.includes('function stripPublicCategoryBoilerplateUi') ||
+  !html.includes('function publicCategoryTextHasAliasUi') ||
+  !html.includes('function strongPublicCategorySuggestionsUi') ||
   !html.includes('function publicCategoryInlineHtml') ||
   !html.includes('publicRelatedCategories:parsePublicRelatedCategories') ||
   !html.includes('data-ops-view="categories"') ||
@@ -385,6 +391,16 @@ if (
   !html.includes('historyTagsChips(h.tags||[])')
 ) {
   throw new Error('Soru-cevap soru ve etiket alanlari onaya gonderme, admin onay duzeltmesi, Excel aktarimi, CSV ve DB semasinda korunmali.');
+}
+if (
+  server.includes('questionKey && questionKey.includes(aliasKey)') ||
+  server.includes('answerKey && answerKey.includes(aliasKey)') ||
+  server.includes('summaryKey && summaryKey.includes(aliasKey)') ||
+  html.includes('questionKey&&questionKey.includes(aliasKey)') ||
+  html.includes('answerKey&&answerKey.includes(aliasKey)') ||
+  html.includes('summaryKey&&summaryKey.includes(aliasKey)')
+) {
+  throw new Error('Kategori onerileri kelime siniriyle eslesmeli; sevgili selami Sevgi kategorisine dusmemeli.');
 }
 if (
   html.includes('id="submitApprovalCategory"') ||
