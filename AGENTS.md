@@ -120,6 +120,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-12
+- **Public preview legacy demo yolu temizlendi:** `codex/public-preview-phase1` branch'inde eski
+  `PUBLIC_ARCHIVE_DEMO` mekanizması kaldırıldı. `server.js` artık `public-archive-demo` modülünü
+  beklemez, `archive-public.css` referansı taşımaz ve startup her zaman normal `seed()` akışını
+  kullanır. `scripts/check-frontend.js` eski demo kalıntılarının geri gelmesini yakalayacak şekilde
+  güncellendi; `scripts/build-archive-demo-static.js` silindi. Bu değişiklik public
+  `public-archive-renderer.js`, `public-archive.css`, fixture içerik veya görsel tasarım yüzeyini
+  değiştirmez; yalnız eski demo kapısını temizler. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `node --check public-archive-renderer.js`,
+  `node --test test/public-archive-renderer.test.js`, `git diff --check` ve `npm.cmd run check`
+  başarılı; 96/96 test geçti. Runtime cleanup commit'i `dcdd673` GitHub'a push edildi.
+  Vercel CLI bu worktree'den ayrı `arsiv-kontrol-public-preview` projesine
+  `dpl_BzsTUK2K8SW5QqtJyZSAXkcLTkaA` deployment'ını aldı; URL
+  `https://arsiv-kontrol-public-preview-d5uoh8ae2-ugurkarabulutts-projects.vercel.app` Vercel
+  Login HTML'i döndürdüğü için geçerli public smoke kanıtı sayılmadı. Ana production domain ve
+  root `/` etkilenmedi. Sıradaki public iş görsel kalite resetidir; kullanıcı onayı olmadan gerçek
+  veri bağlama, SEO veya root cutover yapılmayacak.
+
 ### 2026-08-08
 - **Paket Çıktı Merkezi yayın takibi eklendi:** `/admin` süper admin Arşiv Operasyon
   Merkezi içindeki `Paket Çıktı Merkezi` artık yalnız JSON/Markdown/CSV çıktı üretmez; çıktı

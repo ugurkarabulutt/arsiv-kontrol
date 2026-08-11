@@ -1,5 +1,32 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-12 Codex Public Preview Devralma Notu
+
+- Public iş hattı için esas worktree `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`,
+  branch `codex/public-preview-phase1` olarak doğrulandı. Ana repo
+  `C:\Users\ugur\Desktop\arsiv-kontrol` public frontend devamı için kullanılmamalı; eski ve kirli
+  admin/public karışımı değişiklikler içeriyor.
+- Diğer sohbetten kalan bilinçli cleanup doğrulandı ve commitlendi: eski
+  `PUBLIC_ARCHIVE_DEMO` kapısı, `public-archive-demo` lazy require beklentisi,
+  `archive-public.css` server referansı ve `scripts/build-archive-demo-static.js` kaldırıldı.
+  Bu değişiklik public renderer/CSS/fixture görselini değiştirmez; yalnız eski demo yolunu kapatır.
+  Runtime cleanup commit'i: `dcdd673 chore: remove legacy public demo path`, GitHub'a push edildi.
+- Doğrulama geçti: `node --check server.js`, `node scripts/check-frontend.js`,
+  `node --check public-archive-renderer.js`, `node --test test/public-archive-renderer.test.js`,
+  `git diff --check` ve `npm.cmd run check`. Tam check sonucu 96/96 test başarılı. `git diff --check`
+  yalnız mevcut CRLF uyarılarını gösterdi.
+- Vercel CLI ile production ana domaine dokunmadan bu worktree'den yeni deploy denendi. CLI bu
+  checkout'u ayrı `ugurkarabulutts-projects/arsiv-kontrol-public-preview` projesine bağladı ve
+  deployment `dpl_BzsTUK2K8SW5QqtJyZSAXkcLTkaA` / URL
+  `https://arsiv-kontrol-public-preview-d5uoh8ae2-ugurkarabulutts-projects.vercel.app` üretti.
+  Ancak HTTP smoke bu URL'nin Vercel Login HTML'i döndürdüğünü gösterdi; bu deploy geçerli public
+  preview smoke kanıtı değildir. Main canlı domain `https://arsiv.ibrahimlive.ai` etkilenmedi.
+- Kullanıcı görsel kaliteyi haklı olarak yeterli bulmuyor. Mevcut public preview canlıya alınacak
+  aday kabul edilmemeli. Sıradaki iş kod/veri/SEO değil; önce yalnız görsel kaliteyi kanıtlayan
+  küçük ekran seti hazırlanmalı: mobil ana sayfa, desktop ana sayfa, mobil/desktop soru detay.
+  Kullanıcı onayı gelmeden root cutover, gerçek veri bağlama, Google/Soru Sor yayına alma veya SEO
+  implementasyonu yapılmayacak.
+
 ## 2026-08-08 Codex Güncel Durum
 
 - Yerelde Paket Çıktı Merkezi yayın takibi eklendi: `/admin` süper admin `Arşiv Operasyon
