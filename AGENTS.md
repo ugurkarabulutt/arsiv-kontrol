@@ -121,6 +121,30 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Metin Kaynakları hadis/slayt dışına genişletildi:** `/admin > Arşiv Çalışmaları` içindeki
+  eski `Hadisler ve Slaytlar` alt ekranı daha doğru ve basit bir adla `Metin Kaynakları` oldu.
+  Ekran artık yalnız `hadis` ve `slayt` kaynaklarını değil, `standart` ve yeni `youtube`
+  kaynak türlerini de aynı havuzda listeler. Kaynak formu, Dosyalar filtresi, Kaynak Dosyaları
+  filtresi ve tür etiketi `Youtube Dokümanı` seçimini destekler; dosya içe aktarımında dosya
+  adı `youtube`, `you tube`, `youtu.be`, `yayın link` veya `yayin link` içerirse tür otomatik
+  `youtube` önerilir. Metin Kaynakları ekranında `Yeni Hadis`, `Yeni Slayt`, `Yeni Standart`,
+  `Yeni Youtube Dokümanı` ve `Dosyadan Ekle` aksiyonları bulunur; özet kutuları hadis, slayt,
+  standart, Youtube ve arşiv adayı sayılarını gösterir. Bu adım schema, root `/` ve public
+  frontend hattına dokunmadı; alan hâlâ yalnız `super_admin + /admin` korumasındadır.
+  Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test geçti. Yerel `/admin`
+  smoke testinde `Metin Kaynakları`, `value="youtube"` ve
+  `params.set('types','hadis,slayt,standart,youtube')` marker'ları görüldü; `adminRouteProbe`
+  yoktu. Runtime commit `d179253` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-jp7hjcqqf-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_AQe3RHhLkQPvXoDgRsYBdTxzLnxR`, canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke:
+  `/health`, root `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest,
+  `sw.js` ve favicon başarılı. `/admin` header'ları noindex/no-store doğru. Canlı HTML'de
+  `Metin Kaynakları`, `value="youtube"` ve
+  `params.set('types','hadis,slayt,standart,youtube')` mevcut; `adminRouteProbe` ve public/root
+  cutover marker'ı yok. Oturumsuz
+  `/api/archive-ops/sources?types=hadis,slayt,standart,youtube` isteği `401` döndü.
+
 - **Çalışma Tabloları satır alanları ekip tablosuna yaklaştırıldı:** `/admin > Arşiv
   Çalışmaları > Çalışma Tabloları` formuna ve detaylarına `İşleme tarihi`, `Yayın linki` ve
   `Program` alanları eklendi. Görünen dil `Etiket / Sınıf`, `Soru` ve `Cevap` olarak sadeleştirildi;
