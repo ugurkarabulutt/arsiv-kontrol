@@ -93,35 +93,69 @@ Bugünkü tasarım onayı ve ilk veri geçişi için `public-json` yolu kullanı
 - Kısa vadede: `public-json` ile public ön yüzü besle.
 - Kalıcı yayında: `public_qa` ve kategori/konu tablolarına geç.
 
-## Kategori ve Konu Mantığı
+## Kategori ve Etiket Mantığı
 
-Etiketlerin tamamı kategori yapılmamalı. Kategori geniş ana raf olmalı; etiketler `konu/kavram` olmalı.
+Bu arşiv diğer dini siteler gibi hazır ve dışarıdan verilmiş kategori listesiyle ele alınmayacak.
+Bizde `Mürşid`, `Zikir`, `Hidayet`, `Allah'a Ulaşmayı Dilemek`, `Nefs`, `Teslimiyet` gibi temel
+kavramlar kategori de olabilir. Kategori listesini masa başında değil, eldeki gerçek etiket
+yoğunluğundan çıkaracağız.
 
-Önerilen yapı:
+Basit mantık:
 
-- `public_categories`: az sayıda ana kategori.
-- `public_topics`: etiket/kavram havuzu.
-- `public_qa.category_id`: her soru-cevabın tek ana kategorisi.
-- `public_qa_topics`: her soru-cevabın çoklu konu bağlantısı.
+- Çok geçen, arşivin ana kapısı olacak kavramlar kategori adayıdır.
+- Daha dar, açıklayıcı veya aynı kavramın yazım varyasyonu olanlar etiket olarak kalır.
+- Bir soru-cevap bir ana kategoriye bağlanır.
+- Aynı soru-cevap birden fazla etikete bağlı kalabilir.
+- Etiketler hem arama hem de ilgili cevapları birbirine bağlama için kullanılacaktır.
 
-## İlk Kategori Taslağı
+Örnek:
 
-Bu liste nihai değildir; canlı etiket dağılımı ve ekip lideri onayıyla sadeleştirilmelidir.
+- `Zikir` kategori olabilir.
+- `Daimî Zikir`, `Zikir Emri`, `Zikir Sayısı` gibi ifadeler etiket olabilir.
+- `Hidayet` veya `Allah'a Ulaşmayı Dilemek` kategori olabilir.
+- `Hidâyet`, `Allah’a Ulaşmak`, `Allah’a Ulaşmayı Dilemek` gibi yazım ve yakın anlam varyantları
+  tek public görünen ad altında toparlanmalıdır.
 
-1. Allah'a Ulaşmayı Dilemek ve Hidayet
-2. Zikir, Dua ve İbadet
-3. Mürşid, Resûl ve Tâbiiyet
-4. Nefs, Ruh ve Kalp
-5. Teslimiyet, Takva ve İslâm
-6. Kur'ân, Âyetler ve Vahiy
-7. Ahiret, Cennet ve Cehennem
-8. İmtihan, Kader ve Sabır
-9. Ahlâk, Sevgi ve Mutluluk
-10. Şeytan, Günah ve Afetler
-11. Hizmet, Tebliğ ve Davet
-12. Genel / Kategori Bekliyor
+Teknik kayıtta bunun karşılığı:
 
-Kural: `Genel / Kategori Bekliyor` public'te kalıcı kategori olarak öne çıkarılmamalı; yalnız geçici editoryal kontrol için kullanılmalıdır.
+- Ana kategori listesi: yoğun etiketlerden seçilen public kategori adları.
+- Etiket/kavram listesi: kategori olmayan veya kategoriye bağlı kalan diğer etiketler.
+- Her soru-cevap: bir ana kategori + çoklu etiket.
+
+## İlk Kategori Adayı Çıkarma Şekli
+
+Kategori listesini önce canlı etiket yoğunluğundan çıkaracağız. İlk ham adaylar bu yüzden şunlar
+olabilir:
+
+1. Zikir
+2. Mürşid
+3. Nefs
+4. Hidayet
+5. Allah'a Ulaşmayı Dilemek
+6. Tövbe
+7. Tebliğ
+8. Ruh
+9. Hacet Namazı
+10. Tasavvuf
+11. Sevgi
+12. Devrin İmamı
+13. Teslimiyet
+14. Dua
+15. Namaz
+16. Cennet
+17. Kur'ân
+18. Nefs Tezkiyesi
+19. Takva
+20. Şeytan
+
+Bu liste nihai kategori listesi değildir. İlk iş bu yoğun etiketleri üçe ayırmaktır:
+
+1. Public ana kategori olacaklar.
+2. Ana kategori altında etiket olarak kalacaklar.
+3. Aynı kavramın yazım/ifade varyantı olduğu için başka bir adın altına birleşecekler.
+
+Kural: `Genel / Kategori Bekliyor` public'te kalıcı kategori olarak öne çıkarılmamalı; yalnız
+geçici editoryal kontrol için kullanılmalıdır.
 
 ## Etiket Normalizasyonu
 
@@ -152,16 +186,17 @@ Bir kayıt public'e çıkmadan önce şunlar zorunlu olmalıdır:
 
 1. Bekleyen kayıtlar onaylanır.
 2. Onay sonrası eksik soru/etiket sayısı tekrar ölçülür.
-3. Etiket varyantları normalize edilir.
-4. İlk kategori eşleştirme tablosu çıkarılır.
-5. 50-100 kayıtla public tasarım veri testi yapılır.
-6. Sonra tüm uygun onaylı kayıtlar public-json veya public_qa draft olarak taşınır.
-7. 390px mobil, desktop, SEO, sitemap, noindex ve public dil guard testleri geçmeden indexing açılmaz.
+3. Etiket yoğunluğu listesi çıkarılır.
+4. Yoğun etiketlerden kategori adayları seçilir.
+5. Kategori olacaklar, etiket kalacaklar ve birleşecek yazım varyantları ayrılır.
+6. 50-100 kayıtla public tasarım veri testi yapılır.
+7. Sonra tüm uygun onaylı kayıtlar public-json veya public_qa draft olarak taşınır.
+8. 390px mobil, desktop, SEO, sitemap, noindex ve public dil guard testleri geçmeden indexing açılmaz.
 
 ## Karar Bekleyen Noktalar
 
 1. İlk public yayın tüm onaylı kayıtlarla mı başlayacak, yoksa seçilmiş 50-100 kayıtla mı?
-2. Ana kategori adları yukarıdaki taslağa yakın mı olmalı, ekip lideri kendi kategori listesini mi verecek?
+2. Yoğun etiketlerden hangileri public ana kategori olacak, hangileri etiket olarak kalacak?
 3. Public detay sayfasında kaynak izi olarak yayın linki mi, arşiv kaynak adı mı, yoksa ikisi de mi gösterilecek?
 4. İlk yayında `public-json` yeterli mi, yoksa hemen `public_qa` migration hazırlansın mı?
 

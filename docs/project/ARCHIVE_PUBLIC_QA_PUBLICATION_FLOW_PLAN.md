@@ -22,8 +22,10 @@ kararı ayrıca kayda alındı:
   görüldü.
 - Bekleyen kayıtların 2894'ünde soru, 2895'inde etiket var; 114 soru ve 113 etiket eksiği
   public aktarım öncesi ayrı kontrol edilmelidir.
-- 2750 benzersiz etiket varyantı bulunduğu için etiketlerin tamamı kategori yapılmayacak;
-  az sayıda ana `public_categories`, çoklu kavram/etiket için `public_topics` kullanılacaktır.
+- 2750 benzersiz etiket varyantı bulunduğu için kategori listesi hazır dini site mantığıyla
+  dışarıdan verilmeyecek; yoğun etiketlerden `Zikir`, `Mürşid`, `Hidayet`, `Nefs` gibi ana
+  kategori adayları çıkarılacak, daha dar kavramlar ve yazım varyantları etiket/konu olarak
+  bağlanacaktır.
 - Bugünkü hızlı entegrasyon için öneri `public-json`; kalıcı yayın sistemi için öneri ayrı
   `public_qa` veri katmanıdır.
 

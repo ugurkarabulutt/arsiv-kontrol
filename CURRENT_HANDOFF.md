@@ -11,15 +11,15 @@
   aktarım öncesi ayrıca kontrol edilmeli. Onaylı 11 kaydın tamamında soru ve etiket var.
 - Public aktarım kararı: kısa vadede kilitli `Yayın Dosyası` üzerinden `public-json` üretip public
   frontend'e vermek en hızlı ve kontrollü yoldur. Kalıcı yayın sistemi için `public_qa`,
-  `public_categories`, `public_topics` ve `public_qa_topics` katmanı gereklidir. Etiketlerin tamamı
-  kategori olmayacak; kategori geniş ana raf, etiketler ise konu/kavram olacaktır. İlk kategori
-  taslağı yeni belgeye işlendi; `Zikir`, `Mürşid`, `Nefs`, `Hidayet`, `Tövbe`,
-  `Allah'a/Allah’a Ulaşmayı Dilemek`, `Kur’ân` gibi yoğun etiketlerde alias/normalizasyon
-  gereklidir.
+  `public_categories`, `public_topics` ve `public_qa_topics` katmanı gereklidir. Kullanıcı kararıyla
+  bu arşiv diğer dini siteler gibi hazır kategori mantığıyla ele alınmayacak; `Zikir`, `Mürşid`,
+  `Hidayet`, `Nefs`, `Allah'a Ulaşmayı Dilemek` gibi yoğun ve temel etiketler kategori de olabilir.
+  Kategori olacaklar, etiket olarak kalacaklar ve yazım/ifade varyantı olarak birleşecekler canlı
+  etiket yoğunluğundan çıkarılacaktır.
 - Bu kayıt yalnız dokümantasyon/plan güncellemesidir; kod, DB migration, root `/`, deploy veya
   public frontend dosyası değişmedi. Sıradaki güvenli iş: onaylar bittikten sonra canlı sayımı
-  tekrar almak, eksik soru/etiketli kayıtları ayırmak, etiket normalizasyon tablosu ve ilk kategori
-  eşleştirmesini hazırlamak.
+  tekrar almak, eksik soru/etiketli kayıtları ayırmak, yoğun etiketlerden kategori adaylarını
+  çıkarmak, etiket normalizasyon tablosu ve ilk kategori eşleştirmesini hazırlamak.
 
 - `/admin > Arşiv Çalışmaları > Metin Kaynakları` ekranı hadis/slayt sınırlamasından çıkarıldı.
   Eski menü adı `Hadisler ve Slaytlar` yerine `Metin Kaynakları` oldu; ekran artık `hadis`,

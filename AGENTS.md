@@ -129,9 +129,12 @@ tespit edilir).
   veri özeti eklendi. Salt-okunur canlı Supabase sayımı: `taslak=249`, `bekliyor=3008`,
   `onaylandi=11`, `reddedildi=271`; bekleyen kayıtların 2894'ünde soru, 2895'inde etiket var,
   114 soru ve 113 etiket eksiği public aktarım öncesi kontrol edilmeli. 2750 benzersiz etiket
-  varyantı bulunduğu için karar: etiketlerin tamamı kategori yapılmayacak; az sayıda ana
-  `public_categories`, çoklu kavram/etiket için `public_topics` kullanılacak. Bugünkü hızlı
-  frontend veri besleme yolu `public-json`, kalıcı yayın yolu ayrı `public_qa` katmanıdır.
+  varyantı bulunduğu için karar güncellendi: kategori listesi hazır dini site mantığıyla
+  dışarıdan verilmeyecek; `Zikir`, `Mürşid`, `Hidayet`, `Nefs`, `Allah'a Ulaşmayı Dilemek`
+  gibi yoğun ve temel etiketler kategori de olabilir. Kategori olacaklar, etiket olarak
+  kalacaklar ve yazım/ifade varyantı olarak birleşecekler canlı etiket yoğunluğundan çıkarılacak.
+  Bugünkü hızlı frontend veri besleme yolu `public-json`, kalıcı yayın yolu ayrı `public_qa`
+  katmanıdır.
   Bu adım yalnız dokümantasyon/plan kaydıdır; kod, DB migration, root `/`, deploy veya public
   frontend dosyası değişmedi.
 
