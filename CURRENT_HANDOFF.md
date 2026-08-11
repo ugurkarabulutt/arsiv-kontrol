@@ -12,7 +12,15 @@
   admin meta alanlarını public kayda taşımaz. Frontend guard'a `ARCHIVE_OPS_WORK_ITEM_META_KEY`,
   `syncArchiveWorkItemMeta`, `archiveWorkProcessedDate`, `archiveWorkPublicationUrl` ve
   `archiveWorkProgram` marker'ları eklendi. Bu adım schema, root `/` ve public frontend hattına
-  dokunmadı.
+  dokunmadı. Yerel doğrulama: `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test
+  geçti. Runtime commit `e7e9dce` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-415j59ndn-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archiveWorkProcessedDate`,
+  `archiveWorkPublicationUrl`, `archiveWorkProgram` ve `Etiket / Sınıf` mevcut; public/root
+  cutover marker'ı yok. Oturumsuz `/api/archive-ops/work-items` ve
+  `/api/archive-ops/team-members` istekleri `401` döndü.
 
 - Kullanıcı düzeltmesiyle ekip üyesi sayısının 36 ile sınırlı olmadığı kayda alındı. Güncel model
   sabit kişi sayısına bağlanmayacak; kişi dosyaları mevcut aktif kullanıcılarla dinamik eşleşecek.

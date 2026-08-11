@@ -131,7 +131,16 @@ tespit edilir).
   dosyasında çalışma satırları ve yayın linkleri aynı kişide birlikte görünür. Bu alanlar admin
   çalışma kolaylığı içindir; public JSON üretimi bu yeni admin meta alanlarını public kayda
   taşımaz. `scripts/check-frontend.js` bu alanların ve meta helper'ının kaldırılmamasını denetler.
-  Bu adım schema, root `/` ve public frontend hattına dokunmadı.
+  Bu adım schema, root `/` ve public frontend hattına dokunmadı. Yerel doğrulama:
+  `npm.cmd run check` ve `git diff --check` başarılı; 86/86 test geçti. Runtime commit
+  `e7e9dce` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-415j59ndn-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `archiveWorkProcessedDate`,
+  `archiveWorkPublicationUrl`, `archiveWorkProgram` ve `Etiket / Sınıf` mevcut; public/root
+  cutover marker'ı yok. Oturumsuz `/api/archive-ops/work-items` ve
+  `/api/archive-ops/team-members` istekleri `401` döndü.
 
 - **Kişi Dosyaları aktif ekip üyesi listesine bağlandı:** Kullanıcı düzeltmesiyle ekip üyesi
   sayısının 36 ile sınırlı olmadığı netleştirildi. `/admin > Arşiv Çalışmaları > Çalışma
