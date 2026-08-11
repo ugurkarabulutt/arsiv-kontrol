@@ -400,6 +400,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-source-preview{font-size:12px;color:var(--ink2);line-height:1.5;}
 .ops-file-toolbar{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(150px,.7fr) minmax(150px,.7fr);gap:8px;margin-bottom:12px;}
 .ops-file-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:12px;}
+.ops-text-summary{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}
 .ops-file-summary-item{background:var(--surface);padding:12px;}
 .ops-file-summary-item strong{display:block;font-size:22px;line-height:1;color:var(--ink);}
 .ops-file-summary-item span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);}
@@ -1132,7 +1133,7 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="library" onclick="mArchiveOps('library')">Kaynak Dosyaları</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="publishing" onclick="mArchiveOps('publishing')">Yayın Linkleri</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="work" onclick="mArchiveOps('work')">Çalışma Tabloları</button>
-          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="texts" onclick="mArchiveOps('texts')">Hadisler ve Slaytlar</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="texts" onclick="mArchiveOps('texts')">Metin Kaynakları</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="import" onclick="mArchiveOps('import')">Dosya Yükle</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="candidates" onclick="mArchiveOps('candidates')">Yayına Hazır Kayıtlar</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Son Kontrol</button>
@@ -1170,7 +1171,7 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="library" onclick="openArchiveOps('library')"><span>Kaynak Dosyaları</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="publishing" onclick="openArchiveOps('publishing')"><span>Yayın Linkleri</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="work" onclick="openArchiveOps('work')"><span>Çalışma Tabloları</span></button>
-        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="texts" onclick="openArchiveOps('texts')"><span>Hadisler ve Slaytlar</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="texts" onclick="openArchiveOps('texts')"><span>Metin Kaynakları</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="import" onclick="openArchiveOps('import')"><span>Dosya Yükle</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="candidates" onclick="openArchiveOps('candidates')"><span>Yayına Hazır Kayıtlar</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Son Kontrol</span></button>
@@ -1421,6 +1422,7 @@ canvas{width:100%!important;}
               <option value="transkript">Transkript</option>
               <option value="hadis">Hadis</option>
               <option value="slayt">Slayt</option>
+              <option value="youtube">Youtube Dokümanı</option>
               <option value="dokuman">Doküman</option>
               <option value="standart">Standart</option>
               <option value="not">Not</option>
@@ -1460,6 +1462,7 @@ canvas{width:100%!important;}
               <option value="transkript">Transkript</option>
               <option value="hadis">Hadis</option>
               <option value="slayt">Slayt</option>
+              <option value="youtube">Youtube Dokümanı</option>
               <option value="dokuman">Doküman</option>
               <option value="standart">Standart</option>
               <option value="not">Not</option>
@@ -1511,6 +1514,7 @@ canvas{width:100%!important;}
               <option value="transkript">Transkript</option>
               <option value="hadis">Hadis</option>
               <option value="slayt">Slayt</option>
+              <option value="youtube">Youtube Dokümanı</option>
               <option value="dokuman">Doküman</option>
               <option value="standart">Standart</option>
               <option value="not">Not</option>
@@ -1801,22 +1805,26 @@ canvas{width:100%!important;}
       <div class="ops-panel archive-ops-section" data-ops-view="texts" hidden>
         <div class="ops-panel-head">
           <div>
-            <div class="ops-panel-title">Hadis ve Slayt Metinleri</div>
-            <div class="ops-panel-sub">Hadis ve slayt kaynaklarını linke bağlı kalmadan tam metin olarak bulun, okuyun ve düzenleyin.</div>
+            <div class="ops-panel-title">Metin Kaynakları</div>
+            <div class="ops-panel-sub">Hadis, slayt, standart ve Youtube dokümanlarını linke bağlı kalmadan tam metin olarak bulun, okuyun ve düzenleyin.</div>
           </div>
           <div class="ops-text-actions">
-            <button class="btn-primary" onclick="newArchiveTextSource('hadis')">Yeni Hadis Metni</button>
-            <button class="btn-sec" onclick="newArchiveTextSource('slayt')">Yeni Slayt Metni</button>
+            <button class="btn-primary" onclick="newArchiveTextSource('hadis')">Yeni Hadis</button>
+            <button class="btn-sec" onclick="newArchiveTextSource('slayt')">Yeni Slayt</button>
+            <button class="btn-sec" onclick="newArchiveTextSource('standart')">Yeni Standart</button>
+            <button class="btn-sec" onclick="newArchiveTextSource('youtube')">Yeni Youtube Dokümanı</button>
             <button class="btn-sec" onclick="renderArchiveOpsView('import')">Dosyadan Ekle</button>
           </div>
         </div>
         <div class="ops-panel-body">
           <div class="ops-filter-row">
-            <input class="ops-field" id="archiveTextSearch" placeholder="Hadis, slayt, kaynak adı, kategori veya metin içinde ara..." oninput="setArchiveTextSearch(this.value)">
+            <input class="ops-field" id="archiveTextSearch" placeholder="Hadis, slayt, standart, Youtube dokümanı, kategori veya metin içinde ara..." oninput="setArchiveTextSearch(this.value)">
             <select class="ops-field" id="archiveTextTypeFilter" onchange="setArchiveTextFilter()">
-              <option value="">Hadis ve slaytlar</option>
+              <option value="">Tüm metin kaynakları</option>
               <option value="hadis">Sadece hadis</option>
               <option value="slayt">Sadece slayt</option>
+              <option value="standart">Sadece standart</option>
+              <option value="youtube">Sadece Youtube dokümanı</option>
             </select>
             <select class="ops-field" id="archiveTextStatusFilter" onchange="setArchiveTextFilter()">
               <option value="">Tüm durumlar</option>
@@ -1830,14 +1838,14 @@ canvas{width:100%!important;}
               <option value="beklet">Beklet</option>
             </select>
           </div>
-          <div class="ops-file-summary" id="archiveTextSummary"></div>
+          <div class="ops-file-summary ops-text-summary" id="archiveTextSummary"></div>
           <div class="ops-status" id="archiveTextStatusMsg"></div>
           <div class="ops-source-layout">
             <div class="ops-source-list" id="archiveTextList">
-              <div class="empty-state">Hadis ve slayt metinleri yükleniyor...</div>
+              <div class="empty-state">Metin kaynakları yükleniyor...</div>
             </div>
             <div class="ops-detail" id="archiveTextDetail">
-              <div class="empty-state">Bir hadis veya slayt kaydı seçildiğinde tam metin burada açılır.</div>
+              <div class="empty-state">Bir metin kaynağı seçildiğinde tam metin burada açılır.</div>
             </div>
           </div>
         </div>
@@ -2404,7 +2412,7 @@ let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','tagImport'];
-const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
+const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt','standart','youtube']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
@@ -5487,6 +5495,7 @@ function archiveSourceTypeLabel(type){
     transkript:'Transkript',
     hadis:'Hadis',
     slayt:'Slayt',
+    youtube:'Youtube Dokümanı',
     dokuman:'Doküman',
     standart:'Standart',
     not:'Not'
@@ -5558,7 +5567,7 @@ function archiveSourceStatsHtml(counts={}){
   `;
 }
 function archiveFileIcon(sourceType=''){
-  return {transkript:'TR',hadis:'HD',slayt:'SL',dokuman:'DK',standart:'ST',not:'NT'}[sourceType]||'KY';
+  return {transkript:'TR',hadis:'HD',slayt:'SL',youtube:'YT',dokuman:'DK',standart:'ST',not:'NT'}[sourceType]||'KY';
 }
 function archiveFileFolderName(source){
   return String(source?.category||archiveSourceTypeLabel(source?.sourceType)||'Genel kaynaklar').trim()||'Genel kaynaklar';
@@ -5695,11 +5704,15 @@ function archiveTextFilteredSources(){
 function archiveTextSummaryHtml(items=[]){
   const hadisCount=items.filter(item=>item.sourceType==='hadis').length;
   const slaytCount=items.filter(item=>item.sourceType==='slayt').length;
+  const standartCount=items.filter(item=>item.sourceType==='standart').length;
+  const youtubeCount=items.filter(item=>item.sourceType==='youtube').length;
   const candidateCount=items.filter(item=>item.status==='arsiv_adayi').length;
   return `
     <div class="ops-file-summary-item"><strong>${items.length.toLocaleString('tr-TR')}</strong><span>Görünen metin</span></div>
     <div class="ops-file-summary-item"><strong>${hadisCount.toLocaleString('tr-TR')}</strong><span>Hadis</span></div>
     <div class="ops-file-summary-item"><strong>${slaytCount.toLocaleString('tr-TR')}</strong><span>Slayt</span></div>
+    <div class="ops-file-summary-item"><strong>${standartCount.toLocaleString('tr-TR')}</strong><span>Standart</span></div>
+    <div class="ops-file-summary-item"><strong>${youtubeCount.toLocaleString('tr-TR')}</strong><span>Youtube</span></div>
     <div class="ops-file-summary-item"><strong>${candidateCount.toLocaleString('tr-TR')}</strong><span>Arşiv adayı</span></div>
   `;
 }
@@ -5733,12 +5746,12 @@ function renderArchiveTextLibrary(){
   if(summary)summary.innerHTML=archiveTextSummaryHtml(items);
   if(!list)return;
   if(!archiveOpsState.sources.length){
-    list.innerHTML='<div class="empty-state">Henüz hadis veya slayt metni yok. Yeni kayıt açabilir ya da dosyadan ekleyebilirsiniz.</div>';
+    list.innerHTML='<div class="empty-state">Henüz metin kaynağı yok. Yeni kayıt açabilir ya da dosyadan ekleyebilirsiniz.</div>';
     renderArchiveTextDetail(null);
     return;
   }
   if(!items.length){
-    list.innerHTML='<div class="empty-state">Bu aramaya uygun hadis veya slayt metni bulunamadı.</div>';
+    list.innerHTML='<div class="empty-state">Bu aramaya uygun metin kaynağı bulunamadı.</div>';
     renderArchiveTextDetail(null);
     return;
   }
@@ -5751,7 +5764,7 @@ function renderArchiveTextDetail(source){
   const box=el('archiveTextDetail');
   if(!box)return;
   if(!source){
-    box.innerHTML='<div class="empty-state">Bir hadis veya slayt kaydı seçildiğinde tam metin burada açılır.</div>';
+    box.innerHTML='<div class="empty-state">Bir metin kaynağı seçildiğinde tam metin burada açılır.</div>';
     return;
   }
   const tags=(source.tags||[]).map(tag=>`<span class="ops-tag">${esc(tag)}</span>`).join('');
@@ -5787,10 +5800,10 @@ async function loadArchiveTextSources(){
   const params=new URLSearchParams();
   if(archiveOpsState.textQuery)params.set('q',archiveOpsState.textQuery);
   if(archiveOpsState.textType)params.set('type',archiveOpsState.textType);
-  else params.set('types','hadis,slayt');
+  else params.set('types','hadis,slayt,standart,youtube');
   if(archiveOpsState.textStatus)params.set('status',archiveOpsState.textStatus);
   const list=el('archiveTextList');
-  if(list&&!archiveOpsState.sources.length)list.innerHTML='<div class="empty-state">Hadis ve slayt metinleri yükleniyor...</div>';
+  if(list&&!archiveOpsState.sources.length)list.innerHTML='<div class="empty-state">Metin kaynakları yükleniyor...</div>';
   const data=await api('GET',`/api/archive-ops/sources${params.toString()?`?${params}`:''}`);
   if(data.error){
     if(list)list.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
@@ -5812,7 +5825,7 @@ function setArchiveTextFilter(){
   loadArchiveTextSources();
 }
 function newArchiveTextSource(type='hadis'){
-  const sourceType=type==='slayt'?'slayt':'hadis';
+  const sourceType=ARCHIVE_TEXT_SOURCE_TYPES.has(String(type||''))?String(type||''):'hadis';
   clearArchiveSourceForm();
   if(el('archiveSourceType'))el('archiveSourceType').value=sourceType;
   if(el('archiveSourceStatus'))el('archiveSourceStatus').value='kaynak';
@@ -9485,6 +9498,7 @@ function archiveImportSourceType(name=''){
   if(lower.includes('hadis'))return 'hadis';
   if(lower.includes('slayt'))return 'slayt';
   if(lower.includes('standart'))return 'standart';
+  if(lower.includes('youtube')||lower.includes('you tube')||lower.includes('youtu.be')||lower.includes('yayın link')||lower.includes('yayin link'))return 'youtube';
   if(lower.includes('transkript')||lower.includes('döküm')||lower.includes('dokum'))return 'transkript';
   return 'dokuman';
 }
