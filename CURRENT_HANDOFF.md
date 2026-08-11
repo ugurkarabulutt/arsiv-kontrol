@@ -13,7 +13,16 @@
   `Çalışma Satırları` ve `Yayın Linkleri` iki ayrı bölüm olarak birlikte görünür. Frontend guard'a `team-members`,
   `archiveTeamMemberOptions` ve `loadArchiveTeamMembers` marker'ları eklendi. Bu adım schema,
   root `/` ve public frontend hattına dokunmadı. Yerel doğrulama: `npm.cmd run check` ve
-  `git diff --check` başarılı; 86/86 test geçti.
+  `git diff --check` başarılı; 86/86 test geçti. Runtime commit `0a1e2fd` GitHub'a push edildi
+  ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-a6pldl0pu-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı. `/admin`
+  header'ları noindex/no-store doğru. Canlı HTML'de `/api/archive-ops/team-members`,
+  `archiveTeamMemberOptions`, `loadArchiveTeamMembers`, `Çalışma Satırları` ve `Yayın Linkleri`
+  mevcut; `36 kişilik` sabit varsayımı ve public/root cutover marker'ı yok. Oturumsuz
+  `/api/archive-ops/team-members`, `/api/archive-ops/team-leaders` ve `/api/archive-ops/work-items`
+  istekleri `401` döndü.
 
 - `/admin > Arşiv Çalışmaları > Yayın Linkleri` için seçili ekip lideri ve manuel `Tamam` akışı
   eklendi. Süper admin mevcut aktif kullanıcı listesinden `Seçili Ekip Liderleri`ni işaretleyip
