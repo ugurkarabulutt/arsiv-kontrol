@@ -137,7 +137,14 @@ tespit edilir).
   `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md`. Yerel doğrulama:
   `node --check server.js`, `node scripts/check-frontend.js`, `npm.cmd run check` ve
   `git diff --check` başarılı; 86/86 test geçti. `git diff --check` yalnız mevcut CRLF
-  uyarılarını gösterdi.
+  uyarılarını gösterdi. Runtime commit `35dff35` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-dqhot4kk2-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru. Canlı HTML'de `data-ops-view="categories"`,
+  `submitApprovalCategory`, `detailPublicCategory` ve `loadArchiveCategoryScan` mevcut;
+  oturumsuz `/api/history/public-category-scan` `401` döndü. Dar marker kontrolde
+  `/public-preview`, `publicArchiveRenderer` ve `adminRouteProbe` görünmedi.
 
 - **Public soru-cevap aktarımı ve kategori karar notu kaydedildi:** Public ön yüz tasarımı onay
   aşamasına geldiği için bugünkü bekleyen/onaylı soru-cevapların nasıl public'e taşınacağı
