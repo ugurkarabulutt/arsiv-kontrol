@@ -160,6 +160,13 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
 });
 
+test('mobile search copy stays compact but accessible', () => {
+  const home = renderPublicArchivePreviewRoute('/public-preview').html;
+  assert.match(home, /placeholder="Soru veya kavram yazın\.\.\."/);
+  assert.match(home, /aria-label="Sorunuzu veya kavramınızı yazın"/);
+  assert.doesNotMatch(home, /placeholder="Sorunuzu veya kavramınızı yazın/);
+});
+
 test('public preview exposes separate index and info pages', () => {
   for (const route of [
     '/public-preview/konular',

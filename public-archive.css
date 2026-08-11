@@ -420,7 +420,7 @@ svg {
 
 .pa-search {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 58px;
+  grid-template-columns: 48px minmax(0, 1fr) 54px;
   align-items: center;
   width: min(650px, 100%);
   min-height: 60px;
@@ -463,8 +463,8 @@ svg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   margin: 5px 5px 5px 0;
   color: #111111;
   background: var(--pa-mint);
@@ -1347,7 +1347,7 @@ a.pa-chip:hover,
   }
 
   .pa-search {
-    grid-template-columns: 46px minmax(0, 1fr) 52px;
+    grid-template-columns: 40px minmax(0, 1fr) 49px;
     width: 100%;
     min-height: 58px;
   }
@@ -1359,9 +1359,9 @@ a.pa-chip:hover,
   }
 
   .pa-search button {
-    width: 46px;
-    height: 46px;
-    margin: 5px 5px 5px 0;
+    width: 44px;
+    height: 44px;
+    margin: 7px 5px 7px 0;
   }
 
   .pa-section {

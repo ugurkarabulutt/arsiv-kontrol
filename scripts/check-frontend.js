@@ -795,11 +795,13 @@ for (const marker of [
 for (const marker of [
   '-webkit-text-size-adjust: 100%',
   '.pa-search:focus-within',
-  'grid-template-columns: 46px minmax(0, 1fr) 52px',
+  'grid-template-columns: 40px minmax(0, 1fr) 49px',
   'font-size: 16px'
 ]) {
   assert(publicCss.includes(marker), `Mobil input/focus guard eksik: ${marker}`);
 }
+assert(publicRendererSource.includes('placeholder="Soru veya kavram yazın..."'), 'Mobil arama placeholder kisa ve okunabilir olmali.');
+assert(!publicRendererSource.includes('placeholder="Sorunuzu veya kavramınızı yazın..."'), 'Uzun arama placeholder mobilde okunamaz, geri gelmemeli.');
 for (const match of publicCss.matchAll(/\.pa-search input\s*\{([\s\S]*?)\}/g)) {
   assert(!/font-size:\s*(?:1[0-5](?:\.\d+)?px|0\.\d+rem)/.test(match[1]), 'Arama input fontu 16px altina dusmemeli; iOS zoom yapar.');
 }

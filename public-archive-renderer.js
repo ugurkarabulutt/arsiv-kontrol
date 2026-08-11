@@ -227,7 +227,7 @@ function searchBox(value = '', label = 'Arşivde ara') {
     <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama">
       <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
       <span class="pa-search-leading">${iconSvg('search')}</span>
-      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Sorunuzu veya kavramınızı yazın..." autocomplete="off">
+      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Soru veya kavram yazın..." autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Sorunuzu veya kavramınızı yazın">
       <button type="submit" aria-label="Ara">
         <span class="pa-search-icon">${iconSvg('arrow-right')}</span>
       </button>
