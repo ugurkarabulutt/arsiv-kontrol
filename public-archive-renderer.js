@@ -10,10 +10,12 @@ const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 
 const ROUTE_PATHS = [
   PREVIEW_BASE,
+  `${PREVIEW_BASE}/arsiv`,
   `${PREVIEW_BASE}/arama`,
   `${PREVIEW_BASE}/soru/ornek-soru`,
   `${PREVIEW_BASE}/konu/ornek-kavram`,
   `${PREVIEW_BASE}/kategori/ornek-kategori`,
+  `${PREVIEW_BASE}/hesabim`,
   `${PREVIEW_BASE}/soru-sor`,
   `${PREVIEW_BASE}/bulunamadi`
 ];
@@ -154,7 +156,7 @@ function questionIconName(entry, category, topics) {
 function previewActionNav(active) {
   const items = [
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
-    ['Arşiv', `${PREVIEW_BASE}/arama`, 'archive'],
+    ['Arşiv', `${PREVIEW_BASE}/arsiv`, 'archive'],
     ['Ara', `${PREVIEW_BASE}/arama#arama`, 'search'],
     ['Konular', `${PREVIEW_BASE}/konu/ornek-kavram`, 'topics'],
     ['Soru Sor', `${PREVIEW_BASE}/soru-sor`, 'ask']
@@ -170,7 +172,7 @@ function previewActionNav(active) {
 function header(active) {
   const nav = [
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
-    ['Ar\u015fiv', PREVIEW_BASE + '/arama', 'archive'],
+    ['Ar\u015fiv', PREVIEW_BASE + '/arsiv', 'archive'],
     ['Konular', PREVIEW_BASE + '/konu/ornek-kavram', 'topics'],
     ['Kategoriler', PREVIEW_BASE + '/kategori/ornek-kategori', 'categories'],
     ['Soru Sor', PREVIEW_BASE + '/soru-sor', 'ask']
@@ -180,13 +182,13 @@ function header(active) {
     <header class="pa-header">
       <a class="pa-logo" href="${PREVIEW_BASE}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
       <nav class="pa-desktop-nav" aria-label="Ana gezinme">
-        ${nav.map(([label, url, key]) => `<a class="${active === key || (active === 'search' && key === 'archive') ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
+        ${nav.map(([label, url, key]) => `<a class="${active === key ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
       </nav>
       <div class="pa-header-actions">
-        <button class="pa-account-button" type="button" aria-label="Hesab\u0131m" data-account-placeholder>
+        <a class="pa-account-button${active === 'account' ? ' is-active' : ''}" href="${PREVIEW_BASE}/hesabim" aria-label="Hesab\u0131m">
           <span class="pa-account-icon">${iconSvg('user')}</span>
           <span class="pa-account-text">Hesab\u0131m</span>
-        </button>
+        </a>
         <button class="pa-theme-toggle" type="button" data-theme-toggle aria-label="Tema de\u011fi\u015ftir">
           <span class="pa-theme-toggle-icon"><span class="pa-theme-sun">${iconSvg('sun')}</span><span class="pa-theme-moon">${iconSvg('moon')}</span></span>
         </button>
@@ -402,6 +404,43 @@ function searchResults(query) {
   });
 }
 
+function renderArchive() {
+  const entries = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+  const categories = publicArchiveFixtures.categories.filter(category => category.featured);
+  const topics = publicArchiveFixtures.topics.filter(topic => topic.featured).slice(0, 8);
+  return renderShell({
+    active: 'archive',
+    title: 'Arşiv',
+    description: 'Dini sorular, cevaplar, kavramlar ve kategoriler için public arşiv görünümü.',
+    content: `
+      <main class="pa-main pa-narrow-main">
+        <section class="pa-archive-hero">
+          <p class="pa-kicker">Arşiv</p>
+          <h1>Soru ve cevapları sakince keşfedin.</h1>
+          <p>Yayınlanan soru-cevap kayıtlarını kategori ve kavram bağlantılarıyla birlikte okuyabilirsiniz.</p>
+          <div class="pa-collection-meta">
+            <span>${entries.length} soru</span>
+            <span>${categories.length} kategori</span>
+            <span>${topics.length} kavram</span>
+          </div>
+        </section>
+        <section class="pa-section">
+          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategori/ornek-kategori`)}
+          <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
+        </section>
+        <section class="pa-section">
+          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konu/ornek-kavram`)}
+          <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
+        </section>
+        <section class="pa-section">
+          ${sectionHeader('Tüm Sorular')}
+          <div class="pa-list">${entries.map(entry => questionCard(entry, true)).join('')}</div>
+        </section>
+      </main>
+    `
+  });
+}
+
 function renderSearch(query = '') {
   const cleanQuery = String(query || '').trim();
   const results = searchResults(cleanQuery);
@@ -411,7 +450,6 @@ function renderSearch(query = '') {
     description: 'Arşivde soru, konu ve kategori arayın.',
     content: `
       <main class="pa-main pa-narrow-main">
-        ${breadcrumb([{ label: 'Arama' }])}
         <section class="pa-search-page">
           <p class="pa-kicker">Arşivde ara</p>
           <h1>Aradığınız cevaba en kısa yoldan ulaşın.</h1>
@@ -437,7 +475,7 @@ function renderNoResults(query) {
       <p>${query ? `"${escapeHtml(query)}" için arşivde eşleşen bir kayıt görünmüyor.` : 'Bu aramada eşleşen bir kayıt görünmüyor.'}</p>
       <div class="pa-empty-actions">
         <a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Aklınızda bir soru mu var?</a>
-        <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arama">Arşive Dön</a>
+        <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arsiv">Arşive Dön</a>
       </div>
     </div>
   `;
@@ -456,7 +494,7 @@ function renderQuestion(slug) {
     content: `
       <main class="pa-main pa-detail-main">
         ${breadcrumb([
-          { label: 'Arşiv', href: `${PREVIEW_BASE}/arama` },
+          { label: 'Arşiv', href: `${PREVIEW_BASE}/arsiv` },
           category ? { label: category.name, href: `${PREVIEW_BASE}/kategori/${category.slug}` } : { label: 'Soru' },
           { label: entry.title }
         ])}
@@ -588,6 +626,27 @@ function renderCategory(slug) {
   });
 }
 
+function renderAccount() {
+  return renderShell({
+    active: 'account',
+    title: 'Hesabım',
+    description: 'Hesap alanı için public preview placeholder.',
+    content: `
+      <main class="pa-main pa-narrow-main">
+        <section class="pa-account-page">
+          <p class="pa-kicker">Hesabım</p>
+          <h1>Hesap özelliği yakında kullanılabilir olacak.</h1>
+          <p>Bu ön izleme aşamasında kullanıcı hesabı, giriş veya kayıt akışı bulunmaz. Arşivi gezebilir, soru-cevapları okuyabilir ve arama yapabilirsiniz.</p>
+          <div class="pa-empty-actions">
+            <a class="pa-button" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
+            <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arama">Arama Yap</a>
+          </div>
+        </section>
+      </main>
+    `
+  });
+}
+
 function renderAsk() {
   return renderShell({
     active: 'ask',
@@ -692,24 +751,8 @@ function renderShell({ title, description, active, content, status = 200 }) {
   <nav class="pa-mobile-nav" aria-label="Mobil alt gezinme">
     ${previewActionNav(active)}
   </nav>
-  <div class="pa-toast" role="status" aria-live="polite" hidden data-account-toast>Hesap özelliği yakında kullanılabilir olacak.</div>
   <script>
     (function(){
-      var accountToastTimer;
-      document.querySelectorAll('[data-account-placeholder]').forEach(function(button){
-        button.addEventListener('click', function(){
-          var toast = document.querySelector('[data-account-toast]');
-          if (!toast) return;
-          toast.hidden = false;
-          requestAnimationFrame(function(){ toast.classList.add('is-visible'); });
-          clearTimeout(accountToastTimer);
-          accountToastTimer = setTimeout(function(){
-            toast.classList.remove('is-visible');
-            setTimeout(function(){ toast.hidden = true; }, 180);
-          }, 2200);
-        });
-      });
-
       function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
@@ -764,7 +807,9 @@ function renderShell({ title, description, active, content, status = 200 }) {
 function renderPublicArchivePreviewRoute(routePath, query = {}) {
   const pathname = routePath.replace(/\/+$/, '') || PREVIEW_BASE;
   if (pathname === PREVIEW_BASE) return renderHome();
+  if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive();
   if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
+  if (pathname === `${PREVIEW_BASE}/hesabim`) return renderAccount();
   if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
   const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
   if (questionMatch) return renderQuestion(questionMatch[1]);
@@ -797,7 +842,9 @@ function createPublicArchivePreviewRouter(options = {}) {
     res.type('text/css').sendFile(cssFile);
   });
   router.get(['/', ''], (req, res) => sendRendered(res, renderHome()));
+  router.get('/arsiv', (req, res) => sendRendered(res, renderArchive()));
   router.get('/arama', (req, res) => sendRendered(res, renderSearch(req.query.q || '')));
+  router.get('/hesabim', (req, res) => sendRendered(res, renderAccount()));
   router.get('/soru-sor', (req, res) => sendRendered(res, renderAsk()));
   router.get('/soru/:slug', (req, res) => sendRendered(res, renderQuestion(req.params.slug)));
   router.get('/konu/:slug', (req, res) => sendRendered(res, renderTopic(req.params.slug)));

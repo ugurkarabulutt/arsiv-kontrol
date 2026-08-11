@@ -815,10 +815,18 @@ for (const marker of ['Öne Çıkan Sorular', 'Kavramlar', 'Kategoriler', 'Aklı
 }
 assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
+assert(homePreview.includes('href="/public-preview/hesabim"'), 'Public account control hesap placeholder route una gitmeli.');
+assert(homePreview.includes('href="/public-preview/arsiv"'), 'Public arsiv linki gercek arsiv route una gitmeli.');
+const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
+assert(archivePreview.includes('Soru ve cevapları sakince keşfedin.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi browse/list yapiyla gorunmeli.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' }).html;
 assert(searchPreview.includes('Namaz kılarken akla gelen kötü düşünceler'), 'Public search fixture data ile sonuc dondurmeli.');
+assert(!searchPreview.includes('class="pa-breadcrumb"') && !searchPreview.includes('Sayfa yolu'), 'Public arama sayfasi gereksiz breadcrumb gostermemeli.');
 const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' }).html;
 assert(noResultPreview.includes('Sonuç bulunamadı.') && noResultPreview.includes('Aklınızda bir soru mu var?'), 'Public search no-results state soru CTA ile gorunmeli.');
+const accountPreview = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
+assert(accountPreview.includes('Hesap özelliği yakında kullanılabilir olacak.') && accountPreview.includes('kullanıcı hesabı, giriş veya kayıt akışı bulunmaz'), 'Public hesap sayfasi safe placeholder olmali.');
+assert(!accountPreview.includes('/api/'), 'Public hesap sayfasi gercek auth/API cagrisina baglanmamali.');
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
 for (const marker of ['Orijinal Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
   assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);

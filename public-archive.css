@@ -112,7 +112,6 @@ svg {
 
 .pa-page {
   min-height: 100dvh;
-  padding-bottom: 116px;
 }
 
 .pa-header {
@@ -240,6 +239,7 @@ svg {
 }
 
 .pa-account-button:hover,
+.pa-account-button.is-active,
 .pa-theme-toggle:hover,
 .pa-icon-button:hover {
   border-color: color-mix(in srgb, var(--pa-mint) 50%, var(--pa-border));
@@ -818,7 +818,9 @@ a.pa-chip:hover,
 }
 
 .pa-search-page,
+.pa-archive-hero,
 .pa-collection-hero,
+.pa-account-page,
 .pa-empty-state {
   padding: 34px;
   background:
@@ -829,7 +831,9 @@ a.pa-chip:hover,
 }
 
 .pa-search-page h1,
+.pa-archive-hero h1,
 .pa-collection-hero h1,
+.pa-account-page h1,
 .pa-form-copy h1,
 .pa-empty-state h1 {
   max-width: 720px;
@@ -838,7 +842,9 @@ a.pa-chip:hover,
 }
 
 .pa-search-page p,
+.pa-archive-hero p,
 .pa-collection-hero p,
+.pa-account-page p,
 .pa-form-copy p,
 .pa-empty-state p {
   max-width: 680px;
@@ -1111,7 +1117,7 @@ a.pa-chip:hover,
   align-items: start;
   width: min(var(--pa-container), calc(100% - 48px));
   margin: 56px auto 0;
-  padding: 26px 0 36px;
+  padding: 26px 0 30px;
   color: var(--pa-text-2);
   border-top: 1px solid var(--pa-border);
 }
@@ -1214,10 +1220,6 @@ a.pa-chip:hover,
 }
 
 @media (max-width: 899px) {
-  .pa-page {
-    padding-bottom: calc(132px + env(safe-area-inset-bottom));
-  }
-
   .pa-header {
     width: 100%;
     min-height: 76px;
@@ -1414,13 +1416,17 @@ a.pa-chip:hover,
   }
 
   .pa-search-page,
+  .pa-archive-hero,
   .pa-collection-hero,
+  .pa-account-page,
   .pa-empty-state {
     padding: 24px;
   }
 
   .pa-search-page h1,
+  .pa-archive-hero h1,
   .pa-collection-hero h1,
+  .pa-account-page h1,
   .pa-form-copy h1,
   .pa-empty-state h1 {
     font-size: 32px;
@@ -1450,7 +1456,7 @@ a.pa-chip:hover,
     width: 100%;
     gap: 16px;
     margin-top: 46px;
-    padding: 24px 20px calc(126px + env(safe-area-inset-bottom));
+    padding: 24px 20px calc(94px + env(safe-area-inset-bottom));
   }
 
   .pa-footer-links {

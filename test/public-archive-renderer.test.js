@@ -82,10 +82,22 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /\/public-preview\/assets\/hero-bookshelf-light-desktop\.webp/);
   assert.match(home, /\/public-preview\/assets\/hero-bookshelf-dark-desktop\.webp/);
   assert.match(home, /class="pa-svg-icon"/);
-  assert.match(home, /data-account-toast/);
-  assert.match(home, /Hesap özelliği yakında kullanılabilir olacak\./);
+  assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
 });
+
+test('archive and account routes are explicit public preview pages', () => {
+  const archive = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
+  assert.match(archive, /Soru ve cevapları sakince keşfedin\./);
+  assert.match(archive, /Tüm Sorular/);
+  assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);
+
+  const account = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
+  assert.match(account, /Hesap özelliği yakında kullanılabilir olacak\./);
+  assert.match(account, /kullanıcı hesabı, giriş veya kayıt akışı bulunmaz/);
+  assert.doesNotMatch(account, /\/api\//);
+});
+
 test('public preview search and missing states are deterministic', () => {
   const result = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' });
   assert.equal(result.status, 200);
