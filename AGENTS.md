@@ -143,7 +143,15 @@ tespit edilir).
   test geçti. Yerel `/admin` HTML smoke testinde `Seçili Ekip Liderleri`,
   `archivePublishAssignedBy` ve `setArchivePublishCompletion` marker'ları göründü; yeni
   `/api/archive-ops/team-leaders` endpoint'i oturumsuz `401` döndü ve public/root cutover
-  marker'ı görülmedi.
+  marker'ı görülmedi. Runtime commit `91d6f0c` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-pond8q16p-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru. Canlı HTML'de `Seçili Ekip Liderleri`,
+  `archivePublishAssignedBy`, `setArchivePublishCompletion`, `/api/archive-ops/team-leaders`
+  ve `/completion` mevcut; eski `Arşiv Operasyon Merkezi` ve public/root cutover marker'ı yok.
+  Oturumsuz `/api/archive-ops/team-leaders` ve `/api/archive-ops/publish-tasks` istekleri
+  `401` döndü.
 
 - **Arşiv Çalışmaları erişim kararı ve public yayın sözleşmesi kayda alındı:** Kullanıcı
   kararıyla `Arşiv Çalışmaları` şimdilik yalnız `super_admin` rolüne görünür kalacak; normal
