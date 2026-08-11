@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Kişi Dosyaları aktif ekip üyesi listesine bağlandı:** Kullanıcı düzeltmesiyle ekip üyesi
+  sayısının 36 ile sınırlı olmadığı netleştirildi. `/admin > Arşiv Çalışmaları > Çalışma
+  Tabloları` içindeki `Kişi Dosyaları` artık yalnız atanmış çalışma/yayın linki kayıtlarından
+  türemez; aktif kullanıcı listesinden gelen tüm ekip üyelerini de sıfır kayıtla gösterebilir.
+  Yeni `GET /api/archive-ops/team-members` endpoint'i aktif kullanıcıları döner ve diğer arşiv
+  operasyon rotaları gibi `auth, admin, superAdmin` zinciriyle korunur. `Atanan kişi` alanları
+  çalışma satırında ve yayın linkinde aynı aktif ekip üyesi öneri listesini kullanır; elle yazma
+  desteği korunur. Seçili kişi detayında artık yalnız yayın linkleri değil, aynı kişiye ait
+  çalışma satırları ve yayın linkleri iki ayrı bölüm olarak birlikte görünür. `36 kişi` varsayımı güncel plan ve devir notlarından kaldırıldı; geçmiş toplu
+  duyuru alıcı sayısı gibi gerçek olay kayıtlarına dokunulmadı. Bu adım schema, root `/` ve
+  public frontend hattına dokunmadı. Yerel doğrulama: `npm.cmd run check` ve `git diff --check`
+  başarılı; 86/86 test geçti.
+
 - **Yayın Linkleri ekip lideri seçimi ve elle Tamam akışı eklendi:** `/admin > Arşiv
   Çalışmaları > Yayın Linkleri` ekranına `Seçili Ekip Liderleri` paneli eklendi. Süper admin,
   mevcut aktif kullanıcı listesinden hangi kişilerin yayın linki atayabilecek ekip liderleri
@@ -159,8 +172,8 @@ tespit edilir).
   Frontend regresyon kontrolü artık mobil menü, masaüstü menü, ana tab ve `canUseArchiveOps`
   fonksiyonunun `super_admin + /admin` şartını koruduğunu; backend arşiv operasyon API
   rotalarının `superAdmin` koruması taşıdığını açıkça denetler. Ekip lideri kararları da
-  kayda alındı: 36 kişilik isim listesi mevcut kullanıcılarla birebir aynı; yayın linklerini
-  seçili ekip liderleri atayacak; `Tamam` işareti otomatik değil, işi yapan kişi tarafından
+  kayda alındı: ekip üyesi sayısı sabit değildir; kişi listesi mevcut aktif kullanıcılarla
+  dinamik eşleşecektir. Yayın linklerini seçili ekip liderleri atayacak; `Tamam` işareti otomatik değil, işi yapan kişi tarafından
   elle işaretlenecek. Public ön yüz koduna/root yayına alma hattına dokunmadan
   `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md` eklendi. Bu belge onaylı soru,
   cevap ve etiketlerin admin son kontrolünden sonra public ön yüze hangi temiz JSON/API

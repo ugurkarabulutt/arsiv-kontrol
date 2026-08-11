@@ -116,14 +116,14 @@ Her iki modelde de public ön yüz `history` veya admin operasyon tablolarını 
 ## Yetki ve Ekip Kararları
 
 - Arşiv Çalışmaları şimdilik sadece `super_admin` rolüne görünür.
-- 36 kişilik isim listesi mevcut kullanıcılarla birebir aynıdır.
+- Ekip üyesi sayısı sabit değildir; kişi listesi mevcut aktif kullanıcılarla dinamik eşleşecektir.
 - Yayın linklerini seçili ekip liderleri atayacak.
 - `Tamam` işareti otomatik değil, işi yapan kişi tarafından elle işaretlenecek.
 - Seçili ekip lideri modeli ileride ayrı yetkiyle tanımlanmalı; tüm adminlere otomatik açılmamalı.
 
 ## Kalan İşler
 
-1. 36 kullanıcı adını sistem kullanıcılarıyla doğrulayan kişi eşleştirme ekranı.
+1. Aktif kullanıcı listesini kişi dosyalarıyla doğrulayan kişi eşleştirme ekranı.
 2. Seçili ekip liderlerini tanımlayacak sade yetki modeli.
 3. Yayın linki atama akışında ekip lideri yetkisi.
 4. Atanan kişinin yayın linki satırında `Tamam` durumunu elle işaretlemesi.

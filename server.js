@@ -3645,6 +3645,10 @@ function publicArchiveTeamLeaderUser(user = {}) {
   };
 }
 
+function publicArchiveTeamMemberUser(user = {}) {
+  return publicArchiveTeamLeaderUser(user);
+}
+
 function normalizeArchiveTeamLeaderEntry(user = {}, existing = {}, actor = 'Sistem', now = new Date().toISOString()) {
   const clean = publicArchiveTeamLeaderUser(user);
   return {
@@ -3656,14 +3660,23 @@ function normalizeArchiveTeamLeaderEntry(user = {}, existing = {}, actor = 'Sist
   };
 }
 
-async function listArchiveTeamLeaderUsers() {
+async function listArchiveTeamUsers() {
   const { data, error } = await supabase
     .from('users')
     .select('id,username,name,role,active')
     .eq('active', true)
     .order('name', { ascending: true });
   if (error) throw new Error(error.message);
-  return (data || []).map(publicArchiveTeamLeaderUser);
+  return (data || []).map(publicArchiveTeamMemberUser);
+}
+
+async function listArchiveTeamLeaderUsers() {
+  return listArchiveTeamUsers();
+}
+
+async function archiveTeamMemberState() {
+  const users = await listArchiveTeamUsers();
+  return { users };
 }
 
 async function loadArchiveTeamLeaders() {
@@ -5293,6 +5306,12 @@ app.delete('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (re
     const deleted = await deleteArchiveWorkItem(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
     res.json({ success: true, deleted });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/archive-ops/team-members', auth, admin, superAdmin, async (req, res) => {
+  try {
+    res.json(await archiveTeamMemberState());
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 

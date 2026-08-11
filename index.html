@@ -414,6 +414,8 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-team-board-head .btn-sec{white-space:nowrap;}
 .ops-folder-card.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.12);box-shadow:0 0 0 2px rgba(var(--gold-rgb),.08) inset;}
 .ops-member-links{display:grid;gap:8px;max-height:260px;overflow:auto;}
+.ops-member-section-title{font-size:12px;font-weight:900;color:var(--ink);line-height:1.35;margin:0 0 8px;overflow-wrap:anywhere;}
+.ops-member-section+.ops-member-section{margin-top:14px;}
 .ops-member-link{border:1px solid var(--border);background:var(--bg);padding:10px;min-width:0;}
 .ops-member-link-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
 .ops-member-link-url{font-size:12px;line-height:1.45;margin-top:5px;overflow-wrap:anywhere;word-break:break-word;}
@@ -1611,7 +1613,7 @@ canvas{width:100%!important;}
                   </select>
                 </div>
                 <div class="ops-form-grid two" style="margin-top:10px">
-                  <input class="ops-field" id="archivePublishAssignedTo" placeholder="Atanan kişi">
+                  <input class="ops-field" id="archivePublishAssignedTo" list="archiveTeamMemberOptions" placeholder="Atanan kişi">
                   <input class="ops-field" id="archivePublishDueDate" type="date" aria-label="Hedef tarih">
                 </div>
                 <select class="ops-field" id="archivePublishAssignedBy" style="margin-top:10px" aria-label="Atayan ekip lideri">
@@ -1707,6 +1709,7 @@ canvas{width:100%!important;}
               <div class="ops-folder-strip" id="archiveTeamFolders"></div>
               <div class="ops-detail" id="archiveSelectedMemberLinks" style="min-height:auto"></div>
             </div>
+            <datalist id="archiveTeamMemberOptions"></datalist>
             <div class="ops-work-layout">
               <div class="ops-work-form">
                 <input class="ops-field" id="archiveWorkTitle" placeholder="Çalışma satırı başlığı">
@@ -1730,7 +1733,7 @@ canvas{width:100%!important;}
                   </select>
                 </div>
                 <div class="ops-form-grid two" style="margin-top:10px">
-                  <input class="ops-field" id="archiveWorkAssignedTo" placeholder="Atanan kişi">
+                  <input class="ops-field" id="archiveWorkAssignedTo" list="archiveTeamMemberOptions" placeholder="Atanan kişi">
                   <input class="ops-field" id="archiveWorkDueDate" type="date" aria-label="Hedef tarih">
                 </div>
                 <div class="ops-form-grid two" style="margin-top:10px">
@@ -2389,7 +2392,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveTeamState={activeMember:'',members:[]},archiveTeamLeaderState={users:[],leaders:[],loading:false,saving:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveTeamState={activeMember:'',members:[],users:[],loading:false},archiveTeamLeaderState={users:[],leaders:[],loading:false,saving:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
@@ -2737,12 +2740,14 @@ function renderArchiveOpsView(view=archiveOpsState.view){
   else if(archiveOpsState.view==='sources'||archiveOpsState.view==='library')loadArchiveOpsSources();
   else if(archiveOpsState.view==='texts')loadArchiveTextSources();
   if(archiveOpsState.view==='publishing'){
+    loadArchiveTeamMembers({silent:true});
     loadArchiveTeamLeaders({silent:true});
     loadArchiveOpsSources({ignoreFilters:true});
     loadArchiveWorkItems({silent:true});
     loadArchivePublishTasks();
   }
   if(archiveOpsState.view==='work'){
+    loadArchiveTeamMembers({silent:true});
     loadArchiveOpsSources({ignoreFilters:true});
     loadArchiveWorkItems();
     loadArchivePublishTasks({silent:true});
@@ -6069,15 +6074,82 @@ function archivePublishPayload(){
 function archiveTeamPerson(value){
   return String(value||'').trim();
 }
+function archiveTeamAliasKey(value){
+  return archiveTeamPerson(value).toLocaleLowerCase('tr-TR');
+}
+function archiveTeamUserName(user={}){
+  return archiveTeamPerson(user.name||user.username);
+}
+function archiveTeamUserAliasMap(){
+  const map=new Map();
+  (archiveTeamState.users||[]).forEach(user=>{
+    const name=archiveTeamUserName(user);
+    if(!name)return;
+    [user.name,user.username,name].forEach(alias=>{
+      const key=archiveTeamAliasKey(alias);
+      if(key&&!map.has(key))map.set(key,name);
+    });
+  });
+  return map;
+}
+function archiveTeamCanonicalName(value){
+  const raw=archiveTeamPerson(value);
+  if(!raw)return '';
+  return archiveTeamUserAliasMap().get(archiveTeamAliasKey(raw))||raw;
+}
+function archiveTeamSamePerson(value,member){
+  return archiveTeamCanonicalName(value)===archiveTeamPerson(member);
+}
+function renderArchiveTeamMemberOptions(){
+  const list=el('archiveTeamMemberOptions');
+  if(!list)return;
+  const names=[...new Set((archiveTeamState.users||[]).map(archiveTeamUserName).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
+  list.innerHTML=names.map(name=>`<option value="${escAttr(name)}"></option>`).join('');
+}
+async function loadArchiveTeamMembers(options={}){
+  if(!canUseArchiveOps()||archiveTeamState.loading)return;
+  archiveTeamState.loading=true;
+  renderArchiveTeamFolders();
+  const data=await api('GET','/api/archive-ops/team-members');
+  archiveTeamState.loading=false;
+  if(data.error){
+    if(!options.silent){
+      const strip=el('archiveTeamFolders');
+      if(strip)strip.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;
+    }
+    renderArchiveTeamMemberOptions();
+    renderArchiveTeamFolders();
+    return;
+  }
+  archiveTeamState.users=data.users||[];
+  renderArchiveTeamMemberOptions();
+  renderArchiveTeamFolders();
+}
 function archiveTeamRows(){
   const rows=new Map();
-  const touch=(name,kind,item)=>{
+  const userAliasMap=archiveTeamUserAliasMap();
+  const rowFor=(name,seed={})=>{
     const member=archiveTeamPerson(name);
-    if(!member)return;
+    if(!member)return null;
     if(!rows.has(member)){
-      rows.set(member,{name:member,workCount:0,linkCount:0,doneLinks:0,openLinks:0,latestDate:'',latestTitle:''});
+      rows.set(member,{name:member,username:seed.username||'',role:seed.role||'',userId:seed.id||seed.userId||'',workCount:0,linkCount:0,doneLinks:0,openLinks:0,latestDate:'',latestTitle:''});
+    }else if(seed.username||seed.role||seed.id||seed.userId){
+      const row=rows.get(member);
+      row.username=row.username||seed.username||'';
+      row.role=row.role||seed.role||'';
+      row.userId=row.userId||seed.id||seed.userId||'';
     }
-    const row=rows.get(member);
+    return rows.get(member);
+  };
+  (archiveTeamState.users||[]).forEach(user=>{
+    const member=archiveTeamUserName(user);
+    if(member)rowFor(member,user);
+  });
+  const touch=(name,kind,item)=>{
+    const rawMember=archiveTeamPerson(name);
+    const member=userAliasMap.get(archiveTeamAliasKey(rawMember))||rawMember;
+    if(!member)return;
+    const row=rowFor(member);
     if(kind==='work')row.workCount+=1;
     if(kind==='link'){
       row.linkCount+=1;
@@ -6093,8 +6165,8 @@ function archiveTeamRows(){
   (archiveWorkState.items||[]).forEach(item=>touch(item.assignedTo,'work',item));
   (archivePublishState.tasks||[]).forEach(task=>touch(task.assignedTo,'link',task));
   const currentRows=[...rows.values()].sort((a,b)=>a.name.localeCompare(b.name,'tr'));
-  if(!archiveTeamState.activeMember&&currentRows.length)archiveTeamState.members=currentRows;
-  return archiveTeamState.members.length?archiveTeamState.members:currentRows;
+  archiveTeamState.members=currentRows;
+  return currentRows;
 }
 function archiveTeamCardHtml(row){
   const active=archiveTeamState.activeMember===row.name?' active':'';
@@ -6102,6 +6174,7 @@ function archiveTeamCardHtml(row){
     `${Number(row.workCount||0).toLocaleString('tr-TR')} çalışma satırı`,
     `${Number(row.linkCount||0).toLocaleString('tr-TR')} yayın linki`
   ];
+  if(row.username&&row.username!==row.name)meta.unshift(row.username);
   if(row.openLinks)meta.push(`${Number(row.openLinks).toLocaleString('tr-TR')} açık`);
   if(row.doneLinks)meta.push(`${Number(row.doneLinks).toLocaleString('tr-TR')} tamam`);
   return `
@@ -6142,8 +6215,26 @@ function archiveMemberPublishLinksHtml(member){
       </div>
     `;
   }
-  const links=(archivePublishState.tasks||[]).filter(task=>archiveTeamPerson(task.assignedTo)===member);
-  const works=(archiveWorkState.items||[]).filter(item=>archiveTeamPerson(item.assignedTo)===member);
+  const links=(archivePublishState.tasks||[]).filter(task=>archiveTeamSamePerson(task.assignedTo,member));
+  const works=(archiveWorkState.items||[]).filter(item=>archiveTeamSamePerson(item.assignedTo,member));
+  const workRows=works.length?works.map(item=>{
+    const topics=(item.topics||[]).slice(0,4).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+    return `
+      <div class="ops-member-link">
+        <div class="ops-member-link-title">${esc(item.title||item.question||'Başlıksız çalışma satırı')}</div>
+        <div class="ops-source-meta">
+          <span>${esc(archiveWorkStatusLabel(item.status))}</span>
+          <span>${esc(archiveWorkPriorityLabel(item.priority))}</span>
+          ${item.dueDate?`<span>Hedef: ${archiveWorkDate(item.dueDate)}</span>`:''}
+          ${item.category?`<span>${esc(item.category)}</span>`:''}
+          ${item.sourceTitle?`<span>${esc(item.sourceTitle)}</span>`:''}
+        </div>
+        <div class="ops-work-preview">${esc(item.textPreview||item.question||item.answerDraft||'Ön izleme yok.')}</div>
+        ${topics?`<div class="ops-tags">${topics}</div>`:''}
+        <div class="ops-source-actions"><button class="btn-mini" onclick="openArchiveWorkItem(${attrJson(item.id)})">Aç</button></div>
+      </div>
+    `;
+  }).join(''):'<div class="empty-state">Bu kişiye bağlı çalışma satırı yok.</div>';
   const linkRows=links.length?links.map(task=>{
     const url=String(task.publicationUrl||'').trim();
     return `
@@ -6175,7 +6266,14 @@ function archiveMemberPublishLinksHtml(member){
       <button class="btn-mini" onclick="clearArchiveTeamMemberFilter()">Tümü</button>
     </div>
     <div class="ops-detail-body">
-      <div class="ops-member-links">${linkRows}</div>
+      <div class="ops-member-section">
+        <div class="ops-member-section-title">Çalışma Satırları</div>
+        <div class="ops-member-links">${workRows}</div>
+      </div>
+      <div class="ops-member-section">
+        <div class="ops-member-section-title">Yayın Linkleri</div>
+        <div class="ops-member-links">${linkRows}</div>
+      </div>
     </div>
   `;
 }
@@ -6185,7 +6283,8 @@ function renderArchiveTeamFolders(){
   if(!strip&&!detail)return;
   const rows=archiveTeamRows();
   if(strip){
-    strip.innerHTML=rows.length?rows.map(archiveTeamCardHtml).join(''):'<div class="empty-state">Henüz kişiye atanmış çalışma satırı veya yayın linki yok.</div>';
+    if(archiveTeamState.loading&&!rows.length)strip.innerHTML='<div class="empty-state">Ekip üyeleri yükleniyor...</div>';
+    else strip.innerHTML=rows.length?rows.map(archiveTeamCardHtml).join(''):'<div class="empty-state">Henüz aktif ekip üyesi veya kişiye atanmış kayıt yok.</div>';
   }
   if(detail)detail.innerHTML=archiveMemberPublishLinksHtml(archiveTeamState.activeMember);
 }

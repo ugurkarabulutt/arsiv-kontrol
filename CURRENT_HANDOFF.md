@@ -2,6 +2,19 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- Kullanıcı düzeltmesiyle ekip üyesi sayısının 36 ile sınırlı olmadığı kayda alındı. Güncel model
+  sabit kişi sayısına bağlanmayacak; kişi dosyaları mevcut aktif kullanıcılarla dinamik eşleşecek.
+- `/admin > Arşiv Çalışmaları > Çalışma Tabloları` içindeki `Kişi Dosyaları` aktif kullanıcı
+  listesine bağlandı. Yeni `GET /api/archive-ops/team-members` endpoint'i aktif kullanıcıları
+  döner ve `auth, admin, superAdmin` zinciriyle korunur. Böylece kendisine henüz çalışma satırı
+  veya yayın linki atanmamış ekip üyeleri de sıfır kayıtla kişi dosyasında görünebilir.
+- Çalışma satırı ve yayın linki formlarındaki `Atanan kişi` alanları aynı aktif ekip üyesi öneri
+  listesini kullanır; elle yazma desteği korunur. Seçili kişi detayında artık aynı kişiye ait
+  `Çalışma Satırları` ve `Yayın Linkleri` iki ayrı bölüm olarak birlikte görünür. Frontend guard'a `team-members`,
+  `archiveTeamMemberOptions` ve `loadArchiveTeamMembers` marker'ları eklendi. Bu adım schema,
+  root `/` ve public frontend hattına dokunmadı. Yerel doğrulama: `npm.cmd run check` ve
+  `git diff --check` başarılı; 86/86 test geçti.
+
 - `/admin > Arşiv Çalışmaları > Yayın Linkleri` için seçili ekip lideri ve manuel `Tamam` akışı
   eklendi. Süper admin mevcut aktif kullanıcı listesinden `Seçili Ekip Liderleri`ni işaretleyip
   saklayabilir; seçim `settings.archive_ops_team_leaders` altında tutulur, DB/schema migration
@@ -24,9 +37,9 @@
   `auth, admin, superAdmin` zincirinde kalıyor. Bu turda runtime davranışı değiştirilmedi; bu
   şartların gevşemesini yakalamak için `scripts/check-frontend.js` içine açık regresyon kontrolü
   eklendi.
-- Ekip lideri cevapları kayda alındı: 36 kişinin isim listesi mevcut kullanıcılarla birebir aynı;
-  yayın linklerini tüm adminler değil, seçili ekip liderleri atayacak; yayın linkindeki `Tamam`
-  işareti otomatik değil, işi yapan kişi tarafından elle işaretlenecek. Bu kararlar
+- Ekip lideri cevapları kayda alındı: ekip üyesi sayısı sabit değildir; kişi listesi mevcut aktif
+  kullanıcılarla dinamik eşleşecek. Yayın linklerini tüm adminler değil, seçili ekip liderleri
+  atayacak; yayın linkindeki `Tamam` işareti otomatik değil, işi yapan kişi tarafından elle işaretlenecek. Bu kararlar
   `docs/project/ADMIN_ARCHIVE_OPERATIONS_CENTER_ARCHITECTURE_PLAN.md` içine işlendi.
 - Public yayına çıkacak soru-cevapların admin tarafında nasıl hazırlanacağını tarif eden
   `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md` eklendi. Bu plan public ön yüz
@@ -49,7 +62,7 @@
   ve `/completion` mevcut; eski `Arşiv Operasyon Merkezi` ve public/root cutover marker'ı yok.
   Oturumsuz `/api/archive-ops/team-leaders` ve `/api/archive-ops/publish-tasks` istekleri
   `401` döndü.
-- Sıradaki admin işleri: 36 kullanıcı/kişi eşleştirmesini canlı kullanıcılarla doğrulamak; Çalışma
+- Sıradaki admin işleri: aktif kullanıcı/kişi eşleştirmesini canlı kullanıcılarla doğrulamak; Çalışma
   Tabloları satırlarını ekip alışkanlığına göre soru, etiket/sınıf, cevap, işleme tarihi, yayın
   linki, program ve not odağında sadeleştirmek; hadis/slayt/YouTube dökümanı/standartlar akışını
   kaynak metin olarak daha kullanışlı bağlamak; public JSON için zorunlu alan/yasak alan ve 390px
@@ -1917,7 +1930,7 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
    atayacak, tüm adminlere otomatik açılmayacak.
 3. Yayın linki satırında `Tamam` durumunu işi yapan kişi elle işaretleyecek; sistem bunu kim/ne
    zaman bilgisiyle admin içinde saklayacak.
-4. 36 kişilik kişi dosyası modeli mevcut kullanıcılarla birebir eşleştirilecek.
+4. Kişi dosyası modeli sabit sayıya bağlanmayacak; mevcut aktif kullanıcılarla dinamik eşleştirilecek.
 5. Public soru-cevap yayını için bu admin iş hattında yalnız veri sözleşmesi ve çıktı kalitesi
    hazırlanacak; public ön yüz implementasyonu/root cutover ayrı sohbet/workstream içinde kalacak.
 

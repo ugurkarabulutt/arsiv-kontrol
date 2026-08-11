@@ -610,6 +610,7 @@ if (
   !server.includes("app.get('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.post('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.put('/api/archive-ops/publish-tasks/:id'") ||
+  !server.includes("app.get('/api/archive-ops/team-members'") ||
   !server.includes("app.get('/api/archive-ops/team-leaders'") ||
   !server.includes("app.post('/api/archive-ops/team-leaders'") ||
   !server.includes("app.post('/api/archive-ops/publish-tasks/:id/completion'") ||
@@ -704,11 +705,13 @@ if (
   !html.includes('archivePublishState') ||
   !html.includes('id="archivePublishTitle"') ||
   !html.includes('id="archivePublishAssignedBy"') ||
+  !html.includes('id="archiveTeamMemberOptions"') ||
   !html.includes('id="archiveTeamLeaderList"') ||
   !html.includes('id="archivePublishSourceId"') ||
   !html.includes('id="archivePublishWorkId"') ||
   !html.includes('function loadArchivePublishTasks') ||
   !html.includes('function saveArchivePublishTask') ||
+  !html.includes('function loadArchiveTeamMembers') ||
   !html.includes('function loadArchiveTeamLeaders') ||
   !html.includes('function saveArchiveTeamLeaders') ||
   !html.includes('function setArchivePublishCompletion') ||
@@ -784,6 +787,8 @@ if (
   !html.includes('id="archiveSelectedMemberLinks"') ||
   !html.includes('function archiveSelectTeamMember') ||
   !html.includes('function renderArchiveTeamFolders') ||
+  !html.includes('Çalışma Satırları') ||
+  !html.includes('function archiveTeamSamePerson') ||
   !html.includes('id="archiveWorkTitle"') ||
   !html.includes('id="archiveWorkSourceId"') ||
   !html.includes('function loadArchiveWorkItems') ||

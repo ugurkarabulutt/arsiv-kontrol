@@ -33,7 +33,7 @@ Bu sistem ilk aşamada sadece `super_admin` tarafından görülecek. Normal kull
 Mevcut manuel sistemde şu parçalar var:
 
 1. Arşiv çalışmaları için Google Drive ana klasörü.
-2. `Çalışma Tabloları` klasörü altında 36 kullanıcıya özel Google E-Tablo.
+2. `Çalışma Tabloları` klasörü altında tüm aktif ekip üyelerine özel Google E-Tablo.
 3. Her kullanıcı dosyasında iki ana sayfa:
    - kişinin soru-cevap çalışma tablosu
    - kişiye tanımlanmış yayın linkleri
@@ -701,7 +701,7 @@ Kodlamadan önce netleşmesi gereken kararlar:
 
 2026-08-11 itibarıyla netleşen kararlar:
 
-- 36 kişinin isim listesi mevcut kullanıcılarla birebir aynıdır.
+- Ekip üyesi sayısı sabit değildir; kişi listesi mevcut aktif kullanıcılarla dinamik eşleşecektir.
 - Yayın linklerini tüm adminler değil, seçili ekip liderleri atayacaktır.
 - Yayın linkindeki `Tamam` işareti otomatik değil, işi yapan kişi tarafından elle işaretlenecektir.
 - `Arşiv Çalışmaları` şimdilik sadece `super_admin` rolüne görünür; normal `admin` rolüne açılmayacaktır.
