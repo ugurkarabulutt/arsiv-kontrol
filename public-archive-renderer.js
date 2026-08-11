@@ -246,7 +246,7 @@ function sectionHeader(title, actionText, actionHref) {
   return `
     <div class="pa-section-head">
       <h2>${escapeHtml(title)}</h2>
-      ${actionHref ? `<a href="${escapeHtml(actionHref)}">${escapeHtml(actionText || 'T?m?n? G?r')} ${iconSvg('chevron-right', 'pa-inline-chevron')}</a>` : ''}
+      ${actionHref ? `<a href="${escapeHtml(actionHref)}">${escapeHtml(actionText || 'Tümünü Gör')} ${iconSvg('chevron-right', 'pa-inline-chevron')}</a>` : ''}
     </div>
   `;
 }
