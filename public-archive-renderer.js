@@ -271,10 +271,11 @@ function questionCard(entry, compact = false) {
   const dateLabel = entry.updatedAt ? formatDate(entry.updatedAt) : '';
   const readLabel = entry.readTime ? `${entry.readTime} dk okuma` : '';
   const countNode = `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" hidden>${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label></span></span>`;
+  const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
-    <article class="pa-question-card${compact ? ' is-compact' : ''}">
+    <article class="pa-question-card${compact ? ' is-compact' : ''}" data-card-href="${href}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
-      <a class="pa-question-title" href="${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}">${escapeHtml(entry.title)}</a>
+      <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
       <p class="pa-question-excerpt">${escapeHtml(entry.excerpt || entry.summary)}</p>
       <div class="pa-card-meta">
         ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
@@ -922,6 +923,20 @@ function renderShell({ title, description, active, content, status = 200, questi
       });
       document.querySelectorAll('[data-print]').forEach(function(button){
         button.addEventListener('click', function(){ window.print(); });
+      });
+      document.querySelectorAll('[data-card-href]').forEach(function(card){
+        function openCard(event) {
+          if (event.target && event.target.closest && event.target.closest('a, button, input, select, textarea')) return;
+          var href = card.getAttribute('data-card-href');
+          if (href) window.location.href = href;
+        }
+        card.addEventListener('click', openCard);
+        card.addEventListener('keydown', function(event){
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          var href = card.getAttribute('data-card-href');
+          if (href) window.location.href = href;
+        });
       });
       function formatReadCount(value) {
         var count = Number(value || 0);

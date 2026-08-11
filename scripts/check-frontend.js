@@ -792,6 +792,17 @@ for (const marker of [
 ]) {
   assert(publicCss.includes(marker), `390px ve mobil alt gezinme guard eksik: ${marker}`);
 }
+for (const marker of [
+  '-webkit-text-size-adjust: 100%',
+  '.pa-search:focus-within',
+  'grid-template-columns: 46px minmax(0, 1fr) 52px',
+  'font-size: 16px'
+]) {
+  assert(publicCss.includes(marker), `Mobil input/focus guard eksik: ${marker}`);
+}
+for (const match of publicCss.matchAll(/\.pa-search input\s*\{([\s\S]*?)\}/g)) {
+  assert(!/font-size:\s*(?:1[0-5](?:\.\d+)?px|0\.\d+rem)/.test(match[1]), 'Arama input fontu 16px altina dusmemeli; iOS zoom yapar.');
+}
 
 for (const marker of [
   "const GOOGLE_CLIENT_ID",
@@ -880,6 +891,7 @@ for (const marker of ['Orijinal Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili So
 assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
+assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html;
 assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Tevekkül'), 'Kavram sayfasi kategori gibi sunulmamali.');

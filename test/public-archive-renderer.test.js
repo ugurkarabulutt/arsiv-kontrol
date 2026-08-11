@@ -153,6 +153,13 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   assertOnlyPublicPreviewApi(ask);
 });
 
+test('question cards are whole-card navigable without helpful voting', () => {
+  const home = renderPublicArchivePreviewRoute('/public-preview').html;
+  assert.match(home, /data-card-href="\/public-preview\/soru\/ornek-soru"/);
+  assert.match(home, /role="link"/);
+  assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
+});
+
 test('public preview exposes separate index and info pages', () => {
   for (const route of [
     '/public-preview/konular',
