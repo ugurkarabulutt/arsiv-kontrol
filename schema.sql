@@ -305,5 +305,80 @@ create table if not exists public.settings (
   value text
 );
 
+-- public_users
+-- Public arşiv Google oturumları admin users tablosundan ayrı tutulur.
+-- RLS açık kalır; public/anon doğrudan tablo okuyamaz. Erişim yalnız server API üzerinden yapılır.
+create table if not exists public.public_users (
+  id uuid primary key default gen_random_uuid(),
+  google_sub text unique not null,
+  email text not null,
+  name text not null,
+  avatar_url text,
+  email_verified boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  last_login_at timestamptz
+);
+alter table public.public_users enable row level security;
+create index if not exists public_users_email_idx on public.public_users (email);
+create index if not exists public_users_last_login_idx on public.public_users (last_login_at desc);
+
+-- public_question_submissions
+-- Public "Soru Sor" akışından gelen sorular admin panelinde izlenir.
+-- RLS açık kalır; doğrudan istemci erişimi yoktur.
+create table if not exists public.public_question_submissions (
+  id uuid primary key default gen_random_uuid(),
+  public_user_id uuid references public.public_users(id) on delete set null,
+  submitter_name text,
+  submitter_email text,
+  question text not null,
+  category text,
+  topic text,
+  privacy_accepted boolean not null default false,
+  status text not null default 'new',
+  source text not null default 'public-preview',
+  user_agent text,
+  admin_note text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.public_question_submissions enable row level security;
+create index if not exists public_question_submissions_created_idx on public.public_question_submissions (created_at desc);
+create index if not exists public_question_submissions_status_idx on public.public_question_submissions (status, created_at desc);
+create index if not exists public_question_submissions_user_idx on public.public_question_submissions (public_user_id, created_at desc);
+
+-- public_question_stats
+-- Public soru kartları ve detay sayfaları için kişisel veri tutmayan okunma sayacı.
+-- RLS açık kalır; sayaç güncellemesi server API/service role üzerinden yapılır.
+create table if not exists public.public_question_stats (
+  slug text primary key,
+  read_count integer not null default 0,
+  updated_at timestamptz not null default now()
+);
+alter table public.public_question_stats enable row level security;
+create index if not exists public_question_stats_updated_idx on public.public_question_stats (updated_at desc);
+
+create or replace function public.increment_public_question_read(p_slug text)
+returns table(slug text, read_count integer, updated_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.public_question_stats as stats (slug, read_count, updated_at)
+  values (p_slug, 1, now())
+  on conflict (slug)
+  do update set
+    read_count = stats.read_count + 1,
+    updated_at = now();
+
+  return query
+    select s.slug, s.read_count, s.updated_at
+    from public.public_question_stats s
+    where s.slug = p_slug;
+end;
+$$;
+revoke all on function public.increment_public_question_read(text) from public;
+
 -- NOT: Sunucu service_role anahtarı ile bağlanır ve RLS'i bypass eder.
 -- Bu tablolara yalnızca backend erişir; istemci tarafı doğrudan erişim yoktur.

@@ -12,11 +12,17 @@ const ROUTE_PATHS = [
   PREVIEW_BASE,
   `${PREVIEW_BASE}/arsiv`,
   `${PREVIEW_BASE}/arama`,
+  `${PREVIEW_BASE}/konular`,
+  `${PREVIEW_BASE}/kategoriler`,
   `${PREVIEW_BASE}/soru/ornek-soru`,
   `${PREVIEW_BASE}/konu/ornek-kavram`,
   `${PREVIEW_BASE}/kategori/ornek-kategori`,
   `${PREVIEW_BASE}/hesabim`,
   `${PREVIEW_BASE}/soru-sor`,
+  `${PREVIEW_BASE}/hakkimizda`,
+  `${PREVIEW_BASE}/iletisim`,
+  `${PREVIEW_BASE}/gizlilik`,
+  `${PREVIEW_BASE}/kullanim-kosullari`,
   `${PREVIEW_BASE}/bulunamadi`
 ];
 
@@ -101,7 +107,7 @@ const BOTTOM_NAV_ICONS = {
   archive: 'archive',
   search: 'search',
   topics: 'topics',
-  ask: 'ask-question'
+  ask: 'edit'
 };
 
 const CATEGORY_ICONS = {
@@ -158,7 +164,7 @@ function previewActionNav(active) {
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
     ['Arşiv', `${PREVIEW_BASE}/arsiv`, 'archive'],
     ['Ara', `${PREVIEW_BASE}/arama#arama`, 'search'],
-    ['Konular', `${PREVIEW_BASE}/konu/ornek-kavram`, 'topics'],
+    ['Konular', `${PREVIEW_BASE}/konular`, 'topics'],
     ['Soru Sor', `${PREVIEW_BASE}/soru-sor`, 'ask']
   ];
   return items.map(([label, url, key]) => `
@@ -173,8 +179,8 @@ function header(active) {
   const nav = [
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
     ['Ar\u015fiv', PREVIEW_BASE + '/arsiv', 'archive'],
-    ['Konular', PREVIEW_BASE + '/konu/ornek-kavram', 'topics'],
-    ['Kategoriler', PREVIEW_BASE + '/kategori/ornek-kategori', 'categories'],
+    ['Konular', PREVIEW_BASE + '/konular', 'topics'],
+    ['Kategoriler', PREVIEW_BASE + '/kategoriler', 'categories'],
     ['Soru Sor', PREVIEW_BASE + '/soru-sor', 'ask']
   ];
   const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
@@ -206,10 +212,10 @@ function footer() {
         <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
       </div>
       <nav class="pa-footer-links" aria-label="Alt bağlantılar">
-        <a href="${PREVIEW_BASE}#baglam">Hakkımızda</a>
-        <a href="${PREVIEW_BASE}#iletisim">İletişim</a>
-        <a href="${PREVIEW_BASE}/soru-sor#gizlilik">Gizlilik</a>
-        <a href="${PREVIEW_BASE}/soru-sor#kullanim">Kullanım Koşulları</a>
+        <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
+        <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
+        <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
+        <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
       </nav>
       <p class="pa-copyright">© 2026 Dini Sorular ve Cevaplar Arşivi. Tüm hakları saklıdır.</p>
     </footer>
@@ -264,6 +270,7 @@ function questionCard(entry, compact = false) {
   const topics = topicsFor(entry);
   const dateLabel = entry.updatedAt ? formatDate(entry.updatedAt) : '';
   const readLabel = entry.readTime ? `${entry.readTime} dk okuma` : '';
+  const countNode = `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" hidden>${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label></span></span>`;
   return `
     <article class="pa-question-card${compact ? ' is-compact' : ''}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
@@ -273,7 +280,7 @@ function questionCard(entry, compact = false) {
         ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
         ${topics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
       </div>
-      ${(dateLabel || readLabel) ? `<p class="pa-card-foot">${dateLabel ? `<span>${iconSvg('calendar', 'pa-meta-icon')}${escapeHtml(dateLabel)}</span>` : ''}${readLabel ? `<span>${iconSvg('clock', 'pa-meta-icon')}${escapeHtml(readLabel)}</span>` : ''}</p>` : ''}
+      <p class="pa-card-foot">${dateLabel ? `<span>${iconSvg('calendar', 'pa-meta-icon')}${escapeHtml(dateLabel)}</span>` : ''}${readLabel ? `<span>${iconSvg('clock', 'pa-meta-icon')}${escapeHtml(readLabel)}</span>` : ''}${countNode}</p>
       <span class="pa-card-chevron">${iconSvg('chevron-right')}</span>
     </article>
   `;
@@ -359,22 +366,22 @@ function renderHome() {
         </section>
 
         <section class="pa-section">
-          ${sectionHeader('Öne Çıkan Sorular', 'Tümünü Gör', `${PREVIEW_BASE}/arama`)}
+          ${sectionHeader('Öne Çıkan Sorular', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry)).join('')}</div>
         </section>
 
         <section class="pa-section">
-          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konu/ornek-kavram`)}
+          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konular`)}
           <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
         </section>
 
         <section class="pa-section">
-          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategori/ornek-kategori`)}
+          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}
           <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
         </section>
 
         <section class="pa-section">
-          ${sectionHeader('Son Yayınlanan Sorular', 'Arşive Git', `${PREVIEW_BASE}/arama`)}
+          ${sectionHeader('Son Yayınlanan Sorular', 'Arşive Git', `${PREVIEW_BASE}/arsiv`)}
           <div class="pa-list">${latest.map(entry => questionCard(entry, true)).join('')}</div>
         </section>
 
@@ -425,11 +432,11 @@ function renderArchive() {
           </div>
         </section>
         <section class="pa-section">
-          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategori/ornek-kategori`)}
+          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}
           <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
         </section>
         <section class="pa-section">
-          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konu/ornek-kavram`)}
+          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konular`)}
           <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
         </section>
         <section class="pa-section">
@@ -468,6 +475,58 @@ function renderSearch(query = '') {
   });
 }
 
+function renderTopicsIndex() {
+  const topics = publicArchiveFixtures.topics;
+  return renderShell({
+    active: 'topics',
+    title: 'Konular',
+    description: 'Public arşivdeki kavram ve konu başlıkları.',
+    content: `
+      <main class="pa-main pa-narrow-main">
+        <section class="pa-collection-hero">
+          <p class="pa-kicker">Konular</p>
+          <h1>Kavramlar üzerinden sakin bir okuma yolu kurun.</h1>
+          <p>Soru-cevap kayıtlarını iman, ibadet, ahlak, aile ve günlük hayat başlıkları çevresinde keşfedebilirsiniz.</p>
+          <div class="pa-collection-meta">
+            <span>${topics.length} kavram</span>
+            <span>${publicArchiveFixtures.qa.length} soru</span>
+          </div>
+        </section>
+        <section class="pa-section">
+          ${sectionHeader('Tüm Kavramlar')}
+          <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
+        </section>
+      </main>
+    `
+  });
+}
+
+function renderCategoriesIndex() {
+  const categories = publicArchiveFixtures.categories;
+  return renderShell({
+    active: 'categories',
+    title: 'Kategoriler',
+    description: 'Public arşivdeki soru-cevap kategorileri.',
+    content: `
+      <main class="pa-main pa-narrow-main">
+        <section class="pa-collection-hero">
+          <p class="pa-kicker">Kategoriler</p>
+          <h1>Soruları ana başlıklarına göre inceleyin.</h1>
+          <p>Kategoriler, arşivdeki soru ve cevapları daha düzenli taramak için ana kapılar olarak kullanılır.</p>
+          <div class="pa-collection-meta">
+            <span>${categories.length} kategori</span>
+            <span>${publicArchiveFixtures.qa.length} soru</span>
+          </div>
+        </section>
+        <section class="pa-section">
+          ${sectionHeader('Tüm Kategoriler')}
+          <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
+        </section>
+      </main>
+    `
+  });
+}
+
 function renderNoResults(query) {
   return `
     <div class="pa-empty-state">
@@ -491,6 +550,7 @@ function renderQuestion(slug) {
     active: 'archive',
     title: entry.title,
     description: entry.excerpt || entry.summary,
+    questionSlug: entry.slug,
     content: `
       <main class="pa-main pa-detail-main">
         ${breadcrumb([
@@ -510,6 +570,7 @@ function renderQuestion(slug) {
               ${entry.publishedAt ? `<span>Yayın tarihi: ${escapeHtml(formatDate(entry.publishedAt))}</span>` : ''}
               ${entry.updatedAt ? `<span>Son güncelleme: ${escapeHtml(formatDate(entry.updatedAt))}</span>` : ''}
               ${entry.readTime ? `<span>${entry.readTime} dk okuma</span>` : ''}
+              <span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" hidden>${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label></span></span>
               ${publicArchiveFixtures.brand.answererLabel ? `<span>${escapeHtml(publicArchiveFixtures.brand.answererLabel)}</span>` : ''}
             </div>
             <section class="pa-reading-block">
@@ -562,7 +623,7 @@ function renderTopic(slug) {
     description: topic.description,
     content: `
       <main class="pa-main pa-narrow-main">
-        ${breadcrumb([{ label: 'Konular', href: `${PREVIEW_BASE}/konu/ornek-kavram` }, { label: topic.name }])}
+        ${breadcrumb([{ label: 'Konular', href: `${PREVIEW_BASE}/konular` }, { label: topic.name }])}
         <section class="pa-collection-hero">
           <p class="pa-kicker">Kavram</p>
           <h1>${escapeHtml(topic.name)}</h1>
@@ -601,7 +662,7 @@ function renderCategory(slug) {
     description: category.description,
     content: `
       <main class="pa-main pa-narrow-main">
-        ${breadcrumb([{ label: 'Kategoriler', href: `${PREVIEW_BASE}/kategori/ornek-kategori` }, { label: category.name }])}
+        ${breadcrumb([{ label: 'Kategoriler', href: `${PREVIEW_BASE}/kategoriler` }, { label: category.name }])}
         <section class="pa-collection-hero">
           <p class="pa-kicker">Kategori</p>
           <h1>${escapeHtml(category.name)}</h1>
@@ -630,16 +691,17 @@ function renderAccount() {
   return renderShell({
     active: 'account',
     title: 'Hesabım',
-    description: 'Hesap alanı için public preview placeholder.',
+    description: 'Public arşiv hesabı ve soru gönderimi.',
     content: `
       <main class="pa-main pa-narrow-main">
-        <section class="pa-account-page">
+        <section class="pa-account-page" data-account-panel>
           <p class="pa-kicker">Hesabım</p>
-          <h1>Hesap özelliği yakında kullanılabilir olacak.</h1>
-          <p>Bu ön izleme aşamasında kullanıcı hesabı, giriş veya kayıt akışı bulunmaz. Arşivi gezebilir, soru-cevapları okuyabilir ve arama yapabilirsiniz.</p>
-          <div class="pa-empty-actions">
-            <a class="pa-button" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
-            <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arama">Arama Yap</a>
+          <h1>Hesabınızla soru gönderimini takip edin.</h1>
+          <p>Google hesabınızla oturum açarak Soru Sor ekranından gönderdiğiniz soruların kayıt altına alınmasını sağlayabilirsiniz.</p>
+          <div class="pa-account-status" data-account-status>Oturum durumu kontrol ediliyor...</div>
+          <div class="pa-empty-actions" data-account-actions>
+            <a class="pa-button" href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/hesabim')}">Google ile Devam Et</a>
+            <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
           </div>
         </section>
       </main>
@@ -660,29 +722,95 @@ function renderAsk() {
             <p class="pa-kicker">Soru Sor</p>
             <h1>Aklınızda bir soru mu var?</h1>
             <p>Sorunuzu kısa ve açık şekilde yazabilirsiniz. ${escapeHtml(publicArchiveFixtures.brand.authorLine)}</p>
+            <div class="pa-account-status" data-ask-session>Oturum durumu kontrol ediliyor...</div>
             <div class="pa-note-box" id="gizlilik">
               <strong>Gizlilik notu</strong>
               <p>Kişisel bilgi, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar paylaşmayın.</p>
             </div>
           </div>
-          <form class="pa-ask-form" data-static-question-form>
+          <form class="pa-ask-form" data-question-form>
             <label>
               <span>Soru metni</span>
-              <textarea rows="7" maxlength="500" placeholder="Sorunuzu yazın..."></textarea>
+              <textarea name="question" rows="7" maxlength="2000" minlength="20" placeholder="Sorunuzu yazın..." required></textarea>
             </label>
             <label>
-              <span>İsteğe bağlı kategori veya konu</span>
-              <select>
-                <option>Kategori seçin</option>
-                ${publicArchiveFixtures.categories.map(category => `<option>${escapeHtml(category.name)}</option>`).join('')}
+              <span>İsteğe bağlı kategori</span>
+              <select name="category">
+                <option value="">Kategori seçin</option>
+                ${publicArchiveFixtures.categories.map(category => `<option value="${escapeHtml(category.name)}">${escapeHtml(category.name)}</option>`).join('')}
               </select>
             </label>
+            <label>
+              <span>İsteğe bağlı konu</span>
+              <input name="topic" maxlength="120" placeholder="Örn. Namaz, dua, aile...">
+            </label>
             <label class="pa-check-row" id="kullanim">
-              <input type="checkbox">
+              <input name="privacyAccepted" type="checkbox" required>
               <span>Kişisel bilgi paylaşmadığımı anladım.</span>
             </label>
-            <button class="pa-button" type="submit" disabled aria-disabled="true">Soruyu Gönder</button>
+            <button class="pa-button" type="submit">Soruyu Gönder</button>
+            <p class="pa-form-status" data-question-form-status aria-live="polite"></p>
           </form>
+        </section>
+      </main>
+    `
+  });
+}
+
+function renderInfoPage(kind) {
+  const pages = {
+    hakkimizda: {
+      title: 'Hakkımızda',
+      kicker: 'Hakkımızda',
+      heading: 'Sakin, okunabilir ve kaynak bağlamını koruyan bir arşiv.',
+      copy: [
+        'Dini Sorular ve Cevaplar Arşivi, soru-cevap kayıtlarını kavram ve kategori bağlantılarıyla okunabilir hale getirmek için hazırlanır.',
+        `${publicArchiveFixtures.brand.sentence} ${publicArchiveFixtures.brand.authorLine}`
+      ]
+    },
+    iletisim: {
+      title: 'İletişim',
+      kicker: 'İletişim',
+      heading: 'Arşivle ilgili notlarınızı sade şekilde iletebilirsiniz.',
+      copy: [
+        'Public arşiv yayına hazırlık sürecindedir. Soru göndermek için Soru Sor ekranını kullanabilirsiniz.',
+        'Kişisel bilgi ve mahrem ayrıntı paylaşmamanız önemlidir.'
+      ]
+    },
+    gizlilik: {
+      title: 'Gizlilik',
+      kicker: 'Gizlilik',
+      heading: 'Public arşiv kişisel bilgiyi azaltarak çalışacak şekilde tasarlanır.',
+      copy: [
+        'Soru gönderirken kişisel bilgi, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar yazmayın.',
+        'Google oturumu yalnız soru gönderimini kullanıcı hesabıyla ilişkilendirmek için kullanılır.'
+      ]
+    },
+    'kullanim-kosullari': {
+      title: 'Kullanım Koşulları',
+      kicker: 'Kullanım',
+      heading: 'Arşiv okuma ve soru gönderimi için sade kullanım ilkeleri.',
+      copy: [
+        'Public arşiv, soru-cevap içeriklerini okumak, aramak ve kavramlar üzerinden keşfetmek için sunulur.',
+        'Soru gönderimi, cevabın hemen yayınlanacağı veya belirli sürede yanıtlanacağı anlamına gelmez.'
+      ]
+    }
+  };
+  const page = pages[kind] || pages.hakkimizda;
+  return renderShell({
+    active: kind === 'iletisim' ? 'ask' : 'archive',
+    title: page.title,
+    description: page.heading,
+    content: `
+      <main class="pa-main pa-narrow-main">
+        <section class="pa-account-page">
+          <p class="pa-kicker">${escapeHtml(page.kicker)}</p>
+          <h1>${escapeHtml(page.heading)}</h1>
+          ${page.copy.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+          <div class="pa-empty-actions">
+            <a class="pa-button" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
+            <a class="pa-button is-secondary" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+          </div>
         </section>
       </main>
     `
@@ -712,7 +840,7 @@ function renderNotFound() {
   });
 }
 
-function renderShell({ title, description, active, content, status = 200 }) {
+function renderShell({ title, description, active, content, status = 200, questionSlug = '' }) {
   const safeTitle = pageTitle(title);
   const safeDescription = description || publicArchiveFixtures.brand.sentence;
   return {
@@ -742,7 +870,7 @@ function renderShell({ title, description, active, content, status = 200 }) {
     })();
   </script>
 </head>
-<body>
+<body${questionSlug ? ` data-question-slug="${escapeHtml(questionSlug)}"` : ''}>
   <div class="pa-page">
     ${header(active)}
     ${content}
@@ -795,8 +923,123 @@ function renderShell({ title, description, active, content, status = 200 }) {
       document.querySelectorAll('[data-print]').forEach(function(button){
         button.addEventListener('click', function(){ window.print(); });
       });
-      var form = document.querySelector('[data-static-question-form]');
-      if (form) form.addEventListener('submit', function(event){ event.preventDefault(); });
+      function formatReadCount(value) {
+        var count = Number(value || 0);
+        return count.toLocaleString('tr-TR') + ' okunma';
+      }
+      function updateReadCount(slug, count) {
+        document.querySelectorAll('[data-public-read-count="' + slug + '"]').forEach(function(node){
+          var label = node.querySelector('[data-read-count-label]');
+          if (label) label.textContent = formatReadCount(count);
+          node.hidden = false;
+        });
+      }
+      async function loadReadCounts() {
+        var nodes = Array.from(document.querySelectorAll('[data-public-read-count]'));
+        var slugs = Array.from(new Set(nodes.map(function(node){ return node.getAttribute('data-public-read-count'); }).filter(Boolean)));
+        if (!slugs.length) return;
+        try {
+          var response = await fetch('${PREVIEW_BASE}/api/question-stats?slugs=' + encodeURIComponent(slugs.join(',')), { headers: { Accept: 'application/json' } });
+          var data = await response.json();
+          Object.keys(data.counts || {}).forEach(function(slug){ updateReadCount(slug, data.counts[slug]); });
+        } catch (error) {}
+      }
+      async function trackQuestionRead() {
+        var slug = document.body.getAttribute('data-question-slug');
+        if (!slug) return;
+        try {
+          var key = 'dsca-read-' + slug;
+          var last = Number(localStorage.getItem(key) || 0);
+          var now = Date.now();
+          if (last && now - last < 12 * 60 * 60 * 1000) return loadReadCounts();
+          var response = await fetch('${PREVIEW_BASE}/api/questions/' + encodeURIComponent(slug) + '/read', {
+            method: 'POST',
+            headers: { Accept: 'application/json' }
+          });
+          var data = await response.json();
+          if (data && data.available) {
+            localStorage.setItem(key, String(now));
+            updateReadCount(slug, data.readCount);
+          } else {
+            await loadReadCounts();
+          }
+        } catch (error) {
+          await loadReadCounts();
+        }
+      }
+      async function loadPublicSession() {
+        try {
+          var response = await fetch('${PREVIEW_BASE}/api/session', { headers: { Accept: 'application/json' } });
+          return await response.json();
+        } catch (error) {
+          return { loggedIn: false, googleConfigured: false };
+        }
+      }
+      function renderSessionUi(session) {
+        var status = document.querySelector('[data-account-status]');
+        var actions = document.querySelector('[data-account-actions]');
+        var askSession = document.querySelector('[data-ask-session]');
+        if (status) {
+          if (session.loggedIn && session.user) status.textContent = 'Oturum açık: ' + (session.user.name || session.user.email);
+          else if (session.googleConfigured) status.textContent = 'Soru göndermek için Google hesabınızla oturum açabilirsiniz.';
+          else status.textContent = 'Google ile oturum açma bağlantısı bu ortamda henüz tanımlı değil.';
+        }
+        if (actions && session.loggedIn) {
+          actions.innerHTML = '<button class="pa-button is-secondary" type="button" data-public-logout>Çıkış Yap</button><a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>';
+        }
+        if (askSession) {
+          if (session.loggedIn && session.user) askSession.textContent = 'Soru gönderimi ' + (session.user.name || session.user.email) + ' hesabıyla kaydedilecek.';
+          else if (session.googleConfigured) askSession.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/soru-sor')}">Google ile oturum açın</a>.';
+          else askSession.textContent = 'Google ile oturum açma bağlantısı bu ortamda henüz tanımlı değil.';
+        }
+        document.querySelectorAll('[data-public-logout]').forEach(function(button){
+          button.addEventListener('click', async function(){
+            await fetch('${PREVIEW_BASE}/auth/logout', { method: 'POST', headers: { Accept: 'application/json' } });
+            window.location.href = '${PREVIEW_BASE}/hesabim';
+          });
+        });
+      }
+      function bindQuestionForm() {
+        var form = document.querySelector('[data-question-form]');
+        if (!form) return;
+        var status = document.querySelector('[data-question-form-status]');
+        form.addEventListener('submit', async function(event){
+          event.preventDefault();
+          var button = form.querySelector('button[type="submit"]');
+          var payload = {
+            question: form.elements.question && form.elements.question.value,
+            category: form.elements.category && form.elements.category.value,
+            topic: form.elements.topic && form.elements.topic.value,
+            privacyAccepted: Boolean(form.elements.privacyAccepted && form.elements.privacyAccepted.checked)
+          };
+          if (button) button.disabled = true;
+          if (status) status.textContent = 'Sorunuz kaydediliyor...';
+          try {
+            var response = await fetch('${PREVIEW_BASE}/api/question-submissions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            var data = await response.json();
+            if (!response.ok) {
+              if (response.status === 401) {
+                if (status) status.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/soru-sor')}">Google ile oturum açın</a>.';
+              } else if (status) status.textContent = data.error || 'Soru kaydedilemedi.';
+              return;
+            }
+            form.reset();
+            if (status) status.textContent = 'Sorunuz kaydedildi.';
+          } catch (error) {
+            if (status) status.textContent = 'Bağlantı kurulamadı. Lütfen tekrar deneyin.';
+          } finally {
+            if (button) button.disabled = false;
+          }
+        });
+      }
+      loadReadCounts();
+      trackQuestionRead();
+      loadPublicSession().then(renderSessionUi);
+      bindQuestionForm();
     })();
   </script>
 </body>
@@ -809,8 +1052,14 @@ function renderPublicArchivePreviewRoute(routePath, query = {}) {
   if (pathname === PREVIEW_BASE) return renderHome();
   if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive();
   if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
+  if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
+  if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
   if (pathname === `${PREVIEW_BASE}/hesabim`) return renderAccount();
   if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
+  if (pathname === `${PREVIEW_BASE}/hakkimizda`) return renderInfoPage('hakkimizda');
+  if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
+  if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
+  if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
   const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
   if (questionMatch) return renderQuestion(questionMatch[1]);
   const topicMatch = pathname.match(/^\/public-preview\/konu\/([^/]+)$/);
@@ -844,8 +1093,14 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get(['/', ''], (req, res) => sendRendered(res, renderHome()));
   router.get('/arsiv', (req, res) => sendRendered(res, renderArchive()));
   router.get('/arama', (req, res) => sendRendered(res, renderSearch(req.query.q || '')));
+  router.get('/konular', (req, res) => sendRendered(res, renderTopicsIndex()));
+  router.get('/kategoriler', (req, res) => sendRendered(res, renderCategoriesIndex()));
   router.get('/hesabim', (req, res) => sendRendered(res, renderAccount()));
   router.get('/soru-sor', (req, res) => sendRendered(res, renderAsk()));
+  router.get('/hakkimizda', (req, res) => sendRendered(res, renderInfoPage('hakkimizda')));
+  router.get('/iletisim', (req, res) => sendRendered(res, renderInfoPage('iletisim')));
+  router.get('/gizlilik', (req, res) => sendRendered(res, renderInfoPage('gizlilik')));
+  router.get('/kullanim-kosullari', (req, res) => sendRendered(res, renderInfoPage('kullanim-kosullari')));
   router.get('/soru/:slug', (req, res) => sendRendered(res, renderQuestion(req.params.slug)));
   router.get('/konu/:slug', (req, res) => sendRendered(res, renderTopic(req.params.slug)));
   router.get('/kategori/:slug', (req, res) => sendRendered(res, renderCategory(req.params.slug)));

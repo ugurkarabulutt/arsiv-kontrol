@@ -4,6 +4,7 @@ const cookieSession = require('cookie-session');
 const bcrypt   = require('bcryptjs');
 const multer   = require('multer');
 const path     = require('path');
+const crypto   = require('crypto');
 const mammoth  = require('mammoth');
 const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
@@ -24,6 +25,9 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_KEY      = process.env.SUPABASE_KEY;
+const GOOGLE_CLIENT_ID  = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || '';
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -3763,6 +3767,18 @@ async function seed() {
   const { error: archivePublishErr } = await supabase.from('archive_publish_tasks').select('id').limit(1);
   HAS_ARCHIVE_PUBLISH_TABLES = !archivePublishErr;
   if (!HAS_ARCHIVE_PUBLISH_TABLES) console.warn('⚠ archive_publish_tasks tablosu yok — yayın görevleri settings yedeğiyle çalışacak.');
+
+  const { error: publicUsersErr } = await supabase.from('public_users').select('id').limit(1);
+  HAS_PUBLIC_ARCHIVE_USER_TABLES = !publicUsersErr;
+  if (!HAS_PUBLIC_ARCHIVE_USER_TABLES) console.warn('⚠ public_users tablosu yok — public Google oturumu pasif.');
+
+  const { error: publicQuestionSubmissionsErr } = await supabase.from('public_question_submissions').select('id').limit(1);
+  HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = !publicQuestionSubmissionsErr;
+  if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) console.warn('⚠ public_question_submissions tablosu yok — public soru gönderimi pasif.');
+
+  const { error: publicQuestionStatsErr } = await supabase.from('public_question_stats').select('slug').limit(1);
+  HAS_PUBLIC_ARCHIVE_STATS_TABLES = !publicQuestionStatsErr;
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) console.warn('⚠ public_question_stats tablosu yok — public okunma sayaçları pasif.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -3831,6 +3847,118 @@ const admin = (req, res, next) => isAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
 const superAdmin = (req, res, next) => isSuperAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Süper admin yetkisi gerekli.' });
+
+function publicGoogleAuthConfigured() {
+  return Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
+}
+
+function requestOrigin(req) {
+  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  return `${String(proto).split(',')[0]}://${String(host).split(',')[0]}`;
+}
+
+function publicGoogleRedirectUri(req) {
+  return GOOGLE_REDIRECT_URI || `${requestOrigin(req)}/public-preview/auth/google/callback`;
+}
+
+function safePublicReturnTo(value) {
+  const target = String(value || '').trim();
+  if (!target.startsWith('/public-preview')) return '/public-preview/hesabim';
+  if (target.startsWith('/public-preview/auth/')) return '/public-preview/hesabim';
+  if (target.includes('://')) return '/public-preview/hesabim';
+  return target.slice(0, 240);
+}
+
+function publicSessionUser(req) {
+  if (!req.session?.publicUserId) return null;
+  return {
+    id: req.session.publicUserId,
+    name: req.session.publicUserName || '',
+    email: req.session.publicUserEmail || '',
+    avatarUrl: req.session.publicUserAvatarUrl || ''
+  };
+}
+
+function clearPublicSession(req) {
+  req.session.publicUserId = null;
+  req.session.publicUserName = null;
+  req.session.publicUserEmail = null;
+  req.session.publicUserAvatarUrl = null;
+}
+
+function knownPublicQuestionSlugs() {
+  try {
+    const { publicArchiveFixtures } = require('./public-archive-fixtures');
+    return new Set((publicArchiveFixtures.qa || []).map(item => item.slug).filter(Boolean));
+  } catch (error) {
+    return new Set();
+  }
+}
+
+function validPublicQuestionSlug(slug) {
+  const cleanSlug = String(slug || '').trim();
+  if (!/^[a-z0-9-]{2,120}$/.test(cleanSlug)) return '';
+  return knownPublicQuestionSlugs().has(cleanSlug) ? cleanSlug : '';
+}
+
+function publicQuestionStatsUnavailable() {
+  return { available: false, counts: {} };
+}
+
+async function loadPublicQuestionStats(slugs = []) {
+  const uniqueSlugs = [...new Set(slugs.map(validPublicQuestionSlug).filter(Boolean))].slice(0, 60);
+  if (!uniqueSlugs.length) return { available: HAS_PUBLIC_ARCHIVE_STATS_TABLES, counts: {} };
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return publicQuestionStatsUnavailable();
+  const { data, error } = await supabase
+    .from('public_question_stats')
+    .select('slug,read_count,updated_at')
+    .in('slug', uniqueSlugs);
+  if (error) throw new Error(error.message);
+  const counts = {};
+  for (const row of data || []) counts[row.slug] = Number(row.read_count || 0);
+  for (const slug of uniqueSlugs) if (!Object.prototype.hasOwnProperty.call(counts, slug)) counts[slug] = 0;
+  return { available: true, counts };
+}
+
+async function incrementPublicQuestionRead(slug) {
+  const cleanSlug = validPublicQuestionSlug(slug);
+  if (!cleanSlug) {
+    const err = new Error('Soru bulunamadı.');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return { available: false, slug: cleanSlug, readCount: 0 };
+  const rpc = await supabase.rpc('increment_public_question_read', { p_slug: cleanSlug });
+  if (!rpc.error) {
+    const row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data;
+    return { available: true, slug: cleanSlug, readCount: Number(row?.read_count || 0) };
+  }
+
+  const { data: current, error: selectError } = await supabase
+    .from('public_question_stats')
+    .select('slug,read_count')
+    .eq('slug', cleanSlug)
+    .maybeSingle();
+  if (selectError) throw new Error(selectError.message);
+  const nextCount = Number(current?.read_count || 0) + 1;
+  const { error: upsertError } = await supabase.from('public_question_stats').upsert({
+    slug: cleanSlug,
+    read_count: nextCount,
+    updated_at: new Date().toISOString()
+  });
+  if (upsertError) throw new Error(upsertError.message);
+  return { available: true, slug: cleanSlug, readCount: nextCount };
+}
+
+function requirePublicUser(req, res) {
+  const user = publicSessionUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'Soru göndermek için Google ile oturum açın.' });
+    return null;
+  }
+  return user;
+}
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
@@ -4102,6 +4230,25 @@ app.post('/api/standards', auth, admin, async (req, res) => {
 });
 
 // ── ARCHIVE OPERATIONS SOURCES ─────────────────────────────────────────────
+app.get('/api/public-archive/question-submissions', auth, admin, async (req, res) => {
+  try {
+    await startupReady;
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) return res.status(503).json({ error: 'public_question_submissions tablosu yok. schema.sql uygulanmalı.' });
+    const status = String(req.query.status || '').trim();
+    let query = supabase
+      .from('public_question_submissions')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(120);
+    if (status) query = query.eq('status', status);
+    const { data, error, count } = await query;
+    if (error) throw new Error(error.message);
+    res.json({ submissions: data || [], count: count || 0 });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
 app.get('/api/archive-ops/public-candidates', auth, admin, superAdmin, async (req, res) => {
   try {
     const result = await listArchivePublicCandidates(req.query);
@@ -6394,6 +6541,9 @@ let HAS_ARCHIVE_SOURCE_TABLES = false; // startup'ta tespit edilir (kaynak kayı
 let HAS_ARCHIVE_IMPORT_TABLES = false; // startup'ta tespit edilir (kalıcı içe aktarım tabloları)
 let HAS_ARCHIVE_WORK_TABLES = false; // startup'ta tespit edilir (çalışma kayıtları)
 let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın görevleri)
+let HAS_PUBLIC_ARCHIVE_USER_TABLES = false; // startup'ta tespit edilir (public Google kullanıcıları)
+let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
+let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
@@ -6539,8 +6689,162 @@ if (ADMIN_PARALLEL_ROUTE_ENABLED) {
   app.get('/admin/*', sendAdminIndex);
 }
 app.use('/public-preview', (req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);
   next();
+});
+
+app.use('/public-preview/api', (req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  next();
+});
+
+app.get('/public-preview/api/session', async (req, res) => {
+  res.json({
+    loggedIn: Boolean(publicSessionUser(req)),
+    user: publicSessionUser(req),
+    googleConfigured: publicGoogleAuthConfigured()
+  });
+});
+
+app.get('/public-preview/auth/google', (req, res) => {
+  if (!publicGoogleAuthConfigured()) {
+    return res.status(503).type('html').send('<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Google oturumu hazır değil</title><body><main><h1>Google ile oturum açma şu anda hazır değil.</h1><p>Bu ortam için Google OAuth bağlantısı tanımlandığında Hesabım ekranından devam edebilirsiniz.</p><p><a href="/public-preview/hesabim">Hesabım sayfasına dön</a></p></main></body></html>');
+  }
+  const state = crypto.randomBytes(18).toString('hex');
+  req.session.publicGoogleState = state;
+  req.session.publicAuthReturnTo = safePublicReturnTo(req.query.returnTo);
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: publicGoogleRedirectUri(req),
+    response_type: 'code',
+    scope: 'openid email profile',
+    state,
+    prompt: 'select_account'
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+});
+
+app.get('/public-preview/auth/google/callback', async (req, res, next) => {
+  try {
+    await startupReady;
+    if (!publicGoogleAuthConfigured()) return res.redirect('/public-preview/hesabim?auth=not-configured');
+    const state = String(req.query.state || '');
+    const expectedState = String(req.session.publicGoogleState || '');
+    req.session.publicGoogleState = null;
+    if (!state || !expectedState || state !== expectedState) return res.redirect('/public-preview/hesabim?auth=state');
+    if (!HAS_PUBLIC_ARCHIVE_USER_TABLES) return res.redirect('/public-preview/hesabim?auth=storage');
+    const code = String(req.query.code || '');
+    if (!code) return res.redirect('/public-preview/hesabim?auth=missing-code');
+
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: publicGoogleRedirectUri(req),
+        grant_type: 'authorization_code'
+      })
+    });
+    const tokenJson = await tokenResponse.json().catch(() => ({}));
+    if (!tokenResponse.ok || !tokenJson.access_token) throw new Error(tokenJson.error_description || 'Google oturumu tamamlanamadı.');
+
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenJson.access_token}` }
+    });
+    const profile = await userInfoResponse.json().catch(() => ({}));
+    if (!userInfoResponse.ok || !profile.sub || !profile.email) throw new Error('Google kullanıcı bilgisi alınamadı.');
+    if (profile.email_verified === false) return res.redirect('/public-preview/hesabim?auth=email');
+
+    const now = new Date().toISOString();
+    const { data: existing, error: existingError } = await supabase
+      .from('public_users')
+      .select('*')
+      .eq('google_sub', profile.sub)
+      .maybeSingle();
+    if (existingError) throw new Error(existingError.message);
+    const row = {
+      google_sub: profile.sub,
+      email: profile.email,
+      name: profile.name || profile.email,
+      avatar_url: profile.picture || '',
+      email_verified: profile.email_verified !== false,
+      last_login_at: now,
+      updated_at: now
+    };
+    const query = existing
+      ? supabase.from('public_users').update(row).eq('id', existing.id).select('*').single()
+      : supabase.from('public_users').insert(row).select('*').single();
+    const { data: user, error: upsertError } = await query;
+    if (upsertError) throw new Error(upsertError.message);
+
+    req.session.publicUserId = user.id;
+    req.session.publicUserName = user.name || user.email;
+    req.session.publicUserEmail = user.email;
+    req.session.publicUserAvatarUrl = user.avatar_url || '';
+    res.redirect(safePublicReturnTo(req.session.publicAuthReturnTo) || '/public-preview/hesabim');
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/public-preview/auth/logout', (req, res) => {
+  clearPublicSession(req);
+  res.json({ success: true });
+});
+
+app.get('/public-preview/api/question-stats', async (req, res, next) => {
+  try {
+    await startupReady;
+    const slugs = String(req.query.slugs || '').split(',').map(item => item.trim()).filter(Boolean);
+    res.json(await loadPublicQuestionStats(slugs));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/public-preview/api/questions/:slug/read', async (req, res, next) => {
+  try {
+    await startupReady;
+    res.json(await incrementPublicQuestionRead(req.params.slug));
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+app.post('/public-preview/api/question-submissions', async (req, res) => {
+  try {
+    await startupReady;
+    const user = requirePublicUser(req, res);
+    if (!user) return;
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) return res.status(503).json({ error: 'Soru gönderimi için veri tabanı hazırlığı bekleniyor.' });
+    const question = String(req.body?.question || '').trim().slice(0, 2000);
+    const category = String(req.body?.category || '').trim().slice(0, 120);
+    const topic = String(req.body?.topic || '').trim().slice(0, 120);
+    const privacyAccepted = req.body?.privacyAccepted === true || req.body?.privacyAccepted === 'true' || req.body?.privacyAccepted === 'on';
+    if (question.length < 20) return res.status(400).json({ error: 'Lütfen sorunuzu en az 20 karakter olacak şekilde yazın.' });
+    if (!privacyAccepted) return res.status(400).json({ error: 'Kişisel bilgi paylaşmama notunu onaylayın.' });
+    const { data, error } = await supabase.from('public_question_submissions').insert({
+      public_user_id: user.id,
+      submitter_name: user.name,
+      submitter_email: user.email,
+      question,
+      category,
+      topic,
+      privacy_accepted: true,
+      status: 'new',
+      source: 'public-preview',
+      user_agent: String(req.headers['user-agent'] || '').slice(0, 500)
+    }).select('id,created_at,status').single();
+    if (error) throw new Error(error.message);
+    res.json({ success: true, submission: data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
 });
 
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {

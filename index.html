@@ -145,7 +145,7 @@ body{background:radial-gradient(circle at top left,rgba(202,164,74,.10),transpar
 .side-group{margin:2px 0 8px;}
 .side-group-main{font-weight:800;}
 .side-caret{width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;display:inline-block;transform:rotate(45deg);transition:transform .18s ease,opacity .18s ease;opacity:.7;flex:0 0 auto;}
-.archive-ops-menu-group.open .side-caret{transform:rotate(225deg);margin-top:4px;}
+.archive-ops-menu-group.open .side-caret,.live-site-menu-group.open .side-caret{transform:rotate(225deg);margin-top:4px;}
 .side-subnav{margin:2px 10px 8px 18px;padding:4px 0 4px 9px;border-left:1px solid rgba(var(--gold-rgb),.34);}
 .side-group:not(.open) .side-subnav{display:none;}
 .side-sub-link{width:calc(100% - 8px);margin:1px 0;padding:8px 10px;border-left-width:2px;font-size:11px;color:var(--ink3);}
@@ -1055,6 +1055,12 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packageOutput" onclick="mArchiveOps('packageOutput')">Paket Çıktı Merkezi</button>
         </div>
       </div>
+      <div class="mobile-menu-group live-site-menu-group super-admin-only admin-route-only" style="display:none">
+        <button class="mobile-menu-label live-site-parent" data-tab="archiveOps" onclick="toggleLiveSiteMenu()"><span>Canlı Site</span><span class="side-caret" aria-hidden="true"></span></button>
+        <div class="mobile-subnav">
+          <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="publicQuestions" onclick="mLiveSite('publicQuestions')">Soru Talepleri</button>
+        </div>
+      </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
       <button class="btn-mobile super-admin-only" onclick="mNav('resolution')" style="display:none">Çözüm Takibi</button>
       <button class="btn-mobile" onclick="mNav('ayarlar')">Ayarlar</button>
@@ -1097,6 +1103,14 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Yayın Hazırlık Kuyruğu</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packages" onclick="openArchiveOps('packages')"><span>Yayın Paketleri</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packageOutput" onclick="openArchiveOps('packageOutput')"><span>Paket Çıktı Merkezi</span></button>
+      </div>
+    </div>
+
+    <div class="side-section-label super-admin-only admin-route-only" style="display:none">Canlı Site</div>
+    <div class="side-group live-site-menu-group super-admin-only admin-route-only" style="display:none">
+      <button class="side-link side-group-main live-site-parent" data-tab="archiveOps" onclick="toggleLiveSiteMenu()"><span>Canlı Site</span><span class="side-caret" aria-hidden="true"></span></button>
+      <div class="side-subnav">
+        <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="publicQuestions" onclick="openLiveSite('publicQuestions')"><span>Soru Talepleri</span></button>
       </div>
     </div>
 
@@ -1301,8 +1315,8 @@ canvas{width:100%!important;}
     </div>
 
     <div class="tab-content admin-route-only super-admin-only" id="tabContent-archiveOps" style="display:none">
-      <div class="page-title">Arşiv Operasyon Merkezi</div>
-      <div class="page-sub">Drive, e-tablo ve dokümanlarda yürüyen arşiv işlerini online sisteme taşıma pilotu</div>
+      <div class="page-title" id="archiveOpsPageTitle">Arşiv Operasyon Merkezi</div>
+      <div class="page-sub" id="archiveOpsPageSub">Drive, e-tablo ve dokümanlarda yürüyen arşiv işlerini online sisteme taşıma pilotu</div>
       <div class="divider"></div>
 
       <div class="ops-hero archive-ops-section" data-ops-view="overview">
@@ -1943,6 +1957,36 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="publicQuestions" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Soru Talepleri</div>
+            <div class="ops-panel-sub">Canlı site Soru Sor ekranından Google oturumuyla gönderilen soruları burada izleyin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadArchivePublicQuestions()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="ops-filter-row">
+            <select class="ops-field" id="archivePublicQuestionStatusFilter" onchange="setArchivePublicQuestionFilter()">
+              <option value="">Tüm durumlar</option>
+              <option value="new">Yeni</option>
+              <option value="reviewing">İnceleniyor</option>
+              <option value="answered">Cevaplandı</option>
+              <option value="closed">Kapandı</option>
+            </select>
+          </div>
+          <div class="ops-file-summary" id="archivePublicQuestionSummary"></div>
+          <div class="archive-release-layout">
+            <div class="archive-release-package-list" id="archivePublicQuestionList">
+              <div class="archive-release-empty">Soru talepleri yükleniyor...</div>
+            </div>
+            <div class="ops-detail" id="archivePublicQuestionDetail">
+              <div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih, kategori ve soru metni burada görünür.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="ops-flow archive-ops-section" data-ops-view="overview">
         <div class="ops-step"><div class="ops-step-num">01</div><strong>Kaynak girer</strong><span>Yayın, transkript, hadis, slayt veya standart sisteme alınır.</span></div>
         <div class="ops-step"><div class="ops-step-num">02</div><strong>Görev atanır</strong><span>Kişi, tarih, durum ve çalışma notu belirlenir.</span></div>
@@ -2213,12 +2257,14 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false,liveSiteMenuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput'];
+let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false};
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','publicQuestions'];
+const LIVE_SITE_OPS_VIEWS=new Set(['publicQuestions']);
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -2532,6 +2578,7 @@ function toggleMenu(){
   menu.classList.toggle('open');
   if(willOpen){
     archiveOpsState.menuOpen=false;
+    archiveOpsState.liveSiteMenuOpen=false;
     updateArchiveOpsNavState();
   }
 }
@@ -2540,17 +2587,33 @@ function mNav(tab){closeMobileMenu();showTab(tab);}
 function normalizeArchiveOpsView(view){return ARCHIVE_OPS_VIEWS.includes(view)?view:'overview';}
 function updateArchiveOpsNavState(){
   document.querySelectorAll('.archive-ops-nav,.archive-ops-parent').forEach(e=>e.classList.remove('active-tab'));
+  document.querySelectorAll('.live-site-nav,.live-site-parent').forEach(e=>e.classList.remove('active-tab'));
   document.querySelectorAll('.archive-ops-menu-group').forEach(e=>e.classList.toggle('open',archiveOpsState.menuOpen));
+  document.querySelectorAll('.live-site-menu-group').forEach(e=>e.classList.toggle('open',archiveOpsState.liveSiteMenuOpen));
   document.querySelectorAll('.archive-ops-parent').forEach(e=>e.setAttribute('aria-expanded',archiveOpsState.menuOpen?'true':'false'));
+  document.querySelectorAll('.live-site-parent').forEach(e=>e.setAttribute('aria-expanded',archiveOpsState.liveSiteMenuOpen?'true':'false'));
   if(!canUseArchiveOps())return;
-  document.querySelectorAll(`.archive-ops-nav[data-ops-view="${archiveOpsState.view}"]`).forEach(e=>e.classList.add('active-tab'));
+  if(LIVE_SITE_OPS_VIEWS.has(archiveOpsState.view)){
+    document.querySelectorAll(`.live-site-nav[data-ops-view="${archiveOpsState.view}"]`).forEach(e=>e.classList.add('active-tab'));
+    document.querySelectorAll('.live-site-parent').forEach(e=>e.classList.add('active-tab'));
+  }else{
+    document.querySelectorAll(`.archive-ops-nav[data-ops-view="${archiveOpsState.view}"]`).forEach(e=>e.classList.add('active-tab'));
+  }
 }
 function toggleArchiveOpsMenu(forceOpen){
   archiveOpsState.menuOpen=typeof forceOpen==='boolean'?forceOpen:!archiveOpsState.menuOpen;
   updateArchiveOpsNavState();
 }
+function toggleLiveSiteMenu(forceOpen){
+  archiveOpsState.liveSiteMenuOpen=typeof forceOpen==='boolean'?forceOpen:!archiveOpsState.liveSiteMenuOpen;
+  updateArchiveOpsNavState();
+}
 function renderArchiveOpsView(view=archiveOpsState.view){
   archiveOpsState.view=normalizeArchiveOpsView(view);
+  const title=el('archiveOpsPageTitle');
+  const sub=el('archiveOpsPageSub');
+  if(title)title.textContent=LIVE_SITE_OPS_VIEWS.has(archiveOpsState.view)?'Canlı Site':'Arşiv Operasyon Merkezi';
+  if(sub)sub.textContent=LIVE_SITE_OPS_VIEWS.has(archiveOpsState.view)?'Canlı public siteye ait kullanıcı akışları ve talepler burada izlenir.':'Drive, e-tablo ve dokümanlarda yürüyen arşiv işlerini online sisteme taşıma pilotu';
   document.querySelectorAll('.archive-ops-section').forEach(section=>{
     section.hidden=section.getAttribute('data-ops-view')!==archiveOpsState.view;
   });
@@ -2575,15 +2638,27 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchiveReleaseReadyCandidates();
   }
   if(archiveOpsState.view==='packageOutput')loadArchiveOutputPackages();
+  if(archiveOpsState.view==='publicQuestions')loadArchivePublicQuestions();
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
   archiveOpsState.menuOpen=true;
+  archiveOpsState.liveSiteMenuOpen=false;
+  showTab('archiveOps');
+}
+function openLiveSite(view='publicQuestions'){
+  archiveOpsState.view=normalizeArchiveOpsView(view);
+  archiveOpsState.menuOpen=false;
+  archiveOpsState.liveSiteMenuOpen=true;
   showTab('archiveOps');
 }
 function mArchiveOps(view='overview'){
   closeMobileMenu();
   openArchiveOps(view);
+}
+function mLiveSite(view='publicQuestions'){
+  closeMobileMenu();
+  openLiveSite(view);
 }
 
 function showTab(name){
@@ -7287,6 +7362,96 @@ function openArchiveOutputFromReleasePackage(){
   archiveOutputState.activePackage=pkg;
   archiveOutputState.output=null;
   openArchiveOps('packageOutput');
+}
+function archivePublicQuestionStatusLabel(status){
+  return {new:'Yeni',reviewing:'İnceleniyor',answered:'Cevaplandı',closed:'Kapandı'}[status]||'Yeni';
+}
+function archivePublicQuestionDate(value){
+  const date=value?new Date(value):null;
+  if(!date||!Number.isFinite(date.getTime()))return '';
+  return date.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function setArchivePublicQuestionFilter(){
+  archivePublicQuestionState.status=el('archivePublicQuestionStatusFilter')?.value||'';
+  loadArchivePublicQuestions();
+}
+function archivePublicQuestionCardHtml(item){
+  const active=archivePublicQuestionState.activeItem?.id===item.id?' active':'';
+  const when=archivePublicQuestionDate(item.created_at||item.createdAt);
+  return `
+    <button class="archive-release-card${active}" onclick="selectArchivePublicQuestion(${attrJson(item.id)})">
+      <div class="archive-release-title">${esc(item.question||'Soru metni yok')}</div>
+      <div class="archive-release-preview">${esc(item.submitter_name||item.submitter_email||'Site kullanıcısı')}</div>
+      <div class="ops-source-meta">
+        <span>${esc(archivePublicQuestionStatusLabel(item.status))}</span>
+        ${when?`<span>${esc(when)}</span>`:''}
+        ${item.category?`<span>${esc(item.category)}</span>`:''}
+      </div>
+    </button>
+  `;
+}
+function renderArchivePublicQuestions(){
+  const summary=el('archivePublicQuestionSummary');
+  const list=el('archivePublicQuestionList');
+  const detail=el('archivePublicQuestionDetail');
+  const items=archivePublicQuestionState.items||[];
+  if(summary)summary.innerHTML=`
+    <div class="ops-file-summary-item"><strong>${Number(archivePublicQuestionState.count||items.length).toLocaleString('tr-TR')}</strong><span>Toplam</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(items.filter(item=>item.status==='new').length).toLocaleString('tr-TR')}</strong><span>Yeni</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(items.filter(item=>item.status==='answered').length).toLocaleString('tr-TR')}</strong><span>Cevaplandı</span></div>
+  `;
+  if(list){
+    list.innerHTML=items.length
+      ?items.map(archivePublicQuestionCardHtml).join('')
+      :'<div class="archive-release-empty">Soru talebi bulunamadı.</div>';
+  }
+  const selected=archivePublicQuestionState.activeItem;
+  if(detail){
+    if(!selected){
+      detail.innerHTML='<div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih, kategori ve soru metni burada görünür.</div>';
+    }else{
+      const when=archivePublicQuestionDate(selected.created_at||selected.createdAt);
+      detail.innerHTML=`
+        <div class="ops-detail-head">
+          <div>
+            <div class="ops-detail-title">${esc(selected.question||'Soru talebi')}</div>
+            <div class="ops-source-meta">
+              <span>${esc(archivePublicQuestionStatusLabel(selected.status))}</span>
+              ${when?`<span>${esc(when)}</span>`:''}
+              ${selected.source?`<span>${esc(selected.source)}</span>`:''}
+            </div>
+          </div>
+        </div>
+        <div class="ops-detail-body">
+          <p><strong>Gönderen:</strong><br>${esc(selected.submitter_name||'Site kullanıcısı')} ${selected.submitter_email?`<span class="mono">${esc(selected.submitter_email)}</span>`:''}</p>
+          ${selected.category?`<p><strong>Kategori:</strong><br>${esc(selected.category)}</p>`:''}
+          ${selected.topic?`<p><strong>Konu:</strong><br>${esc(selected.topic)}</p>`:''}
+          <p><strong>Soru:</strong><br>${esc(selected.question||'')}</p>
+        </div>
+      `;
+    }
+  }
+}
+function selectArchivePublicQuestion(id){
+  archivePublicQuestionState.activeItem=(archivePublicQuestionState.items||[]).find(item=>item.id===id)||null;
+  renderArchivePublicQuestions();
+}
+async function loadArchivePublicQuestions(){
+  const list=el('archivePublicQuestionList');
+  if(list&&!archivePublicQuestionState.items.length)list.innerHTML='<div class="archive-release-empty">Soru talepleri yükleniyor...</div>';
+  const params=new URLSearchParams();
+  if(archivePublicQuestionState.status)params.set('status',archivePublicQuestionState.status);
+  const data=await api('GET',`/api/public-archive/question-submissions${params.toString()?`?${params}`:''}`);
+  if(data.error){
+    if(list)list.innerHTML=`<div class="archive-release-empty">${esc(data.error)}</div>`;
+    return;
+  }
+  archivePublicQuestionState.items=data.submissions||[];
+  archivePublicQuestionState.count=data.count||archivePublicQuestionState.items.length;
+  if(archivePublicQuestionState.activeItem){
+    archivePublicQuestionState.activeItem=archivePublicQuestionState.items.find(item=>item.id===archivePublicQuestionState.activeItem.id)||null;
+  }
+  renderArchivePublicQuestions();
 }
 function archiveWorkStatusLabel(status){
   return {

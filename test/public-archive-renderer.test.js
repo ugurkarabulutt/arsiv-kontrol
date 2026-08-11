@@ -38,6 +38,15 @@ function lower(value) {
   return String(value || '').toLocaleLowerCase('tr-TR');
 }
 
+function assertOnlyPublicPreviewApi(html) {
+  const matches = String(html || '').match(/\/api\//g) || [];
+  if (!matches.length) return;
+  const unsafe = [...String(html).matchAll(/.{0,32}\/api\/.{0,56}/g)]
+    .map(match => match[0])
+    .filter(fragment => !fragment.includes('/public-preview/api/'));
+  assert.deepEqual(unsafe, [], `Unexpected non-preview API reference: ${unsafe.join(' | ')}`);
+}
+
 test('public preview routes render isolated noindex pages', () => {
   for (const route of ROUTE_PATHS) {
     const rendered = renderPublicArchivePreviewRoute(route, route.endsWith('/arama') ? { q: 'namaz' } : {});
@@ -46,7 +55,7 @@ test('public preview routes render isolated noindex pages', () => {
     assert.match(rendered.html, /ve Cevaplar Arşivi/);
     assert.match(rendered.html, /Hesab\u0131m/);
     assert.match(rendered.html, /Sorularınız Kur’ân ışığında cevaplanır\./);
-    assert.doesNotMatch(rendered.html, /\/api\//);
+    assertOnlyPublicPreviewApi(rendered.html);
   }
 });
 
@@ -91,11 +100,13 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(archive, /Soru ve cevapları sakince keşfedin\./);
   assert.match(archive, /Tüm Sorular/);
   assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);
+  assertOnlyPublicPreviewApi(archive);
 
   const account = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
-  assert.match(account, /Hesap özelliği yakında kullanılabilir olacak\./);
-  assert.match(account, /kullanıcı hesabı, giriş veya kayıt akışı bulunmaz/);
-  assert.doesNotMatch(account, /\/api\//);
+  assert.match(account, /Hesabınızla soru gönderimini takip edin\./);
+  assert.match(account, /Google ile Devam Et/);
+  assert.match(account, /\/public-preview\/auth\/google/);
+  assertOnlyPublicPreviewApi(account);
 });
 
 test('public preview search and missing states are deterministic', () => {
@@ -113,22 +124,47 @@ test('public preview search and missing states are deterministic', () => {
   assert.match(missing.html, /Sayfa bulunamadı\./);
 });
 
-test('question, topic, category, and ask pages keep Phase 1 boundaries', () => {
+test('question, topic, category, and ask pages keep public boundaries', () => {
   const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
   assert.match(detail, /Orijinal Soru/);
   assert.match(detail, /Cevap/);
   assert.match(detail, /Kaynak ve bağlam/);
   assert.match(detail, /İlgili Sorular/);
+  assert.match(detail, /data-public-read-count="ornek-soru"/);
+  assertOnlyPublicPreviewApi(detail);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html;
   const category = renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html;
   assert.match(topic, /Kavram/);
   assert.match(category, /Kategori/);
   assert.match(category, /Bu Kategorideki Sorular/);
+  assertOnlyPublicPreviewApi(topic);
+  assertOnlyPublicPreviewApi(category);
 
   const ask = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
-  assert.match(ask, /data-static-question-form/);
-  assert.match(ask, /disabled aria-disabled="true">Soruyu Gönder/);
+  assert.match(ask, /data-question-form/);
+  assert.doesNotMatch(ask, /data-static-question-form/);
+  assert.match(ask, />Soruyu Gönder</);
+  assert.doesNotMatch(ask, /disabled aria-disabled="true">Soruyu Gönder/);
+  assert.match(ask, /\/public-preview\/api\/question-submissions/);
+  assert.match(ask, /\/public-preview\/auth\/google/);
   assert.match(ask, /Sorunuzu kısa ve açık şekilde yazabilirsiniz./);
   assert.doesNotMatch(ask, /Bu ekranda kayıt alınmıyor|yalnızca arayüz davranışı gösteriliyor|Bu ekranda kayıt alınmaz/);
+  assertOnlyPublicPreviewApi(ask);
+});
+
+test('public preview exposes separate index and info pages', () => {
+  for (const route of [
+    '/public-preview/konular',
+    '/public-preview/kategoriler',
+    '/public-preview/hakkimizda',
+    '/public-preview/iletisim',
+    '/public-preview/gizlilik',
+    '/public-preview/kullanim-kosullari'
+  ]) {
+    const rendered = renderPublicArchivePreviewRoute(route);
+    assert.equal(rendered.status, 200);
+    assert.match(rendered.html, /Dini Sorular/);
+    assertOnlyPublicPreviewApi(rendered.html);
+  }
 });

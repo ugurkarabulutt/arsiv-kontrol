@@ -631,6 +631,10 @@ a.pa-chip:hover,
   min-width: 0;
 }
 
+.pa-read-count[hidden] {
+  display: none !important;
+}
+
 .pa-meta-icon {
   flex: 0 0 14px;
   width: 14px;
@@ -769,6 +773,26 @@ a.pa-chip:hover,
 .pa-button[aria-disabled="true"] {
   cursor: default;
   opacity: 0.72;
+}
+
+.pa-account-status,
+.pa-form-status {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  color: var(--pa-text-2);
+  background: color-mix(in srgb, var(--pa-mint) 10%, var(--pa-surface));
+  border: 1px solid color-mix(in srgb, var(--pa-mint) 26%, var(--pa-border));
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pa-account-status a,
+.pa-form-status a {
+  color: var(--pa-text);
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .pa-context-band {
