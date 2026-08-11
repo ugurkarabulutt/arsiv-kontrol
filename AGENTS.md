@@ -121,6 +121,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Kategori kullanıcı onaya gönderme ekranından kaldırıldı:** Kullanıcı tarafında kategori tamamen
+  gizlendi; normal kullanıcı denetimden sonra yalnız `Soru` ve `Etiketler` alanlarını görür ve
+  doldurur. Sonuç paneli, onaya gönder modalı ve normal kullanıcı detay/geçmiş akışı kategori
+  göstermez. Backend `/api/history` ve `/api/history/:id` cevaplarında normal kullanıcı için
+  `publicCategory`, `publicRelatedCategories`, `publicCategorySuggestions` ve `publicCategorySource`
+  alanlarını döndürmez; `/api/history/:id/submit` ve `/api/history/submit-merged` kullanıcıdan gelen
+  kategori alanlarını dikkate almaz. Sistem yine soru/etiket/cevap/özetten kategori önerisini arka
+  planda üretip saklar; bu öneri yalnız admin/süper admin onay detayında ve süper admin
+  `Kategoriler` ekranında görünür/değiştirilebilir. Bu adım root `/` public cutover yapmaz ve public
+  frontend hattına dokunmaz. Değişen dosyalar: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`,
+  `docs/project/PUBLIC_QA_TRANSFER_AND_CATEGORY_DECISION_2026-08-11.md` ve
+  `docs/project/ARCHIVE_PUBLIC_QA_PUBLICATION_FLOW_PLAN.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı;
+  86/86 test geçti. `git diff --check` yalnız mevcut CRLF uyarılarını gösterdi.
+
 - **Kategori öneri altyapısı başlatıldı:** Onaya giden soru-cevaplar için public arşiv kategorisi
   admin hattında önerilmeye ve saklanmaya başladı. Backend'e `PUBLIC_CATEGORY_RULES_KEY`,
   `history_public_category_meta:*` settings meta kaydı, kategori öneri motoru, kayıt zenginleştirme

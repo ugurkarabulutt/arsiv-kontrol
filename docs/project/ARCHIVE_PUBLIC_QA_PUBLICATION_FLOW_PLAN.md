@@ -27,7 +27,8 @@ kararı ayrıca kayda alındı:
   kategori adayları çıkarılacak, daha dar kavramlar ve yazım varyantları etiket/konu olarak
   bağlanacaktır.
 - Admin altyapısında kategori önerisi başlatıldı: onaya gönderilen her yeni kayıt için sistem soru
-  ve etiketlerden ana kategori + bağlı kategori önerir; yetkili onay detayında bunu değiştirebilir.
+  ve etiketlerden ana kategori + bağlı kategori önerir; kategori kullanıcı ekranında görünmez,
+  yetkili onay detayında bunu değiştirebilir.
 - `/admin > Arşiv Çalışmaları > Kategoriler` ekranı mevcut onay bekleyen/onaylanan kayıtları tarayıp
   kategori dağılımını ve yeni kategori adayı yoğun etiketleri gösterir.
 - Bugünkü hızlı entegrasyon için öneri `public-json`; kalıcı yayın sistemi için öneri ayrı
@@ -49,7 +50,7 @@ kararı ayrıca kayda alındı:
    - soru
    - onaylı cevap
    - etiketler
-   - varsa kategori/program bilgisi
+   - admin tarafında üretilen veya yetkili tarafından düzeltilen kategori/program bilgisi
 2. Geçmiş Excel aktarımından tamamlanmış kayıtlar:
    - eşleşen cevap
    - Excel sorusu
@@ -66,7 +67,7 @@ kararı ayrıca kayda alındı:
 1. Ekip üyesi cevabı hazırlar.
 2. Denetim yapar.
 3. Onaya göndermeden önce soru ve etiketleri doldurur.
-4. Sistem soru ve etiketlerden ana kategori + bağlı kategori önerir.
+4. Sistem soru ve etiketlerden ana kategori + bağlı kategori önerir; kullanıcı bu alanı görmez.
 5. Admin veya süper admin onay ekranında soru, cevap, etiket ve kategori önerisini görür.
 6. Yetkili gerekirse soru/etiket/kategoriyi düzeltir.
 7. Kayıt onaylanır.

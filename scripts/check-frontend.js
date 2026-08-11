@@ -357,12 +357,9 @@ if (
   !html.includes('id="submitApprovalQuestionMain"') ||
   !html.includes('id="submitApprovalQuestion"') ||
   !html.includes('id="submitApprovalTags"') ||
-  !html.includes('id="submitApprovalCategory"') ||
-  !html.includes('id="submitApprovalCategoryMain"') ||
   !html.includes('id="detailPublicCategory"') ||
   !html.includes('Soru (zorunlu)') ||
   !html.includes('Etiketler (zorunlu)') ||
-  !html.includes('Önerilen ana kategori') ||
   !html.includes('function suggestPublicCategoriesUi') ||
   !html.includes('function publicCategoryInlineHtml') ||
   !html.includes('publicRelatedCategories:parsePublicRelatedCategories') ||
@@ -388,6 +385,17 @@ if (
   !html.includes('historyTagsChips(h.tags||[])')
 ) {
   throw new Error('Soru-cevap soru ve etiket alanlari onaya gonderme, admin onay duzeltmesi, Excel aktarimi, CSV ve DB semasinda korunmali.');
+}
+if (
+  html.includes('id="submitApprovalCategory"') ||
+  html.includes('id="submitApprovalCategoryMain"') ||
+  html.includes('id="submitApprovalRelatedCategories"') ||
+  html.includes('id="submitApprovalRelatedCategoriesMain"') ||
+  html.includes('id="submitApprovalCategorySuggestions"') ||
+  html.includes('id="submitApprovalCategorySuggestionsMain"') ||
+  html.includes('renderSubmitCategorySuggestion')
+) {
+  throw new Error('Kategori alanlari kullanici onaya gonderme ekraninda gorunmemeli; yalniz admin onay detayinda kalmali.');
 }
 if (
   !schema.includes('history_tag_import_batches') ||

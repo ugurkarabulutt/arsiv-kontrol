@@ -2,9 +2,20 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- Kullanıcı tarafında kategori tamamen gizlendi. Normal kullanıcı denetimden sonra yalnız `Soru` ve
+  `Etiketler` alanlarını görür; sonuç paneli, onaya gönder modalı ve normal kullanıcı detay/geçmiş
+  akışında kategori yoktur. Backend de normal kullanıcı `/api/history` ve `/api/history/:id`
+  cevaplarından `publicCategory*` alanlarını çıkarır; kullanıcı submit endpointleri kategori
+  gövdesini dikkate almaz. Sistem yine soru/etiket/cevap/özetten kategori önerisini arka planda
+  üretir ve saklar; öneri yalnız admin/süper admin onay detayında ve süper admin `Kategoriler`
+  ekranında görünür/değiştirilebilir. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; 86/86 test geçti.
+- Bu değişiklik root `/` public cutover yapmadı, public frontend hattına dokunmadı ve normal
+  kullanıcı için yeni bir kategori işi açmadı. Soru + etiket zorunluluğu aynen devam eder.
+
 - Kategori öneri altyapısı admin hattında kodlandı. Yeni kayıt onaya gönderilirken sistem soru,
   etiket, cevap ve özetten `Ana kategori` + `Bağlı kategoriler` önerir; kategori kullanıcı için
-  zorunlu alan değildir, soru ve etiket zorunluluğu aynen kalır. Admin/süper admin detay onay
+  görünür bir alan değildir, soru ve etiket zorunluluğu aynen kalır. Admin/süper admin detay onay
   penceresinde kategori alanını değiştirebilir; onayla dediğinde karar `settings` altında
   `history_public_category_meta:*` anahtarıyla saklanır. Audit bilgisi admin içinde kalır, normal
   kullanıcı API cevabına ve public çıktıya taşınmaz.

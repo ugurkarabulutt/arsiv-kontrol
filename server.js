@@ -518,6 +518,10 @@ function mapHistoryForRole(row = {}, role = ROLES.USER) {
   if (!isAdminRole(role)) {
     delete mapped.approvedBy;
     delete mapped.approvedAt;
+    delete mapped.publicCategory;
+    delete mapped.publicRelatedCategories;
+    delete mapped.publicCategorySuggestions;
+    delete mapped.publicCategorySource;
   }
   return mapped;
 }
@@ -1164,9 +1168,10 @@ async function saveHistoryPublicCategoryMeta(historyId, meta) {
   return clean;
 }
 
-async function enrichHistoryPublicCategories(items) {
+async function enrichHistoryPublicCategories(items, options = {}) {
   const list = Array.isArray(items) ? items : [items].filter(Boolean);
   if (!list.length) return Array.isArray(items) ? [] : items;
+  if (options.includePublicCategory === false) return Array.isArray(items) ? list : list[0];
   const [rules, metaMap] = await Promise.all([
     loadPublicCategoryRules(),
     loadHistoryPublicCategoryMetaByIds(list.map(item => item.id).filter(Boolean))
@@ -6046,7 +6051,7 @@ app.get('/api/history', auth, async (req, res) => {
       return q;
     });
     const rows = (data || []).map(row => mapHistoryForRole(row, req.session.role)).filter(h => !isHiddenHistoryForRole(h, req.session.role));
-    res.json(await enrichHistoryPublicCategories(rows));
+    res.json(await enrichHistoryPublicCategories(rows, { includePublicCategory: isAdminRole(req.session.role) }));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -6183,7 +6188,7 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     if (data.user_id === req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
-    res.json(await enrichHistoryPublicCategories(mapped));
+    res.json(await enrichHistoryPublicCategories(mapped, { includePublicCategory: isAdminRole(req.session.role) }));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -6430,18 +6435,14 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
     }
     if (historyStatusForApproval(history.status)) {
-      const existing = await enrichHistoryPublicCategories(mapHistory(history));
+      const existing = await enrichHistoryPublicCategories(mapHistory(history), { includePublicCategory: isAdminRole(req.session.role) });
       return res.json({
         success: true,
         id: history.id,
         status: 'bekliyor',
         alreadySubmitted: true,
         tags: existing.tags || [],
-        questionText: existing.questionText || '',
-        publicCategory: existing.publicCategory || '',
-        publicRelatedCategories: existing.publicRelatedCategories || [],
-        publicCategorySuggestions: existing.publicCategorySuggestions || [],
-        publicCategorySource: existing.publicCategorySource || ''
+        questionText: existing.questionText || ''
       });
     }
     if (history.status !== 'taslak') return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
@@ -6475,15 +6476,12 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       summary: data.summary || history.summary || ''
     }, {
       rules: categoryRules,
-      publicCategory: req.body?.publicCategory,
-      publicRelatedCategories: req.body?.publicRelatedCategories,
       source: 'auto',
       updatedBy: approvalActorName(req)
     });
     if (publicCategoryMeta.publicCategory || publicCategoryMeta.publicRelatedCategories.length || publicCategoryMeta.publicCategorySuggestions.length) {
       await saveHistoryPublicCategoryMeta(data.id, publicCategoryMeta);
     }
-    const publicCategoryFields = publicCategoryFieldsForHistory(mapHistory(data), publicCategoryMeta, categoryRules);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
     res.json({
@@ -6491,8 +6489,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       id: data.id,
       status: data.status,
       tags: data.tags || updateRow.tags || [],
-      questionText: data.question_text || updateRow.question_text || '',
-      ...publicCategoryFields
+      questionText: data.question_text || updateRow.question_text || ''
     });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
@@ -6603,15 +6600,12 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       summary: data.summary || payload.summary || ''
     }, {
       rules: categoryRules,
-      publicCategory: req.body?.publicCategory,
-      publicRelatedCategories: req.body?.publicRelatedCategories,
       source: 'auto',
       updatedBy: approvalActorName(req)
     });
     if (publicCategoryMeta.publicCategory || publicCategoryMeta.publicRelatedCategories.length || publicCategoryMeta.publicCategorySuggestions.length) {
       await saveHistoryPublicCategoryMeta(data.id, publicCategoryMeta);
     }
-    const publicCategoryFields = publicCategoryFieldsForHistory(mapHistory(data), publicCategoryMeta, categoryRules);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     const { error: hideError } = await supabase.from('history')
       .update({ status: SUBMITTED_PART_STATUS })
@@ -6625,8 +6619,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       id: data.id,
       status: data.status,
       tags: data.tags || mergedRow.tags || [],
-      questionText: data.question_text || mergedRow.question_text || '',
-      ...publicCategoryFields
+      questionText: data.question_text || mergedRow.question_text || ''
     });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);

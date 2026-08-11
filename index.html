@@ -2412,27 +2412,14 @@ canvas{width:100%!important;}
       <div class="submit-confirm-summary" id="submitApprovalSummary"></div>
       <div class="history-question-field">
         <label for="submitApprovalQuestion">Soru (zorunlu)</label>
-        <textarea class="history-question-input" id="submitApprovalQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın." oninput="renderSubmitCategorySuggestion()"></textarea>
+        <textarea class="history-question-input" id="submitApprovalQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın."></textarea>
         <div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div>
       </div>
       <div class="history-tags-field">
         <label for="submitApprovalTags">Etiketler (zorunlu)</label>
-        <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview();renderSubmitCategorySuggestion()"></textarea>
+        <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview()"></textarea>
         <div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div>
         <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
-      </div>
-      <div class="history-category-grid">
-        <div class="history-category-field">
-          <label for="submitApprovalCategory">Önerilen ana kategori</label>
-          <input class="history-category-input" id="submitApprovalCategory" list="publicCategoryOptions" placeholder="Sistem önerir; gerekirse değiştirilebilir.">
-          <div class="history-tags-help">Zorunlu değildir. Sistem soru ve etiketlere göre doldurur; yetkili onayda değiştirebilir.</div>
-          <div class="history-category-suggestions" id="submitApprovalCategorySuggestions"></div>
-        </div>
-        <div class="history-category-field">
-          <label for="submitApprovalRelatedCategories">Bağlı kategoriler</label>
-          <textarea class="history-category-input" id="submitApprovalRelatedCategories" placeholder="Birden çok kategori varsa virgülle ayırın."></textarea>
-          <div class="history-tags-help">Sorunun bağlamına göre ikinci veya üçüncü kategori burada kalır.</div>
-        </div>
       </div>
       <div class="form-err" id="submitApprovalErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
@@ -3382,31 +3369,12 @@ function renderSubmitTagsPreview(target='modal'){
   const box=el(target==='main'?'submitApprovalTagsPreviewMain':'submitApprovalTagsPreview');
   if(!box)return;
   box.innerHTML=historyTagsChipItems(v(target==='main'?'submitApprovalTagsMain':'submitApprovalTags'));
-  renderSubmitCategorySuggestion(target);
 }
 function renderDetailTagsPreview(){
   const box=el('detailHistoryTagsPreview');
   if(!box)return;
   box.innerHTML=historyTagsChipItems(v('detailHistoryTags'));
   renderDetailCategorySuggestion();
-}
-function renderSubmitCategorySuggestion(target='modal'){
-  const d=pendingApprovalPayload||currentResult||{};
-  const questionId=target==='main'?'submitApprovalQuestionMain':'submitApprovalQuestion';
-  const tagsId=target==='main'?'submitApprovalTagsMain':'submitApprovalTags';
-  const categoryId=target==='main'?'submitApprovalCategoryMain':'submitApprovalCategory';
-  const relatedId=target==='main'?'submitApprovalRelatedCategoriesMain':'submitApprovalRelatedCategories';
-  const suggestId=target==='main'?'submitApprovalCategorySuggestionsMain':'submitApprovalCategorySuggestions';
-  const categoryEl=el(categoryId);
-  const relatedEl=el(relatedId);
-  const suggestionsEl=el(suggestId);
-  if(!categoryEl&&!relatedEl&&!suggestionsEl)return;
-  const questionText=normalizeHistoryQuestionUi(v(questionId));
-  const tagsText=v(tagsId);
-  const defaults=publicCategoryDefaults(d,questionText,tagsText);
-  if(categoryEl&&!normalizePublicCategoryNameUi(categoryEl.value))categoryEl.value=defaults.category;
-  if(relatedEl&&!normalizePublicCategoryNameUi(relatedEl.value))relatedEl.value=defaults.related.join(', ');
-  if(suggestionsEl)suggestionsEl.innerHTML=publicCategorySuggestionsHtml(defaults.suggestions);
 }
 function renderDetailCategorySuggestion(){
   const categoryEl=el('detailPublicCategory');
@@ -3426,10 +3394,7 @@ function resetSubmitApprovalModalState(){
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value='';
   if(el('submitApprovalTags'))el('submitApprovalTags').value='';
-  if(el('submitApprovalCategory'))el('submitApprovalCategory').value='';
-  if(el('submitApprovalRelatedCategories'))el('submitApprovalRelatedCategories').value='';
   if(el('submitApprovalTagsPreview'))el('submitApprovalTagsPreview').innerHTML='';
-  if(el('submitApprovalCategorySuggestions'))el('submitApprovalCategorySuggestions').innerHTML='';
   const btn=el('submitApprovalBtn');
   if(btn){btn.disabled=false;btn.textContent='Onaya Gönder';}
 }
@@ -3458,20 +3423,14 @@ function renderApprovalSubmitPanel(d){
     :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
   const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
   const tagsValue=historyTagsText(d.tags||[]);
-  const categoryDefaults=publicCategoryDefaults(d,questionValue,tagsValue);
-  const categoryValue=categoryDefaults.category;
-  const relatedValue=categoryDefaults.related.join(', ');
   const questionField=sent
     ? `<div class="history-question-field"><label>Soru</label>${questionValue?`<div class="history-question-display">${esc(questionValue)}</div>`:`<div class="history-tags-help">Soru eklenmedi.</div>`}</div>`
-    : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın." oninput="renderSubmitCategorySuggestion('main')">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
+    : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
   const tagsField=sent
     ? `<div class="history-tags-field"><label>Etiketler</label>${historyTagsChips(tagsValue)||'<div class="history-tags-help">Etiket eklenmedi.</div>'}</div>`
     : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
-  const categoryField=sent
-    ? `<div class="history-category-field"><label>Kategori</label>${categoryValue||relatedValue?publicCategoryInlineHtml({publicCategory:categoryValue,publicRelatedCategories:categoryDefaults.related}):'<div class="history-tags-help">Kategori önerisi yok.</div>'}</div>`
-    : `<div class="history-category-field"><label for="submitApprovalCategoryMain">Önerilen ana kategori</label><input class="history-category-input" id="submitApprovalCategoryMain" list="publicCategoryOptions" value="${escAttr(categoryValue)}" placeholder="Sistem önerir; gerekirse değiştirilebilir."><div class="history-tags-help">Zorunlu değildir; yetkili onayda değiştirebilir.</div><div class="history-category-suggestions" id="submitApprovalCategorySuggestionsMain">${publicCategorySuggestionsHtml(categoryDefaults.suggestions)}</div><label for="submitApprovalRelatedCategoriesMain" style="margin-top:10px">Bağlı kategoriler</label><textarea class="history-category-input" id="submitApprovalRelatedCategoriesMain" placeholder="Birden çok kategori varsa virgülle ayırın.">${esc(relatedValue)}</textarea></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
-    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div><div class="approval-submit-fields">${questionField}${tagsField}${categoryField}</div></div>
+    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div><div class="approval-submit-fields">${questionField}${tagsField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
   </div>`;
 }
@@ -3496,19 +3455,11 @@ function openSubmitApprovalModal(){
   `;
   const questionMain=el('submitApprovalQuestionMain');
   const tagsMain=el('submitApprovalTagsMain');
-  const categoryMain=el('submitApprovalCategoryMain');
-  const relatedMain=el('submitApprovalRelatedCategoriesMain');
   const questionText=questionMain?normalizeHistoryQuestionUi(questionMain.value):normalizeHistoryQuestionUi(d.questionText||'');
   const tagsText=tagsMain?tagsMain.value:historyTagsText(d.tags||[]);
-  const categoryDefaults=publicCategoryDefaults(d,questionText,tagsText);
-  const categoryText=categoryMain?normalizePublicCategoryNameUi(categoryMain.value):(d.publicCategory||categoryDefaults.category||'');
-  const relatedText=relatedMain?relatedMain.value:parsePublicRelatedCategories(d.publicRelatedCategories?.length?d.publicRelatedCategories:categoryDefaults.related,categoryText).join(', ');
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value=questionText;
   if(el('submitApprovalTags'))el('submitApprovalTags').value=tagsText;
-  if(el('submitApprovalCategory'))el('submitApprovalCategory').value=categoryText;
-  if(el('submitApprovalRelatedCategories'))el('submitApprovalRelatedCategories').value=relatedText;
   renderSubmitTagsPreview();
-  renderSubmitCategorySuggestion();
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   el('submitApprovalModal')?.classList.add('open');
 }
@@ -3639,8 +3590,6 @@ async function confirmSubmitApproval(){
   const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
   const tags=parseHistoryTags(v('submitApprovalTags'));
   const questionText=normalizeHistoryQuestionUi(v('submitApprovalQuestion'));
-  const publicCategory=normalizePublicCategoryNameUi(v('submitApprovalCategory'));
-  const publicRelatedCategories=parsePublicRelatedCategories(v('submitApprovalRelatedCategories'),publicCategory);
   if(!questionText){
     if(err)err.textContent='Onaya göndermeden önce soru alanını doldurun.';
     el('submitApprovalQuestion')?.focus();
@@ -3671,10 +3620,8 @@ async function confirmSubmitApproval(){
       summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
       analysisMeta:d.analysisMeta||{},
       questionText,
-      tags,
-      publicCategory,
-      publicRelatedCategories
-    }:{questionText,tags,publicCategory,publicRelatedCategories};
+      tags
+    }:{questionText,tags};
     const r=await api('POST',endpoint,body);
     if(r.error){if(err)err.textContent=r.error;return;}
     const newId=r.id||d.id;
@@ -3688,9 +3635,6 @@ async function confirmSubmitApproval(){
     d.status='bekliyor';
     d.tags=Array.isArray(r.tags)?r.tags:tags;
     d.questionText=typeof r.questionText==='string'?r.questionText:questionText;
-    d.publicCategory=typeof r.publicCategory==='string'?r.publicCategory:publicCategory;
-    d.publicRelatedCategories=Array.isArray(r.publicRelatedCategories)?r.publicRelatedCategories:publicRelatedCategories;
-    d.publicCategorySuggestions=Array.isArray(r.publicCategorySuggestions)?r.publicCategorySuggestions:(d.publicCategorySuggestions||[]);
     submitted=true;
     if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
     if(isMerged)d.sourceIds=[];
@@ -3701,7 +3645,7 @@ async function confirmSubmitApproval(){
     if(linkedWorkUpdate?.item)d.archiveWorkLinkedTitle=linkedWorkUpdate.item.title||archiveWorkAuditContext?.title||'Çalışma kaydı';
     if(linkedWorkUpdate?.error)d.archiveWorkLinkError=linkedWorkUpdate.error;
     historyRows=historyRows.map(h=>{
-      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText,publicCategory:d.publicCategory,publicRelatedCategories:d.publicRelatedCategories,publicCategorySuggestions:d.publicCategorySuggestions};
+      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText};
       if(sourceIds.includes(h.id))return {...h,status:'submitted_part'};
       return h;
     }).filter(h=>h.status!=='submitted_part'&&h.status!=='chunk_draft');
@@ -4090,7 +4034,8 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.publicCategory,...parsePublicRelatedCategories(h.publicRelatedCategories||[]),h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
+    const categoryTerms=isAdmin?[h.publicCategory,...parsePublicRelatedCategories(h.publicRelatedCategories||[])]:[];
+    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,...categoryTerms,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -4191,7 +4136,7 @@ async function showDetail(id){
     : historyTagsChips(tagsValue);
   const categoryBlock=hasAdminRole(me?.role)
     ? `<div class="history-category-grid" style="margin:0 0 14px"><div class="history-category-field"><label for="detailPublicCategory">Ana kategori</label><input class="history-category-input" id="detailPublicCategory" list="publicCategoryOptions" value="${escAttr(categoryValue)}" placeholder="Sistem önerir; gerekirse değiştirin."><div class="history-category-suggestions" id="detailPublicCategorySuggestions">${publicCategorySuggestionsHtml(categoryDefaults.suggestions)}</div><div class="history-tags-help">Bu bilgi admin içinde kalır; public çıkışta temiz kategori olarak kullanılır.</div></div><div class="history-category-field"><label for="detailPublicRelatedCategories">Bağlı kategoriler</label><textarea class="history-category-input" id="detailPublicRelatedCategories" placeholder="Birden çok kategori varsa virgülle ayırın.">${esc(relatedValue)}</textarea><div class="history-tags-help">Soru birden çok konuyla ilgiliyse burada kalır.</div></div></div>`
-    : publicCategoryInlineHtml({publicCategory:categoryValue,publicRelatedCategories:categoryDefaults.related});
+    : '';
   _textStore[id]=text;
   if(item.originalText&&text){
     el('detailBody').innerHTML=`${approvalBlock}${questionBlock}${tagsBlock}${categoryBlock}<div class="compare-grid" style="max-height:none">

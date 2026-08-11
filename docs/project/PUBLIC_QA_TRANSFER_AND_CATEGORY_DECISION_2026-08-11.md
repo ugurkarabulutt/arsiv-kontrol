@@ -8,8 +8,8 @@ Durum: İstişare notu + admin kategori öneri altyapısı. DB migration, root c
 Bu kararın ilk altyapı adımı admin hattında kuruldu:
 
 - Onaya gönderilen her yeni kayıt için sistem soru, etiket, cevap ve özetten ana kategori önerisi üretir.
-- Kategori kullanıcı için yeni bir zorunluluk değildir; soru ve etiket zorunlu kalır.
-- Admin/süper admin onay detayında ana kategoriyi ve bağlı kategorileri değiştirebilir.
+- Kategori kullanıcı ekranında hiç görünmez; kullanıcı yalnız soru ve etiket doldurur.
+- Admin/süper admin onay detayında ana kategoriyi ve bağlı kategorileri görür ve değiştirebilir.
 - Manuel kategori kararı `settings` içinde `history_public_category_meta:*` anahtarıyla saklanır.
 - Audit bilgisi admin içinde kalır; public çıktıya kullanıcı, onaylayan kişi veya iç süreç bilgisi taşınmaz.
 - `/admin > Arşiv Çalışmaları > Kategoriler` ekranı mevcut onay bekleyen/onaylanan kayıtları tarar,
