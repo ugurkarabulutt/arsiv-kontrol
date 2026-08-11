@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-12 Codex Güncel Durum
+
+- Admin kategori öneri motorunda selam kaynaklı yanlış `Sevgi` eşleşmesi düzeltildi. Sistem artık
+  kategori terimlerini ham parça olarak değil kelime/ifade sınırıyla eşleştirir; `sevgi`,
+  `sevgili` kelimesinin içinde geçtiği için kategori sinyali sayılmaz. Cevap başındaki
+  `Sevgili kardeşlerimiz/kardeşlerim/izleyenler/dinleyenler` selamı kategori taramasından
+  çıkarılır.
+- Bağlı kategori varsayılanı sıkılaştırıldı: açık etiket, yakın etiket veya soru metninden gelen
+  güçlü sinyaller kullanılır; cevap/özet/dosya adından gelen düşük güvenli sinyaller tek başına
+  bağlı kategoriye düşmez. Önceden otomatik kaydedilmiş kategori metaları yeni kurallarla yeniden
+  hesaplanır; adminin elle verdiği `manual` kategori kararları korunur.
+- Kullanıcı tarafı değişmedi: normal kullanıcı hâlâ yalnız `Soru` ve `Etiketler` görür; kategori
+  yalnız admin/süper admin onay detayında ve süper admin `Kategoriler` ekranında kalır. Public ön
+  yüz, root `/` cutover veya public frontend dosyası değişmedi.
+- Yerel doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 89/89 test geçti. Yeni test:
+  `test/public-category-suggestions.test.js`.
+- Runtime commit `36f3479` push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-1ays5ifky-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_H72Q93M7wFXdFHjdsRp5F8MxGMwD`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke geçti: `/health`, `/`, `/admin`, `/admin/`, `/admin/smoke-test`,
+  `/api/auth/me`, `/manifest.webmanifest`, `sw.js`, favicon. `/admin` noindex/no-store doğru;
+  canlı HTML'de yeni kategori eşleştirme marker'ları var, kullanıcı kategori inputları ve public
+  preview/root marker'ları yok.
+- Sıradaki güvenli admin işi: onaylar tamamlandıktan sonra canlı sayımı tekrar almak, eksik
+  soru/etiketli kayıtları ayırmak, `Kategoriler` ekranında gerçek etiket yoğunluğundan kategori
+  adaylarını çıkarmak ve manuel kategori normalizasyon listesini hazırlamak. Public ön yüz raporu
+  gelene kadar public frontend aksiyonu alınmayacak.
+
 ## 2026-08-11 Codex Güncel Durum
 
 - Kullanıcı tarafında kategori tamamen gizlendi. Normal kullanıcı denetimden sonra yalnız `Soru` ve

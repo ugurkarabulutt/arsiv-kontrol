@@ -120,6 +120,31 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-12
+- **Kategori önerilerinde selam kaynaklı `Sevgi` eşleşmesi kesildi:** Admin hattındaki kategori
+  öneri motoru artık ham parça araması yerine kelime/ifade sınırıyla eşleştirir; `sevgi` kelimesi
+  `sevgili` içinde geçtiği için `Sevgi` kategorisi üretmez. Cevap metninin başındaki
+  `Sevgili kardeşlerimiz/kardeşlerim/izleyenler/dinleyenler` selamı kategori taramasından
+  çıkarılır. Bağlı kategori varsayılanı da yalnız güçlü sinyallerden gelir: açık etiket, yakın
+  etiket veya soru metni eşleşmesi; cevap/özet/dosya adından gelen düşük güvenli sinyaller tek
+  başına bağlı kategoriye düşmez. Önceden otomatik kaydedilmiş kategori metaları okunurken yeni
+  kurallarla yeniden hesaplanır; adminin elle verdiği `manual` kategori kararları korunur.
+  Kullanıcı tarafı değişmedi, kategori hâlâ normal kullanıcıya görünmez; root `/` public cutover
+  ve public frontend dosyası değişikliği yapılmadı. Değişen dosyalar: `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `test/public-category-suggestions.test.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  89/89 test geçti. Runtime commit `36f3479` GitHub'a push edildi ve production'a alındı.
+  Production deploy: `https://arsiv-kontrol-1ays5ifky-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_H72Q93M7wFXdFHjdsRp5F8MxGMwD`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, `/manifest.webmanifest`, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru. Canlı HTML'de
+  `publicCategoryTextHasAliasUi`, `stripPublicCategoryBoilerplateUi`,
+  `strongPublicCategorySuggestionsUi`, `detailPublicCategory` ve `loadArchiveCategoryScan`
+  mevcut; kullanıcı kategori input ID'leri, `publicArchiveRenderer`, `/public-preview` ve
+  `adminRouteProbe` yok.
+
 ### 2026-08-11
 - **Kategori kullanıcı onaya gönderme ekranından kaldırıldı:** Kullanıcı tarafında kategori tamamen
   gizlendi; normal kullanıcı denetimden sonra yalnız `Soru` ve `Etiketler` alanlarını görür ve
