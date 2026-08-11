@@ -211,22 +211,21 @@ const publicPreviewFlagIndex = indexOfRequired(server, 'const PUBLIC_ARCHIVE_PRE
 const publicPreviewDisabledIndex = indexOfRequired(server, 'function sendPublicArchivePreviewDisabled', 'Public archive preview disabled handler');
 const publicPreviewGateIndex = indexOfRequired(server, "app.use('/public-preview', (req, res, next) => {", 'Public archive preview gate');
 const publicPreviewRouterRequireIndex = indexOfRequired(server, "const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');", 'Public archive preview lazy require');
-const publicArchiveDemoIndex = indexOfRequired(server, "if (process.env.PUBLIC_ARCHIVE_DEMO === '1')", 'Public archive demo gate');
-const publicArchiveDemoRequireIndex = indexOfRequired(server, "const { createPublicArchiveRouter } = require('./public-archive-demo');", 'Public archive demo lazy require');
 const errorHandlerIndex = indexOfRequired(server, 'app.use((err, req, res, next) => {', 'Express error handler');
 const rootFallbackIndex = indexOfRequired(server, rootFallback, 'Root legacy fallback');
 assert(lastApiRouteIndex > -1 && lastApiRouteIndex < adminRouteIndex, '/api route lari /admin fallback tarafindan yutulmamali.');
-assert(adminRouteIndex < publicArchiveDemoIndex, '/admin fallback public archive router dan once kayit edilmeli.');
 assert(publicPreviewFlagIndex < publicPreviewGateIndex, 'PUBLIC_ARCHIVE_PREVIEW_ENABLED gate kullanilmadan once okunmali.');
 assert(publicPreviewDisabledIndex < publicPreviewGateIndex, 'Public preview kapali handler route tanimindan once bulunmali.');
 assert(adminRouteIndex < publicPreviewGateIndex, '/admin fallback public preview route undan once korunmali.');
 assert(publicPreviewGateIndex < publicPreviewRouterRequireIndex, 'Public preview router yalniz gate sonrasinda lazy yuklenmeli.');
-assert(publicPreviewRouterRequireIndex < publicArchiveDemoIndex, 'Yeni public preview eski PUBLIC_ARCHIVE_DEMO mekanizmasindan ayrilmali.');
 assert(publicPreviewGateIndex < errorHandlerIndex, '/public-preview route error handler dan once kayit edilmeli.');
 assert(publicPreviewGateIndex < rootFallbackIndex, '/public-preview final root fallback a dusmemeli.');
 assert(server.includes("if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);"), 'Preview gate kapaliyken /public-preview 404 donmeli.');
 assert(server.includes("cssFile: path.join(__dirname, 'public-archive.css')"), 'Public preview CSS yalniz public-preview router icinden servis edilmeli.');
-assert(publicArchiveDemoIndex < publicArchiveDemoRequireIndex, 'Public archive demo modulu yalniz PUBLIC_ARCHIVE_DEMO flag icinde yuklenmeli.');
+assert(!server.includes('PUBLIC_ARCHIVE_DEMO'), 'Eski PUBLIC_ARCHIVE_DEMO mekanizmasi server.js icinde kalmamali.');
+assert(!server.includes("require('./public-archive-demo')"), 'Eski public-archive-demo router server.js icinde kalmamali.');
+assert(!server.includes('archive-public.css'), 'Eski archive-public.css referansi server.js icinde kalmamali.');
+assert(!fs.existsSync(path.join(root, 'scripts', 'build-archive-demo-static.js')), 'Eski statik demo build scripti repoda kalmamali.');
 assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
 assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');
 

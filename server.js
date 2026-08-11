@@ -6854,14 +6854,6 @@ if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
   }));
 }
 
-if (process.env.PUBLIC_ARCHIVE_DEMO === '1') {
-  const { createPublicArchiveRouter } = require('./public-archive-demo');
-  app.use(createPublicArchiveRouter({
-    adminFile: path.join(__dirname, 'index.html'),
-    cssFile: path.join(__dirname, 'archive-public.css')
-  }));
-}
-
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ error: 'Dosya en fazla 4 MB olabilir.' });
@@ -6873,9 +6865,7 @@ app.use((err, req, res, next) => {
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-startupReady = process.env.PUBLIC_ARCHIVE_DEMO === '1'
-  ? Promise.resolve()
-  : seed().catch(e => console.error('Seed hatası:', e.message));
+startupReady = seed().catch(e => console.error('Seed hatası:', e.message));
 
 if (require.main === module) {
   app.listen(PORT, () => console.log(`✅ Arşiv Kontrol AI: http://localhost:${PORT}`));
