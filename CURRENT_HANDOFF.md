@@ -2,6 +2,18 @@
 
 ## 2026-08-11 Codex Güncel Durum
 
+- `/admin > Arşiv Çalışmaları > Çalışma Tabloları` satır alanları ekip tablosuna yaklaştırıldı.
+  Forma ve detaylara `İşleme tarihi`, `Yayın linki` ve `Program` alanları eklendi; görünen dil
+  `Etiket / Sınıf`, `Soru` ve `Cevap` olarak sadeleştirildi. Canlı DB'ye migration yapmadan
+  çalışması için ek çalışma satırı alanları DB modunda `settings.archive_ops_work_item_meta`
+  altında saklanır, settings fallback modunda doğrudan çalışma kaydı içinde kalır.
+- Liste, kişi dosyası ve detay görünümü çalışma satırındaki işleme tarihi/yayın linki/program
+  bilgisini gösterebilir. Bu alanlar admin çalışma kolaylığı içindir; public JSON üretimi bu yeni
+  admin meta alanlarını public kayda taşımaz. Frontend guard'a `ARCHIVE_OPS_WORK_ITEM_META_KEY`,
+  `syncArchiveWorkItemMeta`, `archiveWorkProcessedDate`, `archiveWorkPublicationUrl` ve
+  `archiveWorkProgram` marker'ları eklendi. Bu adım schema, root `/` ve public frontend hattına
+  dokunmadı.
+
 - Kullanıcı düzeltmesiyle ekip üyesi sayısının 36 ile sınırlı olmadığı kayda alındı. Güncel model
   sabit kişi sayısına bağlanmayacak; kişi dosyaları mevcut aktif kullanıcılarla dinamik eşleşecek.
 - `/admin > Arşiv Çalışmaları > Çalışma Tabloları` içindeki `Kişi Dosyaları` aktif kullanıcı

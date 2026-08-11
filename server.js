@@ -632,6 +632,7 @@ const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
 const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
+const ARCHIVE_OPS_WORK_ITEM_META_KEY = 'archive_ops_work_item_meta';
 const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
 const ARCHIVE_OPS_TEAM_LEADERS_KEY = 'archive_ops_team_leaders';
 const ARCHIVE_OPS_PUBLISH_TASK_META_KEY = 'archive_ops_publish_task_meta';
@@ -1773,10 +1774,98 @@ function normalizeArchiveWorkPriority(value) {
   return ARCHIVE_WORK_PRIORITIES.includes(priority) ? priority : 'normal';
 }
 
+function normalizeArchiveWorkMeta(value = {}) {
+  const raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  return {
+    processedDate: normalizeIsoDate(raw.processedDate || raw.processed_date || raw.processingDate || raw.processing_date),
+    publicationUrl: String(raw.publicationUrl || raw.publication_url || '').trim().slice(0, 700),
+    program: String(raw.program || raw.platform || '').trim().slice(0, 120),
+    metaUpdatedAt: normalizeIsoDate(raw.metaUpdatedAt || raw.meta_updated_at),
+    metaUpdatedBy: archivePersonName(raw.metaUpdatedBy || raw.meta_updated_by)
+  };
+}
+
+function archiveWorkMetaHasValue(meta = {}) {
+  return Boolean(meta.processedDate || meta.publicationUrl || meta.program);
+}
+
+async function loadArchiveWorkItemMetaMap() {
+  const raw = await loadJsonSetting(ARCHIVE_OPS_WORK_ITEM_META_KEY, {});
+  const map = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  return Object.fromEntries(Object.entries(map)
+    .map(([id, value]) => [String(id || '').trim(), normalizeArchiveWorkMeta(value)])
+    .filter(([id, meta]) => id && (archiveWorkMetaHasValue(meta) || meta.metaUpdatedAt || meta.metaUpdatedBy)));
+}
+
+async function saveArchiveWorkItemMetaMap(map = {}) {
+  const clean = {};
+  Object.entries(map || {}).forEach(([id, value]) => {
+    const key = String(id || '').trim();
+    if (!key) return;
+    const meta = normalizeArchiveWorkMeta(value);
+    if (archiveWorkMetaHasValue(meta) || meta.metaUpdatedAt || meta.metaUpdatedBy) clean[key] = meta;
+  });
+  await saveJsonSetting(ARCHIVE_OPS_WORK_ITEM_META_KEY, clean);
+  return clean;
+}
+
+function applyArchiveWorkMeta(work = {}, metaMap = {}) {
+  const meta = normalizeArchiveWorkMeta(metaMap[work.id] || {});
+  return {
+    ...work,
+    processedDate: meta.processedDate || work.processedDate || null,
+    publicationUrl: meta.publicationUrl || work.publicationUrl || '',
+    program: meta.program || work.program || '',
+    metaUpdatedAt: meta.metaUpdatedAt || work.metaUpdatedAt || null,
+    metaUpdatedBy: meta.metaUpdatedBy || work.metaUpdatedBy || ''
+  };
+}
+
+async function updateArchiveWorkItemMeta(id, updater) {
+  const key = String(id || '').trim();
+  if (!key) return null;
+  const map = await loadArchiveWorkItemMetaMap();
+  const current = normalizeArchiveWorkMeta(map[key] || {});
+  const next = normalizeArchiveWorkMeta(typeof updater === 'function' ? updater(current) : updater);
+  if (archiveWorkMetaHasValue(next) || next.metaUpdatedAt || next.metaUpdatedBy) map[key] = next;
+  else delete map[key];
+  await saveArchiveWorkItemMetaMap(map);
+  return map[key] || normalizeArchiveWorkMeta({});
+}
+
+async function syncArchiveWorkItemMeta(id, input = {}, existing = {}, actor = 'Sistem', now = new Date().toISOString()) {
+  const hasMetaInput = Object.prototype.hasOwnProperty.call(input, 'processedDate')
+    || Object.prototype.hasOwnProperty.call(input, 'processed_date')
+    || Object.prototype.hasOwnProperty.call(input, 'processingDate')
+    || Object.prototype.hasOwnProperty.call(input, 'processing_date')
+    || Object.prototype.hasOwnProperty.call(input, 'publicationUrl')
+    || Object.prototype.hasOwnProperty.call(input, 'publication_url')
+    || Object.prototype.hasOwnProperty.call(input, 'program')
+    || Object.prototype.hasOwnProperty.call(input, 'platform');
+  if (!hasMetaInput) return null;
+  return updateArchiveWorkItemMeta(id, current => {
+    const next = normalizeArchiveWorkMeta({
+      processedDate: input.processedDate ?? input.processed_date ?? input.processingDate ?? input.processing_date ?? existing.processedDate ?? current.processedDate,
+      publicationUrl: input.publicationUrl ?? input.publication_url ?? existing.publicationUrl ?? current.publicationUrl,
+      program: input.program ?? input.platform ?? existing.program ?? current.program
+    });
+    const changed = next.processedDate !== current.processedDate
+      || next.publicationUrl !== current.publicationUrl
+      || next.program !== current.program;
+    return {
+      ...next,
+      metaUpdatedAt: changed ? now : current.metaUpdatedAt,
+      metaUpdatedBy: changed ? actor : current.metaUpdatedBy
+    };
+  });
+}
+
 function buildArchiveWorkPreview(work = {}) {
   return archiveTextPreview([
     work.question,
     work.answerDraft,
+    work.program,
+    work.publicationUrl,
     work.note
   ].filter(Boolean).join(' '), 320);
 }
@@ -1790,6 +1879,9 @@ function buildArchiveWorkSearchBlob(work = {}) {
     work.sourceTitle,
     work.category,
     ...(Array.isArray(work.topics) ? work.topics : []),
+    work.processedDate,
+    work.publicationUrl,
+    work.program,
     work.question,
     work.answerDraft,
     work.note
@@ -1813,6 +1905,9 @@ function normalizeArchiveWorkInput(input = {}, existing = {}) {
     priority: normalizeArchiveWorkPriority(input.priority ?? existing.priority),
     assignedTo: String(input.assignedTo ?? input.assigned_to ?? existing.assignedTo ?? '').trim().slice(0, 120),
     dueDate: normalizeIsoDate(input.dueDate ?? input.due_date ?? existing.dueDate),
+    processedDate: normalizeIsoDate(input.processedDate ?? input.processed_date ?? input.processingDate ?? input.processing_date ?? existing.processedDate),
+    publicationUrl: String(input.publicationUrl ?? input.publication_url ?? existing.publicationUrl ?? '').trim().slice(0, 700),
+    program: String(input.program ?? input.platform ?? existing.program ?? '').trim().slice(0, 120),
     sourceId: String(input.sourceId ?? input.source_id ?? existing.sourceId ?? '').trim().slice(0, 160),
     sourceTitle: String(input.sourceTitle ?? input.source_title ?? existing.sourceTitle ?? '').trim().slice(0, 220),
     category: String(input.category ?? existing.category ?? '').trim().slice(0, 120),
@@ -1880,6 +1975,9 @@ function publicArchiveWorkItem(work = {}, options = {}) {
     priority: work.priority || 'normal',
     assignedTo: work.assignedTo || '',
     dueDate: work.dueDate || null,
+    processedDate: work.processedDate || null,
+    publicationUrl: work.publicationUrl || '',
+    program: work.program || '',
     sourceId: work.sourceId || '',
     sourceTitle: work.sourceTitle || '',
     category: work.category || '',
@@ -1895,6 +1993,8 @@ function publicArchiveWorkItem(work = {}, options = {}) {
     base.question = work.question || '';
     base.answerDraft = work.answerDraft || '';
     base.note = work.note || '';
+    base.metaUpdatedAt = work.metaUpdatedAt || null;
+    base.metaUpdatedBy = work.metaUpdatedBy || '';
   }
   return base;
 }
@@ -1932,6 +2032,7 @@ async function listArchiveWorkItems(query = {}) {
   const q = String(query.q || '').trim();
   const status = String(query.status || '').trim();
   const priority = String(query.priority || '').trim();
+  const metaMap = await loadArchiveWorkItemMetaMap();
   let workQuery = supabase
     .from('archive_work_items')
     .select(ARCHIVE_WORK_ITEM_DB_LIST_COLUMNS, { count: 'exact' })
@@ -1962,7 +2063,7 @@ async function listArchiveWorkItems(query = {}) {
   return {
     storage: 'database',
     counts,
-    filtered: (data || []).map(row => archiveWorkFromDbRow(row)),
+    filtered: (data || []).map(row => applyArchiveWorkMeta(archiveWorkFromDbRow(row), metaMap)),
     items: []
   };
 }
@@ -1978,7 +2079,9 @@ async function getArchiveWorkItem(id) {
     .eq('id', id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? archiveWorkFromDbRow(data, { full: true }) : null;
+  if (!data) return null;
+  const metaMap = await loadArchiveWorkItemMetaMap();
+  return applyArchiveWorkMeta(archiveWorkFromDbRow(data, { full: true }), metaMap);
 }
 
 async function createArchiveWorkItem(input = {}, actor = 'Sistem') {
@@ -2006,7 +2109,9 @@ async function createArchiveWorkItem(input = {}, actor = 'Sistem') {
     .select(ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS)
     .single();
   if (error) throw new Error(error.message);
-  return archiveWorkFromDbRow(data, { full: true });
+  const saved = archiveWorkFromDbRow(data, { full: true });
+  const meta = await syncArchiveWorkItemMeta(saved.id, input, work, actor, now);
+  return applyArchiveWorkMeta(saved, { [saved.id]: meta || normalizeArchiveWorkMeta(work) });
 }
 
 async function updateArchiveWorkItem(id, input = {}, actor = 'Sistem') {
@@ -2048,7 +2153,9 @@ async function updateArchiveWorkItem(id, input = {}, actor = 'Sistem') {
     .select(ARCHIVE_WORK_ITEM_DB_FULL_COLUMNS)
     .single();
   if (error) throw new Error(error.message);
-  return archiveWorkFromDbRow(data, { full: true });
+  const saved = archiveWorkFromDbRow(data, { full: true });
+  const meta = await syncArchiveWorkItemMeta(saved.id, input, updated, actor, updated.updatedAt);
+  return applyArchiveWorkMeta(saved, { [saved.id]: meta || normalizeArchiveWorkMeta(updated) });
 }
 
 async function deleteArchiveWorkItem(id) {
@@ -2066,6 +2173,7 @@ async function deleteArchiveWorkItem(id) {
     .select('id')
     .maybeSingle();
   if (error) throw new Error(error.message);
+  if (data) await updateArchiveWorkItemMeta(id, {});
   return data || null;
 }
 

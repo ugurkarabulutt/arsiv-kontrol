@@ -607,6 +607,8 @@ if (
   !server.includes("app.post('/api/archive-ops/work-items'") ||
   !server.includes("app.put('/api/archive-ops/work-items/:id'") ||
   !server.includes("app.delete('/api/archive-ops/work-items/:id'") ||
+  !server.includes('ARCHIVE_OPS_WORK_ITEM_META_KEY') ||
+  !server.includes('function syncArchiveWorkItemMeta') ||
   !server.includes("app.get('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.post('/api/archive-ops/publish-tasks'") ||
   !server.includes("app.put('/api/archive-ops/publish-tasks/:id'") ||
@@ -790,6 +792,9 @@ if (
   !html.includes('Çalışma Satırları') ||
   !html.includes('function archiveTeamSamePerson') ||
   !html.includes('id="archiveWorkTitle"') ||
+  !html.includes('id="archiveWorkProcessedDate"') ||
+  !html.includes('id="archiveWorkPublicationUrl"') ||
+  !html.includes('id="archiveWorkProgram"') ||
   !html.includes('id="archiveWorkSourceId"') ||
   !html.includes('function loadArchiveWorkItems') ||
   !html.includes('function saveArchiveWorkItem') ||

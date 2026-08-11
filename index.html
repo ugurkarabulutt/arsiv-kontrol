@@ -1738,8 +1738,13 @@ canvas{width:100%!important;}
                 </div>
                 <div class="ops-form-grid two" style="margin-top:10px">
                   <input class="ops-field" id="archiveWorkCategory" placeholder="Kategori veya çalışma alanı">
-                  <input class="ops-field" id="archiveWorkTopics" placeholder="Kavramlar / etiketler, virgülle ayırın">
+                  <input class="ops-field" id="archiveWorkTopics" placeholder="Etiket / Sınıf, virgülle ayırın">
                 </div>
+                <div class="ops-form-grid two" style="margin-top:10px">
+                  <input class="ops-field" id="archiveWorkProcessedDate" type="date" aria-label="İşleme tarihi">
+                  <input class="ops-field" id="archiveWorkProgram" placeholder="Program">
+                </div>
+                <input class="ops-field" id="archiveWorkPublicationUrl" placeholder="Yayın linki" style="margin-top:10px">
                 <div class="ops-source-picker" style="margin-top:10px">
                   <input class="ops-field" id="archiveWorkSourceSearch" placeholder="Bağlanacak kaynak içinde ara..." oninput="renderArchiveWorkSourcePicker()">
                   <select class="ops-field" id="archiveWorkSourceId" onchange="selectArchiveWorkSource(this.value)">
@@ -6219,6 +6224,7 @@ function archiveMemberPublishLinksHtml(member){
   const works=(archiveWorkState.items||[]).filter(item=>archiveTeamSamePerson(item.assignedTo,member));
   const workRows=works.length?works.map(item=>{
     const topics=(item.topics||[]).slice(0,4).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+    const url=String(item.publicationUrl||'').trim();
     return `
       <div class="ops-member-link">
         <div class="ops-member-link-title">${esc(item.title||item.question||'Başlıksız çalışma satırı')}</div>
@@ -6226,9 +6232,12 @@ function archiveMemberPublishLinksHtml(member){
           <span>${esc(archiveWorkStatusLabel(item.status))}</span>
           <span>${esc(archiveWorkPriorityLabel(item.priority))}</span>
           ${item.dueDate?`<span>Hedef: ${archiveWorkDate(item.dueDate)}</span>`:''}
+          ${item.processedDate?`<span>İşleme: ${archiveWorkDate(item.processedDate)}</span>`:''}
+          ${item.program?`<span>${esc(item.program)}</span>`:''}
           ${item.category?`<span>${esc(item.category)}</span>`:''}
           ${item.sourceTitle?`<span>${esc(item.sourceTitle)}</span>`:''}
         </div>
+        ${url?`<div class="ops-member-link-url"><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a></div>`:''}
         <div class="ops-work-preview">${esc(item.textPreview||item.question||item.answerDraft||'Ön izleme yok.')}</div>
         ${topics?`<div class="ops-tags">${topics}</div>`:''}
         <div class="ops-source-actions"><button class="btn-mini" onclick="openArchiveWorkItem(${attrJson(item.id)})">Aç</button></div>
@@ -8817,6 +8826,9 @@ function archiveWorkHaystack(item){
     item?.assignedTo,
     item?.sourceTitle,
     item?.category,
+    item?.processedDate,
+    item?.publicationUrl,
+    item?.program,
     item?.textPreview,
     ...(item?.topics||[])
   ].join(' ').toLocaleLowerCase('tr-TR');
@@ -8856,7 +8868,7 @@ function selectArchiveWorkSource(id){
   renderArchiveWorkSourcePicker();
 }
 function clearArchiveWorkForm(){
-  ['archiveWorkTitle','archiveWorkAssignedTo','archiveWorkDueDate','archiveWorkCategory','archiveWorkTopics','archiveWorkSourceSearch','archiveWorkQuestion','archiveWorkAnswer','archiveWorkNote'].forEach(id=>{const node=el(id);if(node)node.value='';});
+  ['archiveWorkTitle','archiveWorkAssignedTo','archiveWorkDueDate','archiveWorkCategory','archiveWorkTopics','archiveWorkProcessedDate','archiveWorkPublicationUrl','archiveWorkProgram','archiveWorkSourceSearch','archiveWorkQuestion','archiveWorkAnswer','archiveWorkNote'].forEach(id=>{const node=el(id);if(node)node.value='';});
   const status=el('archiveWorkStatus');if(status)status.value='taslak';
   const priority=el('archiveWorkPriority');if(priority)priority.value='normal';
   const source=el('archiveWorkSourceId');if(source)source.value='';
@@ -8877,6 +8889,9 @@ function archiveWorkPayload(){
     priority:el('archiveWorkPriority')?.value||'normal',
     assignedTo:v('archiveWorkAssignedTo'),
     dueDate:el('archiveWorkDueDate')?.value||'',
+    processedDate:el('archiveWorkProcessedDate')?.value||'',
+    publicationUrl:v('archiveWorkPublicationUrl'),
+    program:v('archiveWorkProgram'),
     sourceId,
     sourceTitle:source?.title||archiveWorkState.activeItem?.sourceTitle||'',
     category:v('archiveWorkCategory'),
@@ -8893,6 +8908,9 @@ function archiveWorkPayloadFromItem(item={},overrides={}){
     priority:item.priority||'normal',
     assignedTo:item.assignedTo||'',
     dueDate:item.dueDate?String(item.dueDate).slice(0,10):'',
+    processedDate:item.processedDate?String(item.processedDate).slice(0,10):'',
+    publicationUrl:item.publicationUrl||'',
+    program:item.program||'',
     sourceId:item.sourceId||'',
     sourceTitle:item.sourceTitle||'',
     category:item.category||'',
@@ -9021,6 +9039,7 @@ function archiveWorkCardHtml(item){
   const active=archiveWorkState.activeItem?.id===item.id?' active':'';
   const priorityClass=item.priority==='kritik'?' critical':item.priority==='onemli'?' important':'';
   const topics=(item.topics||[]).slice(0,3).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const url=String(item.publicationUrl||'').trim();
   return `
     <button class="ops-work-card${active}${priorityClass}" onclick="openArchiveWorkItem(${attrJson(item.id)})">
       <div class="ops-work-title">${esc(item.title||'Başlıksız çalışma')}</div>
@@ -9028,8 +9047,11 @@ function archiveWorkCardHtml(item){
         <span>${esc(archiveWorkStatusLabel(item.status))}</span>
         <span>${esc(archiveWorkPriorityLabel(item.priority))}</span>
         ${item.assignedTo?`<span>${esc(item.assignedTo)}</span>`:''}
+        ${item.processedDate?`<span>İşleme: ${archiveWorkDate(item.processedDate)}</span>`:''}
+        ${item.program?`<span>${esc(item.program)}</span>`:''}
         ${item.sourceTitle?`<span>${esc(item.sourceTitle)}</span>`:''}
       </div>
+      ${url?`<div class="ops-member-link-url">${esc(url)}</div>`:''}
       <div class="ops-work-preview">${esc(item.textPreview||'Ön izleme yok.')}</div>
       ${topics?`<div class="ops-tags">${topics}</div>`:''}
     </button>
@@ -9061,6 +9083,7 @@ function renderArchiveWorkDetail(item){
     return;
   }
   const topics=(item.topics||[]).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
+  const url=String(item.publicationUrl||'').trim();
   box.innerHTML=`
     <div class="ops-detail-head">
       <div>
@@ -9070,16 +9093,20 @@ function renderArchiveWorkDetail(item){
           <span>${esc(archiveWorkPriorityLabel(item.priority))}</span>
           ${item.assignedTo?`<span>Atanan: ${esc(item.assignedTo)}</span>`:''}
           <span>Hedef: ${archiveWorkDate(item.dueDate)}</span>
+          <span>İşleme: ${archiveWorkDate(item.processedDate)}</span>
+          ${item.program?`<span>${esc(item.program)}</span>`:''}
         </div>
       </div>
       <button class="btn-mini" onclick="editArchiveWorkItem(${attrJson(item.id)})">Forma Al</button>
     </div>
     <div class="ops-detail-body">
       ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
+      ${url?`<p><strong>Yayın linki:</strong><br><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a></p>`:''}
+      ${item.program?`<p><strong>Program:</strong> ${esc(item.program)}</p>`:''}
       ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
       ${topics?`<div class="ops-tags">${topics}</div>`:''}
-      ${item.question?`<p><strong>Soru / çalışma konusu:</strong><br>${esc(item.question)}</p>`:''}
-      ${item.answerDraft?`<p><strong>Cevap taslağı:</strong></p><div class="ops-preview-text">${esc(item.answerDraft)}</div>`:''}
+      ${item.question?`<p><strong>Soru:</strong><br>${esc(item.question)}</p>`:''}
+      ${item.answerDraft?`<p><strong>Cevap:</strong></p><div class="ops-preview-text">${esc(item.answerDraft)}</div>`:''}
       ${item.note?`<p><strong>Not:</strong><br>${esc(item.note)}</p>`:''}
       <div class="ops-source-actions">
         <button class="btn-main" onclick="transferArchiveWorkToAudit(${attrJson(item.id)})">Denetime Aktar</button>
@@ -9145,6 +9172,9 @@ function editArchiveWorkItem(id,scroll=true){
   el('archiveWorkDueDate').value=item.dueDate?String(item.dueDate).slice(0,10):'';
   el('archiveWorkCategory').value=item.category||'';
   el('archiveWorkTopics').value=(item.topics||[]).join(', ');
+  el('archiveWorkProcessedDate').value=item.processedDate?String(item.processedDate).slice(0,10):'';
+  el('archiveWorkPublicationUrl').value=item.publicationUrl||'';
+  el('archiveWorkProgram').value=item.program||'';
   el('archiveWorkQuestion').value=item.question||'';
   el('archiveWorkAnswer').value=item.answerDraft||'';
   el('archiveWorkNote').value=item.note||'';

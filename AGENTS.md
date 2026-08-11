@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-11
+- **Çalışma Tabloları satır alanları ekip tablosuna yaklaştırıldı:** `/admin > Arşiv
+  Çalışmaları > Çalışma Tabloları` formuna ve detaylarına `İşleme tarihi`, `Yayın linki` ve
+  `Program` alanları eklendi. Görünen dil `Etiket / Sınıf`, `Soru` ve `Cevap` olarak sadeleştirildi;
+  eski `Cevap taslağı` ifadesi çalışma satırı detayında kullanılmaz. Canlı DB'de
+  `archive_work_items` tablosuna migration yapılmadan çalışması için bu üç ek alan DB modunda
+  `settings.archive_ops_work_item_meta` altında saklanır; settings fallback modunda doğrudan
+  çalışma kaydı içinde kalır. Liste, kişi dosyası ve detay görünümü bu alanları okuyabilir; kişi
+  dosyasında çalışma satırları ve yayın linkleri aynı kişide birlikte görünür. Bu alanlar admin
+  çalışma kolaylığı içindir; public JSON üretimi bu yeni admin meta alanlarını public kayda
+  taşımaz. `scripts/check-frontend.js` bu alanların ve meta helper'ının kaldırılmamasını denetler.
+  Bu adım schema, root `/` ve public frontend hattına dokunmadı.
+
 - **Kişi Dosyaları aktif ekip üyesi listesine bağlandı:** Kullanıcı düzeltmesiyle ekip üyesi
   sayısının 36 ile sınırlı olmadığı netleştirildi. `/admin > Arşiv Çalışmaları > Çalışma
   Tabloları` içindeki `Kişi Dosyaları` artık yalnız atanmış çalışma/yayın linki kayıtlarından
