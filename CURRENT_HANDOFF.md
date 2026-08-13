@@ -1,5 +1,18 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-13 Codex Public Preview Kavram Slider Akış Düzeltmesi
+
+- Kullanıcı gerçek mobil preview'da kavram slider'ın kendiliğinden başlamadığını bildirdi.
+- `scrollLeft` tabanlı otomatik akış kaldırıldı; slider artık `pa-concept-rail` üzerinde
+  `translate3d` ile akar. Bu iOS/WebKit tarafında scroll otomasyonuna göre daha güvenilir.
+- Kullanıcı dokunup/sürükleyince slider durur, 2 saniye sonra devam eder. Sürükleme sırasında
+  yanlışlıkla kavram linki açılmaması için drag sonrası click engeli eklendi.
+- Guard/testler `data-concept-rail`, `translate3d`, `setPointerCapture`, `data-dragging` ve
+  yeni CSS viewport/rail marker'larını kontrol ediyor.
+- Doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check`, `git diff --check`. Tam check 96/96 test başarılı.
+
 ## 2026-08-13 Codex Public Preview Kavram Slider
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

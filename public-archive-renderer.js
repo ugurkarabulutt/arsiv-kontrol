@@ -297,8 +297,10 @@ function heroConceptLane() {
         <span aria-hidden="true">→</span>
       </div>
       <div class="pa-concept-track" data-concept-track>
-        <div class="pa-concept-set">${conceptSliderItems(false)}</div>
-        <div class="pa-concept-set" aria-hidden="true">${conceptSliderItems(true)}</div>
+        <div class="pa-concept-rail" data-concept-rail>
+          <div class="pa-concept-set" data-concept-set>${conceptSliderItems(false)}</div>
+          <div class="pa-concept-set" aria-hidden="true">${conceptSliderItems(true)}</div>
+        </div>
       </div>
     </div>
   `;
@@ -1001,13 +1003,38 @@ function renderShell({ title, description, active, content, status = 200, questi
         });
       });
       function bindConceptSliders() {
-        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         document.querySelectorAll('[data-concept-slider]').forEach(function(slider){
           var track = slider.querySelector('[data-concept-track]');
-          if (!track) return;
+          var rail = slider.querySelector('[data-concept-rail]');
+          var firstSet = slider.querySelector('[data-concept-set]');
+          if (!track || !rail || !firstSet) return;
           var resumeTimer = 0;
           var rafId = 0;
-          var speed = 0.42;
+          var lastFrame = 0;
+          var offset = 0;
+          var cycleWidth = 0;
+          var speed = 24;
+          var dragging = false;
+          var didDrag = false;
+          var dragStartX = 0;
+          var dragStartOffset = 0;
+          function railGap() {
+            var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
+            return styles ? (parseFloat(styles.columnGap || styles.gap || '0') || 0) : 0;
+          }
+          function normalizeOffset() {
+            if (!cycleWidth) return;
+            offset = ((offset % cycleWidth) + cycleWidth) % cycleWidth;
+          }
+          function paint() {
+            rail.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px, 0, 0)';
+          }
+          function measure() {
+            cycleWidth = firstSet.getBoundingClientRect().width + railGap();
+            if (!cycleWidth) cycleWidth = rail.scrollWidth / 2;
+            normalizeOffset();
+            paint();
+          }
           function setPaused(paused) {
             if (paused) slider.setAttribute('data-paused', 'true');
             else slider.removeAttribute('data-paused');
@@ -1017,24 +1044,77 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.clearTimeout(resumeTimer);
             resumeTimer = window.setTimeout(function(){ setPaused(false); }, 2000);
           }
-          function loop() {
-            if (!reduceMotion && slider.getAttribute('data-paused') !== 'true') {
-              track.scrollLeft += speed;
-              var half = track.scrollWidth / 2;
-              if (half > 0 && track.scrollLeft >= half) track.scrollLeft -= half;
+          function endDrag(event) {
+            if (!dragging) return;
+            dragging = false;
+            track.removeAttribute('data-dragging');
+            if (event && event.pointerId !== undefined && track.releasePointerCapture) {
+              try { track.releasePointerCapture(event.pointerId); } catch (error) {}
+            }
+            pauseBriefly();
+          }
+          function loop(time) {
+            if (!lastFrame) lastFrame = time;
+            var delta = Math.min(time - lastFrame, 50);
+            lastFrame = time;
+            if (slider.getAttribute('data-paused') !== 'true' && !dragging) {
+              offset += (delta * speed) / 1000;
+              normalizeOffset();
+              paint();
             }
             rafId = window.requestAnimationFrame(loop);
           }
-          track.addEventListener('pointerdown', pauseBriefly, { passive: true });
-          track.addEventListener('wheel', pauseBriefly, { passive: true });
+          track.addEventListener('pointerdown', function(event){
+            if (event.button && event.button !== 0) return;
+            dragging = true;
+            didDrag = false;
+            dragStartX = event.clientX;
+            dragStartOffset = offset;
+            setPaused(true);
+            window.clearTimeout(resumeTimer);
+            track.setAttribute('data-dragging', 'true');
+            if (event.pointerId !== undefined && track.setPointerCapture) {
+              try { track.setPointerCapture(event.pointerId); } catch (error) {}
+            }
+          });
+          track.addEventListener('pointermove', function(event){
+            if (!dragging) return;
+            var dx = event.clientX - dragStartX;
+            if (Math.abs(dx) > 3) didDrag = true;
+            offset = dragStartOffset - dx;
+            normalizeOffset();
+            paint();
+          });
+          track.addEventListener('pointerup', endDrag);
+          track.addEventListener('pointercancel', endDrag);
+          track.addEventListener('lostpointercapture', endDrag);
+          track.addEventListener('wheel', function(event){
+            var delta = Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+            if (delta) {
+              offset += delta;
+              normalizeOffset();
+              paint();
+            }
+            pauseBriefly();
+          }, { passive: true });
           track.addEventListener('focusin', function(){ setPaused(true); });
           track.addEventListener('focusout', pauseBriefly);
           track.addEventListener('mouseenter', function(){ setPaused(true); });
           track.addEventListener('mouseleave', pauseBriefly);
           slider.addEventListener('click', function(event){
+            if (didDrag) {
+              event.preventDefault();
+              event.stopPropagation();
+              didDrag = false;
+              return;
+            }
             if (event.target && event.target.closest && event.target.closest('a')) pauseBriefly();
           }, true);
-          if (!reduceMotion) rafId = window.requestAnimationFrame(loop);
+          measure();
+          window.addEventListener('resize', measure, { passive: true });
+          window.addEventListener('load', measure, { once: true });
+          window.setTimeout(measure, 250);
+          rafId = window.requestAnimationFrame(loop);
           window.addEventListener('pagehide', function(){ if (rafId) window.cancelAnimationFrame(rafId); }, { once: true });
         });
       }

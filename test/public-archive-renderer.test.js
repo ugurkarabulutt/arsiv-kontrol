@@ -96,6 +96,7 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /Arşiv ana kapıları/);
   assert.match(home, /data-concept-slider/);
   assert.match(home, /data-concept-track/);
+  assert.match(home, /data-concept-rail/);
   assert.match(home, /Allah’a Ulaşmayı Dilemek/);
   assert.match(home, /Hidayet/);
   assert.match(home, /Tabiiyet/);

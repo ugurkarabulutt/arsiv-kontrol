@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-13
+- **Public preview kavram slider otomatik akış düzeltildi:** Kullanıcı gerçek mobil preview'da
+  slider'ın kendiliğinden başlamadığını bildirdi. `scrollLeft` tabanlı akış yerine
+  `translate3d` ile hareket eden `pa-concept-rail` yapısı kuruldu. Slider artık ilk render'dan
+  itibaren otomatik akar; kullanıcı dokunup/sürükleyince durur, 2 saniye sonra devam eder ve
+  sürüklemede yanlışlıkla link açılmasını engeller. CSS `overflow-x` scroll'a bağlı olmadan
+  viewport + rail yapısına taşındı. Guard/testler `data-concept-rail`, transform, pointer capture
+  ve drag marker'larını kontrol edecek şekilde güncellendi. Yerel doğrulama:
+  `node --check public-archive-renderer.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; 96/96 test geçti.
+
 - **Public preview ana sayfa kavram slider eklendi:** `/public-preview` ana sayfasındaki
   `Sık okunan kavramlar` alanı sabit chip listesinden otomatik kayan, dokununca/gezinince duran
   ve 2 saniye sonra tekrar akan bir kavram şeridine çevrildi. Şerit açılışta sağdan akmaya başlar,

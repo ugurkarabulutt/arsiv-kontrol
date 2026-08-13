@@ -876,6 +876,7 @@ for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zi
 for (const marker of [
   'data-concept-slider',
   'data-concept-track',
+  'data-concept-rail',
   'pa-concept-pill',
   'href="/public-preview/konu/nefs"',
   'href="/public-preview/konu/ruh"'
@@ -905,10 +906,10 @@ assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public det
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
-for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)']) {
+for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {
   assert(publicRendererSource.includes(marker), `Kavram slider davranis marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-concept-track', 'overflow-x: auto;', 'touch-action: pan-x;', 'scrollbar-width: none;', 'mask-image: linear-gradient', '.pa-concept-pill']) {
+for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
 }
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
