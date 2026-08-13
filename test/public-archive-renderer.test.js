@@ -49,12 +49,12 @@ function assertOnlyPublicPreviewApi(html) {
 
 test('public preview routes render isolated noindex pages', () => {
   for (const route of ROUTE_PATHS) {
-    const rendered = renderPublicArchivePreviewRoute(route, route.endsWith('/arama') ? { q: 'namaz' } : {});
+    const rendered = renderPublicArchivePreviewRoute(route, route.endsWith('/arama') ? { q: 'zikir' } : {});
     assert.match(rendered.html, /<meta name="robots" content="noindex,nofollow">/);
     assert.match(rendered.html, /Dini Sorular/);
     assert.match(rendered.html, /ve Cevaplar Arşivi/);
     assert.match(rendered.html, /Hesab\u0131m/);
-    assert.match(rendered.html, /Sorularınız Kur’ân ışığında cevaplanır\./);
+    assert.match(rendered.html, /Soru, cevap ve kavramları kaynak bağlamıyla birlikte okuyun\./);
     assertOnlyPublicPreviewApi(rendered.html);
   }
 });
@@ -72,10 +72,10 @@ test('public preview shows direct authorship without broad expert language', () 
 test('public preview output avoids internal and fake feature language', () => {
   const pages = [
     renderPublicArchivePreviewRoute('/public-preview').html,
-    renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' }).html,
+    renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html,
     renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html,
-    renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html,
-    renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html,
+    renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html,
+    renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html,
     renderPublicArchivePreviewRoute('/public-preview/soru-sor').html
   ].map(lower).join('\n');
 
@@ -93,11 +93,17 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /class="pa-svg-icon"/);
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
+  assert.match(home, /Arşiv ana kapıları/);
+  assert.match(home, /Allah’a Ulaşmayı Dilemek/);
+  assert.match(home, /Hidayet/);
+  assert.match(home, /Mürşid/);
+  assert.match(home, /Zikir/);
+  assert.match(home, /Teslimiyet/);
 });
 
 test('archive and account routes are explicit public preview pages', () => {
   const archive = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
-  assert.match(archive, /Soru ve cevapları sakince keşfedin\./);
+  assert.match(archive, /Soru ve cevapları kavramlarıyla birlikte keşfedin\./);
   assert.match(archive, /Tüm Sorular/);
   assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);
   assertOnlyPublicPreviewApi(archive);
@@ -110,9 +116,9 @@ test('archive and account routes are explicit public preview pages', () => {
 });
 
 test('public preview search and missing states are deterministic', () => {
-  const result = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' });
+  const result = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' });
   assert.equal(result.status, 200);
-  assert.match(result.html, /Namaz kılarken akla gelen kötü düşünceler/);
+  assert.match(result.html, /Zikir kalbi nasıl değiştirir/);
 
   const empty = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' });
   assert.equal(empty.status, 200);
@@ -126,15 +132,15 @@ test('public preview search and missing states are deterministic', () => {
 
 test('question, topic, category, and ask pages keep public boundaries', () => {
   const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
-  assert.match(detail, /Orijinal Soru/);
+  assert.match(detail, /Soru/);
   assert.match(detail, /Cevap/);
   assert.match(detail, /Kaynak ve bağlam/);
   assert.match(detail, /İlgili Sorular/);
   assert.match(detail, /data-public-read-count="ornek-soru"/);
   assertOnlyPublicPreviewApi(detail);
 
-  const topic = renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html;
-  const category = renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html;
+  const topic = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
+  const category = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
   assert.match(topic, /Kavram/);
   assert.match(category, /Kategori/);
   assert.match(category, /Bu Kategorideki Sorular/);

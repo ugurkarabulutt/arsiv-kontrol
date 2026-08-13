@@ -15,8 +15,8 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/konular`,
   `${PREVIEW_BASE}/kategoriler`,
   `${PREVIEW_BASE}/soru/ornek-soru`,
-  `${PREVIEW_BASE}/konu/ornek-kavram`,
-  `${PREVIEW_BASE}/kategori/ornek-kategori`,
+  `${PREVIEW_BASE}/konu/kalbin-yonelisi`,
+  `${PREVIEW_BASE}/kategori/allaha-ulasmayi-dilemek`,
   `${PREVIEW_BASE}/hesabim`,
   `${PREVIEW_BASE}/soru-sor`,
   `${PREVIEW_BASE}/hakkimizda`,
@@ -111,24 +111,27 @@ const BOTTOM_NAV_ICONS = {
 };
 
 const CATEGORY_ICONS = {
-  'ornek-kategori': 'ibadet',
-  iman: 'iman',
-  ahlak: 'ahlak',
-  'aile-ve-toplum': 'aile',
-  'mali-konular': 'muamelat'
+  'allaha-ulasmayi-dilemek': 'dua',
+  hidayet: 'tevhid',
+  mursid: 'takva',
+  zikir: 'ibadet',
+  teslimiyet: 'ihlas'
 };
 
 const TOPIC_ICONS = {
-  'ornek-kavram': 'takva',
-  iman: 'tevhid',
-  namaz: 'ibadet',
+  'kalbin-yonelisi': 'takva',
   dua: 'dua',
-  sabir: 'sabir',
-  sukur: 'sukur',
-  zekat: 'rizik',
-  sadaka: 'sukur',
-  'kul-hakki': 'ahlak',
-  aile: 'aile'
+  takva: 'takva',
+  'sirati-mustakim': 'tevhid',
+  tabiiyet: 'takva',
+  'daimi-zikir': 'ibadet',
+  'nefs-tezkiyesi': 'sukur',
+  teslim: 'ihlas',
+  irsad: 'help-circle',
+  kalp: 'iman',
+  irade: 'niyet',
+  tevekkul: 'sabir',
+  rahmet: 'dua'
 };
 
 function iconSvg(name, className = 'pa-svg-icon') {
@@ -265,6 +268,37 @@ function chip(label, hrefValue) {
   return `<a class="pa-chip" href="${escapeHtml(hrefValue)}">${escapeHtml(label)}</a>`;
 }
 
+function heroConceptLane(topics) {
+  return `
+    <div class="pa-hero-concepts" aria-label="Öne çıkan kavramlar">
+      <span>Sık okunan kavramlar</span>
+      <div>
+        ${topics.slice(0, 5).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function readingPath(categories) {
+  return `
+    <section class="pa-reading-path" aria-label="Arşiv ana kapıları">
+      <div class="pa-path-copy">
+        <p class="pa-kicker">Arşiv ana kapıları</p>
+        <h2>Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun.</h2>
+      </div>
+      <div class="pa-path-grid">
+        ${categories.map((category, index) => `
+          <a class="pa-path-step" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(category.name)}</strong>
+            <em>${entriesForCategory(category.slug).length} soru</em>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function questionCard(entry, compact = false) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
@@ -335,10 +369,10 @@ function trustBand() {
   return `
     <section class="pa-context-band" id="baglam">
       <div>
-        <p class="pa-kicker">Güvenilir kaynak, sade anlatım</p>
-        <h2>Arşiv, kısa cevap ile derin okuma arasında sakin bir yol sunar.</h2>
+        <p class="pa-kicker">Okuma düzeni</p>
+        <h2>Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır.</h2>
         <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)}</p>
-                <p>Cevaplar; soru, kavram ve kategori bağlantılarıyla birlikte okunacak şekilde düzenlenir. Amaç, doğru bilgiye sade ve huzurlu bir okuma deneyimiyle ulaşmaktır.</p>
+        <p>Bu yapı, bir cevabı tek başına bırakmadan hidayet, mürşid, zikir ve teslimiyet gibi bağlı başlıklarla beraber takip etmeyi kolaylaştırır.</p>
       </div>
       ${stillLife()}
     </section>
@@ -353,31 +387,34 @@ function renderHome() {
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
-    description: 'Dini Sorular ve Cevaplar Arşivi içinde sakin ve okunabilir soru-cevap deneyimi.',
+    description: 'Dini Sorular ve Cevaplar Arşivi içinde soru, cevap ve kavramları birlikte okuyun.',
     content: `
       <main class="pa-main">
         <section class="pa-hero">
           <div class="pa-hero-copy">
             <p class="pa-kicker">${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
-            <h1>Merak ettiğiniz sorunun cevabını bulun.</h1>
-            <p>Arşivdeki soru, cevap ve kavramlar arasında sade bir şekilde arayın.</p>
+            <h1>Soruları kavramlarıyla birlikte okuyun.</h1>
+            <p>Hidayet, mürşid, zikir ve teslimiyet gibi ana başlıklardan başlayın; aradığınız cevaba bağlı kavramlarla ulaşın.</p>
             ${searchBox()}
+            ${heroConceptLane(topics)}
           </div>
           ${stillLife()}
         </section>
 
+        ${readingPath(categories)}
+
         <section class="pa-section">
-          ${sectionHeader('Öne Çıkan Sorular', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
+          ${sectionHeader('Öne Çıkan Cevaplar', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry)).join('')}</div>
         </section>
 
         <section class="pa-section">
-          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konular`)}
+          ${sectionHeader('Kavram Haritası', 'Tümünü Gör', `${PREVIEW_BASE}/konular`)}
           <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
         </section>
 
         <section class="pa-section">
-          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}
+          ${sectionHeader('Ana Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}
           <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
         </section>
 
@@ -419,13 +456,13 @@ function renderArchive() {
   return renderShell({
     active: 'archive',
     title: 'Arşiv',
-    description: 'Dini sorular, cevaplar, kavramlar ve kategoriler için public arşiv görünümü.',
+    description: 'Soru-cevap kayıtlarını ana kapı ve kavram bağlantılarıyla birlikte inceleyin.',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-archive-hero">
           <p class="pa-kicker">Arşiv</p>
-          <h1>Soru ve cevapları sakince keşfedin.</h1>
-          <p>Yayınlanan soru-cevap kayıtlarını kategori ve kavram bağlantılarıyla birlikte okuyabilirsiniz.</p>
+          <h1>Soru ve cevapları kavramlarıyla birlikte keşfedin.</h1>
+          <p>Yayınlanan kayıtları Allah’a ulaşmayı dilemek, hidayet, mürşid, zikir ve teslimiyet ana kapıları üzerinden okuyabilirsiniz.</p>
           <div class="pa-collection-meta">
             <span>${entries.length} soru</span>
             <span>${categories.length} kategori</span>
@@ -487,7 +524,7 @@ function renderTopicsIndex() {
         <section class="pa-collection-hero">
           <p class="pa-kicker">Konular</p>
           <h1>Kavramlar üzerinden sakin bir okuma yolu kurun.</h1>
-          <p>Soru-cevap kayıtlarını iman, ibadet, ahlak, aile ve günlük hayat başlıkları çevresinde keşfedebilirsiniz.</p>
+          <p>Soru-cevap kayıtlarını hidayet, mürşid, zikir, tâbiiyet, takva ve teslimiyet gibi bağlı kavramlarla keşfedebilirsiniz.</p>
           <div class="pa-collection-meta">
             <span>${topics.length} kavram</span>
             <span>${publicArchiveFixtures.qa.length} soru</span>
@@ -575,7 +612,7 @@ function renderQuestion(slug) {
               ${publicArchiveFixtures.brand.answererLabel ? `<span>${escapeHtml(publicArchiveFixtures.brand.answererLabel)}</span>` : ''}
             </div>
             <section class="pa-reading-block">
-              <h2>Orijinal Soru</h2>
+              <h2>Soru</h2>
               <p>${escapeHtml(entry.question)}</p>
             </section>
             <section class="pa-reading-block">
@@ -743,7 +780,7 @@ function renderAsk() {
             </label>
             <label>
               <span>İsteğe bağlı konu</span>
-              <input name="topic" maxlength="120" placeholder="Örn. Namaz, dua, aile...">
+              <input name="topic" maxlength="120" placeholder="Örn. Zikir, hidayet, mürşid...">
             </label>
             <label class="pa-check-row" id="kullanim">
               <input name="privacyAccepted" type="checkbox" required>
@@ -853,7 +890,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
   <meta name="description" content="${escapeHtml(safeDescription)}">
-  <meta name="theme-color" content="#FFFFFF">
+  <meta name="theme-color" content="#F7F3EA">
   <title>${escapeHtml(safeTitle)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -866,7 +903,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var preferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         var theme = saved === 'dark' || saved === 'light' ? saved : preferred;
         document.documentElement.setAttribute('data-theme', theme);
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#0D0F12' : '#FFFFFF');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#0D1412' : '#F7F3EA');
       } catch (error) {}
     })();
   </script>
@@ -885,7 +922,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#0D0F12' : '#FFFFFF');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#0D1412' : '#F7F3EA');
         document.querySelectorAll('[data-theme-toggle]').forEach(function(button){
           button.setAttribute('aria-label', theme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç');
         });

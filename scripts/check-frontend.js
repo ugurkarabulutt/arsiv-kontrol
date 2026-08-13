@@ -744,8 +744,8 @@ if (
 }
 assert(!html.includes('/public-preview/public-archive.css'), 'Admin index.html public preview CSS dosyasini yuklememeli.');
 assert(!html.includes('public-archive-renderer'), 'Admin index.html public preview JS/render dosyasina baglanmamali.');
-assert(publicCss.includes('--pa-bg: #FFFFFF') && publicCss.includes('--pa-bg: #0D0F12'), 'Public preview light/dark tokenlari bulunmali.');
-assert(publicCss.includes('--pa-mint: #BDEBD6') && publicCss.includes('--pa-mint: #7EDBB8'), 'Public preview mint tokenlari light/dark palete bagli olmali.');
+assert(publicCss.includes('--pa-bg: #F7F3EA') && publicCss.includes('--pa-bg: #0D1412'), 'Public preview light/dark tokenlari bulunmali.');
+assert(publicCss.includes('--pa-primary: #145A3A') && publicCss.includes('--pa-primary: #79C99E'), 'Public preview ana yesil tokenlari light/dark palete bagli olmali.');
 for (const asset of [
   'assets/hero-bookshelf-light-desktop.webp',
   'assets/hero-bookshelf-dark-desktop.webp',
@@ -779,7 +779,7 @@ for (const marker of [
 assert(publicCss.includes('.pa-hero-asset') && publicCss.includes('object-position: 72% 50%') && publicCss.includes('object-position: 82% 50%'), 'Public CSS real hero asset geometry markers missing.');
 assert(publicCss.includes('.pa-shelf-arch') && publicCss.includes('display: none !important'), 'Public CSS old placeholder shelf graphics must be disabled.');
 assert(!/--(?:bg|ink|gold)\b/.test(publicCss), 'Public CSS eski admin tokenlarina baglanmamali.');
-assert(!/#[0-9A-Fa-f]{3,6}/.test(publicCss.replace(/#FFFFFF|#F7F7F7|#F0F0F0|#111111|#5A5A5A|#8E8E8E|#E5E5E5|#EFE9DE|#BDEBD6|#0D0F12|#15181D|#1E2127|#F5F6F7|#A1A6AD|#7C828B|#2E2E31|#2A231B|#7EDBB8/g, '')), 'Public CSS final palet disinda hex renk icermemeli.');
+assert(!/#[0-9A-Fa-f]{3,6}/.test(publicCss.replace(/#F7F3EA|#FFFDF7|#EFE8DC|#17201C|#66736D|#8A7662|#DDD2C0|#F5E8C8|#CFE8D9|#145A3A|#0F4930|#B68A2A|#0D1412|#121B18|#101916|#F6F0E6|#B8C0B8|#8F9B93|#2C3A34|#2F2A1B|#294D3A|#79C99E|#9ADDB8|#D7B35D|#FFFFFF|#000000/g, '')), 'Public CSS final palet disinda hex renk icermemeli.');
 for (const marker of [
   'overflow-x: hidden',
   '@media (max-width: 430px)',
@@ -841,7 +841,7 @@ for (const marker of [
 }
 
 const publicRenderCases = [
-  ...ROUTE_PATHS.map(route => ({ route, query: route.endsWith('/arama') ? { q: 'namaz' } : {} })),
+  ...ROUTE_PATHS.map(route => ({ route, query: route.endsWith('/arama') ? { q: 'zikir' } : {} })),
   { route: '/public-preview/arama', query: { q: 'bulunmayan-kelime' } },
   { route: '/public-preview/soru/gizli-icerik' },
   { route: '/public-preview/konu/yok' },
@@ -852,7 +852,7 @@ for (const item of publicRenderCases) {
   const rendered = renderPublicArchivePreviewRoute(item.route, item.query || {});
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
-  assert(rendered.html.includes('Sorularınız Kur’ân ışığında cevaplanır.'), `${item.route} ana public cumleyi icermeli.`);
+  assert(rendered.html.includes('Soru, cevap ve kavramları kaynak bağlamıyla birlikte okuyun.'), `${item.route} ana public cumleyi icermeli.`);
   assert(rendered.html.includes('/public-preview/public-archive.css'), `${item.route} yalniz public CSS yuklemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -867,17 +867,20 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['Öne Çıkan Sorular', 'Kavramlar', 'Kategoriler', 'Aklınızda bir soru mu var?', 'Güvenilir kaynak, sade anlatım']) {
+for (const marker of ['Arşiv ana kapıları', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
+}
+for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zikir', 'Teslimiyet']) {
+  assert(homePreview.includes(marker), `Public home arsiv kavram omurgasi eksik: ${marker}`);
 }
 assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
 assert(homePreview.includes('href="/public-preview/hesabim"'), 'Public account control hesap route una gitmeli.');
 assert(homePreview.includes('href="/public-preview/arsiv"'), 'Public arsiv linki gercek arsiv route una gitmeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
-assert(archivePreview.includes('Soru ve cevapları sakince keşfedin.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi browse/list yapiyla gorunmeli.');
-const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'namaz' }).html;
-assert(searchPreview.includes('Namaz kılarken akla gelen kötü düşünceler'), 'Public search fixture data ile sonuc dondurmeli.');
+assert(archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi browse/list yapiyla gorunmeli.');
+const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html;
+assert(searchPreview.includes('Zikir kalbi nasıl değiştirir'), 'Public search fixture data ile sonuc dondurmeli.');
 assert(!searchPreview.includes('class="pa-breadcrumb"') && !searchPreview.includes('Sayfa yolu'), 'Public arama sayfasi gereksiz breadcrumb gostermemeli.');
 const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' }).html;
 assert(noResultPreview.includes('Sonuç bulunamadı.') && noResultPreview.includes('Aklınızda bir soru mu var?'), 'Public search no-results state soru CTA ile gorunmeli.');
@@ -886,16 +889,16 @@ assert(accountPreview.includes('Hesabınızla soru gönderimini takip edin.') &&
 assert(accountPreview.includes('/public-preview/auth/google'), 'Public hesap sayfasi Google auth route una baglanmali.');
 assertOnlyPublicPreviewApi('/public-preview/hesabim', accountPreview);
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
-for (const marker of ['Orijinal Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
+for (const marker of ['Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
   assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);
 }
 assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
-const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/ornek-kavram').html;
-const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/ornek-kategori').html;
-assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Tevekkül'), 'Kavram sayfasi kategori gibi sunulmamali.');
+const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
+const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
+assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Kalbin Yönelişi'), 'Kavram sayfasi kategori gibi sunulmamali.');
 assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kategorideki Sorular'), 'Kategori sayfasi kavramdan ayri public yapi olmali.');
 const askPreview = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
 assert(askPreview.includes('data-question-form') && !askPreview.includes('data-static-question-form'), 'Soru Sor gercek public talep formu olarak isaretlenmeli.');
