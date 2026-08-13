@@ -120,6 +120,20 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-13
+- **Public preview ana sayfa kavram slider eklendi:** `/public-preview` ana sayfasındaki
+  `Sık okunan kavramlar` alanı sabit chip listesinden otomatik kayan, dokununca/gezinince duran
+  ve 2 saniye sonra tekrar akan bir kavram şeridine çevrildi. Şerit açılışta sağdan akmaya başlar,
+  mobilde elle sağa/sola kaydırılabilir ve her kavram kendi kategori/kavram sayfasına gider.
+  İlk kavram seti: `Hidayet`, `Zikir`, `Takva`, `Tabiiyet`, `Allah’a Ulaşmayı Dilemek`,
+  `Nefs`, `Ruh`. Fixture tarafına `zikir`, `nefs` ve `ruh` kavramları eklendi; ilgili soru
+  kayıtları bu kavramlarla bağlandı. Guard ve testler slider marker'larını, linklerini ve mobil
+  kaydırma CSS'ini kontrol edecek şekilde güncellendi. Kapsam yalnız public preview dosyalarıdır;
+  admin, production root `/` ve gerçek public cutover etkilenmedi. Yerel doğrulama:
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 96/96 test geçti.
+
 ### 2026-08-12
 - **Public preview legacy demo yolu temizlendi:** `codex/public-preview-phase1` branch'inde eski
   `PUBLIC_ARCHIVE_DEMO` mekanizması kaldırıldı. `server.js` artık `public-archive-demo` modülünü

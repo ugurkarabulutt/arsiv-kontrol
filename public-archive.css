@@ -493,34 +493,91 @@ svg {
 
 .pa-hero-concepts {
   display: grid;
-  gap: 10px;
+  gap: 9px;
   margin-top: 18px;
   color: color-mix(in srgb, #FFFDF7 78%, var(--pa-accent));
+  overflow: hidden;
 }
 
-.pa-hero-concepts > span {
+.pa-concept-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  max-width: 520px;
+}
+
+.pa-concept-head span:first-child {
   font-size: 12px;
   font-weight: 750;
   line-height: 1.35;
   text-transform: uppercase;
 }
 
-.pa-hero-concepts > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
+.pa-concept-head span:last-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: #FFFDF7;
+  background: rgb(255 253 247 / 0.1);
+  border: 1px solid rgb(255 253 247 / 0.16);
+  border-radius: 999px;
 }
 
-.pa-hero .pa-chip,
-.pa-hero a.pa-chip {
+.pa-concept-track {
+  display: flex;
+  gap: 10px;
+  width: min(540px, 100%);
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: auto;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(90deg, transparent 0, #000000 22px, #000000 calc(100% - 22px), transparent 100%);
+}
+
+.pa-concept-track::-webkit-scrollbar {
+  display: none;
+}
+
+.pa-concept-set {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  min-width: max-content;
+}
+
+.pa-concept-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 15px;
   color: #FFFDF7;
   background: rgb(255 253 247 / 0.12);
-  border-color: rgb(255 253 247 / 0.22);
+  border: 1px solid rgb(255 253 247 / 0.2);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 10px 20px rgb(0 0 0 / 0.14);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
 }
 
-.pa-hero a.pa-chip:hover {
+.pa-concept-pill:hover,
+.pa-concept-pill:focus-visible {
   background: rgb(255 253 247 / 0.2);
+  border-color: rgb(255 253 247 / 0.34);
+  transform: translateY(-1px);
+}
+
+.pa-concept-pill span {
+  display: block;
 }
 
 .pa-search-icon {
@@ -1466,8 +1523,19 @@ a.pa-chip:hover,
     margin-top: 14px;
   }
 
-  .pa-hero-concepts > div {
+  .pa-concept-head,
+  .pa-concept-track {
     max-width: 292px;
+  }
+
+  .pa-concept-track {
+    width: 292px;
+  }
+
+  .pa-concept-pill {
+    min-height: 36px;
+    padding: 7px 13px;
+    font-size: 13px;
   }
 
   .pa-hero .pa-still-life {
@@ -1704,6 +1772,15 @@ a.pa-chip:hover,
     max-width: 286px;
     margin-bottom: 22px;
     font-size: 15px;
+  }
+
+  .pa-concept-head,
+  .pa-concept-track {
+    max-width: 286px;
+  }
+
+  .pa-concept-track {
+    width: 286px;
   }
 
   .pa-hero .pa-still-life {

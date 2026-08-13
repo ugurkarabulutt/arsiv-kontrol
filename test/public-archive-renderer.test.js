@@ -94,11 +94,18 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
   assert.match(home, /Arşiv ana kapıları/);
+  assert.match(home, /data-concept-slider/);
+  assert.match(home, /data-concept-track/);
   assert.match(home, /Allah’a Ulaşmayı Dilemek/);
   assert.match(home, /Hidayet/);
+  assert.match(home, /Tabiiyet/);
   assert.match(home, /Mürşid/);
   assert.match(home, /Zikir/);
+  assert.match(home, /Nefs/);
+  assert.match(home, /Ruh/);
   assert.match(home, /Teslimiyet/);
+  assert.match(home, /href="\/public-preview\/konu\/nefs"/);
+  assert.match(home, /href="\/public-preview\/konu\/ruh"/);
 });
 
 test('archive and account routes are explicit public preview pages', () => {

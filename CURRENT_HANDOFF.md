@@ -1,5 +1,24 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-13 Codex Public Preview Kavram Slider
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- `/public-preview` ana sayfasındaki `Sık okunan kavramlar` alanı modern kavram slider'a
+  çevrildi. Slider açılışta otomatik akar, kullanıcı dokununca/odaklanınca/gezinince durur,
+  2 saniye sonra tekrar devam eder, mobilde sağa/sola kaydırılabilir ve kavram linkleri ilgili
+  kategori/kavram sayfasını açar.
+- İlk slider kavramları: `Hidayet`, `Zikir`, `Takva`, `Tabiiyet`, `Allah’a Ulaşmayı Dilemek`,
+  `Nefs`, `Ruh`. Fixture tarafına `zikir`, `nefs`, `ruh` kavramları eklendi ve örnek kayıtların
+  kavram bağlantıları güncellendi.
+- Guard/test kapsamı güncellendi: `scripts/check-frontend.js` slider HTML marker'larını,
+  linkleri, otomatik kayma JS marker'larını ve mobil kaydırma CSS'ini kontrol ediyor;
+  `test/public-archive-renderer.test.js` yeni kavramları ve linkleri doğruluyor.
+- Doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
+  Tam check 96/96 test başarılı. Bu iş admin, production root `/` veya gerçek cutover'a dokunmadı.
+
 ## 2026-08-12 Codex Public Preview Devralma Notu
 
 - Public iş hattı için esas worktree `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`,

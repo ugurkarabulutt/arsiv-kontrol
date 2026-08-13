@@ -870,8 +870,17 @@ for (const assetUrl of [
 for (const marker of ['Arşiv ana kapıları', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
-for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zikir', 'Teslimiyet']) {
+for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zikir', 'Teslimiyet', 'Tabiiyet', 'Nefs', 'Ruh']) {
   assert(homePreview.includes(marker), `Public home arsiv kavram omurgasi eksik: ${marker}`);
+}
+for (const marker of [
+  'data-concept-slider',
+  'data-concept-track',
+  'pa-concept-pill',
+  'href="/public-preview/konu/nefs"',
+  'href="/public-preview/konu/ruh"'
+]) {
+  assert(homePreview.includes(marker), `Public home kavram slider marker eksik: ${marker}`);
 }
 assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
@@ -896,6 +905,12 @@ assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public det
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
+for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)']) {
+  assert(publicRendererSource.includes(marker), `Kavram slider davranis marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-concept-track', 'overflow-x: auto;', 'touch-action: pan-x;', 'scrollbar-width: none;', 'mask-image: linear-gradient', '.pa-concept-pill']) {
+  assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
+}
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
 assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Kalbin Yönelişi'), 'Kavram sayfasi kategori gibi sunulmamali.');

@@ -37,7 +37,7 @@ const publicArchiveFixtures = {
       slug: 'zikir',
       name: 'Zikir',
       description: 'Zikir, daimi zikir, nefs tezkiyesi ve kalbin Allah ile beraberliği üzerine kayıtlar.',
-      topicSlugs: ['daimi-zikir', 'nefs-tezkiyesi', 'kalp'],
+      topicSlugs: ['daimi-zikir', 'nefs', 'nefs-tezkiyesi', 'kalp'],
       featured: true
     },
     {
@@ -45,7 +45,7 @@ const publicArchiveFixtures = {
       slug: 'teslimiyet',
       name: 'Teslimiyet',
       description: 'Ruhun, vechin, nefsin ve iradenin teslimi etrafında toplanan okuma yolu.',
-      topicSlugs: ['teslim', 'irade', 'tevekkul'],
+      topicSlugs: ['teslim', 'ruh', 'irade', 'tevekkul'],
       featured: true
     }
   ],
@@ -96,12 +96,30 @@ const publicArchiveFixtures = {
       featured: true
     },
     {
+      id: 'topic-zikir',
+      slug: 'zikir',
+      name: 'Zikir',
+      description: 'Allah’ı anma, hatırlama ve kalbi bu hatırlayışla diri tutma başlığı.',
+      categorySlug: 'zikir',
+      relatedTopicSlugs: ['daimi-zikir', 'kalp', 'nefs'],
+      featured: true
+    },
+    {
       id: 'topic-daimi-zikir',
       slug: 'daimi-zikir',
       name: 'Daimi Zikir',
       description: 'Zikrin sürekliliği ve kalpteki dönüşümle bağlantılı kavram.',
       categorySlug: 'zikir',
-      relatedTopicSlugs: ['kalp', 'nefs-tezkiyesi'],
+      relatedTopicSlugs: ['zikir', 'kalp', 'nefs-tezkiyesi'],
+      featured: true
+    },
+    {
+      id: 'topic-nefs',
+      slug: 'nefs',
+      name: 'Nefs',
+      description: 'İnsanın iç dünyası, arınma ihtiyacı ve tezkiye süreciyle ilgili kavram.',
+      categorySlug: 'zikir',
+      relatedTopicSlugs: ['nefs-tezkiyesi', 'takva', 'kalp'],
       featured: true
     },
     {
@@ -110,7 +128,7 @@ const publicArchiveFixtures = {
       name: 'Nefs Tezkiyesi',
       description: 'Nefsin arınması, tezkiye ve manevi gelişim sorularının kavram bağı.',
       categorySlug: 'zikir',
-      relatedTopicSlugs: ['daimi-zikir', 'takva'],
+      relatedTopicSlugs: ['nefs', 'daimi-zikir', 'takva'],
       featured: true
     },
     {
@@ -120,6 +138,15 @@ const publicArchiveFixtures = {
       description: 'Allah’a teslimiyetin farklı merhaleleriyle ilgili okuma bağı.',
       categorySlug: 'teslimiyet',
       relatedTopicSlugs: ['tevekkul', 'irade'],
+      featured: true
+    },
+    {
+      id: 'topic-ruh',
+      slug: 'ruh',
+      name: 'Ruh',
+      description: 'Ruhun teslimi ve Allah’a yöneliş yolundaki merhalelerle ilgili kavram.',
+      categorySlug: 'teslimiyet',
+      relatedTopicSlugs: ['teslim', 'irade', 'kalbin-yonelisi'],
       featured: true
     },
     {
@@ -255,7 +282,7 @@ const publicArchiveFixtures = {
       ],
       excerpt: 'Zikir, hatırlayışı kalpte diri tutar; süreklilik kazandıkça insanın yönünü değiştirir.',
       categorySlug: 'zikir',
-      topicSlugs: ['daimi-zikir', 'kalp', 'nefs-tezkiyesi'],
+      topicSlugs: ['zikir', 'daimi-zikir', 'kalp', 'nefs-tezkiyesi'],
       sourceContext: {
         title: 'Kaynak ve bağlam',
         text: 'Zikir kayıtları, arşivde kalp, nefs tezkiyesi ve teslimiyet başlıklarına bağlanır.'
@@ -279,7 +306,7 @@ const publicArchiveFixtures = {
       ],
       excerpt: 'Teslimiyet; gayreti terk etmeden, kalbi Allah’a güven içinde tutmaktır.',
       categorySlug: 'teslimiyet',
-      topicSlugs: ['teslim', 'tevekkul', 'irade'],
+      topicSlugs: ['teslim', 'ruh', 'tevekkul', 'irade'],
       sourceContext: {
         title: 'Kaynak ve bağlam',
         text: 'Teslimiyet başlığındaki kayıtlar, arşivde tevekkül ve irade kavramlarıyla birlikte değerlendirilir.'
@@ -303,7 +330,7 @@ const publicArchiveFixtures = {
       ],
       excerpt: 'Nefs tezkiyesi, iç dünyayı Allah’a yönelişle arındırma gayretidir.',
       categorySlug: 'zikir',
-      topicSlugs: ['nefs-tezkiyesi', 'takva', 'kalp'],
+      topicSlugs: ['nefs', 'nefs-tezkiyesi', 'takva', 'kalp'],
       sourceContext: {
         title: 'Kaynak ve bağlam',
         text: 'Nefs tezkiyesi kayıtları, zikir ve takva başlıklarıyla birlikte okuma yolu oluşturur.'

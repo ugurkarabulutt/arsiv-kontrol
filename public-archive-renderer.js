@@ -124,9 +124,12 @@ const TOPIC_ICONS = {
   takva: 'takva',
   'sirati-mustakim': 'tevhid',
   tabiiyet: 'takva',
+  zikir: 'ibadet',
   'daimi-zikir': 'ibadet',
+  nefs: 'sukur',
   'nefs-tezkiyesi': 'sukur',
   teslim: 'ihlas',
+  ruh: 'ihlas',
   irsad: 'help-circle',
   kalp: 'iman',
   irade: 'niyet',
@@ -268,12 +271,34 @@ function chip(label, hrefValue) {
   return `<a class="pa-chip" href="${escapeHtml(hrefValue)}">${escapeHtml(label)}</a>`;
 }
 
-function heroConceptLane(topics) {
+const HERO_CONCEPT_ITEMS = [
+  ['Hidayet', `${PREVIEW_BASE}/kategori/hidayet`],
+  ['Zikir', `${PREVIEW_BASE}/kategori/zikir`],
+  ['Takva', `${PREVIEW_BASE}/konu/takva`],
+  ['Tabiiyet', `${PREVIEW_BASE}/konu/tabiiyet`],
+  ['Allah’a Ulaşmayı Dilemek', `${PREVIEW_BASE}/kategori/allaha-ulasmayi-dilemek`],
+  ['Nefs', `${PREVIEW_BASE}/konu/nefs`],
+  ['Ruh', `${PREVIEW_BASE}/konu/ruh`]
+];
+
+function conceptSliderItems(isClone = false) {
+  return HERO_CONCEPT_ITEMS.map(([label, url]) => `
+    <a class="pa-concept-pill" href="${escapeHtml(url)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>
+      <span>${escapeHtml(label)}</span>
+    </a>
+  `).join('');
+}
+
+function heroConceptLane() {
   return `
-    <div class="pa-hero-concepts" aria-label="Öne çıkan kavramlar">
-      <span>Sık okunan kavramlar</span>
-      <div>
-        ${topics.slice(0, 5).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
+    <div class="pa-hero-concepts" data-concept-slider aria-label="Öne çıkan kavramlar">
+      <div class="pa-concept-head">
+        <span>Sık okunan kavramlar</span>
+        <span aria-hidden="true">→</span>
+      </div>
+      <div class="pa-concept-track" data-concept-track>
+        <div class="pa-concept-set">${conceptSliderItems(false)}</div>
+        <div class="pa-concept-set" aria-hidden="true">${conceptSliderItems(true)}</div>
       </div>
     </div>
   `;
@@ -396,7 +421,7 @@ function renderHome() {
             <h1>Soruları kavramlarıyla birlikte okuyun.</h1>
             <p>Hidayet, mürşid, zikir ve teslimiyet gibi ana başlıklardan başlayın; aradığınız cevaba bağlı kavramlarla ulaşın.</p>
             ${searchBox()}
-            ${heroConceptLane(topics)}
+            ${heroConceptLane()}
           </div>
           ${stillLife()}
         </section>
@@ -975,6 +1000,44 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (href) window.location.href = href;
         });
       });
+      function bindConceptSliders() {
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelectorAll('[data-concept-slider]').forEach(function(slider){
+          var track = slider.querySelector('[data-concept-track]');
+          if (!track) return;
+          var resumeTimer = 0;
+          var rafId = 0;
+          var speed = 0.42;
+          function setPaused(paused) {
+            if (paused) slider.setAttribute('data-paused', 'true');
+            else slider.removeAttribute('data-paused');
+          }
+          function pauseBriefly() {
+            setPaused(true);
+            window.clearTimeout(resumeTimer);
+            resumeTimer = window.setTimeout(function(){ setPaused(false); }, 2000);
+          }
+          function loop() {
+            if (!reduceMotion && slider.getAttribute('data-paused') !== 'true') {
+              track.scrollLeft += speed;
+              var half = track.scrollWidth / 2;
+              if (half > 0 && track.scrollLeft >= half) track.scrollLeft -= half;
+            }
+            rafId = window.requestAnimationFrame(loop);
+          }
+          track.addEventListener('pointerdown', pauseBriefly, { passive: true });
+          track.addEventListener('wheel', pauseBriefly, { passive: true });
+          track.addEventListener('focusin', function(){ setPaused(true); });
+          track.addEventListener('focusout', pauseBriefly);
+          track.addEventListener('mouseenter', function(){ setPaused(true); });
+          track.addEventListener('mouseleave', pauseBriefly);
+          slider.addEventListener('click', function(event){
+            if (event.target && event.target.closest && event.target.closest('a')) pauseBriefly();
+          }, true);
+          if (!reduceMotion) rafId = window.requestAnimationFrame(loop);
+          window.addEventListener('pagehide', function(){ if (rafId) window.cancelAnimationFrame(rafId); }, { once: true });
+        });
+      }
       function formatReadCount(value) {
         var count = Number(value || 0);
         return count.toLocaleString('tr-TR') + ' okunma';
@@ -1090,6 +1153,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       }
       loadReadCounts();
       trackQuestionRead();
+      bindConceptSliders();
       loadPublicSession().then(renderSessionUi);
       bindQuestionForm();
     })();
