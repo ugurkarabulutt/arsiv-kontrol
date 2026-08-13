@@ -171,6 +171,11 @@ test('question cards are whole-card navigable without helpful voting', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
   assert.match(home, /data-card-href="\/public-preview\/soru\/ornek-soru"/);
   assert.match(home, /role="link"/);
+  assert.match(home, /Cevabı oku/);
+  assert.match(home, /data-read-count-label/);
+  assert.match(home, /okunma/);
+  assert.doesNotMatch(home, /pa-question-excerpt/);
+  assert.doesNotMatch(home, /Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur\./);
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
 });
 

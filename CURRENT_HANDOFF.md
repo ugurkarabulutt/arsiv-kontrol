@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-13 Codex Public Preview Soru Kartı Sadeleştirme
+
+- Kullanıcı önerisi: soru kartlarında kısa açıklama olmasın; soru ve etiketler kalsın,
+  `Cevabı oku` yönlendirmesi ve göz ikonlu okunma sayısı görünsün.
+- Uygulandı: `questionCard` artık açıklama paragrafı basmaz. Kartta başlık, kategori/kavram
+  etiketleri, görünür `pa-read-count` ve `Cevabı oku` CTA'sı var. Sağdaki tek başına chevron
+  kaldırıldı.
+- Preview fixture kayıtlarına başlangıç `readCount` değerleri eklendi. Gerçek
+  `public_question_stats` endpoint'i değer döndürürse frontend aynı label'ı canlı değerle
+  günceller. Detay sayfasındaki okunma bilgisi de görünür sayaç bileşenine bağlandı.
+- Guard/testler güncellendi: `pa-question-excerpt` kartlara geri gelirse, `Cevabı oku`,
+  `data-read-count-label`, `okunma`, `pa-card-bottom` veya `pa-card-cta` eksikse kırılır.
+- Doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check`, `git diff --check`. Tam check 96/96 test başarılı.
+
 ## 2026-08-13 Codex Public Preview Kavram Slider Akış Düzeltmesi
 
 - Kullanıcı gerçek mobil preview'da kavram slider'ın kendiliğinden başlamadığını bildirdi.

@@ -326,24 +326,38 @@ function readingPath(categories) {
   `;
 }
 
+function normalizedReadCount(entry = {}) {
+  const count = Number(entry.readCount ?? entry.viewCount ?? 0);
+  if (!Number.isFinite(count) || count < 0) return 0;
+  return Math.round(count);
+}
+
+function readCountLabel(count) {
+  return `${Number(count || 0).toLocaleString('tr-TR')} okunma`;
+}
+
+function readCountNode(entry) {
+  const count = normalizedReadCount(entry);
+  return `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" data-read-count-fallback="${count}">${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label>${escapeHtml(readCountLabel(count))}</span></span>`;
+}
+
 function questionCard(entry, compact = false) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
-  const dateLabel = entry.updatedAt ? formatDate(entry.updatedAt) : '';
-  const readLabel = entry.readTime ? `${entry.readTime} dk okuma` : '';
-  const countNode = `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" hidden>${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label></span></span>`;
+  const countNode = readCountNode(entry);
   const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
     <article class="pa-question-card${compact ? ' is-compact' : ''}" data-card-href="${href}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
-      <p class="pa-question-excerpt">${escapeHtml(entry.excerpt || entry.summary)}</p>
       <div class="pa-card-meta">
         ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
         ${topics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
       </div>
-      <p class="pa-card-foot">${dateLabel ? `<span>${iconSvg('calendar', 'pa-meta-icon')}${escapeHtml(dateLabel)}</span>` : ''}${readLabel ? `<span>${iconSvg('clock', 'pa-meta-icon')}${escapeHtml(readLabel)}</span>` : ''}${countNode}</p>
-      <span class="pa-card-chevron">${iconSvg('chevron-right')}</span>
+      <div class="pa-card-bottom">
+        <p class="pa-card-foot">${countNode}</p>
+        <span class="pa-card-cta">Cevabı oku ${iconSvg('arrow-right', 'pa-cta-icon')}</span>
+      </div>
     </article>
   `;
 }
@@ -635,7 +649,7 @@ function renderQuestion(slug) {
               ${entry.publishedAt ? `<span>Yayın tarihi: ${escapeHtml(formatDate(entry.publishedAt))}</span>` : ''}
               ${entry.updatedAt ? `<span>Son güncelleme: ${escapeHtml(formatDate(entry.updatedAt))}</span>` : ''}
               ${entry.readTime ? `<span>${entry.readTime} dk okuma</span>` : ''}
-              <span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" hidden>${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label></span></span>
+              ${readCountNode(entry)}
               ${publicArchiveFixtures.brand.answererLabel ? `<span>${escapeHtml(publicArchiveFixtures.brand.answererLabel)}</span>` : ''}
             </div>
             <section class="pa-reading-block">

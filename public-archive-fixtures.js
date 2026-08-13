@@ -218,6 +218,7 @@ const publicArchiveFixtures = {
       publishedAt: '2026-08-01',
       updatedAt: '2026-08-08',
       readTime: 3,
+      readCount: 1284,
       isFeatured: true,
       relatedSlugs: ['hidayet-yolu-nasil-baslar', 'murside-tabiiyet-nicin-onemlidir']
     },
@@ -242,6 +243,7 @@ const publicArchiveFixtures = {
       publishedAt: '2026-08-02',
       updatedAt: '2026-08-08',
       readTime: 3,
+      readCount: 936,
       isFeatured: true,
       relatedSlugs: ['ornek-soru', 'zikir-kalbi-nasil-degistirir']
     },
@@ -266,6 +268,7 @@ const publicArchiveFixtures = {
       publishedAt: '2026-08-03',
       updatedAt: '2026-08-08',
       readTime: 3,
+      readCount: 812,
       isFeatured: true,
       relatedSlugs: ['hidayet-yolu-nasil-baslar', 'ornek-soru']
     },
@@ -290,6 +293,7 @@ const publicArchiveFixtures = {
       publishedAt: '2026-08-04',
       updatedAt: '2026-08-08',
       readTime: 2,
+      readCount: 1197,
       isFeatured: true,
       relatedSlugs: ['nefs-tezkiyesi-nedir', 'hidayet-yolu-nasil-baslar']
     },
@@ -314,6 +318,7 @@ const publicArchiveFixtures = {
       publishedAt: '2026-08-05',
       updatedAt: '2026-08-08',
       readTime: 3,
+      readCount: 684,
       isFeatured: false,
       relatedSlugs: ['ornek-soru', 'zikir-kalbi-nasil-degistirir']
     },
@@ -338,6 +343,7 @@ const publicArchiveFixtures = {
       publishedAt: '2026-08-06',
       updatedAt: '2026-08-08',
       readTime: 2,
+      readCount: 759,
       isFeatured: false,
       relatedSlugs: ['zikir-kalbi-nasil-degistirir', 'teslimiyet-hayatta-nasil-yasanir']
     }

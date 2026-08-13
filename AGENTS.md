@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-13
+- **Public preview soru kartları sadeleştirildi ve okunma bilgisi eklendi:** Kullanıcı önerisi
+  üzerine public soru kartlarındaki kısa açıklama paragrafı kaldırıldı. Kartlar artık soru başlığı,
+  kategori/kavram etiketleri, göz ikonlu okunma sayısı ve açık `Cevabı oku` yönlendirmesiyle
+  görünür. Preview fixture kayıtlarına başlangıç `readCount` değerleri eklendi; gerçek
+  `public_question_stats` sayacı dönerse frontend bu değerleri canlı değerle günceller.
+  Detay sayfasındaki okunma bilgisi de aynı görünür sayaç bileşenini kullanır. Guard/testler
+  kartta `pa-question-excerpt` geri gelirse, `Cevabı oku` veya okunma marker'ları eksikse
+  kırılacak şekilde güncellendi. Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 96/96 test geçti.
+
 - **Public preview kavram slider otomatik akış düzeltildi:** Kullanıcı gerçek mobil preview'da
   slider'ın kendiliğinden başlamadığını bildirdi. `scrollLeft` tabanlı akış yerine
   `translate3d` ile hareket eden `pa-concept-rail` yapısı kuruldu. Slider artık ilk render'dan

@@ -720,8 +720,8 @@ svg {
 .pa-question-card.is-compact {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 22px;
-  gap: 9px 16px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 11px;
   min-width: 0;
   min-height: 0;
   padding: 20px 20px 18px;
@@ -782,6 +782,15 @@ svg {
   min-width: 0;
 }
 
+.pa-card-bottom {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
 .pa-chip,
 a.pa-chip {
   display: inline-flex;
@@ -804,7 +813,6 @@ a.pa-chip:hover,
 }
 
 .pa-card-foot {
-  grid-column: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center !important;
@@ -827,6 +835,24 @@ a.pa-chip:hover,
 
 .pa-read-count[hidden] {
   display: none !important;
+}
+
+.pa-card-cta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  color: var(--pa-primary);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.pa-cta-icon {
+  flex: 0 0 15px;
+  width: 15px;
+  height: 15px;
 }
 
 .pa-meta-icon {
@@ -1643,6 +1669,14 @@ a.pa-chip:hover,
 
   .pa-card-foot {
     gap: 8px;
+    font-size: 12px;
+  }
+
+  .pa-card-bottom {
+    gap: 10px;
+  }
+
+  .pa-card-cta {
     font-size: 12px;
   }
 

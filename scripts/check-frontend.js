@@ -887,6 +887,10 @@ assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlan
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
 assert(homePreview.includes('href="/public-preview/hesabim"'), 'Public account control hesap route una gitmeli.');
 assert(homePreview.includes('href="/public-preview/arsiv"'), 'Public arsiv linki gercek arsiv route una gitmeli.');
+for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'data-read-count-label', 'okunma']) {
+  assert(homePreview.includes(marker), `Public soru karti aksiyon/okunma marker eksik: ${marker}`);
+}
+assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi browse/list yapiyla gorunmeli.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html;
@@ -911,6 +915,9 @@ for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-pause
 }
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-cta-icon']) {
+  assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
