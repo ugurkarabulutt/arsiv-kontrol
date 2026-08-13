@@ -1,5 +1,46 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-13 Codex Public Preview Gerçek Veri Köprüsü
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Örnek fixture verisinden gerçek veriye geçiş altyapısı hazırlandı. `/public-preview` artık
+  renderer'a dışarıdan public arşiv verisi alabiliyor; server tarafı önce `public_qa`,
+  `public_categories`, `public_topics`, `public_qa_topics` tablolarını okur, bu tablolar boşsa
+  veya henüz hazır değilse onaylı `history` kayıtlarından soru/cevap/etiket köprüsüyle gerçek
+  public veri seti üretir.
+- Canlı Supabase kontrolünde soru, etiket ve cevap metni tamam olan `11` onaylı kayıt bulundu.
+  Kalıcı `public_qa/public_categories/public_topics/public_qa_topics` tablo aktarımı için SQL
+  `schema.sql` içine eklendi; ancak canlı DB'de `public_categories` schema cache'te görünmediği
+  için doğrudan tabloya aktarım bu oturumda uygulanamadı. Preview bu durumda onaylı kayıt
+  köprüsüyle çalışacak; SQL uygulandıktan sonra süper admin `Canlı Site` ekranından
+  `Onaylıları Siteye Hazırla` ile kalıcı public okuma modelini doldurabilecek.
+- Admin içinde yalnız süper adminin gördüğü `Canlı Site > Soru Talepleri` ekranına public hazırlık
+  durum kartı eklendi. Kart onaylı kayıt, siteye hazır kayıt, kategori ve kavram sayılarını
+  gösterir; tablo yoksa buton pasif kalır ve preview'ın onaylı kayıt köprüsünden çalıştığını
+  açık yazar.
+- Okunma sayacı `public_question_stats` tablosu varsa tabloyu kullanır; tablo henüz yoksa
+  `settings.public_question_stats_fallback` JSON kaydına kalıcı olarak yazar. Böylece canlı
+  preview'da göz ikonlu okunma bilgisi SQL uygulanmasını beklemeden çalışır.
+- Public soru kartlarında kategoriyle aynı slug'a düşen kavram etiketi tekrar basılmaz; injected
+  gerçek veri testinde fixture'a dönmeden public route render edilebildiği doğrulandı.
+- Değişen dosyalar: `server.js`, `public-archive-renderer.js`, `index.html`, `schema.sql`,
+  `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`, `CURRENT_HANDOFF.md`,
+  `AGENTS.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
+  Tam check `97/97` test başarılı.
+- Branch GitHub'a push edildi. Vercel preview deploy:
+  `https://arsiv-kontrol-88m3czm4v-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_BrDhNu5JhCkVqtV6A8tHydZQY3xx`. Root production alias değiştirilmedi.
+- Preview smoke: `/public-preview` 200, `/public-preview/arsiv` 200, ilk gerçek detay route'u 200,
+  `X-Robots-Tag: noindex` var, arşivde `11` gerçek slug var, eski fixture
+  `/public-preview/soru/ornek-soru` görünmüyor, oturumsuz `/api/public-archive/sync-status`
+  401 dönüyor. Okunma smoke'unda ilk gerçek slug
+  `gunumuzde-allahin-tayin-ettigi-mursidler-yok-mudur` için sayaç `0` değerinden `1` değerine
+  çıktı.
+
 ## 2026-08-13 Codex Public Preview Soru Kartı Sadeleştirme
 
 - Kullanıcı önerisi: soru kartlarında kısa açıklama olmasın; soru ve etiketler kalsın,

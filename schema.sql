@@ -48,6 +48,9 @@ alter table public.history add column if not exists text_hash text;
 alter table public.history add column if not exists original_text text;
 alter table public.history add column if not exists prompt_version text;
 alter table public.history add column if not exists rules_hash text;
+alter table public.history add column if not exists question_text text;
+alter table public.history add column if not exists tags jsonb not null default '[]'::jsonb;
+create index if not exists history_public_approved_idx on public.history (approved_at desc) where status = 'onaylandi';
 
 -- Kullanıcı son aktiflik takibi:
 alter table public.users add column if not exists last_seen_at timestamptz;
@@ -379,6 +382,72 @@ begin
 end;
 $$;
 revoke all on function public.increment_public_question_read(text) from public;
+
+-- public_categories / public_topics / public_qa
+-- Public arşivin okuma modeli. Admin iç bilgileri, denetim puanları, kullanıcı kimliği
+-- ve prompt/AI süreç bilgileri bu tablolara taşınmaz.
+create table if not exists public.public_categories (
+  slug text primary key,
+  name text not null,
+  description text,
+  topic_slugs jsonb not null default '[]'::jsonb,
+  featured boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.public_categories enable row level security;
+create index if not exists public_categories_sort_idx on public.public_categories (sort_order, name);
+
+create table if not exists public.public_topics (
+  slug text primary key,
+  name text not null,
+  description text,
+  category_slug text references public.public_categories(slug) on delete set null,
+  related_topic_slugs jsonb not null default '[]'::jsonb,
+  featured boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.public_topics enable row level security;
+create index if not exists public_topics_category_idx on public.public_topics (category_slug, sort_order);
+create index if not exists public_topics_sort_idx on public.public_topics (sort_order, name);
+
+create table if not exists public.public_qa (
+  slug text primary key,
+  source_history_id uuid unique references public.history(id) on delete set null,
+  title text not null,
+  question text not null,
+  answer_text text not null,
+  answer_paragraphs jsonb not null default '[]'::jsonb,
+  summary text,
+  excerpt text,
+  category_slug text references public.public_categories(slug) on delete set null,
+  topic_slugs jsonb not null default '[]'::jsonb,
+  related_slugs jsonb not null default '[]'::jsonb,
+  source_context_title text,
+  source_context_text text,
+  published_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  read_time integer not null default 1,
+  is_featured boolean not null default false,
+  status text not null default 'published',
+  created_at timestamptz not null default now()
+);
+alter table public.public_qa enable row level security;
+create index if not exists public_qa_status_published_idx on public.public_qa (status, published_at desc);
+create index if not exists public_qa_category_idx on public.public_qa (category_slug, published_at desc);
+create index if not exists public_qa_source_history_idx on public.public_qa (source_history_id);
+
+create table if not exists public.public_qa_topics (
+  qa_slug text references public.public_qa(slug) on delete cascade,
+  topic_slug text references public.public_topics(slug) on delete cascade,
+  updated_at timestamptz not null default now(),
+  primary key (qa_slug, topic_slug)
+);
+alter table public.public_qa_topics enable row level security;
+create index if not exists public_qa_topics_topic_idx on public.public_qa_topics (topic_slug);
 
 -- NOT: Sunucu service_role anahtarı ile bağlanır ve RLS'i bypass eder.
 -- Bu tablolara yalnızca backend erişir; istemci tarafı doğrudan erişim yoktur.

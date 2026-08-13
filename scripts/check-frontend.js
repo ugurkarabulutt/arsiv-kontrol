@@ -772,7 +772,10 @@ for (const marker of [
   "iconSvg('arrow-right')",
   "iconSvg('user')",
   "ask: 'edit'",
-  'data-public-read-count'
+  'data-public-read-count',
+  'normalizePublicArchiveData',
+  'withPublicArchiveData',
+  'loadArchiveData'
 ]) {
   assert(publicRendererSource.includes(marker), `Public renderer final handoff marker missing: ${marker}`);
 }
@@ -813,7 +816,18 @@ for (const marker of [
   "app.get('/public-preview/api/question-stats'",
   "app.post('/public-preview/api/questions/:slug/read'",
   "app.post('/public-preview/api/question-submissions'",
-  "app.get('/api/public-archive/question-submissions'"
+  "app.get('/api/public-archive/question-submissions'",
+  "app.get('/api/public-archive/sync-status'",
+  "app.post('/api/public-archive/sync-approved'",
+  'loadPublicArchiveDataset',
+  'loadApprovedHistoryForPublicArchive',
+  'syncApprovedHistoryToPublicArchive',
+  'loadArchiveData: async () =>',
+  'await startupReady',
+  'PUBLIC_QUESTION_STATS_FALLBACK_KEY',
+  'incrementPublicQuestionReadFallback',
+  "storage: 'settings'",
+  "question_text,tags"
 ]) {
   assert(server.includes(marker), `Public archive live preview backend marker eksik: ${marker}`);
 }
@@ -821,9 +835,19 @@ for (const marker of [
   'create table if not exists public.public_users',
   'create table if not exists public.public_question_submissions',
   'create table if not exists public.public_question_stats',
+  'create table if not exists public.public_categories',
+  'create table if not exists public.public_topics',
+  'create table if not exists public.public_qa',
+  'create table if not exists public.public_qa_topics',
+  'alter table public.history add column if not exists question_text text',
+  "alter table public.history add column if not exists tags jsonb not null default '[]'::jsonb",
   'alter table public.public_users enable row level security',
   'alter table public.public_question_submissions enable row level security',
   'alter table public.public_question_stats enable row level security',
+  'alter table public.public_categories enable row level security',
+  'alter table public.public_topics enable row level security',
+  'alter table public.public_qa enable row level security',
+  'alter table public.public_qa_topics enable row level security',
   'create or replace function public.increment_public_question_read'
 ]) {
   assert(schema.includes(marker), `Public archive schema marker eksik: ${marker}`);
@@ -835,7 +859,12 @@ for (const marker of [
   'openLiveSite',
   'archivePublicQuestionList',
   'archivePublicQuestionDetail',
-  '/api/public-archive/question-submissions'
+  'archivePublicSyncSummary',
+  'syncApprovedPublicArchive',
+  'Onaylıları Siteye Hazırla',
+  '/api/public-archive/question-submissions',
+  '/api/public-archive/sync-status',
+  '/api/public-archive/sync-approved'
 ]) {
   assert(html.includes(marker), `Admin panel public soru talepleri gorunurluk marker eksik: ${marker}`);
 }

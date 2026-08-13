@@ -8,6 +8,38 @@ const CSS_PATH = `${PREVIEW_BASE}/public-archive.css`;
 const ASSET_PATH = `${PREVIEW_BASE}/assets`;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 
+function normalizePublicArchiveData(archiveData = {}) {
+  return {
+    brand: { ...publicArchiveFixtures.brand, ...(archiveData.brand || {}) },
+    categories: Array.isArray(archiveData.categories) ? archiveData.categories : publicArchiveFixtures.categories,
+    topics: Array.isArray(archiveData.topics) ? archiveData.topics : publicArchiveFixtures.topics,
+    qa: Array.isArray(archiveData.qa) ? archiveData.qa : publicArchiveFixtures.qa
+  };
+}
+
+function withPublicArchiveData(archiveData, renderFn) {
+  if (!archiveData || archiveData === publicArchiveFixtures) return renderFn();
+  const previous = {
+    brand: publicArchiveFixtures.brand,
+    categories: publicArchiveFixtures.categories,
+    topics: publicArchiveFixtures.topics,
+    qa: publicArchiveFixtures.qa
+  };
+  const next = normalizePublicArchiveData(archiveData);
+  publicArchiveFixtures.brand = next.brand;
+  publicArchiveFixtures.categories = next.categories;
+  publicArchiveFixtures.topics = next.topics;
+  publicArchiveFixtures.qa = next.qa;
+  try {
+    return renderFn();
+  } finally {
+    publicArchiveFixtures.brand = previous.brand;
+    publicArchiveFixtures.categories = previous.categories;
+    publicArchiveFixtures.topics = previous.topics;
+    publicArchiveFixtures.qa = previous.qa;
+  }
+}
+
 const ROUTE_PATHS = [
   PREVIEW_BASE,
   `${PREVIEW_BASE}/arsiv`,
@@ -344,6 +376,7 @@ function readCountNode(entry) {
 function questionCard(entry, compact = false) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
+  const visibleTopics = topics.filter(topic => !category || topic.slug !== category.slug);
   const countNode = readCountNode(entry);
   const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
@@ -352,7 +385,7 @@ function questionCard(entry, compact = false) {
       <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
       <div class="pa-card-meta">
         ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
-        ${topics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
+        ${visibleTopics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
       </div>
       <div class="pa-card-bottom">
         <p class="pa-card-foot">${countNode}</p>
@@ -1257,26 +1290,28 @@ function renderShell({ title, description, active, content, status = 200, questi
   };
 }
 
-function renderPublicArchivePreviewRoute(routePath, query = {}) {
-  const pathname = routePath.replace(/\/+$/, '') || PREVIEW_BASE;
-  if (pathname === PREVIEW_BASE) return renderHome();
-  if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive();
-  if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
-  if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
-  if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
-  if (pathname === `${PREVIEW_BASE}/hesabim`) return renderAccount();
-  if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
-  if (pathname === `${PREVIEW_BASE}/hakkimizda`) return renderInfoPage('hakkimizda');
-  if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
-  if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
-  if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
-  const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
-  if (questionMatch) return renderQuestion(questionMatch[1]);
-  const topicMatch = pathname.match(/^\/public-preview\/konu\/([^/]+)$/);
-  if (topicMatch) return renderTopic(topicMatch[1]);
-  const categoryMatch = pathname.match(/^\/public-preview\/kategori\/([^/]+)$/);
-  if (categoryMatch) return renderCategory(categoryMatch[1]);
-  return renderNotFound();
+function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = publicArchiveFixtures) {
+  return withPublicArchiveData(archiveData, () => {
+    const pathname = routePath.replace(/\/+$/, '') || PREVIEW_BASE;
+    if (pathname === PREVIEW_BASE) return renderHome();
+    if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive();
+    if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
+    if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
+    if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
+    if (pathname === `${PREVIEW_BASE}/hesabim`) return renderAccount();
+    if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
+    if (pathname === `${PREVIEW_BASE}/hakkimizda`) return renderInfoPage('hakkimizda');
+    if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
+    if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
+    if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
+    const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
+    if (questionMatch) return renderQuestion(questionMatch[1]);
+    const topicMatch = pathname.match(/^\/public-preview\/konu\/([^/]+)$/);
+    if (topicMatch) return renderTopic(topicMatch[1]);
+    const categoryMatch = pathname.match(/^\/public-preview\/kategori\/([^/]+)$/);
+    if (categoryMatch) return renderCategory(categoryMatch[1]);
+    return renderNotFound();
+  });
 }
 
 function sendRendered(res, rendered) {
@@ -1287,6 +1322,17 @@ function createPublicArchivePreviewRouter(options = {}) {
   const router = express.Router();
   const cssFile = options.cssFile || path.join(__dirname, 'public-archive.css');
   const assetDir = options.assetDir || path.join(__dirname, 'public-archive-assets', 'assets');
+  const loadArchiveData = typeof options.loadArchiveData === 'function'
+    ? options.loadArchiveData
+    : async () => publicArchiveFixtures;
+  async function sendRoute(req, res, next, routePath, query = {}) {
+    try {
+      const archiveData = await loadArchiveData(req);
+      sendRendered(res, renderPublicArchivePreviewRoute(routePath, query, archiveData));
+    } catch (error) {
+      next(error);
+    }
+  }
   router.use((req, res, next) => {
     res.set('X-Robots-Tag', 'noindex, nofollow');
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -1300,21 +1346,21 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/public-archive.css', (req, res) => {
     res.type('text/css').sendFile(cssFile);
   });
-  router.get(['/', ''], (req, res) => sendRendered(res, renderHome()));
-  router.get('/arsiv', (req, res) => sendRendered(res, renderArchive()));
-  router.get('/arama', (req, res) => sendRendered(res, renderSearch(req.query.q || '')));
-  router.get('/konular', (req, res) => sendRendered(res, renderTopicsIndex()));
-  router.get('/kategoriler', (req, res) => sendRendered(res, renderCategoriesIndex()));
-  router.get('/hesabim', (req, res) => sendRendered(res, renderAccount()));
-  router.get('/soru-sor', (req, res) => sendRendered(res, renderAsk()));
-  router.get('/hakkimizda', (req, res) => sendRendered(res, renderInfoPage('hakkimizda')));
-  router.get('/iletisim', (req, res) => sendRendered(res, renderInfoPage('iletisim')));
-  router.get('/gizlilik', (req, res) => sendRendered(res, renderInfoPage('gizlilik')));
-  router.get('/kullanim-kosullari', (req, res) => sendRendered(res, renderInfoPage('kullanim-kosullari')));
-  router.get('/soru/:slug', (req, res) => sendRendered(res, renderQuestion(req.params.slug)));
-  router.get('/konu/:slug', (req, res) => sendRendered(res, renderTopic(req.params.slug)));
-  router.get('/kategori/:slug', (req, res) => sendRendered(res, renderCategory(req.params.slug)));
-  router.use((req, res) => sendRendered(res, renderNotFound()));
+  router.get(['/', ''], (req, res, next) => sendRoute(req, res, next, PREVIEW_BASE));
+  router.get('/arsiv', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arsiv`));
+  router.get('/arama', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arama`, { q: req.query.q || '' }));
+  router.get('/konular', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konular`));
+  router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategoriler`));
+  router.get('/hesabim', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/hesabim`));
+  router.get('/soru-sor', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/soru-sor`));
+  router.get('/hakkimizda', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/hakkimizda`));
+  router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/iletisim`));
+  router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/gizlilik`));
+  router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kullanim-kosullari`));
+  router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/soru/${req.params.slug}`));
+  router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konu/${req.params.slug}`));
+  router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategori/${req.params.slug}`));
+  router.use((req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/bulunamadi`));
   return router;
 }
 
@@ -1322,6 +1368,7 @@ module.exports = {
   PREVIEW_BASE,
   ROUTE_PATHS,
   createPublicArchivePreviewRouter,
+  normalizePublicArchiveData,
   renderPublicArchivePreviewRoute,
   publicArchiveFixtures
 };

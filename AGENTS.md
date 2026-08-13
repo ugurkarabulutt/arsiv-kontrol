@@ -121,6 +121,31 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-13
+- **Public preview gerçek veri köprüsü hazırlandı:** `/public-preview` örnek fixture verisine
+  bağımlı olmaktan çıkarıldı. `public-archive-renderer.js` artık request bazlı dış public arşiv
+  verisiyle render edebilir; `server.js` önce kalıcı `public_qa/public_categories/public_topics`
+  okuma modelini dener, tablo/veri yoksa onaylı `history` kayıtlarındaki `question_text`, `tags`
+  ve `corrected_text` alanlarından temiz public soru-cevap veri seti üretir. Kalıcı model için
+  `schema.sql` içine `public_categories`, `public_topics`, `public_qa`, `public_qa_topics`
+  tabloları ve `history.question_text/tags` migration'ı eklendi. Süper admin `Canlı Site >
+  Soru Talepleri` ekranında onaylı kayıt/siteye hazır/kategori/kavram durum kartını görür;
+  SQL tabloları hazırsa `Onaylıları Siteye Hazırla` ile onaylanan kayıtlar kalıcı public okuma
+  modeline senkronlanabilir. Canlı Supabase kontrolünde soru, etiket ve cevap metni tamam `11`
+  onaylı kayıt bulundu; canlı DB'de public okuma tabloları henüz schema cache'te görünmediği için
+  doğrudan tablo aktarımı uygulanmadı, preview onaylı kayıt köprüsüyle gerçek veriyi gösterecek.
+  Okunma sayacı `public_question_stats` tablosu varsa tabloyu, tablo yoksa
+  `settings.public_question_stats_fallback` JSON kaydını kullanır. Guard/testlere gerçek veri
+  enjeksiyonu eklendi. Yerel doğrulama: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; 97/97 test geçti. Branch GitHub'a push
+  edildi. Vercel preview deploy:
+  `https://arsiv-kontrol-88m3czm4v-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_BrDhNu5JhCkVqtV6A8tHydZQY3xx`; root production alias değiştirilmedi. Preview smoke:
+  `/public-preview`, `/public-preview/arsiv` ve ilk gerçek soru detay route'u 200 döndü; noindex
+  header doğru; arşivde 11 gerçek slug göründü; eski fixture slug'ı yok; okunma sayacı ilk gerçek
+  slug için 0'dan 1'e çıktı; oturumsuz sync-status 401 döndü.
+
 - **Public preview soru kartları sadeleştirildi ve okunma bilgisi eklendi:** Kullanıcı önerisi
   üzerine public soru kartlarındaki kısa açıklama paragrafı kaldırıldı. Kartlar artık soru başlığı,
   kategori/kavram etiketleri, göz ikonlu okunma sayısı ve açık `Cevabı oku` yönlendirmesiyle

@@ -138,6 +138,73 @@ test('public preview search and missing states are deterministic', () => {
   assert.match(missing.html, /Sayfa bulunamadı\./);
 });
 
+test('public preview can render approved records instead of fixture data', () => {
+  const approvedArchiveData = {
+    brand: {},
+    categories: [{
+      id: 'category-hidayet',
+      slug: 'hidayet',
+      name: 'Hidayet',
+      description: 'Hidayet başlığındaki soru ve cevaplar.',
+      topicSlugs: ['zikir', 'takva'],
+      featured: true
+    }],
+    topics: [
+      {
+        id: 'topic-zikir',
+        slug: 'zikir',
+        name: 'Zikir',
+        description: 'Zikir kavramıyla ilişkili soru ve cevaplar.',
+        categorySlug: 'hidayet',
+        relatedTopicSlugs: ['takva'],
+        featured: true
+      },
+      {
+        id: 'topic-takva',
+        slug: 'takva',
+        name: 'Takva',
+        description: 'Takva kavramıyla ilişkili soru ve cevaplar.',
+        categorySlug: 'hidayet',
+        relatedTopicSlugs: ['zikir'],
+        featured: true
+      }
+    ],
+    qa: [{
+      id: 'qa-gercek-soru',
+      slug: 'gercek-soru',
+      title: 'Gerçek onaylı soru nasıl okunur?',
+      question: 'Gerçek onaylı soru nasıl okunur?',
+      summary: 'Bu kayıt onaylı veri köprüsünden gelen public soru kartını temsil eder.',
+      answer: ['Bu cevap gerçek veri köprüsü testinde kullanılır.'],
+      excerpt: 'Bu kayıt onaylı veri köprüsünden gelir.',
+      categorySlug: 'hidayet',
+      topicSlugs: ['zikir', 'takva'],
+      sourceContext: { title: 'Kaynak ve bağlam', text: 'Public okuma bağlamı.' },
+      publishedAt: '2026-08-13T09:00:00.000Z',
+      updatedAt: '2026-08-13T09:00:00.000Z',
+      readTime: 1,
+      readCount: 12,
+      isFeatured: true,
+      relatedSlugs: []
+    }]
+  };
+
+  const home = renderPublicArchivePreviewRoute('/public-preview', {}, approvedArchiveData).html;
+  assert.match(home, /Gerçek onaylı soru nasıl okunur\?/);
+  assert.match(home, /data-card-href="\/public-preview\/soru\/gercek-soru"/);
+  assert.match(home, /12 okunma/);
+  assert.doesNotMatch(home, /Zikir kalbi nasıl değiştirir/);
+
+  const detail = renderPublicArchivePreviewRoute('/public-preview/soru/gercek-soru', {}, approvedArchiveData);
+  assert.equal(detail.status, 200);
+  assert.match(detail.html, /Gerçek onaylı soru nasıl okunur\?/);
+  assert.match(detail.html, /Bu cevap gerçek veri köprüsü testinde kullanılır\./);
+
+  const topic = renderPublicArchivePreviewRoute('/public-preview/konu/zikir', {}, approvedArchiveData);
+  assert.equal(topic.status, 200);
+  assert.match(topic.html, /Gerçek onaylı soru nasıl okunur\?/);
+});
+
 test('question, topic, category, and ask pages keep public boundaries', () => {
   const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
   assert.match(detail, /Soru/);

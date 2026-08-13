@@ -583,6 +583,7 @@ const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
 const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
 const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
 const ARCHIVE_OPS_RELEASE_PACKAGES_KEY = 'archive_ops_release_packages';
+const PUBLIC_QUESTION_STATS_FALLBACK_KEY = 'public_question_stats_fallback';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
@@ -3779,6 +3780,24 @@ async function seed() {
   const { error: publicQuestionStatsErr } = await supabase.from('public_question_stats').select('slug').limit(1);
   HAS_PUBLIC_ARCHIVE_STATS_TABLES = !publicQuestionStatsErr;
   if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) console.warn('⚠ public_question_stats tablosu yok — public okunma sayaçları pasif.');
+
+  const { error: historyPublicFieldsErr } = await supabase.from('history').select('question_text,tags').limit(1);
+  HAS_HISTORY_PUBLIC_FIELDS = !historyPublicFieldsErr;
+  if (!HAS_HISTORY_PUBLIC_FIELDS) console.warn('⚠ history.question_text/tags alanları yok — onaylı kayıtlardan public veri üretimi pasif.');
+
+  const [
+    publicQaProbe,
+    publicCategoriesProbe,
+    publicTopicsProbe,
+    publicQaTopicsProbe
+  ] = await Promise.all([
+    supabase.from('public_qa').select('slug').limit(1),
+    supabase.from('public_categories').select('slug').limit(1),
+    supabase.from('public_topics').select('slug').limit(1),
+    supabase.from('public_qa_topics').select('qa_slug').limit(1)
+  ]);
+  HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = !publicQaProbe.error && !publicCategoriesProbe.error && !publicTopicsProbe.error && !publicQaTopicsProbe.error;
+  if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) console.warn('⚠ public_qa/public_categories/public_topics tabloları yok — public arşiv onaylı kayıt köprüsüyle çalışacak.');
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -3887,19 +3906,396 @@ function clearPublicSession(req) {
   req.session.publicUserAvatarUrl = null;
 }
 
-function knownPublicQuestionSlugs() {
+const PUBLIC_ARCHIVE_DATA_CACHE_MS = 60_000;
+let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
+
+const PUBLIC_ARCHIVE_GATEWAY_CATEGORIES = [
+  { name: 'Allah’a Ulaşmayı Dilemek', aliases: ['allah’a ulaşmayı dilemek', 'allaha ulasmayi dilemek', 'allaha ulaşmayı dilemek'] },
+  { name: 'Hidayet', aliases: ['hidayet'] },
+  { name: 'Zikir', aliases: ['zikir', 'daimi zikir'] },
+  { name: 'Mürşid', aliases: ['mürşid', 'mursid', 'mürşit', 'mursit'] },
+  { name: 'Tabiiyet', aliases: ['tabiiyet', 'tâbiiyet', 'tabiiyet etmek', 'tâbiiyet etmek'] },
+  { name: 'Takva', aliases: ['takva'] },
+  { name: 'Nefs', aliases: ['nefs', 'nefs tezkiyesi'] },
+  { name: 'Ruh', aliases: ['ruh'] },
+  { name: 'Teslimiyet', aliases: ['teslimiyet', 'teslim'] }
+];
+
+function publicArchiveDefaultData() {
   try {
-    const { publicArchiveFixtures } = require('./public-archive-fixtures');
-    return new Set((publicArchiveFixtures.qa || []).map(item => item.slug).filter(Boolean));
+    return require('./public-archive-fixtures').publicArchiveFixtures;
   } catch (error) {
-    return new Set();
+    return { brand: {}, categories: [], topics: [], qa: [] };
   }
 }
 
-function validPublicQuestionSlug(slug) {
+function publicArchiveComparable(value = '') {
+  return String(value || '')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[’'`´]/g, '')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function publicArchiveSlug(value = '') {
+  const ascii = String(value || '')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/i̇/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[âÂ]/g, 'a').replace(/[îÎ]/g, 'i').replace(/[ûÛ]/g, 'u')
+    .replace(/[’'`´]/g, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 96);
+  return ascii || 'kayit';
+}
+
+function uniquePublicArchiveSlug(baseValue, usedSlugs, fallback = 'kayit') {
+  const base = publicArchiveSlug(baseValue || fallback);
+  let candidate = base;
+  let index = 2;
+  while (usedSlugs.has(candidate)) {
+    candidate = `${base}-${index}`;
+    index += 1;
+  }
+  usedSlugs.add(candidate);
+  return candidate;
+}
+
+function publicArchiveText(value = '', max = 20000) {
+  return String(value || '').replace(/\s+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, max);
+}
+
+function publicArchiveParagraphs(value = '') {
+  return publicArchiveText(value, 120000)
+    .split(/\n{2,}/)
+    .map(item => item.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+function publicArchiveSummaryFromAnswer(answerText = '', question = '') {
+  const clean = publicArchiveText(answerText, 1200).replace(/\s+/g, ' ');
+  const firstSentence = clean.match(/^(.{80,260}?[.!?])\s/u)?.[1] || clean.slice(0, 220);
+  return (firstSentence || String(question || '').trim()).trim().slice(0, 260);
+}
+
+function normalizePublicArchiveTags(value) {
+  return normalizeArchiveTags(value)
+    .map(item => String(item || '').trim())
+    .filter(Boolean)
+    .filter((item, index, arr) => arr.findIndex(other => publicArchiveComparable(other) === publicArchiveComparable(item)) === index)
+    .slice(0, 12);
+}
+
+function publicArchiveGatewayForTags(tags = []) {
+  const comparableTags = tags.map(publicArchiveComparable);
+  for (const gateway of PUBLIC_ARCHIVE_GATEWAY_CATEGORIES) {
+    if (gateway.aliases.some(alias => comparableTags.includes(publicArchiveComparable(alias)))) return gateway.name;
+  }
+  return tags[0] || 'Genel';
+}
+
+function publicArchiveCategoryDescription(name = '') {
+  return `${name} başlığındaki soru ve cevaplar, ilgili kavramlarla birlikte okunur.`;
+}
+
+function publicArchiveTopicDescription(name = '') {
+  return `${name} kavramıyla ilişkili soru ve cevaplar.`;
+}
+
+function publicArchiveRowsFromStats(rows = []) {
+  const stats = new Map();
+  for (const row of rows || []) stats.set(row.slug, Number(row.read_count || 0));
+  return stats;
+}
+
+function normalizePublicQuestionStatsFallback(value = {}) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const out = {};
+  for (const [slug, item] of Object.entries(value)) {
+    if (!/^[a-z0-9-]{2,120}$/.test(slug)) continue;
+    const readCount = typeof item === 'object' && item
+      ? Number(item.readCount || item.read_count || 0)
+      : Number(item || 0);
+    out[slug] = {
+      readCount: Number.isFinite(readCount) && readCount > 0 ? Math.floor(readCount) : 0,
+      updatedAt: typeof item === 'object' && item ? String(item.updatedAt || item.updated_at || '') : ''
+    };
+  }
+  return out;
+}
+
+async function loadPublicQuestionStatsFallbackMap(slugs = []) {
+  const cleanSlugs = [...new Set(slugs.filter(Boolean))].slice(0, 5000);
+  const raw = normalizePublicQuestionStatsFallback(await loadJsonSetting(PUBLIC_QUESTION_STATS_FALLBACK_KEY, {}));
+  const stats = new Map();
+  for (const slug of cleanSlugs) stats.set(slug, Number(raw[slug]?.readCount || 0));
+  return stats;
+}
+
+async function incrementPublicQuestionReadFallback(slug) {
+  const raw = normalizePublicQuestionStatsFallback(await loadJsonSetting(PUBLIC_QUESTION_STATS_FALLBACK_KEY, {}));
+  const nextCount = Number(raw[slug]?.readCount || 0) + 1;
+  raw[slug] = { readCount: nextCount, updatedAt: new Date().toISOString() };
+  await saveJsonSetting(PUBLIC_QUESTION_STATS_FALLBACK_KEY, raw);
+  return { available: true, storage: 'settings', slug, readCount: nextCount };
+}
+
+async function loadPublicArchiveStatsMap(slugs = []) {
+  const cleanSlugs = [...new Set(slugs.filter(Boolean))].slice(0, 5000);
+  if (!cleanSlugs.length) return new Map();
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return loadPublicQuestionStatsFallbackMap(cleanSlugs);
+  const rows = await fetchAllPages(() => supabase
+    .from('public_question_stats')
+    .select('slug,read_count')
+    .in('slug', cleanSlugs), 1000);
+  return publicArchiveRowsFromStats(rows);
+}
+
+function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
+  const defaults = publicArchiveDefaultData();
+  const usedEntrySlugs = new Set();
+  const categoryMap = new Map();
+  const topicMap = new Map();
+  const topicRelations = new Map();
+  const entries = [];
+
+  function ensureCategory(label) {
+    const name = String(label || 'Genel').trim() || 'Genel';
+    const slug = publicArchiveSlug(name);
+    if (!categoryMap.has(slug)) {
+      categoryMap.set(slug, {
+        id: `category-${slug}`,
+        slug,
+        name,
+        description: publicArchiveCategoryDescription(name),
+        topicSlugs: [],
+        featured: true
+      });
+    }
+    return categoryMap.get(slug);
+  }
+
+  function ensureTopic(label, categorySlug) {
+    const name = String(label || '').trim();
+    if (!name) return null;
+    const slug = publicArchiveSlug(name);
+    if (!topicMap.has(slug)) {
+      topicMap.set(slug, {
+        id: `topic-${slug}`,
+        slug,
+        name,
+        description: publicArchiveTopicDescription(name),
+        categorySlug,
+        relatedTopicSlugs: [],
+        featured: true
+      });
+    }
+    return topicMap.get(slug);
+  }
+
+  const cleanRecords = records
+    .map(record => {
+      const question = publicArchiveText(record.question || record.question_text || record.title || '', 1200);
+      const answerText = publicArchiveText(record.answerText || record.answer_text || record.corrected_text || '', 120000);
+      const tags = normalizePublicArchiveTags(record.tags || record.topicSlugs || record.topic_slugs || []);
+      if (!question || !answerText || !tags.length) return null;
+      return { ...record, question, answerText, tags };
+    })
+    .filter(Boolean);
+
+  for (const record of cleanRecords) {
+    const categoryName = record.category || record.categoryName || publicArchiveGatewayForTags(record.tags);
+    const category = ensureCategory(categoryName);
+    const topicSlugs = record.tags
+      .map(tag => ensureTopic(tag, category.slug))
+      .filter(Boolean)
+      .map(topic => topic.slug);
+    for (const slug of topicSlugs) {
+      const current = categoryMap.get(category.slug);
+      if (current && !current.topicSlugs.includes(slug)) current.topicSlugs.push(slug);
+    }
+    for (const slug of topicSlugs) {
+      if (!topicRelations.has(slug)) topicRelations.set(slug, new Map());
+      for (const other of topicSlugs) {
+        if (other === slug) continue;
+        topicRelations.get(slug).set(other, (topicRelations.get(slug).get(other) || 0) + 1);
+      }
+    }
+
+    const slug = uniquePublicArchiveSlug(record.slug || record.question || record.filename || record.id, usedEntrySlugs, 'soru');
+    const answer = publicArchiveParagraphs(record.answerText);
+    const publishedAt = record.publishedAt || record.published_at || record.approved_at || record.created_at || new Date().toISOString();
+    const readTime = Math.max(1, Math.ceil(record.answerText.split(/\s+/).filter(Boolean).length / 180));
+    entries.push({
+      id: record.id ? `qa-${record.id}` : `qa-${slug}`,
+      slug,
+      sourceHistoryId: record.id || null,
+      title: publicArchiveText(record.title || record.question, 180),
+      question: record.question,
+      summary: publicArchiveSummaryFromAnswer(record.answerText, record.question),
+      answer,
+      excerpt: publicArchiveSummaryFromAnswer(record.answerText, record.question),
+      categorySlug: category.slug,
+      topicSlugs,
+      sourceContext: {
+        title: 'Kaynak ve bağlam',
+        text: 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kavramlarla birlikte okunur.'
+      },
+      publishedAt,
+      updatedAt: record.updatedAt || record.updated_at || publishedAt,
+      readTime,
+      readCount: statsMap.get(slug) || Number(record.readCount || record.read_count || 0) || 0,
+      isFeatured: entries.length < 6,
+      relatedSlugs: []
+    });
+  }
+
+  for (const topic of topicMap.values()) {
+    const relationCounts = topicRelations.get(topic.slug) || new Map();
+    topic.relatedTopicSlugs = [...relationCounts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'))
+      .slice(0, 5)
+      .map(([slug]) => slug);
+  }
+
+  for (const entry of entries) {
+    entry.relatedSlugs = entries
+      .filter(other => other.slug !== entry.slug)
+      .map(other => ({
+        slug: other.slug,
+        score: other.topicSlugs.filter(slug => entry.topicSlugs.includes(slug)).length + (other.categorySlug === entry.categorySlug ? 1 : 0)
+      }))
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score || a.slug.localeCompare(b.slug, 'tr'))
+      .slice(0, 3)
+      .map(item => item.slug);
+  }
+
+  const categories = [...categoryMap.values()].sort((a, b) => b.topicSlugs.length - a.topicSlugs.length || a.name.localeCompare(b.name, 'tr'));
+  const topics = [...topicMap.values()].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  if (!entries.length) return defaults;
+  return {
+    ...defaults,
+    categories,
+    topics,
+    qa: entries.sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)))
+  };
+}
+
+function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], topicRows = [], statsMap = new Map() } = {}) {
+  const defaults = publicArchiveDefaultData();
+  const categories = (categoryRows || []).map(row => ({
+    id: `category-${row.slug}`,
+    slug: row.slug,
+    name: row.name,
+    description: row.description || publicArchiveCategoryDescription(row.name),
+    topicSlugs: Array.isArray(row.topic_slugs) ? row.topic_slugs : [],
+    featured: row.featured !== false
+  }));
+  const topics = (topicRows || []).map(row => ({
+    id: `topic-${row.slug}`,
+    slug: row.slug,
+    name: row.name,
+    description: row.description || publicArchiveTopicDescription(row.name),
+    categorySlug: row.category_slug || '',
+    relatedTopicSlugs: Array.isArray(row.related_topic_slugs) ? row.related_topic_slugs : [],
+    featured: row.featured !== false
+  }));
+  const qa = (qaRows || []).map(row => {
+    const answer = Array.isArray(row.answer_paragraphs) && row.answer_paragraphs.length
+      ? row.answer_paragraphs.map(item => String(item || '').trim()).filter(Boolean)
+      : publicArchiveParagraphs(row.answer_text || '');
+    return {
+      id: row.id || `qa-${row.slug}`,
+      slug: row.slug,
+      title: row.title || row.question || 'Soru',
+      question: row.question || row.title || '',
+      summary: row.summary || publicArchiveSummaryFromAnswer(row.answer_text || answer.join('\n\n'), row.question),
+      answer,
+      excerpt: row.excerpt || row.summary || '',
+      categorySlug: row.category_slug || '',
+      topicSlugs: Array.isArray(row.topic_slugs) ? row.topic_slugs : [],
+      sourceContext: {
+        title: row.source_context_title || 'Kaynak ve bağlam',
+        text: row.source_context_text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kavramlarla birlikte okunur.'
+      },
+      publishedAt: row.published_at || row.created_at,
+      updatedAt: row.updated_at || row.published_at || row.created_at,
+      readTime: Number(row.read_time || 1),
+      readCount: statsMap.get(row.slug) || Number(row.read_count || 0) || 0,
+      isFeatured: row.is_featured === true,
+      relatedSlugs: Array.isArray(row.related_slugs) ? row.related_slugs : []
+    };
+  });
+  if (!qa.length) return defaults;
+  return { ...defaults, categories, topics, qa };
+}
+
+async function loadApprovedHistoryForPublicArchive() {
+  if (!HAS_HISTORY_PUBLIC_FIELDS) return [];
+  return fetchAllPages(() => supabase
+    .from('history')
+    .select('id,filename,question_text,tags,corrected_text,approved_at,created_at')
+    .eq('status', 'onaylandi')
+    .not('question_text', 'is', null)
+    .not('tags', 'is', null)
+    .not('corrected_text', 'is', null)
+    .order('approved_at', { ascending: false }), 1000);
+}
+
+async function loadPublicArchiveDataset(options = {}) {
+  const now = Date.now();
+  if (!options.force && publicArchiveDatasetCache.data && publicArchiveDatasetCache.expiresAt > now) {
+    return publicArchiveDatasetCache.data;
+  }
+
+  let dataset = null;
+  if (HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
+    const qaRows = await fetchAllPages(() => supabase
+      .from('public_qa')
+      .select('*')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false }), 1000);
+    if (qaRows.length) {
+      const [categoryRows, topicRows, statsMap] = await Promise.all([
+        fetchAllPages(() => supabase.from('public_categories').select('*').order('sort_order', { ascending: true }), 1000),
+        fetchAllPages(() => supabase.from('public_topics').select('*').order('sort_order', { ascending: true }), 1000),
+        loadPublicArchiveStatsMap(qaRows.map(row => row.slug))
+      ]);
+      dataset = publicArchiveDatasetFromPublicRows({ qaRows, categoryRows, topicRows, statsMap });
+    }
+  }
+
+  if (!dataset || !dataset.qa?.length) {
+    const rows = await loadApprovedHistoryForPublicArchive();
+    const usedSlugs = rows.map(row => publicArchiveSlug(row.question_text || row.filename || row.id));
+    const statsMap = await loadPublicArchiveStatsMap(usedSlugs);
+    dataset = publicArchiveDatasetFromRecords(rows, statsMap);
+  }
+
+  publicArchiveDatasetCache = {
+    expiresAt: now + PUBLIC_ARCHIVE_DATA_CACHE_MS,
+    data: dataset,
+    source: HAS_PUBLIC_ARCHIVE_CONTENT_TABLES ? 'public_tables_or_history' : 'approved_history'
+  };
+  return dataset;
+}
+
+async function knownPublicQuestionSlugs() {
+  const dataset = await loadPublicArchiveDataset();
+  return new Set((dataset.qa || []).map(item => item.slug).filter(Boolean));
+}
+
+async function validPublicQuestionSlug(slug) {
   const cleanSlug = String(slug || '').trim();
   if (!/^[a-z0-9-]{2,120}$/.test(cleanSlug)) return '';
-  return knownPublicQuestionSlugs().has(cleanSlug) ? cleanSlug : '';
+  return (await knownPublicQuestionSlugs()).has(cleanSlug) ? cleanSlug : '';
 }
 
 function publicQuestionStatsUnavailable() {
@@ -3907,9 +4303,19 @@ function publicQuestionStatsUnavailable() {
 }
 
 async function loadPublicQuestionStats(slugs = []) {
-  const uniqueSlugs = [...new Set(slugs.map(validPublicQuestionSlug).filter(Boolean))].slice(0, 60);
-  if (!uniqueSlugs.length) return { available: HAS_PUBLIC_ARCHIVE_STATS_TABLES, counts: {} };
-  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return publicQuestionStatsUnavailable();
+  const validatedSlugs = [];
+  for (const slug of slugs) {
+    const valid = await validPublicQuestionSlug(slug);
+    if (valid) validatedSlugs.push(valid);
+  }
+  const uniqueSlugs = [...new Set(validatedSlugs)].slice(0, 60);
+  if (!uniqueSlugs.length) return { available: true, storage: HAS_PUBLIC_ARCHIVE_STATS_TABLES ? 'table' : 'settings', counts: {} };
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
+    const fallbackMap = await loadPublicQuestionStatsFallbackMap(uniqueSlugs);
+    const counts = {};
+    for (const slug of uniqueSlugs) counts[slug] = Number(fallbackMap.get(slug) || 0);
+    return { available: true, storage: 'settings', counts };
+  }
   const { data, error } = await supabase
     .from('public_question_stats')
     .select('slug,read_count,updated_at')
@@ -3922,13 +4328,13 @@ async function loadPublicQuestionStats(slugs = []) {
 }
 
 async function incrementPublicQuestionRead(slug) {
-  const cleanSlug = validPublicQuestionSlug(slug);
+  const cleanSlug = await validPublicQuestionSlug(slug);
   if (!cleanSlug) {
     const err = new Error('Soru bulunamadı.');
     err.statusCode = 404;
     throw err;
   }
-  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return { available: false, slug: cleanSlug, readCount: 0 };
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return incrementPublicQuestionReadFallback(cleanSlug);
   const rpc = await supabase.rpc('increment_public_question_read', { p_slug: cleanSlug });
   if (!rpc.error) {
     const row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data;
@@ -3949,6 +4355,109 @@ async function incrementPublicQuestionRead(slug) {
   });
   if (upsertError) throw new Error(upsertError.message);
   return { available: true, slug: cleanSlug, readCount: nextCount };
+}
+
+async function syncApprovedHistoryToPublicArchive() {
+  if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
+    return {
+      available: false,
+      error: 'Public soru-cevap tabloları hazır değil. schema.sql içindeki public_qa/public_categories/public_topics bölümü Supabase SQL Editor içinde uygulanmalı.'
+    };
+  }
+  if (!HAS_HISTORY_PUBLIC_FIELDS) {
+    return {
+      available: false,
+      error: 'Onaylı kayıtların soru ve etiket alanları hazır değil.'
+    };
+  }
+
+  const records = await loadApprovedHistoryForPublicArchive();
+  const statsMap = await loadPublicArchiveStatsMap(records.map(row => publicArchiveSlug(row.question_text || row.filename || row.id)));
+  const dataset = publicArchiveDatasetFromRecords(records, statsMap);
+  const now = new Date().toISOString();
+  const categories = (dataset.categories || []).map((item, index) => ({
+    slug: item.slug,
+    name: item.name,
+    description: item.description || publicArchiveCategoryDescription(item.name),
+    topic_slugs: item.topicSlugs || [],
+    featured: item.featured !== false,
+    sort_order: index + 1,
+    updated_at: now
+  }));
+  const topics = (dataset.topics || []).map((item, index) => ({
+    slug: item.slug,
+    name: item.name,
+    description: item.description || publicArchiveTopicDescription(item.name),
+    category_slug: item.categorySlug || null,
+    related_topic_slugs: item.relatedTopicSlugs || [],
+    featured: item.featured !== false,
+    sort_order: index + 1,
+    updated_at: now
+  }));
+  const qaRows = (dataset.qa || []).map(item => ({
+    slug: item.slug,
+    source_history_id: item.sourceHistoryId || null,
+    title: item.title || item.question || 'Soru',
+    question: item.question || item.title || 'Soru',
+    answer_text: (item.answer || []).join('\n\n'),
+    answer_paragraphs: item.answer || [],
+    summary: item.summary || publicArchiveSummaryFromAnswer((item.answer || []).join('\n\n'), item.question),
+    excerpt: item.excerpt || item.summary || '',
+    category_slug: item.categorySlug || null,
+    topic_slugs: item.topicSlugs || [],
+    related_slugs: item.relatedSlugs || [],
+    source_context_title: item.sourceContext?.title || 'Kaynak ve bağlam',
+    source_context_text: item.sourceContext?.text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kavramlarla birlikte okunur.',
+    published_at: item.publishedAt || now,
+    updated_at: now,
+    read_time: Number(item.readTime || 1),
+    is_featured: item.isFeatured === true,
+    status: 'published'
+  }));
+  const qaTopicRows = qaRows.flatMap(row => (Array.isArray(row.topic_slugs) ? row.topic_slugs : [])
+    .map(topicSlug => ({ qa_slug: row.slug, topic_slug: topicSlug, updated_at: now })));
+
+  if (categories.length) {
+    const { error } = await supabase.from('public_categories').upsert(categories, { onConflict: 'slug' });
+    if (error) throw new Error(error.message);
+  }
+  if (topics.length) {
+    const { error } = await supabase.from('public_topics').upsert(topics, { onConflict: 'slug' });
+    if (error) throw new Error(error.message);
+  }
+  if (qaRows.length) {
+    const { error } = await supabase.from('public_qa').upsert(qaRows, { onConflict: 'source_history_id' });
+    if (error) throw new Error(error.message);
+  }
+
+  const qaSlugs = qaRows.map(row => row.slug).filter(Boolean);
+  for (let index = 0; index < qaSlugs.length; index += 400) {
+    const slice = qaSlugs.slice(index, index + 400);
+    const { error } = await supabase.from('public_qa_topics').delete().in('qa_slug', slice);
+    if (error) throw new Error(error.message);
+  }
+  for (let index = 0; index < qaTopicRows.length; index += 1000) {
+    const slice = qaTopicRows.slice(index, index + 1000);
+    if (!slice.length) continue;
+    const { error } = await supabase.from('public_qa_topics').upsert(slice, { onConflict: 'qa_slug,topic_slug' });
+    if (error) throw new Error(error.message);
+  }
+
+  publicArchiveDatasetCache = {
+    expiresAt: Date.now() + PUBLIC_ARCHIVE_DATA_CACHE_MS,
+    data: dataset,
+    source: 'approved_history_sync'
+  };
+
+  return {
+    available: true,
+    source: 'approved_history',
+    approvedRecords: records.length,
+    publishedRecords: qaRows.length,
+    categories: categories.length,
+    topics: topics.length,
+    links: qaTopicRows.length
+  };
 }
 
 function requirePublicUser(req, res) {
@@ -4246,6 +4755,37 @@ app.get('/api/public-archive/question-submissions', auth, admin, async (req, res
     res.json({ submissions: data || [], count: count || 0 });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+app.get('/api/public-archive/sync-status', auth, admin, superAdmin, async (req, res) => {
+  try {
+    await startupReady;
+    const approvedRows = await loadApprovedHistoryForPublicArchive();
+    const dataset = await loadPublicArchiveDataset({ force: true });
+    res.json({
+      ready: true,
+      contentTablesReady: HAS_PUBLIC_ARCHIVE_CONTENT_TABLES,
+      approvedBridgeReady: HAS_HISTORY_PUBLIC_FIELDS,
+      approvedRecords: approvedRows.length,
+      publicRecords: dataset.qa?.length || 0,
+      categories: dataset.categories?.length || 0,
+      topics: dataset.topics?.length || 0,
+      source: publicArchiveDatasetCache.source || 'unknown'
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ ready: false, error: error.message });
+  }
+});
+
+app.post('/api/public-archive/sync-approved', auth, admin, superAdmin, async (req, res) => {
+  try {
+    await startupReady;
+    const result = await syncApprovedHistoryToPublicArchive();
+    const status = result.available === false ? 503 : 200;
+    res.status(status).json({ success: result.available !== false, ...result });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, error: error.message });
   }
 });
 
@@ -6544,6 +7084,8 @@ let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın gör
 let HAS_PUBLIC_ARCHIVE_USER_TABLES = false; // startup'ta tespit edilir (public Google kullanıcıları)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
+let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
+let HAS_HISTORY_PUBLIC_FIELDS = false; // startup'ta tespit edilir (onaylı kayıtlardaki soru/etiket alanları)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
@@ -6850,7 +7392,11 @@ app.post('/public-preview/api/question-submissions', async (req, res) => {
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
   const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
   app.use('/public-preview', createPublicArchivePreviewRouter({
-    cssFile: path.join(__dirname, 'public-archive.css')
+    cssFile: path.join(__dirname, 'public-archive.css'),
+    loadArchiveData: async () => {
+      await startupReady;
+      return loadPublicArchiveDataset();
+    }
   }));
 }
 

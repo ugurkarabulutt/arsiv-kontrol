@@ -1966,6 +1966,16 @@ canvas{width:100%!important;}
           <button class="btn-sec" onclick="loadArchivePublicQuestions()">Yenile</button>
         </div>
         <div class="ops-panel-body">
+          <div class="archive-ready-hero">
+            <strong>Onaylanan soru-cevapları siteye hazırlayın.</strong>
+            <span>Onaylanmış ve soru/etiket bilgisi tamam olan kayıtlar public arşiv okuma yapısına alınır. Root yayın değişmez.</span>
+          </div>
+          <div class="ops-file-summary" id="archivePublicSyncSummary"></div>
+          <div class="ops-filter-row">
+            <button class="btn-primary" id="archivePublicSyncBtn" onclick="syncApprovedPublicArchive()">Onaylıları Siteye Hazırla</button>
+            <button class="btn-sec" onclick="loadArchivePublicSyncStatus()">Durumu Yenile</button>
+            <span class="ops-status" id="archivePublicSyncStatus"></span>
+          </div>
           <div class="ops-filter-row">
             <select class="ops-field" id="archivePublicQuestionStatusFilter" onchange="setArchivePublicQuestionFilter()">
               <option value="">Tüm durumlar</option>
@@ -2262,7 +2272,7 @@ let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:''
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
-let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false};
+let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','publicQuestions'];
 const LIVE_SITE_OPS_VIEWS=new Set(['publicQuestions']);
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
@@ -2638,7 +2648,10 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchiveReleaseReadyCandidates();
   }
   if(archiveOpsState.view==='packageOutput')loadArchiveOutputPackages();
-  if(archiveOpsState.view==='publicQuestions')loadArchivePublicQuestions();
+  if(archiveOpsState.view==='publicQuestions'){
+    loadArchivePublicSyncStatus();
+    loadArchivePublicQuestions();
+  }
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
@@ -7362,6 +7375,93 @@ function openArchiveOutputFromReleasePackage(){
   archiveOutputState.activePackage=pkg;
   archiveOutputState.output=null;
   openArchiveOps('packageOutput');
+}
+function publicArchiveSyncSourceLabel(source){
+  return {
+    approved_history:'Onaylı kayıt köprüsü',
+    approved_history_sync:'Onaylı kayıt senkronu',
+    public_tables_or_history:'Public okuma yapısı',
+    unknown:'Bilinmiyor'
+  }[source]||'Public okuma yapısı';
+}
+function renderArchivePublicSyncStatus(){
+  const summary=el('archivePublicSyncSummary');
+  const status=el('archivePublicSyncStatus');
+  const button=el('archivePublicSyncBtn');
+  const data=archivePublicQuestionState.sync||{};
+  if(button)button.disabled=archivePublicQuestionState.syncLoading||(data.ready&&data.contentTablesReady===false);
+  if(summary){
+    summary.innerHTML=data.ready?`
+      <div class="ops-file-summary-item"><strong>${Number(data.approvedRecords||0).toLocaleString('tr-TR')}</strong><span>Onaylı kayıt</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.publicRecords||0).toLocaleString('tr-TR')}</strong><span>Siteye hazır</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.categories||0).toLocaleString('tr-TR')}</strong><span>Kategori</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.topics||0).toLocaleString('tr-TR')}</strong><span>Kavram</span></div>
+    `:'<div class="ops-file-summary-item"><strong>--</strong><span>Durum bekleniyor</span></div>';
+  }
+  if(status){
+    if(archivePublicQuestionState.syncLoading){
+      status.textContent='Hazırlanıyor...';
+      status.className='ops-status';
+    }else if(data.ready){
+      status.textContent=data.contentTablesReady
+        ?`Kalıcı yapı hazır: ${publicArchiveSyncSourceLabel(data.source)}`
+        :'Public tablolar bekleniyor; preview onaylı kayıt köprüsünden çalışıyor.';
+      status.className=`ops-status ${data.contentTablesReady?'ok':''}`.trim();
+    }else{
+      status.textContent='Durum henüz yüklenmedi.';
+      status.className='ops-status';
+    }
+  }
+}
+async function loadArchivePublicSyncStatus(){
+  archivePublicQuestionState.syncLoading=true;
+  renderArchivePublicSyncStatus();
+  const data=await api('GET','/api/public-archive/sync-status');
+  archivePublicQuestionState.syncLoading=false;
+  if(data.error){
+    archivePublicQuestionState.sync={ready:false};
+    renderArchivePublicSyncStatus();
+    const status=el('archivePublicSyncStatus');
+    if(status){status.textContent=data.error;status.className='ops-status err';}
+    return;
+  }
+  archivePublicQuestionState.sync=data;
+  renderArchivePublicSyncStatus();
+}
+async function syncApprovedPublicArchive(){
+  const ok=await openSystemConfirm({
+    title:'Onaylıları siteye hazırla',
+    badge:'Canlı Site',
+    message:'Onaylanmış ve soru/etiket bilgisi tamam olan tüm kayıtlar public arşiv okuma yapısına hazırlanacak.',
+    detail:'Bu işlem root yayını açmaz; sadece public arşivin okuyacağı temiz soru-cevap verisini günceller.',
+    confirmText:'Hazırla',
+    cancelText:'Vazgeç'
+  });
+  if(!ok)return;
+  archivePublicQuestionState.syncLoading=true;
+  renderArchivePublicSyncStatus();
+  const data=await api('POST','/api/public-archive/sync-approved',{});
+  archivePublicQuestionState.syncLoading=false;
+  if(data.error||data.success===false){
+    archivePublicQuestionState.sync={ready:false};
+    renderArchivePublicSyncStatus();
+    const status=el('archivePublicSyncStatus');
+    if(status){status.textContent=data.error||'Hazırlama tamamlanamadı.';status.className='ops-status err';}
+    await showSystemAlert('Hazırlama tamamlanamadı',data.error||'Public okuma yapısı henüz hazır değil.','danger');
+    return;
+  }
+  archivePublicQuestionState.sync={
+    ready:true,
+    contentTablesReady:true,
+    approvedBridgeReady:true,
+    approvedRecords:data.approvedRecords||0,
+    publicRecords:data.publishedRecords||0,
+    categories:data.categories||0,
+    topics:data.topics||0,
+    source:data.source||'approved_history_sync'
+  };
+  renderArchivePublicSyncStatus();
+  await showSystemAlert('Site verisi hazırlandı',`${Number(data.publishedRecords||0).toLocaleString('tr-TR')} onaylı soru-cevap public arşiv okuma yapısına alındı.`,'success');
 }
 function archivePublicQuestionStatusLabel(status){
   return {new:'Yeni',reviewing:'İnceleniyor',answered:'Cevaplandı',closed:'Kapandı'}[status]||'Yeni';
