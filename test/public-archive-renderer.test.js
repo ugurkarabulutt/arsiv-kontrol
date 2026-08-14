@@ -31,7 +31,12 @@ const forbiddenSnippets = [
   'Bildirim',
   'Kaydedilen',
   'görüntülenme',
-  'Faydalı oldu mu'
+  'Faydalı oldu mu',
+  'Public arşiv',
+  'Google OAuth',
+  'bu ortam',
+  'ön izleme alanı',
+  'önizleme alanı'
 ];
 
 function lower(value) {
@@ -230,6 +235,9 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   assert.match(ask, /\/public-preview\/api\/question-submissions/);
   assert.match(ask, /\/public-preview\/auth\/google/);
   assert.match(ask, /Sorunuzu kısa ve açık şekilde yazabilirsiniz./);
+  assert.match(ask, /Tek soruya odaklanın/);
+  assert.match(ask, /Mahrem bilgi yazmayın/);
+  assert.doesNotMatch(ask, /Kategori seçin|İsteğe bağlı kategori|İsteğe bağlı konu/);
   assert.doesNotMatch(ask, /Bu ekranda kayıt alınmıyor|yalnızca arayüz davranışı gösteriliyor|Bu ekranda kayıt alınmaz/);
   assertOnlyPublicPreviewApi(ask);
 });
@@ -258,6 +266,7 @@ test('public preview exposes separate index and info pages', () => {
     '/public-preview/konular',
     '/public-preview/kategoriler',
     '/public-preview/hakkimizda',
+    '/public-preview/nasil-kullanilir',
     '/public-preview/iletisim',
     '/public-preview/gizlilik',
     '/public-preview/kullanim-kosullari'

@@ -52,6 +52,7 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/hesabim`,
   `${PREVIEW_BASE}/soru-sor`,
   `${PREVIEW_BASE}/hakkimizda`,
+  `${PREVIEW_BASE}/nasil-kullanilir`,
   `${PREVIEW_BASE}/iletisim`,
   `${PREVIEW_BASE}/gizlilik`,
   `${PREVIEW_BASE}/kullanim-kosullari`,
@@ -243,18 +244,39 @@ function header(active) {
 
 function footer() {
   const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
+  const footerCategories = publicArchiveFixtures.categories.filter(category => category.featured).slice(0, 5);
+  const footerTopics = publicArchiveFixtures.topics.filter(topic => topic.featured).slice(0, 6);
   return `
     <footer class="pa-footer">
       <div class="pa-footer-brand">
         <a class="pa-logo" href="${PREVIEW_BASE}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
         <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
       </div>
-      <nav class="pa-footer-links" aria-label="Alt bağlantılar">
-        <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
-        <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
-        <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
-        <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
-      </nav>
+      <div class="pa-footer-groups">
+        <nav class="pa-footer-links" aria-label="Arşiv bağlantıları">
+          <strong>Arşiv</strong>
+          <a href="${PREVIEW_BASE}/arsiv">Tüm Sorular</a>
+          <a href="${PREVIEW_BASE}/konular">Kavramlar</a>
+          <a href="${PREVIEW_BASE}/kategoriler">Kategoriler</a>
+          <a href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+        </nav>
+        <nav class="pa-footer-links" aria-label="Bilgilendirme">
+          <strong>Bilgi</strong>
+          <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
+          <a href="${PREVIEW_BASE}/nasil-kullanilir">Nasıl Kullanılır</a>
+          <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
+          <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
+          <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
+        </nav>
+        <nav class="pa-footer-links" aria-label="Öne çıkan ana başlıklar">
+          <strong>Ana Başlıklar</strong>
+          ${footerCategories.map(category => `<a href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">${escapeHtml(category.name)}</a>`).join('')}
+        </nav>
+        <nav class="pa-footer-links" aria-label="Öne çıkan kavramlar">
+          <strong>Kavramlar</strong>
+          ${footerTopics.map(topic => `<a href="${PREVIEW_BASE}/konu/${escapeHtml(topic.slug)}">${escapeHtml(topic.name)}</a>`).join('')}
+        </nav>
+      </div>
       <p class="pa-copyright">© 2026 Dini Sorular ve Cevaplar Arşivi. Tüm hakları saklıdır.</p>
     </footer>
   `;
@@ -439,6 +461,22 @@ function ctaBand() {
   `;
 }
 
+function guideList(items = []) {
+  return `
+    <div class="pa-guide-list">
+      ${items.map((item, index) => `
+        <div class="pa-guide-item">
+          <span>${String(index + 1).padStart(2, '0')}</span>
+          <div>
+            <strong>${escapeHtml(item.title)}</strong>
+            <p>${escapeHtml(item.text)}</p>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 function trustBand() {
   return `
     <section class="pa-context-band" id="baglam">
@@ -592,7 +630,7 @@ function renderTopicsIndex() {
   return renderShell({
     active: 'topics',
     title: 'Konular',
-    description: 'Public arşivdeki kavram ve konu başlıkları.',
+    description: 'Arşivdeki kavram ve konu başlıkları.',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-collection-hero">
@@ -618,7 +656,7 @@ function renderCategoriesIndex() {
   return renderShell({
     active: 'categories',
     title: 'Kategoriler',
-    description: 'Public arşivdeki soru-cevap kategorileri.',
+    description: 'Arşivdeki soru-cevap kategorileri.',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-collection-hero">
@@ -803,13 +841,13 @@ function renderAccount() {
   return renderShell({
     active: 'account',
     title: 'Hesabım',
-    description: 'Public arşiv hesabı ve soru gönderimi.',
+    description: 'Soru gönderimi için hesap sayfası.',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-account-page" data-account-panel>
           <p class="pa-kicker">Hesabım</p>
           <h1>Hesabınızla soru gönderimini takip edin.</h1>
-          <p>Google hesabınızla oturum açarak Soru Sor ekranından gönderdiğiniz soruların kayıt altına alınmasını sağlayabilirsiniz.</p>
+          <p>Google ile devam ettiğinizde gönderdiğiniz sorular size bağlanır. Böylece ileride sorularınızı aynı hesaptan takip edebilirsiniz.</p>
           <div class="pa-account-status" data-account-status>Oturum durumu kontrol ediliyor...</div>
           <div class="pa-empty-actions" data-account-actions>
             <a class="pa-button" href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/hesabim')}">Google ile Devam Et</a>
@@ -825,42 +863,47 @@ function renderAsk() {
   return renderShell({
     active: 'ask',
     title: 'Soru Sor',
-    description: 'Soru sorma ekranı.',
+    description: 'Arşive soru göndermek için sade form.',
     content: `
       <main class="pa-main pa-form-main">
         ${breadcrumb([{ label: 'Soru Sor' }])}
         <section class="pa-form-layout">
           <div class="pa-form-copy">
             <p class="pa-kicker">Soru Sor</p>
-            <h1>Aklınızda bir soru mu var?</h1>
+            <h1>Sorunuzu anlaşılır bir şekilde yazın.</h1>
             <p>Sorunuzu kısa ve açık şekilde yazabilirsiniz. ${escapeHtml(publicArchiveFixtures.brand.authorLine)}</p>
             <div class="pa-account-status" data-ask-session>Oturum durumu kontrol ediliyor...</div>
-            <div class="pa-note-box" id="gizlilik">
-              <strong>Gizlilik notu</strong>
-              <p>Kişisel bilgi, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar paylaşmayın.</p>
-            </div>
+            ${guideList([
+              {
+                title: 'Tek soruya odaklanın',
+                text: 'Ana meselenizi bir cümlede yazın; gerekiyorsa kısa bir bağlam ekleyin.'
+              },
+              {
+                title: 'Mahrem bilgi yazmayın',
+                text: 'Ad, telefon, adres, özel sağlık bilgisi veya üçüncü kişilere ait ayrıntı paylaşmayın.'
+              },
+              {
+                title: 'Önce arşive bakabilirsiniz',
+                text: 'Benzer cevaplar varsa arama ve kavram sayfaları sizi hızlıca ilgili kayda götürür.'
+              }
+            ])}
           </div>
           <form class="pa-ask-form" data-question-form>
+            <div class="pa-form-heading">
+              <strong>Sorunuz</strong>
+              <p>Soruyu açık, kısa ve tek konuya odaklı yazmanız yeterlidir.</p>
+            </div>
             <label>
               <span>Soru metni</span>
-              <textarea name="question" rows="7" maxlength="2000" minlength="20" placeholder="Sorunuzu yazın..." required></textarea>
-            </label>
-            <label>
-              <span>İsteğe bağlı kategori</span>
-              <select name="category">
-                <option value="">Kategori seçin</option>
-                ${publicArchiveFixtures.categories.map(category => `<option value="${escapeHtml(category.name)}">${escapeHtml(category.name)}</option>`).join('')}
-              </select>
-            </label>
-            <label>
-              <span>İsteğe bağlı konu</span>
-              <input name="topic" maxlength="120" placeholder="Örn. Zikir, hidayet, mürşid...">
+              <textarea name="question" rows="8" maxlength="2000" minlength="20" placeholder="Sorunuzu buraya yazın..." required></textarea>
+              <small class="pa-field-help">Kategori veya kavram seçmeniz gerekmez; soru arşive alınırken ilgili başlıklarla bağlanır.</small>
             </label>
             <label class="pa-check-row" id="kullanim">
               <input name="privacyAccepted" type="checkbox" required>
-              <span>Kişisel bilgi paylaşmadığımı anladım.</span>
+              <span>Kişisel veya mahrem bilgi yazmadığımı anladım.</span>
             </label>
             <button class="pa-button" type="submit">Soruyu Gönder</button>
+            <p class="pa-form-note">Gönderdiğiniz soru kayda alınır. Cevap süresi ve yayın durumu sorunun içeriğine göre değişebilir.</p>
             <p class="pa-form-status" data-question-form-status aria-live="polite"></p>
           </form>
         </section>
@@ -874,10 +917,29 @@ function renderInfoPage(kind) {
     hakkimizda: {
       title: 'Hakkımızda',
       kicker: 'Hakkımızda',
-      heading: 'Sakin, okunabilir ve kaynak bağlamını koruyan bir arşiv.',
+      heading: 'Soruları kavramlarıyla birlikte okumak için hazırlanmış bir arşiv.',
       copy: [
-        'Dini Sorular ve Cevaplar Arşivi, soru-cevap kayıtlarını kavram ve kategori bağlantılarıyla okunabilir hale getirmek için hazırlanır.',
-        `${publicArchiveFixtures.brand.sentence} ${publicArchiveFixtures.brand.authorLine}`
+        'Dini Sorular ve Cevaplar Arşivi, yayınlanan soru ve cevapları ana başlıklar ve kavramlarla birlikte okunur hâle getirir.',
+        `${publicArchiveFixtures.brand.authorLine} Sayfalar, okuyucunun aradığı cevaba daha kolay ulaşması için düzenlenir.`
+      ],
+      points: [
+        { title: 'Arama', text: 'Soru başlıkları, cevap metinleri ve kavramlar birlikte aranır.' },
+        { title: 'Kavram bağı', text: 'Bir cevap tek başına bırakılmaz; ilgili kavram ve ana başlıklarla birlikte gösterilir.' },
+        { title: 'Okuma rahatlığı', text: 'Uzun cevaplar mobil ve masaüstünde sakin bir okuma düzeniyle sunulur.' }
+      ]
+    },
+    'nasil-kullanilir': {
+      title: 'Nasıl Kullanılır',
+      kicker: 'Nasıl Kullanılır',
+      heading: 'Aradığınız cevaba birkaç sade adımla ulaşabilirsiniz.',
+      copy: [
+        'Önce arama kutusuna merak ettiğiniz soruyu veya kavramı yazın. Sonra ilgili soru kartını açarak cevabı okuyun.',
+        'Cevabın yanında görünen kavramlar, aynı konudaki başka sorulara geçmenize yardımcı olur.'
+      ],
+      points: [
+        { title: 'Arayın', text: 'Soru, kavram veya ana başlık yazarak başlayın.' },
+        { title: 'Cevabı okuyun', text: 'Soru detayında cevabı, yayın tarihini ve ilgili kavramları birlikte görün.' },
+        { title: 'Devam edin', text: 'İlgili sorular ve kavramlar üzerinden okumayı derinleştirin.' }
       ]
     },
     iletisim: {
@@ -885,17 +947,27 @@ function renderInfoPage(kind) {
       kicker: 'İletişim',
       heading: 'Arşivle ilgili notlarınızı sade şekilde iletebilirsiniz.',
       copy: [
-        'Public arşiv yayına hazırlık sürecindedir. Soru göndermek için Soru Sor ekranını kullanabilirsiniz.',
-        'Kişisel bilgi ve mahrem ayrıntı paylaşmamanız önemlidir.'
+        'Arşivde bir eksik, yazım hatası veya iletmek istediğiniz bir not fark ederseniz bize bildirebilirsiniz.',
+        'Yeni bir dini soru göndermek için Soru Sor sayfasını kullanmanız yeterlidir.'
+      ],
+      points: [
+        { title: 'Arşiv notu', text: 'Sayfa, bağlantı veya yazım hatasıyla ilgili notlarınızı kısa şekilde iletin.' },
+        { title: 'Yeni soru', text: 'Dini sorular için Soru Sor sayfasındaki formu kullanın.' },
+        { title: 'Mahremiyet', text: 'İletişim veya soru metninde kişisel bilgi paylaşmayın.' }
       ]
     },
     gizlilik: {
       title: 'Gizlilik',
       kicker: 'Gizlilik',
-      heading: 'Public arşiv kişisel bilgiyi azaltarak çalışacak şekilde tasarlanır.',
+      heading: 'Soru gönderirken mahremiyeti korumak esastır.',
       copy: [
-        'Soru gönderirken kişisel bilgi, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar yazmayın.',
-        'Google oturumu yalnız soru gönderimini kullanıcı hesabıyla ilişkilendirmek için kullanılır.'
+        'Soru gönderirken ad, telefon, adres, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar yazmayın.',
+        'Google ile devam etmeniz, gönderdiğiniz soruyu kendi hesabınızla ilişkilendirmek içindir.'
+      ],
+      points: [
+        { title: 'Az bilgi', text: 'Soruyu anlamaya yetmeyen kişisel ayrıntıları yazmayın.' },
+        { title: 'Mahremiyet', text: 'Kendinize veya başkasına ait özel bilgileri paylaşmayın.' },
+        { title: 'Hesap bağı', text: 'Hesap bilgisi, gönderdiğiniz soruyu takip edebilmeniz için kullanılır.' }
       ]
     },
     'kullanim-kosullari': {
@@ -903,8 +975,13 @@ function renderInfoPage(kind) {
       kicker: 'Kullanım',
       heading: 'Arşiv okuma ve soru gönderimi için sade kullanım ilkeleri.',
       copy: [
-        'Public arşiv, soru-cevap içeriklerini okumak, aramak ve kavramlar üzerinden keşfetmek için sunulur.',
-        'Soru gönderimi, cevabın hemen yayınlanacağı veya belirli sürede yanıtlanacağı anlamına gelmez.'
+        'Arşiv; soru-cevap içeriklerini okumak, aramak ve kavramlar üzerinden keşfetmek için sunulur.',
+        'Soru gönderimi, cevabın hemen yayınlanacağı veya belirli bir sürede yanıtlanacağı anlamına gelmez.'
+      ],
+      points: [
+        { title: 'Okuma', text: 'Cevapları arşiv sayfalarından okuyabilir, bağlantılarını paylaşabilirsiniz.' },
+        { title: 'Soru gönderimi', text: 'Gönderilen sorular içerik ve ihtiyaç durumuna göre ele alınır.' },
+        { title: 'Düzen', text: 'Arşivdeki başlıklar ve kavramlar okuyucunun kolay ulaşması için düzenlenir.' }
       ]
     }
   };
@@ -915,10 +992,13 @@ function renderInfoPage(kind) {
     description: page.heading,
     content: `
       <main class="pa-main pa-narrow-main">
-        <section class="pa-account-page">
+        <section class="pa-info-page">
           <p class="pa-kicker">${escapeHtml(page.kicker)}</p>
           <h1>${escapeHtml(page.heading)}</h1>
-          ${page.copy.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+          <div class="pa-info-copy">
+            ${page.copy.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+          </div>
+          ${guideList(page.points || [])}
           <div class="pa-empty-actions">
             <a class="pa-button" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
             <a class="pa-button is-secondary" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
@@ -933,14 +1013,14 @@ function renderNotFound() {
   return renderShell({
     active: 'search',
     title: 'Sayfa bulunamadı',
-    description: 'Aradığınız içerik bu ön izleme alanında bulunamadı.',
+    description: 'Aradığınız içerik bulunamadı.',
     status: 404,
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-empty-state is-large">
           <p class="pa-kicker">404</p>
           <h1>Sayfa bulunamadı.</h1>
-          <p>Aradığınız içerik bu ön izleme alanında görünmüyor. Arama yapabilir veya ana sayfaya dönebilirsiniz.</p>
+          <p>Aradığınız içerik şu anda görünmüyor. Arama yapabilir veya ana sayfaya dönebilirsiniz.</p>
           ${searchBox()}
           <div class="pa-empty-actions">
             <a class="pa-button" href="${PREVIEW_BASE}">Ana Sayfa</a>
@@ -1223,16 +1303,16 @@ function renderShell({ title, description, active, content, status = 200, questi
         var askSession = document.querySelector('[data-ask-session]');
         if (status) {
           if (session.loggedIn && session.user) status.textContent = 'Oturum açık: ' + (session.user.name || session.user.email);
-          else if (session.googleConfigured) status.textContent = 'Soru göndermek için Google hesabınızla oturum açabilirsiniz.';
-          else status.textContent = 'Google ile oturum açma bağlantısı bu ortamda henüz tanımlı değil.';
+          else if (session.googleConfigured) status.textContent = 'Soru göndermek için Google ile devam edebilirsiniz.';
+          else status.textContent = 'Soru gönderimi şu anda açık değil. Arşivi incelemeye devam edebilirsiniz.';
         }
         if (actions && session.loggedIn) {
           actions.innerHTML = '<button class="pa-button is-secondary" type="button" data-public-logout>Çıkış Yap</button><a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>';
         }
         if (askSession) {
-          if (session.loggedIn && session.user) askSession.textContent = 'Soru gönderimi ' + (session.user.name || session.user.email) + ' hesabıyla kaydedilecek.';
+          if (session.loggedIn && session.user) askSession.textContent = 'Sorunuz ' + (session.user.name || session.user.email) + ' hesabıyla kaydedilecek.';
           else if (session.googleConfigured) askSession.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/soru-sor')}">Google ile oturum açın</a>.';
-          else askSession.textContent = 'Google ile oturum açma bağlantısı bu ortamda henüz tanımlı değil.';
+          else askSession.textContent = 'Soru gönderimi şu anda açık değil. Arşivi incelemeye devam edebilirsiniz.';
         }
         document.querySelectorAll('[data-public-logout]').forEach(function(button){
           button.addEventListener('click', async function(){
@@ -1250,8 +1330,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           var button = form.querySelector('button[type="submit"]');
           var payload = {
             question: form.elements.question && form.elements.question.value,
-            category: form.elements.category && form.elements.category.value,
-            topic: form.elements.topic && form.elements.topic.value,
+            category: '',
+            topic: '',
             privacyAccepted: Boolean(form.elements.privacyAccepted && form.elements.privacyAccepted.checked)
           };
           if (button) button.disabled = true;
@@ -1270,7 +1350,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               return;
             }
             form.reset();
-            if (status) status.textContent = 'Sorunuz kaydedildi.';
+            if (status) status.textContent = 'Sorunuz kaydedildi. Teşekkür ederiz.';
           } catch (error) {
             if (status) status.textContent = 'Bağlantı kurulamadı. Lütfen tekrar deneyin.';
           } finally {
@@ -1301,6 +1381,7 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/hesabim`) return renderAccount();
     if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
     if (pathname === `${PREVIEW_BASE}/hakkimizda`) return renderInfoPage('hakkimizda');
+    if (pathname === `${PREVIEW_BASE}/nasil-kullanilir`) return renderInfoPage('nasil-kullanilir');
     if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
     if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
     if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
@@ -1354,6 +1435,7 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/hesabim', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/hesabim`));
   router.get('/soru-sor', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/soru-sor`));
   router.get('/hakkimizda', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/hakkimizda`));
+  router.get('/nasil-kullanilir', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/nasil-kullanilir`));
   router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/iletisim`));
   router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/gizlilik`));
   router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kullanim-kosullari`));

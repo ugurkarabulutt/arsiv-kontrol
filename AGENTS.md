@@ -121,6 +121,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-14
+- **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`
+  cutover yapılmadan ve admin iş hattına dokunulmadan görsel kalite ve ziyaretçi metinleri
+  iyileştirildi. Soru kartları daha net arşiv kartı hissi için üst vurgu çizgisi, daha kontrollü
+  radius ve sade yüzeyle güncellendi; konu/kategori kartları da daha az yuvarlak hale getirildi.
+  Footer tek sıra bağlantı yerine `Arşiv`, `Bilgi`, `Ana Başlıklar` ve `Kavramlar` gruplarına
+  ayrıldı. Yeni `/public-preview/nasil-kullanilir` bilgilendirme sayfası eklendi. Hakkımızda,
+  Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları metinleri teknik olmayan ziyaretçi
+  diline çekildi. Soru Sor sayfasında kullanıcıya kategori/kavram seçtiren alanlar kaldırıldı;
+  kullanıcı yalnız soru metni yazar ve kişisel/mahrem bilgi yazmadığını onaylar. `Public arşiv`,
+  `Google OAuth`, `bu ortam`, `ön izleme alanı` gibi public görünen teknik ifadeler guard
+  kapsamına alındı. Doğrulama: `node --check public-archive-renderer.js`, `node --check server.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check` başarılı; tam check
+  `97/97` test geçti. Chrome/Edge headless screenshot bu Windows oturumunda GPU sürecinde bloklandı;
+  açık kullanıcı tarayıcı süreçlerine dokunulmadı.
+
 - **Public preview gerçek okuma modeli canlı DB'ye dolduruldu:** Kullanıcı `schema.sql`
   içindeki public arşiv tablolarını Supabase SQL Editor'de başarıyla çalıştırdıktan sonra
   onaylı kayıtlar public okuma modeline senkronlandı. Son canlı veri durumu: `11` onaylı

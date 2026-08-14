@@ -75,7 +75,12 @@ const PUBLIC_PREVIEW_FORBIDDEN_SNIPPETS = [
   'Bildirim',
   'görüntülenme',
   'view count',
-  'helpful voting'
+  'helpful voting',
+  'Public arşiv',
+  'Google OAuth',
+  'bu ortam',
+  'ön izleme alanı',
+  'önizleme alanı'
 ];
 
 function normalizePublicPreviewScan(content) {
@@ -957,8 +962,12 @@ assert(askPreview.includes('data-question-form') && !askPreview.includes('data-s
 assert(askPreview.includes('/public-preview/api/question-submissions'), 'Soru Sor public preview submission endpoint ine baglanmali.');
 assert(askPreview.includes('/public-preview/auth/google'), 'Soru Sor Google oturum girisine baglanmali.');
 assert(askPreview.includes('Sorunuzu kısa ve açık şekilde yazabilirsiniz.'), 'Soru Sor public mikrocopy eksik.');
+assert(askPreview.includes('Tek soruya odaklanın') && askPreview.includes('Mahrem bilgi yazmayın'), 'Soru Sor rehber metinleri eksik.');
+assert(!askPreview.includes('Kategori seçin') && !askPreview.includes('İsteğe bağlı kategori') && !askPreview.includes('İsteğe bağlı konu'), 'Soru Sor kullaniciya kategori/kavram sectirmemeli.');
 assert(!askPreview.includes('Bu ekranda kayıt alınmıyor') && !askPreview.includes('yalnızca arayüz davranışı gösteriliyor') && !askPreview.includes('Bu ekranda kayıt alınmaz'), 'Soru Sor teknik preview dili gostermemeli.');
 assert(askPreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Soru Sor author context eksik.');
+const howToPreview = renderPublicArchivePreviewRoute('/public-preview/nasil-kullanilir').html;
+assert(howToPreview.includes('Nasıl Kullanılır') && howToPreview.includes('Arayın') && howToPreview.includes('Cevabı okuyun'), 'Nasıl Kullanılır bilgilendirme sayfasi eksik.');
 const notFoundPreview = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
 assert(notFoundPreview.status === 404 && notFoundPreview.html.includes('Sayfa bulunamadı.'), 'Gizli veya eksik public icerik 404 state dondurmeli.');
 

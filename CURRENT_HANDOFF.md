@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-14 Codex Public Preview Görsel Kalite Pass
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Public ön yüz ikinci görsel/UX pass başlatıldı. Bu adım root `/` cutover yapmaz ve admin
+  iş hattına dokunmaz.
+- Soru kartları daha net arşiv kartı gibi görünmesi için üst vurgu çizgisi, daha kontrollü
+  radius ve daha ciddi yüzeyle güncellendi. Konu/kategori kartlarının radius'u da sadeleştirildi.
+- Footer tek sıra link olmaktan çıkarıldı; `Arşiv`, `Bilgi`, `Ana Başlıklar` ve `Kavramlar`
+  gruplarıyla daha kullanışlı alt gezinme alanına çevrildi.
+- Yeni bilgilendirme sayfası eklendi: `/public-preview/nasil-kullanilir`. Footer bağlantısı,
+  renderer route'u ve Express router route'u birlikte eklendi.
+- Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları metinleri teknik
+  olmayan, kısa ve ziyaretçiye dönük dile çekildi. Public görünen `Public arşiv`, `Google OAuth`,
+  `bu ortam`, `ön izleme alanı` gibi ifadeler guard kapsamına alındı.
+- Soru Sor sayfasında kullanıcıya kategori/kavram seçtiren alanlar kaldırıldı. Kullanıcı yalnız
+  soru metni yazar ve kişisel/mahrem bilgi yazmadığını onaylar; kategori/kavram işi arka tarafta
+  kalır. Sol tarafta `Tek soruya odaklanın`, `Mahrem bilgi yazmayın`, `Önce arşive bakabilirsiniz`
+  rehberleri eklendi.
+- Google giriş hazır değil sayfasındaki teknik `OAuth / ortam` dili sadeleştirildi.
+- Doğrulama geçti: `node --check public-archive-renderer.js`, `node --check server.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
+  test başarılı.
+- Otomatik screenshot denendi ama bu Windows oturumunda Chrome ve Edge headless GPU sürecinde
+  görüntü üretemedi. Kullanıcının açık tarayıcı süreçlerine dokunulmadı. Ekip gerçek cihaz
+  kontrolünde özellikle mobil Safari footer, Soru Sor, Nasıl Kullanılır ve soru detayını
+  incelemeli.
+
 ## 2026-08-14 Codex Public Preview SQL Sonrası Canlı Veri
 
 - Kullanıcı `schema.sql` içindeki public arşiv tablolarını Supabase SQL Editor'de başarıyla

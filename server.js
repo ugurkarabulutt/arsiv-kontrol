@@ -7253,7 +7253,7 @@ app.get('/public-preview/api/session', async (req, res) => {
 
 app.get('/public-preview/auth/google', (req, res) => {
   if (!publicGoogleAuthConfigured()) {
-    return res.status(503).type('html').send('<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Google oturumu hazır değil</title><body><main><h1>Google ile oturum açma şu anda hazır değil.</h1><p>Bu ortam için Google OAuth bağlantısı tanımlandığında Hesabım ekranından devam edebilirsiniz.</p><p><a href="/public-preview/hesabim">Hesabım sayfasına dön</a></p></main></body></html>');
+    return res.status(503).type('html').send('<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Soru gönderimi açık değil</title><body><main><h1>Soru gönderimi şu anda açık değil.</h1><p>Arşivi incelemeye devam edebilir veya daha sonra tekrar deneyebilirsiniz.</p><p><a href="/public-preview/hesabim">Hesabım sayfasına dön</a></p></main></body></html>');
   }
   const state = crypto.randomBytes(18).toString('hex');
   req.session.publicGoogleState = state;
