@@ -135,7 +135,14 @@ tespit edilir).
   `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check` başarılı; tam check
   `97/97` test geçti. Chrome/Edge headless screenshot bu Windows oturumunda GPU sürecinde bloklandı;
-  açık kullanıcı tarayıcı süreçlerine dokunulmadı.
+  açık kullanıcı tarayıcı süreçlerine dokunulmadı. Runtime commit `aae1d0c` GitHub'a push edildi.
+  Doğru Vercel projesi `arsiv-kontrol` üzerinde preview deploy alındı:
+  `https://arsiv-kontrol-4fgpb5jna-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_FHVAtHS7mB3AcSsUKtvjCKAVaWS8`. Deploy `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1`
+  runtime flag'iyle alındı; root production alias değiştirilmedi. Canlı smoke:
+  `/public-preview`, `/public-preview/soru-sor`, `/public-preview/nasil-kullanilir`,
+  `/public-preview/arsiv` 200 ve noindex; footer grupları, Soru Sor rehber metinleri,
+  kategori/kavram alanlarının kaldırılması, ilk gerçek soru detayı ve okunma sayaç yazımı doğrulandı.
 
 - **Public preview gerçek okuma modeli canlı DB'ye dolduruldu:** Kullanıcı `schema.sql`
   içindeki public arşiv tablolarını Supabase SQL Editor'de başarıyla çalıştırdıktan sonra

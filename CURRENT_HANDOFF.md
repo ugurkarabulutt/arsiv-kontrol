@@ -24,6 +24,17 @@
   `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
   test başarılı.
+- Runtime commit `aae1d0c` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol`
+  üzerinde preview deploy alındı:
+  `https://arsiv-kontrol-4fgpb5jna-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_FHVAtHS7mB3AcSsUKtvjCKAVaWS8`. Deploy preview flag ile alındı:
+  `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1`. Root production alias değiştirilmedi.
+- Canlı smoke başarılı: `/public-preview`, `/public-preview/soru-sor`,
+  `/public-preview/nasil-kullanilir`, `/public-preview/arsiv` 200 ve noindex döndü.
+  Footer grupları canlı HTML'de var, Soru Sor rehber metinleri var, kullanıcıya kategori/kavram
+  seçtiren alan yok. Arşivde ilk gerçek slug
+  `gunumuzde-allahin-tayin-ettigi-mursidler-yok-mudur`; soru detayı 200 ve okunma sayacı
+  `public_question_stats` tablosuna yazıyor. Eski fixture slug'ı görünmüyor.
 - Otomatik screenshot denendi ama bu Windows oturumunda Chrome ve Edge headless GPU sürecinde
   görüntü üretemedi. Kullanıcının açık tarayıcı süreçlerine dokunulmadı. Ekip gerçek cihaz
   kontrolünde özellikle mobil Safari footer, Soru Sor, Nasıl Kullanılır ve soru detayını
