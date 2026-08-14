@@ -120,6 +120,20 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-14
+- **Public preview gerçek okuma modeli canlı DB'ye dolduruldu:** Kullanıcı `schema.sql`
+  içindeki public arşiv tablolarını Supabase SQL Editor'de başarıyla çalıştırdıktan sonra
+  onaylı kayıtlar public okuma modeline senkronlandı. Son canlı veri durumu: `11` onaylı
+  soru-cevap `public_qa`, `8` kategori, `26` kavram ve `35` soru-kavram bağlantısı. Eski
+  fallback okunma verisinden `1` kayıt `public_question_stats` tablosuna taşındı. Preview
+  smoke başarılı: `/public-preview`, `/public-preview/arsiv` ve ilk gerçek soru detayı 200;
+  arşivde `11` gerçek slug var, eski fixture slug'ı görünmüyor, `X-Robots-Tag: noindex`
+  korunuyor ve okunma sayacı gerçek tablo üzerinden `2` değerinden `3` değerine çıktı.
+  Preview URL:
+  `https://arsiv-kontrol-88m3czm4v-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Root production alias değiştirilmedi ve `/` cutover yapılmadı. Bu adım runtime kod
+  değişikliği/deploy gerektirmedi; canlı DB verisi hazırlandı ve dokümantasyon güncellendi.
+
 ### 2026-08-13
 - **Public preview gerçek veri köprüsü hazırlandı:** `/public-preview` örnek fixture verisine
   bağımlı olmaktan çıkarıldı. `public-archive-renderer.js` artık request bazlı dış public arşiv

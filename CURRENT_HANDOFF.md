@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-14 Codex Public Preview SQL Sonrası Canlı Veri
+
+- Kullanıcı `schema.sql` içindeki public arşiv tablolarını Supabase SQL Editor'de başarıyla
+  çalıştırdı; SQL sonucu `Success. No rows returned` olarak döndü.
+- Ardından onaylı geçmiş kayıtları public okuma modeline senkronlandı. Son durum:
+  `11` onaylı soru-cevap `public_qa` tablosuna alındı, `8` kategori, `26` kavram ve
+  `35` soru-kavram bağlantısı oluştu. Eski fallback okunma verisinden `1` kayıt
+  `public_question_stats` tablosuna taşındı.
+- Canlı preview smoke başarılı: `/public-preview` 200, `/public-preview/arsiv` 200,
+  ilk gerçek soru detayı 200. Arşivde `11` gerçek slug görünüyor; eski fixture slug'ı
+  `/public-preview/soru/ornek-soru` artık HTML'de yok.
+- Okunma sayacı gerçek tabloya yazıyor. Smoke sırasında ilk soru slug'ı
+  `gunumuzde-allahin-tayin-ettigi-mursidler-yok-mudur` için sayaç `2` değerinden `3`
+  değerine çıktı; yazma yolu `public_question_stats` tablosu.
+- Preview URL aynı kaldı:
+  `https://arsiv-kontrol-88m3czm4v-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Root production alias değiştirilmedi; `/` cutover yapılmadı.
+- Bu adımda runtime kod değişmedi. Sadece canlı DB verisi hazırlandı ve bu devir notu
+  güncellendi.
+
 ## 2026-08-13 Codex Public Preview Gerçek Veri Köprüsü
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
