@@ -146,6 +146,13 @@ tespit edilir).
   güncellendi. Kullanıcının “şeffaf” dediği dosya JPG olduğu için gerçek alfa şeffaflığı taşımıyor;
   bu turda güvenli çözüm CSS yerleşim/katman düzeltmesiyle yapıldı. Kapsam yalnız public-preview
   hattıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı.
+- **Public preview hero kitap görünürlüğü artırıldı:** Kullanıcı son iPhone kontrolünde kitabın
+  hâlâ belli olmadığını bildirdi. Hero banner rengi ve katmanları kitap görseli lehine yeniden
+  ayarlandı: açık kitap asset'i artık `mix-blend-mode: normal` ile basılır, temel opaklık
+  `0.68`, mobil opaklık `0.72`, 430px altı opaklık `0.78` seviyesine çıkarıldı. Mobil yeşil
+  overlay sağ/alt tarafta inceltildi; metin okunurluğu sol üstte korunurken kitabın formu
+  seçilecek şekilde `object-position: 56% 72%` ve 430px altında `50% 74%` kullanıldı. Guard
+  bu görünürlük marker'larını kontrol edecek şekilde güncellendi.
 
 ### 2026-08-14
 - **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`

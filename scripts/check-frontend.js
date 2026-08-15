@@ -781,9 +781,12 @@ for (const marker of [
 assert(!publicRendererSource.includes('hero-bookshelf'), 'Eski kitaplik hero gorseli public preview icinde kalmamali.');
 assert(
   publicCss.includes('.pa-hero > .pa-still-life') &&
-    publicCss.includes('object-position: 54% 70%') &&
-    publicCss.includes('transform: scale(1.18)'),
-  'Public CSS mobil acik kitap hero tam yuzey geometrisi eksik.'
+    publicCss.includes('object-position: 56% 72%') &&
+    publicCss.includes('opacity: 0.72') &&
+    publicCss.includes('object-position: 50% 74%') &&
+    publicCss.includes('opacity: 0.78') &&
+    publicCss.includes('mix-blend-mode: normal'),
+  'Public CSS mobil acik kitap hero gorunur yerlesim markerlari eksik.'
 );
 assert(publicCss.includes('.pa-shelf-arch') && publicCss.includes('display: none !important'), 'Public CSS old placeholder shelf graphics must be disabled.');
 assert(!/--(?:bg|ink|gold)\b/.test(publicCss), 'Public CSS eski admin tokenlarina baglanmamali.');

@@ -31,6 +31,11 @@
   daha büyük arka plan dokusuna çevrildi. Mobil overlay keskin ayrım yerine tam yüzeye yayılan
   yumuşak katman oldu. “Şeffaf” diye gelen görsel JPG olduğu için gerçek alfa taşımıyor; bu
   nedenle bu turda güvenli çözüm CSS yerleşim/katman düzeltmesidir.
+- Kullanıcının ikinci iPhone kontrolünde kitap hâlâ yeterince belli olmadığı için görünürlük
+  artırıldı. `mix-blend-mode: screen` kaldırıldı, kitap normal fotoğraf gibi basılıyor. Opaklık
+  temel ekranda `0.68`, mobilde `0.72`, 430px altında `0.78`; mobil overlay sağ/alt tarafta
+  inceltildi. Bu değişiklik banner rengini ve katmanını kitap formu okunacak şekilde daha sıcak
+  ve daha açık tarafa çekti.
 - Sıradaki pratik kontrol: doğru Vercel projesinde `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile yeni
   preview deploy al, `/public-preview` canlı smoke yap ve gerçek iPhone/Safari görsel feedback'ini
   kullanıcıdan al.
