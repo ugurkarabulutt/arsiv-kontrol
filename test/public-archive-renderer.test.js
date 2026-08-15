@@ -59,7 +59,7 @@ test('public preview routes render isolated noindex pages', () => {
     assert.match(rendered.html, /Dini Sorular/);
     assert.match(rendered.html, /ve Cevaplar Arşivi/);
     assert.match(rendered.html, /Hesab\u0131m/);
-    assert.match(rendered.html, /Soru, cevap ve kavramları kaynak bağlamıyla birlikte okuyun\./);
+    assert.match(rendered.html, /Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın\./);
     assertOnlyPublicPreviewApi(rendered.html);
   }
 });
@@ -91,10 +91,10 @@ test('public preview output avoids internal and fake feature language', () => {
 
 test('public preview uses final handoff assets and icon system', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
-  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-light-mobile\.webp/);
-  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-dark-mobile\.webp/);
-  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-light-desktop\.webp/);
-  assert.match(home, /\/public-preview\/assets\/hero-bookshelf-dark-desktop\.webp/);
+  assert.match(home, /\/public-preview\/assets\/hero-open-book-warm\.jpg/);
+  assert.doesNotMatch(home, /hero-bookshelf/);
+  assert.match(home, /Sorularınıza, kaynaklarıyla birlikte cevap bulun\./);
+  assert.match(home, /ilgili soruları, cevapları ve delilleri bir arada okuyun\./);
   assert.match(home, /class="pa-svg-icon"/);
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
@@ -256,7 +256,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
 
 test('mobile search copy stays compact but accessible', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
-  assert.match(home, /placeholder="Soru veya kavram yazın\.\.\."/);
+  assert.match(home, /placeholder="Soru veya kavram arayın\.\.\."/);
   assert.match(home, /aria-label="Sorunuzu veya kavramınızı yazın"/);
   assert.doesNotMatch(home, /placeholder="Sorunuzu veya kavramınızı yazın/);
 });

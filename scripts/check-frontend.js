@@ -752,10 +752,7 @@ assert(!html.includes('public-archive-renderer'), 'Admin index.html public previ
 assert(publicCss.includes('--pa-bg: #F7F3EA') && publicCss.includes('--pa-bg: #0D1412'), 'Public preview light/dark tokenlari bulunmali.');
 assert(publicCss.includes('--pa-primary: #145A3A') && publicCss.includes('--pa-primary: #79C99E'), 'Public preview ana yesil tokenlari light/dark palete bagli olmali.');
 for (const asset of [
-  'assets/hero-bookshelf-light-desktop.webp',
-  'assets/hero-bookshelf-dark-desktop.webp',
-  'assets/hero-bookshelf-light-mobile.webp',
-  'assets/hero-bookshelf-dark-mobile.webp',
+  'assets/hero-open-book-warm.jpg',
   'icons/search.svg',
   'icons/arrow-right.svg',
   'icons/user.svg',
@@ -769,10 +766,7 @@ for (const asset of [
 }
 for (const marker of [
   'public-archive-assets',
-  'hero-bookshelf-light-desktop.webp',
-  'hero-bookshelf-dark-desktop.webp',
-  'hero-bookshelf-light-mobile.webp',
-  'hero-bookshelf-dark-mobile.webp',
+  'hero-open-book-warm.jpg',
   "iconSvg('search')",
   "iconSvg('arrow-right')",
   "iconSvg('user')",
@@ -784,7 +778,8 @@ for (const marker of [
 ]) {
   assert(publicRendererSource.includes(marker), `Public renderer final handoff marker missing: ${marker}`);
 }
-assert(publicCss.includes('.pa-hero-asset') && publicCss.includes('object-position: 72% 50%') && publicCss.includes('object-position: 82% 50%'), 'Public CSS real hero asset geometry markers missing.');
+assert(!publicRendererSource.includes('hero-bookshelf'), 'Eski kitaplik hero gorseli public preview icinde kalmamali.');
+assert(publicCss.includes('.pa-hero-asset') && publicCss.includes('object-position: 50% 58%') && publicCss.includes('object-position: 50% 56%'), 'Public CSS yeni acik kitap hero asset geometrisi eksik.');
 assert(publicCss.includes('.pa-shelf-arch') && publicCss.includes('display: none !important'), 'Public CSS old placeholder shelf graphics must be disabled.');
 assert(!/--(?:bg|ink|gold)\b/.test(publicCss), 'Public CSS eski admin tokenlarina baglanmamali.');
 assert(!/#[0-9A-Fa-f]{3,6}/.test(publicCss.replace(/#F7F3EA|#FFFDF7|#EFE8DC|#17201C|#66736D|#8A7662|#DDD2C0|#F5E8C8|#CFE8D9|#145A3A|#0F4930|#B68A2A|#0D1412|#121B18|#101916|#F6F0E6|#B8C0B8|#8F9B93|#2C3A34|#2F2A1B|#294D3A|#79C99E|#9ADDB8|#D7B35D|#FFFFFF|#000000/g, '')), 'Public CSS final palet disinda hex renk icermemeli.');
@@ -807,7 +802,7 @@ for (const marker of [
 ]) {
   assert(publicCss.includes(marker), `Mobil input/focus guard eksik: ${marker}`);
 }
-assert(publicRendererSource.includes('placeholder="Soru veya kavram yazın..."'), 'Mobil arama placeholder kisa ve okunabilir olmali.');
+assert(publicRendererSource.includes('placeholder="Soru veya kavram arayın..."'), 'Mobil arama placeholder kisa ve okunabilir olmali.');
 assert(!publicRendererSource.includes('placeholder="Sorunuzu veya kavramınızı yazın..."'), 'Uzun arama placeholder mobilde okunamaz, geri gelmemeli.');
 for (const match of publicCss.matchAll(/\.pa-search input\s*\{([\s\S]*?)\}/g)) {
   assert(!/font-size:\s*(?:1[0-5](?:\.\d+)?px|0\.\d+rem)/.test(match[1]), 'Arama input fontu 16px altina dusmemeli; iOS zoom yapar.');
@@ -886,7 +881,7 @@ for (const item of publicRenderCases) {
   const rendered = renderPublicArchivePreviewRoute(item.route, item.query || {});
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
-  assert(rendered.html.includes('Soru, cevap ve kavramları kaynak bağlamıyla birlikte okuyun.'), `${item.route} ana public cumleyi icermeli.`);
+  assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
   assert(rendered.html.includes('/public-preview/public-archive.css'), `${item.route} yalniz public CSS yuklemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -894,13 +889,13 @@ for (const item of publicRenderCases) {
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [
-  '/public-preview/assets/hero-bookshelf-light-desktop.webp',
-  '/public-preview/assets/hero-bookshelf-dark-desktop.webp',
-  '/public-preview/assets/hero-bookshelf-light-mobile.webp',
-  '/public-preview/assets/hero-bookshelf-dark-mobile.webp'
+  '/public-preview/assets/hero-open-book-warm.jpg'
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
+assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
+assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
+assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
 for (const marker of ['Arşiv ana kapıları', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }

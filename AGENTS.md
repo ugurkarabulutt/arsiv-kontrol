@@ -120,6 +120,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-15
+- **Public preview hero metni ve görseli delil/kaynak çizgisine çekildi:** `/public-preview`
+  ana sayfa banner'ında eski kitaplık görseli kaldırıldı ve kullanıcı tarafından verilen açık
+  kitap görseli `public-archive-assets/assets/hero-open-book-warm.jpg` olarak eklendi. Hero
+  üst cümlesi `Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.` olarak güncellendi;
+  `Kur’an ve Hadis ışığında` gibi tüm cevapların yalnız bu iki kaynakla açıklandığını ima eden
+  iddialı dil özellikle kullanılmadı. Ana başlık `Sorularınıza, kaynaklarıyla birlikte cevap
+  bulun.`, açıklama metni `Hidayet, mürşid, zikir ve teslimiyet gibi temel kavramlardan başlayın;
+  ilgili soruları, cevapları ve delilleri bir arada okuyun.` oldu. Arama placeholder'ı
+  `Soru veya kavram arayın...`, slider başlığı `Öne çıkan kavramlar` olarak değiştirildi.
+  CSS'te eski sağ taraf kitaplık/yeşil silik görsel etkisi kaldırıldı; yeni açık kitap görseli
+  light/dark ve mobil kırpma ayarlarıyla banner tonuna daha sakin bağlandı. Guard ve testler
+  eski `hero-bookshelf` asset'i geri gelirse kırılacak şekilde güncellendi. Kapsam yalnız
+  public-preview hattıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Yerel
+  doğrulama: `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node --check server.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı.
+
 ### 2026-08-14
 - **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`
   cutover yapılmadan ve admin iş hattına dokunulmadan görsel kalite ve ziyaretçi metinleri

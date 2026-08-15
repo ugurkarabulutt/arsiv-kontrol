@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-15 Codex Public Preview Hero Delil/Görsel Güncellemesi
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Kullanıcı onayıyla yalnız `/public-preview` hero/banner katmanı güncellendi. Root `/`
+  production cutover yapılmadı ve admin iş hattına dokunulmadı.
+- Eski kitaplık hero asset'i renderer'dan kaldırıldı. Kullanıcının verdiği açık kitap görseli
+  `public-archive-assets/assets/hero-open-book-warm.jpg` olarak eklendi ve hero içinde tek asset
+  olarak kullanıldı.
+- Hero dili düzeltildi: `Kur’an ve Hadis ışığında` ifadesi kullanılmadı, çünkü her kayıt yalnız
+  Kur'an ve hadisle açıklanmıyor. Public dil artık delil/kaynak merkezli: `Cevaplara delilleri ve
+  kaynak bağlamıyla kolayca ulaşın.`
+- Ana başlık `Sorularınıza, kaynaklarıyla birlikte cevap bulun.` oldu. Açıklama metni
+  `Hidayet, mürşid, zikir ve teslimiyet gibi temel kavramlardan başlayın; ilgili soruları,
+  cevapları ve delilleri bir arada okuyun.` oldu.
+- Arama placeholder'ı `Soru veya kavram arayın...`; kavram slider başlığı `Öne çıkan kavramlar`
+  olarak güncellendi.
+- CSS'te eski sağ taraf kitaplık/yeşil silik efekt yerine açık kitap görseli banner tonuna daha
+  sakin bağlandı. Mobil hero yüksekliği ve kırpma ayarları yeni uzun metne göre rahatlatıldı.
+- Guard/testler güncellendi: eski `hero-bookshelf` renderer'a geri gelirse, yeni açık kitap asset'i
+  eksikse veya eski arama placeholder'ı dönerse kontrol kırılır.
+- Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --check server.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check`. Tam check `97/97` test başarılı.
+- Sıradaki pratik kontrol: doğru Vercel projesinde `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile yeni
+  preview deploy al, `/public-preview` canlı smoke yap ve gerçek iPhone/Safari görsel feedback'ini
+  kullanıcıdan al.
+
 ## 2026-08-14 Codex Public Preview Görsel Kalite Pass
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

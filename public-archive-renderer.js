@@ -287,7 +287,7 @@ function searchBox(value = '', label = 'Arşivde ara') {
     <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama">
       <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
       <span class="pa-search-leading">${iconSvg('search')}</span>
-      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Soru veya kavram yazın..." autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Sorunuzu veya kavramınızı yazın">
+      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Soru veya kavram arayın..." autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Sorunuzu veya kavramınızı yazın">
       <button type="submit" aria-label="Ara">
         <span class="pa-search-icon">${iconSvg('arrow-right')}</span>
       </button>
@@ -298,13 +298,8 @@ function searchBox(value = '', label = 'Arşivde ara') {
 function stillLife() {
   return `
     <div class="pa-still-life" aria-hidden="true">
-      <picture class="pa-hero-asset pa-hero-asset-light">
-        <source media="(max-width: 899px)" srcset="${ASSET_PATH}/hero-bookshelf-light-mobile.webp" type="image/webp">
-        <img src="${ASSET_PATH}/hero-bookshelf-light-desktop.webp" alt="" loading="eager" decoding="async">
-      </picture>
-      <picture class="pa-hero-asset pa-hero-asset-dark">
-        <source media="(max-width: 899px)" srcset="${ASSET_PATH}/hero-bookshelf-dark-mobile.webp" type="image/webp">
-        <img src="${ASSET_PATH}/hero-bookshelf-dark-desktop.webp" alt="" loading="eager" decoding="async">
+      <picture class="pa-hero-asset pa-hero-asset-book">
+        <img src="${ASSET_PATH}/hero-open-book-warm.jpg" alt="" loading="eager" decoding="async">
       </picture>
     </div>
   `;
@@ -347,7 +342,7 @@ function heroConceptLane() {
   return `
     <div class="pa-hero-concepts" data-concept-slider aria-label="Öne çıkan kavramlar">
       <div class="pa-concept-head">
-        <span>Sık okunan kavramlar</span>
+        <span>Öne çıkan kavramlar</span>
         <span aria-hidden="true">→</span>
       </div>
       <div class="pa-concept-track" data-concept-track>
@@ -505,8 +500,8 @@ function renderHome() {
         <section class="pa-hero">
           <div class="pa-hero-copy">
             <p class="pa-kicker">${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
-            <h1>Soruları kavramlarıyla birlikte okuyun.</h1>
-            <p>Hidayet, mürşid, zikir ve teslimiyet gibi ana başlıklardan başlayın; aradığınız cevaba bağlı kavramlarla ulaşın.</p>
+            <h1>Sorularınıza, kaynaklarıyla birlikte cevap bulun.</h1>
+            <p>Hidayet, mürşid, zikir ve teslimiyet gibi temel kavramlardan başlayın; ilgili soruları, cevapları ve delilleri bir arada okuyun.</p>
             ${searchBox()}
             ${heroConceptLane()}
           </div>
