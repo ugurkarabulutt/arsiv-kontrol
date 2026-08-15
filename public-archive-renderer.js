@@ -383,20 +383,24 @@ function readCountNode(entry) {
   return `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" data-read-count-fallback="${count}">${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label>${escapeHtml(readCountLabel(count))}</span></span>`;
 }
 
-function questionCard(entry, compact = false) {
+function questionCard(entry, options = {}) {
+  const cardOptions = typeof options === 'boolean' ? { compact: options } : options;
+  const compact = Boolean(cardOptions.compact);
+  const showMeta = cardOptions.showMeta !== false;
+  const strongCta = Boolean(cardOptions.strongCta);
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
   const visibleTopics = topics.filter(topic => !category || topic.slug !== category.slug);
   const countNode = readCountNode(entry);
   const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
-    <article class="pa-question-card${compact ? ' is-compact' : ''}" data-card-href="${href}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
+    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${href}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
-      <div class="pa-card-meta">
+      ${showMeta ? `<div class="pa-card-meta">
         ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
         ${visibleTopics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
-      </div>
+      </div>` : ''}
       <div class="pa-card-bottom">
         <p class="pa-card-foot">${countNode}</p>
         <span class="pa-card-cta">Cevabı oku ${iconSvg('arrow-right', 'pa-cta-icon')}</span>
@@ -504,8 +508,8 @@ function renderHome() {
         ${archiveShortcutBand()}
 
         <section class="pa-section">
-          ${sectionHeader('Öne Çıkan Cevaplar', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
-          <div class="pa-question-grid">${featured.map(entry => questionCard(entry)).join('')}</div>
+          ${sectionHeader('Öne Çıkan Sorular', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
+          <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
         </section>
 
         <section class="pa-section">

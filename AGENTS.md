@@ -167,6 +167,13 @@ tespit edilir).
   `Arşivin tamamını açın.` ve `Tüm soru ve cevapları tek sayfada inceleyin.` Banner artık
   doğrudan `<a class="pa-archive-shortcut" href="/public-preview/arsiv">` olarak çalışır; mobilde
   büyük alt butona dönüşmez.
+- **Public preview öne çıkan kartları sadeleştirildi:** Ekip lideri isteğiyle ana sayfadaki
+  `Öne Çıkan Cevaplar` başlığı `Öne Çıkan Sorular` olarak değiştirildi. Bu bölümdeki soru
+  kartlarından kategori/kavram etiketleri kaldırıldı; aynı kart bileşeni arşiv, arama, konu ve
+  son yayınlananlar listelerinde etiketli görünmeye devam eder. Featured kartlara özel
+  `has-strong-cta` varyantı eklendi ve `Cevabı oku` aksiyonu yeşil dolu pill buton görünümüne
+  çekildi. Guard/testler eski başlık, featured chip/meta dönüşü ve CTA vurgusu eksikliği için
+  kırılacak şekilde güncellendi.
 
 ### 2026-08-14
 - **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`

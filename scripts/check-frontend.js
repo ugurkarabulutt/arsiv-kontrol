@@ -908,9 +908,16 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+assert(!homePreview.includes('Öne Çıkan Cevaplar'), 'Public home eski One Cikan Cevaplar basligini icermemeli.');
+const featuredStart = homePreview.indexOf('Öne Çıkan Sorular');
+const featuredEnd = homePreview.indexOf('Kavram Haritası');
+assert(featuredStart >= 0 && featuredEnd > featuredStart, 'Public home featured bolum sinirlari bulunmali.');
+const featuredSection = homePreview.slice(featuredStart, featuredEnd);
+assert(featuredSection.includes('has-strong-cta'), 'Public home featured kart CTA vurgusu eksik.');
+assert(!featuredSection.includes('pa-card-meta') && !featuredSection.includes('class="pa-chip"'), 'Public home featured kartlarda etiket/chip gorunmemeli.');
 assert(!homePreview.includes('Arşivin tamamına buradan ulaşabilirsiniz.'), 'Public home eski hacimli arsiv banner metnini icermemeli.');
 assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.'), 'Public home eski hacimli arsiv banner aciklamasini icermemeli.');
 assert(!homePreview.includes('Arşiv ana kapıları'), 'Public home eski Arsiv ana kapilari basligini icermemeli.');
@@ -932,7 +939,7 @@ assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlan
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
 assert(homePreview.includes('href="/public-preview/hesabim"'), 'Public account control hesap route una gitmeli.');
 assert(homePreview.includes('href="/public-preview/arsiv"'), 'Public arsiv linki gercek arsiv route una gitmeli.');
-for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'data-read-count-label', 'okunma']) {
+for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-strong-cta', 'data-read-count-label', 'okunma']) {
   assert(homePreview.includes(marker), `Public soru karti aksiyon/okunma marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
@@ -961,7 +968,7 @@ for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-pause
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-cta-icon']) {
+for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-question-card.has-strong-cta .pa-card-cta', '.pa-cta-icon']) {
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;

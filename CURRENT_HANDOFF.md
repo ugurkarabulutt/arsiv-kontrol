@@ -46,6 +46,11 @@
   koyu/yeşil gradient, küçük yuvarlak arşiv ikonu, kısa metin ve sağda küçük `Arşive Git` rozeti
   var. Metinler `Arşivin tamamını açın.` ve `Tüm soru ve cevapları tek sayfada inceleyin.`
   olarak kısaltıldı; mobilde tam genişlik büyük buton davranışı kaldırıldı.
+- Ekip lideri isteğiyle ana sayfadaki öne çıkan kart bölümü güncellendi. Başlık artık
+  `Öne Çıkan Sorular`; eski `Öne Çıkan Cevaplar` geri gelirse test kırılır. Bu bölümdeki
+  kartlarda kategori/kavram etiketleri görünmez; arşiv, arama, konu ve son yayınlananlar
+  listelerinde etiketler korunur. Featured kartlara `has-strong-cta` varyantı eklendi ve
+  `Cevabı oku` yeşil dolu pill CTA olarak daha dikkat çekici hale getirildi.
 - Sıradaki pratik kontrol: doğru Vercel projesinde `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile yeni
   preview deploy al, `/public-preview` canlı smoke yap ve gerçek iPhone/Safari görsel feedback'ini
   kullanıcıdan al.

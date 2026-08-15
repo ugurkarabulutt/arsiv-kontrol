@@ -251,6 +251,12 @@ test('question cards are whole-card navigable without helpful voting', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
   assert.match(home, /data-card-href="\/public-preview\/soru\/ornek-soru"/);
   assert.match(home, /role="link"/);
+  assert.match(home, /Öne Çıkan Sorular/);
+  assert.doesNotMatch(home, /Öne Çıkan Cevaplar/);
+  const featuredSection = home.slice(home.indexOf('Öne Çıkan Sorular'), home.indexOf('Kavram Haritası'));
+  assert.match(featuredSection, /has-strong-cta/);
+  assert.doesNotMatch(featuredSection, /pa-card-meta/);
+  assert.doesNotMatch(featuredSection, /class="pa-chip"/);
   assert.match(home, /Cevabı oku/);
   assert.match(home, /data-read-count-label/);
   assert.match(home, /okunma/);
