@@ -355,22 +355,15 @@ function heroConceptLane() {
   `;
 }
 
-function readingPath(categories) {
+function archiveShortcutBand() {
   return `
-    <section class="pa-reading-path" aria-label="Arşiv ana kapıları">
-      <div class="pa-path-copy">
-        <p class="pa-kicker">Arşiv ana kapıları</p>
-        <h2>Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun.</h2>
+    <section class="pa-archive-shortcut" aria-label="Arşive yönlendirme">
+      <span class="pa-archive-shortcut-icon">${iconSvg('archive')}</span>
+      <div class="pa-archive-shortcut-copy">
+        <strong>Arşivin tamamına buradan ulaşabilirsiniz.</strong>
+        <span>Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.</span>
       </div>
-      <div class="pa-path-grid">
-        ${categories.map((category, index) => `
-          <a class="pa-path-step" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">
-            <span>${String(index + 1).padStart(2, '0')}</span>
-            <strong>${escapeHtml(category.name)}</strong>
-            <em>${entriesForCategory(category.slug).length} soru</em>
-          </a>
-        `).join('')}
-      </div>
+      <a class="pa-archive-shortcut-link" href="${PREVIEW_BASE}/arsiv">Arşive Git ${iconSvg('arrow-right', 'pa-cta-icon')}</a>
     </section>
   `;
 }
@@ -508,7 +501,7 @@ function renderHome() {
           ${stillLife()}
         </section>
 
-        ${readingPath(categories)}
+        ${archiveShortcutBand()}
 
         <section class="pa-section">
           ${sectionHeader('Öne Çıkan Cevaplar', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}

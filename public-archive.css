@@ -600,75 +600,68 @@ svg {
   margin-top: 42px;
 }
 
-.pa-reading-path {
+.pa-archive-shortcut {
   display: grid;
-  grid-template-columns: minmax(240px, 0.42fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: stretch;
-  margin-top: 30px;
-  padding: 24px;
-  background: color-mix(in srgb, var(--pa-surface) 82%, var(--pa-bg));
-  border: 1px solid var(--pa-border);
-  border-radius: var(--pa-radius-md);
-}
-
-.pa-path-copy {
-  min-width: 0;
-}
-
-.pa-path-copy h2 {
-  margin: 0;
-  color: var(--pa-text);
-  font-family: var(--pa-font-serif);
-  font-size: 29px;
-  font-weight: 650;
-  line-height: 1.16;
-}
-
-.pa-path-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  min-width: 0;
-}
-
-.pa-path-step {
-  display: grid;
-  grid-template-rows: auto minmax(44px, 1fr) auto;
-  gap: 8px;
-  min-width: 0;
-  min-height: 132px;
-  padding: 14px;
-  background: var(--pa-surface);
-  border: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 13px 14px;
+  background: color-mix(in srgb, var(--pa-surface) 88%, var(--pa-mint));
+  border: 1px solid color-mix(in srgb, var(--pa-border) 84%, var(--pa-primary));
   border-radius: var(--pa-radius-sm);
 }
 
-.pa-path-step:hover {
-  border-color: color-mix(in srgb, var(--pa-primary) 42%, var(--pa-border));
-  background: color-mix(in srgb, var(--pa-mint) 42%, var(--pa-surface));
+.pa-archive-shortcut-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  color: var(--pa-primary);
+  background: color-mix(in srgb, var(--pa-mint) 58%, var(--pa-surface));
+  border: 1px solid color-mix(in srgb, var(--pa-primary) 16%, transparent);
+  border-radius: 12px;
 }
 
-.pa-path-step span {
-  color: var(--pa-accent);
-  font-size: 12px;
-  font-weight: 800;
+.pa-archive-shortcut-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
-.pa-path-step strong {
+.pa-archive-shortcut-copy strong {
   color: var(--pa-text);
-  font-family: var(--pa-font-serif);
-  font-size: 18px;
-  font-weight: 650;
-  line-height: 1.15;
-  overflow-wrap: anywhere;
+  font-size: 16px;
+  font-weight: 760;
+  line-height: 1.28;
 }
 
-.pa-path-step em {
-  color: var(--pa-text-3);
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 700;
+.pa-archive-shortcut-copy span {
+  color: var(--pa-text-2);
+  font-size: 13px;
+  font-weight: 560;
+  line-height: 1.45;
+}
+
+.pa-archive-shortcut-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  color: #FFFFFF;
+  background: var(--pa-primary);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.pa-archive-shortcut-link:hover,
+.pa-archive-shortcut-link:focus-visible {
+  background: var(--pa-primary-hover);
 }
 
 .pa-section-head {
@@ -1734,23 +1727,21 @@ a.pa-chip:hover,
     margin-top: 34px;
   }
 
-  .pa-reading-path {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    margin-top: 22px;
-    padding: 20px;
+  .pa-archive-shortcut {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 11px;
+    margin-top: 20px;
+    padding: 12px;
   }
 
-  .pa-path-copy h2 {
-    font-size: 25px;
+  .pa-archive-shortcut-icon {
+    width: 38px;
+    height: 38px;
   }
 
-  .pa-path-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .pa-path-step {
-    min-height: 112px;
+  .pa-archive-shortcut-link {
+    grid-column: 1 / -1;
+    min-height: 40px;
   }
 
   .pa-section-head {
@@ -2000,8 +1991,12 @@ a.pa-chip:hover,
     padding: 14px;
   }
 
-  .pa-path-grid {
-    grid-template-columns: 1fr;
+  .pa-archive-shortcut-copy strong {
+    font-size: 15px;
+  }
+
+  .pa-archive-shortcut-copy span {
+    font-size: 12.5px;
   }
 
   .pa-mobile-nav {

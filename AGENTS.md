@@ -153,6 +153,13 @@ tespit edilir).
   overlay sağ/alt tarafta inceltildi; metin okunurluğu sol üstte korunurken kitabın formu
   seçilecek şekilde `object-position: 56% 72%` ve 430px altında `50% 74%` kullanıldı. Guard
   bu görünürlük marker'larını kontrol edecek şekilde güncellendi.
+- **Public preview ana sayfa arşiv yönlendirmesi sadeleştirildi:** Ekip lideri isteğiyle ana
+  sayfadaki `Arşiv ana kapıları` bölümü tamamen kaldırıldı. Çok kutulu kategori/kavram yol
+  bloğu yerine hero'nun altında ince bir yönlendirme bandı eklendi: `Arşivin tamamına buradan
+  ulaşabilirsiniz.` ve `Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.`
+  metinleriyle kullanıcı doğrudan `/public-preview/arsiv` sayfasına yönlendirilir. Eski
+  `readingPath`, `pa-reading-path` ve `pa-path-step` yapıları renderer/CSS'ten kaldırıldı;
+  guard ve testler eski bölüm geri gelirse kırılacak şekilde güncellendi.
 
 ### 2026-08-14
 - **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`

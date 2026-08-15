@@ -36,6 +36,11 @@
   temel ekranda `0.68`, mobilde `0.72`, 430px altında `0.78`; mobil overlay sağ/alt tarafta
   inceltildi. Bu değişiklik banner rengini ve katmanını kitap formu okunacak şekilde daha sıcak
   ve daha açık tarafa çekti.
+- Ekip lideri isteğiyle ana sayfadaki `Arşiv ana kapıları` bölümü tamamen kaldırıldı. Yerine
+  hero altında ince arşiv yönlendirme bandı eklendi: `Arşivin tamamına buradan ulaşabilirsiniz.`
+  ve `Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.` metinleriyle
+  `/public-preview/arsiv` sayfasına gider. Eski `readingPath`, `pa-reading-path` ve
+  `pa-path-step` yapıları renderer/CSS'ten çıkarıldı; test/guard eski bölüm geri gelirse kırılır.
 - Sıradaki pratik kontrol: doğru Vercel projesinde `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile yeni
   preview deploy al, `/public-preview` canlı smoke yap ve gerçek iPhone/Safari görsel feedback'ini
   kullanıcıdan al.

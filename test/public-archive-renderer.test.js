@@ -98,7 +98,11 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /class="pa-svg-icon"/);
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
-  assert.match(home, /Arşiv ana kapıları/);
+  assert.match(home, /Arşivin tamamına buradan ulaşabilirsiniz\./);
+  assert.match(home, /Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin\./);
+  assert.match(home, /href="\/public-preview\/arsiv">Arşive Git/);
+  assert.doesNotMatch(home, /Arşiv ana kapıları/);
+  assert.doesNotMatch(home, /Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun\./);
   assert.match(home, /data-concept-slider/);
   assert.match(home, /data-concept-track/);
   assert.match(home, /data-concept-rail/);

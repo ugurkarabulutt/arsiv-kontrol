@@ -779,6 +779,8 @@ for (const marker of [
   assert(publicRendererSource.includes(marker), `Public renderer final handoff marker missing: ${marker}`);
 }
 assert(!publicRendererSource.includes('hero-bookshelf'), 'Eski kitaplik hero gorseli public preview icinde kalmamali.');
+assert(!publicRendererSource.includes('function readingPath'), 'Public home eski Arsiv ana kapilari bolumu kaldirilmis olmali.');
+assert(!publicCss.includes('.pa-reading-path') && !publicCss.includes('.pa-path-step'), 'Public CSS eski Arsiv ana kapilari kart grid stillerini icermemeli.');
 assert(
   publicCss.includes('.pa-hero > .pa-still-life') &&
     publicCss.includes('object-position: 56% 72%') &&
@@ -904,9 +906,11 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşiv ana kapıları', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
+for (const marker of ['Arşivin tamamına buradan ulaşabilirsiniz.', 'Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+assert(!homePreview.includes('Arşiv ana kapıları'), 'Public home eski Arsiv ana kapilari basligini icermemeli.');
+assert(!homePreview.includes('Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun.'), 'Public home eski Arsiv ana kapilari aciklamasini icermemeli.');
 for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zikir', 'Teslimiyet', 'Tabiiyet', 'Nefs', 'Ruh']) {
   assert(homePreview.includes(marker), `Public home arsiv kavram omurgasi eksik: ${marker}`);
 }
