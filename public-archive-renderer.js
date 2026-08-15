@@ -357,14 +357,14 @@ function heroConceptLane() {
 
 function archiveShortcutBand() {
   return `
-    <section class="pa-archive-shortcut" aria-label="Arşive yönlendirme">
+    <a class="pa-archive-shortcut" href="${PREVIEW_BASE}/arsiv" aria-label="Arşivin tamamına git">
       <span class="pa-archive-shortcut-icon">${iconSvg('archive')}</span>
       <div class="pa-archive-shortcut-copy">
-        <strong>Arşivin tamamına buradan ulaşabilirsiniz.</strong>
-        <span>Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.</span>
+        <strong>Arşivin tamamını açın.</strong>
+        <span>Tüm soru ve cevapları tek sayfada inceleyin.</span>
       </div>
-      <a class="pa-archive-shortcut-link" href="${PREVIEW_BASE}/arsiv">Arşive Git ${iconSvg('arrow-right', 'pa-cta-icon')}</a>
-    </section>
+      <span class="pa-archive-shortcut-link">Arşive Git ${iconSvg('arrow-right', 'pa-cta-icon')}</span>
+    </a>
   `;
 }
 

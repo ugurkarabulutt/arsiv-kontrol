@@ -781,6 +781,8 @@ for (const marker of [
 assert(!publicRendererSource.includes('hero-bookshelf'), 'Eski kitaplik hero gorseli public preview icinde kalmamali.');
 assert(!publicRendererSource.includes('function readingPath'), 'Public home eski Arsiv ana kapilari bolumu kaldirilmis olmali.');
 assert(!publicCss.includes('.pa-reading-path') && !publicCss.includes('.pa-path-step'), 'Public CSS eski Arsiv ana kapilari kart grid stillerini icermemeli.');
+assert(publicRendererSource.includes('<a class="pa-archive-shortcut"') && publicRendererSource.includes('pa-archive-shortcut-link'), 'Public home arsiv yonlendirme bandi tek parca tiklanabilir olmali.');
+assert(publicCss.includes('.pa-archive-shortcut::after') && publicCss.includes('radial-gradient(circle at 92% 50%') && publicCss.includes('grid-template-columns: 34px minmax(0, 1fr) auto'), 'Public home arsiv banner modern ince serit stilleri eksik.');
 assert(
   publicCss.includes('.pa-hero > .pa-still-life') &&
     publicCss.includes('object-position: 56% 72%') &&
@@ -906,9 +908,11 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamına buradan ulaşabilirsiniz.', 'Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Cevaplar', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+assert(!homePreview.includes('Arşivin tamamına buradan ulaşabilirsiniz.'), 'Public home eski hacimli arsiv banner metnini icermemeli.');
+assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.'), 'Public home eski hacimli arsiv banner aciklamasini icermemeli.');
 assert(!homePreview.includes('Arşiv ana kapıları'), 'Public home eski Arsiv ana kapilari basligini icermemeli.');
 assert(!homePreview.includes('Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun.'), 'Public home eski Arsiv ana kapilari aciklamasini icermemeli.');
 for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zikir', 'Teslimiyet', 'Tabiiyet', 'Nefs', 'Ruh']) {

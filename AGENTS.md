@@ -160,6 +160,13 @@ tespit edilir).
   metinleriyle kullanıcı doğrudan `/public-preview/arsiv` sayfasına yönlendirilir. Eski
   `readingPath`, `pa-reading-path` ve `pa-path-step` yapıları renderer/CSS'ten kaldırıldı;
   guard ve testler eski bölüm geri gelirse kırılacak şekilde güncellendi.
+- **Public preview arşiv yönlendirme bandı modernleştirildi:** Kullanıcı ilk arşiv bandını
+  fazla kart/buton görünümlü bulduğu için yapı tek parça tıklanabilir şeride çevrildi. Eski
+  beyaz kart + tam genişlik yeşil buton yerine koyu/yeşil gradient, hafif ışık katmanı, yuvarlak
+  ikon ve sağda küçük `Arşive Git` rozeti kullanıldı. Metin daha kısa hale getirildi:
+  `Arşivin tamamını açın.` ve `Tüm soru ve cevapları tek sayfada inceleyin.` Banner artık
+  doğrudan `<a class="pa-archive-shortcut" href="/public-preview/arsiv">` olarak çalışır; mobilde
+  büyük alt butona dönüşmez.
 
 ### 2026-08-14
 - **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`

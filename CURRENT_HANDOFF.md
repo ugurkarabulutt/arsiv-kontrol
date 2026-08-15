@@ -41,6 +41,11 @@
   ve `Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.` metinleriyle
   `/public-preview/arsiv` sayfasına gider. Eski `readingPath`, `pa-reading-path` ve
   `pa-path-step` yapıları renderer/CSS'ten çıkarıldı; test/guard eski bölüm geri gelirse kırılır.
+- Kullanıcı ilk arşiv yönlendirme bandını fazla kart/buton görünümlü bulduğu için ikinci tasarım
+  turu yapıldı. Banner artık tek parça tıklanabilir `<a class="pa-archive-shortcut">` şeridi:
+  koyu/yeşil gradient, küçük yuvarlak arşiv ikonu, kısa metin ve sağda küçük `Arşive Git` rozeti
+  var. Metinler `Arşivin tamamını açın.` ve `Tüm soru ve cevapları tek sayfada inceleyin.`
+  olarak kısaltıldı; mobilde tam genişlik büyük buton davranışı kaldırıldı.
 - Sıradaki pratik kontrol: doğru Vercel projesinde `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile yeni
   preview deploy al, `/public-preview` canlı smoke yap ve gerçek iPhone/Safari görsel feedback'ini
   kullanıcıdan al.
