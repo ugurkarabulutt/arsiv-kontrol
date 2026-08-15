@@ -955,12 +955,37 @@ assert(accountPreview.includes('Hesabınızla soru gönderimini takip edin.') &&
 assert(accountPreview.includes('/public-preview/auth/google'), 'Public hesap sayfasi Google auth route una baglanmali.');
 assertOnlyPublicPreviewApi('/public-preview/hesabim', accountPreview);
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
-for (const marker of ['Soru', 'Cevap', 'Kaynak ve bağlam', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
+for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
   assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);
 }
 assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
+assert(!detailPreview.includes('class="pa-detail-subtitle"'), 'Public detail ust ozet paragrafinin geri gelmemesi gerekir.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
+const sourceDetailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/kaynakli-soru', {}, {
+  brand: { authorLine: 'Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.', answererLabel: 'Yanıtlayan: Dr. Abdulcabbar Boran' },
+  categories: [{ slug: 'hidayet', name: 'Hidayet', description: 'Hidayet kayıtları.', topicSlugs: ['zikir'], featured: true }],
+  topics: [{ slug: 'zikir', name: 'Zikir', description: 'Zikir kayıtları.', categorySlug: 'hidayet', relatedTopicSlugs: [], featured: true }],
+  qa: [{
+    slug: 'kaynakli-soru',
+    title: 'Kaynaklı soru nasıl görünür?',
+    question: 'Kaynaklı soru nasıl görünür?',
+    summary: 'Bu özet detay üstünde görünmemeli.',
+    answer: ['Cevap içinde Bakara-256 ve YÂSÎN-62 açık ayet atfı olarak yer alır.'],
+    categorySlug: 'hidayet',
+    topicSlugs: ['zikir'],
+    publishedAt: '2026-08-15',
+    updatedAt: '2026-08-15',
+    readTime: 1,
+    readCount: 3,
+    isFeatured: true,
+    relatedSlugs: []
+  }]
+}).html;
+for (const marker of ['Kaynak ve deliller', 'Bakara-256', 'Yâsîn-62', 'data-source-reference']) {
+  assert(sourceDetailPreview.includes(marker), `Public detail kaynak marker eksik: ${marker}`);
+}
+assert(!sourceDetailPreview.includes('Bu özet detay üstünde görünmemeli.</p>'), 'Public detail kaynakli kayitta ust ozet gorunmemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {
   assert(publicRendererSource.includes(marker), `Kavram slider davranis marker eksik: ${marker}`);

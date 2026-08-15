@@ -185,7 +185,7 @@ test('public preview can render approved records instead of fixture data', () =>
       title: 'Gerçek onaylı soru nasıl okunur?',
       question: 'Gerçek onaylı soru nasıl okunur?',
       summary: 'Bu kayıt onaylı veri köprüsünden gelen public soru kartını temsil eder.',
-      answer: ['Bu cevap gerçek veri köprüsü testinde kullanılır.'],
+      answer: ['Bu cevap gerçek veri köprüsü testinde kullanılır. Bakara-256 ve YÂSÎN-62 bu testte açık kaynak atfı olarak geçer.'],
       excerpt: 'Bu kayıt onaylı veri köprüsünden gelir.',
       categorySlug: 'hidayet',
       topicSlugs: ['zikir', 'takva'],
@@ -209,6 +209,10 @@ test('public preview can render approved records instead of fixture data', () =>
   assert.equal(detail.status, 200);
   assert.match(detail.html, /Gerçek onaylı soru nasıl okunur\?/);
   assert.match(detail.html, /Bu cevap gerçek veri köprüsü testinde kullanılır\./);
+  assert.match(detail.html, /Kaynak ve deliller/);
+  assert.match(detail.html, /Bakara-256/);
+  assert.match(detail.html, /Yâsîn-62/);
+  assert.doesNotMatch(detail.html, /Public okuma bağlamı\./);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/zikir', {}, approvedArchiveData);
   assert.equal(topic.status, 200);
@@ -219,9 +223,10 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
   assert.match(detail, /Soru/);
   assert.match(detail, /Cevap/);
-  assert.match(detail, /Kaynak ve bağlam/);
+  assert.match(detail, /Cevap bilgileri/);
   assert.match(detail, /İlgili Sorular/);
   assert.match(detail, /data-public-read-count="ornek-soru"/);
+  assert.doesNotMatch(detail, /class="pa-detail-subtitle"/);
   assertOnlyPublicPreviewApi(detail);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;

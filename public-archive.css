@@ -1267,7 +1267,7 @@ a.pa-chip:hover,
 }
 
 .pa-answer-primary {
-  padding: 34px 0 0;
+  padding: 28px 0 0;
 }
 
 .pa-detail-meta,
@@ -1279,7 +1279,7 @@ a.pa-chip:hover,
 
 .pa-answer-primary h1 {
   max-width: 760px;
-  margin-top: 18px;
+  margin-top: 14px;
   font-size: 46px;
   line-height: 1.1;
 }
@@ -1309,6 +1309,38 @@ a.pa-chip:hover,
   background: color-mix(in srgb, var(--pa-surface) 70%, transparent);
   border: 1px solid color-mix(in srgb, var(--pa-border) 76%, transparent);
   border-radius: 999px;
+}
+
+.pa-detail-info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 30px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--pa-surface) 86%, var(--pa-bg));
+  border: 1px solid color-mix(in srgb, var(--pa-border) 82%, transparent);
+  border-radius: var(--pa-radius-md);
+}
+
+.pa-detail-info > span,
+.pa-detail-info .pa-read-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+  color: var(--pa-text-2);
+  font-size: 14px;
+  line-height: 1.35;
+  background: color-mix(in srgb, var(--pa-bg) 74%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 72%, transparent);
+  border-radius: 14px;
+}
+
+.pa-detail-info > span span,
+.pa-detail-info .pa-read-count span {
+  min-width: 0;
 }
 
 .pa-reading-block {
@@ -1353,6 +1385,32 @@ a.pa-chip:hover,
 .pa-source-box {
   background: color-mix(in srgb, var(--pa-beige) 48%, var(--pa-surface));
   border-left: 3px solid var(--pa-accent);
+}
+
+.pa-source-references {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pa-source-reference {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 12px;
+  color: var(--pa-green);
+  font-weight: 800;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--pa-surface) 74%, var(--pa-mint));
+  border: 1px solid color-mix(in srgb, var(--pa-green) 30%, var(--pa-border));
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(42, 96, 74, 0.08);
+}
+
+.pa-source-reference:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--pa-green) 54%, var(--pa-border));
 }
 
 .pa-tool-row {
@@ -1912,6 +1970,12 @@ a.pa-chip:hover,
 
   .pa-detail-subtitle {
     font-size: 16px;
+  }
+
+  .pa-detail-info {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+    padding: 12px;
   }
 
   .pa-reading-block p,

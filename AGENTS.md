@@ -121,6 +121,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-15
+- **Public preview soru detay sayfası kaynak/delil düzenine çekildi:** Ekip lideri feedback'iyle
+  `/public-preview/soru/:slug` detay sayfasında üstteki gereksiz tekrarlar kaldırıldı. Breadcrumb
+  artık uzun soru başlığını tekrar etmez; detay üstündeki kategori/kavram çipleri ve özet paragrafı
+  basılmaz. Yayın tarihi, son güncelleme, okuma süresi, göz ikonlu okunma sayısı ve `Yanıtlayan:
+  Dr. Abdulcabbar Boran` bilgisi cevap metninin altındaki `Cevap bilgileri` paneline taşındı.
+  Eski genel `Kaynak ve bağlam` kutusu yerine yeni `Kaynak ve deliller` alanı eklendi; bu alan
+  yalnız cevap metninde açıkça geçen sure-ayet atıflarını yakalar ve listeler. Örnek olarak
+  `Bakara-256`, `YÂSÎN-62`, `FURKÂN-34`, `KAMER-47` gibi kalıplar Türkçe sure adı/diakritik
+  farkları normalize edilerek tekilleştirilir ve `/public-preview/arama?q=...` aramasına bağlanır.
+  Kaynak uydurma yoktur: cevapta açık sure-ayet atfı yoksa kaynak kutusu basılmaz ve eski genel
+  `sourceContext` açıklaması delil yerine gösterilmez. Bu adım public-preview hattıyla sınırlıdır;
+  root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama: `node --check
+  public-archive-renderer.js`, `node --check scripts/check-frontend.js`, `node --check server.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti.
 - **Public preview hero metni ve görseli delil/kaynak çizgisine çekildi:** `/public-preview`
   ana sayfa banner'ında eski kitaplık görseli kaldırıldı ve kullanıcı tarafından verilen açık
   kitap görseli `public-archive-assets/assets/hero-open-book-warm.jpg` olarak eklendi. Hero

@@ -383,6 +383,128 @@ function readCountNode(entry) {
   return `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" data-read-count-fallback="${count}">${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label>${escapeHtml(readCountLabel(count))}</span></span>`;
 }
 
+function quranReferenceKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[Çç]/g, 'C')
+    .replace(/[Ğğ]/g, 'G')
+    .replace(/[İIı]/g, 'I')
+    .replace(/[Öö]/g, 'O')
+    .replace(/[Şş]/g, 'S')
+    .replace(/[Üü]/g, 'U')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+}
+
+const QURAN_SURAH_NAMES = [
+  'Fatiha', 'Bakara', 'Âl-i İmrân', 'Nisâ', 'Mâide', 'Enâm', 'Araf', 'Enfâl',
+  'Tevbe', 'Yûnus', 'Hûd', 'Yûsuf', 'Rad', 'İbrâhîm', 'Hicr', 'Nahl', 'İsrâ',
+  'Kehf', 'Meryem', 'Tâhâ', 'Enbiyâ', 'Hac', 'Müminûn', 'Nûr', 'Furkân',
+  'Şuarâ', 'Neml', 'Kasas', 'Ankebût', 'Rûm', 'Lokmân', 'Secde', 'Ahzâb',
+  'Sebe', 'Fâtır', 'Yâsîn', 'Sâffât', 'Sâd', 'Zümer', 'Mümin', 'Fussilet',
+  'Şûrâ', 'Zuhruf', 'Duhân', 'Câsiye', 'Ahkâf', 'Muhammed', 'Fetih', 'Hucurât',
+  'Kâf', 'Zâriyât', 'Tûr', 'Necm', 'Kamer', 'Rahmân', 'Vâkıa', 'Hadîd',
+  'Mücâdele', 'Haşr', 'Mümtehine', 'Saf', 'Cuma', 'Münâfikûn', 'Tegâbün',
+  'Talâk', 'Tahrîm', 'Mülk', 'Kalem', 'Hâkka', 'Meâric', 'Nûh', 'Cin',
+  'Müzzemmil', 'Müddessir', 'Kıyâmet', 'İnsan', 'Mürselât', 'Nebe', 'Nâziât',
+  'Abese', 'Tekvîr', 'İnfitâr', 'Mutaffifîn', 'İnşikâk', 'Bürûc', 'Târık',
+  'Alâ', 'Gâşiye', 'Fecr', 'Beled', 'Şems', 'Leyl', 'Duhâ', 'İnşirâh',
+  'Tîn', 'Alak', 'Kadir', 'Beyyine', 'Zilzâl', 'Âdiyât', 'Kâria', 'Tekâsür',
+  'Asr', 'Hümeze', 'Fîl', 'Kureyş', 'Mâûn', 'Kevser', 'Kâfirûn', 'Nasr',
+  'Tebbet', 'İhlâs', 'Felak', 'Nâs'
+];
+
+const QURAN_SURAH_BY_KEY = new Map(QURAN_SURAH_NAMES.map(name => [quranReferenceKey(name), name]));
+for (const [alias, displayName] of Object.entries({
+  ALIMRAN: 'Âl-i İmrân',
+  GAFIR: 'Mümin',
+  MUMINUN: 'Müminûn',
+  MUMININ: 'Müminûn',
+  YASIN: 'Yâsîn'
+})) {
+  QURAN_SURAH_BY_KEY.set(alias, displayName);
+}
+
+function answerTextForReferences(entry = {}) {
+  const answer = Array.isArray(entry.answer) ? entry.answer.join(' ') : String(entry.answer || '');
+  return [
+    answer,
+    entry.answerText,
+    entry.answer_text,
+    entry.fullAnswer,
+    entry.body
+  ].filter(Boolean).join(' ');
+}
+
+function surahNameFromCandidate(value) {
+  const words = String(value || '').trim().split(/\s+/).filter(Boolean);
+  for (let index = 0; index < words.length; index += 1) {
+    const candidate = words.slice(index).join(' ');
+    const surahName = QURAN_SURAH_BY_KEY.get(quranReferenceKey(candidate));
+    if (surahName) return surahName;
+  }
+  return '';
+}
+
+function extractQuranReferences(entry = {}) {
+  const text = answerTextForReferences(entry);
+  const references = [];
+  const seen = new Set();
+  const word = "[A-Za-zÇĞİÖŞÜçğıöşüÂÎÛâîû'’]+";
+  const pattern = new RegExp(`(^|[^\\p{L}])(${word}(?:\\s+${word}){0,2}?)(?:\\s+[Ss]uresi)?\\s*[-–—]\\s*(\\d{1,3})(?=$|[^\\d])`, 'gu');
+  let match;
+  while ((match = pattern.exec(text))) {
+    const surahName = surahNameFromCandidate(match[2]);
+    const verseNumber = Number(match[3]);
+    if (!surahName || !Number.isFinite(verseNumber) || verseNumber < 1 || verseNumber > 286) continue;
+    const key = `${quranReferenceKey(surahName)}-${verseNumber}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    references.push({ label: `${surahName}-${verseNumber}`, surahName, verseNumber });
+  }
+  return references;
+}
+
+function detailInfoPanel(entry) {
+  const items = [];
+  if (publicArchiveFixtures.brand.answererLabel) {
+    items.push({ icon: 'user', label: publicArchiveFixtures.brand.answererLabel });
+  }
+  if (entry.publishedAt) {
+    items.push({ icon: 'calendar', label: `Yayın tarihi: ${formatDate(entry.publishedAt)}` });
+  }
+  if (entry.updatedAt) {
+    items.push({ icon: 'guncel', label: `Son güncelleme: ${formatDate(entry.updatedAt)}` });
+  }
+  if (entry.readTime) {
+    items.push({ icon: 'clock', label: `${entry.readTime} dk okuma` });
+  }
+  items.push({ html: readCountNode(entry) });
+  return `
+    <section class="pa-detail-info" aria-label="Cevap bilgileri">
+      ${items.map(item => item.html || `<span>${iconSvg(item.icon, 'pa-meta-icon')}<span>${escapeHtml(item.label)}</span></span>`).join('')}
+    </section>
+  `;
+}
+
+function sourceReferencesPanel(entry) {
+  const references = extractQuranReferences(entry);
+  if (!references.length) return '';
+  return `
+    <aside class="pa-source-box">
+      <h2>Kaynak ve deliller</h2>
+      <p>Cevap metninde atıf yapılan ayetler:</p>
+      <div class="pa-source-references">
+        ${references.map(reference => {
+          const href = `${PREVIEW_BASE}/arama?q=${encodeURIComponent(reference.label)}`;
+          return `<a class="pa-source-reference" href="${escapeHtml(href)}" data-source-reference="${escapeHtml(reference.label)}">${escapeHtml(reference.label)}</a>`;
+        }).join('')}
+      </div>
+    </aside>
+  `;
+}
+
 function questionCard(entry, options = {}) {
   const cardOptions = typeof options === 'boolean' ? { compact: options } : options;
   const compact = Boolean(cardOptions.compact);
@@ -697,24 +819,11 @@ function renderQuestion(slug) {
       <main class="pa-main pa-detail-main">
         ${breadcrumb([
           { label: 'Arşiv', href: `${PREVIEW_BASE}/arsiv` },
-          category ? { label: category.name, href: `${PREVIEW_BASE}/kategori/${category.slug}` } : { label: 'Soru' },
-          { label: entry.title }
+          category ? { label: category.name, href: `${PREVIEW_BASE}/kategori/${category.slug}` } : { label: 'Soru' }
         ])}
         <article class="pa-answer-layout">
           <div class="pa-answer-primary">
-            <div class="pa-detail-meta">
-              ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
-              ${topics.map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
-            </div>
             <h1>${escapeHtml(entry.title)}</h1>
-            <p class="pa-detail-subtitle">${escapeHtml(entry.summary)}</p>
-            <div class="pa-date-line">
-              ${entry.publishedAt ? `<span>Yayın tarihi: ${escapeHtml(formatDate(entry.publishedAt))}</span>` : ''}
-              ${entry.updatedAt ? `<span>Son güncelleme: ${escapeHtml(formatDate(entry.updatedAt))}</span>` : ''}
-              ${entry.readTime ? `<span>${entry.readTime} dk okuma</span>` : ''}
-              ${readCountNode(entry)}
-              ${publicArchiveFixtures.brand.answererLabel ? `<span>${escapeHtml(publicArchiveFixtures.brand.answererLabel)}</span>` : ''}
-            </div>
             <section class="pa-reading-block">
               <h2>Soru</h2>
               <p>${escapeHtml(entry.question)}</p>
@@ -723,12 +832,8 @@ function renderQuestion(slug) {
               <h2>Cevap</h2>
               ${entry.answer.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
             </section>
-            ${entry.sourceContext ? `
-              <aside class="pa-source-box">
-                <h2>${escapeHtml(entry.sourceContext.title)}</h2>
-                <p>${escapeHtml(entry.sourceContext.text)}</p>
-              </aside>
-            ` : ''}
+            ${detailInfoPanel(entry)}
+            ${sourceReferencesPanel(entry)}
             <div class="pa-tool-row" aria-label="Sayfa araçları">
               <button type="button" class="pa-icon-button" data-share>Paylaş</button>
               <button type="button" class="pa-icon-button" data-copy-link>Bağlantıyı kopyala</button>

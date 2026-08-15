@@ -1,5 +1,32 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-15 Codex Public Preview Soru Detay Kaynak/Düzen Güncellemesi
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Ekip lideri feedback'iyle soru-cevap detay sayfasının üst kısmı sadeleştirildi. Breadcrumb artık
+  uzun soru başlığını tekrar etmez; detay üstünde kategori/kavram çipleri ve özet paragrafı
+  gösterilmez. İlk görünümde soru başlığı, sonra `Soru` ve `Cevap` akışı kalır.
+- Yayın tarihi, son güncelleme, okuma süresi, göz ikonlu okunma sayısı ve `Yanıtlayan:
+  Dr. Abdulcabbar Boran` bilgisi cevap metninin altındaki `Cevap bilgileri` paneline taşındı.
+  Mobilde bu panel tek sütuna düşer; uzun satırlar taşma üretmemelidir.
+- Eski genel `Kaynak ve bağlam` metni kaldırıldı. Yeni `Kaynak ve deliller` alanı yalnız cevap
+  metninde açıkça geçen sure-ayet atıflarını listeler. Örnek: cevap içinde `Bakara-256`,
+  `YÂSÎN-62`, `FURKÂN-34` veya `KAMER-47` geçerse bunlar kaynak etiketi olarak gösterilir ve
+  `/public-preview/arama?q=...` aramasına bağlanır.
+- Kaynak uydurma yok: cevapta açık sure-ayet atfı yoksa kaynak kutusu basılmaz. Mevcut
+  `sourceContext` içindeki eski genel açıklama public detayda delil yerine gösterilmez.
+- Renderer'a Türkçe sure adları/diakritik varyantlarını normalize eden ve tekrarları eleyen
+  kaynak çıkarma katmanı eklendi. Bu çalışma ileride SEO/canonical/schema fazına temel olabilir;
+  bu turda root `/` cutover yapılmadı ve admin hattına dokunulmadı.
+- Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --check server.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check`. Tam check `97/97` test başarılı.
+- Sıradaki pratik adım: bu değişikliği commit/push edip `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile
+  yeni Vercel preview deploy almak; ardından gerçek iPhone/Safari'de soru detay üst görünüm,
+  cevap sonu bilgi paneli ve kaynak etiketleri kontrol edilecek.
+
 ## 2026-08-15 Codex Public Preview Hero Delil/Görsel Güncellemesi
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
