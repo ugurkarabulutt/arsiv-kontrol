@@ -779,7 +779,12 @@ for (const marker of [
   assert(publicRendererSource.includes(marker), `Public renderer final handoff marker missing: ${marker}`);
 }
 assert(!publicRendererSource.includes('hero-bookshelf'), 'Eski kitaplik hero gorseli public preview icinde kalmamali.');
-assert(publicCss.includes('.pa-hero-asset') && publicCss.includes('object-position: 50% 58%') && publicCss.includes('object-position: 50% 56%'), 'Public CSS yeni acik kitap hero asset geometrisi eksik.');
+assert(
+  publicCss.includes('.pa-hero > .pa-still-life') &&
+    publicCss.includes('object-position: 54% 70%') &&
+    publicCss.includes('transform: scale(1.18)'),
+  'Public CSS mobil acik kitap hero tam yuzey geometrisi eksik.'
+);
 assert(publicCss.includes('.pa-shelf-arch') && publicCss.includes('display: none !important'), 'Public CSS old placeholder shelf graphics must be disabled.');
 assert(!/--(?:bg|ink|gold)\b/.test(publicCss), 'Public CSS eski admin tokenlarina baglanmamali.');
 assert(!/#[0-9A-Fa-f]{3,6}/.test(publicCss.replace(/#F7F3EA|#FFFDF7|#EFE8DC|#17201C|#66736D|#8A7662|#DDD2C0|#F5E8C8|#CFE8D9|#145A3A|#0F4930|#B68A2A|#0D1412|#121B18|#101916|#F6F0E6|#B8C0B8|#8F9B93|#2C3A34|#2F2A1B|#294D3A|#79C99E|#9ADDB8|#D7B35D|#FFFFFF|#000000/g, '')), 'Public CSS final palet disinda hex renk icermemeli.');

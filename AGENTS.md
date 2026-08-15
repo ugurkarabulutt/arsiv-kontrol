@@ -137,6 +137,15 @@ tespit edilir).
   doğrulama: `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node --check server.js`, `node --test test/public-archive-renderer.test.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı.
+- **Public preview mobil hero kitap yerleşimi düzeltildi:** Kullanıcı gerçek iPhone kontrolünde
+  kitabın sağda ayrı bir parça gibi göründüğünü bildirdi. Eski sağ kolon davranışı kaldırıldı;
+  açık kitap görseli mobilde ve genelde hero yüzeyinin tamamını kaplayan, altta/ortada daha büyük
+  duran arka plan katmanına çevrildi. Mobil üst katman yumuşatıldı, keskin yeşil/görsel ayrımı
+  azaltıldı ve guard `pa-hero > .pa-still-life`, `object-position: 54% 70%`,
+  `transform: scale(1.18)` marker'larıyla yeni tam yüzey yerleşimini kontrol edecek şekilde
+  güncellendi. Kullanıcının “şeffaf” dediği dosya JPG olduğu için gerçek alfa şeffaflığı taşımıyor;
+  bu turda güvenli çözüm CSS yerleşim/katman düzeltmesiyle yapıldı. Kapsam yalnız public-preview
+  hattıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı.
 
 ### 2026-08-14
 - **Public preview ikinci görsel/UX pass yapıldı:** `/public-preview` hattında root `/`

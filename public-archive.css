@@ -389,6 +389,14 @@ svg {
   content: none !important;
 }
 
+.pa-hero > .pa-still-life {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  min-height: 0;
+}
+
 .pa-hero-asset {
   position: absolute;
   inset: 0;
@@ -400,11 +408,11 @@ svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 56%;
-  opacity: 0.46;
-  filter: saturate(0.82) contrast(1.04) brightness(1.02);
+  object-position: 64% 60%;
+  opacity: 0.3;
+  filter: saturate(0.78) contrast(1.04) brightness(1.03);
   mix-blend-mode: screen;
-  transform: scale(1.02);
+  transform: scale(1.08);
 }
 
 .pa-hero-asset-book {
@@ -412,8 +420,8 @@ svg {
 }
 
 :root[data-theme="dark"] .pa-hero-asset img {
-  opacity: 0.34;
-  filter: saturate(0.72) contrast(1.04) brightness(0.9);
+  opacity: 0.22;
+  filter: saturate(0.7) contrast(1.05) brightness(0.86);
 }
 
 .pa-context-band .pa-still-life {
@@ -424,6 +432,7 @@ svg {
 .pa-context-band .pa-still-life .pa-hero-asset img {
   object-position: 50% 56%;
   opacity: 0.5;
+  transform: scale(1.02);
 }
 
 .pa-search {
@@ -1633,15 +1642,19 @@ a.pa-chip:hover,
 
   .pa-hero::after {
     position: absolute;
-    inset: 0 22% 0 0;
+    inset: 0;
     z-index: 1;
     content: "";
     pointer-events: none;
-    background: linear-gradient(90deg, color-mix(in srgb, var(--pa-primary-hover) 98%, transparent) 0%, color-mix(in srgb, var(--pa-primary) 86%, transparent) 78%, transparent 100%);
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--pa-primary-hover) 96%, transparent) 0%, color-mix(in srgb, var(--pa-primary) 82%, transparent) 56%, color-mix(in srgb, var(--pa-primary) 42%, transparent) 100%),
+      linear-gradient(180deg, transparent 48%, color-mix(in srgb, var(--pa-primary-hover) 46%, transparent) 100%);
   }
 
   :root[data-theme="dark"] .pa-hero::after {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--pa-surface) 98%, transparent) 0%, color-mix(in srgb, var(--pa-surface) 86%, transparent) 78%, transparent 100%);
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--pa-surface) 98%, transparent) 0%, color-mix(in srgb, var(--pa-surface) 82%, transparent) 58%, color-mix(in srgb, var(--pa-surface) 44%, transparent) 100%),
+      linear-gradient(180deg, transparent 48%, color-mix(in srgb, var(--pa-bg) 48%, transparent) 100%);
   }
 
   .pa-hero-copy {
@@ -1684,16 +1697,17 @@ a.pa-chip:hover,
 
   .pa-hero .pa-still-life {
     position: absolute;
-    inset: 0 -12% 0 auto;
-    width: 52%;
+    inset: 0;
+    width: 100%;
     height: 100%;
     opacity: 1;
     z-index: 0;
   }
 
   .pa-hero-asset img {
-    object-position: 50% 58%;
-    opacity: 0.34;
+    object-position: 54% 70%;
+    opacity: 0.28;
+    transform: scale(1.18);
   }
 
   .pa-search {
@@ -1940,8 +1954,8 @@ a.pa-chip:hover,
   }
 
   .pa-hero .pa-still-life {
-    right: -16%;
-    width: 54%;
+    right: 0;
+    width: 100%;
     opacity: 1;
   }
 

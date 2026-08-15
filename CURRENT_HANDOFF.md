@@ -25,6 +25,12 @@
   `node --check scripts/check-frontend.js`, `node --check server.js`,
   `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
   `npm.cmd run check`, `git diff --check`. Tam check `97/97` test başarılı.
+- Kullanıcının iPhone ekran görüntüsünde kitap görseli sağda ayrı bir parça gibi göründü. Bunun
+  üzerine eski sağ kolon mantığı kaldırıldı: `.pa-hero > .pa-still-life` hero'nun tamamına
+  yayıldı, mobilde kitap `object-position: 54% 70%` ve `transform: scale(1.18)` ile altta/ortada
+  daha büyük arka plan dokusuna çevrildi. Mobil overlay keskin ayrım yerine tam yüzeye yayılan
+  yumuşak katman oldu. “Şeffaf” diye gelen görsel JPG olduğu için gerçek alfa taşımıyor; bu
+  nedenle bu turda güvenli çözüm CSS yerleşim/katman düzeltmesidir.
 - Sıradaki pratik kontrol: doğru Vercel projesinde `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile yeni
   preview deploy al, `/public-preview` canlı smoke yap ve gerçek iPhone/Safari görsel feedback'ini
   kullanıcıdan al.
