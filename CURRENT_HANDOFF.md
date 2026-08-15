@@ -23,9 +23,19 @@
   `node --check scripts/check-frontend.js`, `node --check server.js`,
   `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
   `npm.cmd run check`, `git diff --check`. Tam check `97/97` test başarılı.
-- Sıradaki pratik adım: bu değişikliği commit/push edip `PUBLIC_ARCHIVE_PREVIEW_ENABLED=1` ile
-  yeni Vercel preview deploy almak; ardından gerçek iPhone/Safari'de soru detay üst görünüm,
-  cevap sonu bilgi paneli ve kaynak etiketleri kontrol edilecek.
+- Runtime commit `25a8407` GitHub'a push edildi ve doğru Vercel projesi `arsiv-kontrol` üzerinde
+  preview deploy alındı. İlk deploy:
+  `https://arsiv-kontrol-3v3lovg4l-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_DkXJDdjLBDVuJ5wNEzrsVJpeUEGm`, target `preview`, status `Ready`.
+- Canlı smoke başarılı: `/public-preview` ve `/public-preview/arsiv` 200/noindex. İlk gerçek detay
+  slug'ı `gunumuzde-allahin-tayin-ettigi-mursidler-yok-mudur` 200/noindex döndü; detayda
+  `Cevap bilgileri`, `Yanıtlayan: Dr. Abdulcabbar Boran`, `data-public-read-count` ve
+  `Kaynak ve deliller` mevcut. Eski üst özet `pa-detail-subtitle` ve eski genel kaynak metni
+  canlı detayda yok. İlk gerçek detayda otomatik yakalanan kaynaklardan bazıları: `İsrâ-15`,
+  `Enbiyâ-73`, `Secde-24`, `Âl-i İmrân-164`, `Nahl-36`, `Kehf-17`, `Yûnus-7`, `Furkân-21`,
+  `Rûm-8`.
+- Sıradaki pratik kontrol: kullanıcı/ekip gerçek iPhone/Safari üzerinde soru detay üst görünümünü,
+  cevap sonu bilgi panelini ve kaynak etiketlerinin görsel yoğunluğunu değerlendirecek.
 
 ## 2026-08-15 Codex Public Preview Hero Delil/Görsel Güncellemesi
 

@@ -135,7 +135,16 @@ tespit edilir).
   root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama: `node --check
   public-archive-renderer.js`, `node --check scripts/check-frontend.js`, `node --check server.js`,
   `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
-  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti.
+  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti. Runtime commit
+  `25a8407` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde preview deploy
+  alındı: `https://arsiv-kontrol-3v3lovg4l-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_DkXJDdjLBDVuJ5wNEzrsVJpeUEGm`, target `preview`, status `Ready`. Canlı smoke:
+  `/public-preview` ve `/public-preview/arsiv` 200/noindex; ilk gerçek detay slug'ı
+  `gunumuzde-allahin-tayin-ettigi-mursidler-yok-mudur` 200/noindex, `Cevap bilgileri`,
+  `Yanıtlayan: Dr. Abdulcabbar Boran`, `data-public-read-count` ve `Kaynak ve deliller` mevcut.
+  Eski üst özet `pa-detail-subtitle` ve eski genel kaynak metni canlı detayda yok. İlk gerçek
+  detayda otomatik yakalanan kaynaklardan bazıları `İsrâ-15`, `Enbiyâ-73`, `Secde-24`,
+  `Âl-i İmrân-164`, `Nahl-36`, `Kehf-17`, `Yûnus-7`, `Furkân-21`, `Rûm-8`.
 - **Public preview hero metni ve görseli delil/kaynak çizgisine çekildi:** `/public-preview`
   ana sayfa banner'ında eski kitaplık görseli kaldırıldı ve kullanıcı tarafından verilen açık
   kitap görseli `public-archive-assets/assets/hero-open-book-warm.jpg` olarak eklendi. Hero
