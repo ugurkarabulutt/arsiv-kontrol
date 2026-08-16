@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-16
+- **Public preview Arşiv sayfası metni sadeleştirildi:** Ekip lideri feedback'iyle
+  `/public-preview/arsiv` üst tanıtım alanında kicker `Arşiv` olarak korunurken başlık
+  `Merak ettiğiniz konunun cevaplarına ulaşın.` yapıldı. Açıklama metni
+  `Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak
+  kolayca bulabilirsiniz.` oldu. Eski `Soru ve cevapları kavramlarıyla birlikte keşfedin.`
+  başlığı ve eski ana kapı/kavram açıklaması kaldırıldı; liste yapısı, kategori/kavram
+  sayıları ve `Tüm Sorular` bölümü korundu. Guard/testler yeni metinleri doğrulayacak ve eski
+  hero metni geri gelirse kırılacak şekilde güncellendi. Bu adım public-preview hattıyla
+  sınırlıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama:
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti.
 - **Public preview ana sayfaya aktif soru/cevap sayacı eklendi:** Ekip lideri feedback'iyle
   `/public-preview` ana sayfasındaki `Kavram Haritası` bölümü tamamen kaldırıldı. Konu/kavram
   kartları `/konular`, konu detayları ve diğer arşiv akışlarında korunur; ana sayfa bu yatay

@@ -1,5 +1,23 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-16 Codex Public Preview Arşiv Sayfası Metin Güncellemesi
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Ekip lideri feedback'iyle `/public-preview/arsiv` üst tanıtım alanı sadeleştirildi.
+  Kicker `Arşiv` olarak kaldı.
+- Yeni başlık: `Merak ettiğiniz konunun cevaplarına ulaşın.`
+- Yeni açıklama: `Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu
+  alfabetik olarak kolayca bulabilirsiniz.`
+- Eski `Soru ve cevapları kavramlarıyla birlikte keşfedin.` başlığı ve eski ana kapı/kavram
+  açıklaması kaldırıldı. Liste yapısı, kategori/kavram sayıları ve `Tüm Sorular` bölümü korundu.
+- Guard/testler yeni metinleri arayacak ve eski hero metni geri gelirse kırılacak şekilde
+  güncellendi. Root `/` cutover yapılmadı, admin hattına dokunulmadı.
+- Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
+  test başarılı.
+
 ## 2026-08-16 Codex Public Preview Aktif Soru/Cevap Sayacı
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

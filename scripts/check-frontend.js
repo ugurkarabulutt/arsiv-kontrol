@@ -952,7 +952,8 @@ for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-stron
 }
 assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
-assert(archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi browse/list yapiyla gorunmeli.');
+assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
+assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && !archivePreview.includes('Yayınlanan kayıtları Allah’a ulaşmayı dilemek'), 'Public arsiv sayfasi eski hero metnini icermemeli.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html;
 assert(searchPreview.includes('Zikir kalbi nasıl değiştirir'), 'Public search fixture data ile sonuc dondurmeli.');
 assert(!searchPreview.includes('class="pa-breadcrumb"') && !searchPreview.includes('Sayfa yolu'), 'Public arama sayfasi gereksiz breadcrumb gostermemeli.');

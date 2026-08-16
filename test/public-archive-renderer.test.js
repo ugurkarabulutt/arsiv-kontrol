@@ -123,7 +123,9 @@ test('public preview uses final handoff assets and icon system', () => {
 
 test('archive and account routes are explicit public preview pages', () => {
   const archive = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
-  assert.match(archive, /Soru ve cevapları kavramlarıyla birlikte keşfedin\./);
+  assert.match(archive, /Merak ettiğiniz konunun cevaplarına ulaşın\./);
+  assert.match(archive, /Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz\./);
+  assert.doesNotMatch(archive, /Soru ve cevapları kavramlarıyla birlikte keşfedin\./);
   assert.match(archive, /Tüm Sorular/);
   assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);
   assertOnlyPublicPreviewApi(archive);

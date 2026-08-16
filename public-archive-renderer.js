@@ -706,13 +706,13 @@ function renderArchive() {
   return renderShell({
     active: 'archive',
     title: 'Arşiv',
-    description: 'Soru-cevap kayıtlarını ana kapı ve kavram bağlantılarıyla birlikte inceleyin.',
+    description: 'Merak ettiğiniz konunun cevaplarına ulaşın.',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-archive-hero">
           <p class="pa-kicker">Arşiv</p>
-          <h1>Soru ve cevapları kavramlarıyla birlikte keşfedin.</h1>
-          <p>Yayınlanan kayıtları Allah’a ulaşmayı dilemek, hidayet, mürşid, zikir ve teslimiyet ana kapıları üzerinden okuyabilirsiniz.</p>
+          <h1>Merak ettiğiniz konunun cevaplarına ulaşın.</h1>
+          <p>Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.</p>
           <div class="pa-collection-meta">
             <span>${entries.length} soru</span>
             <span>${categories.length} kategori</span>
