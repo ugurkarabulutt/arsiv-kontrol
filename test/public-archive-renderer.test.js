@@ -100,6 +100,9 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /class="pa-svg-icon"/);
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
+  assert.match(home, />Ara<\/span>/);
+  assert.doesNotMatch(home, />Konular<\/span>|>Konular<\/a>|>Kategoriler<\/a>/);
+  assert.doesNotMatch(home, /<strong>Ana Başlıklar<\/strong>|<strong>Kavramlar<\/strong>/);
   assert.match(home, /<a class="pa-archive-shortcut" href="\/public-preview\/arsiv"/);
   assert.match(home, /Arşivin tamamını açın\./);
   assert.match(home, /Tüm soru ve cevapları tek sayfada inceleyin\./);
@@ -127,6 +130,7 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(archive, /Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz\./);
   assert.doesNotMatch(archive, /Soru ve cevapları kavramlarıyla birlikte keşfedin\./);
   assert.match(archive, /Tüm Sorular/);
+  assert.doesNotMatch(archive, /<h2>Kategoriler<\/h2>|<h2>Kavramlar<\/h2>|\/public-preview\/konular/);
   assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);
   assertOnlyPublicPreviewApi(archive);
 
@@ -271,11 +275,12 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /data-count-up/);
   assert.match(home, /data-count-target/);
   assert.doesNotMatch(home, /Kavram Haritası/);
+  assert.doesNotMatch(home, /Ana Kategoriler/);
   const featuredSection = home.slice(home.indexOf('Öne Çıkan Sorular'), home.indexOf('Aktif arşiv'));
   assert.match(featuredSection, /has-strong-cta/);
   assert.doesNotMatch(featuredSection, /pa-card-meta/);
   assert.doesNotMatch(featuredSection, /class="pa-chip"/);
-  const activeStatsSection = home.slice(home.indexOf('class="pa-active-stats"'), home.indexOf('Ana Kategoriler'));
+  const activeStatsSection = home.slice(home.indexOf('class="pa-active-stats"'), home.indexOf('Son Yayınlanan Sorular'));
   assert.doesNotMatch(activeStatsSection, /href=|Arşive Git|pa-active-stats-link/);
   assert.match(home, /Cevabı oku/);
   assert.match(home, /data-read-count-label/);

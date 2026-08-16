@@ -799,7 +799,7 @@ for (const marker of [
   'overflow-x: hidden',
   '@media (max-width: 430px)',
   'env(safe-area-inset-bottom)',
-  'grid-template-columns: repeat(5, minmax(0, 1fr))',
+  'grid-template-columns: repeat(4, minmax(0, 1fr))',
   'width: calc(100% - 24px)',
   'minmax(0, 1fr)',
   'backdrop-filter: blur(24px)'
@@ -908,7 +908,7 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'bağlantılı kavramlara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'bağlantılı kavramlara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
@@ -921,11 +921,14 @@ const featuredSection = homePreview.slice(featuredStart, featuredEnd);
 assert(featuredSection.includes('has-strong-cta'), 'Public home featured kart CTA vurgusu eksik.');
 assert(!featuredSection.includes('pa-card-meta') && !featuredSection.includes('class="pa-chip"'), 'Public home featured kartlarda etiket/chip gorunmemeli.');
 const activeStatsStart = homePreview.indexOf('class="pa-active-stats"');
-const activeStatsEnd = homePreview.indexOf('Ana Kategoriler');
+const activeStatsEnd = homePreview.indexOf('Son Yayınlanan Sorular');
 assert(activeStatsStart >= 0 && activeStatsEnd > activeStatsStart, 'Public home aktif arsiv sayaci sinirlari bulunmali.');
 const activeStatsSection = homePreview.slice(activeStatsStart, activeStatsEnd);
 assert(!activeStatsSection.includes('href=') && !activeStatsSection.includes('Arşive Git') && !activeStatsSection.includes('pa-active-stats-link'), 'Public home aktif arsiv sayacinda arsiv yonlendirme olmamali.');
 assert(!homePreview.includes('Kavram Haritası'), 'Public home Kavram Haritasi bolumu geri gelmemeli.');
+assert(!homePreview.includes('Ana Kategoriler'), 'Public home ana kategori vitrini geri gelmemeli.');
+assert(!homePreview.includes('>Konular</a>') && !homePreview.includes('>Kategoriler</a>') && !homePreview.includes('>Konular</span>'), 'Public ana gezinmede Konular/Kategoriler gorunmemeli.');
+assert(homePreview.includes('href="/public-preview/arama#arama"'), 'Public ana gezinmede arama kapisi gorunmeli.');
 assert(!homePreview.includes('Arşivin tamamına buradan ulaşabilirsiniz.'), 'Public home eski hacimli arsiv banner metnini icermemeli.');
 assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.'), 'Public home eski hacimli arsiv banner aciklamasini icermemeli.');
 assert(!homePreview.includes('Arşiv ana kapıları'), 'Public home eski Arsiv ana kapilari basligini icermemeli.');
@@ -954,6 +957,7 @@ assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda ki
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
 assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && !archivePreview.includes('Yayınlanan kayıtları Allah’a ulaşmayı dilemek'), 'Public arsiv sayfasi eski hero metnini icermemeli.');
+assert(!archivePreview.includes('<h2>Kategoriler</h2>') && !archivePreview.includes('<h2>Kavramlar</h2>') && !archivePreview.includes('/public-preview/konular'), 'Public arsiv sayfasinda kategori/kavram vitrinleri gorunmemeli.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html;
 assert(searchPreview.includes('Zikir kalbi nasıl değiştirir'), 'Public search fixture data ile sonuc dondurmeli.');
 assert(!searchPreview.includes('class="pa-breadcrumb"') && !searchPreview.includes('Sayfa yolu'), 'Public arama sayfasi gereksiz breadcrumb gostermemeli.');

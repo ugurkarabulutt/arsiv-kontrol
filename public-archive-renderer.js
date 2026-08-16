@@ -203,7 +203,6 @@ function previewActionNav(active) {
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
     ['Arşiv', `${PREVIEW_BASE}/arsiv`, 'archive'],
     ['Ara', `${PREVIEW_BASE}/arama#arama`, 'search'],
-    ['Konular', `${PREVIEW_BASE}/konular`, 'topics'],
     ['Soru Sor', `${PREVIEW_BASE}/soru-sor`, 'ask']
   ];
   return items.map(([label, url, key]) => `
@@ -218,8 +217,7 @@ function header(active) {
   const nav = [
     ['Ana Sayfa', PREVIEW_BASE, 'home'],
     ['Ar\u015fiv', PREVIEW_BASE + '/arsiv', 'archive'],
-    ['Konular', PREVIEW_BASE + '/konular', 'topics'],
-    ['Kategoriler', PREVIEW_BASE + '/kategoriler', 'categories'],
+    ['Ara', PREVIEW_BASE + '/arama#arama', 'search'],
     ['Soru Sor', PREVIEW_BASE + '/soru-sor', 'ask']
   ];
   const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
@@ -244,8 +242,6 @@ function header(active) {
 
 function footer() {
   const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
-  const footerCategories = publicArchiveFixtures.categories.filter(category => category.featured).slice(0, 5);
-  const footerTopics = publicArchiveFixtures.topics.filter(topic => topic.featured).slice(0, 6);
   return `
     <footer class="pa-footer">
       <div class="pa-footer-brand">
@@ -256,8 +252,7 @@ function footer() {
         <nav class="pa-footer-links" aria-label="Arşiv bağlantıları">
           <strong>Arşiv</strong>
           <a href="${PREVIEW_BASE}/arsiv">Tüm Sorular</a>
-          <a href="${PREVIEW_BASE}/konular">Kavramlar</a>
-          <a href="${PREVIEW_BASE}/kategoriler">Kategoriler</a>
+          <a href="${PREVIEW_BASE}/arama#arama">Arama</a>
           <a href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
         </nav>
         <nav class="pa-footer-links" aria-label="Bilgilendirme">
@@ -267,14 +262,6 @@ function footer() {
           <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
           <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
           <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
-        </nav>
-        <nav class="pa-footer-links" aria-label="Öne çıkan ana başlıklar">
-          <strong>Ana Başlıklar</strong>
-          ${footerCategories.map(category => `<a href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">${escapeHtml(category.name)}</a>`).join('')}
-        </nav>
-        <nav class="pa-footer-links" aria-label="Öne çıkan kavramlar">
-          <strong>Kavramlar</strong>
-          ${footerTopics.map(topic => `<a href="${PREVIEW_BASE}/konu/${escapeHtml(topic.slug)}">${escapeHtml(topic.name)}</a>`).join('')}
         </nav>
       </div>
       <p class="pa-copyright">© 2026 Dini Sorular ve Cevaplar Arşivi. Tüm hakları saklıdır.</p>
@@ -636,7 +623,6 @@ function trustBand() {
 function renderHome() {
   const featured = publicArchiveFixtures.qa.filter(entry => entry.isFeatured).slice(0, 3);
   const latest = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0, 3);
-  const categories = publicArchiveFixtures.categories.filter(category => category.featured);
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
@@ -662,11 +648,6 @@ function renderHome() {
         </section>
 
         ${activeArchiveStatsBand(publicArchiveFixtures.qa)}
-
-        <section class="pa-section">
-          ${sectionHeader('Ana Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}
-          <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
-        </section>
 
         <section class="pa-section">
           ${sectionHeader('Son Yayınlanan Sorular', 'Arşive Git', `${PREVIEW_BASE}/arsiv`)}
@@ -701,8 +682,7 @@ function searchResults(query) {
 
 function renderArchive() {
   const entries = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
-  const categories = publicArchiveFixtures.categories.filter(category => category.featured);
-  const topics = publicArchiveFixtures.topics.filter(topic => topic.featured).slice(0, 8);
+  const answeredCount = entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length;
   return renderShell({
     active: 'archive',
     title: 'Arşiv',
@@ -715,17 +695,8 @@ function renderArchive() {
           <p>Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.</p>
           <div class="pa-collection-meta">
             <span>${entries.length} soru</span>
-            <span>${categories.length} kategori</span>
-            <span>${topics.length} kavram</span>
+            <span>${answeredCount} cevap</span>
           </div>
-        </section>
-        <section class="pa-section">
-          ${sectionHeader('Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}
-          <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
-        </section>
-        <section class="pa-section">
-          ${sectionHeader('Kavramlar', 'Tümünü Gör', `${PREVIEW_BASE}/konular`)}
-          <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
         </section>
         <section class="pa-section">
           ${sectionHeader('Tüm Sorular')}

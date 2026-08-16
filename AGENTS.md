@@ -121,13 +121,28 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-16
+- **Public preview görünür konu/kategori gezinmesi sadeleştirildi:** Ekip lideri feedback'iyle
+  kullanıcıya görünen ana gezinme ve vitrin alanları azaltıldı. Üst menü artık yalnız
+  `Ana Sayfa`, `Arşiv`, `Ara`, `Soru Sor` gösterir; `Konular` ve `Kategoriler` menüden
+  kaldırıldı. Mobil bottom bar 4'lü yapıya çekildi: `Ana Sayfa`, `Arşiv`, `Ara`, `Soru Sor`;
+  CSS grid `repeat(4, minmax(0, 1fr))` olarak güncellendi. Ana sayfadaki büyük
+  `Ana Kategoriler` vitrini kaldırıldı. `/public-preview/arsiv` sayfasındaki büyük
+  `Kategoriler` ve `Kavramlar` gridleri kaldırıldı; arşiv üst sayacı yalnız `soru` ve `cevap`
+  sayılarını gösterir ve sayfa doğrudan `Tüm Sorular` listesine iner. Footer'da `Kavramlar`,
+  `Kategoriler`, `Ana Başlıklar` ve kavram listeleri kaldırıldı; `Arşiv` sütununda
+  `Tüm Sorular`, `Arama`, `Soru Sor` kaldı. Kategori/kavram veri altyapısı, arama eşleştirmesi
+  ve soru detayındaki ilişki bilgileri korunur; bu adım yalnız görünür ana gezinme ve vitrin
+  alanlarını sadeleştirir. Root `/` cutover yapılmadı ve admin iş hattına dokunulmadı.
+  Doğrulama: `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti.
 - **Public preview Arşiv sayfası metni sadeleştirildi:** Ekip lideri feedback'iyle
   `/public-preview/arsiv` üst tanıtım alanında kicker `Arşiv` olarak korunurken başlık
   `Merak ettiğiniz konunun cevaplarına ulaşın.` yapıldı. Açıklama metni
   `Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak
   kolayca bulabilirsiniz.` oldu. Eski `Soru ve cevapları kavramlarıyla birlikte keşfedin.`
-  başlığı ve eski ana kapı/kavram açıklaması kaldırıldı; liste yapısı, kategori/kavram
-  sayıları ve `Tüm Sorular` bölümü korundu. Guard/testler yeni metinleri doğrulayacak ve eski
+  başlığı ve eski ana kapı/kavram açıklaması kaldırıldı; liste yapısı ve `Tüm Sorular` bölümü
+  korundu. Guard/testler yeni metinleri doğrulayacak ve eski
   hero metni geri gelirse kırılacak şekilde güncellendi. Bu adım public-preview hattıyla
   sınırlıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama:
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,

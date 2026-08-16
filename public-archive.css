@@ -1759,7 +1759,7 @@ a.pa-chip:hover,
 
 .pa-footer-groups {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
   gap: 20px;
   min-width: 0;
 }
@@ -1797,7 +1797,7 @@ a.pa-chip:hover,
   left: max(12px, env(safe-area-inset-left));
   z-index: 70;
   display: none;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   width: calc(100% - 24px);
   min-height: 68px;
   padding: 6px;
