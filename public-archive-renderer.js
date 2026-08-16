@@ -680,9 +680,113 @@ function searchResults(query) {
   });
 }
 
-function renderArchive() {
+const trCollator = new Intl.Collator('tr-TR', { numeric: true, sensitivity: 'base' });
+
+function sortedCategories() {
+  return [...publicArchiveFixtures.categories].sort((a, b) => trCollator.compare(a.name || '', b.name || ''));
+}
+
+function categoryInitial(category) {
+  const firstLetter = Array.from(String(category?.name || '').trim()).find(char => /\p{L}/u.test(char));
+  return firstLetter ? firstLetter.toLocaleUpperCase('tr-TR') : '#';
+}
+
+function compareArchiveLetters(a, b) {
+  if (a === b) return 0;
+  if (a === '#') return 1;
+  if (b === '#') return -1;
+  return trCollator.compare(a, b);
+}
+
+function archiveQueryUrl(params = {}) {
+  const search = new URLSearchParams();
+  if (params.harf) search.set('harf', params.harf);
+  if (params.kategori) search.set('kategori', params.kategori);
+  if (params.kategoriAra) search.set('kategoriAra', params.kategoriAra);
+  const query = search.toString();
+  return `${PREVIEW_BASE}/arsiv${query ? `?${query}` : ''}${params.hash ? `#${params.hash}` : ''}`;
+}
+
+function archiveCategoryIndexState(query = {}) {
+  const categories = sortedCategories();
+  const categoriesByLetter = new Map();
+  for (const category of categories) {
+    const letter = categoryInitial(category);
+    if (!categoriesByLetter.has(letter)) categoriesByLetter.set(letter, []);
+    categoriesByLetter.get(letter).push(category);
+  }
+  const letters = [...categoriesByLetter.keys()].sort(compareArchiveLetters);
+  const queryCategory = String(query.kategori || '').trim();
+  const selectedCategory = queryCategory ? bySlug(categories, queryCategory) : null;
+  const queryLetter = String(query.harf || '').trim().toLocaleUpperCase('tr-TR');
+  const activeLetter = selectedCategory
+    ? categoryInitial(selectedCategory)
+    : letters.includes(queryLetter)
+      ? queryLetter
+      : letters[0] || '';
+  const letterCategories = categoriesByLetter.get(activeLetter) || [];
+  const categorySearch = String(query.kategoriAra || '').trim();
+  const normalizedCategorySearch = normalizeSearchText(categorySearch);
+  const visibleCategories = normalizedCategorySearch
+    ? letterCategories.filter(category => normalizeSearchText(category.name).includes(normalizedCategorySearch))
+    : letterCategories;
+  return {
+    activeLetter,
+    categorySearch,
+    letters,
+    selectedCategory,
+    visibleCategories
+  };
+}
+
+function archiveCategoryIndex(query = {}) {
+  const state = archiveCategoryIndexState(query);
+  if (!state.letters.length) return { html: '', selectedCategory: null, activeLetter: '' };
+  return {
+    ...state,
+    html: `
+      <div class="pa-alpha-index" aria-label="Alfabetik kategori dizini">
+        <div class="pa-alpha-track" role="list" aria-label="Kategori harfleri">
+          ${state.letters.map(letter => `
+            <a class="pa-alpha-letter${letter === state.activeLetter ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}"${letter === state.activeLetter ? ' aria-current="true"' : ''} role="listitem">${escapeHtml(letter)}</a>
+          `).join('')}
+        </div>
+        <div class="pa-letter-panel">
+          <div class="pa-letter-head">
+            <span class="pa-letter-badge">${escapeHtml(state.activeLetter)}</span>
+            <strong>${escapeHtml(state.activeLetter)} harfiyle başlayan kategoriler</strong>
+            ${state.selectedCategory || state.categorySearch ? `<a href="${escapeHtml(archiveQueryUrl({ harf: state.activeLetter }))}">Tümünü göster</a>` : ''}
+          </div>
+          <form class="pa-letter-search" action="${PREVIEW_BASE}/arsiv" method="get" role="search">
+            <input type="hidden" name="harf" value="${escapeHtml(state.activeLetter)}">
+            <span>${iconSvg('search')}</span>
+            <input name="kategoriAra" value="${escapeHtml(state.categorySearch)}" placeholder="Bu harfte ara..." aria-label="${escapeHtml(state.activeLetter)} harfindeki kategorilerde ara" autocomplete="off">
+            <button type="submit" aria-label="Kategori ara">${iconSvg('arrow-right')}</button>
+          </form>
+          ${state.visibleCategories.length ? `
+            <div class="pa-letter-categories">
+              ${state.visibleCategories.map(category => `
+                <a class="pa-index-category${state.selectedCategory?.slug === category.slug ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: state.activeLetter, kategori: category.slug, hash: 'sorular' }))}">
+                  <strong>${escapeHtml(category.name)}</strong>
+                  <span>${entriesForCategory(category.slug).length} soru</span>
+                </a>
+              `).join('')}
+            </div>
+          ` : `<p class="pa-index-empty">Bu harfte aramanızla eşleşen kategori bulunamadı.</p>`}
+        </div>
+      </div>
+    `
+  };
+}
+
+function renderArchive(query = {}) {
   const entries = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
   const answeredCount = entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length;
+  const categoryIndex = archiveCategoryIndex(query);
+  const visibleEntries = categoryIndex.selectedCategory
+    ? entries.filter(entry => entry.categorySlug === categoryIndex.selectedCategory.slug)
+    : entries;
+  const listTitle = categoryIndex.selectedCategory ? `${categoryIndex.selectedCategory.name} soruları` : 'Tüm Sorular';
   return renderShell({
     active: 'archive',
     title: 'Arşiv',
@@ -697,10 +801,13 @@ function renderArchive() {
             <span>${entries.length} soru</span>
             <span>${answeredCount} cevap</span>
           </div>
+          ${categoryIndex.html}
         </section>
-        <section class="pa-section">
-          ${sectionHeader('Tüm Sorular')}
-          <div class="pa-list">${entries.map(entry => questionCard(entry, true)).join('')}</div>
+        <section class="pa-section" id="sorular">
+          ${sectionHeader(listTitle, categoryIndex.selectedCategory ? 'Tümünü göster' : '', categoryIndex.selectedCategory ? archiveQueryUrl({ harf: categoryIndex.activeLetter, hash: 'sorular' }) : '')}
+          ${visibleEntries.length
+            ? `<div class="pa-list">${visibleEntries.map(entry => questionCard(entry, true)).join('')}</div>`
+            : `<div class="pa-empty-state"><h2>Bu kategoride soru görünmüyor.</h2><p>Arşivdeki diğer kategorileri inceleyebilirsiniz.</p></div>`}
         </section>
       </main>
     `
@@ -1515,7 +1622,7 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
   return withPublicArchiveData(archiveData, () => {
     const pathname = routePath.replace(/\/+$/, '') || PREVIEW_BASE;
     if (pathname === PREVIEW_BASE) return renderHome();
-    if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive();
+    if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive(query);
     if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
     if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
     if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
@@ -1569,7 +1676,11 @@ function createPublicArchivePreviewRouter(options = {}) {
     res.type('text/css').sendFile(cssFile);
   });
   router.get(['/', ''], (req, res, next) => sendRoute(req, res, next, PREVIEW_BASE));
-  router.get('/arsiv', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arsiv`));
+  router.get('/arsiv', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arsiv`, {
+    harf: req.query.harf || '',
+    kategori: req.query.kategori || '',
+    kategoriAra: req.query.kategoriAra || ''
+  }));
   router.get('/arama', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arama`, { q: req.query.q || '' }));
   router.get('/konular', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konular`));
   router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategoriler`));

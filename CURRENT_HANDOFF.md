@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-16 Codex Public Preview Arşiv Alfabetik Kategori Dizini
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Kullanıcı/ekip lideri feedback'iyle `/public-preview/arsiv` üst giriş kartı yalnız açıklama
+  alanı olmaktan çıkarıldı ve alfabetik kategori dizinine çevrildi.
+- Harf şeridi yalnız içinde kategori olan harfleri gösterir; boş harfler basılmaz. Şerit yatay
+  kayar, mobilde kenar fade'i ve scroll-snap ile kaydırılabilir olduğu anlaşılır.
+- Harfe tıklanınca aynı kart içinde o harfle başlayan kategoriler listelenir. Küçük arama alanı
+  `Bu harfte ara...` placeholder'ıyla yalnız seçili harfin kategori listesini süzer.
+- Kategoriye tıklanınca URL `harf`, `kategori` ve `#sorular` bilgisini taşır; sayfadaki soru
+  listesi seçili kategoriye göre filtrelenir ve başlık örn. `Hidayet soruları` olur. Filtre
+  varken `Tümünü göster` bağlantısı görünür.
+- Query tabanlı yapı JS kapalıyken de çalışır: `/public-preview/arsiv?harf=H&kategori=hidayet`.
+  Root `/` cutover yapılmadı, admin hattına dokunulmadı.
+- Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
+  Tam check `97/97` test başarılı.
+
 ## 2026-08-16 Codex Public Preview Cevabı Oku CTA Standardı
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

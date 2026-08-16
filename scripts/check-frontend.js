@@ -956,8 +956,15 @@ for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-stron
 assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
+for (const marker of ['pa-alpha-index', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
+  assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
+}
 assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && !archivePreview.includes('Yayınlanan kayıtları Allah’a ulaşmayı dilemek'), 'Public arsiv sayfasi eski hero metnini icermemeli.');
 assert(!archivePreview.includes('<h2>Kategoriler</h2>') && !archivePreview.includes('<h2>Kavramlar</h2>') && !archivePreview.includes('/public-preview/konular'), 'Public arsiv sayfasinda kategori/kavram vitrinleri gorunmemeli.');
+const hArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H' }).html;
+assert(hArchivePreview.includes('H harfiyle başlayan kategoriler') && hArchivePreview.includes('/public-preview/arsiv?harf=H&amp;kategori=hidayet#sorular'), 'Public arsiv H harfi kategori listesi calismali.');
+const filteredArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H', kategori: 'hidayet' }).html;
+assert(filteredArchivePreview.includes('Hidayet soruları') && filteredArchivePreview.includes('Tümünü göster') && !filteredArchivePreview.includes('<h2>Tüm Sorular</h2>'), 'Public arsiv kategori seciminde soru listesi filtrelenmeli.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html;
 assert(searchPreview.includes('Zikir kalbi nasıl değiştirir'), 'Public search fixture data ile sonuc dondurmeli.');
 assert(!searchPreview.includes('class="pa-breadcrumb"') && !searchPreview.includes('Sayfa yolu'), 'Public arama sayfasi gereksiz breadcrumb gostermemeli.');
@@ -1008,6 +1015,9 @@ for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-c
 }
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-alpha-index', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
+  assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', '@keyframes pa-cta-shine', '.pa-question-card:hover .pa-card-cta', '.pa-cta-icon']) {
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);

@@ -129,10 +129,23 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(archive, /Merak ettiğiniz konunun cevaplarına ulaşın\./);
   assert.match(archive, /Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz\./);
   assert.doesNotMatch(archive, /Soru ve cevapları kavramlarıyla birlikte keşfedin\./);
+  assert.match(archive, /pa-alpha-index/);
+  assert.match(archive, /pa-alpha-track/);
+  assert.match(archive, /Bu harfte ara\.\.\./);
+  assert.match(archive, /A harfiyle başlayan kategoriler/);
   assert.match(archive, /Tüm Sorular/);
   assert.doesNotMatch(archive, /<h2>Kategoriler<\/h2>|<h2>Kavramlar<\/h2>|\/public-preview\/konular/);
   assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);
   assertOnlyPublicPreviewApi(archive);
+
+  const hArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H' }).html;
+  assert.match(hArchive, /H harfiyle başlayan kategoriler/);
+  assert.match(hArchive, /href="\/public-preview\/arsiv\?harf=H&amp;kategori=hidayet#sorular"/);
+
+  const filteredArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H', kategori: 'hidayet' }).html;
+  assert.match(filteredArchive, /Hidayet soruları/);
+  assert.match(filteredArchive, /Tümünü göster/);
+  assert.doesNotMatch(filteredArchive, /<h2>Tüm Sorular<\/h2>/);
 
   const account = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
   assert.match(account, /Hesabınızla soru gönderimini takip edin\./);
