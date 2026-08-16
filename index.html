@@ -1327,7 +1327,7 @@ canvas{width:100%!important;}
         </div>
         <div class="ops-search">
           <span>⌕</span>
-          <input id="archiveSourceSearch" placeholder="Kaynak, yayın linki, hadis, slayt, kategori veya not ara..." oninput="setArchiveSourceSearch(null,'library')">
+          <input id="archiveSourceSearch" placeholder="Kaynak, yayın linki, hadis, slayt, etiket veya not ara..." oninput="setArchiveSourceSearch(null,'library')">
         </div>
       </div>
 
@@ -1341,7 +1341,7 @@ canvas{width:100%!important;}
         </div>
         <div class="ops-panel-body">
           <div class="ops-file-toolbar">
-            <input class="ops-field" id="archiveFileSearch" placeholder="Dosya, kaynak, kategori, kavram veya metin içinde ara..." oninput="setArchiveFileSearch(this.value)">
+            <input class="ops-field" id="archiveFileSearch" placeholder="Dosya, kaynak, etiket veya metin içinde ara..." oninput="setArchiveFileSearch(this.value)">
             <select class="ops-field" id="archiveFileTypeFilter" onchange="setArchiveFileFilter()">
               <option value="">Tüm türler</option>
               <option value="transkript">Transkript</option>
@@ -1401,13 +1401,11 @@ canvas{width:100%!important;}
               <option value="beklet">Beklet</option>
             </select>
           </div>
-          <div class="ops-form-grid two">
-            <input class="ops-field" id="archiveSourceCategory" placeholder="Kategori veya çalışma alanı">
-            <input class="ops-field" id="archiveSourceDate" type="date" aria-label="Kaynak tarihi">
-          </div>
+          <input type="hidden" id="archiveSourceCategory" value="">
+          <input class="ops-field" id="archiveSourceDate" type="date" aria-label="Kaynak tarihi" style="margin-top:10px">
           <div class="ops-form-grid two">
             <input class="ops-field" id="archiveSourceUrl" placeholder="Kaynak linki veya Drive bağlantısı">
-            <input class="ops-field" id="archiveSourceTags" placeholder="Kavramlar / etiketler, virgülle ayırın">
+            <input class="ops-field" id="archiveSourceTags" placeholder="Etiketler, virgülle ayırın">
           </div>
           <textarea class="ops-field ops-source-text" id="archiveSourceText" placeholder="Kaynak metnini buraya ekleyin. Hadis ve slaytlar bağlantı olarak değil, metin olarak da burada durmalı." oninput="updateArchiveSourceCount()"></textarea>
           <textarea class="ops-field" id="archiveSourceNote" placeholder="Kısa not, karar veya kullanım açıklaması" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
@@ -1426,7 +1424,7 @@ canvas{width:100%!important;}
         <div class="ops-panel-head">
           <div>
             <div class="ops-panel-title">Kaynak Havuzu</div>
-            <div class="ops-panel-sub">Kayıtlar başlık, metin, kategori, link, not ve kavramlara göre aranır.</div>
+            <div class="ops-panel-sub">Kayıtlar başlık, metin, etiket, link ve notlara göre aranır.</div>
           </div>
         </div>
         <div class="ops-panel-body">
@@ -1536,10 +1534,8 @@ canvas{width:100%!important;}
                   <input class="ops-field" id="archivePublishPlatform" placeholder="Platform / program">
                 </div>
                 <input class="ops-field" id="archivePublishUrl" placeholder="Yayın linki" style="margin-top:10px">
-                <div class="ops-form-grid two" style="margin-top:10px">
-                  <input class="ops-field" id="archivePublishCategory" placeholder="Kategori veya çalışma alanı">
-                  <input class="ops-field" id="archivePublishTopics" placeholder="Kavramlar / etiketler, virgülle ayırın">
-                </div>
+                <input type="hidden" id="archivePublishCategory" value="">
+                <input class="ops-field" id="archivePublishTopics" placeholder="Etiketler, virgülle ayırın" style="margin-top:10px">
                 <div class="ops-source-picker" style="margin-top:10px">
                   <input class="ops-field" id="archivePublishSourceSearch" placeholder="Kaynak havuzunda ara..." oninput="renderArchivePublishSourcePicker()">
                   <select class="ops-field" id="archivePublishSourceId" onchange="selectArchivePublishSource(this.value)">
@@ -1636,10 +1632,8 @@ canvas{width:100%!important;}
                   <input class="ops-field" id="archiveWorkAssignedTo" placeholder="Atanan kişi">
                   <input class="ops-field" id="archiveWorkDueDate" type="date" aria-label="Hedef tarih">
                 </div>
-                <div class="ops-form-grid two" style="margin-top:10px">
-                  <input class="ops-field" id="archiveWorkCategory" placeholder="Kategori veya çalışma alanı">
-                  <input class="ops-field" id="archiveWorkTopics" placeholder="Kavramlar / etiketler, virgülle ayırın">
-                </div>
+                <input type="hidden" id="archiveWorkCategory" value="">
+                <input class="ops-field" id="archiveWorkTopics" placeholder="Etiketler, virgülle ayırın" style="margin-top:10px">
                 <div class="ops-source-picker" style="margin-top:10px">
                   <input class="ops-field" id="archiveWorkSourceSearch" placeholder="Bağlanacak kaynak içinde ara..." oninput="renderArchiveWorkSourcePicker()">
                   <select class="ops-field" id="archiveWorkSourceId" onchange="selectArchiveWorkSource(this.value)">
@@ -1647,7 +1641,7 @@ canvas{width:100%!important;}
                   </select>
                   <div class="ops-status" id="archiveWorkSourceHint">Kaynak seçildiğinde çalışma kaydı o metne bağlanır.</div>
                 </div>
-                <textarea class="ops-field" id="archiveWorkQuestion" placeholder="Soru veya çalışma konusu" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
+                <textarea class="ops-field" id="archiveWorkQuestion" placeholder="Soru veya çalışma başlığı" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
                 <textarea class="ops-field ops-source-text" id="archiveWorkAnswer" placeholder="Cevap taslağı veya hazırlanacak metin"></textarea>
                 <textarea class="ops-field" id="archiveWorkNote" placeholder="Not, kontrol ihtiyacı veya ekip açıklaması" style="margin-top:10px;min-height:90px;resize:vertical"></textarea>
                 <div class="ops-source-actions">
@@ -1661,7 +1655,7 @@ canvas{width:100%!important;}
               </div>
               <div class="ops-work-list-wrap">
                 <div class="ops-filter-row">
-                  <input class="ops-field" id="archiveWorkSearch" placeholder="Çalışma, kaynak, kişi, kavram veya not ara..." oninput="setArchiveWorkSearch(this.value)">
+                  <input class="ops-field" id="archiveWorkSearch" placeholder="Çalışma, kaynak, kişi, etiket veya not ara..." oninput="setArchiveWorkSearch(this.value)">
                   <select class="ops-field" id="archiveWorkStatusFilter" onchange="setArchiveWorkFilter()">
                     <option value="">Tüm durumlar</option>
                     <option value="taslak">Taslak</option>
@@ -1707,7 +1701,7 @@ canvas{width:100%!important;}
         </div>
         <div class="ops-panel-body">
           <div class="ops-filter-row">
-            <input class="ops-field" id="archiveTextSearch" placeholder="Hadis, slayt, kaynak adı, kategori veya metin içinde ara..." oninput="setArchiveTextSearch(this.value)">
+            <input class="ops-field" id="archiveTextSearch" placeholder="Hadis, slayt, kaynak adı, etiket veya metin içinde ara..." oninput="setArchiveTextSearch(this.value)">
             <select class="ops-field" id="archiveTextTypeFilter" onchange="setArchiveTextFilter()">
               <option value="">Hadis ve slaytlar</option>
               <option value="hadis">Sadece hadis</option>
@@ -1797,7 +1791,7 @@ canvas{width:100%!important;}
         </div>
         <div class="ops-panel-body">
           <div class="ops-filter-row">
-            <input class="ops-field" id="archiveCandidateSearch" placeholder="Aday, kaynak, çalışma, kavram veya not içinde ara..." oninput="setArchiveCandidateSearch(this.value)">
+            <input class="ops-field" id="archiveCandidateSearch" placeholder="Aday, kaynak, çalışma, etiket veya not içinde ara..." oninput="setArchiveCandidateSearch(this.value)">
             <select class="ops-field" id="archiveCandidateKindFilter" onchange="setArchiveCandidateFilter()">
               <option value="">Tüm adaylar</option>
               <option value="source">Kaynak kayıtları</option>
@@ -1840,7 +1834,7 @@ canvas{width:100%!important;}
         <div class="ops-panel-body">
           <div class="archive-ready-hero">
             <strong>Bu ekran yalnız yayına hazır kayıtları gösterir.</strong>
-            <span>Kaynak izi, kategori, kavram ve metin ön izlemesi birlikte kontrol edilir. Eksik veya şüpheli görülen kayıtlar tek tek son kontrole, revizyona veya beklemeye alınabilir.</span>
+            <span>Kaynak izi, etiketler ve metin ön izlemesi birlikte kontrol edilir. Eksik veya şüpheli görülen kayıtlar tek tek son kontrole, revizyona veya beklemeye alınabilir.</span>
           </div>
           <div class="ops-filter-row">
             <input class="ops-field" id="archiveReadySearch" placeholder="Yayına hazır adaylarda ara..." oninput="setArchiveReadySearch(this.value)">
@@ -1991,7 +1985,7 @@ canvas{width:100%!important;}
               <div class="archive-release-empty">Soru talepleri yükleniyor...</div>
             </div>
             <div class="ops-detail" id="archivePublicQuestionDetail">
-              <div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih, kategori ve soru metni burada görünür.</div>
+              <div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih ve soru metni burada görünür.</div>
             </div>
           </div>
         </div>
@@ -5467,7 +5461,6 @@ function archiveTextCardHtml(source){
         <span>${esc(archiveSourceTypeLabel(source.sourceType))}</span>
         <span>${esc(archiveSourceStatusLabel(source.status))}</span>
         <span>${Number(source.textLength||0).toLocaleString('tr-TR')} karakter</span>
-        ${source.category?`<span>${esc(source.category)}</span>`:''}
       </div>
       <div class="ops-source-preview">${esc(source.textPreview||'Ön izleme yok.')}</div>
       ${tags?`<div class="ops-tags">${tags}</div>`:''}
@@ -5523,8 +5516,7 @@ function renderArchiveTextDetail(source){
       <button class="btn-mini" onclick="editArchiveTextSource(${attrJson(source.id)})">Forma Al</button>
     </div>
     <div class="ops-detail-body">
-      ${source.category?`<p><strong>Kategori:</strong> ${esc(source.category)}</p>`:''}
-      ${source.sourceUrl?`<p><strong>Kaynak bilgisi:</strong> ${esc(source.sourceUrl)}</p>`:''}
+	      ${source.sourceUrl?`<p><strong>Kaynak bilgisi:</strong> ${esc(source.sourceUrl)}</p>`:''}
       ${source.note?`<p><strong>Not:</strong> ${esc(source.note)}</p>`:''}
       ${tags?`<div class="ops-tags">${tags}</div>`:''}
       <div class="ops-source-actions">
@@ -5666,7 +5658,6 @@ function selectArchivePublishSource(id){
   const source=(archiveOpsState.sources||[]).find(item=>item.id===id);
   if(source){
     if(!v('archivePublishTitle'))el('archivePublishTitle').value=source.title||'';
-    if(!v('archivePublishCategory'))el('archivePublishCategory').value=source.category||'';
     if(!v('archivePublishTopics'))el('archivePublishTopics').value=(source.tags||[]).join(', ');
   }
   renderArchivePublishSourcePicker();
@@ -5700,7 +5691,6 @@ function selectArchivePublishWork(id){
   const item=(archiveWorkState.items||[]).find(entry=>entry.id===id);
   if(item){
     if(!v('archivePublishTitle'))el('archivePublishTitle').value=item.title||'';
-    if(!v('archivePublishCategory'))el('archivePublishCategory').value=item.category||'';
     if(!v('archivePublishTopics'))el('archivePublishTopics').value=(item.topics||[]).join(', ');
     if(!el('archivePublishSourceId')?.value&&item.sourceId){
       const sourceSelect=el('archivePublishSourceId');
@@ -5744,7 +5734,7 @@ function archivePublishPayload(){
     sourceTitle:source?.title||archivePublishState.activeTask?.sourceTitle||'',
     workItemId,
     workItemTitle:work?.title||archivePublishState.activeTask?.workItemTitle||'',
-    category:v('archivePublishCategory'),
+    category:'',
     topics:v('archivePublishTopics'),
     description:v('archivePublishDescription'),
     note:v('archivePublishNote')
@@ -5814,8 +5804,7 @@ function renderArchivePublishDetail(task){
       ${task.platform?`<p><strong>Platform / program:</strong> ${esc(task.platform)}</p>`:''}
       ${task.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(task.sourceTitle)}</p>`:''}
       ${task.workItemTitle?`<p><strong>Çalışma kaydı:</strong> ${esc(task.workItemTitle)}</p>`:''}
-      ${task.category?`<p><strong>Kategori:</strong> ${esc(task.category)}</p>`:''}
-      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+	      ${topics?`<div class="ops-tags">${topics}</div>`:''}
       ${task.description?`<p><strong>Açıklama:</strong></p><div class="ops-preview-text">${esc(task.description)}</div>`:''}
       ${task.note?`<p><strong>Not:</strong><br>${esc(task.note)}</p>`:''}
       <div class="ops-source-actions">
@@ -5875,7 +5864,7 @@ function editArchivePublishTask(id,scroll=true){
   el('archivePublishDate').value=task.publishDate?String(task.publishDate).slice(0,10):'';
   el('archivePublishPlatform').value=task.platform||'';
   el('archivePublishUrl').value=task.publicationUrl||'';
-  el('archivePublishCategory').value=task.category||'';
+  el('archivePublishCategory').value='';
   el('archivePublishTopics').value=(task.topics||[]).join(', ');
   el('archivePublishDescription').value=task.description||'';
   el('archivePublishNote').value=task.note||'';
@@ -5972,13 +5961,12 @@ function archiveCandidateReadinessItems(item){
   const textLength=Number(item?.textLength||0);
   const textPreview=String(item?.textPreview||'').trim();
   const hasSourceTrace=Boolean(item?.sourceTitle||item?.sourceId||item?.publicationUrl||item?.workItemTitle||item?.workItemId);
-  return [
-    {key:'title',label:'Başlık',ok:Boolean(String(item?.title||'').trim()),help:'Public kart ve detay sayfası için başlık gerekli.'},
-    {key:'text',label:'Metin',ok:textLength>0||Boolean(textPreview),help:'Aday kaydın okunabilir metin veya ön izlemesi olmalı.'},
-    {key:'category',label:'Kategori',ok:Boolean(String(item?.category||'').trim()),help:'Kategori boşsa arşivde sınıflandırma zayıf kalır.'},
-    {key:'topics',label:'Kavramlar',ok:topics.length>0,help:'Kavramlar arama ve benzer içerik bağlantısını güçlendirir.'},
-    {key:'source',label:'Kaynak izi',ok:hasSourceTrace,help:'Kaynak, çalışma veya yayın izi görünür olmalı.'}
-  ];
+	  return [
+	    {key:'title',label:'Başlık',ok:Boolean(String(item?.title||'').trim()),help:'Public kart ve detay sayfası için başlık gerekli.'},
+	    {key:'text',label:'Metin',ok:textLength>0||Boolean(textPreview),help:'Aday kaydın okunabilir metin veya ön izlemesi olmalı.'},
+	    {key:'topics',label:'Etiketler',ok:topics.length>0,help:'Etiketler public sitede listeleme başlığı olarak çalışır.'},
+	    {key:'source',label:'Kaynak izi',ok:hasSourceTrace,help:'Kaynak, çalışma veya yayın izi görünür olmalı.'}
+	  ];
 }
 function archiveCandidateReadinessScore(item){
   const items=archiveCandidateReadinessItems(item);
@@ -6041,11 +6029,11 @@ function archiveCandidatePublicPreviewHtml(item){
   const excerpt=String(item.textPreview||'Ön izleme yok.').trim();
   return `
     <div class="candidate-public-preview">
-      <div class="candidate-trace-label">Public görünüm ön izlemesi</div>
-      <div class="ops-source-meta">
-        <span>${esc(item.category||'Kategori yok')}</span>
-        <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
-      </div>
+	      <div class="candidate-trace-label">Public görünüm ön izlemesi</div>
+	      <div class="ops-source-meta">
+	        <span>${topics?'Etiketler hazır':'Etiket yok'}</span>
+	        <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
+	      </div>
       <h4>${esc(item.title||'Başlıksız aday')}</h4>
       <p>${esc(excerpt)}</p>
       ${topics?`<div class="ops-tags">${topics}</div>`:''}
@@ -6082,7 +6070,6 @@ function archiveCandidateCardHtml(item){
   const meta=[
     archiveCandidateKindLabel(item.kind),
     archiveCandidateStatusLabel(item),
-    item.category||'',
     item.sourceType?archiveSourceTypeLabel(item.sourceType):'',
     item.sourceTitle?`Kaynak: ${item.sourceTitle}`:'',
     item.workItemTitle?`Çalışma: ${item.workItemTitle}`:'',
@@ -6137,8 +6124,7 @@ function renderArchiveCandidateDetail(item){
       <button class="btn-mini" onclick="openArchiveCandidateRecord()">Kaydı Aç</button>
     </div>
     <div class="ops-detail-body">
-      ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
-      ${item.assignedTo?`<p><strong>Atanan:</strong> ${esc(item.assignedTo)}</p>`:''}
+	      ${item.assignedTo?`<p><strong>Atanan:</strong> ${esc(item.assignedTo)}</p>`:''}
       ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
       ${item.workItemTitle?`<p><strong>Çalışma:</strong> ${esc(item.workItemTitle)}</p>`:''}
       ${item.publicationUrl?`<p><strong>Yayın linki:</strong> ${esc(item.publicationUrl)}</p>`:''}
@@ -6323,8 +6309,7 @@ function archiveReadyCardHtml(item){
   const topics=(item.topics||[]).slice(0,3).map(topic=>`<span class="ops-tag">${esc(topic)}</span>`).join('');
   const meta=[
     archiveCandidateKindLabel(item.kind),
-    item.category||'Kategori yok',
-    `${score.done}/${score.total} alan hazır`,
+	    `${score.done}/${score.total} alan hazır`,
     `${Number(item.textLength||0).toLocaleString('tr-TR')} karakter`
   ].filter(Boolean);
   return `
@@ -6375,8 +6360,7 @@ function renderArchiveReadyDetail(item){
       <button class="btn-mini" onclick="openArchiveReadyRecord()">Kaydı Aç</button>
     </div>
     <div class="ops-detail-body">
-      ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
-      ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
+	      ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
       ${item.workItemTitle?`<p><strong>Çalışma:</strong> ${esc(item.workItemTitle)}</p>`:''}
       ${item.publicationUrl?`<p><strong>Yayın linki:</strong> ${esc(item.publicationUrl)}</p>`:''}
       ${topics?`<div class="ops-tags">${topics}</div>`:''}
@@ -6528,13 +6512,12 @@ function archiveReleaseItemReadiness(item={}){
   const textLength=Number(item.textLength||0);
   const textPreview=String(item.textPreview||'').trim();
   const hasSourceTrace=Boolean(item.sourceTitle||item.sourceId||item.publicationUrl||item.workItemTitle||item.workItemId);
-  const checks=[
-    {key:'title',label:'Başlık',ok:Boolean(String(item.title||'').trim())&&String(item.title||'').trim()!=='Başlıksız kayıt',severity:'blocker',help:'Public görünüm için başlık gerekli.'},
-    {key:'text',label:'Metin',ok:textLength>0||Boolean(textPreview),severity:'blocker',help:'Okunabilir metin veya ön izleme olmalı.'},
-    {key:'category',label:'Kategori',ok:Boolean(String(item.category||'').trim()),severity:'blocker',help:'Kategori boşsa arşivde sınıflandırma zayıf kalır.'},
-    {key:'source',label:'Kaynak izi',ok:hasSourceTrace,severity:'blocker',help:'Kaynak, çalışma veya yayın izi görünür olmalı.'},
-    {key:'topics',label:'Kavramlar',ok:topics.length>0,severity:'warning',help:'Kavramlar arama ve benzer içerik bağlantısını güçlendirir.'}
-  ];
+	  const checks=[
+	    {key:'title',label:'Başlık',ok:Boolean(String(item.title||'').trim())&&String(item.title||'').trim()!=='Başlıksız kayıt',severity:'blocker',help:'Public görünüm için başlık gerekli.'},
+	    {key:'text',label:'Metin',ok:textLength>0||Boolean(textPreview),severity:'blocker',help:'Okunabilir metin veya ön izleme olmalı.'},
+	    {key:'source',label:'Kaynak izi',ok:hasSourceTrace,severity:'blocker',help:'Kaynak, çalışma veya yayın izi görünür olmalı.'},
+	    {key:'topics',label:'Etiketler',ok:topics.length>0,severity:'blocker',help:'Etiketler public sitede listeleme başlığı olarak çalışır.'}
+	  ];
   if(item.kind==='publish'){
     checks.push({key:'publicationUrl',label:'Yayın linki',ok:Boolean(String(item.publicationUrl||'').trim()),severity:'warning',help:'Yayın görevi için link son kontrolde faydalı olur.'});
   }
@@ -6643,7 +6626,7 @@ function archiveReleaseItemFromCandidate(item){
     recordId:item.recordId,
     id:`${item.kind}:${item.recordId}`,
     title:item.title||'Başlıksız kayıt',
-    category:item.category||'',
+    category:'',
     topics:Array.isArray(item.topics)?item.topics:[],
     sourceTitle:item.sourceTitle||'',
     sourceId:item.sourceId||'',
@@ -6736,12 +6719,11 @@ function renderArchiveReleaseReadyList(){
       <label class="archive-release-ready-card">
         <input type="checkbox"${checked}${disabled} onchange="toggleArchiveReleaseReadySelection(${attrJson(id)},this.checked)">
         <span>
-          <span class="archive-release-title">${esc(item.title||'Başlıksız kayıt')}</span>
-          <span class="ops-source-meta">
-            <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
-            <span>${esc(item.category||'Kategori yok')}</span>
-            <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
-            ${disabled?'<span>Pakette var</span>':''}
+	          <span class="archive-release-title">${esc(item.title||'Başlıksız kayıt')}</span>
+	          <span class="ops-source-meta">
+	            <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
+	            <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
+	            ${disabled?'<span>Pakette var</span>':''}
           </span>
           <span class="archive-release-preview">${esc(item.textPreview||'Ön izleme yok.')}</span>
           ${topics?`<span class="ops-tags">${topics}</span>`:''}
@@ -6769,11 +6751,10 @@ function renderArchiveReleasePackageDetail(pkg=archiveReleasePackageState.active
         <div class="archive-release-item-head">
           <div>
             <div class="archive-release-title">${esc(item.title||'Başlıksız kayıt')}</div>
-            <div class="ops-source-meta">
-              <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
-              <span>${esc(item.category||'Kategori yok')}</span>
-              <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
-            </div>
+	            <div class="ops-source-meta">
+	              <span>${esc(archiveCandidateKindLabel(item.kind))}</span>
+	              <span>${Number(item.textLength||0).toLocaleString('tr-TR')} karakter</span>
+	            </div>
           </div>
           <div class="archive-release-review-score">${Number(itemReview.done||0).toLocaleString('tr-TR')}/${Number(itemReview.total||0).toLocaleString('tr-TR')} kontrol</div>
         </div>
@@ -7164,7 +7145,7 @@ function renderArchiveOutputPackages(){
   const q=archiveOutputState.query.trim().toLocaleLowerCase('tr-TR');
   const packages=(archiveOutputState.packages||[]).filter(pkg=>{
     if(!q)return true;
-    return [pkg.title,pkg.note,pkg.status,pkg.publicationStatus,pkg.publicationUrl,pkg.publicationNote,...(pkg.items||[]).map(item=>`${item.title} ${item.category} ${item.sourceTitle} ${(item.topics||[]).join(' ')}`)]
+    return [pkg.title,pkg.note,pkg.status,pkg.publicationStatus,pkg.publicationUrl,pkg.publicationNote,...(pkg.items||[]).map(item=>`${item.title} ${item.sourceTitle} ${(item.topics||[]).join(' ')}`)]
       .join(' ')
       .toLocaleLowerCase('tr-TR')
       .includes(q);
@@ -7394,8 +7375,8 @@ function renderArchivePublicSyncStatus(){
     summary.innerHTML=data.ready?`
       <div class="ops-file-summary-item"><strong>${Number(data.approvedRecords||0).toLocaleString('tr-TR')}</strong><span>Onaylı kayıt</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.publicRecords||0).toLocaleString('tr-TR')}</strong><span>Siteye hazır</span></div>
-      <div class="ops-file-summary-item"><strong>${Number(data.categories||0).toLocaleString('tr-TR')}</strong><span>Kategori</span></div>
-      <div class="ops-file-summary-item"><strong>${Number(data.topics||0).toLocaleString('tr-TR')}</strong><span>Kavram</span></div>
+	      <div class="ops-file-summary-item"><strong>${Number(data.categories||0).toLocaleString('tr-TR')}</strong><span>Site başlığı</span></div>
+	      <div class="ops-file-summary-item"><strong>${Number(data.topics||0).toLocaleString('tr-TR')}</strong><span>Etiket bağı</span></div>
     `:'<div class="ops-file-summary-item"><strong>--</strong><span>Durum bekleniyor</span></div>';
   }
   if(status){
@@ -7485,7 +7466,6 @@ function archivePublicQuestionCardHtml(item){
       <div class="ops-source-meta">
         <span>${esc(archivePublicQuestionStatusLabel(item.status))}</span>
         ${when?`<span>${esc(when)}</span>`:''}
-        ${item.category?`<span>${esc(item.category)}</span>`:''}
       </div>
     </button>
   `;
@@ -7508,7 +7488,7 @@ function renderArchivePublicQuestions(){
   const selected=archivePublicQuestionState.activeItem;
   if(detail){
     if(!selected){
-      detail.innerHTML='<div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih, kategori ve soru metni burada görünür.</div>';
+      detail.innerHTML='<div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih ve soru metni burada görünür.</div>';
     }else{
       const when=archivePublicQuestionDate(selected.created_at||selected.createdAt);
       detail.innerHTML=`
@@ -7524,8 +7504,6 @@ function renderArchivePublicQuestions(){
         </div>
         <div class="ops-detail-body">
           <p><strong>Gönderen:</strong><br>${esc(selected.submitter_name||'Site kullanıcısı')} ${selected.submitter_email?`<span class="mono">${esc(selected.submitter_email)}</span>`:''}</p>
-          ${selected.category?`<p><strong>Kategori:</strong><br>${esc(selected.category)}</p>`:''}
-          ${selected.topic?`<p><strong>Konu:</strong><br>${esc(selected.topic)}</p>`:''}
           <p><strong>Soru:</strong><br>${esc(selected.question||'')}</p>
         </div>
       `;
@@ -7631,7 +7609,6 @@ function selectArchiveWorkSource(id){
   const source=(archiveOpsState.sources||[]).find(item=>item.id===id);
   if(source){
     if(!v('archiveWorkTitle'))el('archiveWorkTitle').value=source.title||'';
-    if(!v('archiveWorkCategory'))el('archiveWorkCategory').value=source.category||'';
     if(!v('archiveWorkTopics'))el('archiveWorkTopics').value=(source.tags||[]).join(', ');
   }
   renderArchiveWorkSourcePicker();
@@ -7660,7 +7637,7 @@ function archiveWorkPayload(){
     dueDate:el('archiveWorkDueDate')?.value||'',
     sourceId,
     sourceTitle:source?.title||archiveWorkState.activeItem?.sourceTitle||'',
-    category:v('archiveWorkCategory'),
+    category:'',
     topics:v('archiveWorkTopics'),
     question:v('archiveWorkQuestion'),
     answerDraft:v('archiveWorkAnswer'),
@@ -7676,7 +7653,7 @@ function archiveWorkPayloadFromItem(item={},overrides={}){
     dueDate:item.dueDate?String(item.dueDate).slice(0,10):'',
     sourceId:item.sourceId||'',
     sourceTitle:item.sourceTitle||'',
-    category:item.category||'',
+    category:'',
     topics:Array.isArray(item.topics)?item.topics.join(', '):(item.topics||''),
     question:item.question||'',
     answerDraft:item.answerDraft||'',
@@ -7856,8 +7833,7 @@ function renderArchiveWorkDetail(item){
     </div>
     <div class="ops-detail-body">
       ${item.sourceTitle?`<p><strong>Kaynak:</strong> ${esc(item.sourceTitle)}</p>`:''}
-      ${item.category?`<p><strong>Kategori:</strong> ${esc(item.category)}</p>`:''}
-      ${topics?`<div class="ops-tags">${topics}</div>`:''}
+	      ${topics?`<div class="ops-tags">${topics}</div>`:''}
       ${item.question?`<p><strong>Soru / çalışma konusu:</strong><br>${esc(item.question)}</p>`:''}
       ${item.answerDraft?`<p><strong>Cevap taslağı:</strong></p><div class="ops-preview-text">${esc(item.answerDraft)}</div>`:''}
       ${item.note?`<p><strong>Not:</strong><br>${esc(item.note)}</p>`:''}
@@ -7921,7 +7897,7 @@ function editArchiveWorkItem(id,scroll=true){
   el('archiveWorkPriority').value=item.priority||'normal';
   el('archiveWorkAssignedTo').value=item.assignedTo||'';
   el('archiveWorkDueDate').value=item.dueDate?String(item.dueDate).slice(0,10):'';
-  el('archiveWorkCategory').value=item.category||'';
+  el('archiveWorkCategory').value='';
   el('archiveWorkTopics').value=(item.topics||[]).join(', ');
   el('archiveWorkQuestion').value=item.question||'';
   el('archiveWorkAnswer').value=item.answerDraft||'';
@@ -8008,8 +7984,7 @@ function archiveSourceChangeSummary(payload={},source={}){
     ['title','Başlık'],
     ['sourceType','Tür'],
     ['status','Durum'],
-    ['category','Kategori'],
-    ['sourceDate','Tarih'],
+	    ['sourceDate','Tarih'],
     ['sourceUrl','Kaynak linki'],
     ['note','Not']
   ];
@@ -8078,8 +8053,7 @@ function renderArchiveSourceDetail(source){
       <button class="btn-mini" onclick="editArchiveSource(${attrJson(source.id)})">Forma Al</button>
     </div>
     <div class="ops-detail-body">
-      ${source.category?`<p><strong>Kategori:</strong> ${esc(source.category)}</p>`:''}
-      ${source.sourceUrl?`<p><strong>Kaynak linki:</strong> ${esc(source.sourceUrl)}</p>`:''}
+	      ${source.sourceUrl?`<p><strong>Kaynak linki:</strong> ${esc(source.sourceUrl)}</p>`:''}
       ${source.note?`<p><strong>Not:</strong> ${esc(source.note)}</p>`:''}
       ${source.duplicateWarning?`<p><strong>Çakışma notu:</strong> Benzer kaynak uyarısı görülerek kaydedildi. ${source.conflictAcceptedBy?esc(source.conflictAcceptedBy):'Süper admin'} tarafından onaylandı.</p>`:''}
       ${tags?`<div class="ops-tags">${tags}</div>`:''}
@@ -8129,7 +8103,7 @@ function editArchiveSource(id){
   el('archiveSourceTitle').value=source.title||'';
   el('archiveSourceType').value=source.sourceType||'dokuman';
   el('archiveSourceStatus').value=source.status||'kaynak';
-  el('archiveSourceCategory').value=source.category||'';
+  el('archiveSourceCategory').value='';
   el('archiveSourceDate').value=source.sourceDate?String(source.sourceDate).slice(0,10):'';
   el('archiveSourceUrl').value=source.sourceUrl||'';
   el('archiveSourceTags').value=(source.tags||[]).join(', ');
@@ -8158,7 +8132,7 @@ async function saveArchiveSource(forceSave=false,changeConfirmed=false){
     title:v('archiveSourceTitle'),
     sourceType:el('archiveSourceType')?.value||'dokuman',
     status:el('archiveSourceStatus')?.value||'kaynak',
-    category:v('archiveSourceCategory'),
+    category:'',
     sourceDate:el('archiveSourceDate')?.value||'',
     sourceUrl:v('archiveSourceUrl'),
     tags:v('archiveSourceTags'),
@@ -8491,7 +8465,7 @@ function archiveImportSourcePayload(item,forceSave=false){
     title:item?.title||archiveImportBaseTitle(item?.fileName||item?.name),
     sourceType:item?.sourceType||'dokuman',
     status:'kaynak',
-    category:item?.category||'İçe aktarım',
+    category:'',
     sourceDate:item?.sourceDate||'',
     sourceUrl:item?.sourceUrl||'',
     tags:Array.isArray(item?.tags)?item.tags:[],
@@ -8507,7 +8481,7 @@ async function updateArchiveImportItemStatus(id,status,extra={}){
     status,
     sourceType:current.sourceType,
     title:current.title||archiveImportBaseTitle(current.fileName||current.name),
-    category:current.category||'',
+    category:'',
     tags:current.tags||[],
     note:current.note||'',
     sourceId:current.sourceId||'',
@@ -8544,7 +8518,7 @@ async function createArchiveSourceFromImportItem(id,forceSave=false,confirmed=fa
       title:'Kaynak havuzuna kaydedilsin mi?',
       badge:'Son kontrol',
       message:'Bu dosyadan kaynak kaydı oluşturulacak. Kayıt Kaynak Havuzu içinde aranabilir olacak.',
-      detail:`Başlık: ${payload.title}\nTür: ${payload.sourceType}\nKategori: ${payload.category||'Belirtilmedi'}\nMetin: ${payload.sourceText.length.toLocaleString('tr-TR')} karakter`,
+	      detail:`Başlık: ${payload.title}\nTür: ${payload.sourceType}\nMetin: ${payload.sourceText.length.toLocaleString('tr-TR')} karakter`,
       confirmText:'Kaynak Olarak Kaydet',
       cancelText:'Vazgeç'
     });
@@ -8713,7 +8687,7 @@ async function sendArchiveImportToSourceForm(id){
   el('archiveSourceTitle').value=item.title||archiveImportBaseTitle(item.fileName||item.name);
   el('archiveSourceType').value=item.sourceType||'dokuman';
   el('archiveSourceStatus').value='kaynak';
-  el('archiveSourceCategory').value=item.category||'İçe aktarım';
+  el('archiveSourceCategory').value='';
   el('archiveSourceTags').value=(item.tags||[]).join(', ');
   el('archiveSourceText').value=text;
   el('archiveSourceNote').value=item.note||`İçe Aktarım Merkezi üzerinden "${item.fileName||item.name}" dosyasından forma alındı.`;

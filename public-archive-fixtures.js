@@ -63,7 +63,7 @@ const publicArchiveFixtures = {
       id: 'topic-dua',
       slug: 'dua',
       name: 'Dua',
-      description: 'Talebin, niyazın ve Allah’tan istemenin arşivdeki kavram bağlantısı.',
+      description: 'Talebin, niyazın ve Allah’tan istemenin arşivdeki kategori bağı.',
       categorySlug: 'allaha-ulasmayi-dilemek',
       relatedTopicSlugs: ['kalbin-yonelisi', 'rahmet'],
       featured: true
@@ -72,7 +72,7 @@ const publicArchiveFixtures = {
       id: 'topic-takva',
       slug: 'takva',
       name: 'Takva',
-      description: 'Korunma, sakınma ve Allah’a yakınlık arayışını açıklayan kavram.',
+      description: 'Korunma, sakınma ve Allah’a yakınlık arayışını açıklayan başlık.',
       categorySlug: 'hidayet',
       relatedTopicSlugs: ['sirati-mustakim', 'teslim'],
       featured: true
@@ -81,7 +81,7 @@ const publicArchiveFixtures = {
       id: 'topic-sirati-mustakim',
       slug: 'sirati-mustakim',
       name: 'Sıratı Mustakîm',
-      description: 'Hidayet yolunu ve istikameti anlatan ana kavramlardan biri.',
+      description: 'Hidayet yolunu ve istikameti anlatan ana başlıklardan biri.',
       categorySlug: 'hidayet',
       relatedTopicSlugs: ['takva', 'tabiiyet'],
       featured: true
@@ -108,7 +108,7 @@ const publicArchiveFixtures = {
       id: 'topic-daimi-zikir',
       slug: 'daimi-zikir',
       name: 'Daimi Zikir',
-      description: 'Zikrin sürekliliği ve kalpteki dönüşümle bağlantılı kavram.',
+      description: 'Zikrin sürekliliği ve kalpteki dönüşümle bağlantılı başlık.',
       categorySlug: 'zikir',
       relatedTopicSlugs: ['zikir', 'kalp', 'nefs-tezkiyesi'],
       featured: true
@@ -117,7 +117,7 @@ const publicArchiveFixtures = {
       id: 'topic-nefs',
       slug: 'nefs',
       name: 'Nefs',
-      description: 'İnsanın iç dünyası, arınma ihtiyacı ve tezkiye süreciyle ilgili kavram.',
+      description: 'İnsanın iç dünyası, arınma ihtiyacı ve tezkiye süreciyle ilgili başlık.',
       categorySlug: 'zikir',
       relatedTopicSlugs: ['nefs-tezkiyesi', 'takva', 'kalp'],
       featured: true
@@ -126,7 +126,7 @@ const publicArchiveFixtures = {
       id: 'topic-nefs-tezkiyesi',
       slug: 'nefs-tezkiyesi',
       name: 'Nefs Tezkiyesi',
-      description: 'Nefsin arınması, tezkiye ve manevi gelişim sorularının kavram bağı.',
+      description: 'Nefsin arınması, tezkiye ve manevi gelişim sorularının kategori bağı.',
       categorySlug: 'zikir',
       relatedTopicSlugs: ['nefs', 'daimi-zikir', 'takva'],
       featured: true
@@ -144,7 +144,7 @@ const publicArchiveFixtures = {
       id: 'topic-ruh',
       slug: 'ruh',
       name: 'Ruh',
-      description: 'Ruhun teslimi ve Allah’a yöneliş yolundaki merhalelerle ilgili kavram.',
+      description: 'Ruhun teslimi ve Allah’a yöneliş yolundaki merhalelerle ilgili başlık.',
       categorySlug: 'teslimiyet',
       relatedTopicSlugs: ['teslim', 'irade', 'kalbin-yonelisi'],
       featured: true
@@ -153,7 +153,7 @@ const publicArchiveFixtures = {
       id: 'topic-irsad',
       slug: 'irsad',
       name: 'İrşad',
-      description: 'Manevi yol göstericilik ve doğruya çağırma kavramı.',
+      description: 'Manevi yol göstericilik ve doğruya çağırma başlığı.',
       categorySlug: 'mursid',
       relatedTopicSlugs: ['tabiiyet', 'kalbin-yonelisi'],
       featured: false
@@ -162,7 +162,7 @@ const publicArchiveFixtures = {
       id: 'topic-kalp',
       slug: 'kalp',
       name: 'Kalp',
-      description: 'Zikir, yöneliş ve teslimiyet konularının kesiştiği merkez kavram.',
+      description: 'Zikir, yöneliş ve teslimiyet başlıklarının kesiştiği merkez alan.',
       categorySlug: 'zikir',
       relatedTopicSlugs: ['kalbin-yonelisi', 'daimi-zikir'],
       featured: false
@@ -189,7 +189,7 @@ const publicArchiveFixtures = {
       id: 'topic-rahmet',
       slug: 'rahmet',
       name: 'Rahmet',
-      description: 'Allah’ın rahmeti, mağfiret ve umut başlıklarının kavram bağlantısı.',
+      description: 'Allah’ın rahmeti, mağfiret ve umut başlıklarının kategori bağı.',
       categorySlug: 'hidayet',
       relatedTopicSlugs: ['dua', 'takva'],
       featured: false
@@ -205,7 +205,7 @@ const publicArchiveFixtures = {
       answer: [
         'Allah’a ulaşmayı dilemek, insanın hayatının merkezine Allah’a yönelişi almasıdır. Bu yöneliş, kulun iç dünyasında başlayan samimi bir taleptir.',
         'Bu talep yalnız bir cümle olarak kalmamalıdır. Kişi duasında, seçimlerinde ve gündelik davranışlarında bu yönelişi korumaya çalışır.',
-        'Arşivde bu başlık hidayet, takva, dua ve teslimiyet kavramlarıyla birlikte okunur. Çünkü mesele yalnız bir bilgi değil, insanın yönünün değişmesidir.',
+        'Arşivde bu başlık hidayet, takva, dua ve teslimiyet kategorileriyle birlikte okunur. Çünkü mesele yalnız bir bilgi değil, insanın yönünün değişmesidir.',
         'En doğrusunu Allah bilir.'
       ],
       excerpt: 'Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur.',
@@ -231,7 +231,7 @@ const publicArchiveFixtures = {
       answer: [
         'Hidayet yolunun başlangıcında kalbin samimi talebi vardır. İnsan önce yönünü fark eder, sonra Allah’tan yardım ister.',
         'Bu başlangıç, kişinin kendisini yeterli görmeden doğru bilgiye, doğru rehberliğe ve istikamete ihtiyaç duymasını da beraberinde getirir.',
-        'Hidayet başlığı arşivde Sıratı Mustakîm, takva, rahmet ve mürşid kavramlarıyla birlikte okunmalıdır.'
+        'Hidayet başlığı arşivde Sıratı Mustakîm, takva, rahmet ve mürşid kategorileriyle birlikte okunmalıdır.'
       ],
       excerpt: 'Hidayet; samimi talep, dua, istikamet ve doğru rehberlikle birlikte anlaşılır.',
       categorySlug: 'hidayet',
@@ -251,12 +251,12 @@ const publicArchiveFixtures = {
       id: 'qa-mursid',
       slug: 'murside-tabiiyet-nicin-onemlidir',
       title: 'Mürşide tâbiiyet niçin önemlidir?',
-      question: 'Mürşid ve tâbiiyet kavramları hidayet yolunda nasıl anlaşılmalıdır?',
+      question: 'Mürşid ve tâbiiyet hidayet yolunda nasıl anlaşılmalıdır?',
       summary: 'Mürşid, kulun manevi yürüyüşünde yol göstericilik ve istikamet anlamı taşır. Tâbiiyet ise bu rehberliği ciddiye alma ve yola bilinçli girme iradesidir.',
       answer: [
-        'Mürşid kavramı, yalnız bilgi veren bir kişi anlamına indirgenmez. Arşivde bu başlık, manevi yol göstericilik ve istikamet bağlamında ele alınır.',
+        'Mürşid yalnız bilgi veren bir kişi anlamına indirgenmez. Arşivde bu başlık, manevi yol göstericilik ve istikamet bağlamında ele alınır.',
         'Tâbiiyet, kişinin kendi nefsinin dağınıklığı içinde kalmadan, Allah’a götüren yolu ciddiyetle takip etmek istemesidir.',
-        'Bu sebeple mürşid başlığı hidayet, Sıratı Mustakîm, irşad ve kalbin yönelişi kavramlarıyla birlikte okunur.'
+        'Bu sebeple mürşid başlığı hidayet, Sıratı Mustakîm, irşad ve kalbin yönelişi kategorileriyle birlikte okunur.'
       ],
       excerpt: 'Tâbiiyet, doğru rehberliği ciddiye alma ve hidayet yoluna bilinçli girme iradesidir.',
       categorySlug: 'mursid',
@@ -281,7 +281,7 @@ const publicArchiveFixtures = {
       answer: [
         'Zikir yalnız kelimelerin tekrarından ibaret görülmemelidir. Esas olan, kulun kalbini Allah ile beraber tutma gayretidir.',
         'Dil ile başlayan zikir, dikkat ve süreklilik kazandığında kalbin hâline de tesir eder. İnsan neyi çok hatırlarsa kalbi de ona göre şekillenir.',
-        'Bu yüzden zikir başlığı, daimi zikir, kalp ve nefs tezkiyesi kavramlarıyla beraber okunur.'
+        'Bu yüzden zikir başlığı; daimi zikir, kalp ve nefs tezkiyesi kategorileriyle beraber okunur.'
       ],
       excerpt: 'Zikir, hatırlayışı kalpte diri tutar; süreklilik kazandıkça insanın yönünü değiştirir.',
       categorySlug: 'zikir',
@@ -306,14 +306,14 @@ const publicArchiveFixtures = {
       answer: [
         'Teslimiyet pasif bekleyiş değildir. İnsan elinden geleni yapar, doğru sebebe sarılır ve kalbini Allah’a dayandırır.',
         'Günlük hayatta teslimiyet; acele hüküm vermemek, duayı bırakmamak, helal sınırları korumak ve sonucu Allah’a havale etmekle görünür.',
-        'Bu başlık arşivde tevekkül, irade ve teslim kavramlarıyla birlikte okunur.'
+        'Bu başlık arşivde tevekkül, irade ve teslim kategorileriyle birlikte okunur.'
       ],
       excerpt: 'Teslimiyet; gayreti terk etmeden, kalbi Allah’a güven içinde tutmaktır.',
       categorySlug: 'teslimiyet',
       topicSlugs: ['teslim', 'ruh', 'tevekkul', 'irade'],
       sourceContext: {
         title: 'Kaynak ve bağlam',
-        text: 'Teslimiyet başlığındaki kayıtlar, arşivde tevekkül ve irade kavramlarıyla birlikte değerlendirilir.'
+        text: 'Teslimiyet başlığındaki kayıtlar, arşivde tevekkül ve irade kategorileriyle birlikte değerlendirilir.'
       },
       publishedAt: '2026-08-05',
       updatedAt: '2026-08-08',
@@ -327,11 +327,11 @@ const publicArchiveFixtures = {
       slug: 'nefs-tezkiyesi-nedir',
       title: 'Nefs tezkiyesi nedir?',
       question: 'Nefs tezkiyesi insanın iç dünyasında hangi değişimi hedefler?',
-      summary: 'Nefs tezkiyesi, insanın kötü eğilimlerden arınması ve Allah’a yönelişini güçlendirmesiyle ilgili bir başlıktır. Zikir ve takva kavramlarıyla birlikte okunur.',
+      summary: 'Nefs tezkiyesi, insanın kötü eğilimlerden arınması ve Allah’a yönelişini güçlendirmesiyle ilgili bir başlıktır. Zikir ve takva kategorileriyle birlikte okunur.',
       answer: [
         'Nefs tezkiyesi, insanın iç dünyasını başıboş bırakmaması ve yanlış eğilimlerle mücadele etmesidir.',
         'Bu mücadele yalnız irade gücüyle değil; dua, zikir, takva ve doğru istikametle desteklenir.',
-        'Arşivde nefs tezkiyesi başlığı zikir, kalp, takva ve teslimiyet kavramlarına bağlanır.'
+        'Arşivde nefs tezkiyesi başlığı zikir, kalp, takva ve teslimiyet kategorilerine bağlanır.'
       ],
       excerpt: 'Nefs tezkiyesi, iç dünyayı Allah’a yönelişle arındırma gayretidir.',
       categorySlug: 'zikir',

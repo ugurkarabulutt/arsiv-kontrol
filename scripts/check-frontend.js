@@ -814,8 +814,8 @@ for (const marker of [
 ]) {
   assert(publicCss.includes(marker), `Mobil input/focus guard eksik: ${marker}`);
 }
-assert(publicRendererSource.includes('placeholder="Soru veya kavram arayın..."'), 'Mobil arama placeholder kisa ve okunabilir olmali.');
-assert(!publicRendererSource.includes('placeholder="Sorunuzu veya kavramınızı yazın..."'), 'Uzun arama placeholder mobilde okunamaz, geri gelmemeli.');
+assert(publicRendererSource.includes('placeholder="Soru veya kategori arayın..."'), 'Mobil arama placeholder kisa ve okunabilir olmali.');
+assert(!publicRendererSource.includes('placeholder="Sorunuzu veya kategorinizi yazın..."'), 'Uzun arama placeholder mobilde okunamaz, geri gelmemeli.');
 for (const match of publicCss.matchAll(/\.pa-search input\s*\{([\s\S]*?)\}/g)) {
   assert(!/font-size:\s*(?:1[0-5](?:\.\d+)?px|0\.\d+rem)/.test(match[1]), 'Arama input fontu 16px altina dusmemeli; iOS zoom yapar.');
 }
@@ -908,7 +908,7 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'bağlantılı kavramlara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
@@ -934,17 +934,17 @@ assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için 
 assert(!homePreview.includes('Arşiv ana kapıları'), 'Public home eski Arsiv ana kapilari basligini icermemeli.');
 assert(!homePreview.includes('Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun.'), 'Public home eski Arsiv ana kapilari aciklamasini icermemeli.');
 for (const marker of ['Allah’a Ulaşmayı Dilemek', 'Hidayet', 'Mürşid', 'Zikir', 'Teslimiyet', 'Tabiiyet', 'Nefs', 'Ruh']) {
-  assert(homePreview.includes(marker), `Public home arsiv kavram omurgasi eksik: ${marker}`);
+  assert(homePreview.includes(marker), `Public home arsiv kategori omurgasi eksik: ${marker}`);
 }
 for (const marker of [
   'data-concept-slider',
   'data-concept-track',
   'data-concept-rail',
   'pa-concept-pill',
-  'href="/public-preview/konu/nefs"',
-  'href="/public-preview/konu/ruh"'
+  'href="/public-preview/kategori/nefs"',
+  'href="/public-preview/kategori/ruh"'
 ]) {
-  assert(homePreview.includes(marker), `Public home kavram slider marker eksik: ${marker}`);
+  assert(homePreview.includes(marker), `Public home kategori slider marker eksik: ${marker}`);
 }
 assert(homePreview.includes('Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır'), 'Public home author/source context eksik.');
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
@@ -1009,13 +1009,13 @@ for (const marker of ['Kaynak ve deliller', 'Bakara-256', 'Yâsîn-62', 'data-so
 assert(!sourceDetailPreview.includes('Bu özet detay üstünde görünmemeli.</p>'), 'Public detail kaynakli kayitta ust ozet gorunmemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {
-  assert(publicRendererSource.includes(marker), `Kavram slider davranis marker eksik: ${marker}`);
+  assert(publicRendererSource.includes(marker), `Kategori slider davranis marker eksik: ${marker}`);
 }
 for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-count-up', 'data-count-target', 'duration = 2400', 'data-counted']) {
   assert(publicRendererSource.includes(marker), `Aktif arsiv sayac animasyon marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
-  assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
+  assert(publicCss.includes(marker), `Kategori slider CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-alpha-index', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
   assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini CSS marker eksik: ${marker}`);
@@ -1033,8 +1033,8 @@ for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-s
 assert(!publicCss.includes('.pa-active-stats-link'), 'Public aktif arsiv sayacinda eski CTA CSS geri gelmemeli.');
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
-assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Kalbin Yönelişi'), 'Kavram sayfasi kategori gibi sunulmamali.');
-assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kategorideki Sorular'), 'Kategori sayfasi kavramdan ayri public yapi olmali.');
+assert(topicPreview.includes('Kategori') && !topicPreview.includes('Kavram'), 'Eski konu route u publicte kategori diliyle sunulmali.');
+assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kategorideki Sorular'), 'Kategori sayfasi etiket omurgasiyla calismali.');
 const askPreview = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
 assert(askPreview.includes('data-question-form') && !askPreview.includes('data-static-question-form'), 'Soru Sor gercek public talep formu olarak isaretlenmeli.');
 assert(askPreview.includes('/public-preview/api/question-submissions'), 'Soru Sor public preview submission endpoint ine baglanmali.');

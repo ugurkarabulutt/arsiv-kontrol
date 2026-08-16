@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-16 Codex Public Preview Etiketlerden Kategori Modeli
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Kullanıcı kararıyla admin/yayın hazırlık tarafında `Kategori`, `İkincil kategori` ve sistemin
+  otomatik kategori önerisi iş akışı kaldırıldı. Admin tarafında sınıflandırma girdisi artık
+  yalnız `Etiketler`dir; soru ve etiket zorunluluğu korunur.
+- Public ön yüzde görünür sınıflandırma dili sadeleştirildi: kullanıcıya `Konu` veya `Kavram`
+  ana gezinmesi gösterilmez; public tarafta kullanılacak görünen isim `Kategori`dir.
+- Public kategori listesi artık eski ayrı kategori alanından değil, onaylı kayıtlardaki
+  etiketlerden türetilir. Bir sorunun birden fazla etiketi varsa public arşivde birden fazla
+  kategori altında görünebilir; arşiv alfabetik dizinindeki kategori filtresi bunu destekler.
+- Public gerçek veri adapter'ı da `topic_slugs`/etiket slug'larını kategori omurgası olarak okur.
+  Eski `category_slug` yalnız etiketsiz eski satırlar için geri uyumluluk yedeği olarak kalır.
+- Admin Arşiv Operasyon Merkezi formlarındaki görünür kategori alanları kaldırıldı veya boş
+  gönderilir hale getirildi. Public aday/paket hazırlığında `Kategori` kontrolü yok; yayın için
+  bloklayıcı kontrol `Etiketler`dir.
+- Paket çıktı merkezinde JSON/Markdown/CSV çıktılarında ayrı kategori alanı kullanılmaz; etiketler
+  public siteye kategori gibi aktarılacak ana bağdır.
+- Demo fixture metinleri ve public renderer görünür dili `kavram` yerine kategori/başlık diline
+  çekildi. Eski `/public-preview/konu/:slug` route'u linklenmez; yalnız geriye uyumluluk için
+  kategori diliyle çalışır.
+- Yerel doğrulama geçti: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
+  test başarılı.
+- Root `/` public cutover yapılmadı; production admin alias'ı değiştirilmedi. Bu kayıt henüz
+  commit/push/deploy sonucu içermiyor; sıradaki adım commit, push, preview deploy ve canlı smoke.
+
 ## 2026-08-16 Codex Public Preview Arşiv Dizin Görsel Düzeltmesi
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

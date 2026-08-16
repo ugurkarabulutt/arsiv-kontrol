@@ -121,6 +121,25 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-16
+- **Public preview sınıflandırma modeli etiketlerden kategoriye çevrildi:** Kullanıcı kararıyla
+  admin/yayın hazırlık tarafındaki ayrı `Kategori`, `İkincil kategori` ve otomatik kategori önerisi
+  iş akışı kaldırıldı; sınıflandırma girdisi artık yalnız `Etiketler`dir. Public ön yüzde görünür
+  sınıflandırma dili `Kategori` olarak sadeleştirildi; `Konu`/`Kavram` ana gezinmesi ve görünür
+  kavram dili kaldırıldı. Public kategori listesi onaylı kayıtların etiketlerinden türetilir; bir
+  soru birden fazla etikete sahipse birden fazla public kategori altında listelenebilir. Gerçek
+  veri adapter'ı `topic_slugs`/etiket slug'larını kategori omurgası olarak okur; eski
+  `category_slug` yalnız etiketsiz eski satırlar için geriye uyumluluk yedeğidir. Admin
+  Arşiv Operasyon Merkezi formlarındaki görünür kategori alanları kaldırıldı veya boş gönderilir
+  hale getirildi; public aday/paket hazırlığında bloklayıcı kontrol artık `Etiketler`dir. Paket
+  çıktı merkezinde JSON/Markdown/CSV çıktılarında ayrı kategori alanı kullanılmaz. Eski
+  `/public-preview/konu/:slug` route'u linklenmez; yalnız geriye uyumluluk için kategori diliyle
+  çalışır. Değişen dosyalar: `server.js`, `index.html`, `public-archive-renderer.js`,
+  `public-archive-fixtures.js`, `scripts/check-frontend.js`,
+  `test/public-archive-renderer.test.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check` başarılı; tam check
+  `97/97` test geçti. Root `/` cutover yapılmadı ve production alias değiştirilmedi.
 - **Public preview Arşiv dizininde sayaç ve köşeli stil düzeltildi:** Kullanıcı feedback'iyle
   `/public-preview/arsiv` üst kartındaki ayrı `soru` ve `cevap` sayaçları tek ifadeye indirildi:
   örn. `11 soru cevap`. Harf şeridi boş harfleri basmaz; yalnız mevcut kategori verisinde

@@ -2020,9 +2020,8 @@ function archiveReleaseItemReadiness(item = {}) {
   const checks = [
     { key: 'title', label: 'Başlık', ok: Boolean(String(item.title || '').trim()) && String(item.title || '').trim() !== 'Başlıksız kayıt', severity: 'blocker' },
     { key: 'text', label: 'Metin', ok: textLength > 0 || Boolean(textPreview), severity: 'blocker' },
-    { key: 'category', label: 'Kategori', ok: Boolean(String(item.category || '').trim()), severity: 'blocker' },
     { key: 'source', label: 'Kaynak izi', ok: hasSourceTrace, severity: 'blocker' },
-    { key: 'topics', label: 'Kavramlar', ok: topics.length > 0, severity: 'warning' }
+    { key: 'topics', label: 'Etiketler', ok: topics.length > 0, severity: 'blocker' }
   ];
   if (item.kind === 'publish') {
     checks.push({ key: 'publicationUrl', label: 'Yayın linki', ok: Boolean(String(item.publicationUrl || '').trim()), severity: 'warning' });
@@ -2196,10 +2195,9 @@ async function loadArchiveReleaseOutputRecord(item = {}) {
     const source = await getArchiveOpsSource(item.recordId);
     if (!source) return null;
     const full = publicArchiveSource(source, { full: true });
-    return {
-      title: full.title || item.title,
-      category: full.category || item.category,
-      topics: Array.isArray(full.tags) ? full.tags : item.topics || [],
+	    return {
+	      title: full.title || item.title,
+	      topics: Array.isArray(full.tags) ? full.tags : item.topics || [],
       sourceTitle: full.title || item.sourceTitle,
       sourceUrl: full.sourceUrl || '',
       text: full.sourceText || item.textPreview || '',
@@ -2214,10 +2212,9 @@ async function loadArchiveReleaseOutputRecord(item = {}) {
       full.question ? `Soru:\n${full.question}` : '',
       full.answerDraft ? `Cevap:\n${full.answerDraft}` : ''
     ].filter(Boolean);
-    return {
-      title: full.title || item.title,
-      category: full.category || item.category,
-      topics: Array.isArray(full.topics) ? full.topics : item.topics || [],
+	    return {
+	      title: full.title || item.title,
+	      topics: Array.isArray(full.topics) ? full.topics : item.topics || [],
       sourceTitle: full.sourceTitle || item.sourceTitle,
       sourceUrl: '',
       text: sections.join('\n\n') || full.textPreview || item.textPreview || '',
@@ -2228,10 +2225,9 @@ async function loadArchiveReleaseOutputRecord(item = {}) {
     const task = await getArchivePublishTask(item.recordId);
     if (!task) return null;
     const full = publicArchivePublishTask(task, { full: true });
-    return {
-      title: full.title || item.title,
-      category: full.category || item.category,
-      topics: Array.isArray(full.topics) ? full.topics : item.topics || [],
+	    return {
+	      title: full.title || item.title,
+	      topics: Array.isArray(full.topics) ? full.topics : item.topics || [],
       sourceTitle: full.sourceTitle || item.sourceTitle,
       sourceUrl: full.publicationUrl || item.publicationUrl || '',
       text: full.description || full.textPreview || item.textPreview || '',
@@ -2254,10 +2250,9 @@ async function archiveReleasePackageOutputManifest(pkg = {}) {
       order: index + 1,
       id: item.id,
       kind: item.kind,
-      recordId: item.recordId,
-      title: record?.title || item.title,
-      category: record?.category || item.category || '',
-      topics: Array.isArray(record?.topics) ? record.topics : item.topics || [],
+	      recordId: item.recordId,
+	      title: record?.title || item.title,
+	      topics: Array.isArray(record?.topics) ? record.topics : item.topics || [],
       sourceTitle: record?.sourceTitle || item.sourceTitle || item.workItemTitle || '',
       sourceUrl: record?.sourceUrl || item.publicationUrl || '',
       summary: record?.summary || '',
@@ -2319,8 +2314,7 @@ function archiveReleasePackageOutputMarkdown(manifest = {}) {
     lines.push(`## ${item.order}. ${item.title || 'Başlıksız kayıt'}`);
     lines.push('');
     lines.push(archiveReleaseMarkdownMeta('Tür', item.kind));
-    lines.push(archiveReleaseMarkdownMeta('Kategori', item.category));
-    lines.push(archiveReleaseMarkdownMeta('Kavramlar', item.topics));
+	    lines.push(archiveReleaseMarkdownMeta('Etiketler', item.topics));
     lines.push(archiveReleaseMarkdownMeta('Kaynak', item.sourceTitle));
     lines.push(archiveReleaseMarkdownMeta('Bağlantı', item.sourceUrl));
     lines.push('');
@@ -2340,13 +2334,12 @@ function csvEscape(value = '') {
 }
 
 function archiveReleasePackageOutputCsv(manifest = {}) {
-  const header = ['order', 'title', 'kind', 'category', 'topics', 'sourceTitle', 'sourceUrl', 'summary', 'text'];
+  const header = ['order', 'title', 'kind', 'topics', 'sourceTitle', 'sourceUrl', 'summary', 'text'];
   const rows = (manifest.items || []).map(item => [
-    item.order,
-    item.title,
-    item.kind,
-    item.category,
-    Array.isArray(item.topics) ? item.topics.join('|') : '',
+	    item.order,
+	    item.title,
+	    item.kind,
+	    Array.isArray(item.topics) ? item.topics.join('|') : '',
     item.sourceTitle,
     item.sourceUrl,
     item.summary,
@@ -2423,8 +2416,7 @@ function filterArchiveReleasePackages(packages = [], query = {}) {
       pkg.status,
       ...(Array.isArray(pkg.items) ? pkg.items.flatMap(item => [
         item.title,
-        item.category,
-        item.sourceTitle,
+	        item.sourceTitle,
         item.workItemTitle,
         item.publicationUrl,
         item.textPreview,
@@ -3909,18 +3901,6 @@ function clearPublicSession(req) {
 const PUBLIC_ARCHIVE_DATA_CACHE_MS = 60_000;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 
-const PUBLIC_ARCHIVE_GATEWAY_CATEGORIES = [
-  { name: 'Allah’a Ulaşmayı Dilemek', aliases: ['allah’a ulaşmayı dilemek', 'allaha ulasmayi dilemek', 'allaha ulaşmayı dilemek'] },
-  { name: 'Hidayet', aliases: ['hidayet'] },
-  { name: 'Zikir', aliases: ['zikir', 'daimi zikir'] },
-  { name: 'Mürşid', aliases: ['mürşid', 'mursid', 'mürşit', 'mursit'] },
-  { name: 'Tabiiyet', aliases: ['tabiiyet', 'tâbiiyet', 'tabiiyet etmek', 'tâbiiyet etmek'] },
-  { name: 'Takva', aliases: ['takva'] },
-  { name: 'Nefs', aliases: ['nefs', 'nefs tezkiyesi'] },
-  { name: 'Ruh', aliases: ['ruh'] },
-  { name: 'Teslimiyet', aliases: ['teslimiyet', 'teslim'] }
-];
-
 function publicArchiveDefaultData() {
   try {
     return require('./public-archive-fixtures').publicArchiveFixtures;
@@ -3992,20 +3972,12 @@ function normalizePublicArchiveTags(value) {
     .slice(0, 12);
 }
 
-function publicArchiveGatewayForTags(tags = []) {
-  const comparableTags = tags.map(publicArchiveComparable);
-  for (const gateway of PUBLIC_ARCHIVE_GATEWAY_CATEGORIES) {
-    if (gateway.aliases.some(alias => comparableTags.includes(publicArchiveComparable(alias)))) return gateway.name;
-  }
-  return tags[0] || 'Genel';
-}
-
 function publicArchiveCategoryDescription(name = '') {
-  return `${name} başlığındaki soru ve cevaplar, ilgili kavramlarla birlikte okunur.`;
+  return `${name} kategorisindeki soru ve cevaplar.`;
 }
 
 function publicArchiveTopicDescription(name = '') {
-  return `${name} kavramıyla ilişkili soru ve cevaplar.`;
+  return `${name} etiketiyle ilişkili soru ve cevaplar.`;
 }
 
 function publicArchiveRowsFromStats(rows = []) {
@@ -4110,15 +4082,16 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
     .filter(Boolean);
 
   for (const record of cleanRecords) {
-    const categoryName = record.category || record.categoryName || publicArchiveGatewayForTags(record.tags);
-    const category = ensureCategory(categoryName);
-    const topicSlugs = record.tags
-      .map(tag => ensureTopic(tag, category.slug))
+    const tagCategories = record.tags.map(tag => ensureCategory(tag)).filter(Boolean);
+    if (!tagCategories.length) continue;
+    const primaryCategory = tagCategories[0];
+    const topicSlugs = tagCategories
+      .map(category => ensureTopic(category.name, category.slug))
       .filter(Boolean)
       .map(topic => topic.slug);
-    for (const slug of topicSlugs) {
+    for (const category of tagCategories) {
       const current = categoryMap.get(category.slug);
-      if (current && !current.topicSlugs.includes(slug)) current.topicSlugs.push(slug);
+      if (current && !current.topicSlugs.includes(category.slug)) current.topicSlugs.push(category.slug);
     }
     for (const slug of topicSlugs) {
       if (!topicRelations.has(slug)) topicRelations.set(slug, new Map());
@@ -4141,11 +4114,12 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
       summary: publicArchiveSummaryFromAnswer(record.answerText, record.question),
       answer,
       excerpt: publicArchiveSummaryFromAnswer(record.answerText, record.question),
-      categorySlug: category.slug,
+      categorySlug: primaryCategory.slug,
+      categorySlugs: tagCategories.map(category => category.slug),
       topicSlugs,
       sourceContext: {
         title: 'Kaynak ve bağlam',
-        text: 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kavramlarla birlikte okunur.'
+        text: 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kategorilerle birlikte okunur.'
       },
       publishedAt,
       updatedAt: record.updatedAt || record.updated_at || publishedAt,
@@ -4190,14 +4164,25 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
 
 function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], topicRows = [], statsMap = new Map() } = {}) {
   const defaults = publicArchiveDefaultData();
-  const categories = (categoryRows || []).map(row => ({
-    id: `category-${row.slug}`,
-    slug: row.slug,
-    name: row.name,
-    description: row.description || publicArchiveCategoryDescription(row.name),
-    topicSlugs: Array.isArray(row.topic_slugs) ? row.topic_slugs : [],
-    featured: row.featured !== false
-  }));
+  const categoryRowMap = new Map((categoryRows || []).map(row => [row.slug, row]));
+  const topicRowMap = new Map((topicRows || []).map(row => [row.slug, row]));
+  const usedCategorySlugs = new Set();
+  for (const row of qaRows || []) {
+    const tagSlugs = Array.isArray(row.topic_slugs) ? row.topic_slugs.filter(Boolean) : [];
+    if (tagSlugs.length) tagSlugs.forEach(slug => usedCategorySlugs.add(slug));
+    else if (row.category_slug) usedCategorySlugs.add(row.category_slug);
+  }
+  const categories = [...usedCategorySlugs].map(slug => {
+    const row = categoryRowMap.get(slug) || topicRowMap.get(slug) || { slug, name: slug };
+    return {
+      id: `category-${row.slug}`,
+      slug: row.slug,
+      name: row.name,
+      description: row.description || publicArchiveCategoryDescription(row.name),
+      topicSlugs: [row.slug],
+      featured: row.featured !== false
+    };
+  }).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
   const topics = (topicRows || []).map(row => ({
     id: `topic-${row.slug}`,
     slug: row.slug,
@@ -4208,6 +4193,8 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
     featured: row.featured !== false
   }));
   const qa = (qaRows || []).map(row => {
+    const tagSlugs = Array.isArray(row.topic_slugs) ? row.topic_slugs.filter(Boolean) : [];
+    const categorySlugs = tagSlugs.length ? tagSlugs : (row.category_slug ? [row.category_slug] : []);
     const answer = Array.isArray(row.answer_paragraphs) && row.answer_paragraphs.length
       ? row.answer_paragraphs.map(item => String(item || '').trim()).filter(Boolean)
       : publicArchiveParagraphs(row.answer_text || '');
@@ -4219,11 +4206,12 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
       summary: row.summary || publicArchiveSummaryFromAnswer(row.answer_text || answer.join('\n\n'), row.question),
       answer,
       excerpt: row.excerpt || row.summary || '',
-      categorySlug: row.category_slug || '',
-      topicSlugs: Array.isArray(row.topic_slugs) ? row.topic_slugs : [],
+      categorySlug: categorySlugs[0] || '',
+      categorySlugs,
+      topicSlugs: categorySlugs,
       sourceContext: {
         title: row.source_context_title || 'Kaynak ve bağlam',
-        text: row.source_context_text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kavramlarla birlikte okunur.'
+        text: row.source_context_text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kategorilerle birlikte okunur.'
       },
       publishedAt: row.published_at || row.created_at,
       updatedAt: row.updated_at || row.published_at || row.created_at,
@@ -4407,7 +4395,7 @@ async function syncApprovedHistoryToPublicArchive() {
     topic_slugs: item.topicSlugs || [],
     related_slugs: item.relatedSlugs || [],
     source_context_title: item.sourceContext?.title || 'Kaynak ve bağlam',
-    source_context_text: item.sourceContext?.text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kavramlarla birlikte okunur.',
+    source_context_text: item.sourceContext?.text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kategorilerle birlikte okunur.',
     published_at: item.publishedAt || now,
     updated_at: now,
     read_time: Number(item.readTime || 1),

@@ -120,8 +120,8 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /Nefs/);
   assert.match(home, /Ruh/);
   assert.match(home, /Teslimiyet/);
-  assert.match(home, /href="\/public-preview\/konu\/nefs"/);
-  assert.match(home, /href="\/public-preview\/konu\/ruh"/);
+  assert.match(home, /href="\/public-preview\/kategori\/nefs"/);
+  assert.match(home, /href="\/public-preview\/kategori\/ruh"/);
 });
 
 test('archive and account routes are explicit public preview pages', () => {
@@ -187,7 +187,7 @@ test('public preview can render approved records instead of fixture data', () =>
         id: 'topic-zikir',
         slug: 'zikir',
         name: 'Zikir',
-        description: 'Zikir kavramıyla ilişkili soru ve cevaplar.',
+        description: 'Zikir kategorisindeki soru ve cevaplar.',
         categorySlug: 'hidayet',
         relatedTopicSlugs: ['takva'],
         featured: true
@@ -196,7 +196,7 @@ test('public preview can render approved records instead of fixture data', () =>
         id: 'topic-takva',
         slug: 'takva',
         name: 'Takva',
-        description: 'Takva kavramıyla ilişkili soru ve cevaplar.',
+        description: 'Takva kategorisindeki soru ve cevaplar.',
         categorySlug: 'hidayet',
         relatedTopicSlugs: ['zikir'],
         featured: true
@@ -240,6 +240,11 @@ test('public preview can render approved records instead of fixture data', () =>
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/zikir', {}, approvedArchiveData);
   assert.equal(topic.status, 200);
   assert.match(topic.html, /Gerçek onaylı soru nasıl okunur\?/);
+
+  const tagCategory = renderPublicArchivePreviewRoute('/public-preview/kategori/zikir', {}, approvedArchiveData);
+  assert.equal(tagCategory.status, 200);
+  assert.match(tagCategory.html, /Zikir/);
+  assert.match(tagCategory.html, /Gerçek onaylı soru nasıl okunur\?/);
 });
 
 test('question, topic, category, and ask pages keep public boundaries', () => {
@@ -254,7 +259,8 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
   const category = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
-  assert.match(topic, /Kavram/);
+  assert.match(topic, /Kategori/);
+  assert.doesNotMatch(topic, /Kavram/);
   assert.match(category, /Kategori/);
   assert.match(category, /Bu Kategorideki Sorular/);
   assertOnlyPublicPreviewApi(topic);
@@ -307,9 +313,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
 
 test('mobile search copy stays compact but accessible', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
-  assert.match(home, /placeholder="Soru veya kavram arayın\.\.\."/);
-  assert.match(home, /aria-label="Sorunuzu veya kavramınızı yazın"/);
-  assert.doesNotMatch(home, /placeholder="Sorunuzu veya kavramınızı yazın/);
+  assert.match(home, /placeholder="Soru veya kategori arayın\.\.\."/);
+  assert.match(home, /aria-label="Sorunuzu veya kategorinizi yazın"/);
+  assert.doesNotMatch(home, /placeholder="Sorunuzu veya kategorinizi yazın/);
 });
 
 test('public preview exposes separate index and info pages', () => {

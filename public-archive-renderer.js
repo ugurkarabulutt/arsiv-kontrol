@@ -93,8 +93,48 @@ function bySlug(items, slug) {
   return items.find(item => item.slug === slug) || null;
 }
 
+function asPublicCategory(item) {
+  if (!item) return null;
+  return {
+    id: item.id || `category-${item.slug}`,
+    slug: item.slug,
+    name: item.name,
+    description: `${item.name} kategorisindeki soru ve cevaplar.`,
+    topicSlugs: Array.isArray(item.topicSlugs) && item.topicSlugs.length ? item.topicSlugs : [item.slug],
+    featured: item.featured !== false
+  };
+}
+
+function publicCategories() {
+  const categories = new Map();
+  for (const category of publicArchiveFixtures.categories || []) {
+    const normalized = asPublicCategory(category);
+    if (normalized?.slug) categories.set(normalized.slug, normalized);
+  }
+  for (const topic of publicArchiveFixtures.topics || []) {
+    const normalized = asPublicCategory(topic);
+    if (normalized?.slug && !categories.has(normalized.slug)) categories.set(normalized.slug, normalized);
+  }
+  return [...categories.values()];
+}
+
+function publicCategoryBySlug(slug) {
+  return bySlug(publicCategories(), slug);
+}
+
+function categorySlugsFor(entry) {
+  const raw = Array.isArray(entry.categorySlugs) && entry.categorySlugs.length
+    ? entry.categorySlugs
+    : [entry.categorySlug, ...(entry.topicSlugs || [])];
+  return raw.filter(Boolean).filter((slug, index, arr) => arr.indexOf(slug) === index);
+}
+
 function categoryFor(entry) {
-  return bySlug(publicArchiveFixtures.categories, entry.categorySlug);
+  return publicCategoryBySlug(entry.categorySlug) || publicCategoryBySlug(categorySlugsFor(entry)[0]);
+}
+
+function categoriesFor(entry) {
+  return categorySlugsFor(entry).map(publicCategoryBySlug).filter(Boolean);
 }
 
 function topicsFor(entry) {
@@ -108,7 +148,7 @@ function entriesForTopic(slug) {
 }
 
 function entriesForCategory(slug) {
-  return publicArchiveFixtures.qa.filter(entry => entry.categorySlug === slug);
+  return publicArchiveFixtures.qa.filter(entry => categorySlugsFor(entry).includes(slug));
 }
 
 function relatedEntries(entry) {
@@ -186,7 +226,7 @@ function iconSvg(name, className = 'pa-svg-icon') {
 }
 
 function categoryIconName(category) {
-  return CATEGORY_ICONS[category?.slug] || 'diger';
+  return CATEGORY_ICONS[category?.slug] || TOPIC_ICONS[category?.slug] || 'diger';
 }
 
 function topicIconName(topic) {
@@ -274,7 +314,7 @@ function searchBox(value = '', label = 'Arşivde ara') {
     <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama">
       <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
       <span class="pa-search-leading">${iconSvg('search')}</span>
-      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Soru veya kavram arayın..." autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Sorunuzu veya kavramınızı yazın">
+      <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="Soru veya kategori arayın..." autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Sorunuzu veya kategorinizi yazın">
       <button type="submit" aria-label="Ara">
         <span class="pa-search-icon">${iconSvg('arrow-right')}</span>
       </button>
@@ -310,11 +350,11 @@ function chip(label, hrefValue) {
 const HERO_CONCEPT_ITEMS = [
   ['Hidayet', `${PREVIEW_BASE}/kategori/hidayet`],
   ['Zikir', `${PREVIEW_BASE}/kategori/zikir`],
-  ['Takva', `${PREVIEW_BASE}/konu/takva`],
-  ['Tabiiyet', `${PREVIEW_BASE}/konu/tabiiyet`],
+  ['Takva', `${PREVIEW_BASE}/kategori/takva`],
+  ['Tabiiyet', `${PREVIEW_BASE}/kategori/tabiiyet`],
   ['Allah’a Ulaşmayı Dilemek', `${PREVIEW_BASE}/kategori/allaha-ulasmayi-dilemek`],
-  ['Nefs', `${PREVIEW_BASE}/konu/nefs`],
-  ['Ruh', `${PREVIEW_BASE}/konu/ruh`]
+  ['Nefs', `${PREVIEW_BASE}/kategori/nefs`],
+  ['Ruh', `${PREVIEW_BASE}/kategori/ruh`]
 ];
 
 function conceptSliderItems(isClone = false) {
@@ -327,9 +367,9 @@ function conceptSliderItems(isClone = false) {
 
 function heroConceptLane() {
   return `
-    <div class="pa-hero-concepts" data-concept-slider aria-label="Öne çıkan kavramlar">
+    <div class="pa-hero-concepts" data-concept-slider aria-label="Öne çıkan kategoriler">
       <div class="pa-concept-head">
-        <span>Öne çıkan kavramlar</span>
+        <span>Öne çıkan kategoriler</span>
         <span aria-hidden="true">→</span>
       </div>
       <div class="pa-concept-track" data-concept-track>
@@ -529,7 +569,7 @@ function questionCard(entry, options = {}) {
   const strongCta = Boolean(cardOptions.strongCta);
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
-  const visibleTopics = topics.filter(topic => !category || topic.slug !== category.slug);
+  const cardCategories = categoriesFor(entry);
   const countNode = readCountNode(entry);
   const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
@@ -537,8 +577,7 @@ function questionCard(entry, options = {}) {
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
       ${showMeta ? `<div class="pa-card-meta">
-        ${category ? chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`) : ''}
-        ${visibleTopics.slice(0, 2).map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}
+        ${cardCategories.slice(0, 3).map(category => chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`)).join('')}
       </div>` : ''}
       <div class="pa-card-bottom">
         <p class="pa-card-foot">${countNode}</p>
@@ -550,10 +589,10 @@ function questionCard(entry, options = {}) {
 
 function topicCard(topic) {
   return `
-    <a class="pa-topic-card" href="${PREVIEW_BASE}/konu/${escapeHtml(topic.slug)}">
+    <a class="pa-topic-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(topic.slug)}">
       <span class="pa-topic-mark">${iconSvg(topicIconName(topic))}</span>
       <strong>${escapeHtml(topic.name)}</strong>
-      <span>${entriesForTopic(topic.slug).length} soru</span>
+      <span>${entriesForCategory(topic.slug).length} soru</span>
     </a>
   `;
 }
@@ -613,7 +652,7 @@ function trustBand() {
     <section class="pa-context-band" id="baglam">
       <div>
         <h2>Cevapları nasıl keşfedebilirsiniz?</h2>
-        <p>Her cevap, ilgili kavramlarla birlikte anlam kazanır. Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır; her cevap, ilgili konu ve kavramlarla birlikte arşivlenir. Böylece yalnızca aradığınız sorunun cevabına değil; sorularınızla ilgili bağlantılı kavramlara ve bu kavramlarla ilgili diğer sorulara da kolayca ulaşabilirsiniz.</p>
+        <p>Her cevap, ilgili kategorilerle birlikte daha kolay bulunur. Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır; her cevap, ilgili kategorilerle birlikte arşivlenir. Böylece yalnızca aradığınız sorunun cevabına değil; aynı kategori altındaki diğer sorulara da kolayca ulaşabilirsiniz.</p>
       </div>
       ${stillLife()}
     </section>
@@ -626,14 +665,14 @@ function renderHome() {
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
-    description: 'Dini Sorular ve Cevaplar Arşivi içinde soru, cevap ve kavramları birlikte okuyun.',
+    description: 'Dini Sorular ve Cevaplar Arşivi içinde soru, cevap ve kategorileri birlikte okuyun.',
     content: `
       <main class="pa-main">
         <section class="pa-hero">
           <div class="pa-hero-copy">
             <p class="pa-kicker">${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
             <h1>Sorularınıza, kaynaklarıyla birlikte cevap bulun.</h1>
-            <p>Hidayet, mürşid, zikir ve teslimiyet gibi temel kavramlardan başlayın; ilgili soruları, cevapları ve delilleri bir arada okuyun.</p>
+            <p>Hidayet, mürşid, zikir ve teslimiyet gibi temel kategorilerden başlayın; ilgili soruları, cevapları ve delilleri bir arada okuyun.</p>
             ${searchBox()}
             ${heroConceptLane()}
           </div>
@@ -683,7 +722,7 @@ function searchResults(query) {
 const trCollator = new Intl.Collator('tr-TR', { numeric: true, sensitivity: 'base' });
 
 function sortedCategories() {
-  return [...publicArchiveFixtures.categories].sort((a, b) => trCollator.compare(a.name || '', b.name || ''));
+  return publicCategories().sort((a, b) => trCollator.compare(a.name || '', b.name || ''));
 }
 
 function categoryInitial(category) {
@@ -784,7 +823,7 @@ function renderArchive(query = {}) {
   const answeredCount = entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length || entries.length;
   const categoryIndex = archiveCategoryIndex(query);
   const visibleEntries = categoryIndex.selectedCategory
-    ? entries.filter(entry => entry.categorySlug === categoryIndex.selectedCategory.slug)
+    ? entries.filter(entry => categorySlugsFor(entry).includes(categoryIndex.selectedCategory.slug))
     : entries;
   const listTitle = categoryIndex.selectedCategory ? `${categoryIndex.selectedCategory.name} soruları` : 'Tüm Sorular';
   return renderShell({
@@ -819,13 +858,13 @@ function renderSearch(query = '') {
   return renderShell({
     active: 'search',
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
-    description: 'Arşivde soru, konu ve kategori arayın.',
+    description: 'Arşivde soru ve kategori arayın.',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-search-page">
           <p class="pa-kicker">Arşivde ara</p>
           <h1>Aradığınız cevaba en kısa yoldan ulaşın.</h1>
-          <p class="pa-page-intro">Soru başlıkları, cevap özetleri, kavramlar ve kategoriler içinde sade bir arama yapabilirsiniz.</p>
+          <p class="pa-page-intro">Soru başlıkları, cevap metinleri ve kategoriler içinde sade bir arama yapabilirsiniz.</p>
           ${searchBox(cleanQuery)}
         </section>
         <section class="pa-section">
@@ -841,33 +880,11 @@ function renderSearch(query = '') {
 }
 
 function renderTopicsIndex() {
-  const topics = publicArchiveFixtures.topics;
-  return renderShell({
-    active: 'topics',
-    title: 'Konular',
-    description: 'Arşivdeki kavram ve konu başlıkları.',
-    content: `
-      <main class="pa-main pa-narrow-main">
-        <section class="pa-collection-hero">
-          <p class="pa-kicker">Konular</p>
-          <h1>Kavramlar üzerinden sakin bir okuma yolu kurun.</h1>
-          <p>Soru-cevap kayıtlarını hidayet, mürşid, zikir, tâbiiyet, takva ve teslimiyet gibi bağlı kavramlarla keşfedebilirsiniz.</p>
-          <div class="pa-collection-meta">
-            <span>${topics.length} kavram</span>
-            <span>${publicArchiveFixtures.qa.length} soru</span>
-          </div>
-        </section>
-        <section class="pa-section">
-          ${sectionHeader('Tüm Kavramlar')}
-          <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
-        </section>
-      </main>
-    `
-  });
+  return renderCategoriesIndex();
 }
 
 function renderCategoriesIndex() {
-  const categories = publicArchiveFixtures.categories;
+  const categories = sortedCategories();
   return renderShell({
     active: 'categories',
     title: 'Kategoriler',
@@ -949,8 +966,8 @@ function renderQuestion(slug) {
               </section>
             ` : ''}
             <section>
-              <h2>İlgili Kavramlar</h2>
-              <div class="pa-chip-wrap">${topics.map(topic => chip(topic.name, `${PREVIEW_BASE}/konu/${topic.slug}`)).join('')}</div>
+              <h2>Kategoriler</h2>
+              <div class="pa-chip-wrap">${categoriesFor(entry).map(category => chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`)).join('')}</div>
             </section>
           </aside>
         </article>
@@ -960,50 +977,13 @@ function renderQuestion(slug) {
 }
 
 function renderTopic(slug) {
-  const topic = bySlug(publicArchiveFixtures.topics, slug);
-  if (!topic) return renderNotFound();
-  const category = bySlug(publicArchiveFixtures.categories, topic.categorySlug);
-  const entries = entriesForTopic(topic.slug);
-  const related = relatedTopics(topic);
-  return renderShell({
-    active: 'topics',
-    title: topic.name,
-    description: topic.description,
-    content: `
-      <main class="pa-main pa-narrow-main">
-        ${breadcrumb([{ label: 'Konular', href: `${PREVIEW_BASE}/konular` }, { label: topic.name }])}
-        <section class="pa-collection-hero">
-          <p class="pa-kicker">Kavram</p>
-          <h1>${escapeHtml(topic.name)}</h1>
-          <p>${escapeHtml(topic.description)}</p>
-          <div class="pa-collection-meta">
-            <span>${entries.length} ilgili soru</span>
-            ${related.length ? `<span>${related.length} ilişkili kavram</span>` : ''}
-          </div>
-          ${category ? `<a class="pa-inline-link" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">Kategori: ${escapeHtml(category.name)}</a>` : ''}
-        </section>
-        <section class="pa-section">
-          ${sectionHeader('İlgili Sorular')}
-          <div class="pa-list">${entries.map(entry => questionCard(entry, true)).join('')}</div>
-        </section>
-        ${related.length ? `
-          <section class="pa-section">
-            ${sectionHeader('İlişkili Kavramlar')}
-            <div class="pa-topic-grid">${related.map(topicCard).join('')}</div>
-          </section>
-        ` : ''}
-      </main>
-    `
-  });
+  return renderCategory(slug);
 }
 
 function renderCategory(slug) {
-  const category = bySlug(publicArchiveFixtures.categories, slug);
+  const category = publicCategoryBySlug(slug);
   if (!category) return renderNotFound();
   const entries = entriesForCategory(category.slug);
-  const topics = (category.topicSlugs || [])
-    .map(topicSlug => bySlug(publicArchiveFixtures.topics, topicSlug))
-    .filter(Boolean);
   return renderShell({
     active: 'categories',
     title: category.name,
@@ -1017,19 +997,12 @@ function renderCategory(slug) {
           <p>${escapeHtml(category.description)}</p>
           <div class="pa-collection-meta">
             <span>${entries.length} ilgili soru</span>
-            ${topics.length ? `<span>${topics.length} kavram</span>` : ''}
           </div>
         </section>
         <section class="pa-section">
           ${sectionHeader('Bu Kategorideki Sorular')}
           <div class="pa-list">${entries.map(entry => questionCard(entry, true)).join('')}</div>
         </section>
-        ${topics.length ? `
-          <section class="pa-section">
-            ${sectionHeader('İlgili Kavramlar')}
-            <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
-          </section>
-        ` : ''}
       </main>
     `
   });
@@ -1082,7 +1055,7 @@ function renderAsk() {
               },
               {
                 title: 'Önce arşive bakabilirsiniz',
-                text: 'Benzer cevaplar varsa arama ve kavram sayfaları sizi hızlıca ilgili kayda götürür.'
+                text: 'Benzer cevaplar varsa arama ve kategori sayfaları sizi hızlıca ilgili kayda götürür.'
               }
             ])}
           </div>
@@ -1094,7 +1067,7 @@ function renderAsk() {
             <label>
               <span>Soru metni</span>
               <textarea name="question" rows="8" maxlength="2000" minlength="20" placeholder="Sorunuzu buraya yazın..." required></textarea>
-              <small class="pa-field-help">Kategori veya kavram seçmeniz gerekmez; soru arşive alınırken ilgili başlıklarla bağlanır.</small>
+              <small class="pa-field-help">Kategori seçmeniz gerekmez; soru arşive alınırken ilgili başlıklarla bağlanır.</small>
             </label>
             <label class="pa-check-row" id="kullanim">
               <input name="privacyAccepted" type="checkbox" required>
@@ -1115,14 +1088,14 @@ function renderInfoPage(kind) {
     hakkimizda: {
       title: 'Hakkımızda',
       kicker: 'Hakkımızda',
-      heading: 'Soruları kavramlarıyla birlikte okumak için hazırlanmış bir arşiv.',
+      heading: 'Soruları kategorileriyle birlikte okumak için hazırlanmış bir arşiv.',
       copy: [
-        'Dini Sorular ve Cevaplar Arşivi, yayınlanan soru ve cevapları ana başlıklar ve kavramlarla birlikte okunur hâle getirir.',
+        'Dini Sorular ve Cevaplar Arşivi, yayınlanan soru ve cevapları kategorileriyle birlikte okunur hâle getirir.',
         `${publicArchiveFixtures.brand.authorLine} Sayfalar, okuyucunun aradığı cevaba daha kolay ulaşması için düzenlenir.`
       ],
       points: [
-        { title: 'Arama', text: 'Soru başlıkları, cevap metinleri ve kavramlar birlikte aranır.' },
-        { title: 'Kavram bağı', text: 'Bir cevap tek başına bırakılmaz; ilgili kavram ve ana başlıklarla birlikte gösterilir.' },
+        { title: 'Arama', text: 'Soru başlıkları, cevap metinleri ve kategoriler birlikte aranır.' },
+        { title: 'Kategori bağı', text: 'Bir cevap tek başına bırakılmaz; ilgili kategorilerle birlikte gösterilir.' },
         { title: 'Okuma rahatlığı', text: 'Uzun cevaplar mobil ve masaüstünde sakin bir okuma düzeniyle sunulur.' }
       ]
     },
@@ -1131,13 +1104,13 @@ function renderInfoPage(kind) {
       kicker: 'Nasıl Kullanılır',
       heading: 'Aradığınız cevaba birkaç sade adımla ulaşabilirsiniz.',
       copy: [
-        'Önce arama kutusuna merak ettiğiniz soruyu veya kavramı yazın. Sonra ilgili soru kartını açarak cevabı okuyun.',
-        'Cevabın yanında görünen kavramlar, aynı konudaki başka sorulara geçmenize yardımcı olur.'
+        'Önce arama kutusuna merak ettiğiniz soruyu veya kategoriyi yazın. Sonra ilgili soru kartını açarak cevabı okuyun.',
+        'Cevabın yanında görünen kategoriler, aynı başlıktaki başka sorulara geçmenize yardımcı olur.'
       ],
       points: [
-        { title: 'Arayın', text: 'Soru, kavram veya ana başlık yazarak başlayın.' },
-        { title: 'Cevabı okuyun', text: 'Soru detayında cevabı, yayın tarihini ve ilgili kavramları birlikte görün.' },
-        { title: 'Devam edin', text: 'İlgili sorular ve kavramlar üzerinden okumayı derinleştirin.' }
+        { title: 'Arayın', text: 'Soru veya kategori yazarak başlayın.' },
+        { title: 'Cevabı okuyun', text: 'Soru detayında cevabı, yayın tarihini ve ilgili kategorileri birlikte görün.' },
+        { title: 'Devam edin', text: 'İlgili sorular ve kategoriler üzerinden okumayı derinleştirin.' }
       ]
     },
     iletisim: {
@@ -1173,13 +1146,13 @@ function renderInfoPage(kind) {
       kicker: 'Kullanım',
       heading: 'Arşiv okuma ve soru gönderimi için sade kullanım ilkeleri.',
       copy: [
-        'Arşiv; soru-cevap içeriklerini okumak, aramak ve kavramlar üzerinden keşfetmek için sunulur.',
+        'Arşiv; soru-cevap içeriklerini okumak, aramak ve kategoriler üzerinden keşfetmek için sunulur.',
         'Soru gönderimi, cevabın hemen yayınlanacağı veya belirli bir sürede yanıtlanacağı anlamına gelmez.'
       ],
       points: [
         { title: 'Okuma', text: 'Cevapları arşiv sayfalarından okuyabilir, bağlantılarını paylaşabilirsiniz.' },
         { title: 'Soru gönderimi', text: 'Gönderilen sorular içerik ve ihtiyaç durumuna göre ele alınır.' },
-        { title: 'Düzen', text: 'Arşivdeki başlıklar ve kavramlar okuyucunun kolay ulaşması için düzenlenir.' }
+        { title: 'Düzen', text: 'Arşivdeki başlıklar ve kategoriler okuyucunun kolay ulaşması için düzenlenir.' }
       ]
     }
   };
