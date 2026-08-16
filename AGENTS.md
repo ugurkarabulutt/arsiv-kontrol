@@ -121,6 +121,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-16
+- **Public preview Arşiv dizininde sayaç ve köşeli stil düzeltildi:** Kullanıcı feedback'iyle
+  `/public-preview/arsiv` üst kartındaki ayrı `soru` ve `cevap` sayaçları tek ifadeye indirildi:
+  örn. `11 soru cevap`. Harf şeridi boş harfleri basmaz; yalnız mevcut kategori verisinde
+  başlangıç harfi olan harfler görünür. Bu yüzden canlı veride az harf görünmesi veri kaynaklıdır;
+  yeni kategoriler farklı harfle geldiğinde şeride otomatik eklenir. Alfabetik dizindeki
+  yuvarlak/pill hissi azaltıldı. Harfler daha köşeli sekme stiline çekildi; seçili harf, arama
+  kutusu, panel ve kategori kartlarında daha kontrollü radius değerleri kullanıldı. Guard/testler
+  tek `soru cevap` sayaç metnini ve köşeli dizin CSS marker'larını doğrulayacak şekilde güncellendi.
+  Root `/` cutover yapılmadı ve admin iş hattına dokunulmadı.
 - **Public preview Arşiv sayfasına alfabetik kategori dizini eklendi:** Kullanıcı/ekip lideri
   feedback'iyle `/public-preview/arsiv` üst giriş kartı yalnız açıklama alanı olmaktan çıkarıldı
   ve alfabetik kategori dizinine çevrildi. Harf şeridi yalnız içinde kategori olan harfleri

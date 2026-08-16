@@ -956,6 +956,7 @@ for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-stron
 assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
+assert(archivePreview.includes('soru cevap') && !/<span>\d+ soru<\/span>\s*<span>\d+ cevap<\/span>/.test(archivePreview), 'Public arsiv sayacinda soru/cevap ayrimi tek ifadeye inmeli.');
 for (const marker of ['pa-alpha-index', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
   assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
 }
@@ -1018,6 +1019,9 @@ for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: p
 }
 for (const marker of ['.pa-alpha-index', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
   assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini CSS marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-archive-hero .pa-collection-meta span', 'border-radius: 11px', 'border-radius: 12px', 'border-radius: 14px']) {
+  assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini koseli stil marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', '@keyframes pa-cta-shine', '.pa-question-card:hover .pa-card-cta', '.pa-cta-icon']) {
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);

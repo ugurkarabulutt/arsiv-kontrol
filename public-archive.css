@@ -1398,6 +1398,11 @@ a.pa-chip:hover,
   font-weight: 650;
 }
 
+.pa-archive-hero .pa-collection-meta span {
+  min-height: 30px;
+  border-radius: 11px;
+}
+
 .pa-alpha-index {
   display: grid;
   gap: 14px;
@@ -1425,13 +1430,13 @@ a.pa-chip:hover,
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  min-width: 42px;
+  min-width: 46px;
   min-height: 38px;
   padding: 0 13px;
   color: var(--pa-text-2);
   background: color-mix(in srgb, var(--pa-surface) 78%, transparent);
   border: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
-  border-radius: 999px;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 850;
   line-height: 1;
@@ -1451,7 +1456,7 @@ a.pa-chip:hover,
   padding: 16px;
   background: color-mix(in srgb, var(--pa-surface) 78%, var(--pa-bg));
   border: 1px solid color-mix(in srgb, var(--pa-border) 86%, transparent);
-  border-radius: 20px;
+  border-radius: 14px;
 }
 
 .pa-letter-head {
@@ -1486,7 +1491,7 @@ a.pa-chip:hover,
   height: 34px;
   color: #FFFFFF;
   background: var(--pa-primary);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 900;
 }
@@ -1500,7 +1505,7 @@ a.pa-chip:hover,
   padding: 8px 9px 8px 12px;
   background: var(--pa-bg);
   border: 1px solid color-mix(in srgb, var(--pa-border) 84%, transparent);
-  border-radius: 999px;
+  border-radius: 14px;
 }
 
 .pa-letter-search span {
@@ -1527,7 +1532,7 @@ a.pa-chip:hover,
   color: #FFFFFF;
   background: var(--pa-primary);
   border: 0;
-  border-radius: 999px;
+  border-radius: 11px;
   cursor: pointer;
 }
 
@@ -1546,7 +1551,7 @@ a.pa-chip:hover,
   color: var(--pa-text);
   background: color-mix(in srgb, var(--pa-surface) 88%, var(--pa-bg));
   border: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
-  border-radius: 15px;
+  border-radius: 12px;
   box-shadow: 0 10px 18px rgb(20 40 28 / 0.05);
 }
 
@@ -2282,7 +2287,7 @@ a.pa-chip:hover,
   }
 
   .pa-alpha-letter {
-    min-width: 40px;
+    min-width: 42px;
     min-height: 36px;
     padding: 0 12px;
     font-size: 14px;
@@ -2290,7 +2295,7 @@ a.pa-chip:hover,
 
   .pa-letter-panel {
     padding: 13px;
-    border-radius: 18px;
+    border-radius: 13px;
   }
 
   .pa-letter-head {

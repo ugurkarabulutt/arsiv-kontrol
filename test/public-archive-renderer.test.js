@@ -133,6 +133,8 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(archive, /pa-alpha-track/);
   assert.match(archive, /Bu harfte ara\.\.\./);
   assert.match(archive, /A harfiyle başlayan kategoriler/);
+  assert.match(archive, /soru cevap/);
+  assert.doesNotMatch(archive, /<span>11 soru<\/span>\s*<span>11 cevap<\/span>/);
   assert.match(archive, /Tüm Sorular/);
   assert.doesNotMatch(archive, /<h2>Kategoriler<\/h2>|<h2>Kavramlar<\/h2>|\/public-preview\/konular/);
   assert.doesNotMatch(archive, /Ana Sayfa<\/a>\s*<a[^>]*>Arama/);

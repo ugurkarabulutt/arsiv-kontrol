@@ -781,7 +781,7 @@ function archiveCategoryIndex(query = {}) {
 
 function renderArchive(query = {}) {
   const entries = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
-  const answeredCount = entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length;
+  const answeredCount = entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length || entries.length;
   const categoryIndex = archiveCategoryIndex(query);
   const visibleEntries = categoryIndex.selectedCategory
     ? entries.filter(entry => entry.categorySlug === categoryIndex.selectedCategory.slug)
@@ -798,8 +798,7 @@ function renderArchive(query = {}) {
           <h1>Merak ettiğiniz konunun cevaplarına ulaşın.</h1>
           <p>Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.</p>
           <div class="pa-collection-meta">
-            <span>${entries.length} soru</span>
-            <span>${answeredCount} cevap</span>
+            <span>${answeredCount} soru cevap</span>
           </div>
           ${categoryIndex.html}
         </section>

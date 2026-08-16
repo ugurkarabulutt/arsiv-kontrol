@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-16 Codex Public Preview Arşiv Dizin Görsel Düzeltmesi
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Kullanıcı feedback'iyle `/public-preview/arsiv` üst kartındaki ayrı `soru` ve `cevap`
+  sayaçları tek ifadeye indirildi: örn. `11 soru cevap`.
+- Harf şeridi boş harfleri basmaz; yalnız mevcut kategori verisinde başlangıç harfi olan harfler
+  görünür. Bu yüzden canlı veride şu an az harf görünmesi veri kaynaklıdır; yeni kategoriler farklı
+  harfle geldiğinde şeride otomatik eklenir.
+- Alfabetik dizindeki yuvarlak/pill hissi azaltıldı. Harfler daha köşeli sekme stiline çekildi;
+  seçili harf, arama kutusu, panel ve kategori kartlarında daha kontrollü radius değerleri
+  kullanıldı.
+- Guard/testler tek `soru cevap` sayaç metnini ve köşeli dizin CSS marker'larını doğrulayacak
+  şekilde güncellendi. Root `/` cutover yapılmadı, admin hattına dokunulmadı.
+
 ## 2026-08-16 Codex Public Preview Arşiv Alfabetik Kategori Dizini
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
