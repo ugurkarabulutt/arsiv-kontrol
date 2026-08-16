@@ -134,7 +134,12 @@ tespit edilir).
   root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama: `node --check
   public-archive-renderer.js`, `node --check scripts/check-frontend.js`, `node --test
   test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`, `npm.cmd run check`,
-  `git diff --check` başarılı; tam check `97/97` test geçti.
+  `git diff --check` başarılı; tam check `97/97` test geçti. Runtime commit `d6f433d` GitHub'a
+  push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde preview deploy alındı:
+  `https://arsiv-kontrol-2rp2o9r8f-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_G3ByjVBM1EWGoNKjh3ZZ8pZXVJTn`, target `preview`, status `Ready`. Canlı smoke:
+  `/public-preview` 200/noindex, `pa-active-stats`, `aktif soru` ve `aktif cevap` mevcut,
+  `Kavram Haritası` yok. Canlı gerçek veri sayacı `11 soru, 11 cevap` olarak göründü.
 
 ### 2026-08-15
 - **Public preview soru detay sayfası kaynak/delil düzenine çekildi:** Ekip lideri feedback'iyle
