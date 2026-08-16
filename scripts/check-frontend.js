@@ -1009,9 +1009,10 @@ for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-c
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-question-card.has-strong-cta .pa-card-cta', '.pa-cta-icon']) {
+for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', '@keyframes pa-cta-shine', '.pa-question-card:hover .pa-card-cta', '.pa-cta-icon']) {
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
+assert(!publicCss.includes('.pa-question-card.has-strong-cta .pa-card-cta'), 'Public soru karti CTA stili yalniz featured kartlara bagli olmamali.');
 for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-live-dot', '@keyframes pa-live-pulse', '@keyframes pa-live-blink']) {
   assert(publicCss.includes(marker), `Public aktif arsiv sayaci CSS marker eksik: ${marker}`);
 }

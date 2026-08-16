@@ -1,5 +1,23 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-16 Codex Public Preview Cevabı Oku CTA Standardı
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Kullanıcı feedback'iyle soru kartlarındaki `Cevabı oku` aksiyonu site genelinde tek standarda
+  bağlandı. Artık yalnız `Öne Çıkan Sorular` kartlarında değil, `Son Yayınlanan Sorular`,
+  arşiv, arama, konu ve kategori listelerindeki soru kartlarında da aynı yeşil pill CTA görünür.
+- Eski `has-strong-cta` özel görünüm bağı kaldırıldı; bu sınıf yalnız öne çıkan kartların iç
+  yerleşiminde kullanılabilir. Görsel tarif artık genel `.pa-card-cta` sınıfındadır.
+- `Cevabı oku` butonuna hızlı geçen parıltı efekti eklendi. `prefers-reduced-motion: reduce`
+  tercihinde animasyon kapanır.
+- Guard, CTA stilinin yalnız featured karta bağlı kalmamasını ve parıltı animasyonu marker'larını
+  doğrulayacak şekilde güncellendi. Root `/` cutover yapılmadı, admin hattına dokunulmadı.
+- Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
+  Tam check `97/97` test başarılı.
+
 ## 2026-08-16 Codex Public Preview Görünür Konu/Kategori Sadeleştirme
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

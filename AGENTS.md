@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-16
+- **Public preview `Cevabı oku` CTA standardı site geneline yayıldı:** Kullanıcı feedback'iyle
+  soru kartlarındaki `Cevabı oku` aksiyonu yalnız `Öne Çıkan Sorular` kartlarında güçlü görünmekten
+  çıkarıldı; `Son Yayınlanan Sorular`, arşiv, arama, konu ve kategori listelerindeki tüm soru
+  kartlarında aynı yeşil pill CTA görünür. Eski `has-strong-cta` özel görünüm bağı kaldırıldı;
+  bu sınıf yalnız öne çıkan kartların iç yerleşiminde kullanılabilir. Görsel tarif artık genel
+  `.pa-card-cta` sınıfındadır. Butona hızlı geçen parıltı efekti eklendi; `prefers-reduced-motion:
+  reduce` tercihinde animasyon kapanır. Guard, CTA stilinin yalnız featured karta bağlı kalmamasını
+  ve parıltı animasyonu marker'larını doğrular. Root `/` cutover yapılmadı ve admin iş hattına
+  dokunulmadı. Doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`
+  başarılı; tam check `97/97` test geçti.
 - **Public preview görünür konu/kategori gezinmesi sadeleştirildi:** Ekip lideri feedback'iyle
   kullanıcıya görünen ana gezinme ve vitrin alanları azaltıldı. Üst menü artık yalnız
   `Ana Sayfa`, `Arşiv`, `Ara`, `Soru Sor` gösterir; `Konular` ve `Kategoriler` menüden

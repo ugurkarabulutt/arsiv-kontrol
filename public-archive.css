@@ -810,7 +810,8 @@ svg {
 @media (prefers-reduced-motion: reduce) {
   .pa-live-dot::before,
   .pa-live-dot::after,
-  .pa-live-dot span {
+  .pa-live-dot span,
+  .pa-card-cta::after {
     animation: none;
   }
 }
@@ -1052,35 +1053,58 @@ a.pa-chip:hover,
 }
 
 .pa-card-cta {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 6px;
-  color: var(--pa-primary);
+  min-height: 34px;
+  padding: 0 12px;
+  overflow: hidden;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--pa-primary) 0%, var(--pa-primary-hover) 100%);
+  border: 1px solid color-mix(in srgb, var(--pa-primary) 64%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 12px 24px rgb(20 90 58 / 0.18);
   font-size: 13px;
   font-weight: 750;
   line-height: 1.2;
   white-space: nowrap;
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.pa-card-cta::after {
+  position: absolute;
+  top: -45%;
+  bottom: -45%;
+  left: -58%;
+  width: 44%;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  transform: skewX(-22deg) translateX(0);
+  animation: pa-cta-shine 3.2s ease-in-out infinite;
 }
 
 .pa-question-card.has-strong-cta .pa-card-bottom {
   margin-top: auto;
 }
 
-.pa-question-card.has-strong-cta .pa-card-cta {
-  min-height: 34px;
-  padding: 0 12px;
-  color: #FFFFFF;
-  background: linear-gradient(135deg, var(--pa-primary) 0%, var(--pa-primary-hover) 100%);
-  border: 1px solid color-mix(in srgb, var(--pa-primary) 64%, transparent);
-  border-radius: 999px;
-  box-shadow: 0 12px 24px rgb(20 90 58 / 0.18);
-}
-
-.pa-question-card.has-strong-cta:hover .pa-card-cta,
-.pa-question-card.has-strong-cta:focus-visible .pa-card-cta {
+.pa-question-card:hover .pa-card-cta,
+.pa-question-card:focus-visible .pa-card-cta {
   background: linear-gradient(135deg, var(--pa-primary-hover) 0%, var(--pa-primary) 100%);
   box-shadow: 0 14px 28px rgb(20 90 58 / 0.24);
+  transform: translateY(-1px);
+}
+
+@keyframes pa-cta-shine {
+  0% {
+    transform: skewX(-22deg) translateX(0);
+  }
+  18%,
+  100% {
+    transform: skewX(-22deg) translateX(430%);
+  }
 }
 
 .pa-cta-icon {
@@ -2113,12 +2137,9 @@ a.pa-chip:hover,
   }
 
   .pa-card-cta {
-    font-size: 12px;
-  }
-
-  .pa-question-card.has-strong-cta .pa-card-cta {
     min-height: 32px;
     padding: 0 11px;
+    font-size: 12px;
   }
 
   .pa-topic-grid,
