@@ -908,7 +908,7 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 assert(!homePreview.includes('Öne Çıkan Cevaplar'), 'Public home eski One Cikan Cevaplar basligini icermemeli.');
@@ -918,6 +918,11 @@ assert(featuredStart >= 0 && featuredEnd > featuredStart, 'Public home featured 
 const featuredSection = homePreview.slice(featuredStart, featuredEnd);
 assert(featuredSection.includes('has-strong-cta'), 'Public home featured kart CTA vurgusu eksik.');
 assert(!featuredSection.includes('pa-card-meta') && !featuredSection.includes('class="pa-chip"'), 'Public home featured kartlarda etiket/chip gorunmemeli.');
+const activeStatsStart = homePreview.indexOf('class="pa-active-stats"');
+const activeStatsEnd = homePreview.indexOf('Ana Kategoriler');
+assert(activeStatsStart >= 0 && activeStatsEnd > activeStatsStart, 'Public home aktif arsiv sayaci sinirlari bulunmali.');
+const activeStatsSection = homePreview.slice(activeStatsStart, activeStatsEnd);
+assert(!activeStatsSection.includes('href=') && !activeStatsSection.includes('Arşive Git') && !activeStatsSection.includes('pa-active-stats-link'), 'Public home aktif arsiv sayacinda arsiv yonlendirme olmamali.');
 assert(!homePreview.includes('Kavram Haritası'), 'Public home Kavram Haritasi bolumu geri gelmemeli.');
 assert(!homePreview.includes('Arşivin tamamına buradan ulaşabilirsiniz.'), 'Public home eski hacimli arsiv banner metnini icermemeli.');
 assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.'), 'Public home eski hacimli arsiv banner aciklamasini icermemeli.');
@@ -991,15 +996,19 @@ assert(publicRendererSource.includes('data-card-href') && publicRendererSource.i
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {
   assert(publicRendererSource.includes(marker), `Kavram slider davranis marker eksik: ${marker}`);
 }
+for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-count-up', 'data-count-target', 'duration = 2400', 'data-counted']) {
+  assert(publicRendererSource.includes(marker), `Aktif arsiv sayac animasyon marker eksik: ${marker}`);
+}
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kavram slider CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-question-card.has-strong-cta .pa-card-cta', '.pa-cta-icon']) {
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-active-stats-link']) {
+for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-live-dot', '@keyframes pa-live-pulse', '@keyframes pa-live-blink']) {
   assert(publicCss.includes(marker), `Public aktif arsiv sayaci CSS marker eksik: ${marker}`);
 }
+assert(!publicCss.includes('.pa-active-stats-link'), 'Public aktif arsiv sayacinda eski CTA CSS geri gelmemeli.');
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;
 assert(topicPreview.includes('Kavram') && !topicPreview.includes('Kategori</p><h1>Kalbin Yönelişi'), 'Kavram sayfasi kategori gibi sunulmamali.');

@@ -24,6 +24,18 @@
 - Canlı smoke başarılı: `/public-preview` 200/noindex döndü; `pa-active-stats`, `aktif soru` ve
   `aktif cevap` mevcut; `Kavram Haritası` yok. Canlı gerçek veri sayacı `11 soru, 11 cevap`
   olarak göründü. Root `/` production cutover yapılmadı ve admin hattına dokunulmadı.
+- Kullanıcı feedback'iyle aktif arşiv bandındaki `Arşive Git` yönlendirme CTA'sı kaldırıldı; sayı
+  kartları da link olmaktan çıkarıldı. Bu bölüm artık yalnız bilgi verir, arşive yönlendirme
+  yapmaz.
+- `Aktif arşiv` solundaki yeşil nokta canlı hissi veren pulse/blink animasyonuna çevrildi.
+  `prefers-reduced-motion: reduce` tercihinde bu animasyonlar kapanır.
+- Sayaç sayıları ekrana girince `IntersectionObserver` ile 0'dan gerçek değere yaklaşık 2.4
+  saniyede akar. JS kapalıysa HTML'de gerçek sayı korunur; JS çalışınca görünürlük anında
+  animasyon başlar ve tek kez çalışır.
+- Yerel doğrulama tekrar geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
+  test başarılı. Bu son feedback değişikliği henüz commit/push/deploy edilmedi.
 
 ## 2026-08-15 Codex Public Preview Soru Detay Kaynak/Düzen Güncellemesi
 

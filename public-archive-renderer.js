@@ -378,23 +378,22 @@ function activeArchiveStatsBand(entries = []) {
     ? entry.answer.some(paragraph => String(paragraph || '').trim())
     : String(entry.answer || entry.answerText || entry.answer_text || '').trim()).length;
   return `
-    <section class="pa-active-stats" aria-label="Arşiv sayacı">
+    <section class="pa-active-stats" data-active-stats aria-label="Arşiv sayacı">
       <div class="pa-active-stats-copy">
-        <span class="pa-live-label"><span aria-hidden="true"></span>Aktif arşiv</span>
+        <span class="pa-live-label"><span class="pa-live-dot" aria-hidden="true"><span></span></span>Aktif arşiv</span>
         <h2>Yayındaki soru ve cevaplar</h2>
         <p>Arşivde şu anda okunabilir durumda olan kayıtlar.</p>
       </div>
       <div class="pa-active-stats-grid">
-        <a class="pa-active-stat" href="${PREVIEW_BASE}/arsiv" aria-label="${escapeHtml(`${archiveCountLabel(questionCount)} aktif soruyu arşivde gör`)}">
-          <strong>${escapeHtml(archiveCountLabel(questionCount))}</strong>
+        <div class="pa-active-stat" role="group" aria-label="${escapeHtml(`${archiveCountLabel(questionCount)} aktif soru`)}">
+          <strong data-count-up data-count-target="${questionCount}">${escapeHtml(archiveCountLabel(questionCount))}</strong>
           <span>aktif soru</span>
-        </a>
-        <a class="pa-active-stat" href="${PREVIEW_BASE}/arsiv" aria-label="${escapeHtml(`${archiveCountLabel(answerCount)} aktif cevabı arşivde gör`)}">
-          <strong>${escapeHtml(archiveCountLabel(answerCount))}</strong>
+        </div>
+        <div class="pa-active-stat" role="group" aria-label="${escapeHtml(`${archiveCountLabel(answerCount)} aktif cevap`)}">
+          <strong data-count-up data-count-target="${answerCount}">${escapeHtml(archiveCountLabel(answerCount))}</strong>
           <span>aktif cevap</span>
-        </a>
+        </div>
       </div>
-      <a class="pa-active-stats-link" href="${PREVIEW_BASE}/arsiv">Arşive Git ${iconSvg('arrow-right', 'pa-cta-icon')}</a>
     </section>
   `;
 }
@@ -1390,6 +1389,54 @@ function renderShell({ title, description, active, content, status = 200, questi
           Object.keys(data.counts || {}).forEach(function(slug){ updateReadCount(slug, data.counts[slug]); });
         } catch (error) {}
       }
+      function bindActiveStatsCounters() {
+        var section = document.querySelector('[data-active-stats]');
+        var counters = section ? Array.from(section.querySelectorAll('[data-count-up]')) : [];
+        if (!section || !counters.length) return;
+        var formatter = new Intl.NumberFormat('tr-TR');
+        var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var started = false;
+        function targetFor(node) {
+          var target = Number(node.getAttribute('data-count-target') || '0');
+          return Number.isFinite(target) && target > 0 ? Math.round(target) : 0;
+        }
+        function animateNode(node) {
+          var target = targetFor(node);
+          if (reducedMotion || target === 0) {
+            node.textContent = formatter.format(target);
+            return;
+          }
+          var duration = 2400;
+          var startedAt = 0;
+          node.textContent = '0';
+          function tick(time) {
+            if (!startedAt) startedAt = time;
+            var progress = Math.min((time - startedAt) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            node.textContent = formatter.format(Math.round(target * eased));
+            if (progress < 1) window.requestAnimationFrame(tick);
+            else node.textContent = formatter.format(target);
+          }
+          window.requestAnimationFrame(tick);
+        }
+        function startCounters() {
+          if (started) return;
+          started = true;
+          section.setAttribute('data-counted', 'true');
+          counters.forEach(animateNode);
+        }
+        if ('IntersectionObserver' in window) {
+          var observer = new IntersectionObserver(function(entries){
+            if (entries.some(function(entry){ return entry.isIntersecting; })) {
+              observer.disconnect();
+              startCounters();
+            }
+          }, { threshold: 0.35, rootMargin: '0px 0px -8% 0px' });
+          observer.observe(section);
+        } else {
+          window.setTimeout(startCounters, 300);
+        }
+      }
       async function trackQuestionRead() {
         var slug = document.body.getAttribute('data-question-slug');
         if (!slug) return;
@@ -1485,6 +1532,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       loadReadCounts();
       trackQuestionRead();
       bindConceptSliders();
+      bindActiveStatsCounters();
       loadPublicSession().then(renderSessionUi);
       bindQuestionForm();
     })();

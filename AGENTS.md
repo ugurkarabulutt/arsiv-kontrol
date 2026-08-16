@@ -140,6 +140,19 @@ tespit edilir).
   deployment `dpl_G3ByjVBM1EWGoNKjh3ZZ8pZXVJTn`, target `preview`, status `Ready`. Canlı smoke:
   `/public-preview` 200/noindex, `pa-active-stats`, `aktif soru` ve `aktif cevap` mevcut,
   `Kavram Haritası` yok. Canlı gerçek veri sayacı `11 soru, 11 cevap` olarak göründü.
+- **Public preview aktif arşiv sayacı canlı davranışa çekildi:** Kullanıcı feedback'iyle aktif
+  arşiv bandındaki `Arşive Git` yönlendirme CTA'sı kaldırıldı; sayı kartları link olmaktan çıkarıldı
+  ve bu bölüm yalnız bilgi veren sayaç alanı haline geldi. `Aktif arşiv` solundaki yeşil nokta
+  pulse/blink animasyonlu canlı göstergeye çevrildi; hareket azaltma tercihinde animasyonlar
+  kapanır. Sayaç rakamları ekrana girince `IntersectionObserver` ile 0'dan gerçek değere yaklaşık
+  2.4 saniyede akar ve tek kez çalışır. JS kapalıysa HTML'de gerçek sayı korunur. Guard/testler bu
+  bölümde `href`, `Arşive Git` veya `pa-active-stats-link` geri gelirse; `pa-live-dot`,
+  `data-count-up`, `data-count-target`, `bindActiveStatsCounters` veya canlı dot keyframe'leri
+  eksikse kırılacak şekilde güncellendi. Bu adım public-preview hattıyla sınırlıdır; root `/`
+  cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama: `node --check
+  public-archive-renderer.js`, `node --check scripts/check-frontend.js`, `node --test
+  test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`, `npm.cmd run check`,
+  `git diff --check` başarılı; tam check `97/97` test geçti.
 
 ### 2026-08-15
 - **Public preview soru detay sayfası kaynak/delil düzenine çekildi:** Ekip lideri feedback'iyle
