@@ -26,8 +26,15 @@
   `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
   test başarılı.
-- Root `/` public cutover yapılmadı; production admin alias'ı değiştirilmedi. Bu kayıt henüz
-  commit/push/deploy sonucu içermiyor; sıradaki adım commit, push, preview deploy ve canlı smoke.
+- Runtime commit `22cce6b` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde
+  preview deploy alındı:
+  `https://arsiv-kontrol-j9ifghs2d-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_75g38GzHXTQQ7qzj58EEJcsbFZfP`, status `Ready`.
+- Canlı smoke başarılı: `/public-preview`, `/public-preview/arsiv`,
+  `/public-preview/kategori/zikir` ve geriye uyumluluk için `/public-preview/konu/zikir`
+  200/noindex döndü. Public görünürde `Kavram` ve `Konular` nav marker'ı yok; arşivde alfabetik
+  kategori dizini ve soru kartlarında `Cevabı oku` CTA'sı mevcut.
+- Root `/` public cutover yapılmadı; production admin alias'ı değiştirilmedi.
 
 ## 2026-08-16 Codex Public Preview Arşiv Dizin Görsel Düzeltmesi
 

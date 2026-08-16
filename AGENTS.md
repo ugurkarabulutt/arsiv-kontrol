@@ -139,7 +139,14 @@ tespit edilir).
   `node --check server.js`, `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check` başarılı; tam check
-  `97/97` test geçti. Root `/` cutover yapılmadı ve production alias değiştirilmedi.
+  `97/97` test geçti. Runtime commit `22cce6b` GitHub'a push edildi ve doğru Vercel projesi
+  `arsiv-kontrol` üzerinde preview deploy alındı:
+  `https://arsiv-kontrol-j9ifghs2d-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_75g38GzHXTQQ7qzj58EEJcsbFZfP`, status `Ready`. Canlı smoke başarılı:
+  `/public-preview`, `/public-preview/arsiv`, `/public-preview/kategori/zikir` ve geriye
+  uyumluluk için `/public-preview/konu/zikir` 200/noindex döndü. Public görünürde `Kavram` ve
+  `Konular` nav marker'ı yok; arşivde alfabetik kategori dizini ve soru kartlarında `Cevabı oku`
+  CTA'sı mevcut. Root `/` cutover yapılmadı ve production alias değiştirilmedi.
 - **Public preview Arşiv dizininde sayaç ve köşeli stil düzeltildi:** Kullanıcı feedback'iyle
   `/public-preview/arsiv` üst kartındaki ayrı `soru` ve `cevap` sayaçları tek ifadeye indirildi:
   örn. `11 soru cevap`. Harf şeridi boş harfleri basmaz; yalnız mevcut kategori verisinde
