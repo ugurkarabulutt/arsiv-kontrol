@@ -44,6 +44,19 @@
   `data-count-up`, `data-count-target` ve animasyon script marker'ları mevcut; aynı bölümde
   `href`, `Arşive Git` ve `pa-active-stats-link` yok. Canlı gerçek veri sayacı `11 soru, 11 cevap`
   olarak göründü.
+- Kullanıcı feedback'iyle ana sayfadaki `Okuma düzeni` bağlam bandı metni değiştirildi. Eski
+  kicker ve `Her cevap; soru, ana kapı...` başlığı kaldırıldı. Yeni başlık:
+  `Cevapları nasıl keşfedebilirsiniz?`
+- Yeni açıklama metni: `Her cevap, ilgili kavramlarla birlikte anlam kazanır. Sorularınız
+  Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır; her cevap,
+  ilgili konu ve kavramlarla birlikte arşivlenir. Böylece yalnızca aradığınız sorunun cevabına
+  değil; sorularınızla ilgili bağlantılı kavramlara ve bu kavramlarla ilgili diğer sorulara da
+  kolayca ulaşabilirsiniz.`
+- Guard/testler yeni başlık/metin için güncellendi; eski `Okuma düzeni` ve eski başlık geri
+  gelirse kontrol kırılır. Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
+  test başarılı. Bu son metin değişikliği henüz commit/push/deploy edilmedi.
 
 ## 2026-08-15 Codex Public Preview Soru Detay Kaynak/Düzen Güncellemesi
 

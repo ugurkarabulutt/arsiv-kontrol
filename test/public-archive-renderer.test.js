@@ -69,7 +69,9 @@ test('public preview shows direct authorship without broad expert language', () 
   const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
   const ask = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
 
-  assert.match(home, /Sorular Dr\. Abdulcabbar Boran tarafından yanıtlanır\./);
+  assert.match(home, /Sorularınız Dr\. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır/);
+  assert.match(home, /Cevapları nasıl keşfedebilirsiniz\?/);
+  assert.doesNotMatch(home, /Okuma düzeni|Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır\./);
   assert.match(detail, /Yanıtlayan: Dr\. Abdulcabbar Boran/);
   assert.match(ask, /Sorular Dr\. Abdulcabbar Boran tarafından yanıtlanır\./);
 });

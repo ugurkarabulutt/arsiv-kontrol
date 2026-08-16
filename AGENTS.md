@@ -159,6 +159,19 @@ tespit edilir).
   `/public-preview` 200/noindex; aktif arşiv bölümünde `pa-live-dot`, `data-count-up`,
   `data-count-target` ve animasyon script marker'ları mevcut; aynı bölümde `href`, `Arşive Git`
   ve `pa-active-stats-link` yok. Canlı gerçek veri sayacı `11 soru, 11 cevap` olarak göründü.
+- **Public preview ana sayfa keşif metni değiştirildi:** Kullanıcı feedback'iyle ana sayfadaki
+  `Okuma düzeni` bağlam bandı yeniden yazıldı. Eski `Okuma düzeni` kicker'ı ve `Her cevap; soru,
+  ana kapı ve ilgili kavramlarla birlikte hazırlanır.` başlığı kaldırıldı. Yeni başlık:
+  `Cevapları nasıl keşfedebilirsiniz?` Yeni açıklama: `Her cevap, ilgili kavramlarla birlikte
+  anlam kazanır. Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında
+  cevaplandırılır; her cevap, ilgili konu ve kavramlarla birlikte arşivlenir. Böylece yalnızca
+  aradığınız sorunun cevabına değil; sorularınızla ilgili bağlantılı kavramlara ve bu kavramlarla
+  ilgili diğer sorulara da kolayca ulaşabilirsiniz.` Guard/testler yeni başlık/metin için
+  güncellendi; eski kicker ve eski başlık geri gelirse kırılır. Bu adım public-preview hattıyla
+  sınırlıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama:
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti.
 
 ### 2026-08-15
 - **Public preview soru detay sayfası kaynak/delil düzenine çekildi:** Ekip lideri feedback'iyle

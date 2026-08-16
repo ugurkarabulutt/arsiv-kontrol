@@ -625,10 +625,8 @@ function trustBand() {
   return `
     <section class="pa-context-band" id="baglam">
       <div>
-        <p class="pa-kicker">Okuma düzeni</p>
-        <h2>Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır.</h2>
-        <p>${escapeHtml(publicArchiveFixtures.brand.sentence)} ${escapeHtml(publicArchiveFixtures.brand.authorLine)}</p>
-        <p>Bu yapı, bir cevabı tek başına bırakmadan hidayet, mürşid, zikir ve teslimiyet gibi bağlı başlıklarla beraber takip etmeyi kolaylaştırır.</p>
+        <h2>Cevapları nasıl keşfedebilirsiniz?</h2>
+        <p>Her cevap, ilgili kavramlarla birlikte anlam kazanır. Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır; her cevap, ilgili konu ve kavramlarla birlikte arşivlenir. Böylece yalnızca aradığınız sorunun cevabına değil; sorularınızla ilgili bağlantılı kavramlara ve bu kavramlarla ilgili diğer sorulara da kolayca ulaşabilirsiniz.</p>
       </div>
       ${stillLife()}
     </section>

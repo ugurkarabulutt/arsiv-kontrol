@@ -908,9 +908,11 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'bağlantılı kavramlara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
+assert(!homePreview.includes('Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır.'), 'Public home eski okuma duzeni basligini icermemeli.');
 assert(!homePreview.includes('Öne Çıkan Cevaplar'), 'Public home eski One Cikan Cevaplar basligini icermemeli.');
 const featuredStart = homePreview.indexOf('Öne Çıkan Sorular');
 const featuredEnd = homePreview.indexOf('Aktif arşiv');
@@ -941,7 +943,7 @@ for (const marker of [
 ]) {
   assert(homePreview.includes(marker), `Public home kavram slider marker eksik: ${marker}`);
 }
-assert(homePreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Public home author context eksik.');
+assert(homePreview.includes('Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır'), 'Public home author/source context eksik.');
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
 assert(homePreview.includes('href="/public-preview/hesabim"'), 'Public account control hesap route una gitmeli.');
 assert(homePreview.includes('href="/public-preview/arsiv"'), 'Public arsiv linki gercek arsiv route una gitmeli.');
