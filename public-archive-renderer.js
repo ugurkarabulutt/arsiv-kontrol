@@ -368,6 +368,37 @@ function archiveShortcutBand() {
   `;
 }
 
+function archiveCountLabel(count) {
+  return Number(count || 0).toLocaleString('tr-TR');
+}
+
+function activeArchiveStatsBand(entries = []) {
+  const questionCount = entries.length;
+  const answerCount = entries.filter(entry => Array.isArray(entry.answer)
+    ? entry.answer.some(paragraph => String(paragraph || '').trim())
+    : String(entry.answer || entry.answerText || entry.answer_text || '').trim()).length;
+  return `
+    <section class="pa-active-stats" aria-label="Arşiv sayacı">
+      <div class="pa-active-stats-copy">
+        <span class="pa-live-label"><span aria-hidden="true"></span>Aktif arşiv</span>
+        <h2>Yayındaki soru ve cevaplar</h2>
+        <p>Arşivde şu anda okunabilir durumda olan kayıtlar.</p>
+      </div>
+      <div class="pa-active-stats-grid">
+        <a class="pa-active-stat" href="${PREVIEW_BASE}/arsiv" aria-label="${escapeHtml(`${archiveCountLabel(questionCount)} aktif soruyu arşivde gör`)}">
+          <strong>${escapeHtml(archiveCountLabel(questionCount))}</strong>
+          <span>aktif soru</span>
+        </a>
+        <a class="pa-active-stat" href="${PREVIEW_BASE}/arsiv" aria-label="${escapeHtml(`${archiveCountLabel(answerCount)} aktif cevabı arşivde gör`)}">
+          <strong>${escapeHtml(archiveCountLabel(answerCount))}</strong>
+          <span>aktif cevap</span>
+        </a>
+      </div>
+      <a class="pa-active-stats-link" href="${PREVIEW_BASE}/arsiv">Arşive Git ${iconSvg('arrow-right', 'pa-cta-icon')}</a>
+    </section>
+  `;
+}
+
 function normalizedReadCount(entry = {}) {
   const count = Number(entry.readCount ?? entry.viewCount ?? 0);
   if (!Number.isFinite(count) || count < 0) return 0;
@@ -608,7 +639,6 @@ function trustBand() {
 function renderHome() {
   const featured = publicArchiveFixtures.qa.filter(entry => entry.isFeatured).slice(0, 3);
   const latest = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0, 3);
-  const topics = publicArchiveFixtures.topics.filter(topic => topic.featured).slice(0, 6);
   const categories = publicArchiveFixtures.categories.filter(category => category.featured);
   return renderShell({
     active: 'home',
@@ -634,10 +664,7 @@ function renderHome() {
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
         </section>
 
-        <section class="pa-section">
-          ${sectionHeader('Kavram Haritası', 'Tümünü Gör', `${PREVIEW_BASE}/konular`)}
-          <div class="pa-topic-grid">${topics.map(topicCard).join('')}</div>
-        </section>
+        ${activeArchiveStatsBand(publicArchiveFixtures.qa)}
 
         <section class="pa-section">
           ${sectionHeader('Ana Kategoriler', 'Tümünü Gör', `${PREVIEW_BASE}/kategoriler`)}

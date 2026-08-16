@@ -1,5 +1,23 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-16 Codex Public Preview Aktif Soru/Cevap Sayacı
+
+- Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
+  `codex/public-preview-phase1`.
+- Ekip lideri feedback'iyle ana sayfadaki `Kavram Haritası` bölümü tamamen kaldırıldı. Konu/kavram
+  kartları `/konular`, konu detayları ve arşiv yan akışlarında kalır; ana sayfada bu yatay harita
+  artık gösterilmez.
+- Aynı konuma modern `Aktif arşiv` sayaç bandı eklendi. Sayaçlar renderer'daki aktif public veri
+  setinden hesaplanır: `aktif soru` toplam yayınlanmış soru kaydıdır, `aktif cevap` cevap metni
+  dolu olan yayınlanmış kayıt sayısıdır. İki sayaç da `/public-preview/arsiv` sayfasına gider.
+- Sayaç bandı desktop'ta açıklama + iki sayı hücresi + `Arşive Git` CTA düzeninde, mobilde tek
+  kolon ve iki dengeli sayı hücresi olarak çalışır. Eski `Kavram Haritası` marker'ı home route'a
+  geri gelirse test/guard kırılır.
+- Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
+  test başarılı. Henüz commit/push/deploy alınmadı.
+
 ## 2026-08-15 Codex Public Preview Soru Detay Kaynak/Düzen Güncellemesi
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

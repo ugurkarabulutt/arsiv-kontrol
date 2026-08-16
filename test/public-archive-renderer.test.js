@@ -258,7 +258,13 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /role="link"/);
   assert.match(home, /Öne Çıkan Sorular/);
   assert.doesNotMatch(home, /Öne Çıkan Cevaplar/);
-  const featuredSection = home.slice(home.indexOf('Öne Çıkan Sorular'), home.indexOf('Kavram Haritası'));
+  assert.match(home, /Aktif arşiv/);
+  assert.match(home, /Yayındaki soru ve cevaplar/);
+  assert.match(home, /aktif soru/);
+  assert.match(home, /aktif cevap/);
+  assert.match(home, /pa-active-stats/);
+  assert.doesNotMatch(home, /Kavram Haritası/);
+  const featuredSection = home.slice(home.indexOf('Öne Çıkan Sorular'), home.indexOf('Aktif arşiv'));
   assert.match(featuredSection, /has-strong-cta/);
   assert.doesNotMatch(featuredSection, /pa-card-meta/);
   assert.doesNotMatch(featuredSection, /class="pa-chip"/);

@@ -908,16 +908,17 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Kavram Haritası', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'Ana Kategoriler', 'Aklınızda bir soru mu var?', 'Okuma düzeni']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 assert(!homePreview.includes('Öne Çıkan Cevaplar'), 'Public home eski One Cikan Cevaplar basligini icermemeli.');
 const featuredStart = homePreview.indexOf('Öne Çıkan Sorular');
-const featuredEnd = homePreview.indexOf('Kavram Haritası');
+const featuredEnd = homePreview.indexOf('Aktif arşiv');
 assert(featuredStart >= 0 && featuredEnd > featuredStart, 'Public home featured bolum sinirlari bulunmali.');
 const featuredSection = homePreview.slice(featuredStart, featuredEnd);
 assert(featuredSection.includes('has-strong-cta'), 'Public home featured kart CTA vurgusu eksik.');
 assert(!featuredSection.includes('pa-card-meta') && !featuredSection.includes('class="pa-chip"'), 'Public home featured kartlarda etiket/chip gorunmemeli.');
+assert(!homePreview.includes('Kavram Haritası'), 'Public home Kavram Haritasi bolumu geri gelmemeli.');
 assert(!homePreview.includes('Arşivin tamamına buradan ulaşabilirsiniz.'), 'Public home eski hacimli arsiv banner metnini icermemeli.');
 assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.'), 'Public home eski hacimli arsiv banner aciklamasini icermemeli.');
 assert(!homePreview.includes('Arşiv ana kapıları'), 'Public home eski Arsiv ana kapilari basligini icermemeli.');
@@ -995,6 +996,9 @@ for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: p
 }
 for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-question-card.has-strong-cta .pa-card-cta', '.pa-cta-icon']) {
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-active-stats-link']) {
+  assert(publicCss.includes(marker), `Public aktif arsiv sayaci CSS marker eksik: ${marker}`);
 }
 const topicPreview = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
 const categoryPreview = renderPublicArchivePreviewRoute('/public-preview/kategori/allaha-ulasmayi-dilemek').html;

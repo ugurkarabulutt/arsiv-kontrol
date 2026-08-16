@@ -120,6 +120,22 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-16
+- **Public preview ana sayfaya aktif soru/cevap sayacı eklendi:** Ekip lideri feedback'iyle
+  `/public-preview` ana sayfasındaki `Kavram Haritası` bölümü tamamen kaldırıldı. Konu/kavram
+  kartları `/konular`, konu detayları ve diğer arşiv akışlarında korunur; ana sayfa bu yatay
+  kavram haritasını artık göstermez. Aynı konuma modern `Aktif arşiv` sayaç bandı eklendi.
+  Sayaçlar aktif public veri setinden hesaplanır: `aktif soru` yayınlanmış soru kaydı sayısıdır,
+  `aktif cevap` cevap metni dolu olan yayınlanmış kayıt sayısıdır. İki sayaç ve `Arşive Git` CTA'sı
+  `/public-preview/arsiv` sayfasına bağlanır. CSS'te desktop için açıklama + iki sayı hücresi +
+  CTA düzeni, mobil için tek kolon ve dengeli sayı hücreleri eklendi. Guard/testler `Kavram
+  Haritası` home route'a geri gelirse veya `pa-active-stats`, `aktif soru`, `aktif cevap`
+  marker'ları eksikse kırılacak şekilde güncellendi. Bu adım public-preview hattıyla sınırlıdır;
+  root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama: `node --check
+  public-archive-renderer.js`, `node --check scripts/check-frontend.js`, `node --test
+  test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`, `npm.cmd run check`,
+  `git diff --check` başarılı; tam check `97/97` test geçti.
+
 ### 2026-08-15
 - **Public preview soru detay sayfası kaynak/delil düzenine çekildi:** Ekip lideri feedback'iyle
   `/public-preview/soru/:slug` detay sayfasında üstteki gereksiz tekrarlar kaldırıldı. Breadcrumb
