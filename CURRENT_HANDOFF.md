@@ -56,7 +56,14 @@
   gelirse kontrol kırılır. Yerel doğrulama geçti: `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `97/97`
-  test başarılı. Bu son metin değişikliği henüz commit/push/deploy edilmedi.
+  test başarılı.
+- Runtime commit `bdd245e` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde
+  preview deploy alındı:
+  `https://arsiv-kontrol-q4pzigxt1-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_CyVmzm7uJKnaA54CzkTPuTcc3ZKm`, status `Ready`.
+- Canlı smoke başarılı: `/public-preview` 200/noindex; yeni başlık ve `Kur’an ve Hadis-i Şerif`
+  metni mevcut; `bağlantılı kavramlara` ifadesi mevcut; eski `Okuma düzeni` ve eski
+  `Her cevap; soru, ana kapı...` başlığı yok.
 
 ## 2026-08-15 Codex Public Preview Soru Detay Kaynak/Düzen Güncellemesi
 

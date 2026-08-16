@@ -171,7 +171,13 @@ tespit edilir).
   sınırlıdır; root `/` cutover yapılmadı ve admin iş hattına dokunulmadı. Doğrulama:
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
-  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti.
+  `npm.cmd run check`, `git diff --check` başarılı; tam check `97/97` test geçti. Runtime commit
+  `bdd245e` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde preview deploy
+  alındı: `https://arsiv-kontrol-q4pzigxt1-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_CyVmzm7uJKnaA54CzkTPuTcc3ZKm`, status `Ready`. Canlı smoke:
+  `/public-preview` 200/noindex; yeni başlık ve `Kur’an ve Hadis-i Şerif` metni mevcut,
+  `bağlantılı kavramlara` ifadesi mevcut; eski `Okuma düzeni` ve eski `Her cevap; soru, ana
+  kapı...` başlığı yok.
 
 ### 2026-08-15
 - **Public preview soru detay sayfası kaynak/delil düzenine çekildi:** Ekip lideri feedback'iyle
