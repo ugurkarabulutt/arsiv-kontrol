@@ -120,6 +120,23 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-17
+- **Admin onay akışına Teyit Bekleyenler ve Favorilerim eklendi:** `/admin` İş Panosu onay
+  ekranında bekleyen/onaylanan/reddedilen kayıtların yanında kalabalık oluşturmayan açılır
+  `Teyit Bekleyenler` kuyruğu eklendi. Admin veya süper admin bir kayıt için hemen onay/red
+  kararı veremediğinde `Teyide Al` ile kısa not yazar; kayıt `teyit_bekliyor` durumuna alınır,
+  onay kuyruğundan ayrılır ve soru işareti ikonlu bölümde görünür. Gerekirse aynı kayıt
+  `Bekleyenlere Al` ile normal kuyruğa döndürülebilir; onay/red kararı verildiğinde süreç yine
+  mevcut onay kayıtlarıyla çalışır. Ayrıca admin/süper admin her onay kartını yıldızlayabilir;
+  kişiye özel `Favorilerim` ekranında yıldızlanan soru-cevaplar aynı kart ve detay davranışıyla
+  listelenir. Teyit notları ve favoriler DB migration gerektirmeden `settings` kayıtlarında
+  saklanır: `approval_review_notes` ve `approval_favorites:{userId}`. Public ön yüz, root `/`
+  cutover, yayın JSON sözleşmesi ve kullanıcı denetim ekranı kapsam dışı bırakıldı.
+  Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  86/86 test geçti.
+
 ### 2026-08-10
 - **Etiket Aktarımı eşleşmeyen kayıtlar için Excel aday seçimi tamamlandı:** `/admin` süper
   admin Arşiv Operasyon Merkezi içindeki `Etiket Aktarımı` ekranında eşleşmeyen kayıtlar için

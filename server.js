@@ -519,15 +519,25 @@ const mapAlert   = a => ({
   createdAt: a.created_at
 });
 
+const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor';
+const APPROVAL_REVIEW_NOTES_KEY = 'approval_review_notes';
+const APPROVAL_FAVORITES_KEY_PREFIX = 'approval_favorites:';
+const APPROVAL_FAVORITE_LIMIT = 240;
+
 function historyStatusLabel(status) {
   return status === 'taslak' ? 'Taslak'
     : status === 'onaylandi' ? 'Onaylandı'
     : status === 'reddedildi' ? 'Reddedildi'
+    : status === APPROVAL_REVIEW_STATUS ? 'Teyit Bekliyor'
     : 'Bekliyor';
 }
 
 function historyStatusForApproval(status) {
   return !status || status === 'bekliyor';
+}
+
+function historyStatusSubmitted(status) {
+  return historyStatusForApproval(status) || status === APPROVAL_REVIEW_STATUS || status === 'onaylandi' || status === 'reddedildi';
 }
 
 const CHUNK_DRAFT_STATUS = 'chunk_draft';
@@ -780,6 +790,96 @@ async function deleteSettingsByKeys(keys = []) {
     const { error } = await supabase.from('settings').delete().in('key', cleanKeys.slice(i, i + 100));
     if (error) throw new Error(error.message);
   }
+}
+
+function approvalFavoriteKey(userId = '') {
+  return `${APPROVAL_FAVORITES_KEY_PREFIX}${userId}`;
+}
+
+function cleanApprovalFavoriteRows(value = []) {
+  const rows = Array.isArray(value) ? value : [];
+  const seen = new Set();
+  return rows
+    .map(item => {
+      const historyId = typeof item === 'string' ? item : item?.historyId;
+      const id = String(historyId || '').trim();
+      if (!/^[0-9a-fA-F-]{36}$/.test(id) || seen.has(id)) return null;
+      seen.add(id);
+      return {
+        historyId: id,
+        createdAt: item?.createdAt || new Date().toISOString(),
+        createdBy: String(item?.createdBy || '').slice(0, 120)
+      };
+    })
+    .filter(Boolean)
+    .slice(0, APPROVAL_FAVORITE_LIMIT);
+}
+
+async function loadApprovalFavorites(userId = '') {
+  if (!userId) return [];
+  return cleanApprovalFavoriteRows(await loadJsonSetting(approvalFavoriteKey(userId), []));
+}
+
+async function saveApprovalFavorites(userId = '', rows = []) {
+  if (!userId) return [];
+  const clean = cleanApprovalFavoriteRows(rows);
+  await saveJsonSetting(approvalFavoriteKey(userId), clean);
+  return clean;
+}
+
+async function loadApprovalFavoriteSet(userId = '') {
+  const rows = await loadApprovalFavorites(userId);
+  return new Set(rows.map(item => item.historyId));
+}
+
+async function setApprovalFavorite(userId = '', historyId = '', favorite = true, actor = '') {
+  const rows = await loadApprovalFavorites(userId);
+  const cleanId = String(historyId || '').trim();
+  const next = rows.filter(item => item.historyId !== cleanId);
+  if (favorite) next.unshift({ historyId: cleanId, createdAt: new Date().toISOString(), createdBy: actor || '' });
+  return saveApprovalFavorites(userId, next);
+}
+
+function cleanApprovalReviewNotes(value = {}) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const clean = {};
+  for (const [historyId, note] of Object.entries(source)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(historyId)) continue;
+    const text = String(note?.note || '').trim().slice(0, 1200);
+    if (!text) continue;
+    clean[historyId] = {
+      note: text,
+      requestedBy: String(note?.requestedBy || '').slice(0, 120),
+      requestedAt: note?.requestedAt || new Date().toISOString()
+    };
+  }
+  return clean;
+}
+
+async function loadApprovalReviewNotes() {
+  return cleanApprovalReviewNotes(await loadJsonSetting(APPROVAL_REVIEW_NOTES_KEY, {}));
+}
+
+async function saveApprovalReviewNote(historyId = '', note = '', actor = '') {
+  const cleanId = String(historyId || '').trim();
+  const cleanNote = String(note || '').trim().slice(0, 1200);
+  if (!cleanNote) throw httpError('Teyit notu gerekli.', 400);
+  const notes = await loadApprovalReviewNotes();
+  notes[cleanId] = { note: cleanNote, requestedBy: actor || '', requestedAt: new Date().toISOString() };
+  await saveJsonSetting(APPROVAL_REVIEW_NOTES_KEY, notes);
+  return notes[cleanId];
+}
+
+function attachApprovalMeta(history = {}, favoriteSet = new Set(), reviewNotes = {}) {
+  const note = reviewNotes[history.id] || null;
+  return {
+    ...history,
+    statusLabel: historyStatusLabel(history.status),
+    favorite: favoriteSet.has(history.id),
+    reviewNote: note?.note || '',
+    reviewRequestedBy: note?.requestedBy || '',
+    reviewRequestedAt: note?.requestedAt || ''
+  };
 }
 
 function parseJsonSettingValue(value, fallback) {
@@ -5335,18 +5435,56 @@ app.get('/api/history', auth, async (req, res) => {
 
 app.get('/api/history/approval-board', auth, admin, async (req, res) => {
   try {
-    const [pending, approved, rejected] = await Promise.all([
+    const [pending, approved, rejected, review, favorites, reviewNotes] = await Promise.all([
       loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor')),
       loadApprovalGroup(q => q.eq('status', 'onaylandi')),
-      loadApprovalGroup(q => q.eq('status', 'reddedildi'))
+      loadApprovalGroup(q => q.eq('status', 'reddedildi')),
+      loadApprovalGroup(q => q.eq('status', APPROVAL_REVIEW_STATUS)),
+      loadApprovalFavoriteSet(req.session.userId),
+      loadApprovalReviewNotes()
     ]);
+    const withMeta = group => ({
+      ...group,
+      items: (group.items || []).map(item => attachApprovalMeta(item, favorites, reviewNotes))
+    });
     res.json({
       groups: {
-        bekliyor: pending,
-        onaylandi: approved,
-        reddedildi: rejected
+        bekliyor: withMeta(pending),
+        onaylandi: withMeta(approved),
+        reddedildi: withMeta(rejected),
+        teyit_bekliyor: withMeta(review)
       }
     });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history/favorites', auth, admin, async (req, res) => {
+  try {
+    const favorites = await loadApprovalFavorites(req.session.userId);
+    const ids = favorites.map(item => item.historyId);
+    if (!ids.length) return res.json({ count: 0, items: [] });
+    const [reviewNotes, favoriteSet] = await Promise.all([
+      loadApprovalReviewNotes(),
+      loadApprovalFavoriteSet(req.session.userId)
+    ]);
+    const { data, error } = await supabase.from('history')
+      .select('*')
+      .in('id', ids);
+    if (error) throw new Error(error.message);
+    const byId = new Map((data || []).map(row => [row.id, row]));
+    const items = favorites
+      .map(fav => {
+        const row = byId.get(fav.historyId);
+        if (!row) return null;
+        const mapped = attachApprovalMeta(mapHistory(row), favoriteSet, reviewNotes);
+        return {
+          ...mapped,
+          favoriteAt: fav.createdAt,
+          favoriteBy: fav.createdBy || ''
+        };
+      })
+      .filter(item => item && !isHiddenHistoryForRole(item, ROLES.ADMIN));
+    res.json({ count: items.length, items });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -5357,7 +5495,14 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-    const mapped = mapHistory(data);
+    let mapped = mapHistory(data);
+    if (isAdminRole(req.session.role)) {
+      const [favorites, reviewNotes] = await Promise.all([
+        loadApprovalFavoriteSet(req.session.userId),
+        loadApprovalReviewNotes()
+      ]);
+      mapped = attachApprovalMeta(mapped, favorites, reviewNotes);
+    }
     if (data.user_id !== req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
@@ -5366,6 +5511,22 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     }
     res.json(mapped);
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/favorite', auth, admin, async (req, res) => {
+  try {
+    const { data: current, error: currentError } = await supabase.from('history')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    const favorite = req.body?.favorite !== false;
+    const rows = await setApprovalFavorite(req.session.userId, current.id, favorite, req.session.name || req.session.username || 'Admin');
+    res.json({ success: true, id: current.id, favorite, count: rows.length });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.get('/api/history/:id([0-9a-fA-F-]{36})/approval-status', auth, async (req, res) => {
@@ -5380,7 +5541,7 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})/approval-status', auth, async (req, 
     res.json({
       id: data.id,
       status: data.status || 'bekliyor',
-      submitted: historyStatusForApproval(data.status) || data.status === 'onaylandi',
+      submitted: historyStatusSubmitted(data.status),
       approvedBy: data.approved_by,
       approvedAt: data.approved_at
     });
@@ -5486,7 +5647,7 @@ async function submittedDuplicateExists(req, hash, excludeId = '') {
     .select('id')
     .eq('user_id', req.session.userId)
     .eq('text_hash', hash)
-    .or('status.is.null,status.in.(bekliyor,onaylandi)')
+    .or(`status.is.null,status.in.(bekliyor,${APPROVAL_REVIEW_STATUS},onaylandi)`)
     .limit(1);
   if (excludeId) q = q.neq('id', excludeId);
   const { data, error } = await q;
@@ -5604,7 +5765,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     if (isChunkHistoryRow(history)) {
       return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.' });
     }
-    if (history.status === 'onaylandi' || history.status === 'reddedildi') {
+    if (history.status === 'onaylandi' || history.status === 'reddedildi' || history.status === APPROVAL_REVIEW_STATUS) {
       return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
     }
     if (historyStatusForApproval(history.status)) {
@@ -5869,6 +6030,12 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
 // ── APPROVAL ──────────────────────────────────────────────────────────────
 async function setApproval(req, res, status) {
   try {
+    const now = new Date().toISOString();
+    const actor = req.session.name || req.session.username || 'Admin';
+    const reviewNote = status === APPROVAL_REVIEW_STATUS ? String(req.body?.note || '').trim().slice(0, 1200) : '';
+    if (status === APPROVAL_REVIEW_STATUS && !reviewNote) {
+      return res.status(400).json({ error: 'Teyit için kısa not gerekli.' });
+    }
     const { data: current, error: currentError } = await supabase.from('history')
       .select('*')
       .eq('id', req.params.id)
@@ -5877,9 +6044,9 @@ async function setApproval(req, res, status) {
     if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
-    const updateRow = {
-      status, approved_by: req.session.name, approved_at: new Date().toISOString()
-    };
+    const updateRow = status === 'onaylandi' || status === 'reddedildi'
+      ? { status, approved_by: actor, approved_at: now }
+      : { status, approved_by: null, approved_at: null };
     if (HAS_HISTORY_TAGS && Object.prototype.hasOwnProperty.call(req.body || {}, 'tags')) {
       updateRow.tags = normalizeHistoryTags(req.body?.tags);
     }
@@ -5891,11 +6058,22 @@ async function setApproval(req, res, status) {
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
     if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
-    res.json({ success: true, history: mapHistory(data[0]) });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    if (status === APPROVAL_REVIEW_STATUS) {
+      await saveApprovalReviewNote(current.id, reviewNote, actor);
+      await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    }
+    if (status === 'bekliyor') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    const [favorites, reviewNotes] = await Promise.all([
+      loadApprovalFavoriteSet(req.session.userId),
+      loadApprovalReviewNotes()
+    ]);
+    res.json({ success: true, history: attachApprovalMeta(mapHistory(data[0]), favorites, reviewNotes) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 }
 app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req, res, 'onaylandi'));
 app.post('/api/history/:id/reject',  auth, admin, (req, res) => setApproval(req, res, 'reddedildi'));
+app.post('/api/history/:id/review',  auth, admin, (req, res) => setApproval(req, res, APPROVAL_REVIEW_STATUS));
+app.post('/api/history/:id/pending', auth, admin, (req, res) => setApproval(req, res, 'bekliyor'));
 
 app.post('/api/history/:id([0-9a-fA-F-]{36})/tags', auth, admin, async (req, res) => {
   try {
@@ -7335,7 +7513,7 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const adminAlertTypes = ['feedback', 'low_score'];
     const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
     const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
-    const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
+    const pending = hist.filter(h => h.status === 'bekliyor' || h.status === APPROVAL_REVIEW_STATUS || !h.status).length;
     const riskItems = hist
       .filter(h => (h.score || 0) < 60 || (h.totalErrors || 0) >= 5)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -7504,7 +7682,7 @@ async function collectOperationalSnapshot(period = 'daily') {
       feedbackOpen: feedbackOpen.length,
       feedbackResolved: feedbackResolved.length,
       activeUsers: (userRows || []).filter(u => u.active).length,
-      approvalsPending: hist.filter(h => !h.status || h.status === 'bekliyor').length
+      approvalsPending: hist.filter(h => !h.status || h.status === 'bekliyor' || h.status === APPROVAL_REVIEW_STATUS).length
     },
     catTotals,
     topUsers,

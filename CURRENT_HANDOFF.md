@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-17 Codex Güncel Durum
+
+- Yerelde `/admin` İş Panosu onay akışına iki admin aracı eklendi. Birincisi `Teyit
+  Bekleyenler`: admin/süper admin onay veya red kararı veremediği soru-cevapları `Teyide Al`
+  ile kısa not yazarak ayrı bir kuyruğa alabilir; bu kuyruk ana üç kolonun üstünde soru işareti
+  ikonlu açılır panel olarak durur, ekranı kalabalıklaştırmaz. Teyit kaydı gerekirse
+  `Bekleyenlere Al` ile normal bekleyen kuyruğa döndürülebilir. İkincisi kişiye özel
+  `Favorilerim`: admin/süper admin onay kartlarını yıldızlayabilir ve menüdeki Favorilerim
+  ekranında aynı soru-cevap kartlarını açıp inceleyebilir. Teyit notları ve favoriler SQL
+  migration gerektirmeden `settings` altında saklanır; public ön yüz/root cutover kapsam dışı
+  bırakıldı. Kapsam: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
+  86/86 test geçti. Çalışma worktree'i:
+  `C:\Users\ugur\Desktop\arsiv-kontrol\.tmp-admin-review-flow-worktree`, branch:
+  `codex/admin-review-flow`.
+
 ## 2026-08-10 Codex Güncel Durum
 
 - Yerelde `/admin > Arşiv Operasyon Merkezi > Etiket Aktarımı` için 192 eşleşmeyen kaydı

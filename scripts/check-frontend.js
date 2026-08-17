@@ -253,11 +253,11 @@ if (!html.includes('submitApprovalModal') || !html.includes('renderApprovalActio
 }
 const approvalSubmittedFn = html.match(/function approvalSubmitted\(d\)\{[\s\S]*?\n\}/)?.[0] || '';
 if (
-  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','onaylandi','reddedildi'])") ||
+  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','onaylandi','reddedildi'])") ||
   !approvalSubmittedFn.includes('SUBMITTED_APPROVAL_STATUSES.has(status)') ||
   approvalSubmittedFn.includes('!status')
 ) {
-  throw new Error('Bos veya eksik status onaya gonderilmis sayilmamali; sadece bekliyor/onaylandi/reddedildi pasiflestirmeli.');
+  throw new Error('Bos veya eksik status onaya gonderilmis sayilmamali; sadece bekliyor/teyit_bekliyor/onaylandi/reddedildi pasiflestirmeli.');
 }
 if (
   !html.includes('resetCurrentAnalysisStateForNewRun();') ||
@@ -295,6 +295,20 @@ if (html.includes('corrected-btns') || html.includes('onclick="downloadPDF()"') 
 }
 if (!html.includes('function setApprovalAction') || !html.includes("await loadOnay();") || !html.includes("approveItem('${h.id}',this)") || !html.includes("rejectItem('${h.id}',this)")) {
   throw new Error('Is Panosu onay/red sonrasi paneli yenilemeli ve buton islemini gorunur sekilde kilitlemeli.');
+}
+if (
+  !server.includes("const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor'") ||
+  !server.includes("app.post('/api/history/:id/review'") ||
+  !server.includes("app.post('/api/history/:id/pending'") ||
+  !server.includes("app.get('/api/history/favorites'") ||
+  !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/favorite'") ||
+  !html.includes('Teyit Bekleyenler') ||
+  !html.includes('toggleApprovalFavorite') ||
+  !html.includes("reviewItem('${h.id}',this)") ||
+  !html.includes("pendingItem('${h.id}',this)") ||
+  !html.includes('Favorilerim')
+) {
+  throw new Error('Admin onay akisi Teyit Bekleyenler ve Favorilerim ozelliklerini korumali.');
 }
 if (
   !schema.includes("tags jsonb not null default '[]'::jsonb") ||
