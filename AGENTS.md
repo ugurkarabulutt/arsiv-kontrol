@@ -121,6 +121,46 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-17
+- **Geri Bildirim Merkezi kalan iş görünümü eklendi:** Açık kalan feedback'ler için ayrı ekran
+  açılmadı; mevcut `Geri Bildirim Merkezi` ve `Geçmiş Düzeltme` akışı güçlendirildi. Backend
+  `/api/alerts` cevabı artık son uyarı limitine takılmadan açık feedback kayıtlarını ayrıca
+  getirir ve her feedback için çalışma türü üretir: `Düzeltmeye hazır`, `Çoklu geçiş`,
+  `Eksik düzeltme`, `Yanlış alarm`, `Eşleşme yok`, `Yorum / düzen`, `Metin doğru`. Admin
+  ekranında bu iş türleri filtrelenebilir. Uygun yanlış-düzeltme kartlarında `Düzeltmeye Hazırla`
+  butonu, mevcut `Geçmiş Düzeltme` formunu bildirilen doküman kapsamıyla doldurur; otomatik geniş
+  geçmiş düzeltmesi yapmaz ve çoklu geçişlerde admin etki taramasından doğru hedefleri seçer.
+  Kapsam: `server.js`, `index.html`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node scripts/check-frontend.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 86/86 test geçti. Deploy yapılmadı.
+
+- **Canlı feedback kuyruğunda mevcut kayda özel düzeltme temizliği yapıldı:** Kullanıcı kararıyla
+  geniş geçmiş düzeltmesi uygulanmadı; her açık feedback yalnız bağlı olduğu denetim kaydı üzerinde
+  ele alındı. Canlı Supabase'de `alerts(type='feedback')` başlangıç durumu 611 toplam feedback,
+  180 açık ve 431 çözülmüş idi. Mevcut `content_correction_packages` kayıtlarından güvenli olanlar
+  uygulandı, metinde karşılığı net olan feedback'ler için küçük ve `historyScope: reported`
+  kapsamlı yeni paketler oluşturuldu. Son doğrulama 611 toplam feedback, 496 çözülmüş ve 115 açık
+  gösterdi. `content_correction_packages` 56 pakete çıktı; `Codex Admin Feedback Cleanup`
+  tarafından 56 geri alınabilir `content_correction_log` kaydı yazıldı. İşlem öncesi paket
+  yedekleri `settings` altında saklandı:
+  `content_correction_packages_backup_codex_20260817141108`,
+  `content_correction_packages_backup_codex_20260817142010` ve
+  `content_correction_packages_backup_codex_20260817142336`. `TEVBE 1.` başlık düzeltmesi yalnız
+  bildirilen kayıtlarda `TÖVBE 1.` olarak uygulandı; `Tevbe 9` gibi kaynak atıflarına dokunulmadı.
+  Açık kalan iki paket bağlantılı konu manuel kontrol gerektirir: `Ahlaki kelimesi metne özel
+  koruma` ve `Yakîn kelimesi düzeltmesi`. Bu adım kod deploy'u, public ön yüz değişikliği veya root
+  cutover değildir; canlı veri düzeltme ve çözüm kaydı operasyonudur.
+
+- **Açık feedback kuyruğu ikinci geçişte çalışma listesine indirildi:** Aynı canlı veri
+  operasyonunun devamında sadece `Yanlış düzeltme` tipindeki, düzeltilmiş metinde hedef ifade tam
+  1 kez geçen kayıtlar işlendi. 45 kayıt grubu, 46 feedback ve 45 metin düzeltmesi yalnız bağlı
+  denetim kaydında uygulandı; `content_correction_packages_backup_codex_20260817144845` yedeği
+  alındı. Son doğrulama 611 toplam feedback, 542 çözülmüş ve 69 açık gösterdi.
+  `content_correction_packages` 101 pakete, `Codex Admin Feedback Cleanup` logları 101 kayda
+  çıktı. Kalan 69 açık kayıt otomatik değiştirilmedi ve adminin tek tek kapatabilmesi için
+  `docs/feedback-open-triage-2026-08-17.md` dosyasına ayrıldı: 23 çoklu geçiş/admin seçimi,
+  8 eksik düzeltme, 5 eşleşme bulunamadı, 25 yanlış alarm/kural kontrolü, 8 yorum/düzen kararı.
+  Benzer geçmiş kayıtlar, public ön yüz, root cutover ve deploy kapsam dışı kaldı.
+
 - **Admin onay akışına Teyit Bekleyenler ve Favorilerim eklendi:** `/admin` İş Panosu onay
   ekranında bekleyen/onaylanan/reddedilen kayıtların yanında kalabalık oluşturmayan açılır
   `Teyit Bekleyenler` kuyruğu eklendi. Admin veya süper admin bir kayıt için hemen onay/red

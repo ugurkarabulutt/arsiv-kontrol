@@ -770,6 +770,17 @@ canvas{width:100%!important;}
 .feedback-root{display:inline-flex;align-items:center;gap:5px;margin:6px 0 4px;padding:4px 8px;border:1px solid var(--border);background:var(--surface2);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);}
 .feedback-root-match{margin:7px 0 4px;padding:8px 10px;border:1px solid rgba(var(--ai-rgb),.35);border-left:3px solid var(--ai);background:rgba(var(--ai-rgb),.08);font-size:12px;line-height:1.45;color:var(--ink2);}
 .feedback-root-match strong{color:var(--ink);}
+.feedback-work{margin:8px 0;padding:10px 11px;border:1px solid var(--border);border-left:3px solid var(--gold);background:var(--surface2);font-size:12px;line-height:1.5;color:var(--ink2);}
+.feedback-work.ok{border-left-color:var(--green);background:var(--grn-bg);}
+.feedback-work.warn{border-left-color:var(--gold);}
+.feedback-work.info{border-left-color:var(--ai);background:rgba(var(--ai-rgb),.08);}
+.feedback-work.done{border-left-color:var(--green);background:var(--grn-bg);}
+.feedback-work-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+.feedback-work-pill{display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--bg);padding:4px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--ink2);}
+.feedback-work-pair{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);word-break:break-word;}
+.feedback-work-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.feedback-work-filter{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 10px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);}
+.feedback-work-filter .btn-mini{font-size:10px;}
 .correction-layout{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:14px;align-items:start;}
 .correction-form,.correction-card,.correction-queue-section{background:var(--white);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);}
 .correction-form-head{padding:13px 16px;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:800;color:var(--ink);}
@@ -2369,7 +2380,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
@@ -4391,6 +4402,7 @@ async function loadFeedbackCenter(){
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
   const allFeedback=alerts.filter(a=>a.type==='feedback');
   if(!allFeedback.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
+  feedbackRows=allFeedback;
   const visible=allFeedback.filter(a=>{
     const positive=isPositiveFeedback(a);
     if(feedbackFilter==='positive')return positive;
@@ -4398,6 +4410,10 @@ async function loadFeedbackCenter(){
     if(feedbackFilter==='resolved')return a.feedbackStatus==='resolved';
     if(feedbackFilter==='unread')return !a.read&&a.feedbackStatus!=='resolved';
     return true;
+  }).filter(a=>{
+    if(feedbackWorkFilter==='all')return true;
+    if(a.feedbackStatus==='resolved'||isPositiveFeedback(a))return false;
+    return feedbackWorkKey(a)===feedbackWorkFilter;
   });
   const open=allFeedback.filter(a=>a.feedbackStatus!=='resolved'&&!isPositiveFeedback(a)).length;
   const resolved=allFeedback.filter(a=>a.feedbackStatus==='resolved').length;
@@ -4416,8 +4432,9 @@ async function loadFeedbackCenter(){
     <button class="btn-mini ${feedbackFilter==='resolved'?'active':''}" onclick="setFeedbackFilter('resolved')">&Ccedil;&ouml;z&uuml;len</button>
     <button class="btn-mini ${feedbackFilter==='all'?'active':''}" onclick="setFeedbackFilter('all')">T&uuml;m&uuml;</button>
   </div>`;
-  if(!visible.length){container.innerHTML=summary+filters+'<div class="empty-state">Bu filtrede geri bildirim yok.</div>';return;}
-  renderAlertItems(container, visible, true, summary+filters);
+  const workFilters=feedbackWorkFilterHtml(allFeedback);
+  if(!visible.length){container.innerHTML=summary+filters+workFilters+'<div class="empty-state">Bu filtrede geri bildirim yok.</div>';return;}
+  renderAlertItems(container, visible, true, summary+filters+workFilters);
 }
 
 function isPositiveFeedback(a){
@@ -4426,6 +4443,62 @@ function isPositiveFeedback(a){
 }
 
 function setFeedbackFilter(filter){feedbackFilter=filter||'open';loadFeedbackCenter();}
+
+function feedbackWorkKey(a){
+  return a?.feedbackTriage?.key||'manual_review';
+}
+
+function feedbackWorkFilterHtml(items=[]){
+  const openItems=items.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved'&&!isPositiveFeedback(a));
+  if(!openItems.length)return '';
+  const countFor=key=>openItems.filter(a=>feedbackWorkKey(a)===key).length;
+  const options=[
+    {key:'all',label:'T&uuml;m a&ccedil;&#305;k',count:openItems.length},
+    {key:'ready_current_fix',label:'D&uuml;zeltmeye haz&#305;r',count:countFor('ready_current_fix')},
+    {key:'multi_choice',label:'&Ccedil;oklu ge&ccedil;i&#351;',count:countFor('multi_choice')},
+    {key:'missing_manual',label:'Eksik d&uuml;zeltme',count:countFor('missing_manual')},
+    {key:'false_alarm',label:'Yanl&#305;&#351; alarm',count:countFor('false_alarm')},
+    {key:'manual_match',label:'E&#351;le&#351;me yok',count:countFor('manual_match')},
+    {key:'layout_manual',label:'Yorum / d&uuml;zen',count:countFor('layout_manual')},
+    {key:'already_ok',label:'Metin do&#287;ru',count:countFor('already_ok')}
+  ].filter(item=>item.key==='all'||item.count>0);
+  return `<div class="feedback-work-filter">${options.map(item=>`
+    <button class="btn-mini ${feedbackWorkFilter===item.key?'active':''}" onclick="setFeedbackWorkFilter('${item.key}')">${item.label} <span class="mono">${item.count}</span></button>
+  `).join('')}</div>`;
+}
+
+function setFeedbackWorkFilter(filter){
+  feedbackWorkFilter=filter||'all';
+  if(feedbackWorkFilter!=='all'&&!['open','unread','all'].includes(feedbackFilter)){
+    feedbackFilter='open';
+  }
+  loadFeedbackCenter();
+}
+
+function feedbackWorkHtml(a){
+  if(a.type!=='feedback'||isPositiveFeedback(a))return '';
+  const triage=a.feedbackTriage;
+  if(!triage)return '';
+  const severity=['ok','warn','info','done'].includes(triage.severity)?triage.severity:'warn';
+  const pair=triage.pair;
+  const counts=triage.counts||{};
+  const canPrepare=pair&&a.feedbackStatus!=='resolved'&&['ready_current_fix','multi_choice','manual_match'].includes(triage.key);
+  const pairHtml=pair?`<div class="feedback-work-pair">Eski/hedef: <strong>${esc(pair.current||'')}</strong> &rarr; Do&#287;ru: <strong>${esc(pair.desired||'')}</strong></div>`:'';
+  const countHtml=pair?`<div class="feedback-work-pair">Bildirilen metinde ge&ccedil;i&#351;: ${Number(counts.current||0)} hedef, ${Number(counts.desired||0)} do&#287;ru ifade.</div>`:'';
+  const historyHtml=triage.historyFilename||triage.historyStatus
+    ?`<div class="feedback-work-pair">Kay&#305;t: ${esc(triage.historyFilename||'-')} ${triage.historyStatus?`&middot; ${esc(triage.historyStatus)}`:''}</div>`
+    :'';
+  return `<div class="feedback-work ${severity}">
+    <div class="feedback-work-top">
+      <span class="feedback-work-pill">${esc(triage.label||'Kontrol')}</span>
+      <strong>${esc(triage.action||'Bu geri bildirim mevcut ekranda kontrol edilmeli.')}</strong>
+    </div>
+    ${pairHtml}
+    ${countHtml}
+    ${historyHtml}
+    ${canPrepare?`<div class="feedback-work-actions"><button class="btn-mini active" onclick="prepareCorrectionFromFeedback('${a.id}')">D&uuml;zeltmeye Haz&#305;rla</button></div>`:''}
+  </div>`;
+}
 
 function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml=''){
   const visibleFeedbackIds=new Set(filtered.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved').map(a=>a.id));
@@ -4439,6 +4512,7 @@ function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml='
       <div class="feedback-user">${esc(a.userName||'Bilinmeyen kullanıcı')} ${a.userUsername?`<span class="mono">(${esc(a.userUsername)})</span>`:''}</div>
       ${root}
       ${match}
+      ${feedbackWorkHtml(a)}
       ${parts.map(p=>{
       const idx=p.indexOf(':');
       if(idx<0)return `<div>${esc(p)}</div>`;
@@ -4551,6 +4625,42 @@ async function downloadFeedbackWorkPackage(){
     setStatus(`✓ ${items.length} geri bildirimlik PDF paket indirildi.`,'ok');
     setTimeout(()=>setStatus('',''),3000);
   }catch(e){setStatus(e.message,'err');}
+}
+
+function prepareCorrectionFromFeedback(id){
+  const item=(feedbackRows||[]).find(a=>a.id===id);
+  const triage=item?.feedbackTriage;
+  const pair=triage?.pair;
+  if(!item||!pair){
+    setStatus('Bu geri bildirim i\u00e7in otomatik d\u00fczeltme bilgisi bulunamad\u0131.','err');
+    return;
+  }
+  selectedFeedbackIds=new Set([id]);
+  showTab('corrections');
+  const title=[triage.label||'Geri bildirim d\u00fczeltmesi',pair.current||'',pair.desired||''].filter(Boolean).join(' | ');
+  if(el('correctionTitle'))el('correctionTitle').value=title.slice(0,180);
+  if(el('correctionFrom'))el('correctionFrom').value=pair.current||'';
+  if(el('correctionTo'))el('correctionTo').value=pair.desired||'';
+  if(el('correctionNote'))el('correctionNote').value=[
+    'Geri bildirimden haz\u0131rland\u0131.',
+    triage.action||'',
+    `Kapsam: bildirilen dok\u00fcman / ${item.historyId||'-'}`,
+    triage.counts?`Ge\u00e7i\u015f: hedef ${Number(triage.counts.current||0)}, do\u011fru ${Number(triage.counts.desired||0)}`:''
+  ].filter(Boolean).join('\n');
+  if(el('correctionFieldCorrected'))el('correctionFieldCorrected').checked=true;
+  if(el('correctionFieldSummary'))el('correctionFieldSummary').checked=false;
+  if(el('correctionScopeReported')){
+    el('correctionScopeReported').checked=true;
+    el('correctionScopeReported').dataset.userPicked='';
+  }
+  if(el('correctionScopeAll')){
+    el('correctionScopeAll').checked=false;
+    el('correctionScopeAll').dataset.userPicked='';
+  }
+  if(el('correctionNeedsReview'))el('correctionNeedsReview').checked=true;
+  updateCorrectionSelectedInfo();
+  setStatus('Geri bildirim d\u00fczeltme formuna ta\u015f\u0131nd\u0131. \u00d6nce etki taramas\u0131 yap\u0131n; \u00e7oklu ge\u00e7i\u015flerde do\u011fru sat\u0131rlar\u0131 se\u00e7in.','ok');
+  setTimeout(()=>setStatus('',''),3200);
 }
 
 function updateCorrectionSelectedInfo(){

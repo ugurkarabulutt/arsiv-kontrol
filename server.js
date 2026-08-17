@@ -4344,6 +4344,138 @@ function feedbackRootCategory(alertOrMessage) {
   return { key: category.key, label: category.label };
 }
 
+function feedbackFindingPair(alertOrMessage) {
+  const raw = typeof alertOrMessage === 'string' ? alertOrMessage : alertOrMessage?.message;
+  const fields = parseAlertFields(raw || '');
+  const finding = String(fields.bulgu || '');
+  if (!finding) return null;
+  const quoted = [...finding.matchAll(/["“”]([^"“”]{1,180})["“”]/gu)]
+    .map(match => String(match[1] || '').trim())
+    .filter(Boolean);
+  if (quoted.length < 2) return null;
+  return {
+    reported: quoted[0],
+    current: quoted[1],
+    desired: quoted[0]
+  };
+}
+
+function countLiteralOccurrences(source = '', needle = '') {
+  const text = String(source || '');
+  const target = String(needle || '');
+  if (!text || !target) return 0;
+  let count = 0;
+  let index = 0;
+  while ((index = text.indexOf(target, index)) !== -1) {
+    count++;
+    index += target.length;
+  }
+  return count;
+}
+
+function feedbackWorkTriage(alert = {}, history = {}) {
+  if (alert.type !== 'feedback') return null;
+  if (alert.feedback_status === 'resolved') {
+    return {
+      key: 'resolved',
+      label: 'Çözüldü',
+      action: 'Bu geri bildirim daha önce kapatılmış.',
+      severity: 'done'
+    };
+  }
+  const fields = parseAlertFields(alert.message || '');
+  const reason = foldFeedbackText(fields['geri bildirim'] || '');
+  const pair = feedbackFindingPair(alert);
+  const correctedText = String(history?.corrected_text || '');
+  const currentCount = pair ? countLiteralOccurrences(correctedText, pair.current) : 0;
+  const desiredCount = pair ? countLiteralOccurrences(correctedText, pair.desired) : 0;
+  const base = {
+    pair,
+    counts: { current: currentCount, desired: desiredCount },
+    historyStatus: history?.status || '',
+    historyFilename: history?.filename || ''
+  };
+  if (reason.startsWith('yanlis duzeltme')) {
+    if (!pair) {
+      return {
+        ...base,
+        key: 'manual_match',
+        label: 'Eşleşme bulunamadı',
+        action: 'Bildirimdeki ifade otomatik ayrıştırılamadı. Denetim kaydı açılıp elle kontrol edilmeli.',
+        severity: 'warn'
+      };
+    }
+    if (currentCount === 1) {
+      return {
+        ...base,
+        key: 'ready_current_fix',
+        label: 'Düzeltmeye hazır',
+        action: 'Mevcut düzeltilmiş metinde hedef ifade 1 kez geçiyor. Geçmiş Düzeltme formu bildirilen doküman kapsamıyla hazırlanabilir.',
+        severity: 'ok'
+      };
+    }
+    if (currentCount > 1) {
+      return {
+        ...base,
+        key: 'multi_choice',
+        label: 'Çoklu geçiş',
+        action: 'Aynı ifade bu kayıtta birden fazla geçiyor. Admin doğru geçişleri tek tek seçmeli.',
+        severity: 'warn'
+      };
+    }
+    if (desiredCount > 0) {
+      return {
+        ...base,
+        key: 'already_ok',
+        label: 'Metin doğru görünüyor',
+        action: 'Doğru kabul edilen ifade metinde zaten var. Kayıt açılıp feedback metne dokunmadan kapatılabilir.',
+        severity: 'done'
+      };
+    }
+    return {
+      ...base,
+      key: 'manual_match',
+      label: 'Eşleşme bulunamadı',
+      action: 'Hedef ifade artık metinde yok veya farklı biçimde duruyor. Denetim kaydı manuel kontrol edilmeli.',
+      severity: 'warn'
+    };
+  }
+  if (reason.startsWith('metinde olmayan hata')) {
+    return {
+      ...base,
+      key: 'false_alarm',
+      label: 'Yanlış alarm kontrolü',
+      action: 'Metin otomatik değiştirilmemeli. Rapor/kural yanlış alarm üretmiş olabilir; admin kontrol edip kapatmalı.',
+      severity: 'info'
+    };
+  }
+  if (reason.startsWith('eksik hata')) {
+    return {
+      ...base,
+      key: 'missing_manual',
+      label: 'Eksik düzeltme',
+      action: 'Kullanıcı eksik kalan düzeltmeyi tarif etmiş. Denetim kaydı açılıp elle uygulanmalı.',
+      severity: 'warn'
+    };
+  }
+  if (reason.startsWith('duzen bozuldu') || reason.startsWith('diger')) {
+    return {
+      ...base,
+      key: 'layout_manual',
+      label: 'Yorum / düzen',
+      action: 'Kelime eşleşmesi değil. Düzen, satır, tekrar denetim veya genel yorum olarak admin kararı gerekir.',
+      severity: 'info'
+    };
+  }
+  return {
+    ...base,
+    key: 'manual_review',
+    label: 'Manuel kontrol',
+    action: 'Bu geri bildirim için admin kaydı açıp karar vermeli.',
+    severity: 'warn'
+  };
+}
+
 function feedbackRootCategorySummary(feedbacks = []) {
   const byKey = new Map();
   feedbacks.forEach(feedback => {
@@ -7052,8 +7184,21 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questi
 
 app.get('/api/alerts', auth, admin, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);
+    const { data: latestRows, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);
     if (error) throw new Error(error.message);
+    let data = latestRows || [];
+    if (HAS_ALERT_FEEDBACK_META) {
+      const { data: openFeedbackRows, error: openFeedbackError } = await supabase.from('alerts')
+        .select('*')
+        .eq('type', 'feedback')
+        .neq('feedback_status', 'resolved')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (openFeedbackError) throw new Error(openFeedbackError.message);
+      const byId = new Map(data.map(row => [row.id, row]));
+      (openFeedbackRows || []).forEach(row => byId.set(row.id, row));
+      data = [...byId.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
     const userIds = [...new Set((data || []).map(a => a.user_id).filter(Boolean))];
     const usersById = new Map();
     if (userIds.length) {
@@ -7063,6 +7208,15 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
       if (usersError) throw new Error(usersError.message);
       (users || []).forEach(u => usersById.set(u.id, u));
     }
+    const historyIds = [...new Set((data || []).filter(a => a.type === 'feedback').map(a => a.history_id).filter(Boolean))];
+    const historiesById = new Map();
+    for (let i = 0; i < historyIds.length; i += 100) {
+      const { data: histories, error: historiesError } = await supabase.from('history')
+        .select('id,filename,status,corrected_text,summary')
+        .in('id', historyIds.slice(i, i + 100));
+      if (historiesError) throw new Error(historiesError.message);
+      (histories || []).forEach(row => historiesById.set(row.id, row));
+    }
     const feedbackSimilarities = feedbackSimilarityMap((data || []).filter(a => a.type === 'feedback'));
     res.json((data || []).map(row => {
       const user = usersById.get(row.user_id);
@@ -7070,6 +7224,7 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
         ...mapAlert(row),
         userName: user?.name || user?.username || '',
         userUsername: user?.username || '',
+        feedbackTriage: row.type === 'feedback' ? feedbackWorkTriage(row, historiesById.get(row.history_id)) : null,
         ...(feedbackSimilarities.get(row.id) || {})
       };
     }));
