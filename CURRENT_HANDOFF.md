@@ -13,7 +13,12 @@
   doğru satırları seçerek ilerler. Kapsam: `server.js`, `index.html`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
   `node scripts/check-frontend.js`, `git diff --check` ve `npm.cmd run check` başarılı;
-  86/86 test geçti. Deploy yapılmadı.
+  86/86 test geçti. Runtime commit `3f01141` GitHub'a push edildi ve Vercel production'a
+  alındı. Production deploy: `https://arsiv-kontrol-cuplsyxg0-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`,
+  `/admin/`, `/admin/smoke-test`, `/api/auth/me`, `/manifest.webmanifest`, `sw.js` ve favicon
+  başarılı. `/admin` noindex/no-store header'ları doğru; canlı HTML'de `feedbackWorkFilterHtml`,
+  `prepareCorrectionFromFeedback` ve `feedbackTriage` marker'ları mevcut, public preview marker'ı yok.
 
 - Canlı Supabase feedback kuyruğunda güvenli düzeltme temizliği yapıldı. Kullanıcı kararı gereği
   geniş geçmiş düzeltmesi uygulanmadı; yalnız her feedback'in bağlı olduğu mevcut denetim kaydı
