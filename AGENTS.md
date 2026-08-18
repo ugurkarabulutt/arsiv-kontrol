@@ -120,6 +120,30 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-18
+- **Onay akışına geri gönderme ve konum koruma eklendi:** `/admin` İş Panosu'nda admin/süper
+  admin bekleyen veya `Teyit Bekleyenler` içindeki bir denetim kaydını reddetmeden ilgili ekip
+  üyesine `Geri Gönder` ile iade edebilir. Sebep seçenekleri `Soru eksik`, `Soru yanlış`,
+  `Etiket eksik`, `Etiket yanlış`, `Cevap/metin eksik` ve `Diğer`; `Diğer` için not zorunlu.
+  Geri gönderilen kayıt `history.status='geri_gonderildi'` durumuna alınır, sebep/not bilgisi
+  SQL migration gerektirmeden `settings.approval_return_notes` içinde tutulur ve kullanıcıya
+  `alerts.type='approval_return'` bildirimi gönderilir. Kullanıcı mevcut `Denetim Geçmişi`
+  içinde `Geri Dönenler` filtresinden kaydı görür, `Eksikleri Tamamla` ile aynı kaydı düzenleyip
+  tekrar onaya gönderebilir; mükerrer kayıt oluşturulmaz ve tekrar gönderimde geri dönüş notu
+  temizlenir. Onay, red, teyit, bekleyene alma, favori ve geri gönderme işlemlerinde liste
+  yenilense bile ekran konumu korunur; 100. kayıt civarında işlem yapılınca sayfa en başa
+  dönmez. Public ön yüz/root cutover yapılmadı. Kapsam: `server.js`, `index.html`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 86/86 test geçti.
+  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  Runtime commit `483bec1` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-9wyayru73-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, `/manifest.webmanifest`, `sw.js` ve favicon başarılı.
+  `/admin` header'ları noindex/no-store doğru; canlı HTML'de `returnApprovalModal`,
+  `geri_gonderildi`, `Geri Gönder` ve `refreshApprovalSurfacesAfterAction` marker'ları mevcut,
+  public preview marker'ı yok.
+
 ### 2026-08-17
 - **Geri Bildirim Merkezi kalan iş görünümü eklendi:** Açık kalan feedback'ler için ayrı ekran
   açılmadı; mevcut `Geri Bildirim Merkezi` ve `Geçmiş Düzeltme` akışı güçlendirildi. Backend

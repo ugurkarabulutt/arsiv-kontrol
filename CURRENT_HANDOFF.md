@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-18 Codex Güncel Durum
+
+- `/admin` İş Panosu onay akışına `Geri Gönder` işlevi eklendi. Admin/süper admin bekleyen
+  veya `Teyit Bekleyenler` içindeki bir kaydı reddetmeden ilgili ekip üyesine geri
+  gönderebilir. Sebep seçenekleri: `Soru eksik`, `Soru yanlış`, `Etiket eksik`,
+  `Etiket yanlış`, `Cevap/metin eksik`, `Diğer`; `Diğer` seçilirse kısa not zorunludur.
+  Geri gönderme durumu `history.status='geri_gonderildi'` olarak tutulur; sebep/not bilgisi
+  SQL migration gerektirmeden `settings.approval_return_notes` altında saklanır ve kullanıcıya
+  `alerts.type='approval_return'` bildirimi düşer.
+- Kullanıcı tarafında bu kayıtlar mevcut `Denetim Geçmişi` içinde `Geri Dönenler` filtresiyle
+  görünür. Kullanıcı `Eksikleri Tamamla` ile aynı denetim kaydındaki soru/etiket alanlarını
+  düzenleyip tekrar onaya gönderebilir; yeni mükerrer kayıt oluşturulmaz. Tekrar onaya gönderim
+  başarılı olunca geri gönderme notu temizlenir.
+- Admin/süper admin onay, red, teyit, bekleyene alma, favori ve geri gönderme işlemlerinde
+  liste yenilense bile ekran konumu korunur; ekip lideri 100. kayıtta işlem yaptığında sayfa
+  en başa dönmez. Bu davranış `refreshApprovalSurfacesAfterAction` ile yalnız aktif yüzeyleri
+  yenileyerek sağlandı.
+- Kapsam yalnız admin hattıdır: `server.js`, `index.html`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Public ön yüz/root cutover yapılmadı. Yerel doğrulama: `node --check server.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 86/86 test geçti.
+  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  Runtime commit `483bec1` push edildi ve Vercel production'a alındı:
+  `https://arsiv-kontrol-9wyayru73-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health`, root `/`, `/admin`, `/admin/`,
+  `/admin/smoke-test`, `/api/auth/me`, `/manifest.webmanifest`, `sw.js`, favicon başarılı.
+  `/admin` noindex/no-store doğru; canlı HTML'de `returnApprovalModal`, `geri_gonderildi`,
+  `Geri Gönder` ve `refreshApprovalSurfacesAfterAction` marker'ları mevcut, public preview
+  marker'ı yok.
+
 ## 2026-08-17 Codex Güncel Durum
 
 - Yerelde mevcut `Geri Bildirim Merkezi` ve `Geçmiş Düzeltme` akışı, kalan açık işleri aynı
