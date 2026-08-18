@@ -328,6 +328,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .sb-ok{background:var(--grn-bg);color:var(--green);}
 .sb-no{background:var(--red-bg);color:var(--red);}
 .sb-draft{background:rgba(var(--ai-rgb),.12);color:var(--ai);}
+.sb-return{background:var(--gold-bg);color:var(--gold);}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
 .dot-on{background:var(--green);}
 .dot-off{background:var(--red);}
@@ -666,6 +667,10 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .work-star:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px);}
 .work-star.active{background:var(--gold-bg);border-color:rgba(var(--gold-rgb),.55);color:var(--gold);}
 .work-review-note{border:1px solid rgba(var(--gold-rgb),.32);background:var(--gold-bg);color:var(--ink2);font-size:12px;line-height:1.5;padding:8px 9px;margin:8px 0;}
+.work-return-note{border:1px solid rgba(var(--gold-rgb),.38);background:linear-gradient(135deg,var(--orange-bg),rgba(var(--gold-rgb),.08));color:var(--ink2);font-size:12px;line-height:1.55;padding:9px 10px;margin:8px 0;}
+.work-return-note strong{color:var(--orange);}
+.work-return-reason{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--orange);}
+.work-return-note.compact{margin-top:6px;padding:7px 8px;font-size:11px;}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:640px){.approval-tools{justify-content:stretch}.approval-review-toggle{width:100%;justify-content:space-between}.approval-review-panel-head{display:grid;grid-template-columns:1fr}.work-actions button{flex:1;min-width:96px}.work-star{flex:0 0 36px;width:36px;height:36px}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
@@ -913,8 +918,8 @@ canvas{width:100%!important;}
 .modal-body{padding:16px 20px 20px;}
 .mfield{margin-bottom:14px;}
 .mfield label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
-.mfield input,.mfield select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:15px;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;border-radius:0;}
-.mfield input:focus,.mfield select:focus{border-color:var(--gold);}
+.mfield input,.mfield select,.mfield textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:15px;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;border-radius:0;}
+.mfield input:focus,.mfield select:focus,.mfield textarea:focus{border-color:var(--gold);}
 .mfield select{font-family:'JetBrains Mono',monospace;font-size:12px;}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 .form-err{color:var(--red);font-size:13px;min-height:16px;}
@@ -1261,6 +1266,7 @@ canvas{width:100%!important;}
           <option value="taslak">Taslaklar</option>
           <option value="bekliyor">Bekleyen</option>
           <option value="teyit_bekliyor">Teyit Bekleyen</option>
+          <option value="geri_gonderildi">Geri Dönenler</option>
           <option value="onaylandi">Onaylanan</option>
           <option value="reddedildi">Reddedilen</option>
           <option value="low">Düşük skor</option>
@@ -2310,8 +2316,37 @@ canvas{width:100%!important;}
       <div id="detailBody" style="white-space:pre-wrap;font-size:15px;line-height:1.8;color:var(--ink2);max-height:55vh;overflow-y:auto;background:var(--bg2);padding:14px;"></div>
       <div class="modal-foot" style="margin-top:12px">
         <button class="btn-sec" onclick="closeModal('detailModal')">Kapat</button>
+        <button class="btn-sec" id="returnDetailBtn" onclick="openReturnApprovalFromDetail(this)" style="display:none">Geri Gönder</button>
         <button class="btn-green" id="approveDetailBtn" onclick="approveDetailFromModal(this)" style="display:none">Onayla</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="returnApprovalModal">
+  <div class="modal feedback-modal">
+    <div class="modal-head"><h3>Kaydı geri gönder</h3><button class="modal-close" onclick="closeReturnApprovalModal()">×</button></div>
+    <div class="modal-body">
+      <div class="feedback-label">Düzeltme sebebi</div>
+      <input type="hidden" id="returnApprovalId">
+      <div class="mfield">
+        <label for="returnApprovalReason">Sebep</label>
+        <select id="returnApprovalReason">
+          <option value="missing_question">Soru eksik</option>
+          <option value="wrong_question">Soru yanlış</option>
+          <option value="missing_tags">Etiket eksik</option>
+          <option value="wrong_tags">Etiket yanlış</option>
+          <option value="missing_answer">Cevap/metin eksik</option>
+          <option value="other">Diğer</option>
+        </select>
+      </div>
+      <div class="mfield">
+        <label for="returnApprovalNote">Not</label>
+        <textarea id="returnApprovalNote" rows="4" maxlength="1200" placeholder="Ekip üyesinin neyi tamamlaması gerektiğini kısa ve net yazın."></textarea>
+      </div>
+      <div class="history-tags-help">Bu kayıt reddedilmez; ilgili ekip üyesinin Denetim Geçmişi’nde “Geri Dönenler” olarak görünür ve aynı kayıt tekrar onaya gönderilebilir.</div>
+      <div class="form-err" id="returnApprovalErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeReturnApprovalModal()">Vazgeç</button><button class="btn-primary" id="returnApprovalBtn" onclick="submitReturnApproval()">Geri Gönder</button></div>
     </div>
   </div>
 </div>
@@ -2380,7 +2415,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,pendingReturnApprovalId=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
@@ -2396,7 +2431,16 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
+const APPROVAL_RETURNED_STATUS='geri_gonderildi';
 const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','onaylandi','reddedildi']);
+const APPROVAL_RETURN_REASON_LABELS={
+  missing_question:'Soru eksik',
+  wrong_question:'Soru yanlış',
+  missing_tags:'Etiket eksik',
+  wrong_tags:'Etiket yanlış',
+  missing_answer:'Cevap/metin eksik',
+  other:'Diğer'
+};
 const FONT_SCALE={small:.94,medium:1,large:1.14};
 let isRestoringDraft=false;
 
@@ -3099,9 +3143,32 @@ function approvalStatusText(d){
   const status=String(d?.status||'taslak');
   if(status==='bekliyor')return 'Onaya gönderildi';
   if(status==='teyit_bekliyor')return 'Teyit bekliyor';
+  if(status===APPROVAL_RETURNED_STATUS)return 'Tekrar Onaya Gönder';
   if(status==='onaylandi')return 'Onaylandı';
   if(status==='reddedildi')return 'Reddedildi';
   return 'Onaya Gönder';
+}
+function historyApprovalStatusUi(status){
+  const clean=String(status||'bekliyor');
+  if(clean==='onaylandi')return {label:'Onaylandı',cls:'sb-ok'};
+  if(clean==='reddedildi')return {label:'Reddedildi',cls:'sb-no'};
+  if(clean==='teyit_bekliyor')return {label:'Teyit bekliyor',cls:'sb-wait'};
+  if(clean===APPROVAL_RETURNED_STATUS)return {label:'Geri gönderildi',cls:'sb-return'};
+  if(clean==='taslak')return {label:'Taslak',cls:'sb-draft'};
+  return {label:'Bekliyor',cls:'sb-wait'};
+}
+function approvalReturnInfoHtml(h,compact=false){
+  const reason=String(h?.returnReason||'').trim();
+  const note=String(h?.returnNote||'').trim();
+  if(!reason&&!note)return '';
+  const label=String(h?.returnReasonLabel||APPROVAL_RETURN_REASON_LABELS[reason]||'Düzeltme gerekli');
+  const when=h?.returnRequestedAt?new Date(h.returnRequestedAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const by=h?.returnRequestedBy?` · ${esc(h.returnRequestedBy)}`:'';
+  return `<div class="work-return-note ${compact?'compact':''}">
+    <div class="work-return-reason">↩ ${esc(label)}</div>
+    ${note?`<div style="margin-top:5px">${esc(note)}</div>`:''}
+    ${when?`<div class="mono" style="font-size:10px;color:var(--ink3);margin-top:5px">${esc(when)}${by}</div>`:''}
+  </div>`;
 }
 function parseHistoryTags(value){
   const raw=Array.isArray(value)?value.join(','):String(value||'');
@@ -3176,10 +3243,13 @@ function renderApprovalActionButton(d, placement='main'){
 function renderApprovalSubmitPanel(d){
   if(!d?.id||!d.correctedText)return '';
   const sent=approvalSubmitted(d);
-  const title=sent?'Onay sürecinde':'Sonuç hazırlandı';
+  const returned=String(d.status||'')===APPROVAL_RETURNED_STATUS;
+  const title=sent?'Onay sürecinde':returned?'Düzeltme bekliyor':'Sonuç hazırlandı';
   const text=sent
     ?'Sonuç onay sürecine iletildi. Yeni bir metin denetlemeye başlayabilirsiniz.'
-    :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
+    :returned
+      ?'Bu kayıt düzenleme için geri gönderildi. Sebebi inceleyip soru ve etiketleri tamamladıktan sonra tekrar onaya gönderebilirsiniz.'
+      :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
   const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
   const tagsValue=historyTagsText(d.tags||[]);
   const questionField=sent
@@ -3189,7 +3259,7 @@ function renderApprovalSubmitPanel(d){
     ? `<div class="history-tags-field"><label>Etiketler</label>${historyTagsChips(tagsValue)||'<div class="history-tags-help">Etiket eklenmedi.</div>'}</div>`
     : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
-    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div><div class="approval-submit-fields">${questionField}${tagsField}</div></div>
+    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div>${returned?approvalReturnInfoHtml(d):''}<div class="approval-submit-fields">${questionField}${tagsField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
   </div>`;
 }
@@ -3211,6 +3281,7 @@ function openSubmitApprovalModal(){
     <div><strong>Dosya/Metin:</strong> ${esc(d.filename||'Metin Girişi')}</div>
     <div><strong>Skor:</strong> ${Number(d.score||0)}/100</div>
     <div><strong>Bulgu:</strong> ${Number(d.totalErrors||0)} sorun</div>
+    ${String(d.status||'')===APPROVAL_RETURNED_STATUS?approvalReturnInfoHtml(d,true):''}
   `;
   const questionMain=el('submitApprovalQuestionMain');
   const tagsMain=el('submitApprovalTagsMain');
@@ -3279,12 +3350,12 @@ function showSubmittedHistory(){
 }
 async function openSubmitApprovalFromHistory(id){
   const row=historyRows.find(h=>h.id===id);
-  if(!row||row.status!=='taslak'){setStatus('Bu kayıt onaya gönderilecek taslak durumda değil.','err');return;}
+  if(!row||!['taslak',APPROVAL_RETURNED_STATUS].includes(row.status)){setStatus('Bu kayıt onaya gönderilecek durumda değil.','err');return;}
   if(isChunkHistoryRowUi(row)){setStatus('Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.','err');return;}
   setStatus('Taslak hazırlanıyor...','');
   const detail=await api('GET',`/api/history/${id}`);
   if(detail.error){setStatus(detail.error,'err');return;}
-  currentResult={...row,...detail,status:'taslak',categories:detail.categories||row.categories||{}};
+  currentResult={...row,...detail,status:detail.status||row.status||'taslak',categories:detail.categories||row.categories||{}};
   currentOriginalText=detail.originalText||row.originalText||'';
   correctedText=detail.correctedText||row.correctedText||'';
   currentHistoryId=id;
@@ -3793,7 +3864,7 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
+    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.returnReasonLabel,h.returnNote,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -3808,10 +3879,11 @@ function renderHistory(){
       const status=h.status||'bekliyor';
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-      const stCls=status==='onaylandi'?'sb-ok':status==='reddedildi'?'sb-no':status==='taslak'?'sb-draft':'sb-wait';
-      const statusText=status==='onaylandi'?'Onaylandı':status==='reddedildi'?'Reddedildi':status==='teyit_bekliyor'?'Teyit bekliyor':status==='taslak'?'Taslak':'Bekliyor';
+      const statusUi=historyApprovalStatusUi(status);
       const draftAction=!isAdmin&&status==='taslak'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Onaya Gönder</button>`:'';
+      const returnedAction=!isAdmin&&status===APPROVAL_RETURNED_STATUS&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Eksikleri Tamamla</button>`:'';
       const withdrawAction=!isAdmin&&status==='bekliyor'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="withdrawApprovalFromHistory('${h.id}')">Geri Çek</button>`:'';
+      const returnInfo=status===APPROVAL_RETURNED_STATUS?approvalReturnInfoHtml(h,true):'';
       if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<tr>
         <td class="mono" style="font-size:10px;white-space:nowrap">${dt}</td>
@@ -3819,7 +3891,7 @@ function renderHistory(){
         <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename)}">${esc(h.filename)}</td>
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
-        <td><span class="status-badge ${stCls}">${statusText}</span>${draftAction}${withdrawAction}</td>
+        <td><span class="status-badge ${statusUi.cls}">${statusUi.label}</span>${draftAction}${returnedAction}${withdrawAction}${returnInfo}</td>
         <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">✗</button>`:''}
@@ -3872,6 +3944,8 @@ async function showDetail(id){
   el('detailModal').classList.add('open');
   const approveBtn=el('approveDetailBtn');
   if(approveBtn){approveBtn.style.display='none';approveBtn.disabled=true;approveBtn.textContent='Onayla';}
+  const returnBtn=el('returnDetailBtn');
+  if(returnBtn){returnBtn.style.display='none';returnBtn.disabled=true;returnBtn.textContent='Geri Gönder';}
   window._detailHistoryId='';
   window._detailHistoryStatus='';
   const item=await api('GET',`/api/history/${id}`);
@@ -3886,14 +3960,15 @@ async function showDetail(id){
     ? `<div class="history-tags-field" style="margin:0 0 14px"><label for="detailHistoryTags">Etiketler</label><textarea class="history-tags-input" id="detailHistoryTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderDetailTagsPreview()">${esc(tagsValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde etiketler de kaydedilir.</div><div class="history-tags-preview" id="detailHistoryTagsPreview">${historyTagsChipItems(tagsValue)}</div></div>`
     : historyTagsChips(tagsValue);
   const reviewBlock=hasAdminRole(me?.role)?approvalReviewNoteHtml(item):'';
+  const returnBlock=(hasAdminRole(me?.role)||item.status===APPROVAL_RETURNED_STATUS)?approvalReturnInfoHtml(item):'';
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}${returnBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}${returnBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
   renderDetailTagsPreview();
   window._detailText=text;
@@ -3909,6 +3984,11 @@ async function showDetail(id){
       approveBtn.textContent='Onayla';
     }
   }
+  if(returnBtn&&hasAdminRole(me?.role)){
+    const canReturn=!['onaylandi','reddedildi',APPROVAL_RETURNED_STATUS].includes(item.status||'bekliyor');
+    returnBtn.style.display=canReturn?'':'none';
+    returnBtn.disabled=!canReturn;
+  }
 }
 function setApprovalStatus(msg,type){
   const s=el('onayActionStatus')||el('statusMsg');
@@ -3922,8 +4002,22 @@ function approvalActionMessage(action){
     approve:'✓ Kayıt onaylandı.',
     reject:'✓ Kayıt reddedildi.',
     review:'✓ Kayıt teyit bekleyenlere alındı.',
-    pending:'✓ Kayıt bekleyenlere alındı.'
+    pending:'✓ Kayıt bekleyenlere alındı.',
+    return:'✓ Kayıt kullanıcıya geri gönderildi.'
   }[action]||'✓ İşlem tamamlandı.';
+}
+async function refreshApprovalSurfacesAfterAction(){
+  const x=window.scrollX;
+  const y=window.scrollY;
+  const activeOnay=el('tabContent-onay')?.classList.contains('active');
+  const activeFavorites=el('tabContent-favorites')?.classList.contains('active');
+  const activeHistory=el('tabContent-gecmis')?.classList.contains('active');
+  if(activeOnay)await loadOnay();
+  if(activeFavorites)await loadApprovalFavorites();
+  if(activeHistory)await loadHistory();
+  await refreshBadges();
+  requestAnimationFrame(()=>window.scrollTo(x,y));
+  setTimeout(()=>window.scrollTo(x,y),80);
 }
 async function setApprovalAction(id,action,btn,body=null){
   const oldText=btn?.textContent;
@@ -3932,10 +4026,7 @@ async function setApprovalAction(id,action,btn,body=null){
     const r=await api('POST',`/api/history/${id}/${action}`,body||undefined);
     if(r.error)throw new Error(r.error);
     setApprovalStatus(approvalActionMessage(action),'ok');
-    await loadOnay();
-    if(el('tabContent-favorites')?.classList.contains('active'))await loadApprovalFavorites();
-    await loadHistory();
-    await refreshBadges();
+    await refreshApprovalSurfacesAfterAction();
     return true;
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent=oldText;}
@@ -3960,6 +4051,48 @@ async function reviewItem(id,btn){
   return setApprovalAction(id,'review',btn,{note:clean});
 }
 async function pendingItem(id,btn){return setApprovalAction(id,'pending',btn);}
+function openReturnApprovalModal(id,btn=null){
+  const cleanId=String(id||'').trim();
+  if(!cleanId){setApprovalStatus('Geri gönderilecek kayıt bulunamadı.','err');return;}
+  pendingReturnApprovalId=cleanId;
+  if(el('returnApprovalId'))el('returnApprovalId').value=cleanId;
+  if(el('returnApprovalReason'))el('returnApprovalReason').value='missing_question';
+  if(el('returnApprovalNote'))el('returnApprovalNote').value='';
+  if(el('returnApprovalErr'))el('returnApprovalErr').textContent='';
+  const submitBtn=el('returnApprovalBtn');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Geri Gönder';}
+  openModal('returnApprovalModal');
+}
+function closeReturnApprovalModal(){
+  pendingReturnApprovalId=null;
+  const submitBtn=el('returnApprovalBtn');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Geri Gönder';}
+  closeModal('returnApprovalModal');
+}
+function openReturnApprovalFromDetail(btn){
+  const id=window._detailHistoryId;
+  if(!id){setApprovalStatus('Geri gönderilecek kayıt bulunamadı.','err');return;}
+  openReturnApprovalModal(id,btn);
+}
+async function submitReturnApproval(){
+  const id=pendingReturnApprovalId||v('returnApprovalId');
+  const reason=v('returnApprovalReason')||'other';
+  const note=v('returnApprovalNote');
+  const err=el('returnApprovalErr');
+  const btn=el('returnApprovalBtn');
+  if(err)err.textContent='';
+  if(reason==='other'&&!note){
+    if(err)err.textContent='Diğer sebebi için kısa bir not yazın.';
+    el('returnApprovalNote')?.focus();
+    return;
+  }
+  const ok=await setApprovalAction(id,'return',btn,{reason,note});
+  if(ok){
+    if(window._detailHistoryId===id)window._detailHistoryStatus=APPROVAL_RETURNED_STATUS;
+    closeReturnApprovalModal();
+    if(el('detailModal')?.classList.contains('open'))setTimeout(()=>closeModal('detailModal'),350);
+  }
+}
 async function toggleApprovalFavorite(id,nextFavorite,btn){
   const oldText=btn?.textContent;
   if(btn){btn.disabled=true;btn.textContent='…';}
@@ -3967,8 +4100,7 @@ async function toggleApprovalFavorite(id,nextFavorite,btn){
     const r=await api('POST',`/api/history/${id}/favorite`,{favorite:Boolean(nextFavorite)});
     if(r.error)throw new Error(r.error);
     setApprovalStatus(r.favorite?'✓ Favorilere eklendi.':'✓ Favorilerden çıkarıldı.','ok');
-    if(el('tabContent-onay')?.classList.contains('active'))await loadOnay();
-    if(el('tabContent-favorites')?.classList.contains('active'))await loadApprovalFavorites();
+    await refreshApprovalSurfacesAfterAction();
     return true;
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent=oldText;}
@@ -4339,6 +4471,7 @@ function approvalCard(h){
   const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
   const status=h.status||'bekliyor';
   const isReview=status==='teyit_bekliyor';
+  const isFinal=status==='onaylandi'||status==='reddedildi';
   const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const questionPreview=normalizeHistoryQuestionUi(h.questionText||'');
   const questionHtml=questionPreview?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionPreview.slice(0,180))}${questionPreview.length>180?'…':''}</div>`:'';
@@ -4357,11 +4490,13 @@ function approvalCard(h){
     ${questionHtml}
     ${historyTagsChips(h.tags||[])}
     ${approvalReviewNoteHtml(h)}
+    ${approvalReturnInfoHtml(h)}
     <div class="work-actions">
       ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
       ${status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
       ${status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
-      ${!isReview&&status!=='onaylandi'&&status!=='reddedildi'?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="reviewItem('${h.id}',this)">Teyide Al</button>`:''}
+      ${!isFinal&&status!==APPROVAL_RETURNED_STATUS?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openReturnApprovalModal('${h.id}',this)">Geri Gönder</button>`:''}
+      ${!isReview&&!isFinal&&status!==APPROVAL_RETURNED_STATUS?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="reviewItem('${h.id}',this)">Teyide Al</button>`:''}
       ${isReview?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="pendingItem('${h.id}',this)">Bekleyenlere Al</button>`:''}
     </div>
   </div>`;

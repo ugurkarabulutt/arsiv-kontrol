@@ -520,15 +520,26 @@ const mapAlert   = a => ({
 });
 
 const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor';
+const APPROVAL_RETURNED_STATUS = 'geri_gonderildi';
 const APPROVAL_REVIEW_NOTES_KEY = 'approval_review_notes';
+const APPROVAL_RETURN_NOTES_KEY = 'approval_return_notes';
 const APPROVAL_FAVORITES_KEY_PREFIX = 'approval_favorites:';
 const APPROVAL_FAVORITE_LIMIT = 240;
+const APPROVAL_RETURN_REASONS = Object.freeze({
+  missing_question: 'Soru eksik',
+  wrong_question: 'Soru yanlış',
+  missing_tags: 'Etiket eksik',
+  wrong_tags: 'Etiket yanlış',
+  missing_answer: 'Cevap/metin eksik',
+  other: 'Diğer'
+});
 
 function historyStatusLabel(status) {
   return status === 'taslak' ? 'Taslak'
     : status === 'onaylandi' ? 'Onaylandı'
     : status === 'reddedildi' ? 'Reddedildi'
     : status === APPROVAL_REVIEW_STATUS ? 'Teyit Bekliyor'
+    : status === APPROVAL_RETURNED_STATUS ? 'Geri Gönderildi'
     : 'Bekliyor';
 }
 
@@ -604,7 +615,7 @@ async function loadApprovalGroup(filterQuery) {
     items: (data || []).map(mapHistory)
   };
 }
-const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
+const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution', 'approval_return'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
@@ -870,16 +881,77 @@ async function saveApprovalReviewNote(historyId = '', note = '', actor = '') {
   return notes[cleanId];
 }
 
-function attachApprovalMeta(history = {}, favoriteSet = new Set(), reviewNotes = {}) {
-  const note = reviewNotes[history.id] || null;
+function cleanApprovalReturnNotes(value = {}) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const clean = {};
+  for (const [historyId, note] of Object.entries(source)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(historyId)) continue;
+    const reason = Object.prototype.hasOwnProperty.call(APPROVAL_RETURN_REASONS, note?.reason) ? note.reason : 'other';
+    const text = String(note?.note || '').trim().slice(0, 1200);
+    clean[historyId] = {
+      reason,
+      reasonLabel: APPROVAL_RETURN_REASONS[reason],
+      note: text,
+      requestedBy: String(note?.requestedBy || '').slice(0, 120),
+      requestedAt: note?.requestedAt || new Date().toISOString()
+    };
+  }
+  return clean;
+}
+
+async function loadApprovalReturnNotes() {
+  return cleanApprovalReturnNotes(await loadJsonSetting(APPROVAL_RETURN_NOTES_KEY, {}));
+}
+
+async function saveApprovalReturnNote(historyId = '', reason = 'other', note = '', actor = '') {
+  const cleanId = String(historyId || '').trim();
+  const cleanReason = Object.prototype.hasOwnProperty.call(APPROVAL_RETURN_REASONS, reason) ? reason : 'other';
+  const cleanNote = String(note || '').trim().slice(0, 1200);
+  if (!/^[0-9a-fA-F-]{36}$/.test(cleanId)) throw httpError('Kayıt bulunamadı.', 404);
+  if (cleanReason === 'other' && !cleanNote) throw httpError('Geri gönderme notu gerekli.', 400);
+  const notes = await loadApprovalReturnNotes();
+  notes[cleanId] = {
+    reason: cleanReason,
+    reasonLabel: APPROVAL_RETURN_REASONS[cleanReason],
+    note: cleanNote,
+    requestedBy: actor || '',
+    requestedAt: new Date().toISOString()
+  };
+  await saveJsonSetting(APPROVAL_RETURN_NOTES_KEY, notes);
+  return notes[cleanId];
+}
+
+async function clearApprovalReturnNote(historyId = '') {
+  const cleanId = String(historyId || '').trim();
+  if (!/^[0-9a-fA-F-]{36}$/.test(cleanId)) return;
+  const notes = await loadApprovalReturnNotes();
+  if (!Object.prototype.hasOwnProperty.call(notes, cleanId)) return;
+  delete notes[cleanId];
+  await saveJsonSetting(APPROVAL_RETURN_NOTES_KEY, notes);
+}
+
+function attachApprovalReturnMeta(history = {}, returnNotes = {}) {
+  const returnNote = returnNotes[history.id] || null;
   return {
+    ...history,
+    returnReason: returnNote?.reason || '',
+    returnReasonLabel: returnNote?.reasonLabel || '',
+    returnNote: returnNote?.note || '',
+    returnRequestedBy: returnNote?.requestedBy || '',
+    returnRequestedAt: returnNote?.requestedAt || ''
+  };
+}
+
+function attachApprovalMeta(history = {}, favoriteSet = new Set(), reviewNotes = {}, returnNotes = {}) {
+  const note = reviewNotes[history.id] || null;
+  return attachApprovalReturnMeta({
     ...history,
     statusLabel: historyStatusLabel(history.status),
     favorite: favoriteSet.has(history.id),
     reviewNote: note?.note || '',
     reviewRequestedBy: note?.requestedBy || '',
     reviewRequestedAt: note?.requestedAt || ''
-  };
+  }, returnNotes);
 }
 
 function parseJsonSettingValue(value, fallback) {
@@ -5561,23 +5633,28 @@ app.get('/api/history', auth, async (req, res) => {
       else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       return q;
     });
-    res.json((data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, req.session.role)));
+    const returnNotes = await loadApprovalReturnNotes();
+    res.json((data || [])
+      .map(mapHistory)
+      .filter(h => !isHiddenHistoryForRole(h, req.session.role))
+      .map(h => attachApprovalReturnMeta(h, returnNotes)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/history/approval-board', auth, admin, async (req, res) => {
   try {
-    const [pending, approved, rejected, review, favorites, reviewNotes] = await Promise.all([
+    const [pending, approved, rejected, review, favorites, reviewNotes, returnNotes] = await Promise.all([
       loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor')),
       loadApprovalGroup(q => q.eq('status', 'onaylandi')),
       loadApprovalGroup(q => q.eq('status', 'reddedildi')),
       loadApprovalGroup(q => q.eq('status', APPROVAL_REVIEW_STATUS)),
       loadApprovalFavoriteSet(req.session.userId),
-      loadApprovalReviewNotes()
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes()
     ]);
     const withMeta = group => ({
       ...group,
-      items: (group.items || []).map(item => attachApprovalMeta(item, favorites, reviewNotes))
+      items: (group.items || []).map(item => attachApprovalMeta(item, favorites, reviewNotes, returnNotes))
     });
     res.json({
       groups: {
@@ -5595,8 +5672,9 @@ app.get('/api/history/favorites', auth, admin, async (req, res) => {
     const favorites = await loadApprovalFavorites(req.session.userId);
     const ids = favorites.map(item => item.historyId);
     if (!ids.length) return res.json({ count: 0, items: [] });
-    const [reviewNotes, favoriteSet] = await Promise.all([
+    const [reviewNotes, returnNotes, favoriteSet] = await Promise.all([
       loadApprovalReviewNotes(),
+      loadApprovalReturnNotes(),
       loadApprovalFavoriteSet(req.session.userId)
     ]);
     const { data, error } = await supabase.from('history')
@@ -5608,7 +5686,7 @@ app.get('/api/history/favorites', auth, admin, async (req, res) => {
       .map(fav => {
         const row = byId.get(fav.historyId);
         if (!row) return null;
-        const mapped = attachApprovalMeta(mapHistory(row), favoriteSet, reviewNotes);
+        const mapped = attachApprovalMeta(mapHistory(row), favoriteSet, reviewNotes, returnNotes);
         return {
           ...mapped,
           favoriteAt: fav.createdAt,
@@ -5628,12 +5706,15 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     let mapped = mapHistory(data);
+    const returnNotes = await loadApprovalReturnNotes();
     if (isAdminRole(req.session.role)) {
       const [favorites, reviewNotes] = await Promise.all([
         loadApprovalFavoriteSet(req.session.userId),
         loadApprovalReviewNotes()
       ]);
-      mapped = attachApprovalMeta(mapped, favorites, reviewNotes);
+      mapped = attachApprovalMeta(mapped, favorites, reviewNotes, returnNotes);
+    } else {
+      mapped = attachApprovalReturnMeta(mapped, returnNotes);
     }
     if (data.user_id !== req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
@@ -5903,7 +5984,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     if (historyStatusForApproval(history.status)) {
       return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '' });
     }
-    if (history.status !== 'taslak') return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
+    if (history.status !== 'taslak' && history.status !== APPROVAL_RETURNED_STATUS) return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
     const approvalMeta = requireApprovalQuestionAndTags(req.body);
     if (await submittedDuplicateExists(req, history.text_hash, history.id)) {
       return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
@@ -5920,10 +6001,11 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       .update(updateRow)
       .eq('id', history.id)
       .eq('user_id', req.session.userId)
-      .eq('status', 'taslak')
+      .in('status', ['taslak', APPROVAL_RETURNED_STATUS])
       .select('*')
       .single();
     if (updateError) throw new Error(updateError.message);
+    await clearApprovalReturnNote(history.id);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
     res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '' });
@@ -6195,17 +6277,74 @@ async function setApproval(req, res, status) {
       await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
     }
     if (status === 'bekliyor') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
-    const [favorites, reviewNotes] = await Promise.all([
+    if (status !== APPROVAL_RETURNED_STATUS) await clearApprovalReturnNote(current.id);
+    const [favorites, reviewNotes, returnNotes] = await Promise.all([
       loadApprovalFavoriteSet(req.session.userId),
-      loadApprovalReviewNotes()
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes()
     ]);
-    res.json({ success: true, history: attachApprovalMeta(mapHistory(data[0]), favorites, reviewNotes) });
+    res.json({ success: true, history: attachApprovalMeta(mapHistory(data[0]), favorites, reviewNotes, returnNotes) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 }
 app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req, res, 'onaylandi'));
 app.post('/api/history/:id/reject',  auth, admin, (req, res) => setApproval(req, res, 'reddedildi'));
 app.post('/api/history/:id/review',  auth, admin, (req, res) => setApproval(req, res, APPROVAL_REVIEW_STATUS));
 app.post('/api/history/:id/pending', auth, admin, (req, res) => setApproval(req, res, 'bekliyor'));
+
+app.post('/api/history/:id/return', auth, admin, async (req, res) => {
+  try {
+    const now = new Date().toISOString();
+    const actor = req.session.name || req.session.username || 'Admin';
+    const reason = String(req.body?.reason || 'other').trim();
+    const cleanReason = Object.prototype.hasOwnProperty.call(APPROVAL_RETURN_REASONS, reason) ? reason : 'other';
+    const note = String(req.body?.note || '').trim().slice(0, 1200);
+    if (cleanReason === 'other' && !note) {
+      return res.status(400).json({ error: 'Geri gönderme notu gerekli.' });
+    }
+    const { data: current, error: currentError } = await supabase.from('history')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    if (current.status === 'onaylandi' || current.status === 'reddedildi') {
+      return res.status(400).json({ error: 'Onaylanmış veya reddedilmiş kayıt kullanıcıya geri gönderilemez.' });
+    }
+    const returnNote = await saveApprovalReturnNote(current.id, cleanReason, note, actor);
+    const { data, error } = await supabase.from('history')
+      .update({ status: APPROVAL_RETURNED_STATUS, approved_by: null, approved_at: null })
+      .eq('id', current.id)
+      .select('*')
+      .single();
+    if (error) throw new Error(error.message);
+    await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, APPROVAL_RETURNED_STATUS);
+    const alertMessage = [
+      'Denetim kaydınız düzenleme için geri gönderildi',
+      `Sebep: ${returnNote.reasonLabel}`,
+      returnNote.note ? `Not: ${returnNote.note}` : '',
+      `Kayıt: ${current.filename || 'Metin Girişi'}`,
+      `Gönderen: ${actor}`
+    ].filter(Boolean).join(' | ');
+    const { error: noticeError } = await supabase.from('alerts').insert({
+      type: 'approval_return',
+      message: alertMessage,
+      user_id: current.user_id,
+      history_id: current.id,
+      score: current.score,
+      read: false,
+      created_at: now
+    });
+    if (noticeError) throw new Error(noticeError.message);
+    const [favorites, reviewNotes, returnNotes] = await Promise.all([
+      loadApprovalFavoriteSet(req.session.userId),
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes()
+    ]);
+    res.json({ success: true, history: attachApprovalMeta(mapHistory(data), favorites, reviewNotes, returnNotes) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
 
 app.post('/api/history/:id([0-9a-fA-F-]{36})/tags', auth, admin, async (req, res) => {
   try {
