@@ -5377,7 +5377,7 @@ async function loadPublicArchivePageDataset(query = {}) {
       .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
       .eq('status', 'published')
       .order('published_at', { ascending: false });
-    if (selectedCategory) builder = builder.contains('topic_slugs', [selectedCategory]);
+    if (selectedCategory) builder = builder.filter('topic_slugs', 'cs', JSON.stringify([selectedCategory]));
     return builder;
   }, page);
   const categoryRows = await loadPublicArchiveCategoryIndexRows();
@@ -5401,7 +5401,7 @@ async function loadPublicArchiveCategoryDataset(slug = '', query = {}) {
     .from('public_qa')
     .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
     .eq('status', 'published')
-    .contains('topic_slugs', [cleanSlug])
+    .filter('topic_slugs', 'cs', JSON.stringify([cleanSlug]))
     .order('published_at', { ascending: false }), publicArchivePageNumber(query.sayfa));
   const categoryRows = await loadPublicArchiveCategoryRowsBySlug([cleanSlug, ...publicArchiveTagSlugsFromRows(pageResult.rows)]);
   return publicArchiveDatasetForRows({

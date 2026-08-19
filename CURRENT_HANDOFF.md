@@ -61,6 +61,8 @@
   yalnız public okuma tabloları için kısa `ensurePublicArchiveContentReady` kontrolünü bekler;
   admin seed arkada çalışmaya devam eder.
 - Route cache eklendi; public sync sonrası hem genel dataset cache'i hem route cache temizlenir.
+- Kategori filtresinde `topic_slugs` JSON alanı açık JSON `cs` filtresiyle sorgulanır; Supabase'in
+  array sözdizimiyle JSON hatası üretmesi engellendi.
 - Büyük sayı gösterimleri `3.147 soru cevap` gibi Türkçe formatla sabitlendi.
 - Yukarı çık butonunda sağ ok görünmesine yol açabilen SVG cache sorunu düzeltildi; ikon cache'i
   artık ikon adı ve CSS sınıfı birlikte kullanılarak tutulur.

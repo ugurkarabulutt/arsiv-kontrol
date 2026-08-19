@@ -162,7 +162,9 @@ tespit edilir).
   detay kaydını ve az sayıda ilişkili kaydı okur. Public render, genel admin `startupReady/seed`
   zincirinin tamamını beklemek yerine yalnız public okuma tablolarını kısa
   `ensurePublicArchiveContentReady` kontrolüyle doğrular; admin seed arkada çalışmaya devam eder.
-  Route cache eklendi ve public sync sonrası tüm public cache'ler temizlenir. Renderer server'dan gelen global `stats`, `pagination` ve
+  Route cache eklendi ve public sync sonrası tüm public cache'ler temizlenir. Kategori filtresi
+  `topic_slugs` JSON alanında açık JSON `cs` filtresiyle çalışır; Supabase'in array sözdizimiyle
+  JSON hatası üretmesi engellenir. Renderer server'dan gelen global `stats`, `pagination` ve
   `search` bilgisini kabul eder; büyük sayılar Türkçe formatlanır. Yukarı çık butonunda sağ ok
   görünmesine yol açabilen SVG cache sınıf çakışması düzeltildi. Yerel doğrulama geçti:
   `node --check server.js`, `node --check public-archive-renderer.js`,
