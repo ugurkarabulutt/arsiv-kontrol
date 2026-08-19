@@ -922,6 +922,76 @@ svg {
   gap: 12px;
 }
 
+.pa-list-status {
+  margin: 16px 0 0;
+  color: var(--pa-text-2);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.pa-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
+  border-radius: var(--pa-radius-md);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--pa-surface) 96%, #FFFFFF) 0%, color-mix(in srgb, var(--pa-primary-soft) 34%, var(--pa-surface)) 100%);
+  box-shadow: var(--pa-shadow-soft);
+}
+
+.pa-pagination-status {
+  color: var(--pa-text-2);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.pa-pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pa-page-link,
+.pa-page-current {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pa-page-link {
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--pa-primary) 0%, color-mix(in srgb, var(--pa-primary) 82%, #000000) 100%);
+  box-shadow: 0 14px 26px color-mix(in srgb, var(--pa-primary) 18%, transparent);
+}
+
+.pa-page-link:hover {
+  transform: translateY(-1px);
+}
+
+.pa-page-link.is-disabled {
+  color: var(--pa-text-3);
+  background: color-mix(in srgb, var(--pa-border) 24%, transparent);
+  box-shadow: none;
+}
+
+.pa-page-current {
+  color: var(--pa-text);
+  background: color-mix(in srgb, var(--pa-surface) 86%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 82%, transparent);
+}
+
 .pa-question-card,
 .pa-question-card.is-compact {
   position: relative;
@@ -2332,6 +2402,30 @@ a.pa-chip:hover,
   .pa-list {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  .pa-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 11px;
+    padding: 12px;
+  }
+
+  .pa-pagination-status {
+    text-align: center;
+  }
+
+  .pa-pagination-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .pa-page-link,
+  .pa-page-current {
+    min-height: 42px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 
   .pa-question-card,

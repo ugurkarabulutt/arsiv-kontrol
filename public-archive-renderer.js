@@ -7,6 +7,7 @@ const PREVIEW_BASE = '/public-preview';
 const CSS_PATH = `${PREVIEW_BASE}/public-archive.css`;
 const ASSET_PATH = `${PREVIEW_BASE}/assets`;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
+const ARCHIVE_PAGE_SIZE = 30;
 
 function normalizePublicArchiveData(archiveData = {}) {
   return {
@@ -388,7 +389,7 @@ function archiveShortcutBand() {
       <span class="pa-archive-shortcut-icon">${iconSvg('archive')}</span>
       <div class="pa-archive-shortcut-copy">
         <strong>Arşivin tamamını açın.</strong>
-        <span>Tüm soru ve cevapları tek sayfada inceleyin.</span>
+        <span>Tüm soru ve cevaplara hızlıca ulaşın.</span>
       </div>
       <span class="pa-archive-shortcut-link">Arşive Git ${iconSvg('arrow-right', 'pa-cta-icon')}</span>
     </a>
@@ -738,12 +739,67 @@ function compareArchiveLetters(a, b) {
 }
 
 function archiveQueryUrl(params = {}) {
+  return queryPageUrl(`${PREVIEW_BASE}/arsiv`, params);
+}
+
+function queryPageUrl(basePath, params = {}) {
   const search = new URLSearchParams();
   if (params.harf) search.set('harf', params.harf);
   if (params.kategori) search.set('kategori', params.kategori);
   if (params.kategoriAra) search.set('kategoriAra', params.kategoriAra);
+  const page = archivePageNumber(params.sayfa);
+  if (page > 1) search.set('sayfa', String(page));
   const query = search.toString();
-  return `${PREVIEW_BASE}/arsiv${query ? `?${query}` : ''}${params.hash ? `#${params.hash}` : ''}`;
+  return `${basePath}${query ? `?${query}` : ''}${params.hash ? `#${params.hash}` : ''}`;
+}
+
+function archivePageNumber(value) {
+  const page = Number.parseInt(String(value || '1'), 10);
+  return Number.isFinite(page) && page > 1 ? page : 1;
+}
+
+function archivePaginationState(entries = [], requestedPage = 1) {
+  const total = entries.length;
+  const totalPages = Math.max(1, Math.ceil(total / ARCHIVE_PAGE_SIZE));
+  const page = Math.min(Math.max(archivePageNumber(requestedPage), 1), totalPages);
+  const startIndex = (page - 1) * ARCHIVE_PAGE_SIZE;
+  const pageEntries = entries.slice(startIndex, startIndex + ARCHIVE_PAGE_SIZE);
+  return {
+    end: total ? Math.min(total, startIndex + pageEntries.length) : 0,
+    page,
+    pageEntries,
+    start: total ? startIndex + 1 : 0,
+    total,
+    totalPages
+  };
+}
+
+function archivePagination(basePath, params = {}, state) {
+  if (!state || state.totalPages <= 1) {
+    return state?.total
+      ? `<p class="pa-list-status">${archiveCountLabel(state.total)} soru gösteriliyor.</p>`
+      : '';
+  }
+  const prevHref = state.page > 1
+    ? queryPageUrl(basePath, { ...params, sayfa: state.page - 1, hash: 'sorular' })
+    : '';
+  const nextHref = state.page < state.totalPages
+    ? queryPageUrl(basePath, { ...params, sayfa: state.page + 1, hash: 'sorular' })
+    : '';
+  return `
+    <nav class="pa-pagination" aria-label="Arşiv sayfaları">
+      <span class="pa-pagination-status">${archiveCountLabel(state.start)}-${archiveCountLabel(state.end)} / ${archiveCountLabel(state.total)} soru gösteriliyor</span>
+      <div class="pa-pagination-actions">
+        ${prevHref
+          ? `<a class="pa-page-link" href="${escapeHtml(prevHref)}">${iconSvg('arrow-left', 'pa-cta-icon')} Önceki</a>`
+          : `<span class="pa-page-link is-disabled" aria-disabled="true">${iconSvg('arrow-left', 'pa-cta-icon')} Önceki</span>`}
+        <span class="pa-page-current">Sayfa ${archiveCountLabel(state.page)} / ${archiveCountLabel(state.totalPages)}</span>
+        ${nextHref
+          ? `<a class="pa-page-link" href="${escapeHtml(nextHref)}">Sonraki ${iconSvg('arrow-right', 'pa-cta-icon')}</a>`
+          : `<span class="pa-page-link is-disabled" aria-disabled="true">Sonraki ${iconSvg('arrow-right', 'pa-cta-icon')}</span>`}
+      </div>
+    </nav>
+  `;
 }
 
 function archiveCategoryIndexState(query = {}) {
@@ -825,6 +881,12 @@ function renderArchive(query = {}) {
   const visibleEntries = categoryIndex.selectedCategory
     ? entries.filter(entry => categorySlugsFor(entry).includes(categoryIndex.selectedCategory.slug))
     : entries;
+  const pageState = archivePaginationState(visibleEntries, query.sayfa);
+  const paginationParams = {
+    harf: (query.harf || categoryIndex.selectedCategory || categoryIndex.categorySearch) ? categoryIndex.activeLetter : '',
+    kategori: categoryIndex.selectedCategory?.slug || '',
+    kategoriAra: categoryIndex.categorySearch || ''
+  };
   const listTitle = categoryIndex.selectedCategory ? `${categoryIndex.selectedCategory.name} soruları` : 'Tüm Sorular';
   return renderShell({
     active: 'archive',
@@ -844,7 +906,7 @@ function renderArchive(query = {}) {
         <section class="pa-section" id="sorular">
           ${sectionHeader(listTitle, categoryIndex.selectedCategory ? 'Tümünü göster' : '', categoryIndex.selectedCategory ? archiveQueryUrl({ harf: categoryIndex.activeLetter, hash: 'sorular' }) : '')}
           ${visibleEntries.length
-            ? `<div class="pa-list">${visibleEntries.map(entry => questionCard(entry, true)).join('')}</div>`
+            ? `<div class="pa-list">${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>${archivePagination(`${PREVIEW_BASE}/arsiv`, paginationParams, pageState)}`
             : `<div class="pa-empty-state"><h2>Bu kategoride soru görünmüyor.</h2><p>Arşivdeki diğer kategorileri inceleyebilirsiniz.</p></div>`}
         </section>
       </main>
@@ -976,14 +1038,15 @@ function renderQuestion(slug) {
   });
 }
 
-function renderTopic(slug) {
-  return renderCategory(slug);
+function renderTopic(slug, query = {}) {
+  return renderCategory(slug, query, `${PREVIEW_BASE}/konu/${slug}`);
 }
 
-function renderCategory(slug) {
+function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/${slug}`) {
   const category = publicCategoryBySlug(slug);
   if (!category) return renderNotFound();
   const entries = entriesForCategory(category.slug);
+  const pageState = archivePaginationState(entries, query.sayfa);
   return renderShell({
     active: 'categories',
     title: category.name,
@@ -999,9 +1062,10 @@ function renderCategory(slug) {
             <span>${entries.length} ilgili soru</span>
           </div>
         </section>
-        <section class="pa-section">
+        <section class="pa-section" id="sorular">
           ${sectionHeader('Bu Kategorideki Sorular')}
-          <div class="pa-list">${entries.map(entry => questionCard(entry, true)).join('')}</div>
+          <div class="pa-list">${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>
+          ${archivePagination(basePath, {}, pageState)}
         </section>
       </main>
     `
@@ -1608,9 +1672,9 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
     if (questionMatch) return renderQuestion(questionMatch[1]);
     const topicMatch = pathname.match(/^\/public-preview\/konu\/([^/]+)$/);
-    if (topicMatch) return renderTopic(topicMatch[1]);
+    if (topicMatch) return renderTopic(topicMatch[1], query);
     const categoryMatch = pathname.match(/^\/public-preview\/kategori\/([^/]+)$/);
-    if (categoryMatch) return renderCategory(categoryMatch[1]);
+    if (categoryMatch) return renderCategory(categoryMatch[1], query);
     return renderNotFound();
   });
 }
@@ -1651,7 +1715,8 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/arsiv', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arsiv`, {
     harf: req.query.harf || '',
     kategori: req.query.kategori || '',
-    kategoriAra: req.query.kategoriAra || ''
+    kategoriAra: req.query.kategoriAra || '',
+    sayfa: req.query.sayfa || ''
   }));
   router.get('/arama', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arama`, { q: req.query.q || '' }));
   router.get('/konular', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konular`));
@@ -1664,8 +1729,8 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/gizlilik`));
   router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kullanim-kosullari`));
   router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/soru/${req.params.slug}`));
-  router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konu/${req.params.slug}`));
-  router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategori/${req.params.slug}`));
+  router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konu/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
+  router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategori/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
   router.use((req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/bulunamadi`));
   return router;
 }

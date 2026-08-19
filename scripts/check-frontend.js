@@ -1080,7 +1080,7 @@ for (const assetUrl of [
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevapları tek sayfada inceleyin.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
@@ -1131,6 +1131,9 @@ assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.'
 assert(archivePreview.includes('soru cevap') && !/<span>\d+ soru<\/span>\s*<span>\d+ cevap<\/span>/.test(archivePreview), 'Public arsiv sayacinda soru/cevap ayrimi tek ifadeye inmeli.');
 for (const marker of ['pa-alpha-index', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
   assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
+}
+for (const marker of ['ARCHIVE_PAGE_SIZE', 'archivePaginationState', 'archivePagination(', 'pa-pagination', 'pa-pagination-actions', 'Sayfa ', 'soru gösteriliyor', 'sayfa: req.query.sayfa']) {
+  assert(publicRendererSource.includes(marker) || publicArchiveCss.includes(marker), `Public arsiv sayfalama marker eksik: ${marker}`);
 }
 assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && !archivePreview.includes('Yayınlanan kayıtları Allah’a ulaşmayı dilemek'), 'Public arsiv sayfasi eski hero metnini icermemeli.');
 assert(!archivePreview.includes('<h2>Kategoriler</h2>') && !archivePreview.includes('<h2>Kavramlar</h2>') && !archivePreview.includes('/public-preview/konular'), 'Public arsiv sayfasinda kategori/kavram vitrinleri gorunmemeli.');

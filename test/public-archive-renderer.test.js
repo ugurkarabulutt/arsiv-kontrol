@@ -105,7 +105,7 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.doesNotMatch(home, /<strong>Ana Başlıklar<\/strong>|<strong>Kavramlar<\/strong>/);
   assert.match(home, /<a class="pa-archive-shortcut" href="\/public-preview\/arsiv"/);
   assert.match(home, /Arşivin tamamını açın\./);
-  assert.match(home, /Tüm soru ve cevapları tek sayfada inceleyin\./);
+  assert.match(home, /Tüm soru ve cevaplara hızlıca ulaşın\./);
   assert.match(home, /<span class="pa-archive-shortcut-link">Arşive Git/);
   assert.doesNotMatch(home, /Arşiv ana kapıları/);
   assert.doesNotMatch(home, /Cevapları yalnız liste olarak değil, kavram yolu olarak okuyun\./);
@@ -154,6 +154,49 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(account, /Google ile Devam Et/);
   assert.match(account, /\/public-preview\/auth\/google/);
   assertOnlyPublicPreviewApi(account);
+});
+
+test('archive lists are paginated for large public data', () => {
+  const largeData = {
+    categories: [
+      { slug: 'hidayet', name: 'Hidayet', description: 'Hidayet kategorisi.' }
+    ],
+    topics: [],
+    qa: Array.from({ length: 75 }, (_, index) => {
+      const number = index + 1;
+      return {
+        id: `qa-${number}`,
+        slug: `soru-${number}`,
+        title: `Soru ${number}`,
+        question: `Soru ${number}`,
+        answer: [`Cevap ${number}`],
+        categorySlug: 'hidayet',
+        categorySlugs: ['hidayet'],
+        topicSlugs: [],
+        publishedAt: '2026-08-10',
+        readTime: 1,
+        readCount: number
+      };
+    })
+  };
+
+  const firstPage = renderPublicArchivePreviewRoute('/public-preview/arsiv', {}, largeData).html;
+  assert.equal((firstPage.match(/class="pa-question-card/g) || []).length, 30);
+  assert.match(firstPage, /1-30 \/ 75 soru gösteriliyor/);
+  assert.match(firstPage, /Sayfa 1 \/ 3/);
+  assert.match(firstPage, /href="\/public-preview\/arsiv\?sayfa=2#sorular"/);
+  assert.doesNotMatch(firstPage, /Soru 75/);
+
+  const thirdPage = renderPublicArchivePreviewRoute('/public-preview/arsiv', { sayfa: '3' }, largeData).html;
+  assert.equal((thirdPage.match(/class="pa-question-card/g) || []).length, 15);
+  assert.match(thirdPage, /61-75 \/ 75 soru gösteriliyor/);
+  assert.match(thirdPage, /Sayfa 3 \/ 3/);
+  assert.match(thirdPage, /Soru 75/);
+
+  const categorySecondPage = renderPublicArchivePreviewRoute('/public-preview/kategori/hidayet', { sayfa: '2' }, largeData).html;
+  assert.equal((categorySecondPage.match(/class="pa-question-card/g) || []).length, 30);
+  assert.match(categorySecondPage, /31-60 \/ 75 soru gösteriliyor/);
+  assert.match(categorySecondPage, /href="\/public-preview\/kategori\/hidayet\?sayfa=3#sorular"/);
 });
 
 test('public preview search and missing states are deterministic', () => {
