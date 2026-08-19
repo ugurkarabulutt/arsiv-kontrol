@@ -1122,6 +1122,12 @@ assert(homePreview.includes('Sorularınız Dr. Abdulcabbar Boran tarafından Kur
 assert(homePreview.includes('Hesab\u0131m'), 'Public account control eksik.');
 assert(homePreview.includes('href="/public-preview/hesabim"'), 'Public account control hesap route una gitmeli.');
 assert(homePreview.includes('href="/public-preview/arsiv"'), 'Public arsiv linki gercek arsiv route una gitmeli.');
+for (const marker of ['pa-mobile-nav', 'pa-scroll-top', 'data-scroll-top', 'Yukarı çık']) {
+  assert(homePreview.includes(marker), `Public global mobil kontrol marker eksik: ${marker}`);
+}
+for (const marker of ['bindScrollTopControl', 'window.scrollY > 420', "window.scrollTo({ top: 0, behavior: 'smooth' })", 'data-visible']) {
+  assert(publicRendererSource.includes(marker), `Public yukari cik davranis marker eksik: ${marker}`);
+}
 for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-strong-cta', 'data-read-count-label', 'okunma']) {
   assert(homePreview.includes(marker), `Public soru karti aksiyon/okunma marker eksik: ${marker}`);
 }
@@ -1202,6 +1208,9 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
 assert(!publicCss.includes('.pa-question-card.has-strong-cta .pa-card-cta'), 'Public soru karti CTA stili yalniz featured kartlara bagli olmamali.');
+for (const marker of ['.pa-mobile-nav::before', '-webkit-backdrop-filter: blur(28px) saturate(1.45)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
+  assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
+}
 for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-live-dot', '@keyframes pa-live-pulse', '@keyframes pa-live-blink']) {
   assert(publicCss.includes(marker), `Public aktif arsiv sayaci CSS marker eksik: ${marker}`);
 }

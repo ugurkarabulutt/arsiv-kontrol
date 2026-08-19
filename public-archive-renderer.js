@@ -1306,6 +1306,9 @@ function renderShell({ title, description, active, content, status = 200, questi
   <nav class="pa-mobile-nav" aria-label="Mobil alt gezinme">
     ${previewActionNav(active)}
   </nav>
+  <button class="pa-scroll-top" type="button" data-scroll-top aria-label="Yukarı çık" aria-hidden="true">
+    ${iconSvg('arrow-right', 'pa-scroll-top-icon')}
+  </button>
   <script>
     (function(){
       function applyTheme(theme) {
@@ -1549,6 +1552,28 @@ function renderShell({ title, description, active, content, status = 200, questi
           window.setTimeout(startCounters, 300);
         }
       }
+      function bindScrollTopControl() {
+        var button = document.querySelector('[data-scroll-top]');
+        if (!button) return;
+        var ticking = false;
+        function update() {
+          var visible = window.scrollY > 420;
+          button.setAttribute('data-visible', visible ? 'true' : 'false');
+          button.setAttribute('aria-hidden', visible ? 'false' : 'true');
+          ticking = false;
+        }
+        window.addEventListener('scroll', function(){
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(update);
+        }, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+        button.addEventListener('click', function(){
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          button.blur();
+        });
+        update();
+      }
       async function trackQuestionRead() {
         var slug = document.body.getAttribute('data-question-slug');
         if (!slug) return;
@@ -1645,6 +1670,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       trackQuestionRead();
       bindConceptSliders();
       bindActiveStatsCounters();
+      bindScrollTopControl();
       loadPublicSession().then(renderSessionUi);
       bindQuestionForm();
     })();

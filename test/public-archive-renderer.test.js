@@ -103,6 +103,10 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, />Ara<\/span>/);
   assert.doesNotMatch(home, />Konular<\/span>|>Konular<\/a>|>Kategoriler<\/a>/);
   assert.doesNotMatch(home, /<strong>Ana Başlıklar<\/strong>|<strong>Kavramlar<\/strong>/);
+  assert.match(home, /class="pa-mobile-nav"/);
+  assert.match(home, /class="pa-scroll-top"/);
+  assert.match(home, /data-scroll-top/);
+  assert.match(home, /aria-label="Yukarı çık"/);
   assert.match(home, /<a class="pa-archive-shortcut" href="\/public-preview\/arsiv"/);
   assert.match(home, /Arşivin tamamını açın\./);
   assert.match(home, /Tüm soru ve cevaplara hızlıca ulaşın\./);
