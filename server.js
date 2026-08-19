@@ -5226,20 +5226,17 @@ async function loadPublicArchiveDataset(options = {}) {
       .eq('status', 'published')
       .order('published_at', { ascending: false }), 1000);
     if (qaRows.length) {
-      const [categoryRows, topicRows, statsMap] = await Promise.all([
+      const [categoryRows, topicRows] = await Promise.all([
         fetchAllPages(() => supabase.from('public_categories').select('*').order('sort_order', { ascending: true }), 1000),
-        fetchAllPages(() => supabase.from('public_topics').select('*').order('sort_order', { ascending: true }), 1000),
-        loadPublicArchiveStatsMap(qaRows.map(row => row.slug))
+        fetchAllPages(() => supabase.from('public_topics').select('*').order('sort_order', { ascending: true }), 1000)
       ]);
-      dataset = publicArchiveDatasetFromPublicRows({ qaRows, categoryRows, topicRows, statsMap });
+      dataset = publicArchiveDatasetFromPublicRows({ qaRows, categoryRows, topicRows });
     }
   }
 
   if (!dataset || !dataset.qa?.length) {
     const rows = await loadApprovedHistoryForPublicArchive();
-    const usedSlugs = rows.map(row => publicArchiveSlug(row.question_text || row.filename || row.id));
-    const statsMap = await loadPublicArchiveStatsMap(usedSlugs);
-    dataset = publicArchiveDatasetFromRecords(rows, statsMap);
+    dataset = publicArchiveDatasetFromRecords(rows);
   }
 
   publicArchiveDatasetCache = {

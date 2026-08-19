@@ -236,6 +236,8 @@ assert(server.includes("cssFile: path.join(__dirname, 'public-archive.css')"), '
 assert(!server.includes('PUBLIC_ARCHIVE_DEMO'), 'Eski PUBLIC_ARCHIVE_DEMO mekanizmasi server.js icinde kalmamali.');
 assert(!server.includes("require('./public-archive-demo')"), 'Eski public-archive-demo router server.js icinde kalmamali.');
 assert(!server.includes('archive-public.css'), 'Eski archive-public.css referansi server.js icinde kalmamali.');
+assert(!server.includes('loadPublicArchiveStatsMap(qaRows.map'), 'Public dataset ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
+assert(!server.includes('const usedSlugs = rows.map'), 'Public history fallback ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(!fs.existsSync(path.join(root, 'scripts', 'build-archive-demo-static.js')), 'Eski statik demo build scripti repoda kalmamali.');
 assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
 assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');
