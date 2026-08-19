@@ -4746,19 +4746,7 @@ async function seed() {
   HAS_HISTORY_PUBLIC_FIELDS = !historyPublicFieldsErr;
   if (!HAS_HISTORY_PUBLIC_FIELDS) console.warn('⚠ history.question_text/tags alanları yok — onaylı kayıtlardan public veri üretimi pasif.');
 
-  const [
-    publicQaProbe,
-    publicCategoriesProbe,
-    publicTopicsProbe,
-    publicQaTopicsProbe
-  ] = await Promise.all([
-    supabase.from('public_qa').select('slug').limit(1),
-    supabase.from('public_categories').select('slug').limit(1),
-    supabase.from('public_topics').select('slug').limit(1),
-    supabase.from('public_qa_topics').select('qa_slug').limit(1)
-  ]);
-  HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = !publicQaProbe.error && !publicCategoriesProbe.error && !publicTopicsProbe.error && !publicQaTopicsProbe.error;
-  if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) console.warn('⚠ public_qa/public_categories/public_topics tabloları yok — public arşiv onaylı kayıt köprüsüyle çalışacak.');
+  await ensurePublicArchiveContentReady();
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -4876,6 +4864,7 @@ const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 const publicArchiveRouteCache = new Map();
+let publicArchiveContentReady = null;
 
 function publicArchiveDefaultData() {
   try {
@@ -5235,6 +5224,33 @@ function clearPublicArchiveCaches() {
   publicArchiveRouteCache.clear();
 }
 
+async function ensurePublicArchiveContentReady() {
+  if (!publicArchiveContentReady) {
+    publicArchiveContentReady = (async () => {
+      const [
+        publicQaProbe,
+        publicCategoriesProbe,
+        publicTopicsProbe,
+        publicQaTopicsProbe
+      ] = await Promise.all([
+        supabase.from('public_qa').select('slug').limit(1),
+        supabase.from('public_categories').select('slug').limit(1),
+        supabase.from('public_topics').select('slug').limit(1),
+        supabase.from('public_qa_topics').select('qa_slug').limit(1)
+      ]);
+      HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = !publicQaProbe.error && !publicCategoriesProbe.error && !publicTopicsProbe.error && !publicQaTopicsProbe.error;
+      if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) console.warn('⚠ public_qa/public_categories/public_topics tabloları yok — public arşiv onaylı kayıt köprüsüyle çalışacak.');
+      return HAS_PUBLIC_ARCHIVE_CONTENT_TABLES;
+    })().catch(error => {
+      publicArchiveContentReady = null;
+      HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false;
+      console.warn('Public arşiv tablo kontrolü başarısız:', error.message);
+      return false;
+    });
+  }
+  return publicArchiveContentReady;
+}
+
 function publicArchivePageNumber(value) {
   const page = Number.parseInt(String(value || '1'), 10);
   return Number.isFinite(page) && page > 1 ? page : 1;
@@ -5470,8 +5486,10 @@ async function loadPublicArchiveQuestionDataset(slug = '') {
 }
 
 async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
-  await startupReady;
-  if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) return loadPublicArchiveDataset();
+  if (!await ensurePublicArchiveContentReady()) {
+    await startupReady;
+    return loadPublicArchiveDataset();
+  }
   const key = publicArchiveRouteCacheKey(routePath, query);
   const cached = getPublicArchiveRouteCache(key);
   if (cached) return cached;

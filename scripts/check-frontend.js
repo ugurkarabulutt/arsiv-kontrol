@@ -237,6 +237,7 @@ assert(!server.includes('PUBLIC_ARCHIVE_DEMO'), 'Eski PUBLIC_ARCHIVE_DEMO mekani
 assert(!server.includes("require('./public-archive-demo')"), 'Eski public-archive-demo router server.js icinde kalmamali.');
 assert(!server.includes('archive-public.css'), 'Eski archive-public.css referansi server.js icinde kalmamali.');
 assert(server.includes('loadPublicArchiveRouteDataset'), 'Public preview route bazli veri yukleyici kullanilmali.');
+assert(server.includes('ensurePublicArchiveContentReady'), 'Public preview admin startup seed tamamini beklemeden public tablo hazirligini kontrol etmeli.');
 assert(server.includes('PUBLIC_ARCHIVE_LIST_SELECT') && server.includes('PUBLIC_ARCHIVE_DETAIL_SELECT'), 'Public preview liste/detay kolon secimleri ayrilmali.');
 assert(server.includes('publicArchiveRouteCache') && server.includes('PUBLIC_ARCHIVE_ROUTE_CACHE_MS'), 'Public preview route cache eksik.');
 assert(!server.includes('loadArchiveData: async () =>'), 'Public preview router tum dataset yukleyen eski loadArchiveData imzasina donmemeli.');

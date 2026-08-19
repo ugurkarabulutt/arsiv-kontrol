@@ -57,6 +57,9 @@
   3147 kaydın tamamını ve tüm kategori bağlantılarını çekmez; yalnız öne çıkan/son kayıtlar ve
   toplam sayaç bilgisini alır. `/public-preview/arsiv` ve kategori sayfaları 30 kayıtlık sayfalı
   listeyle çalışır; soru detay sayfası yalnız ilgili soru ve az sayıda ilişkili kaydı okur.
+- Public render artık genel admin `startupReady/seed` zincirinin bitmesini beklemez. Public sayfa
+  yalnız public okuma tabloları için kısa `ensurePublicArchiveContentReady` kontrolünü bekler;
+  admin seed arkada çalışmaya devam eder.
 - Route cache eklendi; public sync sonrası hem genel dataset cache'i hem route cache temizlenir.
 - Büyük sayı gösterimleri `3.147 soru cevap` gibi Türkçe formatla sabitlendi.
 - Yukarı çık butonunda sağ ok görünmesine yol açabilen SVG cache sorunu düzeltildi; ikon cache'i

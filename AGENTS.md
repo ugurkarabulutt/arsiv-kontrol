@@ -159,8 +159,10 @@ tespit edilir).
   isteğinde yaklaşık `9.2 sn` gecikme bildirmesi üzerine `/public-preview` artık tüm public arşiv
   dataset'ini çekmez. Ana sayfa yalnız öne çıkan/son kayıtlar ve toplam sayaçları okur; `/arsiv`
   ve kategori sayfaları 30 kayıtlık sayfalı listeyle çalışır; soru detay sayfası yalnız ilgili
-  detay kaydını ve az sayıda ilişkili kaydı okur. Route cache eklendi ve public sync sonrası tüm
-  public cache'ler temizlenir. Renderer server'dan gelen global `stats`, `pagination` ve
+  detay kaydını ve az sayıda ilişkili kaydı okur. Public render, genel admin `startupReady/seed`
+  zincirinin tamamını beklemek yerine yalnız public okuma tablolarını kısa
+  `ensurePublicArchiveContentReady` kontrolüyle doğrular; admin seed arkada çalışmaya devam eder.
+  Route cache eklendi ve public sync sonrası tüm public cache'ler temizlenir. Renderer server'dan gelen global `stats`, `pagination` ve
   `search` bilgisini kabul eder; büyük sayılar Türkçe formatlanır. Yukarı çık butonunda sağ ok
   görünmesine yol açabilen SVG cache sınıf çakışması düzeltildi. Yerel doğrulama geçti:
   `node --check server.js`, `node --check public-archive-renderer.js`,
