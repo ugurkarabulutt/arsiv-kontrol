@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-19 Codex Public Launch Entegrasyon Hazırlığı
+
+- Public launch entegrasyonu için `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`
+  worktree içinde `codex/public-launch-integration` branch'i açıldı.
+- Public preview hattındaki gerçek veri/public site hazırlığı ile canlı admin hattındaki son
+  admin işleri aynı branch'te birleştirildi. Korunan ana işler: `/public-preview` public ön yüz,
+  onaylı kayıtları public okuma modeline hazırlayan `Onaylıları Siteye Hazırla` akışı, canlı site
+  `Soru Talepleri`, admin onay ekranında favori/teyit/geri gönderme akışı, kullanıcıya geri dönen
+  denetimler, çözüm/feedback merkezi ve eski Excel etiket-soru aktarımı ekranı.
+- Merge çatışmaları `server.js`, `index.html`, `schema.sql` ve `scripts/check-frontend.js`
+  üzerinde iki hattı da koruyacak şekilde çözüldü. Public root cutover yapılmadı; production
+  alias henüz değiştirilmedi.
+- Yerel doğrulama geçti: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
+  Tam check `97/97` test başarılı.
+- Sıradaki adım: entegrasyon commit/push, Vercel preview deploy, `/public-preview` üzerinde gerçek
+  veri smoke, ardından admin içinden onaylı kayıtları siteye hazırlama/senkron kontrolü. Root `/`
+  ancak ayrıca açık onayla public siteye çevrilecek.
+
 ## 2026-08-16 Codex Public Preview Etiketlerden Kategori Modeli
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

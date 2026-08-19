@@ -173,6 +173,12 @@ if (!html.includes('/api/extract-file-text') || !server.includes('/api/extract-f
 if (!server.includes("status = 'taslak'") || !server.includes('/api/history/submit-merged') || !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/submit'")) {
   throw new Error('Denetim sonucunun once taslak kalip ayrica onaya gonderilmesini saglayan API akisi eksik.');
 }
+if (!html.includes('id="approveDetailBtn"') || !html.includes('approveDetailFromModal') || !html.includes("window.setTimeout(()=>closeModal('detailModal'),450)")) {
+  throw new Error('Denetim kaydi modalinda kopyalama yerine dogrudan onaylama akisi bulunmali.');
+}
+if (html.includes('id="copyDetailBtn"') || html.includes('function copyDetail()')) {
+  throw new Error('Denetim kaydi modalinda eski Kopyala butonu/akisi kalmamali.');
+}
 const noStoreHeader = (vercelConfig.headers || []).some(item =>
   (item.headers || []).some(h => h.key === 'Cache-Control' && String(h.value || '').includes('no-store'))
 );
@@ -352,11 +358,11 @@ if (!html.includes('submitApprovalModal') || !html.includes('renderApprovalActio
 }
 const approvalSubmittedFn = html.match(/function approvalSubmitted\(d\)\{[\s\S]*?\n\}/)?.[0] || '';
 if (
-  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','onaylandi','reddedildi'])") ||
+  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','onaylandi','reddedildi'])") ||
   !approvalSubmittedFn.includes('SUBMITTED_APPROVAL_STATUSES.has(status)') ||
   approvalSubmittedFn.includes('!status')
 ) {
-  throw new Error('Bos veya eksik status onaya gonderilmis sayilmamali; sadece bekliyor/onaylandi/reddedildi pasiflestirmeli.');
+  throw new Error('Bos veya eksik status onaya gonderilmis sayilmamali; sadece bekliyor/teyit_bekliyor/onaylandi/reddedildi pasiflestirmeli.');
 }
 if (
   !html.includes('resetCurrentAnalysisStateForNewRun();') ||
@@ -394,6 +400,160 @@ if (html.includes('corrected-btns') || html.includes('onclick="downloadPDF()"') 
 }
 if (!html.includes('function setApprovalAction') || !html.includes("await loadOnay();") || !html.includes("approveItem('${h.id}',this)") || !html.includes("rejectItem('${h.id}',this)")) {
   throw new Error('Is Panosu onay/red sonrasi paneli yenilemeli ve buton islemini gorunur sekilde kilitlemeli.');
+}
+if (
+  !server.includes("const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor'") ||
+  !server.includes("app.post('/api/history/:id/review'") ||
+  !server.includes("app.post('/api/history/:id/pending'") ||
+  !server.includes("app.get('/api/history/favorites'") ||
+  !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/favorite'") ||
+  !html.includes('Teyit Bekleyenler') ||
+  !html.includes('toggleApprovalFavorite') ||
+  !html.includes("reviewItem('${h.id}',this)") ||
+  !html.includes("pendingItem('${h.id}',this)") ||
+  !html.includes('Favorilerim')
+) {
+  throw new Error('Admin onay akisi Teyit Bekleyenler ve Favorilerim ozelliklerini korumali.');
+}
+if (
+  !schema.includes("tags jsonb not null default '[]'::jsonb") ||
+  !schema.includes('question_text  text') ||
+  !schema.includes('history_tags_idx') ||
+  !server.includes('HAS_HISTORY_TAGS') ||
+  !server.includes('HAS_HISTORY_QUESTION_TEXT') ||
+  !server.includes('function normalizeHistoryTags') ||
+  !server.includes('function normalizeHistoryQuestion') ||
+  !server.includes('function requireApprovalQuestionAndTags') ||
+  !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/tags'") ||
+  !server.includes('const approvalMeta = requireApprovalQuestionAndTags(req.body)') ||
+  !server.includes('updateRow.tags = approvalMeta.tags') ||
+  !server.includes('updateRow.question_text = approvalMeta.questionText') ||
+  !server.includes('mergedRow.tags = approvalMeta.tags') ||
+  !server.includes('mergedRow.question_text = approvalMeta.questionText') ||
+  !server.includes('const importedQuestion = normalizeHistoryQuestion(match.excel_question)') ||
+  !server.includes("if (importedQuestion && (!existingQuestion || options.replaceQuestion === true))") ||
+  !server.includes('function fetchHistoryQuestionRowsByIds') ||
+  !server.includes('function historyTagImportQuestionLimit') ||
+  !server.includes('function updateHistoryQuestionsBulk') ||
+  !server.includes('function backfillHistoryTagImportQuestionsChunk') ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS') ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
+  !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
+  !server.includes('questionText: h.question_text') ||
+  !server.includes('Soru Etiketleri') ||
+  !server.includes('Soru') ||
+  !html.includes('normalizeHistoryQuestionUi') ||
+  !html.includes('id="submitApprovalQuestionMain"') ||
+  !html.includes('id="submitApprovalQuestion"') ||
+  !html.includes('id="submitApprovalTags"') ||
+  !html.includes('Soru (zorunlu)') ||
+  !html.includes('Etiketler (zorunlu)') ||
+  !html.includes('Onaya göndermeden önce soru alanını doldurun.') ||
+  !html.includes('Onaya göndermeden önce en az bir etiket ekleyin.') ||
+  !html.includes('id="historyTagImportBackfillQuestionsBtn"') ||
+  !html.includes('backfillHistoryTagImportQuestions') ||
+  !html.includes('Excel Sorularını Ekle') ||
+  !html.includes('Sorular Arka Planda Ekleniyor') ||
+  !html.includes('boş soru alanı tamamlandı') ||
+  !html.includes('Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.') ||
+  !html.includes('archive-question-backfill-pending') ||
+  !html.includes('resumePendingHistoryTagImportQuestions') ||
+  !html.includes('document.addEventListener(\'visibilitychange\'') ||
+  !html.includes('Daha önce elle yazılmış sorular korunur') ||
+  !html.includes('renderSubmitTagsPreview') ||
+  !html.includes('id="detailHistoryQuestion"') ||
+  !html.includes('id="detailHistoryTags"') ||
+  !html.includes("setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))})") ||
+  !html.includes('h.questionText') ||
+  !html.includes('historyTagsChips(h.tags||[])')
+) {
+  throw new Error('Soru-cevap soru ve etiket alanlari onaya gonderme, admin onay duzeltmesi, Excel aktarimi, CSV ve DB semasinda korunmali.');
+}
+if (
+  !schema.includes('history_tag_import_batches') ||
+  !schema.includes('history_tag_import_matches') ||
+  !server.includes('function parseHistoryTagImportWorkbook') ||
+  !server.includes('function ensureHistoryTagImportReady') ||
+  !server.includes("app.post('/api/history-tags/import/preview'") ||
+  !server.includes("app.post('/api/history-tags/import/upload/start'") ||
+  !server.includes("app.post('/api/history-tags/import/upload/chunk'") ||
+  !server.includes("app.post('/api/history-tags/import/upload/complete'") ||
+  !server.includes('TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH') ||
+  !server.includes('function historyTagImportSelectColumns()') ||
+  !server.includes("app.get('/api/history-tags/import-batches'") ||
+  !server.includes("app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})'") ||
+  !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review'") ||
+  !server.includes("app.get('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/candidates'") ||
+  !server.includes("app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/select-candidate'") ||
+  !server.includes('replaceQuestion: true') ||
+  !server.includes("applied: applyNow") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions'") ||
+  !server.includes("app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start'") ||
+  !server.includes("app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status'") ||
+  !server.includes('async function runHistoryTagImportQuestionBackfillJob') ||
+  !server.includes('function loadHistoryTagImportExcelItems') ||
+  !server.includes('function findHistoryTagImportCandidatesForMatch') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS') ||
+  !server.includes('TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS') ||
+  !server.includes('function historyTagImportQuestionLimit') ||
+  !server.includes('async function updateHistoryQuestionsBulk') ||
+  !server.includes('TAG_IMPORT_APPLY_CHUNK_SIZE') ||
+  !server.includes('function historyTagImportApplyLimit') ||
+  !server.includes('async function applyHistoryTagImportBatchChunk') ||
+  !server.includes('async function backfillHistoryTagImportQuestionsChunk') ||
+  server.includes(".order('updated_at', { ascending: true })\r\n    .limit(safeLimit)") ||
+  server.includes(".order('updated_at', { ascending: true })\n    .limit(safeLimit)") ||
+  !server.includes('remaining,') ||
+  !server.includes('done: remaining === 0') ||
+  !server.includes("const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')") ||
+  !server.includes('const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);') ||
+  server.includes("const rows = await fetchAllPages(() => supabase.from('history_tag_import_matches')\n      .select('id')\n      .eq('batch_id', req.params.id)\n      .eq('match_status', 'ready')") ||
+  !server.includes('TAG_IMPORT_INITIAL_DETAIL_LIMIT') ||
+  !server.includes('insertHistoryTagImportMatches') ||
+  !server.includes('publicHistoryTagImportHistory') ||
+  !html.includes('data-ops-view="tagImport"') ||
+  !html.includes('id="historyTagImportFile"') ||
+  !html.includes('uploadHistoryTagImportFile') ||
+  !html.includes('HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES') ||
+  !html.includes('/api/history-tags/import/upload/start') ||
+  !html.includes('/api/history-tags/import/upload/chunk') ||
+  !html.includes('/api/history-tags/import/upload/complete') ||
+  !html.includes('readHistoryTagImportUploadResponse') ||
+  !html.includes('applyHistoryTagImportMatch') ||
+  !html.includes('applyHistoryTagImportMatchesInSteps') ||
+  !html.includes('applyReadyHistoryTagImportMatches') ||
+  !html.includes('applyReviewHistoryTagImportMatches') ||
+  !html.includes('backfillHistoryTagImportQuestions') ||
+  !html.includes('/backfill-questions/start') ||
+  !html.includes('/backfill-questions/status') ||
+  !html.includes('archive-question-backfill-pending') ||
+  !html.includes('visibilitychange') ||
+  !html.includes('historyTagImportApplyReadyBtn') ||
+  !html.includes('historyTagImportApplyReviewBtn') ||
+  !html.includes('historyTagImportBackfillQuestionsBtn') ||
+  !html.includes('deleteHistoryTagImportBatch') ||
+  !html.includes('toggleHistoryTagImportCandidates') ||
+  !html.includes('selectHistoryTagImportCandidate') ||
+  !html.includes('tag-import-candidate-panel') ||
+  !html.includes('Excel Adayları') ||
+  !html.includes('Bu Satırı Seç') ||
+  !html.includes('{rowNumber,applyNow}') ||
+  !html.includes('soru ve etiketler kayda uygulandı') ||
+  !html.includes('Seçili Aktarımı Sil') ||
+  !html.includes('Güvenli Eşleşmeleri Uygula') ||
+  !html.includes('Kontrol Gerekenleri Uygula') ||
+  !html.includes('Excel Sorularını Ekle') ||
+  !html.includes('Listeyi Yenile') ||
+  html.includes('Yüksek Güvenlileri Uygula') ||
+  html.includes('Partileri Yenile') ||
+  html.includes('Aktarım partileri')
+) {
+  throw new Error('Excel etiket aktarimi icin super admin ekrani, import APIleri ve DB semasi korunmali.');
 }
 if (!html.includes('openSubmitApprovalFromHistory') || !html.includes('value="taslak"')) {
   throw new Error('Kullanici gecmisindeki taslaklari filtreleme ve onaya gonderme akisi eksik.');
@@ -569,6 +729,12 @@ if (
   !server.includes('function archiveReleasePackageOutputManifest') ||
   !server.includes('function archiveReleasePackageOutputMarkdown') ||
   !server.includes('function archiveReleasePackageOutputCsv') ||
+  !server.includes('ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION') ||
+  !server.includes('ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS') ||
+  !server.includes('function validateArchivePublicRecords') ||
+  !server.includes('publicReadiness') ||
+  !server.includes('function archiveReleasePackagePublicRecords') ||
+  !server.includes("format: 'public-json'") ||
   !server.includes('function updateArchiveReleasePackagePublication') ||
   !server.includes('function updateArchiveReleasePackageItemReview') ||
   !server.includes('function lockArchiveReleasePackage') ||
@@ -665,9 +831,15 @@ if (
   !html.includes('Paket Çıktı Merkezi') ||
   !html.includes('id="archiveOutputPackageList"') ||
   !html.includes('id="archiveOutputPublicationUrl"') ||
+  !html.includes('value="public-json"') ||
+  !html.includes('archive-public-readiness') ||
+  !html.includes('function archiveOutputPublicReadinessHtml') ||
+  !html.includes('Public yayın kontrolü') ||
+  !html.includes('Public JSON kalite kontrolünden geçmedi') ||
   !html.includes('Yayın Takibi') ||
   !html.includes('function loadArchiveOutputPackages') ||
   !html.includes('function generateArchivePackageOutput') ||
+  !html.includes('function prepareArchivePublicRecordsOutput') ||
   !html.includes('function downloadArchivePackageOutput') ||
   !html.includes('function setArchivePackagePublicationStatus') ||
   !html.includes('/output?format=') ||
@@ -1049,4 +1221,15 @@ assert(howToPreview.includes('Nasıl Kullanılır') && howToPreview.includes('Ar
 const notFoundPreview = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
 assert(notFoundPreview.status === 404 && notFoundPreview.html.includes('Sayfa bulunamadı.'), 'Gizli veya eksik public icerik 404 state dondurmeli.');
 
+const sidebarIndex = html.indexOf('<aside class="side-nav">');
+const sidebarOnayIndex = html.indexOf('data-tab="onay"', sidebarIndex);
+const sidebarArchiveOpsIndex = html.indexOf('<div class="side-group archive-ops-menu-group', sidebarIndex);
+const sidebarFeedbackIndex = html.indexOf('Geri Bildirim', sidebarOnayIndex);
+assert(
+  sidebarIndex > -1 &&
+  sidebarOnayIndex > sidebarIndex &&
+  sidebarArchiveOpsIndex > sidebarOnayIndex &&
+  sidebarArchiveOpsIndex < sidebarFeedbackIndex,
+  'Desktop sidebar Arsiv Operasyon Merkezi grubu super admin icin Operasyon bolumunde gorunur kalmali.'
+);
 console.log('Frontend/PWA doğrulaması: başarılı');

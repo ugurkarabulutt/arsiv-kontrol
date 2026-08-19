@@ -6,6 +6,7 @@ const multer   = require('multer');
 const path     = require('path');
 const crypto   = require('crypto');
 const mammoth  = require('mammoth');
+const XLSX     = require('xlsx');
 const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
 const {
@@ -20,6 +21,7 @@ const {
 const app    = express();
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // Vercel Function istek gövdesi sınırının altında tut.
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE } });
+const tagImportUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } });
 
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const SESSION_SECRET    = process.env.SESSION_SECRET || 'arsiv-gizli-v3-2025';
@@ -506,7 +508,9 @@ const mapHistory = h => ({
   id: h.id, userId: h.user_id, username: h.username, name: h.name,
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
   catCounts: h.cat_counts || {}, summary: h.summary, originalText: h.original_text, correctedText: h.corrected_text,
+  questionText: h.question_text || '',
   status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
+  tags: Array.isArray(h.tags) ? h.tags : [],
   promptVersion: h.prompt_version, rulesHash: h.rules_hash,
   createdAt: h.created_at
 });
@@ -519,10 +523,27 @@ const mapAlert   = a => ({
   createdAt: a.created_at
 });
 
+const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor';
+const APPROVAL_RETURNED_STATUS = 'geri_gonderildi';
+const APPROVAL_REVIEW_NOTES_KEY = 'approval_review_notes';
+const APPROVAL_RETURN_NOTES_KEY = 'approval_return_notes';
+const APPROVAL_FAVORITES_KEY_PREFIX = 'approval_favorites:';
+const APPROVAL_FAVORITE_LIMIT = 240;
+const APPROVAL_RETURN_REASONS = Object.freeze({
+  missing_question: 'Soru eksik',
+  wrong_question: 'Soru yanlış',
+  missing_tags: 'Etiket eksik',
+  wrong_tags: 'Etiket yanlış',
+  missing_answer: 'Cevap/metin eksik',
+  other: 'Diğer'
+});
+
 function historyStatusLabel(status) {
   return status === 'taslak' ? 'Taslak'
     : status === 'onaylandi' ? 'Onaylandı'
     : status === 'reddedildi' ? 'Reddedildi'
+    : status === APPROVAL_REVIEW_STATUS ? 'Teyit Bekliyor'
+    : status === APPROVAL_RETURNED_STATUS ? 'Geri Gönderildi'
     : 'Bekliyor';
 }
 
@@ -530,11 +551,33 @@ function historyStatusForApproval(status) {
   return !status || status === 'bekliyor';
 }
 
+function historyStatusSubmitted(status) {
+  return historyStatusForApproval(status) || status === APPROVAL_REVIEW_STATUS || status === 'onaylandi' || status === 'reddedildi';
+}
+
 const CHUNK_DRAFT_STATUS = 'chunk_draft';
 const SUBMITTED_PART_STATUS = 'submitted_part';
 const SUBMITTED_CORRECTED_HASH_PREFIX = 'submitted_corrected_hash:';
 const HIDDEN_HISTORY_STATUSES = [CHUNK_DRAFT_STATUS, SUBMITTED_PART_STATUS];
 const ADMIN_HIDDEN_HISTORY_STATUSES = ['taslak', ...HIDDEN_HISTORY_STATUSES];
+const TAG_IMPORT_HISTORY_TEXT_LIMIT = 18000;
+const TAG_IMPORT_INITIAL_DETAIL_LIMIT = 120;
+const TAG_IMPORT_INSERT_CHUNK_SIZE = 180;
+const TAG_IMPORT_APPLY_CHUNK_SIZE = 60;
+const TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE = 250;
+const TAG_IMPORT_QUESTION_BACKFILL_UPSERT_CHUNK_SIZE = 120;
+const TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS = 8500;
+const TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS = 4500;
+const TAG_IMPORT_UPLOAD_KEY_PREFIX = 'history_tag_import_upload';
+const TAG_IMPORT_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
+const TAG_IMPORT_MAX_UPLOAD_CHUNKS = 160;
+const TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH = 900000;
+const TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX = 'history_tag_import_question_backfill';
+const TAG_IMPORT_EXCEL_CACHE_KEY_PREFIX = 'history_tag_import_excel_items';
+const TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE = 55;
+const TAG_IMPORT_CANDIDATE_LIMIT = 12;
+const TAG_IMPORT_QUESTION_BACKFILL_STALE_MS = 15000;
+const activeQuestionBackfillJobs = new Set();
 
 function isChunkFilename(filename = '') {
   return /\s-\sParça\s+\d+\/\d+$/u.test(String(filename || '').trim());
@@ -576,7 +619,7 @@ async function loadApprovalGroup(filterQuery) {
     items: (data || []).map(mapHistory)
   };
 }
-const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution'];
+const USER_NOTICE_TYPES = ['announcement', 'feedback_resolution', 'approval_return'];
 const RESOLUTION_RESPONSE_KEY = 'resolution_feedback_responses';
 const CORRECTION_PACKAGE_SETTING_KEY = 'content_correction_packages';
 const ARCHIVE_OPS_SOURCES_KEY = 'archive_ops_sources';
@@ -600,6 +643,7 @@ const ARCHIVE_RELEASE_PACKAGE_ITEM_LIMIT = 200;
 const ARCHIVE_RELEASE_PACKAGE_STATUSES = ['taslak', 'son_kontrol', 'hazir', 'beklet'];
 const ARCHIVE_RELEASE_PACKAGE_ITEM_REVIEW_STATUSES = ['bekliyor', 'kontrol_edildi', 'revizyon', 'beklet'];
 const ARCHIVE_RELEASE_PUBLICATION_STATUSES = ['bekliyor', 'yayinda', 'arsive_aktarildi', 'geri_alindi'];
+const ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION = 'public_archive_records_v1';
 const ARCHIVE_IMPORT_BATCH_LIMIT = 60;
 const ARCHIVE_IMPORT_ITEM_LIMIT = 500;
 const ARCHIVE_IMPORT_BATCH_STATUSES = ['open', 'review', 'completed', 'archived'];
@@ -756,6 +800,165 @@ async function saveJsonSetting(key, value) {
   if (error) throw new Error(error.message);
 }
 
+async function deleteSettingsByKeys(keys = []) {
+  const cleanKeys = [...new Set(keys.filter(Boolean))];
+  for (let i = 0; i < cleanKeys.length; i += 100) {
+    const { error } = await supabase.from('settings').delete().in('key', cleanKeys.slice(i, i + 100));
+    if (error) throw new Error(error.message);
+  }
+}
+
+function approvalFavoriteKey(userId = '') {
+  return `${APPROVAL_FAVORITES_KEY_PREFIX}${userId}`;
+}
+
+function cleanApprovalFavoriteRows(value = []) {
+  const rows = Array.isArray(value) ? value : [];
+  const seen = new Set();
+  return rows
+    .map(item => {
+      const historyId = typeof item === 'string' ? item : item?.historyId;
+      const id = String(historyId || '').trim();
+      if (!/^[0-9a-fA-F-]{36}$/.test(id) || seen.has(id)) return null;
+      seen.add(id);
+      return {
+        historyId: id,
+        createdAt: item?.createdAt || new Date().toISOString(),
+        createdBy: String(item?.createdBy || '').slice(0, 120)
+      };
+    })
+    .filter(Boolean)
+    .slice(0, APPROVAL_FAVORITE_LIMIT);
+}
+
+async function loadApprovalFavorites(userId = '') {
+  if (!userId) return [];
+  return cleanApprovalFavoriteRows(await loadJsonSetting(approvalFavoriteKey(userId), []));
+}
+
+async function saveApprovalFavorites(userId = '', rows = []) {
+  if (!userId) return [];
+  const clean = cleanApprovalFavoriteRows(rows);
+  await saveJsonSetting(approvalFavoriteKey(userId), clean);
+  return clean;
+}
+
+async function loadApprovalFavoriteSet(userId = '') {
+  const rows = await loadApprovalFavorites(userId);
+  return new Set(rows.map(item => item.historyId));
+}
+
+async function setApprovalFavorite(userId = '', historyId = '', favorite = true, actor = '') {
+  const rows = await loadApprovalFavorites(userId);
+  const cleanId = String(historyId || '').trim();
+  const next = rows.filter(item => item.historyId !== cleanId);
+  if (favorite) next.unshift({ historyId: cleanId, createdAt: new Date().toISOString(), createdBy: actor || '' });
+  return saveApprovalFavorites(userId, next);
+}
+
+function cleanApprovalReviewNotes(value = {}) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const clean = {};
+  for (const [historyId, note] of Object.entries(source)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(historyId)) continue;
+    const text = String(note?.note || '').trim().slice(0, 1200);
+    if (!text) continue;
+    clean[historyId] = {
+      note: text,
+      requestedBy: String(note?.requestedBy || '').slice(0, 120),
+      requestedAt: note?.requestedAt || new Date().toISOString()
+    };
+  }
+  return clean;
+}
+
+async function loadApprovalReviewNotes() {
+  return cleanApprovalReviewNotes(await loadJsonSetting(APPROVAL_REVIEW_NOTES_KEY, {}));
+}
+
+async function saveApprovalReviewNote(historyId = '', note = '', actor = '') {
+  const cleanId = String(historyId || '').trim();
+  const cleanNote = String(note || '').trim().slice(0, 1200);
+  if (!cleanNote) throw httpError('Teyit notu gerekli.', 400);
+  const notes = await loadApprovalReviewNotes();
+  notes[cleanId] = { note: cleanNote, requestedBy: actor || '', requestedAt: new Date().toISOString() };
+  await saveJsonSetting(APPROVAL_REVIEW_NOTES_KEY, notes);
+  return notes[cleanId];
+}
+
+function cleanApprovalReturnNotes(value = {}) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const clean = {};
+  for (const [historyId, note] of Object.entries(source)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(historyId)) continue;
+    const reason = Object.prototype.hasOwnProperty.call(APPROVAL_RETURN_REASONS, note?.reason) ? note.reason : 'other';
+    const text = String(note?.note || '').trim().slice(0, 1200);
+    clean[historyId] = {
+      reason,
+      reasonLabel: APPROVAL_RETURN_REASONS[reason],
+      note: text,
+      requestedBy: String(note?.requestedBy || '').slice(0, 120),
+      requestedAt: note?.requestedAt || new Date().toISOString()
+    };
+  }
+  return clean;
+}
+
+async function loadApprovalReturnNotes() {
+  return cleanApprovalReturnNotes(await loadJsonSetting(APPROVAL_RETURN_NOTES_KEY, {}));
+}
+
+async function saveApprovalReturnNote(historyId = '', reason = 'other', note = '', actor = '') {
+  const cleanId = String(historyId || '').trim();
+  const cleanReason = Object.prototype.hasOwnProperty.call(APPROVAL_RETURN_REASONS, reason) ? reason : 'other';
+  const cleanNote = String(note || '').trim().slice(0, 1200);
+  if (!/^[0-9a-fA-F-]{36}$/.test(cleanId)) throw httpError('Kayıt bulunamadı.', 404);
+  if (cleanReason === 'other' && !cleanNote) throw httpError('Geri gönderme notu gerekli.', 400);
+  const notes = await loadApprovalReturnNotes();
+  notes[cleanId] = {
+    reason: cleanReason,
+    reasonLabel: APPROVAL_RETURN_REASONS[cleanReason],
+    note: cleanNote,
+    requestedBy: actor || '',
+    requestedAt: new Date().toISOString()
+  };
+  await saveJsonSetting(APPROVAL_RETURN_NOTES_KEY, notes);
+  return notes[cleanId];
+}
+
+async function clearApprovalReturnNote(historyId = '') {
+  const cleanId = String(historyId || '').trim();
+  if (!/^[0-9a-fA-F-]{36}$/.test(cleanId)) return;
+  const notes = await loadApprovalReturnNotes();
+  if (!Object.prototype.hasOwnProperty.call(notes, cleanId)) return;
+  delete notes[cleanId];
+  await saveJsonSetting(APPROVAL_RETURN_NOTES_KEY, notes);
+}
+
+function attachApprovalReturnMeta(history = {}, returnNotes = {}) {
+  const returnNote = returnNotes[history.id] || null;
+  return {
+    ...history,
+    returnReason: returnNote?.reason || '',
+    returnReasonLabel: returnNote?.reasonLabel || '',
+    returnNote: returnNote?.note || '',
+    returnRequestedBy: returnNote?.requestedBy || '',
+    returnRequestedAt: returnNote?.requestedAt || ''
+  };
+}
+
+function attachApprovalMeta(history = {}, favoriteSet = new Set(), reviewNotes = {}, returnNotes = {}) {
+  const note = reviewNotes[history.id] || null;
+  return attachApprovalReturnMeta({
+    ...history,
+    statusLabel: historyStatusLabel(history.status),
+    favorite: favoriteSet.has(history.id),
+    reviewNote: note?.note || '',
+    reviewRequestedBy: note?.requestedBy || '',
+    reviewRequestedAt: note?.requestedAt || ''
+  }, returnNotes);
+}
+
 function parseJsonSettingValue(value, fallback) {
   if (!value) return fallback;
   try { return JSON.parse(value); }
@@ -808,6 +1011,380 @@ function normalizeArchiveTags(value) {
   const raw = Array.isArray(value) ? value.join(',') : String(value || '');
   return [...new Set(raw.split(',').map(item => item.trim()).filter(Boolean).slice(0, 20))]
     .map(item => item.slice(0, 48));
+}
+
+function normalizeHistoryTags(value) {
+  const raw = Array.isArray(value) ? value.join(',') : String(value || '');
+  const seen = new Set();
+  const tags = [];
+  raw.split(',').forEach(part => {
+    const tag = String(part || '').replace(/\s+/g, ' ').trim();
+    if (!tag) return;
+    const key = tag.toLocaleLowerCase('tr-TR');
+    if (seen.has(key)) return;
+    seen.add(key);
+    tags.push(tag.slice(0, 96));
+  });
+  return tags;
+}
+
+function normalizeHistoryQuestion(value) {
+  return String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => line.replace(/[ \t]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .slice(0, 8000);
+}
+
+function requireApprovalQuestionAndTags(body = {}) {
+  if (!HAS_HISTORY_QUESTION_TEXT || !HAS_HISTORY_TAGS) {
+    const err = new Error('Soru ve etiket alanları aktif değil. Lütfen gerekli SQL güncellemesini uygulayın.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const questionText = normalizeHistoryQuestion(body.questionText);
+  const tags = normalizeHistoryTags(body.tags);
+  if (!questionText) {
+    const err = new Error('Onaya göndermeden önce soru alanını doldurun.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (!tags.length) {
+    const err = new Error('Onaya göndermeden önce en az bir etiket ekleyin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  return { questionText, tags };
+}
+
+function normalizeImportTags(value) {
+  return normalizeHistoryTags(String(value || '').replace(/[;\n\r]+/g, ','));
+}
+
+const TAG_IMPORT_STOPWORDS = new Set([
+  've', 'veya', 'ile', 'icin', 'için', 'bir', 'bu', 'su', 'şu', 'da', 'de', 'ki',
+  'mi', 'mu', 'mı', 'mü', 'ne', 'nasil', 'nasıl', 'olan', 'olarak', 'vardir',
+  'vardır', 'diyor', 'sevgili', 'kardeslerim', 'kardeşlerim', 'allah', 'allahu',
+  'teala', 'tealâ', 'biz', 'siz', 'onlar', 'olanlar', 'ama', 'fakat', 'cunku',
+  'çünkü', 'ise', 'icin', 'olarak', 'olur', 'oluyor', 'oldu'
+]);
+
+function normalizeTagImportText(value = '') {
+  return normalizeText(value)
+    .replace(/[’‘`´]/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('tr-TR');
+}
+
+function tagImportTokens(value = '', limit = 120) {
+  const tokens = normalizeTagImportText(value)
+    .split(/[^0-9a-zA-ZığüşöçİĞÜŞÖÇâÂîÎûÛ']+/u)
+    .map(token => token.replace(/^'+|'+$/g, '').trim())
+    .filter(token => token.length >= 4 && !TAG_IMPORT_STOPWORDS.has(token));
+  return [...new Set(tokens)].slice(0, limit);
+}
+
+function tagImportOverlapScore(aTokens = [], bTokens = []) {
+  if (!aTokens.length || !bTokens.length) return 0;
+  const a = new Set(aTokens);
+  const b = new Set(bTokens);
+  let hit = 0;
+  a.forEach(token => { if (b.has(token)) hit++; });
+  const smaller = Math.min(a.size, b.size) || 1;
+  const larger = Math.max(a.size, b.size) || 1;
+  return Math.min(1, (hit / smaller) * 0.72 + (hit / larger) * 0.28);
+}
+
+function tagImportHeaderKey(value = '') {
+  return normalizeTagImportText(value)
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function tagImportCellValue(row, aliases = []) {
+  for (const [key, value] of Object.entries(row || {})) {
+    if (aliases.includes(tagImportHeaderKey(key))) return value;
+  }
+  return '';
+}
+
+function makeHistoryTagImportExcelItem(row = {}) {
+  const question = String(row.question || '').trim();
+  const answer = String(row.answer || '').trim();
+  const combined = `${question}\n${answer}`;
+  const tags = normalizeHistoryTags(row.tags || []);
+  return {
+    rowNumber: Number(row.rowNumber || 0),
+    inheritedQuestionRow: row.inheritedQuestionRow || null,
+    question,
+    answer,
+    answerPreview: archiveTextPreview(answer || question, 320),
+    sourceUrl: String(row.sourceUrl || '').trim(),
+    program: String(row.program || '').trim(),
+    note: String(row.note || '').trim(),
+    tags,
+    normalizedText: normalizeTagImportText(combined),
+    questionTokens: tagImportTokens(question, 80),
+    answerTokens: tagImportTokens(answer, 160),
+    tokens: tagImportTokens(combined, 200)
+  };
+}
+
+function parseHistoryTagImportWorkbook(buffer, fileName = '') {
+  let workbook;
+  try {
+    workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false, raw: false });
+  } catch (error) {
+    const err = new Error('Excel dosyasi okunamadi. Lutfen .xlsx, .csv veya .tsv dosyasi yukleyin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const sheetName = workbook.SheetNames?.[0];
+  if (!sheetName) {
+    const err = new Error('Dosyada okunabilir sayfa bulunamadi.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const sheet = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+  let lastStandaloneQuestion = null;
+  const items = rows.map((row, index) => {
+    const question = String(tagImportCellValue(row, ['soru']) || '').trim();
+    const tagText = tagImportCellValue(row, ['etiketsinif', 'etiketsınıf', 'etiket', 'sinif', 'sınıf']);
+    const answer = String(tagImportCellValue(row, ['cevap']) || '').trim();
+    const sourceUrl = String(tagImportCellValue(row, ['yayinlink', 'yayınlink', 'link']) || '').trim();
+    const program = String(tagImportCellValue(row, ['program']) || '').trim();
+    const note = String(tagImportCellValue(row, ['notlar', 'not']) || '').trim();
+    const tags = normalizeImportTags(tagText);
+    let effectiveQuestion = question;
+    let inheritedQuestionRow = null;
+    if (question && !answer && !tags.length) {
+      lastStandaloneQuestion = { question, rowNumber: index + 2 };
+    } else if (!question && answer && tags.length && lastStandaloneQuestion?.question) {
+      effectiveQuestion = lastStandaloneQuestion.question;
+      inheritedQuestionRow = lastStandaloneQuestion.rowNumber;
+    }
+    if (question && answer) lastStandaloneQuestion = null;
+    return makeHistoryTagImportExcelItem({
+      rowNumber: index + 2,
+      inheritedQuestionRow,
+      question: effectiveQuestion,
+      answer,
+      sourceUrl,
+      program,
+      note,
+      tags
+    });
+  });
+  return {
+    fileName,
+    sheetName,
+    totalRows: rows.length,
+    usableRows: items.filter(item => item.tags.length && (item.question || item.answer)).length,
+    items: items.filter(item => item.tags.length && (item.question || item.answer))
+  };
+}
+
+function buildTagImportExcelIndex(items = []) {
+  const tokenMap = new Map();
+  items.forEach((item, index) => {
+    item.tokens.forEach(token => {
+      if (!tokenMap.has(token)) tokenMap.set(token, []);
+      tokenMap.get(token).push(index);
+    });
+  });
+  return { items, tokenMap };
+}
+
+function tagImportHistoryCandidate(history = {}) {
+  const original = history.original_text || '';
+  const corrected = history.corrected_text || '';
+  const summary = history.summary || '';
+  const fullText = [original, corrected, summary].filter(Boolean).join('\n');
+  const text = fullText.slice(0, TAG_IMPORT_HISTORY_TEXT_LIMIT);
+  return {
+    id: history.id,
+    userId: history.user_id,
+    username: history.username,
+    name: history.name,
+    filename: history.filename,
+    status: history.status,
+    score: history.score,
+    totalErrors: history.total_errors,
+    createdAt: history.created_at,
+    tags: Array.isArray(history.tags) ? history.tags : [],
+    originalText: original,
+    correctedText: corrected,
+    normalizedText: normalizeTagImportText(text),
+    tokens: tagImportTokens(text, 240),
+    textLength: fullText.length
+  };
+}
+
+function tagImportCandidateIndexes(history, excelIndex) {
+  const counts = new Map();
+  history.tokens.slice(0, 120).forEach(token => {
+    const indexes = excelIndex.tokenMap.get(token);
+    if (!indexes || indexes.length > 280) return;
+    indexes.forEach(index => counts.set(index, (counts.get(index) || 0) + 1));
+  });
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 80)
+    .map(([index]) => index);
+}
+
+function scoreTagImportMatch(history, excelItem) {
+  const historyText = history.normalizedText;
+  const excelText = excelItem.normalizedText;
+  const answerText = normalizeTagImportText(excelItem.answer);
+  const questionText = normalizeTagImportText(excelItem.question);
+  const allOverlap = tagImportOverlapScore(history.tokens, excelItem.tokens);
+  const answerOverlap = tagImportOverlapScore(history.tokens, excelItem.answerTokens);
+  const questionOverlap = tagImportOverlapScore(history.tokens, excelItem.questionTokens);
+  let score = Math.round(Math.max(allOverlap * 72, answerOverlap * 88, (answerOverlap * 0.68 + questionOverlap * 0.32) * 100));
+  const reasons = [];
+
+  if (answerText.length >= 120) {
+    const answerStart = answerText.slice(0, 120);
+    const answerMiddle = answerText.slice(Math.max(0, Math.floor(answerText.length / 2) - 60), Math.floor(answerText.length / 2) + 60);
+    const answerEnd = answerText.slice(-120);
+    const hitCount = [answerStart, answerMiddle, answerEnd].filter(part => part && historyText.includes(part)).length;
+    if (hitCount >= 2) {
+      score = Math.max(score, 96);
+      reasons.push('cevap metni guclu eslesti');
+    } else if (hitCount === 1) {
+      score = Math.max(score, 84);
+      reasons.push('cevap metni kismen eslesti');
+    }
+  }
+  if (questionText.length >= 50 && historyText.includes(questionText.slice(0, Math.min(100, questionText.length)))) {
+    score = Math.max(score, 82);
+    reasons.push('soru baslangici eslesti');
+  }
+  if (excelText.length >= 120 && historyText.includes(excelText.slice(0, 120))) {
+    score = Math.max(score, 90);
+    reasons.push('excel kaydi baslangici eslesti');
+  }
+  if (history.textLength > 15000 && score < 98) {
+    score = Math.min(score, 74);
+    reasons.push('uzun dokuman manuel kontrol gerektirir');
+  }
+  if (answerOverlap >= 0.55) reasons.push('cevap kelime benzerligi yuksek');
+  else if (allOverlap >= 0.45) reasons.push('genel kelime benzerligi var');
+  return {
+    confidence: Math.max(0, Math.min(100, score)),
+    reason: reasons.length ? reasons.join('; ') : 'dusuk benzerlik'
+  };
+}
+
+function historyTagImportStatus(confidence, history, excelItem) {
+  if (!excelItem?.tags?.length) return 'unmatched';
+  if (!history?.id) return 'unmatched';
+  if (history.textLength > 15000 && confidence < 98) return 'review';
+  if (confidence >= 86) return 'ready';
+  if (confidence >= 62) return 'review';
+  return 'unmatched';
+}
+
+function publicHistoryTagImportBatch(row = {}) {
+  return {
+    id: row.id,
+    filename: row.filename || '',
+    sheetName: row.sheet_name || '',
+    totalRows: row.total_rows || 0,
+    usableRows: row.usable_rows || 0,
+    historyCount: row.history_count || 0,
+    readyCount: row.ready_count || 0,
+    reviewCount: row.review_count || 0,
+    unmatchedCount: row.unmatched_count || 0,
+    appliedCount: row.applied_count || 0,
+    skippedCount: row.skipped_count || 0,
+    status: row.status || 'preview',
+    note: row.note || '',
+    createdBy: row.created_by || '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function publicHistoryTagImportMatch(row = {}) {
+  return {
+    id: row.id,
+    batchId: row.batch_id,
+    historyId: row.history_id,
+    excelRow: row.excel_row,
+    question: row.excel_question || '',
+    answerPreview: row.answer_preview || '',
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    currentTags: Array.isArray(row.current_tags) ? row.current_tags : [],
+    confidence: Number(row.confidence || 0),
+    status: row.match_status || 'review',
+    reason: row.match_reason || '',
+    appliedAt: row.applied_at,
+    appliedBy: row.applied_by || '',
+    history: row.history ? publicHistoryTagImportHistory(row.history) : null,
+    createdAt: row.created_at
+  };
+}
+
+function publicHistoryTagImportHistory(row = {}) {
+  const original = String(row.original_text || '');
+  const corrected = String(row.corrected_text || '');
+  const summary = String(row.summary || '');
+  return {
+    id: row.id,
+    userId: row.user_id,
+    username: row.username || '',
+    name: row.name || '',
+    filename: row.filename || '',
+    score: row.score,
+    totalErrors: row.total_errors,
+    catCounts: row.cat_counts || {},
+    summary,
+    originalText: archiveTextPreview(original, 700),
+    correctedText: archiveTextPreview(corrected || original || summary, 900),
+    status: row.status || 'bekliyor',
+    approvedBy: row.approved_by,
+    approvedAt: row.approved_at,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    questionText: row.question_text || '',
+    promptVersion: row.prompt_version,
+    rulesHash: row.rules_hash,
+    createdAt: row.created_at
+  };
+}
+
+function historyTagImportSelectColumns() {
+  const columns = [
+    'id',
+    'user_id',
+    'username',
+    'name',
+    'filename',
+    'status',
+    'score',
+    'total_errors',
+    'cat_counts',
+    'summary',
+    'corrected_text',
+    'approved_by',
+    'approved_at',
+    'created_at'
+  ];
+  if (HAS_ORIGINAL_TEXT) columns.splice(10, 0, 'original_text');
+  if (HAS_HISTORY_TAGS) columns.splice(columns.indexOf('created_at'), 0, 'tags');
+  if (HAS_HISTORY_QUESTION_TEXT) columns.splice(columns.indexOf('created_at'), 0, 'question_text');
+  if (HAS_ANALYSIS_META) columns.splice(columns.indexOf('created_at'), 0, 'prompt_version', 'rules_hash');
+  return columns.join(',');
 }
 
 function archiveComparableText(value = '') {
@@ -2358,12 +2935,245 @@ function archiveReleaseOutputFileName(title = 'yayin-paketi', extension = 'json'
   return `${slug}.${extension}`;
 }
 
+function archivePublicSlugPart(text = '', fallback = 'kayit') {
+  const slug = String(text || fallback || 'kayit')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 90);
+  return slug || fallback || 'kayit';
+}
+
+function estimateArchiveReadTime(text = '') {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 180));
+  return { words, minutes, label: `${minutes} dk okuma` };
+}
+
+function splitArchiveQuestionAnswer(text = '', fallbackTitle = '') {
+  const clean = String(text || '').trim();
+  if (!clean) return { question: fallbackTitle || '', answer: '', body: '' };
+  const lines = clean.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const questionMarker = lines.findIndex(line => /^(soru|sual)\s*[:：-]/i.test(line));
+  const answerMarker = lines.findIndex(line => /^(cevap|yanıt|yanit)\s*[:：-]/i.test(line));
+  if (questionMarker >= 0 && answerMarker > questionMarker) {
+    const question = lines
+      .slice(questionMarker, answerMarker)
+      .join('\n')
+      .replace(/^(soru|sual)\s*[:：-]\s*/i, '')
+      .trim();
+    const answer = lines
+      .slice(answerMarker)
+      .join('\n')
+      .replace(/^(cevap|yanıt|yanit)\s*[:：-]\s*/i, '')
+      .trim();
+    return { question: question || fallbackTitle || '', answer, body: clean };
+  }
+  const firstQuestionLine = lines.find(line => line.endsWith('?'));
+  if (firstQuestionLine && clean.length > firstQuestionLine.length + 20) {
+    const answer = clean.slice(clean.indexOf(firstQuestionLine) + firstQuestionLine.length).trim();
+    return { question: firstQuestionLine, answer, body: clean };
+  }
+  return {
+    question: fallbackTitle || lines[0] || '',
+    answer: clean,
+    body: clean
+  };
+}
+
+function archiveReleasePublicRecordFromItem(item = {}, manifest = {}) {
+  const title = String(item.title || item.summary || manifest.title || 'Arşiv kaydı').trim();
+  const text = String(item.text || item.summary || '').trim();
+  const qa = splitArchiveQuestionAnswer(text, title);
+  const summary = String(item.summary || qa.answer || qa.body || '').trim().slice(0, 420);
+  const category = String(item.category || 'Genel').trim();
+  const topics = normalizeArchiveTopicList(item.topics || []);
+  const slugBase = `${title}-${item.kind || 'kayit'}-${item.recordId || item.id || item.order || ''}`;
+  return {
+    schemaVersion: ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION,
+    id: `${item.kind || 'record'}:${item.recordId || item.id || item.order || archivePublicSlugPart(title)}`,
+    slug: archivePublicSlugPart(slugBase),
+    sourceRecord: {
+      packageId: manifest.id || '',
+      packageTitle: manifest.title || '',
+      order: item.order || 0,
+      kind: item.kind || '',
+      recordId: item.recordId || item.id || ''
+    },
+    title,
+    summary,
+    question: qa.question,
+    answer: qa.answer,
+    body: qa.body,
+    category,
+    topics,
+    source: {
+      title: item.sourceTitle || '',
+      url: item.sourceUrl || '',
+      trace: [item.sourceTitle, item.sourceUrl].filter(Boolean).join(' | ')
+    },
+    publication: {
+      packageStatus: manifest.status || '',
+      publicationStatus: manifest.publicationStatus || '',
+      publicationUrl: manifest.publicationUrl || '',
+      publicationNote: manifest.publicationNote || ''
+    },
+    seo: {
+      title,
+      description: summary || qa.question || title,
+      canonicalPath: `/soru/${archivePublicSlugPart(slugBase)}`
+    },
+    reading: estimateArchiveReadTime(qa.body || qa.answer),
+    updatedAt: manifest.generatedAt || new Date().toISOString()
+  };
+}
+
+const ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS = [
+  { label: 'AI', pattern: /\bAI\b/i },
+  { label: 'admin', pattern: /\badmin\b/i },
+  { label: 'prompt', pattern: /\bprompt\b/i },
+  { label: 'model', pattern: /\bmodel\b/i },
+  { label: 'denetim', pattern: /\bdenetim\b/i },
+  { label: 'kalite kontrol', pattern: /kalite\s+kontrol/i },
+  { label: 'onay kuyrugu', pattern: /onay\s+kuyru[ğg]u/i },
+  { label: 'test verisi', pattern: /test\s+verisi/i }
+];
+
+function archivePublicIssue(record = {}, type = 'warning', field = '', message = '') {
+  return {
+    type,
+    recordId: record.id || '',
+    slug: record.slug || '',
+    title: record.title || '',
+    field,
+    message
+  };
+}
+
+function archivePublicVisibleFields(record = {}) {
+  return [
+    ['baslik', record.title],
+    ['ozet', record.summary],
+    ['soru', record.question],
+    ['cevap', record.answer],
+    ['metin', record.body],
+    ['kategori', record.category],
+    ['kavramlar', Array.isArray(record.topics) ? record.topics.join(' ') : record.topics],
+    ['kaynak', record.source?.title],
+    ['kaynak_izi', record.source?.trace]
+  ].map(([field, value]) => [field, String(value || '').trim()]);
+}
+
+function archivePublicRecordReadiness(record = {}, slugCounts = new Map()) {
+  const blockers = [];
+  const warnings = [];
+  const title = String(record.title || '').trim();
+  const body = String(record.body || record.answer || '').trim();
+  const category = String(record.category || '').trim();
+  const topics = Array.isArray(record.topics) ? record.topics.filter(Boolean) : [];
+  const sourceRecord = record.sourceRecord || {};
+  const hasSourceTrace = Boolean(sourceRecord.kind || sourceRecord.recordId || record.source?.title || record.source?.trace || record.source?.url);
+
+  if (!title || title === 'Arsiv kaydi' || title === 'Arşiv kaydı') {
+    blockers.push(archivePublicIssue(record, 'blocker', 'title', 'Baslik eksik veya otomatik varsayilan baslik kullaniliyor.'));
+  }
+  if (!body) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'body', 'Public kayit metni bos.'));
+  }
+  if (!record.slug) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'slug', 'Public URL slug olusmadi.'));
+  } else if ((slugCounts.get(record.slug) || 0) > 1) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'slug', 'Ayni slug birden fazla kayitta kullaniliyor.'));
+  }
+  if (!hasSourceTrace) {
+    blockers.push(archivePublicIssue(record, 'blocker', 'source', 'Kaynak izi bulunamadi.'));
+  }
+
+  if (!record.question) warnings.push(archivePublicIssue(record, 'warning', 'question', 'Soru alani ayrismadi; metin arsiv kaydi olarak kalacak.'));
+  if (!record.summary || String(record.summary).trim().length < 40) warnings.push(archivePublicIssue(record, 'warning', 'summary', 'Ozet kisa veya eksik gorunuyor.'));
+  if (!category || category === 'Genel') warnings.push(archivePublicIssue(record, 'warning', 'category', 'Kategori genel gorunuyor; gerekirse net kategori secilmeli.'));
+  if (!topics.length) warnings.push(archivePublicIssue(record, 'warning', 'topics', 'Kavram/etiket bilgisi yok.'));
+  if (!record.source?.url) warnings.push(archivePublicIssue(record, 'warning', 'source.url', 'Kaynak linki yok; metin kaynak iziyle yayinlanacak.'));
+
+  for (const [field, value] of archivePublicVisibleFields(record)) {
+    if (!value) continue;
+    for (const term of ARCHIVE_PUBLIC_RECORD_FORBIDDEN_TERMS) {
+      if (term.pattern.test(value)) {
+        blockers.push(archivePublicIssue(record, 'blocker', field, `Public kayitta ic surec ifadesi gorunuyor: ${term.label}`));
+      }
+    }
+  }
+
+  return {
+    recordId: record.id || '',
+    slug: record.slug || '',
+    title: record.title || '',
+    blockerCount: blockers.length,
+    warningCount: warnings.length,
+    blockers,
+    warnings
+  };
+}
+
+function validateArchivePublicRecords(records = []) {
+  const slugCounts = new Map();
+  for (const record of records) {
+    if (!record?.slug) continue;
+    slugCounts.set(record.slug, (slugCounts.get(record.slug) || 0) + 1);
+  }
+  const recordReports = records.map(record => archivePublicRecordReadiness(record, slugCounts));
+  const blockers = recordReports.flatMap(report => report.blockers);
+  const warnings = recordReports.flatMap(report => report.warnings);
+  return {
+    ready: blockers.length === 0,
+    recordCount: records.length,
+    blockerCount: blockers.length,
+    warningCount: warnings.length,
+    blockers,
+    warnings,
+    records: recordReports
+  };
+}
+
+function archiveReleasePackagePublicRecords(manifest = {}) {
+  const records = (manifest.items || []).map(item => archiveReleasePublicRecordFromItem(item, manifest));
+  const readiness = validateArchivePublicRecords(records);
+  return {
+    schemaVersion: ARCHIVE_PUBLIC_RECORD_SCHEMA_VERSION,
+    generatedAt: manifest.generatedAt || new Date().toISOString(),
+    package: {
+      id: manifest.id || '',
+      title: manifest.title || '',
+      status: manifest.status || '',
+      itemCount: records.length,
+      publicationStatus: manifest.publicationStatus || '',
+      publicationUrl: manifest.publicationUrl || ''
+    },
+    contract: {
+      purpose: 'public_archive_frontend',
+      language: 'tr',
+      excludesInternalWorkflow: true,
+      excludes: ['AI', 'admin', 'prompt', 'model', 'denetim', 'kalite kontrol', 'onay kuyrugu', 'test verisi'],
+      recordFields: ['id', 'slug', 'title', 'summary', 'question', 'answer', 'body', 'category', 'topics', 'source', 'publication', 'seo', 'reading', 'updatedAt']
+    },
+    readiness,
+    records
+  };
+}
+
 async function getArchiveReleasePackageOutput(id = '', format = 'json') {
   const packages = await loadArchiveReleasePackages();
   const pkg = packages.find(item => item.id === id);
   if (!pkg) return null;
   const manifest = await archiveReleasePackageOutputManifest(pkg);
-  const normalizedFormat = ['json', 'markdown', 'csv'].includes(String(format || '').trim()) ? String(format || '').trim() : 'json';
+  const normalizedFormat = ['json', 'markdown', 'csv', 'public-json'].includes(String(format || '').trim()) ? String(format || '').trim() : 'json';
   if (normalizedFormat === 'markdown') {
     return {
       format: 'markdown',
@@ -2380,6 +3190,20 @@ async function getArchiveReleasePackageOutput(id = '', format = 'json') {
       filename: archiveReleaseOutputFileName(manifest.title, 'csv'),
       content: archiveReleasePackageOutputCsv(manifest),
       manifest
+    };
+  }
+  if (normalizedFormat === 'public-json') {
+    const publicRecords = archiveReleasePackagePublicRecords(manifest);
+    const blocked = !publicRecords.readiness.ready;
+    return {
+      format: 'public-json',
+      contentType: 'application/json; charset=utf-8',
+      filename: archiveReleaseOutputFileName(`${manifest.title || 'yayin-paketi'}-public-kayitlar`, 'json'),
+      content: blocked ? '' : JSON.stringify(publicRecords, null, 2),
+      manifest,
+      publicRecords,
+      publicReadiness: publicRecords.readiness,
+      blocked
     };
   }
   return {
@@ -2853,7 +3677,7 @@ function archiveImportBatchFromDbRow(row = {}, counts = {}) {
 
 function normalizeArchiveImportBatchInput(input = {}, existing = {}) {
   const title = String(input.title ?? existing.title ?? '').trim().slice(0, 180);
-  if (!title) throw httpError('İçe aktarım partisi için başlık gerekli.', 400);
+  if (!title) throw httpError('İçe aktarım listesi için başlık gerekli.', 400);
   return {
     ...existing,
     title,
@@ -3589,6 +4413,138 @@ function feedbackRootCategory(alertOrMessage) {
   return { key: category.key, label: category.label };
 }
 
+function feedbackFindingPair(alertOrMessage) {
+  const raw = typeof alertOrMessage === 'string' ? alertOrMessage : alertOrMessage?.message;
+  const fields = parseAlertFields(raw || '');
+  const finding = String(fields.bulgu || '');
+  if (!finding) return null;
+  const quoted = [...finding.matchAll(/["“”]([^"“”]{1,180})["“”]/gu)]
+    .map(match => String(match[1] || '').trim())
+    .filter(Boolean);
+  if (quoted.length < 2) return null;
+  return {
+    reported: quoted[0],
+    current: quoted[1],
+    desired: quoted[0]
+  };
+}
+
+function countLiteralOccurrences(source = '', needle = '') {
+  const text = String(source || '');
+  const target = String(needle || '');
+  if (!text || !target) return 0;
+  let count = 0;
+  let index = 0;
+  while ((index = text.indexOf(target, index)) !== -1) {
+    count++;
+    index += target.length;
+  }
+  return count;
+}
+
+function feedbackWorkTriage(alert = {}, history = {}) {
+  if (alert.type !== 'feedback') return null;
+  if (alert.feedback_status === 'resolved') {
+    return {
+      key: 'resolved',
+      label: 'Çözüldü',
+      action: 'Bu geri bildirim daha önce kapatılmış.',
+      severity: 'done'
+    };
+  }
+  const fields = parseAlertFields(alert.message || '');
+  const reason = foldFeedbackText(fields['geri bildirim'] || '');
+  const pair = feedbackFindingPair(alert);
+  const correctedText = String(history?.corrected_text || '');
+  const currentCount = pair ? countLiteralOccurrences(correctedText, pair.current) : 0;
+  const desiredCount = pair ? countLiteralOccurrences(correctedText, pair.desired) : 0;
+  const base = {
+    pair,
+    counts: { current: currentCount, desired: desiredCount },
+    historyStatus: history?.status || '',
+    historyFilename: history?.filename || ''
+  };
+  if (reason.startsWith('yanlis duzeltme')) {
+    if (!pair) {
+      return {
+        ...base,
+        key: 'manual_match',
+        label: 'Eşleşme bulunamadı',
+        action: 'Bildirimdeki ifade otomatik ayrıştırılamadı. Denetim kaydı açılıp elle kontrol edilmeli.',
+        severity: 'warn'
+      };
+    }
+    if (currentCount === 1) {
+      return {
+        ...base,
+        key: 'ready_current_fix',
+        label: 'Düzeltmeye hazır',
+        action: 'Mevcut düzeltilmiş metinde hedef ifade 1 kez geçiyor. Geçmiş Düzeltme formu bildirilen doküman kapsamıyla hazırlanabilir.',
+        severity: 'ok'
+      };
+    }
+    if (currentCount > 1) {
+      return {
+        ...base,
+        key: 'multi_choice',
+        label: 'Çoklu geçiş',
+        action: 'Aynı ifade bu kayıtta birden fazla geçiyor. Admin doğru geçişleri tek tek seçmeli.',
+        severity: 'warn'
+      };
+    }
+    if (desiredCount > 0) {
+      return {
+        ...base,
+        key: 'already_ok',
+        label: 'Metin doğru görünüyor',
+        action: 'Doğru kabul edilen ifade metinde zaten var. Kayıt açılıp feedback metne dokunmadan kapatılabilir.',
+        severity: 'done'
+      };
+    }
+    return {
+      ...base,
+      key: 'manual_match',
+      label: 'Eşleşme bulunamadı',
+      action: 'Hedef ifade artık metinde yok veya farklı biçimde duruyor. Denetim kaydı manuel kontrol edilmeli.',
+      severity: 'warn'
+    };
+  }
+  if (reason.startsWith('metinde olmayan hata')) {
+    return {
+      ...base,
+      key: 'false_alarm',
+      label: 'Yanlış alarm kontrolü',
+      action: 'Metin otomatik değiştirilmemeli. Rapor/kural yanlış alarm üretmiş olabilir; admin kontrol edip kapatmalı.',
+      severity: 'info'
+    };
+  }
+  if (reason.startsWith('eksik hata')) {
+    return {
+      ...base,
+      key: 'missing_manual',
+      label: 'Eksik düzeltme',
+      action: 'Kullanıcı eksik kalan düzeltmeyi tarif etmiş. Denetim kaydı açılıp elle uygulanmalı.',
+      severity: 'warn'
+    };
+  }
+  if (reason.startsWith('duzen bozuldu') || reason.startsWith('diger')) {
+    return {
+      ...base,
+      key: 'layout_manual',
+      label: 'Yorum / düzen',
+      action: 'Kelime eşleşmesi değil. Düzen, satır, tekrar denetim veya genel yorum olarak admin kararı gerekir.',
+      severity: 'info'
+    };
+  }
+  return {
+    ...base,
+    key: 'manual_review',
+    label: 'Manuel kontrol',
+    action: 'Bu geri bildirim için admin kaydı açıp karar vermeli.',
+    severity: 'warn'
+  };
+}
+
 function feedbackRootCategorySummary(feedbacks = []) {
   const byKey = new Map();
   feedbacks.forEach(feedback => {
@@ -3721,6 +4677,19 @@ async function seed() {
   HAS_ORIGINAL_TEXT = !originalTextErr;
   if (!HAS_ORIGINAL_TEXT) console.warn('⚠ history.original_text kolonu yok — geçmişte orijinal metin saklanmayacak.');
 
+  const { error: historyTagsErr } = await supabase.from('history').select('tags').limit(1);
+  HAS_HISTORY_TAGS = !historyTagsErr;
+  if (!HAS_HISTORY_TAGS) console.warn('⚠ history.tags kolonu yok — onay etiketleri saklanmayacak. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
+
+  const { error: historyQuestionTextErr } = await supabase.from('history').select('question_text').limit(1);
+  HAS_HISTORY_QUESTION_TEXT = !historyQuestionTextErr;
+  if (!HAS_HISTORY_QUESTION_TEXT) console.warn('⚠ history.question_text kolonu yok — soru alanı saklanmayacak. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
+
+  const { error: tagImportBatchErr } = await supabase.from('history_tag_import_batches').select('id').limit(1);
+  const { error: tagImportMatchErr } = await supabase.from('history_tag_import_matches').select('id').limit(1);
+  HAS_HISTORY_TAG_IMPORT_TABLES = !tagImportBatchErr && !tagImportMatchErr;
+  if (!HAS_HISTORY_TAG_IMPORT_TABLES) console.warn('⚠ history tag import tabloları yok — Excel etiket aktarımı pasif.');
+
   const { error: feedbackMetaErr } = await supabase.from('alerts')
     .select('feedback_status,resolved_at,resolved_by,resolution_group,resolution_note').limit(1);
   HAS_ALERT_FEEDBACK_META = !feedbackMetaErr;
@@ -3751,7 +4720,7 @@ async function seed() {
   const { error: archiveImportBatchesErr } = await supabase.from('archive_import_batches').select('id').limit(1);
   const { error: archiveImportItemsErr } = await supabase.from('archive_import_items').select('id').limit(1);
   HAS_ARCHIVE_IMPORT_TABLES = !archiveImportBatchesErr && !archiveImportItemsErr;
-  if (!HAS_ARCHIVE_IMPORT_TABLES) console.warn('⚠ archive import tabloları yok — kalıcı içe aktarım partileri pasif.');
+  if (!HAS_ARCHIVE_IMPORT_TABLES) console.warn('⚠ archive import tabloları yok — kalıcı içe aktarım listeleri pasif.');
 
   const { error: archiveWorkErr } = await supabase.from('archive_work_items').select('id').limit(1);
   HAS_ARCHIVE_WORK_TABLES = !archiveWorkErr;
@@ -5072,7 +6041,7 @@ app.post('/api/archive-ops/import-batches', auth, admin, superAdmin, async (req,
 app.get('/api/archive-ops/import-batches/:id', auth, admin, superAdmin, async (req, res) => {
   try {
     const result = await getArchiveImportBatch(req.params.id);
-    if (!result) return res.status(404).json({ error: 'İçe aktarım partisi bulunamadı.' });
+    if (!result) return res.status(404).json({ error: 'İçe aktarım listesi bulunamadı.' });
     res.json({
       batch: result.batch,
       items: result.items.map(item => publicArchiveImportItem(item, { full: true }))
@@ -5084,7 +6053,7 @@ app.post('/api/archive-ops/import-batches/:id/items', auth, admin, superAdmin, a
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const item = await createArchiveImportItem(req.params.id, req.body || {}, actor);
-    if (!item) return res.status(404).json({ error: 'İçe aktarım partisi bulunamadı.' });
+    if (!item) return res.status(404).json({ error: 'İçe aktarım listesi bulunamadı.' });
     res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -5339,24 +6308,68 @@ app.get('/api/history', auth, async (req, res) => {
       else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       return q;
     });
-    res.json((data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, req.session.role)));
+    const returnNotes = await loadApprovalReturnNotes();
+    res.json((data || [])
+      .map(mapHistory)
+      .filter(h => !isHiddenHistoryForRole(h, req.session.role))
+      .map(h => attachApprovalReturnMeta(h, returnNotes)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/history/approval-board', auth, admin, async (req, res) => {
   try {
-    const [pending, approved, rejected] = await Promise.all([
+    const [pending, approved, rejected, review, favorites, reviewNotes, returnNotes] = await Promise.all([
       loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor')),
       loadApprovalGroup(q => q.eq('status', 'onaylandi')),
-      loadApprovalGroup(q => q.eq('status', 'reddedildi'))
+      loadApprovalGroup(q => q.eq('status', 'reddedildi')),
+      loadApprovalGroup(q => q.eq('status', APPROVAL_REVIEW_STATUS)),
+      loadApprovalFavoriteSet(req.session.userId),
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes()
     ]);
+    const withMeta = group => ({
+      ...group,
+      items: (group.items || []).map(item => attachApprovalMeta(item, favorites, reviewNotes, returnNotes))
+    });
     res.json({
       groups: {
-        bekliyor: pending,
-        onaylandi: approved,
-        reddedildi: rejected
+        bekliyor: withMeta(pending),
+        onaylandi: withMeta(approved),
+        reddedildi: withMeta(rejected),
+        teyit_bekliyor: withMeta(review)
       }
     });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history/favorites', auth, admin, async (req, res) => {
+  try {
+    const favorites = await loadApprovalFavorites(req.session.userId);
+    const ids = favorites.map(item => item.historyId);
+    if (!ids.length) return res.json({ count: 0, items: [] });
+    const [reviewNotes, returnNotes, favoriteSet] = await Promise.all([
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes(),
+      loadApprovalFavoriteSet(req.session.userId)
+    ]);
+    const { data, error } = await supabase.from('history')
+      .select('*')
+      .in('id', ids);
+    if (error) throw new Error(error.message);
+    const byId = new Map((data || []).map(row => [row.id, row]));
+    const items = favorites
+      .map(fav => {
+        const row = byId.get(fav.historyId);
+        if (!row) return null;
+        const mapped = attachApprovalMeta(mapHistory(row), favoriteSet, reviewNotes, returnNotes);
+        return {
+          ...mapped,
+          favoriteAt: fav.createdAt,
+          favoriteBy: fav.createdBy || ''
+        };
+      })
+      .filter(item => item && !isHiddenHistoryForRole(item, ROLES.ADMIN));
+    res.json({ count: items.length, items });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -5367,7 +6380,17 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-    const mapped = mapHistory(data);
+    let mapped = mapHistory(data);
+    const returnNotes = await loadApprovalReturnNotes();
+    if (isAdminRole(req.session.role)) {
+      const [favorites, reviewNotes] = await Promise.all([
+        loadApprovalFavoriteSet(req.session.userId),
+        loadApprovalReviewNotes()
+      ]);
+      mapped = attachApprovalMeta(mapped, favorites, reviewNotes, returnNotes);
+    } else {
+      mapped = attachApprovalReturnMeta(mapped, returnNotes);
+    }
     if (data.user_id !== req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
@@ -5376,6 +6399,22 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     }
     res.json(mapped);
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/favorite', auth, admin, async (req, res) => {
+  try {
+    const { data: current, error: currentError } = await supabase.from('history')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    const favorite = req.body?.favorite !== false;
+    const rows = await setApprovalFavorite(req.session.userId, current.id, favorite, req.session.name || req.session.username || 'Admin');
+    res.json({ success: true, id: current.id, favorite, count: rows.length });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.get('/api/history/:id([0-9a-fA-F-]{36})/approval-status', auth, async (req, res) => {
@@ -5390,7 +6429,7 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})/approval-status', auth, async (req, 
     res.json({
       id: data.id,
       status: data.status || 'bekliyor',
-      submitted: historyStatusForApproval(data.status) || data.status === 'onaylandi',
+      submitted: historyStatusSubmitted(data.status),
       approvedBy: data.approved_by,
       approvedAt: data.approved_at
     });
@@ -5496,7 +6535,7 @@ async function submittedDuplicateExists(req, hash, excludeId = '') {
     .select('id')
     .eq('user_id', req.session.userId)
     .eq('text_hash', hash)
-    .or('status.is.null,status.in.(bekliyor,onaylandi)')
+    .or(`status.is.null,status.in.(bekliyor,${APPROVAL_REVIEW_STATUS},onaylandi)`)
     .limit(1);
   if (excludeId) q = q.neq('id', excludeId);
   const { data, error } = await q;
@@ -5605,7 +6644,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
   let reservationText = '';
   try {
     const { data: history, error } = await supabase.from('history')
-      .select('id,user_id,filename,score,status,text_hash,corrected_text')
+      .select('*')
       .eq('id', req.params.id)
       .eq('user_id', req.session.userId)
       .maybeSingle();
@@ -5614,13 +6653,14 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     if (isChunkHistoryRow(history)) {
       return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.' });
     }
-    if (history.status === 'onaylandi' || history.status === 'reddedildi') {
+    if (history.status === 'onaylandi' || history.status === 'reddedildi' || history.status === APPROVAL_REVIEW_STATUS) {
       return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
     }
     if (historyStatusForApproval(history.status)) {
-      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true });
+      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '' });
     }
-    if (history.status !== 'taslak') return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
+    if (history.status !== 'taslak' && history.status !== APPROVAL_RETURNED_STATUS) return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
+    const approvalMeta = requireApprovalQuestionAndTags(req.body);
     if (await submittedDuplicateExists(req, history.text_hash, history.id)) {
       return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
     }
@@ -5629,20 +6669,24 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     if (correctedReservation.duplicate) {
       return res.status(400).json({ error: 'Bu düzeltilmiş metnin onaya gönderilmiş veya onaylanmış bir kaydı zaten var.' });
     }
+    const updateRow = { status: 'bekliyor', approved_by: null, approved_at: null };
+    updateRow.tags = approvalMeta.tags;
+    updateRow.question_text = approvalMeta.questionText;
     const { data, error: updateError } = await supabase.from('history')
-      .update({ status: 'bekliyor', approved_by: null, approved_at: null })
+      .update(updateRow)
       .eq('id', history.id)
       .eq('user_id', req.session.userId)
-      .eq('status', 'taslak')
-      .select('id,status')
+      .in('status', ['taslak', APPROVAL_RETURNED_STATUS])
+      .select('*')
       .single();
     if (updateError) throw new Error(updateError.message);
+    await clearApprovalReturnNote(history.id);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
-    res.json({ success: true, id: data.id, status: data.status });
+    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
-    res.status(500).json({ error: e.message });
+    res.status(e.statusCode || 500).json({ error: e.message });
   }
 });
 
@@ -5706,6 +6750,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
     const sourceIds = safeUuidList(req.body?.sourceIds);
     await loadValidChunkSources(req, sourceIds);
     const payload = mergedHistoryPayloadFromBody(req, 'Metin denetlendi ve sonuç onay sürecine iletildi.');
+    const approvalMeta = requireApprovalQuestionAndTags(req.body);
     if (await submittedDuplicateExists(req, payload.hash)) {
       return res.status(400).json({ error: 'Bu metnin onaya gönderilmiş bir kaydı zaten var.' });
     }
@@ -5727,6 +6772,8 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       corrected_text: payload.correctedText,
       status: 'bekliyor'
     };
+    mergedRow.tags = approvalMeta.tags;
+    mergedRow.question_text = approvalMeta.questionText;
     if (HAS_ORIGINAL_TEXT) mergedRow.original_text = payload.originalText;
     if (HAS_TEXT_HASH) mergedRow.text_hash = payload.hash;
     if (HAS_ANALYSIS_META) {
@@ -5734,7 +6781,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       mergedRow.rules_hash = payload.analysisMeta?.rulesHash || null;
     }
 
-    const { data, error: insertError } = await supabase.from('history').insert(mergedRow).select('id,status').single();
+    const { data, error: insertError } = await supabase.from('history').insert(mergedRow).select('*').single();
     if (insertError) throw new Error(insertError.message);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     const { error: hideError } = await supabase.from('history')
@@ -5744,7 +6791,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
     if (hideError) console.warn('Birlesik onay sonrasi parca gizleme uyarisi:', hideError.message);
     await maybeCreateLowScoreAlert(req, data.id, payload.score, payload.filename);
-    res.json({ success: true, id: data.id, status: data.status });
+    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || mergedRow.tags || [], questionText: data.question_text || mergedRow.question_text || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);
     res.status(e.statusCode || 500).json({ error: e.message });
@@ -5850,7 +6897,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
   try {
   const { data, error } = await supabase.from('history').select('*').order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket', 'Yapı', 'Durum', 'Onaylayan', 'Prompt Sürümü', 'Kural Hash']];
+  const rows = [['Tarih', 'Kullanıcı', 'Dosya/Metin', 'Skor', 'Toplam Hata', 'Sözlük', 'İmla', 'Noktalama', 'Etiket Hatası', 'Yapı', 'Durum', 'Onaylayan', 'Soru', 'Soru Etiketleri', 'Prompt Sürümü', 'Kural Hash']];
   (data || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, ROLES.ADMIN)).forEach(h => {
     rows.push([
       new Date(h.createdAt).toLocaleString('tr-TR'),
@@ -5858,7 +6905,7 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
       h.score || 0, h.totalErrors || 0,
       h.catCounts?.sozluk || 0, h.catCounts?.imla || 0,
       h.catCounts?.noktalama || 0, h.catCounts?.etiket || 0, h.catCounts?.yapi || 0,
-      h.status || 'bekliyor', h.approvedBy || '',
+      h.status || 'bekliyor', h.approvedBy || '', h.questionText || '', (h.tags || []).join(', '),
       h.promptVersion || '', h.rulesHash || ''
     ]);
   });
@@ -5872,32 +6919,1100 @@ app.get('/api/history/csv', auth, admin, async (req, res) => {
 // ── APPROVAL ──────────────────────────────────────────────────────────────
 async function setApproval(req, res, status) {
   try {
+    const now = new Date().toISOString();
+    const actor = req.session.name || req.session.username || 'Admin';
+    const reviewNote = status === APPROVAL_REVIEW_STATUS ? String(req.body?.note || '').trim().slice(0, 1200) : '';
+    if (status === APPROVAL_REVIEW_STATUS && !reviewNote) {
+      return res.status(400).json({ error: 'Teyit için kısa not gerekli.' });
+    }
     const { data: current, error: currentError } = await supabase.from('history')
-      .select('id,user_id,status,filename,corrected_text')
+      .select('*')
       .eq('id', req.params.id)
       .maybeSingle();
     if (currentError) throw new Error(currentError.message);
     if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
-    const { data, error } = await supabase.from('history').update({
-      status, approved_by: req.session.name, approved_at: new Date().toISOString()
-    }).eq('id', req.params.id).select('id');
+    const updateRow = status === 'onaylandi' || status === 'reddedildi'
+      ? { status, approved_by: actor, approved_at: now }
+      : { status, approved_by: null, approved_at: null };
+    if (HAS_HISTORY_TAGS && Object.prototype.hasOwnProperty.call(req.body || {}, 'tags')) {
+      updateRow.tags = normalizeHistoryTags(req.body?.tags);
+    }
+    if (HAS_HISTORY_QUESTION_TEXT && Object.prototype.hasOwnProperty.call(req.body || {}, 'questionText')) {
+      updateRow.question_text = normalizeHistoryQuestion(req.body?.questionText);
+    }
+    const { data, error } = await supabase.from('history').update(updateRow).eq('id', req.params.id).select('*');
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
     if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    if (status === APPROVAL_REVIEW_STATUS) {
+      await saveApprovalReviewNote(current.id, reviewNote, actor);
+      await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    }
+    if (status === 'bekliyor') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    if (status !== APPROVAL_RETURNED_STATUS) await clearApprovalReturnNote(current.id);
+    const [favorites, reviewNotes, returnNotes] = await Promise.all([
+      loadApprovalFavoriteSet(req.session.userId),
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes()
+    ]);
+    res.json({ success: true, history: attachApprovalMeta(mapHistory(data[0]), favorites, reviewNotes, returnNotes) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 }
 app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req, res, 'onaylandi'));
 app.post('/api/history/:id/reject',  auth, admin, (req, res) => setApproval(req, res, 'reddedildi'));
+app.post('/api/history/:id/review',  auth, admin, (req, res) => setApproval(req, res, APPROVAL_REVIEW_STATUS));
+app.post('/api/history/:id/pending', auth, admin, (req, res) => setApproval(req, res, 'bekliyor'));
+
+app.post('/api/history/:id/return', auth, admin, async (req, res) => {
+  try {
+    const now = new Date().toISOString();
+    const actor = req.session.name || req.session.username || 'Admin';
+    const reason = String(req.body?.reason || 'other').trim();
+    const cleanReason = Object.prototype.hasOwnProperty.call(APPROVAL_RETURN_REASONS, reason) ? reason : 'other';
+    const note = String(req.body?.note || '').trim().slice(0, 1200);
+    if (cleanReason === 'other' && !note) {
+      return res.status(400).json({ error: 'Geri gönderme notu gerekli.' });
+    }
+    const { data: current, error: currentError } = await supabase.from('history')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    if (current.status === 'onaylandi' || current.status === 'reddedildi') {
+      return res.status(400).json({ error: 'Onaylanmış veya reddedilmiş kayıt kullanıcıya geri gönderilemez.' });
+    }
+    const returnNote = await saveApprovalReturnNote(current.id, cleanReason, note, actor);
+    const { data, error } = await supabase.from('history')
+      .update({ status: APPROVAL_RETURNED_STATUS, approved_by: null, approved_at: null })
+      .eq('id', current.id)
+      .select('*')
+      .single();
+    if (error) throw new Error(error.message);
+    await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, APPROVAL_RETURNED_STATUS);
+    const alertMessage = [
+      'Denetim kaydınız düzenleme için geri gönderildi',
+      `Sebep: ${returnNote.reasonLabel}`,
+      returnNote.note ? `Not: ${returnNote.note}` : '',
+      `Kayıt: ${current.filename || 'Metin Girişi'}`,
+      `Gönderen: ${actor}`
+    ].filter(Boolean).join(' | ');
+    const { error: noticeError } = await supabase.from('alerts').insert({
+      type: 'approval_return',
+      message: alertMessage,
+      user_id: current.user_id,
+      history_id: current.id,
+      score: current.score,
+      read: false,
+      created_at: now
+    });
+    if (noticeError) throw new Error(noticeError.message);
+    const [favorites, reviewNotes, returnNotes] = await Promise.all([
+      loadApprovalFavoriteSet(req.session.userId),
+      loadApprovalReviewNotes(),
+      loadApprovalReturnNotes()
+    ]);
+    res.json({ success: true, history: attachApprovalMeta(mapHistory(data), favorites, reviewNotes, returnNotes) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/tags', auth, admin, async (req, res) => {
+  try {
+    if (!HAS_HISTORY_TAGS) return res.status(400).json({ error: 'Etiket alanı henüz veritabanında aktif değil.' });
+    const tags = normalizeHistoryTags(req.body?.tags);
+    const { data, error } = await supabase.from('history')
+      .update({ tags })
+      .eq('id', req.params.id)
+      .select('id,tags')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    res.json({ success: true, id: data.id, tags: data.tags || [] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
 // ── ALERTS ────────────────────────────────────────────────────────────────
+function ensureHistoryTagImportReady(res) {
+  if (!HAS_HISTORY_TAGS) {
+    res.status(400).json({ error: 'Denetim kayıtlarında etiket alanı aktif değil. schema.sql içindeki history.tags SQL satırı uygulanmalı.' });
+    return false;
+  }
+  if (!HAS_HISTORY_TAG_IMPORT_TABLES) {
+    res.status(400).json({ error: 'Etiket aktarım tabloları aktif değil. schema.sql içindeki history_tag_import tabloları Supabase SQL Editor tarafında uygulanmalı.' });
+    return false;
+  }
+  return true;
+}
+
+async function refreshHistoryTagImportBatchCounts(batchId) {
+  const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')
+    .select('match_status')
+    .eq('batch_id', batchId), 1000);
+  const counts = { ready: 0, review: 0, unmatched: 0, applied: 0, skipped: 0 };
+  (matches || []).forEach(row => {
+    const key = row.match_status || 'review';
+    if (Object.prototype.hasOwnProperty.call(counts, key)) counts[key]++;
+  });
+  const status = counts.ready + counts.review + counts.unmatched > 0 ? 'preview' : 'completed';
+  const { data, error: updateError } = await supabase.from('history_tag_import_batches')
+    .update({
+      ready_count: counts.ready,
+      review_count: counts.review,
+      unmatched_count: counts.unmatched,
+      applied_count: counts.applied,
+      skipped_count: counts.skipped,
+      status,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', batchId)
+    .select('*')
+    .maybeSingle();
+  if (updateError) throw new Error(updateError.message);
+  return publicHistoryTagImportBatch(data || {});
+}
+
+async function fetchHistoryTagImportHistoryRows() {
+  const rows = await fetchAllPages(() => supabase.from('history')
+    .select(historyTagImportSelectColumns())
+    .order('created_at', { ascending: false }), 1000);
+  return (rows || [])
+    .map(row => tagImportHistoryCandidate(row))
+    .filter(row => !isHiddenHistoryForRole({ status: row.status, filename: row.filename }, ROLES.ADMIN))
+    .filter(row => row.correctedText || row.originalText);
+}
+
+function buildHistoryTagImportMatches(historyRows, excelItems) {
+  const excelIndex = buildTagImportExcelIndex(excelItems);
+  return historyRows.map(history => {
+    const indexes = tagImportCandidateIndexes(history, excelIndex);
+    let bestItem = null;
+    let bestScore = { confidence: 0, reason: 'eslesme bulunamadi' };
+    for (const index of indexes) {
+      const excelItem = excelItems[index];
+      const score = scoreTagImportMatch(history, excelItem);
+      if (score.confidence > bestScore.confidence) {
+        bestScore = score;
+        bestItem = excelItem;
+      }
+      if (score.confidence >= 99) break;
+    }
+    const status = historyTagImportStatus(bestScore.confidence, history, bestItem);
+    return {
+      history_id: history.id,
+      excel_row: bestItem?.rowNumber || null,
+      excel_question: bestItem?.question || '',
+      answer_preview: bestItem?.answerPreview || archiveTextPreview(history.correctedText || history.originalText, 320),
+      tags: bestItem?.tags || [],
+      confidence: bestScore.confidence,
+      match_status: status,
+      match_reason: bestScore.reason,
+      current_tags: history.tags || []
+    };
+  });
+}
+
+async function attachHistoryToTagImportMatches(rows = []) {
+  const historyIds = [...new Set((rows || []).map(row => row.history_id).filter(Boolean))];
+  if (!historyIds.length) return rows || [];
+  const { data, error } = await supabase.from('history')
+    .select(historyTagImportSelectColumns())
+    .in('id', historyIds);
+  if (error) throw new Error(error.message);
+  const byId = new Map((data || []).map(row => [row.id, row]));
+  return (rows || []).map(row => ({ ...row, history: byId.get(row.history_id) || null }));
+}
+
+async function insertHistoryTagImportMatches(batchId, matches = []) {
+  for (let i = 0; i < matches.length; i += TAG_IMPORT_INSERT_CHUNK_SIZE) {
+    const chunk = matches.slice(i, i + TAG_IMPORT_INSERT_CHUNK_SIZE).map(row => ({ ...row, batch_id: batchId }));
+    const { error } = await supabase.from('history_tag_import_matches').insert(chunk);
+    if (error) throw new Error(error.message);
+  }
+}
+
+function historyTagImportExcelCacheMetaKey(batchId) {
+  return `${TAG_IMPORT_EXCEL_CACHE_KEY_PREFIX}:${batchId}:meta`;
+}
+
+function historyTagImportExcelCacheChunkKey(batchId, index) {
+  return `${TAG_IMPORT_EXCEL_CACHE_KEY_PREFIX}:${batchId}:chunk:${index}`;
+}
+
+async function historyTagImportExcelCacheKeys(batchId) {
+  const keys = [historyTagImportExcelCacheMetaKey(batchId)];
+  const meta = await loadJsonSetting(historyTagImportExcelCacheMetaKey(batchId), null);
+  const chunkCount = Number(meta?.chunkCount || 0);
+  for (let i = 0; i < chunkCount; i++) keys.push(historyTagImportExcelCacheChunkKey(batchId, i));
+  return keys;
+}
+
+function publicTagImportExcelItemForCache(item = {}) {
+  const answer = String(item.answer || '').slice(0, TAG_IMPORT_HISTORY_TEXT_LIMIT);
+  return {
+    rowNumber: Number(item.rowNumber || 0),
+    inheritedQuestionRow: item.inheritedQuestionRow || null,
+    question: item.question || '',
+    answer,
+    answerPreview: item.answerPreview || archiveTextPreview(answer || item.question || '', 320),
+    sourceUrl: item.sourceUrl || '',
+    program: item.program || '',
+    note: item.note || '',
+    tags: normalizeHistoryTags(item.tags || [])
+  };
+}
+
+function hydrateTagImportExcelItem(item = {}) {
+  return makeHistoryTagImportExcelItem({
+    rowNumber: item.rowNumber,
+    inheritedQuestionRow: item.inheritedQuestionRow || null,
+    question: item.question || '',
+    answer: item.answer || '',
+    sourceUrl: item.sourceUrl || '',
+    program: item.program || '',
+    note: item.note || '',
+    tags: item.tags || []
+  });
+}
+
+async function saveHistoryTagImportExcelItems(batchId, items = []) {
+  const cleanItems = (items || [])
+    .map(publicTagImportExcelItemForCache)
+    .filter(item => item.rowNumber && item.tags.length && (item.question || item.answer));
+  const previousKeys = await historyTagImportExcelCacheKeys(batchId);
+  await deleteSettingsByKeys(previousKeys);
+  const chunkCount = Math.ceil(cleanItems.length / TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE);
+  for (let i = 0; i < chunkCount; i++) {
+    const chunk = cleanItems.slice(i * TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE, (i + 1) * TAG_IMPORT_EXCEL_CACHE_CHUNK_SIZE);
+    await saveJsonSetting(historyTagImportExcelCacheChunkKey(batchId, i), chunk);
+  }
+  await saveJsonSetting(historyTagImportExcelCacheMetaKey(batchId), {
+    batchId,
+    count: cleanItems.length,
+    chunkCount,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+async function loadHistoryTagImportExcelItems(batchId) {
+  const meta = await loadJsonSetting(historyTagImportExcelCacheMetaKey(batchId), null);
+  const chunkCount = Number(meta?.chunkCount || 0);
+  if (!Number.isInteger(chunkCount) || chunkCount < 1) return [];
+  const keys = Array.from({ length: chunkCount }, (_, index) => historyTagImportExcelCacheChunkKey(batchId, index));
+  const rows = await fetchAllPages(() => supabase.from('settings').select('key,value').in('key', keys), 1000);
+  const byKey = new Map((rows || []).map(row => [row.key, parseJsonSettingValue(row.value, [])]));
+  return keys
+    .flatMap(key => Array.isArray(byKey.get(key)) ? byKey.get(key) : [])
+    .map(hydrateTagImportExcelItem)
+    .filter(item => item.rowNumber && item.tags.length && (item.question || item.answer));
+}
+
+function publicHistoryTagImportCandidate(item = {}, score = {}) {
+  return {
+    rowNumber: Number(item.rowNumber || 0),
+    inheritedQuestionRow: item.inheritedQuestionRow || null,
+    question: item.question || '',
+    answerPreview: item.answerPreview || '',
+    tags: normalizeHistoryTags(item.tags || []),
+    confidence: Number(score.confidence || 0),
+    reason: score.reason || '',
+    sourceUrl: item.sourceUrl || '',
+    program: item.program || '',
+    note: item.note || ''
+  };
+}
+
+function tagImportCandidateSearchHaystack(item = {}) {
+  return normalizeTagImportText([
+    item.question,
+    item.answer,
+    item.answerPreview,
+    item.sourceUrl,
+    item.program,
+    item.note,
+    ...(item.tags || [])
+  ].join(' '));
+}
+
+function findHistoryTagImportCandidatesForMatch(match = {}, historyRow = {}, items = [], q = '') {
+  const history = tagImportHistoryCandidate(historyRow || {});
+  const search = normalizeTagImportText(q);
+  let candidates = items || [];
+  if (search) candidates = candidates.filter(item => tagImportCandidateSearchHaystack(item).includes(search));
+  const anchor = Number(match.excel_row || 0);
+  const scored = candidates
+    .map(item => ({ item, score: scoreTagImportMatch(history, item) }))
+    .filter(entry => search || entry.score.confidence > 0)
+    .sort((a, b) => {
+      if (b.score.confidence !== a.score.confidence) return b.score.confidence - a.score.confidence;
+      if (anchor) return Math.abs(anchor - Number(a.item.rowNumber || 0)) - Math.abs(anchor - Number(b.item.rowNumber || 0));
+      return Number(a.item.rowNumber || 0) - Number(b.item.rowNumber || 0);
+    })
+    .slice(0, TAG_IMPORT_CANDIDATE_LIMIT);
+  return scored.map(entry => publicHistoryTagImportCandidate(entry.item, entry.score));
+}
+
+function tagImportUploadMetaKey(uploadId) {
+  return `${TAG_IMPORT_UPLOAD_KEY_PREFIX}:${uploadId}:meta`;
+}
+
+function tagImportUploadChunkKey(uploadId, index) {
+  return `${TAG_IMPORT_UPLOAD_KEY_PREFIX}:${uploadId}:chunk:${index}`;
+}
+
+function createTagImportUploadId() {
+  return `tiu-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+}
+
+function isValidTagImportUploadId(uploadId = '') {
+  return /^tiu-\d{10,}-[a-f0-9]{12}$/i.test(String(uploadId || ''));
+}
+
+async function cleanupTagImportUpload(uploadId, totalChunks = 0) {
+  if (!isValidTagImportUploadId(uploadId)) return;
+  const keys = [tagImportUploadMetaKey(uploadId)];
+  for (let i = 0; i < Number(totalChunks || 0); i++) keys.push(tagImportUploadChunkKey(uploadId, i));
+  await deleteSettingsByKeys(keys);
+}
+
+async function createHistoryTagImportPreviewFromBuffer(buffer, fileName, actorName) {
+  const parsed = parseHistoryTagImportWorkbook(buffer, fileName || 'Etiket dosyası');
+  if (!parsed.usableRows) {
+    const err = new Error('Dosyada etiketli soru-cevap satırı bulunamadı. Soru, Etiket/Sınıf ve Cevap sütunlarını kontrol edin.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const historyRows = await fetchHistoryTagImportHistoryRows();
+  const matches = buildHistoryTagImportMatches(historyRows, parsed.items);
+  const { data: batch, error: batchError } = await supabase.from('history_tag_import_batches')
+    .insert({
+      filename: parsed.fileName,
+      sheet_name: parsed.sheetName,
+      total_rows: parsed.totalRows,
+      usable_rows: parsed.usableRows,
+      history_count: historyRows.length,
+      status: 'preview',
+      note: `Excel etiketi ön izlemesi: ${parsed.fileName}`,
+      created_by: actorName || ''
+    })
+    .select('*')
+    .single();
+  if (batchError) throw new Error(batchError.message);
+  if (matches.length) await insertHistoryTagImportMatches(batch.id, matches);
+  await saveHistoryTagImportExcelItems(batch.id, parsed.items);
+  const refreshed = await refreshHistoryTagImportBatchCounts(batch.id);
+  const { data: detailRows, error: detailError } = await supabase.from('history_tag_import_matches')
+    .select('*')
+    .eq('batch_id', batch.id)
+    .order('confidence', { ascending: false })
+    .limit(TAG_IMPORT_INITIAL_DETAIL_LIMIT);
+  if (detailError) throw new Error(detailError.message);
+  const rowsWithHistory = await attachHistoryToTagImportMatches(detailRows || []);
+  return { batch: refreshed, matches: rowsWithHistory.map(publicHistoryTagImportMatch) };
+}
+
+async function applyHistoryTagImportMatchRow(matchId, actorName, options = {}) {
+  const { data: match, error } = await supabase.from('history_tag_import_matches')
+    .select('*')
+    .eq('id', matchId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!match) {
+    const err = new Error('Etiket aktarım kaydı bulunamadı.');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (match.match_status === 'applied') return match;
+  if (!match.history_id) {
+    const err = new Error('Bu satır mevcut bir denetim kaydıyla eşleşmemiş.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const tags = normalizeHistoryTags(match.tags || []);
+  if (!tags.length) {
+    const err = new Error('Uygulanacak etiket bulunamadı.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const historyUpdate = {};
+  if (HAS_HISTORY_TAGS) historyUpdate.tags = tags;
+  if (HAS_HISTORY_QUESTION_TEXT) {
+    const { data: existingHistory, error: existingHistoryError } = await supabase.from('history')
+      .select('question_text')
+      .eq('id', match.history_id)
+      .maybeSingle();
+    if (existingHistoryError) throw new Error(existingHistoryError.message);
+    const importedQuestion = normalizeHistoryQuestion(match.excel_question);
+    const existingQuestion = normalizeHistoryQuestion(existingHistory?.question_text || '');
+    if (importedQuestion && (!existingQuestion || options.replaceQuestion === true)) {
+      historyUpdate.question_text = importedQuestion;
+    }
+  }
+  const { data: updatedHistory, error: historyError } = await supabase.from('history')
+    .update(historyUpdate)
+    .eq('id', match.history_id)
+    .select('*')
+    .maybeSingle();
+  if (historyError) throw new Error(historyError.message);
+  if (!updatedHistory) {
+    const err = new Error('Denetim kaydı bulunamadı.');
+    err.statusCode = 404;
+    throw err;
+  }
+  const { data: updatedMatch, error: matchError } = await supabase.from('history_tag_import_matches')
+    .update({
+      current_tags: updatedHistory.tags || tags,
+      match_status: 'applied',
+      applied_at: new Date().toISOString(),
+      applied_by: actorName || ''
+    })
+    .eq('id', matchId)
+    .select('*')
+    .maybeSingle();
+  if (matchError) throw new Error(matchError.message);
+  if (options.refreshBatch !== false) await refreshHistoryTagImportBatchCounts(match.batch_id);
+  return updatedMatch || match;
+}
+
+function historyTagImportApplyLimit(value) {
+  const requested = Number(value || 0);
+  if (!Number.isFinite(requested) || requested <= 0) return TAG_IMPORT_APPLY_CHUNK_SIZE;
+  return Math.min(TAG_IMPORT_APPLY_CHUNK_SIZE, Math.max(1, Math.floor(requested)));
+}
+
+async function applyHistoryTagImportBatchChunk({ batchId, matchStatus, minConfidence, limit, actorName }) {
+  const safeLimit = historyTagImportApplyLimit(limit);
+  let query = supabase.from('history_tag_import_matches')
+    .select('id')
+    .eq('batch_id', batchId)
+    .eq('match_status', matchStatus)
+    .order('confidence', { ascending: false })
+    .order('id', { ascending: true })
+    .limit(safeLimit);
+  if (Number.isFinite(minConfidence)) query = query.gte('confidence', minConfidence);
+  const { data: rows, error } = await query;
+  if (error) throw new Error(error.message);
+
+  let applied = 0;
+  const errors = [];
+  for (const row of rows || []) {
+    try {
+      await applyHistoryTagImportMatchRow(row.id, actorName, { refreshBatch: false });
+      applied++;
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+
+  const batch = await refreshHistoryTagImportBatchCounts(batchId);
+  const remaining = matchStatus === 'ready' ? Number(batch.readyCount || 0) : Number(batch.reviewCount || 0);
+  return {
+    success: errors.length === 0,
+    applied,
+    errors,
+    batch,
+    remaining,
+    done: remaining === 0,
+    limit: safeLimit
+  };
+}
+
+async function fetchHistoryQuestionRowsByIds(historyIds = []) {
+  const out = new Map();
+  const ids = [...new Set((historyIds || []).filter(Boolean))];
+  for (let i = 0; i < ids.length; i += 250) {
+    const chunk = ids.slice(i, i + 250);
+    const { data, error } = await supabase.from('history')
+      .select('id,question_text')
+      .in('id', chunk);
+    if (error) throw new Error(error.message);
+    (data || []).forEach(row => out.set(row.id, row));
+  }
+  return out;
+}
+
+function historyTagImportQuestionLimit(value) {
+  const requested = Number(value || 0);
+  if (!Number.isFinite(requested) || requested <= 0) return TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE;
+  return Math.min(TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE, Math.max(1, Math.floor(requested)));
+}
+
+async function collectHistoryTagImportQuestionTargets(batchId) {
+  const matches = await fetchAllPages(() => supabase.from('history_tag_import_matches')
+    .select('id,batch_id,history_id,excel_question,confidence,match_status')
+    .eq('batch_id', batchId)
+    .eq('match_status', 'applied')
+    .not('history_id', 'is', null)
+    .not('excel_question', 'is', null)
+    .order('confidence', { ascending: false })
+    .order('id', { ascending: true }), 1000);
+
+  const byHistory = new Map();
+  for (const match of matches || []) {
+    const question = normalizeHistoryQuestion(match.excel_question);
+    if (!question || !match.history_id) continue;
+    if (!byHistory.has(match.history_id)) byHistory.set(match.history_id, { ...match, question });
+  }
+
+  const uniqueMatches = [...byHistory.values()];
+  const historyById = await fetchHistoryQuestionRowsByIds(uniqueMatches.map(match => match.history_id));
+  const missing = uniqueMatches.filter(match => {
+    const current = normalizeHistoryQuestion(historyById.get(match.history_id)?.question_text || '');
+    return !current;
+  });
+
+  return {
+    uniqueMatches,
+    missing,
+    skippedExisting: Math.max(0, uniqueMatches.length - missing.length)
+  };
+}
+
+async function updateHistoryQuestionsBulk(rows = []) {
+  let updated = 0;
+  const errors = [];
+  for (let i = 0; i < rows.length; i += TAG_IMPORT_QUESTION_BACKFILL_UPSERT_CHUNK_SIZE) {
+    const chunk = rows.slice(i, i + TAG_IMPORT_QUESTION_BACKFILL_UPSERT_CHUNK_SIZE);
+    const payload = chunk.map(row => ({ id: row.history_id, question_text: row.question }));
+    const { error } = await supabase.from('history').upsert(payload, { onConflict: 'id' });
+    if (!error) {
+      updated += chunk.length;
+      continue;
+    }
+
+    for (const row of chunk) {
+      try {
+        const { error: rowError } = await supabase.from('history')
+          .update({ question_text: row.question })
+          .eq('id', row.history_id);
+        if (rowError) throw new Error(rowError.message);
+        updated++;
+      } catch (rowError) {
+        errors.push(rowError.message);
+      }
+    }
+  }
+  return { updated, errors };
+}
+
+async function backfillHistoryTagImportQuestionsChunk({ batchId, limit }) {
+  if (!HAS_HISTORY_QUESTION_TEXT) {
+    const err = new Error('Denetim kayıtlarında soru alanı aktif değil. schema.sql içindeki history.question_text SQL satırı uygulanmalı.');
+    err.statusCode = 400;
+    throw err;
+  }
+  const safeLimit = historyTagImportQuestionLimit(limit);
+  const { uniqueMatches, missing, skippedExisting } = await collectHistoryTagImportQuestionTargets(batchId);
+  const rows = missing.slice(0, safeLimit);
+  const { updated, errors } = await updateHistoryQuestionsBulk(rows);
+
+  const remaining = Math.max(0, missing.length - updated);
+  const batch = await refreshHistoryTagImportBatchCounts(batchId);
+  return {
+    success: errors.length === 0,
+    updated,
+    skippedExisting,
+    errors,
+    batch,
+    remaining,
+    totalMissing: missing.length,
+    done: remaining === 0,
+    limit: safeLimit
+  };
+}
+
+function historyTagImportQuestionBackfillJobKey(batchId) {
+  return `${TAG_IMPORT_QUESTION_BACKFILL_JOB_KEY_PREFIX}:${batchId}`;
+}
+
+function normalizeHistoryTagImportQuestionBackfillJob(job, batchId = '') {
+  const raw = job && typeof job === 'object' && !Array.isArray(job) ? job : {};
+  const status = ['running', 'completed', 'failed'].includes(raw.status) ? raw.status : '';
+  return {
+    batchId: String(raw.batchId || batchId || ''),
+    status,
+    actorName: String(raw.actorName || ''),
+    startedAt: raw.startedAt || null,
+    updatedAt: raw.updatedAt || null,
+    completedAt: raw.completedAt || null,
+    updatedTotal: Number(raw.updatedTotal || 0),
+    remaining: Number(raw.remaining || 0),
+    totalMissing: Number(raw.totalMissing || 0),
+    skippedExisting: Number(raw.skippedExisting || 0),
+    steps: Number(raw.steps || 0),
+    needsResume: Boolean(raw.needsResume),
+    lastError: String(raw.lastError || ''),
+    batch: raw.batch || null
+  };
+}
+
+async function loadHistoryTagImportQuestionBackfillJob(batchId) {
+  const job = await loadJsonSetting(historyTagImportQuestionBackfillJobKey(batchId), null);
+  return job ? normalizeHistoryTagImportQuestionBackfillJob(job, batchId) : null;
+}
+
+async function saveHistoryTagImportQuestionBackfillJob(batchId, patch = {}) {
+  const now = new Date().toISOString();
+  const current = normalizeHistoryTagImportQuestionBackfillJob(
+    await loadJsonSetting(historyTagImportQuestionBackfillJobKey(batchId), null),
+    batchId
+  );
+  const next = normalizeHistoryTagImportQuestionBackfillJob({
+    ...current,
+    ...patch,
+    batchId,
+    updatedAt: now
+  }, batchId);
+  await saveJsonSetting(historyTagImportQuestionBackfillJobKey(batchId), next);
+  return next;
+}
+
+function isHistoryTagImportQuestionBackfillActive(job) {
+  return job && job.status === 'running';
+}
+
+async function runHistoryTagImportQuestionBackfillJob(batchId, options = {}) {
+  if (!batchId || activeQuestionBackfillJobs.has(batchId)) return loadHistoryTagImportQuestionBackfillJob(batchId);
+  activeQuestionBackfillJobs.add(batchId);
+  const budgetMs = Math.max(1000, Number(options.budgetMs || TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS));
+  const deadline = Date.now() + budgetMs;
+  let job = await loadHistoryTagImportQuestionBackfillJob(batchId);
+  try {
+    if (!isHistoryTagImportQuestionBackfillActive(job)) return job;
+    job = await saveHistoryTagImportQuestionBackfillJob(batchId, { needsResume: false, lastError: '' });
+
+    do {
+      const result = await backfillHistoryTagImportQuestionsChunk({
+        batchId,
+        limit: TAG_IMPORT_QUESTION_BACKFILL_CHUNK_SIZE
+      });
+      const hasErrors = Boolean(result.errors?.length);
+      const stalled = !result.done && !hasErrors && Number(result.updated || 0) <= 0;
+      const updatedTotal = Number(job.updatedTotal || 0) + Number(result.updated || 0);
+      const remaining = Number(result.remaining || 0);
+      const totalMissing = Math.max(
+        Number(job.totalMissing || 0),
+        Number(result.totalMissing || 0),
+        updatedTotal + remaining
+      );
+      job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
+        status: hasErrors ? 'failed' : (result.done || stalled ? 'completed' : 'running'),
+        completedAt: result.done || stalled ? new Date().toISOString() : null,
+        updatedTotal,
+        remaining,
+        totalMissing,
+        skippedExisting: Number(result.skippedExisting || job.skippedExisting || 0),
+        steps: Number(job.steps || 0) + 1,
+        needsResume: !hasErrors && !result.done && !stalled,
+        lastError: hasErrors
+          ? result.errors.slice(0, 3).join(' | ')
+          : (stalled ? 'Eklenecek uygun soru kalmadı. Daha önce yazılmış sorular korunmuş olabilir.' : ''),
+        batch: result.batch || job.batch || null
+      });
+      if (hasErrors || result.done || stalled) break;
+    } while (Date.now() < deadline);
+
+    if (job.status === 'running') {
+      job = await saveHistoryTagImportQuestionBackfillJob(batchId, { needsResume: true });
+    }
+  } catch (error) {
+    job = await saveHistoryTagImportQuestionBackfillJob(batchId, {
+      status: 'failed',
+      needsResume: false,
+      lastError: error.message || 'Soru aktarımı tamamlanamadı.'
+    });
+  } finally {
+    activeQuestionBackfillJobs.delete(batchId);
+  }
+  return job;
+}
+
+function scheduleHistoryTagImportQuestionBackfillJob(batchId) {
+  setTimeout(() => {
+    runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS }).catch(error => {
+      console.error('Soru aktarımı devam işi tamamlanamadı:', error.message);
+    });
+  }, 0);
+}
+
+async function startHistoryTagImportQuestionBackfillJob(batchId, actorName = '') {
+  const existing = await loadHistoryTagImportQuestionBackfillJob(batchId);
+  if (isHistoryTagImportQuestionBackfillActive(existing)) {
+    return runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS });
+  }
+  await saveHistoryTagImportQuestionBackfillJob(batchId, {
+    status: 'running',
+    actorName,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    updatedTotal: 0,
+    remaining: 0,
+    totalMissing: 0,
+    skippedExisting: 0,
+    steps: 0,
+    needsResume: true,
+    lastError: ''
+  });
+  return runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_START_BUDGET_MS });
+}
+
+async function getHistoryTagImportQuestionBackfillStatus(batchId) {
+  const job = await loadHistoryTagImportQuestionBackfillJob(batchId);
+  if (!isHistoryTagImportQuestionBackfillActive(job)) return job;
+  const updatedAt = Date.parse(job.updatedAt || job.startedAt || '');
+  const stale = !Number.isFinite(updatedAt) || Date.now() - updatedAt > TAG_IMPORT_QUESTION_BACKFILL_STALE_MS || job.needsResume;
+  if (stale) return runHistoryTagImportQuestionBackfillJob(batchId, { budgetMs: TAG_IMPORT_QUESTION_BACKFILL_STATUS_BUDGET_MS });
+  return job;
+}
+
+app.post('/api/history-tags/import/preview', auth, admin, superAdmin, tagImportUpload.single('file'), async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    if (!req.file?.buffer) return res.status(400).json({ error: 'Etiket aktarımı için Excel dosyası seçin.' });
+    const payload = await createHistoryTagImportPreviewFromBuffer(
+      req.file.buffer,
+      req.file.originalname || 'Etiket dosyası',
+      req.session.name || req.session.username || ''
+    );
+    res.json(payload);
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import/upload/start', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const fileName = String(req.body?.fileName || req.body?.filename || 'Etiket dosyası').trim().slice(0, 220) || 'Etiket dosyası';
+    const fileSize = Number(req.body?.fileSize || req.body?.size || 0);
+    const totalChunks = Number(req.body?.totalChunks || 0);
+    if (!Number.isFinite(fileSize) || fileSize <= 0) return res.status(400).json({ error: 'Dosya boyutu okunamadı. Lütfen dosyayı yeniden seçin.' });
+    if (fileSize > TAG_IMPORT_MAX_UPLOAD_SIZE) return res.status(413).json({ error: 'Etiket dosyası çok büyük. Lütfen dosyayı sadeleştirip tekrar deneyin.' });
+    if (!Number.isInteger(totalChunks) || totalChunks < 1 || totalChunks > TAG_IMPORT_MAX_UPLOAD_CHUNKS) return res.status(400).json({ error: 'Dosya parçaları hazırlanamadı. Lütfen sayfayı yenileyip tekrar deneyin.' });
+    const uploadId = createTagImportUploadId();
+    await saveJsonSetting(tagImportUploadMetaKey(uploadId), {
+      uploadId,
+      fileName,
+      fileSize,
+      totalChunks,
+      createdBy: req.session.name || req.session.username || '',
+      createdAt: new Date().toISOString()
+    });
+    res.json({ uploadId, totalChunks });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import/upload/chunk', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const uploadId = String(req.body?.uploadId || '').trim();
+    const index = Number(req.body?.index);
+    const totalChunks = Number(req.body?.totalChunks);
+    const chunk = String(req.body?.chunk || '');
+    if (!isValidTagImportUploadId(uploadId)) return res.status(400).json({ error: 'Yükleme oturumu bulunamadı. Lütfen dosyayı yeniden seçin.' });
+    const meta = await loadJsonSetting(tagImportUploadMetaKey(uploadId), null);
+    if (!meta) return res.status(404).json({ error: 'Yükleme oturumu süresi dolmuş. Lütfen dosyayı yeniden seçin.' });
+    if (!Number.isInteger(index) || index < 0 || index >= meta.totalChunks) return res.status(400).json({ error: 'Dosya parçası sırası okunamadı.' });
+    if (totalChunks !== meta.totalChunks) return res.status(400).json({ error: 'Dosya parça sayısı değişti. Lütfen dosyayı yeniden seçin.' });
+    if (!chunk || chunk.length > TAG_IMPORT_MAX_CHUNK_BASE64_LENGTH) return res.status(413).json({ error: 'Dosya parçası çok büyük. Lütfen sayfayı yenileyip tekrar deneyin.' });
+    await saveJsonSetting(tagImportUploadChunkKey(uploadId, index), { index, chunk, receivedAt: new Date().toISOString() });
+    res.json({ success: true, index, received: index + 1, totalChunks: meta.totalChunks });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import/upload/complete', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const uploadId = String(req.body?.uploadId || '').trim();
+    if (!isValidTagImportUploadId(uploadId)) return res.status(400).json({ error: 'Yükleme oturumu bulunamadı. Lütfen dosyayı yeniden seçin.' });
+    const meta = await loadJsonSetting(tagImportUploadMetaKey(uploadId), null);
+    if (!meta) return res.status(404).json({ error: 'Yükleme oturumu süresi dolmuş. Lütfen dosyayı yeniden seçin.' });
+    const totalChunks = Number(meta.totalChunks || 0);
+    if (!Number.isInteger(totalChunks) || totalChunks < 1 || totalChunks > TAG_IMPORT_MAX_UPLOAD_CHUNKS) return res.status(400).json({ error: 'Dosya parça bilgisi okunamadı. Lütfen dosyayı yeniden seçin.' });
+    const keys = Array.from({ length: totalChunks }, (_, index) => tagImportUploadChunkKey(uploadId, index));
+    const { data, error } = await supabase.from('settings').select('key,value').in('key', keys);
+    if (error) throw new Error(error.message);
+    const byKey = new Map((data || []).map(row => [row.key, parseJsonSettingValue(row.value, null)]));
+    const missing = keys.filter(key => !byKey.get(key)?.chunk);
+    if (missing.length) return res.status(400).json({ error: 'Dosyanın bazı parçaları eksik kaldı. Lütfen dosyayı yeniden seçip tekrar deneyin.' });
+    const buffer = Buffer.concat(keys.map(key => Buffer.from(String(byKey.get(key).chunk || ''), 'base64')));
+    if (meta.fileSize && Math.abs(buffer.length - Number(meta.fileSize)) > 2) {
+      return res.status(400).json({ error: 'Dosya eksik aktarılmış görünüyor. Lütfen dosyayı yeniden seçip tekrar deneyin.' });
+    }
+    const payload = await createHistoryTagImportPreviewFromBuffer(
+      buffer,
+      meta.fileName || 'Etiket dosyası',
+      req.session.name || req.session.username || ''
+    );
+    await cleanupTagImportUpload(uploadId, totalChunks);
+    res.json(payload);
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/history-tags/import-batches', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data, error } = await supabase.from('history_tag_import_batches')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(40);
+    if (error) throw new Error(error.message);
+    res.json({ batches: (data || []).map(publicHistoryTagImportBatch) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data: batch, error } = await supabase.from('history_tag_import_batches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!batch) return res.status(404).json({ error: 'Etiket aktarım listesi bulunamadı.' });
+    const refreshedBatch = await refreshHistoryTagImportBatchCounts(req.params.id);
+    const status = String(req.query.status || '').trim();
+    const q = String(req.query.q || '').trim().toLocaleLowerCase('tr-TR');
+    let query = supabase.from('history_tag_import_matches')
+      .select('*')
+      .eq('batch_id', req.params.id)
+      .order('confidence', { ascending: false })
+      .limit(500);
+    if (status) query = query.eq('match_status', status);
+    const { data: rows, error: rowsError } = await query;
+    if (rowsError) throw new Error(rowsError.message);
+    const rowsWithHistory = await attachHistoryToTagImportMatches(rows || []);
+    let matches = rowsWithHistory.map(publicHistoryTagImportMatch);
+    if (q) {
+      matches = matches.filter(item => [
+        item.question,
+        item.answerPreview,
+        item.reason,
+        item.status,
+        item.history?.name,
+        item.history?.username,
+        item.history?.filename,
+        item.history?.summary,
+        ...(item.tags || []),
+        ...(item.currentTags || [])
+      ].join(' ').toLocaleLowerCase('tr-TR').includes(q));
+    }
+    res.json({ batch: refreshedBatch, matches });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data: batch, error: batchError } = await supabase.from('history_tag_import_batches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (batchError) throw new Error(batchError.message);
+    if (!batch) return res.status(404).json({ error: 'Etiket aktarım listesi bulunamadı.' });
+
+    const { error: matchesError } = await supabase.from('history_tag_import_matches')
+      .delete()
+      .eq('batch_id', req.params.id);
+    if (matchesError) throw new Error(matchesError.message);
+
+    const { error: deleteError } = await supabase.from('history_tag_import_batches')
+      .delete()
+      .eq('id', req.params.id);
+    if (deleteError) throw new Error(deleteError.message);
+    const cacheKeys = await historyTagImportExcelCacheKeys(req.params.id);
+    await deleteSettingsByKeys([historyTagImportQuestionBackfillJobKey(req.params.id), ...cacheKeys]);
+
+    res.json({ success: true, batch: publicHistoryTagImportBatch(batch) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/candidates', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data: match, error } = await supabase.from('history_tag_import_matches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!match) return res.status(404).json({ error: 'Etiket aktarım kaydı bulunamadı.' });
+    const [matchWithHistory] = await attachHistoryToTagImportMatches([match]);
+    if (!matchWithHistory?.history) return res.status(400).json({ error: 'Bu aktarım kaydı bir denetim kaydıyla bağlı değil.' });
+    const excelItems = await loadHistoryTagImportExcelItems(match.batch_id);
+    if (!excelItems.length) {
+      return res.status(409).json({ error: 'Excel satır havuzu bulunamadı. Bu eski aktarım için Excel dosyasını tekrar seçip yeni liste oluşturun.' });
+    }
+    const candidates = findHistoryTagImportCandidatesForMatch(match, matchWithHistory.history, excelItems, req.query.q || '');
+    res.json({ success: true, match: publicHistoryTagImportMatch(matchWithHistory), candidates });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/select-candidate', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const rowNumber = Number(req.body?.rowNumber || 0);
+    const applyNow = req.body?.applyNow === true;
+    const actorName = req.session.name || req.session.username || '';
+    if (!Number.isFinite(rowNumber) || rowNumber <= 0) return res.status(400).json({ error: 'Seçilecek Excel satırı bulunamadı.' });
+    const { data: match, error } = await supabase.from('history_tag_import_matches')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!match) return res.status(404).json({ error: 'Etiket aktarım kaydı bulunamadı.' });
+    if (['applied', 'skipped'].includes(match.match_status)) {
+      return res.status(400).json({ error: 'Bu kayıt zaten tamamlanmış; Excel adayı değiştirilemez.' });
+    }
+    const [matchWithHistory] = await attachHistoryToTagImportMatches([match]);
+    if (!matchWithHistory?.history) return res.status(400).json({ error: 'Bu aktarım kaydı bir denetim kaydıyla bağlı değil.' });
+    const excelItems = await loadHistoryTagImportExcelItems(match.batch_id);
+    if (!excelItems.length) {
+      return res.status(409).json({ error: 'Excel satır havuzu bulunamadı. Bu eski aktarım için Excel dosyasını tekrar seçip yeni liste oluşturun.' });
+    }
+    const selectedItem = excelItems.find(item => Number(item.rowNumber || 0) === rowNumber);
+    if (!selectedItem) return res.status(404).json({ error: 'Seçilen Excel satırı bulunamadı.' });
+    const score = scoreTagImportMatch(tagImportHistoryCandidate(matchWithHistory.history), selectedItem);
+    const selectedStatus = score.confidence >= 86 ? 'ready' : 'review';
+    const { data: updated, error: updateError } = await supabase.from('history_tag_import_matches')
+      .update({
+        excel_row: selectedItem.rowNumber,
+        excel_question: selectedItem.question || '',
+        answer_preview: selectedItem.answerPreview || '',
+        tags: selectedItem.tags || [],
+        confidence: score.confidence,
+        match_status: selectedStatus,
+        match_reason: `Elle Excel satırı seçildi${applyNow ? ' ve uygulandı' : ''}; ${score.reason || 'aday satır seçildi'}`,
+        current_tags: Array.isArray(matchWithHistory.history?.tags) ? matchWithHistory.history.tags : []
+      })
+      .eq('id', req.params.id)
+      .select('*')
+      .maybeSingle();
+    if (updateError) throw new Error(updateError.message);
+    if (!updated) return res.status(404).json({ error: 'Etiket aktarım kaydı güncellenemedi.' });
+    let finalMatch = updated;
+    if (applyNow) {
+      finalMatch = await applyHistoryTagImportMatchRow(updated.id, actorName, {
+        refreshBatch: false,
+        replaceQuestion: true
+      });
+    }
+    const refreshedBatch = await refreshHistoryTagImportBatchCounts(match.batch_id);
+    const [rowWithHistory] = await attachHistoryToTagImportMatches([finalMatch]);
+    res.json({ success: true, applied: applyNow, batch: refreshedBatch, match: publicHistoryTagImportMatch(rowWithHistory) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const updated = await applyHistoryTagImportMatchRow(req.params.id, req.session.name || req.session.username || '');
+    const { data: match, error } = await supabase.from('history_tag_import_matches')
+      .select('*')
+      .eq('id', updated.id || req.params.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    const [rowWithHistory] = await attachHistoryToTagImportMatches([match || updated]);
+    res.json({ success: true, match: publicHistoryTagImportMatch(rowWithHistory) });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/skip', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const { data: current, error: currentError } = await supabase.from('history_tag_import_matches')
+      .select('id,batch_id')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current) return res.status(404).json({ error: 'Etiket aktarım kaydı bulunamadı.' });
+    const { data, error } = await supabase.from('history_tag_import_matches')
+      .update({ match_status: 'skipped' })
+      .eq('id', req.params.id)
+      .select('*')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    await refreshHistoryTagImportBatchCounts(current.batch_id);
+    const [rowWithHistory] = await attachHistoryToTagImportMatches([data]);
+    res.json({ success: true, match: publicHistoryTagImportMatch(rowWithHistory) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const result = await applyHistoryTagImportBatchChunk({
+      batchId: req.params.id,
+      matchStatus: 'ready',
+      minConfidence: 86,
+      limit: req.body?.limit,
+      actorName: req.session.name || req.session.username || ''
+    });
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const result = await applyHistoryTagImportBatchChunk({
+      batchId: req.params.id,
+      matchStatus: 'review',
+      limit: req.body?.limit,
+      actorName: req.session.name || req.session.username || ''
+    });
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/start', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const job = await startHistoryTagImportQuestionBackfillJob(
+      req.params.id,
+      req.session.name || req.session.username || ''
+    );
+    res.json({ success: true, job });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.get('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions/status', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const job = await getHistoryTagImportQuestionBackfillStatus(req.params.id);
+    res.json({ success: true, job });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
+app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questions', auth, admin, superAdmin, async (req, res) => {
+  try {
+    if (!ensureHistoryTagImportReady(res)) return;
+    const result = await backfillHistoryTagImportQuestionsChunk({
+      batchId: req.params.id,
+      limit: req.body?.limit
+    });
+    res.json(result);
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+});
+
 app.get('/api/alerts', auth, admin, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);
+    const { data: latestRows, error } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(300);
     if (error) throw new Error(error.message);
+    let data = latestRows || [];
+    if (HAS_ALERT_FEEDBACK_META) {
+      const { data: openFeedbackRows, error: openFeedbackError } = await supabase.from('alerts')
+        .select('*')
+        .eq('type', 'feedback')
+        .neq('feedback_status', 'resolved')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (openFeedbackError) throw new Error(openFeedbackError.message);
+      const byId = new Map(data.map(row => [row.id, row]));
+      (openFeedbackRows || []).forEach(row => byId.set(row.id, row));
+      data = [...byId.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
     const userIds = [...new Set((data || []).map(a => a.user_id).filter(Boolean))];
     const usersById = new Map();
     if (userIds.length) {
@@ -5907,6 +8022,15 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
       if (usersError) throw new Error(usersError.message);
       (users || []).forEach(u => usersById.set(u.id, u));
     }
+    const historyIds = [...new Set((data || []).filter(a => a.type === 'feedback').map(a => a.history_id).filter(Boolean))];
+    const historiesById = new Map();
+    for (let i = 0; i < historyIds.length; i += 100) {
+      const { data: histories, error: historiesError } = await supabase.from('history')
+        .select('id,filename,status,corrected_text,summary')
+        .in('id', historyIds.slice(i, i + 100));
+      if (historiesError) throw new Error(historiesError.message);
+      (histories || []).forEach(row => historiesById.set(row.id, row));
+    }
     const feedbackSimilarities = feedbackSimilarityMap((data || []).filter(a => a.type === 'feedback'));
     res.json((data || []).map(row => {
       const user = usersById.get(row.user_id);
@@ -5914,6 +8038,7 @@ app.get('/api/alerts', auth, admin, async (req, res) => {
         ...mapAlert(row),
         userName: user?.name || user?.username || '',
         userUsername: user?.username || '',
+        feedbackTriage: row.type === 'feedback' ? feedbackWorkTriage(row, historiesById.get(row.history_id)) : null,
         ...(feedbackSimilarities.get(row.id) || {})
       };
     }));
@@ -6357,7 +8482,7 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     const adminAlertTypes = ['feedback', 'low_score'];
     const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
     const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
-    const pending = hist.filter(h => h.status === 'bekliyor' || !h.status).length;
+    const pending = hist.filter(h => h.status === 'bekliyor' || h.status === APPROVAL_REVIEW_STATUS || !h.status).length;
     const riskItems = hist
       .filter(h => (h.score || 0) < 60 || (h.totalErrors || 0) >= 5)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -6526,7 +8651,7 @@ async function collectOperationalSnapshot(period = 'daily') {
       feedbackOpen: feedbackOpen.length,
       feedbackResolved: feedbackResolved.length,
       activeUsers: (userRows || []).filter(u => u.active).length,
-      approvalsPending: hist.filter(h => !h.status || h.status === 'bekliyor').length
+      approvalsPending: hist.filter(h => !h.status || h.status === 'bekliyor' || h.status === APPROVAL_REVIEW_STATUS).length
     },
     catTotals,
     topUsers,
@@ -7060,6 +9185,8 @@ const DUPLICATE_MSG = 'Bu metni daha önce denetlediniz. Aynı metni tekrar gön
 let HAS_TEXT_HASH = false; // startup'ta tespit edilir (history.text_hash kolonu)
 let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_version/rules_hash kolonları)
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
+let HAS_HISTORY_TAGS = false; // startup'ta tespit edilir (history.tags kolonu)
+let HAS_HISTORY_QUESTION_TEXT = false; // startup'ta tespit edilir (history.question_text kolonu)
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
 let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş içerik düzeltme kayıt defteri)
@@ -7074,6 +9201,7 @@ let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (p
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
 let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
 let HAS_HISTORY_PUBLIC_FIELDS = false; // startup'ta tespit edilir (onaylı kayıtlardaki soru/etiket alanları)
+let HAS_HISTORY_TAG_IMPORT_TABLES = false; // startup'ta tespit edilir (Excel etiket aktarimi)
 let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?

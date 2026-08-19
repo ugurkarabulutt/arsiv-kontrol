@@ -120,6 +120,22 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-19
+- **Public launch entegrasyon branch'i hazırlandı:** Public preview hattı (`codex/public-preview-phase1`)
+  ile canlı admin review hattı (`codex/admin-review-flow`) yeni `codex/public-launch-integration`
+  branch'inde birleştirildi. Amaç root cutover'dan önce public ön yüz, gerçek veri hazırlığı ve
+  canlı admin iş akışlarını tek deploy adayında toplamak. Merge sırasında public `/public-preview`
+  renderer'ı, onaylı kayıtları public okuma modeline hazırlayan `Onaylıları Siteye Hazırla`
+  endpoint/UI akışı, canlı site `Soru Talepleri`, admin onay ekranındaki favori/teyit/geri gönderme
+  akışı, kullanıcıya geri dönen denetimler, çözüm/feedback merkezi ve Excel etiket-soru aktarımı
+  korunarak birleştirildi. `schema.sql` hem public okuma tablolarını hem de eski
+  `history_tag_import_*` tablolarını içerir. Bu adım root `/` public cutover yapmaz ve production
+  alias değiştirmez. Yerel doğrulama geçti: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check`, `git diff --check`; tam check `97/97` test başarılı. Sıradaki adım preview
+  deploy ve gerçek veri smoke'tur.
+
 ### 2026-08-16
 - **Public preview sınıflandırma modeli etiketlerden kategoriye çevrildi:** Kullanıcı kararıyla
   admin/yayın hazırlık tarafındaki ayrı `Kategori`, `İkincil kategori` ve otomatik kategori önerisi

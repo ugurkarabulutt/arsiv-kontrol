@@ -259,6 +259,12 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .approval-submit-title{font-weight:800;font-size:13px;color:var(--ink);}
 .approval-submit-text{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;max-width:680px;}
 .approval-submit-panel .btn-submit-approval{min-width:150px;text-align:center;}
+.approval-submit-content{flex:1;min-width:280px;}
+.approval-submit-fields{width:100%;display:grid;grid-template-columns:1.15fr 1fr;gap:12px;margin-top:12px;}
+.history-question-field{margin-top:12px;}
+.history-question-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
+.history-question-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:12px 13px;font-size:14px;line-height:1.55;resize:vertical;min-height:92px;}
+.history-question-display{border:1px solid var(--border);background:var(--surface2);color:var(--ink2);padding:11px 13px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
 .work-audit-context{margin:0 0 14px;padding:13px 14px;border:1px solid rgba(var(--ai-rgb),.35);border-left:4px solid var(--ai);background:linear-gradient(135deg,rgba(var(--ai-rgb),.09),var(--surface));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:var(--soft-shadow);}
 .work-audit-context-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;}
 .work-audit-context-text{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;max-width:720px;}
@@ -271,6 +277,14 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .submit-confirm-summary{border:1px solid var(--border);background:var(--surface2);padding:12px 14px;margin:12px 0;font-size:13px;line-height:1.6;color:var(--ink2);}
 .submit-confirm-summary strong{color:var(--ink);}
 .submit-confirm-warning{border-left:3px solid var(--gold);background:var(--grn-bg);padding:11px 13px;font-size:13px;line-height:1.6;color:var(--ink2);}
+.history-tags-field{margin-top:12px;}
+.history-tags-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
+.history-tags-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:12px 13px;font-size:14px;line-height:1.5;resize:vertical;min-height:48px;}
+.history-tags-help{font-size:11px;color:var(--ink3);line-height:1.5;margin-top:6px;}
+.history-tags-preview{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.history-tag-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);background:rgba(var(--gold-rgb),.08);border:1px solid rgba(var(--gold-rgb),.32);padding:4px 7px;}
+.history-tags-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.history-question-inline{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:7px;border-left:2px solid var(--gold);padding-left:8px;word-break:break-word;}
 .corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
 .corrected-body{padding:22px 128px 24px 18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
@@ -292,7 +306,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
 @media(max-width:760px){.compare-head{align-items:flex-start}.scroll-lock-control{width:100%;justify-content:space-between}}
-@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
+@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-content,.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%;min-width:0}.approval-submit-fields{grid-template-columns:1fr}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
 @media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
@@ -314,6 +328,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .sb-ok{background:var(--grn-bg);color:var(--green);}
 .sb-no{background:var(--red-bg);color:var(--red);}
 .sb-draft{background:rgba(var(--ai-rgb),.12);color:var(--ai);}
+.sb-return{background:var(--gold-bg);color:var(--gold);}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
 .dot-on{background:var(--green);}
 .dot-off{background:var(--red);}
@@ -519,6 +534,42 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-output-check.blocked .archive-output-check-dot{border-color:var(--red);background:var(--red-bg);}
 .archive-output-check strong{display:block;color:var(--ink);font-size:12px;overflow-wrap:anywhere;}
 .archive-output-check span{display:block;color:var(--ink3);overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-actions{grid-template-columns:repeat(5,minmax(0,1fr));}
+.tag-import-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:12px;align-items:start;margin-top:12px;}
+.tag-import-batch-list,.tag-import-match-list{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tag-import-batch-list{max-height:520px;overflow:auto;}
+.tag-import-batch-card,.tag-import-match-card{border:1px solid var(--border);background:var(--bg);padding:12px;color:var(--ink);min-width:0;}
+.tag-import-batch-card{width:100%;text-align:left;cursor:pointer;}
+.tag-import-batch-card:hover,.tag-import-batch-card.active{border-color:var(--gold);background:rgba(var(--gold-rgb),.08);}
+.tag-import-batch-title,.tag-import-match-title{font-size:14px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
+.tag-import-badge{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding:4px 7px;white-space:nowrap;}
+.tag-import-badge.ready{border-color:rgba(var(--green-rgb),.42);background:var(--grn-bg);color:var(--green);}
+.tag-import-badge.review{border-color:rgba(var(--gold-rgb),.42);background:var(--gold-bg);color:var(--gold);}
+.tag-import-badge.unmatched,.tag-import-badge.skipped{border-color:rgba(var(--red-rgb),.38);background:var(--red-bg);color:var(--red);}
+.tag-import-badge.applied{border-color:rgba(var(--green-rgb),.42);background:rgba(var(--green-rgb),.12);color:var(--green);}
+.tag-import-match-card.ready{border-left:3px solid var(--green);}
+.tag-import-match-card.review{border-left:3px solid var(--gold);}
+.tag-import-match-card.unmatched,.tag-import-match-card.skipped{border-left:3px solid var(--red);}
+.tag-import-match-card.applied{border-left:3px solid var(--green);opacity:.86;}
+.tag-import-score{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);border:1px solid var(--border);background:var(--surface);padding:5px 8px;white-space:nowrap;}
+.tag-import-match-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.tag-import-preview{font-size:12px;line-height:1.55;color:var(--ink2);border:1px solid var(--border);background:var(--surface);padding:10px;margin:9px 0;max-height:170px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-map{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;margin:10px 0;}
+.tag-import-old,.tag-import-new{border:1px solid var(--border);padding:9px 10px;min-height:42px;line-height:1.45;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-old{background:var(--red-bg);color:var(--red);}
+.tag-import-new{background:var(--grn-bg);color:var(--green);font-weight:800;}
+.tag-import-arrow{font-family:'JetBrains Mono',monospace;color:var(--ink3);}
+.tag-import-actions-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.tag-import-actions-row button{white-space:nowrap;}
+.tag-import-candidate-panel{border:1px solid rgba(var(--gold-rgb),.36);background:var(--surface-strong);padding:10px;margin-top:10px;display:grid;gap:8px;min-width:0;}
+.tag-import-candidate-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;}
+.tag-import-candidate-list{display:grid;gap:8px;max-height:420px;overflow:auto;min-width:0;}
+.tag-import-candidate-card{border:1px solid var(--border);background:var(--bg);padding:10px;display:grid;gap:8px;min-width:0;}
+.tag-import-candidate-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;min-width:0;}
+.tag-import-candidate-title{font-size:12px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-candidate-preview{font-size:12px;line-height:1.5;color:var(--ink2);white-space:pre-wrap;max-height:130px;overflow:auto;overflow-wrap:anywhere;word-break:break-word;}
+.tag-import-candidate-tags{display:flex;gap:6px;flex-wrap:wrap;}
 .archive-output-publication{border:1px solid rgba(var(--gold-rgb),.38);background:linear-gradient(135deg,rgba(var(--gold-rgb),.08),rgba(var(--green-rgb),.05));padding:12px;margin:12px 0;min-width:0;}
 .archive-output-publication-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;min-width:0;}
 .archive-output-publication-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;}
@@ -526,6 +577,18 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-output-publication-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:8px;}
 .archive-output-publication-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;}
 .archive-output-publication-actions button{min-width:0;white-space:normal;}
+.archive-output-publication .badge,.archive-public-readiness .badge{position:static;width:auto;height:auto;min-width:auto;border-radius:999px;padding:5px 8px;background:rgba(var(--gold-rgb),.14);border:1px solid rgba(var(--gold-rgb),.38);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.1;white-space:nowrap;}
+.archive-public-readiness .badge.danger{background:rgba(var(--red-rgb),.12);border-color:rgba(var(--red-rgb),.42);color:var(--red);}
+.archive-public-readiness{border:1px solid var(--border);background:var(--surface-strong);padding:10px;margin-top:10px;display:grid;gap:8px;min-width:0;}
+.archive-public-readiness-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;}
+.archive-public-readiness-title{font-size:12px;font-weight:900;color:var(--ink);line-height:1.35;overflow-wrap:anywhere;}
+.archive-public-readiness-counts{display:flex;gap:6px;flex-wrap:wrap;}
+.archive-public-readiness-list{display:grid;gap:6px;max-height:260px;overflow:auto;min-width:0;}
+.archive-public-readiness-item{border:1px solid var(--border);background:var(--bg);padding:8px;font-size:12px;line-height:1.45;color:var(--ink2);min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+.archive-public-readiness-item.blocker{border-color:rgba(var(--red-rgb),.55);background:rgba(var(--red-rgb),.06);}
+.archive-public-readiness-item.warning{border-color:rgba(var(--gold-rgb),.55);background:rgba(var(--gold-rgb),.07);}
+.archive-public-readiness-item strong{display:block;color:var(--ink);font-size:12px;margin-bottom:2px;overflow-wrap:anywhere;}
+.archive-public-readiness-item span{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);overflow-wrap:anywhere;}
 .ops-source-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .ops-status{font-size:13px;color:var(--ink3);}
 .ops-status.ok{color:var(--green);}
@@ -577,22 +640,42 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
 @media(max-width:640px){.candidate-review-grid{grid-template-columns:1fr}.candidate-trace-row{grid-template-columns:1fr;gap:2px}.candidate-public-preview{padding:12px}.candidate-public-preview h4{font-size:16px}.candidate-review-card{padding:12px}}
+.approval-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:-6px 0 12px;flex-wrap:wrap;}
+.approval-review-toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bord2);background:linear-gradient(135deg,var(--surface),var(--surface2));color:var(--ink);padding:7px 10px;border-radius:999px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;box-shadow:var(--soft-shadow);}
+.approval-review-toggle:hover{border-color:var(--gold);transform:translateY(-1px);}
+.approval-review-icon{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--gold-bg);color:var(--gold);border:1px solid rgba(var(--gold-rgb),.36);font-weight:900;font-size:15px;}
+.approval-review-count{min-width:20px;height:20px;border-radius:999px;background:var(--ink);color:var(--bg);display:inline-flex;align-items:center;justify-content:center;padding:0 6px;font-size:10px;}
+.approval-review-panel{border:1px solid var(--bord2);background:linear-gradient(135deg,var(--white),var(--surface2));padding:12px;margin-bottom:12px;box-shadow:var(--soft-shadow);}
+.approval-review-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.approval-review-panel h3{font-size:16px;margin:0 0 3px;color:var(--ink);}
+.approval-review-panel p{font-size:12px;color:var(--ink3);margin:0;line-height:1.5;}
 .workflow-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .workflow-col{background:var(--white);border:1px solid var(--bord2);min-width:0;box-shadow:var(--soft-shadow);}
 .workflow-head{padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .workflow-title{font-weight:600;font-size:13px;}
 .workflow-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);}
 .workflow-list{padding:8px;display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}
-.work-card{border:1px solid var(--border);background:var(--bg);padding:10px;}
+.work-card{border:1px solid var(--border);background:var(--bg);padding:10px;position:relative;}
+.work-card.is-review{border-left:3px solid var(--gold);background:linear-gradient(135deg,var(--bg),rgba(var(--gold-rgb),.08));}
+.work-card.is-favorite{border-top-color:rgba(var(--gold-rgb),.7);}
 .work-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
 .work-name{font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .work-file{font-size:12px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px;}
 .work-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);margin-bottom:8px;}
 .work-actions{display:flex;gap:4px;flex-wrap:wrap;}
+.work-star{width:30px;height:30px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;line-height:1;transition:all .16s;}
+.work-star:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px);}
+.work-star.active{background:var(--gold-bg);border-color:rgba(var(--gold-rgb),.55);color:var(--gold);}
+.work-review-note{border:1px solid rgba(var(--gold-rgb),.32);background:var(--gold-bg);color:var(--ink2);font-size:12px;line-height:1.5;padding:8px 9px;margin:8px 0;}
+.work-return-note{border:1px solid rgba(var(--gold-rgb),.38);background:linear-gradient(135deg,var(--orange-bg),rgba(var(--gold-rgb),.08));color:var(--ink2);font-size:12px;line-height:1.55;padding:9px 10px;margin:8px 0;}
+.work-return-note strong{color:var(--orange);}
+.work-return-reason{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--orange);}
+.work-return-note.compact{margin-top:6px;padding:7px 8px;font-size:11px;}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
+@media(max-width:640px){.approval-tools{justify-content:stretch}.approval-review-toggle{width:100%;justify-content:space-between}.approval-review-panel-head{display:grid;grid-template-columns:1fr}.work-actions button{flex:1;min-width:96px}.work-star{flex:0 0 36px;width:36px;height:36px}}
 @media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
-@media(max-width:900px){.archive-output-layout{grid-template-columns:1fr}.archive-output-package-list{max-height:none;overflow:visible}}
-@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks{grid-template-columns:1fr}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
+@media(max-width:900px){.archive-output-layout,.tag-import-layout{grid-template-columns:1fr}.archive-output-package-list,.tag-import-batch-list{max-height:none;overflow:visible}.tag-import-actions{grid-template-columns:1fr}}
+@media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions,.tag-import-actions-row{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button,.tag-import-actions-row button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head,.tag-import-match-head,.tag-import-candidate-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks,.tag-import-map,.tag-import-candidate-tools{grid-template-columns:1fr}.tag-import-arrow{text-align:center}.tag-import-candidate-list{max-height:none}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .bar-label{font-size:12px;color:var(--ink2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
@@ -692,6 +775,17 @@ canvas{width:100%!important;}
 .feedback-root{display:inline-flex;align-items:center;gap:5px;margin:6px 0 4px;padding:4px 8px;border:1px solid var(--border);background:var(--surface2);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);}
 .feedback-root-match{margin:7px 0 4px;padding:8px 10px;border:1px solid rgba(var(--ai-rgb),.35);border-left:3px solid var(--ai);background:rgba(var(--ai-rgb),.08);font-size:12px;line-height:1.45;color:var(--ink2);}
 .feedback-root-match strong{color:var(--ink);}
+.feedback-work{margin:8px 0;padding:10px 11px;border:1px solid var(--border);border-left:3px solid var(--gold);background:var(--surface2);font-size:12px;line-height:1.5;color:var(--ink2);}
+.feedback-work.ok{border-left-color:var(--green);background:var(--grn-bg);}
+.feedback-work.warn{border-left-color:var(--gold);}
+.feedback-work.info{border-left-color:var(--ai);background:rgba(var(--ai-rgb),.08);}
+.feedback-work.done{border-left-color:var(--green);background:var(--grn-bg);}
+.feedback-work-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+.feedback-work-pill{display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--bg);padding:4px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--ink2);}
+.feedback-work-pair{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);word-break:break-word;}
+.feedback-work-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.feedback-work-filter{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 10px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);}
+.feedback-work-filter .btn-mini{font-size:10px;}
 .correction-layout{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:14px;align-items:start;}
 .correction-form,.correction-card,.correction-queue-section{background:var(--white);border:1px solid var(--bord2);box-shadow:var(--soft-shadow);}
 .correction-form-head{padding:13px 16px;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:800;color:var(--ink);}
@@ -824,8 +918,8 @@ canvas{width:100%!important;}
 .modal-body{padding:16px 20px 20px;}
 .mfield{margin-bottom:14px;}
 .mfield label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
-.mfield input,.mfield select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:15px;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;border-radius:0;}
-.mfield input:focus,.mfield select:focus{border-color:var(--gold);}
+.mfield input,.mfield select,.mfield textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);font-family:inherit;font-size:15px;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;border-radius:0;}
+.mfield input:focus,.mfield select:focus,.mfield textarea:focus{border-color:var(--gold);}
 .mfield select{font-family:'JetBrains Mono',monospace;font-size:12px;}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 .form-err{color:var(--red);font-size:13px;min-height:16px;}
@@ -1033,6 +1127,7 @@ canvas{width:100%!important;}
     <button class="btn-mobile admin-only" onclick="mNav('dash')" style="display:none">Dashboard</button>
       <button class="btn-mobile admin-only" onclick="mNav('ai')" style="display:none">AI Asistan</button>
       <button class="btn-mobile admin-only" id="mBtnOnay" onclick="mNav('onay')" style="display:none">Onaylar <span class="badge-m" id="mOnayBadge" style="display:none">0</span></button>
+      <button class="btn-mobile admin-only" onclick="mNav('favorites')" style="display:none">Favorilerim</button>
       <button class="btn-mobile admin-only" onclick="mNav('feedback')" style="display:none">Geri Bildirim Merkezi</button>
       <button class="btn-mobile admin-only" onclick="mNav('corrections')" style="display:none">Geçmiş Düzeltmeleri</button>
       <button class="btn-mobile admin-only" id="mBtnAlerts" onclick="mNav('alerts')" style="display:none">Sistem Uyarıları <span class="badge-m" id="mAlertBadge" style="display:none">0</span></button>
@@ -1053,6 +1148,7 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="ready" onclick="mArchiveOps('ready')">Yayın Hazırlık Kuyruğu</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packages" onclick="mArchiveOps('packages')">Yayın Paketleri</button>
           <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="packageOutput" onclick="mArchiveOps('packageOutput')">Paket Çıktı Merkezi</button>
+          <button class="btn-mobile mobile-sub-link archive-ops-nav" data-ops-view="tagImport" onclick="mArchiveOps('tagImport')">Etiket Aktarımı</button>
         </div>
       </div>
       <div class="mobile-menu-group live-site-menu-group super-admin-only admin-route-only" style="display:none">
@@ -1079,13 +1175,7 @@ canvas{width:100%!important;}
     <button class="side-link admin-only" data-tab="dash" onclick="showTab('dash')" style="display:none"><span>Dashboard</span></button>
     <button class="side-link admin-only" data-tab="ai" onclick="showTab('ai')" style="display:none"><span>AI Asistan ve Raporlar</span></button>
     <button class="side-link admin-only" data-tab="onay" onclick="showTab('onay')" style="display:none"><span>&#304;&#351; Panosu</span><span class="badge" id="sideOnayBadge" style="display:none">0</span></button>
-
-    <div class="side-section-label admin-only" style="display:none">Geri Bildirim</div>
-    <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
-    <button class="side-link admin-only" data-tab="corrections" onclick="showTab('corrections')" style="display:none"><span>Geçmiş Düzeltmeleri</span></button>
-    <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>&Ccedil;&ouml;z&uuml;m Takibi</span></button>
-    <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kay&#305;tlar&#305;</span></button>
-    <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyar&#305;lar&#305;</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
+    <button class="side-link admin-only" data-tab="favorites" onclick="showTab('favorites')" style="display:none"><span>Favorilerim</span></button>
 
     <div class="side-section-label super-admin-only admin-route-only" style="display:none">Arşiv Operasyonu</div>
     <div class="side-group archive-ops-menu-group super-admin-only admin-route-only" style="display:none">
@@ -1103,6 +1193,7 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="ready" onclick="openArchiveOps('ready')"><span>Yayın Hazırlık Kuyruğu</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packages" onclick="openArchiveOps('packages')"><span>Yayın Paketleri</span></button>
         <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="packageOutput" onclick="openArchiveOps('packageOutput')"><span>Paket Çıktı Merkezi</span></button>
+        <button class="side-link side-sub-link archive-ops-nav" data-tab="archiveOps" data-ops-view="tagImport" onclick="openArchiveOps('tagImport')"><span>Etiket Aktarımı</span></button>
       </div>
     </div>
 
@@ -1113,6 +1204,13 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="publicQuestions" onclick="openLiveSite('publicQuestions')"><span>Soru Talepleri</span></button>
       </div>
     </div>
+
+    <div class="side-section-label admin-only" style="display:none">Geri Bildirim</div>
+    <button class="side-link admin-only" data-tab="feedback" onclick="showTab('feedback')" style="display:none"><span>Geri Bildirim Merkezi</span><span class="badge" id="sideFeedbackBadge" style="display:none">0</span></button>
+    <button class="side-link admin-only" data-tab="corrections" onclick="showTab('corrections')" style="display:none"><span>Geçmiş Düzeltmeleri</span></button>
+    <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>&Ccedil;&ouml;z&uuml;m Takibi</span></button>
+    <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kay&#305;tlar&#305;</span></button>
+    <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyar&#305;lar&#305;</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
 
     <div class="side-section-label admin-only" style="display:none">Y&ouml;netim</div>
     <button class="side-link admin-only" data-tab="kullanici" onclick="showTab('kullanici')" style="display:none"><span>Kullan&#305;c&#305;lar</span></button>
@@ -1180,6 +1278,8 @@ canvas{width:100%!important;}
           <option value="all">Tüm kayıtlar</option>
           <option value="taslak">Taslaklar</option>
           <option value="bekliyor">Bekleyen</option>
+          <option value="teyit_bekliyor">Teyit Bekleyen</option>
+          <option value="geri_gonderildi">Geri Dönenler</option>
           <option value="onaylandi">Onaylanan</option>
           <option value="reddedildi">Reddedilen</option>
           <option value="low">Düşük skor</option>
@@ -1734,8 +1834,8 @@ canvas{width:100%!important;}
 
       <div class="ops-module-page archive-ops-section" data-ops-view="import" hidden>
         <div class="ops-module-kicker">İçe aktarım</div>
-        <div class="ops-module-title">Google dosyalarından gelen kayıtlar kalıcı içe aktarım partilerinde takip edilecek.</div>
-        <div class="ops-module-copy">Dosyalar artık yalnız tarayıcı hafızasında kalmaz. Her aktarım bir partiye bağlanır; dosya metni, durum, not ve kaynak kaydına dönüşme adımı aynı ekranda takip edilir.</div>
+        <div class="ops-module-title">Google dosyalarından gelen kayıtlar kalıcı içe aktarım listelerinde takip edilecek.</div>
+        <div class="ops-module-copy">Dosyalar artık yalnız tarayıcı hafızasında kalmaz. Her aktarım bir listeye bağlanır; dosya metni, durum, not ve kaynak kaydına dönüşme adımı aynı ekranda takip edilir.</div>
         <div class="ops-module-list">
           <div class="ops-module-item"><strong>Ön izleme</strong>Aktarılan satırlar kalıcı kayda dönüşmeden kontrol edilir.</div>
           <div class="ops-module-item"><strong>Çakışma kontrolü</strong>Aynı link, aynı metin veya benzer başlıklar işaretlenir.</div>
@@ -1744,13 +1844,13 @@ canvas{width:100%!important;}
         <div class="ops-import-workspace">
           <div class="ops-import-batch-bar">
             <div>
-              <input class="ops-field" id="archiveImportBatchTitle" placeholder="Parti başlığı: Örn. 6 Ağustos hadis dokümanları">
+              <input class="ops-field" id="archiveImportBatchTitle" placeholder="Liste başlığı: Örn. 6 Ağustos hadis dokümanları">
               <textarea class="ops-field" id="archiveImportBatchNote" placeholder="Kısa not" style="margin-top:8px;min-height:70px;resize:vertical"></textarea>
             </div>
-            <button class="btn-primary" onclick="createArchiveImportBatch()">Parti Oluştur</button>
+            <button class="btn-primary" onclick="createArchiveImportBatch()">Liste Oluştur</button>
           </div>
           <div class="ops-import-batch-list" id="archiveImportBatchList">
-            <div class="empty-state">İçe aktarım partileri yükleniyor...</div>
+            <div class="empty-state">İçe aktarım listeleri yükleniyor...</div>
           </div>
           <div class="ops-import-flow" aria-label="İçe aktarım adımları">
             <div class="ops-import-flow-step"><strong>1. Dosya seç</strong><span>DOCX, TXT, MD, CSV, TSV veya JSON ekleyin.</span></div>
@@ -1933,6 +2033,7 @@ canvas{width:100%!important;}
               <option value="json">JSON</option>
               <option value="markdown">Markdown</option>
               <option value="csv">CSV</option>
+              <option value="public-json">Public Kayıt JSON</option>
             </select>
             <button class="btn-sec" onclick="clearArchiveOutput()">Çıktıyı Temizle</button>
           </div>
@@ -1991,6 +2092,59 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="tagImport" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Etiket Aktarımı</div>
+            <div class="ops-panel-sub">Excel dosyasındaki Etiket/Sınıf bilgisini geçmiş denetim kayıtlarıyla kontrollü eşleştirin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="archive-ready-hero">
+            <strong>Bu ekran toplu ve kontrollü etiket taşıma alanıdır.</strong>
+            <span>Excel yüklenince sistem denetim kayıtlarıyla eşleşme önerir. Süper admin, etiketleri tek tek ya da yalnız yüksek güvenli eşleşmeleri toplu uygulayabilir.</span>
+          </div>
+          <input type="file" id="historyTagImportFile" hidden accept=".xlsx,.xls,.csv,.tsv" onchange="uploadHistoryTagImportFile(this.files&&this.files[0]);this.value='';">
+          <div class="ops-filter-row tag-import-actions">
+            <button class="btn-primary" onclick="triggerHistoryTagImportPicker()">Excel Seç ve Eşleştir</button>
+            <button class="btn-sec" id="historyTagImportApplyReadyBtn" onclick="applyReadyHistoryTagImportMatches()">Güvenli Eşleşmeleri Uygula</button>
+            <button class="btn-sec" id="historyTagImportApplyReviewBtn" onclick="applyReviewHistoryTagImportMatches()" hidden>Kontrol Gerekenleri Uygula</button>
+            <button class="btn-sec" id="historyTagImportBackfillQuestionsBtn" onclick="backfillHistoryTagImportQuestions()">Excel Sorularını Ekle</button>
+            <button class="btn-sec" onclick="loadHistoryTagImportBatches()">Listeyi Yenile</button>
+            <button class="btn-danger" onclick="deleteHistoryTagImportBatch()">Seçili Aktarımı Sil</button>
+          </div>
+          <div class="ops-status" id="historyTagImportStatusMsg"></div>
+          <div class="ops-file-summary" id="historyTagImportSummary"></div>
+          <div class="ops-filter-row">
+            <input class="ops-field" id="historyTagImportSearch" placeholder="Kullanıcı, dosya, soru, cevap veya etikette ara..." oninput="setHistoryTagImportFilter()">
+            <select class="ops-field" id="historyTagImportStatusFilter" onchange="setHistoryTagImportFilter()">
+              <option value="ready">Hazır eşleşmeler</option>
+              <option value="review">Kontrol gerekenler</option>
+              <option value="unmatched">Eşleşmeyenler</option>
+              <option value="applied">Uygulananlar</option>
+              <option value="skipped">Atlananlar</option>
+              <option value="">Tüm kayıtlar</option>
+            </select>
+            <button class="btn-sec" onclick="clearHistoryTagImportFilters()">Filtreyi Temizle</button>
+          </div>
+          <div class="tag-import-layout">
+            <div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Aktarım listeleri</div>
+              <div class="tag-import-batch-list" id="historyTagImportBatchList">
+                <div class="archive-release-empty">Etiket aktarım listeleri yükleniyor...</div>
+              </div>
+            </div>
+            <div>
+              <div class="ops-panel-title" style="font-size:14px;margin:0 0 8px">Eşleşme kontrolü</div>
+              <div class="tag-import-match-list" id="historyTagImportMatchList">
+                <div class="empty-state">Bir aktarım listesi seçildiğinde eşleşmeler burada görünür.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="ops-flow archive-ops-section" data-ops-view="overview">
         <div class="ops-step"><div class="ops-step-num">01</div><strong>Kaynak girer</strong><span>Yayın, transkript, hadis, slayt veya standart sisteme alınır.</span></div>
         <div class="ops-step"><div class="ops-step-num">02</div><strong>Görev atanır</strong><span>Kişi, tarih, durum ve çalışma notu belirlenir.</span></div>
@@ -2006,10 +2160,17 @@ canvas{width:100%!important;}
 
     <div class="tab-content" id="tabContent-onay">
       <div class="page-title">İş Panosu</div>
-      <div class="page-sub">Bekleyen, onaylanan ve reddedilen denetimler</div>
+      <div class="page-sub">Bekleyen, onaylanan, reddedilen ve teyit bekleyen denetimler</div>
       <div class="divider"></div>
       <div id="onayActionStatus" class="status-msg" style="margin-bottom:10px"></div>
       <div id="onayContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
+    <div class="tab-content" id="tabContent-favorites">
+      <div class="page-title">Favorilerim</div>
+      <div class="page-sub">Onay sürecinde yıldızladığınız soru-cevap kayıtları</div>
+      <div class="divider"></div>
+      <div id="favoritesContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
     <div class="tab-content" id="tabContent-bildirim">
@@ -2202,8 +2363,37 @@ canvas{width:100%!important;}
       <div id="detailBody" style="white-space:pre-wrap;font-size:15px;line-height:1.8;color:var(--ink2);max-height:55vh;overflow-y:auto;background:var(--bg2);padding:14px;"></div>
       <div class="modal-foot" style="margin-top:12px">
         <button class="btn-sec" onclick="closeModal('detailModal')">Kapat</button>
-        <button class="btn-primary" id="copyDetailBtn" onclick="copyDetail()">Kopyala</button>
+        <button class="btn-sec" id="returnDetailBtn" onclick="openReturnApprovalFromDetail(this)" style="display:none">Geri Gönder</button>
+        <button class="btn-green" id="approveDetailBtn" onclick="approveDetailFromModal(this)" style="display:none">Onayla</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="returnApprovalModal">
+  <div class="modal feedback-modal">
+    <div class="modal-head"><h3>Kaydı geri gönder</h3><button class="modal-close" onclick="closeReturnApprovalModal()">×</button></div>
+    <div class="modal-body">
+      <div class="feedback-label">Düzeltme sebebi</div>
+      <input type="hidden" id="returnApprovalId">
+      <div class="mfield">
+        <label for="returnApprovalReason">Sebep</label>
+        <select id="returnApprovalReason">
+          <option value="missing_question">Soru eksik</option>
+          <option value="wrong_question">Soru yanlış</option>
+          <option value="missing_tags">Etiket eksik</option>
+          <option value="wrong_tags">Etiket yanlış</option>
+          <option value="missing_answer">Cevap/metin eksik</option>
+          <option value="other">Diğer</option>
+        </select>
+      </div>
+      <div class="mfield">
+        <label for="returnApprovalNote">Not</label>
+        <textarea id="returnApprovalNote" rows="4" maxlength="1200" placeholder="Ekip üyesinin neyi tamamlaması gerektiğini kısa ve net yazın."></textarea>
+      </div>
+      <div class="history-tags-help">Bu kayıt reddedilmez; ilgili ekip üyesinin Denetim Geçmişi’nde “Geri Dönenler” olarak görünür ve aynı kayıt tekrar onaya gönderilebilir.</div>
+      <div class="form-err" id="returnApprovalErr"></div>
+      <div class="modal-foot"><button class="btn-sec" onclick="closeReturnApprovalModal()">Vazgeç</button><button class="btn-primary" id="returnApprovalBtn" onclick="submitReturnApproval()">Geri Gönder</button></div>
     </div>
   </div>
 </div>
@@ -2230,6 +2420,17 @@ canvas{width:100%!important;}
       <div class="feedback-label">Son kontrol</div>
       <div class="submit-confirm-warning">Sistem denetimi tamamladı. Onaya Gönder dediğinizde sonuç onay kuyruğuna iletilir.</div>
       <div class="submit-confirm-summary" id="submitApprovalSummary"></div>
+      <div class="history-question-field">
+        <label for="submitApprovalQuestion">Soru (zorunlu)</label>
+        <textarea class="history-question-input" id="submitApprovalQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın."></textarea>
+        <div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div>
+      </div>
+      <div class="history-tags-field">
+        <label for="submitApprovalTags">Etiketler (zorunlu)</label>
+        <textarea class="history-tags-input" id="submitApprovalTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview()"></textarea>
+        <div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div>
+        <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
+      </div>
       <div class="form-err" id="submitApprovalErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
     </div>
@@ -2261,23 +2462,34 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',msgLogFilter='all',scrollLockEnabled=true,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false,liveSiteMenuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,pendingReturnApprovalId=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false,liveSiteMenuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
 let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','publicQuestions'];
+let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','publicQuestions','tagImport'];
 const LIVE_SITE_OPS_VIEWS=new Set(['publicQuestions']);
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
 const MIN_TEXT_CHARS=10;
 const MAX_TEXT_CHARS=200000;
+const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','onaylandi','reddedildi']);
+const APPROVAL_RETURNED_STATUS='geri_gonderildi';
+const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','onaylandi','reddedildi']);
+const APPROVAL_RETURN_REASON_LABELS={
+  missing_question:'Soru eksik',
+  wrong_question:'Soru yanlış',
+  missing_tags:'Etiket eksik',
+  wrong_tags:'Etiket yanlış',
+  missing_answer:'Cevap/metin eksik',
+  other:'Diğer'
+};
 const FONT_SCALE={small:.94,medium:1,large:1.14};
 let isRestoringDraft=false;
 
@@ -2646,6 +2858,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchivePublicSyncStatus();
     loadArchivePublicQuestions();
   }
+  if(archiveOpsState.view==='tagImport')loadHistoryTagImportBatches();
 }
 function openArchiveOps(view='overview'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
@@ -2682,6 +2895,7 @@ function showTab(name){
   if(name==='dash')loadDash();
   if(name==='ai')loadAiReports();
   if(name==='onay')loadOnay();
+  if(name==='favorites')loadApprovalFavorites();
   if(name==='feedback')loadFeedbackCenter();
   if(name==='corrections')loadCorrectionPackages();
   if(name==='archiveOps')renderArchiveOpsView();
@@ -3009,15 +3223,85 @@ function approvalSubmitted(d){
 function approvalStatusText(d){
   const status=String(d?.status||'taslak');
   if(status==='bekliyor')return 'Onaya gönderildi';
+  if(status==='teyit_bekliyor')return 'Teyit bekliyor';
+  if(status===APPROVAL_RETURNED_STATUS)return 'Tekrar Onaya Gönder';
   if(status==='onaylandi')return 'Onaylandı';
   if(status==='reddedildi')return 'Reddedildi';
   return 'Onaya Gönder';
+}
+function historyApprovalStatusUi(status){
+  const clean=String(status||'bekliyor');
+  if(clean==='onaylandi')return {label:'Onaylandı',cls:'sb-ok'};
+  if(clean==='reddedildi')return {label:'Reddedildi',cls:'sb-no'};
+  if(clean==='teyit_bekliyor')return {label:'Teyit bekliyor',cls:'sb-wait'};
+  if(clean===APPROVAL_RETURNED_STATUS)return {label:'Geri gönderildi',cls:'sb-return'};
+  if(clean==='taslak')return {label:'Taslak',cls:'sb-draft'};
+  return {label:'Bekliyor',cls:'sb-wait'};
+}
+function approvalReturnInfoHtml(h,compact=false){
+  const reason=String(h?.returnReason||'').trim();
+  const note=String(h?.returnNote||'').trim();
+  if(!reason&&!note)return '';
+  const label=String(h?.returnReasonLabel||APPROVAL_RETURN_REASON_LABELS[reason]||'Düzeltme gerekli');
+  const when=h?.returnRequestedAt?new Date(h.returnRequestedAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const by=h?.returnRequestedBy?` · ${esc(h.returnRequestedBy)}`:'';
+  return `<div class="work-return-note ${compact?'compact':''}">
+    <div class="work-return-reason">↩ ${esc(label)}</div>
+    ${note?`<div style="margin-top:5px">${esc(note)}</div>`:''}
+    ${when?`<div class="mono" style="font-size:10px;color:var(--ink3);margin-top:5px">${esc(when)}${by}</div>`:''}
+  </div>`;
+}
+function parseHistoryTags(value){
+  const raw=Array.isArray(value)?value.join(','):String(value||'');
+  const seen=new Set();
+  const tags=[];
+  raw.split(',').forEach(part=>{
+    const tag=String(part||'').replace(/\s+/g,' ').trim();
+    if(!tag)return;
+    const key=tag.toLocaleLowerCase('tr-TR');
+    if(seen.has(key))return;
+    seen.add(key);
+    tags.push(tag.slice(0,96));
+  });
+  return tags;
+}
+function historyTagsText(tags){
+  return parseHistoryTags(tags).join(', ');
+}
+function historyTagsChips(tags){
+  const parsed=parseHistoryTags(tags);
+  return parsed.length?`<div class="history-tags-inline">${parsed.map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('')}</div>`:'';
+}
+function historyTagsChipItems(tags){
+  return parseHistoryTags(tags).map(tag=>`<span class="history-tag-chip">${esc(tag)}</span>`).join('');
+}
+function normalizeHistoryQuestionUi(value){
+  return String(value||'')
+    .replace(/\r\n?/g,'\n')
+    .split('\n')
+    .map(line=>line.replace(/[ \t]+/g,' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .slice(0,8000);
+}
+function renderSubmitTagsPreview(target='modal'){
+  const box=el(target==='main'?'submitApprovalTagsPreviewMain':'submitApprovalTagsPreview');
+  if(!box)return;
+  box.innerHTML=historyTagsChipItems(v(target==='main'?'submitApprovalTagsMain':'submitApprovalTags'));
+}
+function renderDetailTagsPreview(){
+  const box=el('detailHistoryTagsPreview');
+  if(!box)return;
+  box.innerHTML=historyTagsChipItems(v('detailHistoryTags'));
 }
 function resetSubmitApprovalModalState(){
   pendingApprovalPayload=null;
   submitApprovalInFlight=false;
   el('submitApprovalModal')?.classList.remove('open');
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
+  if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value='';
+  if(el('submitApprovalTags'))el('submitApprovalTags').value='';
+  if(el('submitApprovalTagsPreview'))el('submitApprovalTagsPreview').innerHTML='';
   const btn=el('submitApprovalBtn');
   if(btn){btn.disabled=false;btn.textContent='Onaya Gönder';}
 }
@@ -3040,13 +3324,23 @@ function renderApprovalActionButton(d, placement='main'){
 function renderApprovalSubmitPanel(d){
   if(!d?.id||!d.correctedText)return '';
   const sent=approvalSubmitted(d);
-  const title=sent?'Onay sürecinde':'Sonuç hazırlandı';
+  const returned=String(d.status||'')===APPROVAL_RETURNED_STATUS;
+  const title=sent?'Onay sürecinde':returned?'Düzeltme bekliyor':'Sonuç hazırlandı';
   const text=sent
     ?'Sonuç onay sürecine iletildi. Yeni bir metin denetlemeye başlayabilirsiniz.'
-    :'Denetim tamamlandı. Sonucu onay sürecine iletmek için Onaya Gönder’i kullanabilirsiniz.';
-  const extra='';
+    :returned
+      ?'Bu kayıt düzenleme için geri gönderildi. Sebebi inceleyip soru ve etiketleri tamamladıktan sonra tekrar onaya gönderebilirsiniz.'
+      :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
+  const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
+  const tagsValue=historyTagsText(d.tags||[]);
+  const questionField=sent
+    ? `<div class="history-question-field"><label>Soru</label>${questionValue?`<div class="history-question-display">${esc(questionValue)}</div>`:`<div class="history-tags-help">Soru eklenmedi.</div>`}</div>`
+    : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
+  const tagsField=sent
+    ? `<div class="history-tags-field"><label>Etiketler</label>${historyTagsChips(tagsValue)||'<div class="history-tags-help">Etiket eklenmedi.</div>'}</div>`
+    : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
-    <div><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}${extra}</div></div>
+    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div>${returned?approvalReturnInfoHtml(d):''}<div class="approval-submit-fields">${questionField}${tagsField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
   </div>`;
 }
@@ -3068,7 +3362,15 @@ function openSubmitApprovalModal(){
     <div><strong>Dosya/Metin:</strong> ${esc(d.filename||'Metin Girişi')}</div>
     <div><strong>Skor:</strong> ${Number(d.score||0)}/100</div>
     <div><strong>Bulgu:</strong> ${Number(d.totalErrors||0)} sorun</div>
+    ${String(d.status||'')===APPROVAL_RETURNED_STATUS?approvalReturnInfoHtml(d,true):''}
   `;
+  const questionMain=el('submitApprovalQuestionMain');
+  const tagsMain=el('submitApprovalTagsMain');
+  const questionText=questionMain?normalizeHistoryQuestionUi(questionMain.value):normalizeHistoryQuestionUi(d.questionText||'');
+  const tagsText=tagsMain?tagsMain.value:historyTagsText(d.tags||[]);
+  if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value=questionText;
+  if(el('submitApprovalTags'))el('submitApprovalTags').value=tagsText;
+  renderSubmitTagsPreview();
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   el('submitApprovalModal')?.classList.add('open');
 }
@@ -3129,12 +3431,12 @@ function showSubmittedHistory(){
 }
 async function openSubmitApprovalFromHistory(id){
   const row=historyRows.find(h=>h.id===id);
-  if(!row||row.status!=='taslak'){setStatus('Bu kayıt onaya gönderilecek taslak durumda değil.','err');return;}
+  if(!row||!['taslak',APPROVAL_RETURNED_STATUS].includes(row.status)){setStatus('Bu kayıt onaya gönderilecek durumda değil.','err');return;}
   if(isChunkHistoryRowUi(row)){setStatus('Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.','err');return;}
   setStatus('Taslak hazırlanıyor...','');
   const detail=await api('GET',`/api/history/${id}`);
   if(detail.error){setStatus(detail.error,'err');return;}
-  currentResult={...row,...detail,status:'taslak',categories:detail.categories||row.categories||{}};
+  currentResult={...row,...detail,status:detail.status||row.status||'taslak',categories:detail.categories||row.categories||{}};
   currentOriginalText=detail.originalText||row.originalText||'';
   correctedText=detail.correctedText||row.correctedText||'';
   currentHistoryId=id;
@@ -3183,7 +3485,7 @@ async function verifyApprovalStatus(id){
   if(!id)return false;
   for(let attempt=0;attempt<5;attempt++){
     const r=await api('GET',`/api/history/${id}/approval-status`);
-    if(!r.error&&(r.status==='bekliyor'||r.status==='onaylandi'||r.submitted===true))return true;
+    if(!r.error&&(SUBMITTED_APPROVAL_STATUSES.has(r.status)||r.submitted===true))return true;
     await new Promise(resolve=>setTimeout(resolve, attempt<2?450:900));
   }
   return false;
@@ -3194,13 +3496,25 @@ async function confirmSubmitApproval(){
   const err=el('submitApprovalErr');
   const btn=el('submitApprovalBtn');
   if(!d?.id)return;
+  if(err)err.textContent='';
+  const oldId=d.id;
+  const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
+  const tags=parseHistoryTags(v('submitApprovalTags'));
+  const questionText=normalizeHistoryQuestionUi(v('submitApprovalQuestion'));
+  if(!questionText){
+    if(err)err.textContent='Onaya göndermeden önce soru alanını doldurun.';
+    el('submitApprovalQuestion')?.focus();
+    return;
+  }
+  if(!tags.length){
+    if(err)err.textContent='Onaya göndermeden önce en az bir etiket ekleyin.';
+    el('submitApprovalTags')?.focus();
+    return;
+  }
   let submitted=false;
   const waitTimers=[];
   submitApprovalInFlight=true;
   if(btn){btn.disabled=true;btn.textContent='Gönderiliyor...';}
-  if(err)err.textContent='';
-  const oldId=d.id;
-  const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
   try{
     waitTimers.push(setTimeout(()=>{if(err)err.textContent='Gönderim kontrol ediliyor. Lütfen pencereyi kapatmayın.';},4000));
     waitTimers.push(setTimeout(()=>{if(err)err.textContent='İşlem normalden uzun sürdü. Metin korunuyor; sonucu bekleyin, sayfayı yenilemeyin.';},16000));
@@ -3215,8 +3529,10 @@ async function confirmSubmitApproval(){
       totalErrors:d.totalErrors||0,
       categories:submitCategoryCounts(d.categories||{}),
       summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
-      analysisMeta:d.analysisMeta||{}
-    }:null;
+      analysisMeta:d.analysisMeta||{},
+      questionText,
+      tags
+    }:{questionText,tags};
     const r=await api('POST',endpoint,body);
     if(r.error){if(err)err.textContent=r.error;return;}
     const newId=r.id||d.id;
@@ -3228,6 +3544,8 @@ async function confirmSubmitApproval(){
     }
     d.id=newId;
     d.status='bekliyor';
+    d.tags=Array.isArray(r.tags)?r.tags:tags;
+    d.questionText=typeof r.questionText==='string'?r.questionText:questionText;
     submitted=true;
     if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
     if(isMerged)d.sourceIds=[];
@@ -3238,7 +3556,7 @@ async function confirmSubmitApproval(){
     if(linkedWorkUpdate?.item)d.archiveWorkLinkedTitle=linkedWorkUpdate.item.title||archiveWorkAuditContext?.title||'Çalışma kaydı';
     if(linkedWorkUpdate?.error)d.archiveWorkLinkError=linkedWorkUpdate.error;
     historyRows=historyRows.map(h=>{
-      if(h.id===oldId)return {...h,id:newId,status:'bekliyor'};
+      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText};
       if(sourceIds.includes(h.id))return {...h,status:'submitted_part'};
       return h;
     }).filter(h=>h.status!=='submitted_part'&&h.status!=='chunk_draft');
@@ -3627,7 +3945,7 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.score,h.totalErrors,status].join(' ').toLocaleLowerCase('tr-TR');
+    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.returnReasonLabel,h.returnNote,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -3642,10 +3960,11 @@ function renderHistory(){
       const status=h.status||'bekliyor';
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-      const stCls=status==='onaylandi'?'sb-ok':status==='reddedildi'?'sb-no':status==='taslak'?'sb-draft':'sb-wait';
-      const statusText=status==='onaylandi'?'Onaylandı':status==='reddedildi'?'Reddedildi':status==='taslak'?'Taslak':'Bekliyor';
+      const statusUi=historyApprovalStatusUi(status);
       const draftAction=!isAdmin&&status==='taslak'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Onaya Gönder</button>`:'';
+      const returnedAction=!isAdmin&&status===APPROVAL_RETURNED_STATUS&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Eksikleri Tamamla</button>`:'';
       const withdrawAction=!isAdmin&&status==='bekliyor'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="withdrawApprovalFromHistory('${h.id}')">Geri Çek</button>`:'';
+      const returnInfo=status===APPROVAL_RETURNED_STATUS?approvalReturnInfoHtml(h,true):'';
       if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<tr>
         <td class="mono" style="font-size:10px;white-space:nowrap">${dt}</td>
@@ -3653,7 +3972,7 @@ function renderHistory(){
         <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename)}">${esc(h.filename)}</td>
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
-        <td><span class="status-badge ${stCls}">${statusText}</span>${draftAction}${withdrawAction}</td>
+        <td><span class="status-badge ${statusUi.cls}">${statusUi.label}</span>${draftAction}${returnedAction}${withdrawAction}${returnInfo}</td>
         <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">✗</button>`:''}
@@ -3704,29 +4023,53 @@ function drawScoreChart(data){
 async function showDetail(id){
   el('detailBody').textContent='Yükleniyor...';
   el('detailModal').classList.add('open');
+  const approveBtn=el('approveDetailBtn');
+  if(approveBtn){approveBtn.style.display='none';approveBtn.disabled=true;approveBtn.textContent='Onayla';}
+  const returnBtn=el('returnDetailBtn');
+  if(returnBtn){returnBtn.style.display='none';returnBtn.disabled=true;returnBtn.textContent='Geri Gönder';}
+  window._detailHistoryId='';
+  window._detailHistoryStatus='';
   const item=await api('GET',`/api/history/${id}`);
   if(item.error){el('detailBody').textContent=item.error;window._detailText='';return;}
   const text=item.correctedText||'';
+  const tagsValue=historyTagsText(item.tags||[]);
+  const questionValue=normalizeHistoryQuestionUi(item.questionText||'');
+  const questionBlock=hasAdminRole(me?.role)
+    ? `<div class="history-question-field" style="margin:0 0 14px"><label for="detailHistoryQuestion">Soru</label><textarea class="history-question-input" id="detailHistoryQuestion" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde soru da kaydedilir.</div></div>`
+    : (questionValue?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionValue)}</div>`:'');
+  const tagsBlock=hasAdminRole(me?.role)
+    ? `<div class="history-tags-field" style="margin:0 0 14px"><label for="detailHistoryTags">Etiketler</label><textarea class="history-tags-input" id="detailHistoryTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderDetailTagsPreview()">${esc(tagsValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde etiketler de kaydedilir.</div><div class="history-tags-preview" id="detailHistoryTagsPreview">${historyTagsChipItems(tagsValue)}</div></div>`
+    : historyTagsChips(tagsValue);
+  const reviewBlock=hasAdminRole(me?.role)?approvalReviewNoteHtml(item):'';
+  const returnBlock=(hasAdminRole(me?.role)||item.status===APPROVAL_RETURNED_STATUS)?approvalReturnInfoHtml(item):'';
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}${returnBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').textContent=text||'Bu kayıt için düzeltilmiş metin bulunmuyor.';
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}${returnBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
+  renderDetailTagsPreview();
   window._detailText=text;
-}
-function copyDetail(){
-  navigator.clipboard.writeText(window._detailText||'').then(()=>{
-    const btn=el('copyDetailBtn');
-    if(btn){
-      const orig=btn.textContent;
-      btn.textContent='✓ Kopyalandı!';
-      setTimeout(()=>{btn.textContent=orig;},1500);
+  window._detailHistoryId=item.id||id;
+  window._detailHistoryStatus=item.status||'';
+  if(approveBtn&&hasAdminRole(me?.role)){
+    approveBtn.style.display='';
+    if(item.status==='onaylandi'){
+      approveBtn.disabled=true;
+      approveBtn.textContent='Onaylandı';
+    }else{
+      approveBtn.disabled=false;
+      approveBtn.textContent='Onayla';
     }
-  });
+  }
+  if(returnBtn&&hasAdminRole(me?.role)){
+    const canReturn=!['onaylandi','reddedildi',APPROVAL_RETURNED_STATUS].includes(item.status||'bekliyor');
+    returnBtn.style.display=canReturn?'':'none';
+    returnBtn.disabled=!canReturn;
+  }
 }
 function setApprovalStatus(msg,type){
   const s=el('onayActionStatus')||el('statusMsg');
@@ -3735,23 +4078,127 @@ function setApprovalStatus(msg,type){
   s.className='status-msg'+(type?' '+type:'');
   if(msg)setTimeout(()=>{s.textContent='';s.className='status-msg';},3200);
 }
-async function setApprovalAction(id,action,btn){
+function approvalActionMessage(action){
+  return {
+    approve:'✓ Kayıt onaylandı.',
+    reject:'✓ Kayıt reddedildi.',
+    review:'✓ Kayıt teyit bekleyenlere alındı.',
+    pending:'✓ Kayıt bekleyenlere alındı.',
+    return:'✓ Kayıt kullanıcıya geri gönderildi.'
+  }[action]||'✓ İşlem tamamlandı.';
+}
+async function refreshApprovalSurfacesAfterAction(){
+  const x=window.scrollX;
+  const y=window.scrollY;
+  const activeOnay=el('tabContent-onay')?.classList.contains('active');
+  const activeFavorites=el('tabContent-favorites')?.classList.contains('active');
+  const activeHistory=el('tabContent-gecmis')?.classList.contains('active');
+  if(activeOnay)await loadOnay();
+  if(activeFavorites)await loadApprovalFavorites();
+  if(activeHistory)await loadHistory();
+  await refreshBadges();
+  requestAnimationFrame(()=>window.scrollTo(x,y));
+  setTimeout(()=>window.scrollTo(x,y),80);
+}
+async function setApprovalAction(id,action,btn,body=null){
   const oldText=btn?.textContent;
   if(btn){btn.disabled=true;btn.textContent='İşleniyor...';}
   try{
-    const r=await api('POST',`/api/history/${id}/${action}`);
+    const r=await api('POST',`/api/history/${id}/${action}`,body||undefined);
     if(r.error)throw new Error(r.error);
-    setApprovalStatus(action==='approve'?'✓ Kayıt onaylandı.':'✓ Kayıt reddedildi.','ok');
-    await loadOnay();
-    await loadHistory();
-    await refreshBadges();
+    setApprovalStatus(approvalActionMessage(action),'ok');
+    await refreshApprovalSurfacesAfterAction();
+    return true;
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent=oldText;}
     setApprovalStatus(`İşlem tamamlanamadı: ${e.message||'Lütfen tekrar deneyin.'}`,'err');
+    return false;
   }
 }
 async function approveItem(id,btn){return setApprovalAction(id,'approve',btn);}
 async function rejectItem(id,btn){return setApprovalAction(id,'reject',btn);}
+async function reviewItem(id,btn){
+  const note=await openSystemPrompt({
+    title:'Teyide alınsın mı?',
+    badge:'Teyit',
+    message:'Bu kayıt onay veya red kararı verilmeden önce ayrıca sorulacaklar listesine alınacak.',
+    detail:'Kısa not yazın: hangi nokta teyit edilecek?',
+    inputPlaceholder:'Örn: Bu cevapta geçen ifade mürşidimize sorulacak.',
+    confirmText:'Teyide Al'
+  });
+  if(note===null)return false;
+  const clean=String(note||'').trim();
+  if(!clean){setApprovalStatus('Teyit için kısa not gerekli.','err');return false;}
+  return setApprovalAction(id,'review',btn,{note:clean});
+}
+async function pendingItem(id,btn){return setApprovalAction(id,'pending',btn);}
+function openReturnApprovalModal(id,btn=null){
+  const cleanId=String(id||'').trim();
+  if(!cleanId){setApprovalStatus('Geri gönderilecek kayıt bulunamadı.','err');return;}
+  pendingReturnApprovalId=cleanId;
+  if(el('returnApprovalId'))el('returnApprovalId').value=cleanId;
+  if(el('returnApprovalReason'))el('returnApprovalReason').value='missing_question';
+  if(el('returnApprovalNote'))el('returnApprovalNote').value='';
+  if(el('returnApprovalErr'))el('returnApprovalErr').textContent='';
+  const submitBtn=el('returnApprovalBtn');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Geri Gönder';}
+  openModal('returnApprovalModal');
+}
+function closeReturnApprovalModal(){
+  pendingReturnApprovalId=null;
+  const submitBtn=el('returnApprovalBtn');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Geri Gönder';}
+  closeModal('returnApprovalModal');
+}
+function openReturnApprovalFromDetail(btn){
+  const id=window._detailHistoryId;
+  if(!id){setApprovalStatus('Geri gönderilecek kayıt bulunamadı.','err');return;}
+  openReturnApprovalModal(id,btn);
+}
+async function submitReturnApproval(){
+  const id=pendingReturnApprovalId||v('returnApprovalId');
+  const reason=v('returnApprovalReason')||'other';
+  const note=v('returnApprovalNote');
+  const err=el('returnApprovalErr');
+  const btn=el('returnApprovalBtn');
+  if(err)err.textContent='';
+  if(reason==='other'&&!note){
+    if(err)err.textContent='Diğer sebebi için kısa bir not yazın.';
+    el('returnApprovalNote')?.focus();
+    return;
+  }
+  const ok=await setApprovalAction(id,'return',btn,{reason,note});
+  if(ok){
+    if(window._detailHistoryId===id)window._detailHistoryStatus=APPROVAL_RETURNED_STATUS;
+    closeReturnApprovalModal();
+    if(el('detailModal')?.classList.contains('open'))setTimeout(()=>closeModal('detailModal'),350);
+  }
+}
+async function toggleApprovalFavorite(id,nextFavorite,btn){
+  const oldText=btn?.textContent;
+  if(btn){btn.disabled=true;btn.textContent='…';}
+  try{
+    const r=await api('POST',`/api/history/${id}/favorite`,{favorite:Boolean(nextFavorite)});
+    if(r.error)throw new Error(r.error);
+    setApprovalStatus(r.favorite?'✓ Favorilere eklendi.':'✓ Favorilerden çıkarıldı.','ok');
+    await refreshApprovalSurfacesAfterAction();
+    return true;
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent=oldText;}
+    setApprovalStatus(`Favori güncellenemedi: ${e.message||'Lütfen tekrar deneyin.'}`,'err');
+    return false;
+  }
+}
+async function approveDetailFromModal(btn){
+  const id=window._detailHistoryId;
+  if(!id){setApprovalStatus('Onaylanacak kayıt bulunamadı.','err');return;}
+  const ok=await setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))});
+  if(ok){
+    window._detailHistoryStatus='onaylandi';
+    if(btn){btn.disabled=true;btn.textContent='Onaylandı';}
+    window.setTimeout(()=>closeModal('detailModal'),450);
+  }
+}
 function downloadCSV(){window.open('/api/history/csv','_blank');}
 
 async function loadDash(){
@@ -3770,7 +4217,7 @@ async function loadDash(){
   const riskRows=(stats.riskItems||[]).map(h=>{
     const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
     const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const st=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':'Bekliyor';
+    const st=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':h.status==='teyit_bekliyor'?'Teyit bekliyor':'Bekliyor';
     return `<tr>
       <td><strong>${esc(h.name||'—')}</strong><div class="mono" style="font-size:10px;color:var(--ink3)">${dt}</div></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename||'Metin Girişi')}">${esc(h.filename||'Metin Girişi')}</td>
@@ -4061,30 +4508,98 @@ async function loadOnay(){
     {key:'onaylandi',title:'Onaylanan',count:src.onaylandi?.count||0,items:src.onaylandi?.items||[]},
     {key:'reddedildi',title:'Reddedilen',count:src.reddedildi?.count||0,items:src.reddedildi?.items||[]}
   ];
-  if(!groups.some(g=>g.count)){container.innerHTML='<div class="empty-state">Henüz denetim yok.</div>';return;}
-  function card(h){
-      const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
-      const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      if(h.correctedText)_textStore[h.id]=h.correctedText;
-      return `<div class="work-card">
-        <div class="work-top"><div class="work-name">${esc(h.name||'—')}</div><span class="score-pill ${pc}">${sc}</span></div>
-        <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
-        <div class="work-meta">${dt} · ${h.totalErrors||0} sorun</div>
-        <div class="work-actions">
-          ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
-          ${h.status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
-          ${h.status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
-        </div>
-      </div>`;
-  }
-  container.innerHTML=`<div class="workflow-board">${groups.map(g=>`
+  const review={key:'teyit_bekliyor',title:'Teyit Bekleyenler',count:src.teyit_bekliyor?.count||0,items:src.teyit_bekliyor?.items||[]};
+  const hasAny=groups.some(g=>g.count)||review.count;
+  if(!hasAny){container.innerHTML='<div class="empty-state">Henüz denetim yok.</div>';return;}
+  const reviewPanel=approvalReviewOpen?`<div class="approval-review-panel">
+    <div class="approval-review-panel-head">
+      <div>
+        <h3>Teyit Bekleyenler</h3>
+        <p>Onay veya red kararı verilmeden önce mürşidimize sorulacak kayıtlar burada tutulur.</p>
+      </div>
+      <button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="toggleApprovalReviewPanel()">Kapat</button>
+    </div>
+    <div class="workflow-list" style="max-height:360px">
+      ${review.count>review.items.length?`<div class="empty-state" style="padding:8px 12px;font-size:11px">Son ${review.items.length} kayıt gösteriliyor.</div>`:''}
+      ${review.items.length?review.items.map(approvalCard).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Teyit bekleyen kayıt yok.</div>`}
+    </div>
+  </div>`:'';
+  container.innerHTML=`<div class="approval-tools">
+    <button class="approval-review-toggle" type="button" onclick="toggleApprovalReviewPanel()" title="Teyit bekleyen kayıtlar">
+      <span class="approval-review-icon">?</span>
+      <span>Teyit Bekleyenler</span>
+      <span class="approval-review-count">${review.count}</span>
+    </button>
+  </div>${reviewPanel}<div class="workflow-board">${groups.map(g=>`
     <div class="workflow-col">
       <div class="workflow-head"><div class="workflow-title">${g.title}</div><div class="workflow-count">${g.count}</div></div>
       <div class="workflow-list">
         ${g.count>g.items.length?`<div class="empty-state" style="padding:8px 12px;font-size:11px">Son ${g.items.length} kayıt gösteriliyor.</div>`:''}
-        ${g.items.length?g.items.map(card).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Kayıt yok.</div>`}
+        ${g.items.length?g.items.map(approvalCard).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Kayıt yok.</div>`}
       </div>
     </div>`).join('')}</div>`;
+}
+
+function approvalReviewNoteHtml(h){
+  const note=String(h?.reviewNote||'').trim();
+  if(!note)return '';
+  const when=h.reviewRequestedAt?new Date(h.reviewRequestedAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const by=h.reviewRequestedBy?` · ${esc(h.reviewRequestedBy)}`:'';
+  return `<div class="work-review-note"><strong>Teyit notu:</strong> ${esc(note)}${when?`<div class="mono" style="font-size:10px;color:var(--ink3);margin-top:4px">${esc(when)}${by}</div>`:''}</div>`;
+}
+
+function approvalCard(h){
+  const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
+  const status=h.status||'bekliyor';
+  const isReview=status==='teyit_bekliyor';
+  const isFinal=status==='onaylandi'||status==='reddedildi';
+  const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const questionPreview=normalizeHistoryQuestionUi(h.questionText||'');
+  const questionHtml=questionPreview?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionPreview.slice(0,180))}${questionPreview.length>180?'…':''}</div>`:'';
+  const favorite=Boolean(h.favorite);
+  if(h.correctedText)_textStore[h.id]=h.correctedText;
+  return `<div class="work-card${isReview?' is-review':''}${favorite?' is-favorite':''}">
+    <div class="work-top">
+      <div class="work-name">${esc(h.name||'—')}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="work-star ${favorite?'active':''}" type="button" title="${favorite?'Favorilerden çıkar':'Favoriye ekle'}" aria-label="${favorite?'Favorilerden çıkar':'Favoriye ekle'}" onclick="toggleApprovalFavorite('${h.id}',${favorite?'false':'true'},this)">${favorite?'★':'☆'}</button>
+        <span class="score-pill ${pc}">${sc}</span>
+      </div>
+    </div>
+    <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
+    <div class="work-meta">${dt} · ${h.totalErrors||0} sorun${isReview?' · Teyit bekliyor':''}</div>
+    ${questionHtml}
+    ${historyTagsChips(h.tags||[])}
+    ${approvalReviewNoteHtml(h)}
+    ${approvalReturnInfoHtml(h)}
+    <div class="work-actions">
+      ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
+      ${status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
+      ${status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
+      ${!isFinal&&status!==APPROVAL_RETURNED_STATUS?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openReturnApprovalModal('${h.id}',this)">Geri Gönder</button>`:''}
+      ${!isReview&&!isFinal&&status!==APPROVAL_RETURNED_STATUS?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="reviewItem('${h.id}',this)">Teyide Al</button>`:''}
+      ${isReview?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="pendingItem('${h.id}',this)">Bekleyenlere Al</button>`:''}
+    </div>
+  </div>`;
+}
+
+function toggleApprovalReviewPanel(){
+  approvalReviewOpen=!approvalReviewOpen;
+  loadOnay();
+}
+
+async function loadApprovalFavorites(){
+  const container=el('favoritesContent');
+  if(!container)return;
+  container.innerHTML='<div class="empty-state">Yükleniyor...</div>';
+  const r=await api('GET','/api/history/favorites');
+  if(r.error){container.innerHTML=`<div class="empty-state">${esc(r.error)}</div>`;return;}
+  const items=r.items||[];
+  if(!items.length){
+    container.innerHTML='<div class="empty-state">Henüz favori kayıt yok. Onay ekranında yıldızladığınız kayıtlar burada görünecek.</div>';
+    return;
+  }
+  container.innerHTML=`<div class="workflow-list" style="max-height:none;padding:0">${items.map(approvalCard).join('')}</div>`;
 }
 
 async function loadAlerts(){
@@ -4103,6 +4618,7 @@ async function loadFeedbackCenter(){
   if(!alerts?.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
   const allFeedback=alerts.filter(a=>a.type==='feedback');
   if(!allFeedback.length){container.innerHTML='<div class="empty-state">Geri bildirim yok.</div>';return;}
+  feedbackRows=allFeedback;
   const visible=allFeedback.filter(a=>{
     const positive=isPositiveFeedback(a);
     if(feedbackFilter==='positive')return positive;
@@ -4110,6 +4626,10 @@ async function loadFeedbackCenter(){
     if(feedbackFilter==='resolved')return a.feedbackStatus==='resolved';
     if(feedbackFilter==='unread')return !a.read&&a.feedbackStatus!=='resolved';
     return true;
+  }).filter(a=>{
+    if(feedbackWorkFilter==='all')return true;
+    if(a.feedbackStatus==='resolved'||isPositiveFeedback(a))return false;
+    return feedbackWorkKey(a)===feedbackWorkFilter;
   });
   const open=allFeedback.filter(a=>a.feedbackStatus!=='resolved'&&!isPositiveFeedback(a)).length;
   const resolved=allFeedback.filter(a=>a.feedbackStatus==='resolved').length;
@@ -4128,8 +4648,9 @@ async function loadFeedbackCenter(){
     <button class="btn-mini ${feedbackFilter==='resolved'?'active':''}" onclick="setFeedbackFilter('resolved')">&Ccedil;&ouml;z&uuml;len</button>
     <button class="btn-mini ${feedbackFilter==='all'?'active':''}" onclick="setFeedbackFilter('all')">T&uuml;m&uuml;</button>
   </div>`;
-  if(!visible.length){container.innerHTML=summary+filters+'<div class="empty-state">Bu filtrede geri bildirim yok.</div>';return;}
-  renderAlertItems(container, visible, true, summary+filters);
+  const workFilters=feedbackWorkFilterHtml(allFeedback);
+  if(!visible.length){container.innerHTML=summary+filters+workFilters+'<div class="empty-state">Bu filtrede geri bildirim yok.</div>';return;}
+  renderAlertItems(container, visible, true, summary+filters+workFilters);
 }
 
 function isPositiveFeedback(a){
@@ -4138,6 +4659,62 @@ function isPositiveFeedback(a){
 }
 
 function setFeedbackFilter(filter){feedbackFilter=filter||'open';loadFeedbackCenter();}
+
+function feedbackWorkKey(a){
+  return a?.feedbackTriage?.key||'manual_review';
+}
+
+function feedbackWorkFilterHtml(items=[]){
+  const openItems=items.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved'&&!isPositiveFeedback(a));
+  if(!openItems.length)return '';
+  const countFor=key=>openItems.filter(a=>feedbackWorkKey(a)===key).length;
+  const options=[
+    {key:'all',label:'T&uuml;m a&ccedil;&#305;k',count:openItems.length},
+    {key:'ready_current_fix',label:'D&uuml;zeltmeye haz&#305;r',count:countFor('ready_current_fix')},
+    {key:'multi_choice',label:'&Ccedil;oklu ge&ccedil;i&#351;',count:countFor('multi_choice')},
+    {key:'missing_manual',label:'Eksik d&uuml;zeltme',count:countFor('missing_manual')},
+    {key:'false_alarm',label:'Yanl&#305;&#351; alarm',count:countFor('false_alarm')},
+    {key:'manual_match',label:'E&#351;le&#351;me yok',count:countFor('manual_match')},
+    {key:'layout_manual',label:'Yorum / d&uuml;zen',count:countFor('layout_manual')},
+    {key:'already_ok',label:'Metin do&#287;ru',count:countFor('already_ok')}
+  ].filter(item=>item.key==='all'||item.count>0);
+  return `<div class="feedback-work-filter">${options.map(item=>`
+    <button class="btn-mini ${feedbackWorkFilter===item.key?'active':''}" onclick="setFeedbackWorkFilter('${item.key}')">${item.label} <span class="mono">${item.count}</span></button>
+  `).join('')}</div>`;
+}
+
+function setFeedbackWorkFilter(filter){
+  feedbackWorkFilter=filter||'all';
+  if(feedbackWorkFilter!=='all'&&!['open','unread','all'].includes(feedbackFilter)){
+    feedbackFilter='open';
+  }
+  loadFeedbackCenter();
+}
+
+function feedbackWorkHtml(a){
+  if(a.type!=='feedback'||isPositiveFeedback(a))return '';
+  const triage=a.feedbackTriage;
+  if(!triage)return '';
+  const severity=['ok','warn','info','done'].includes(triage.severity)?triage.severity:'warn';
+  const pair=triage.pair;
+  const counts=triage.counts||{};
+  const canPrepare=pair&&a.feedbackStatus!=='resolved'&&['ready_current_fix','multi_choice','manual_match'].includes(triage.key);
+  const pairHtml=pair?`<div class="feedback-work-pair">Eski/hedef: <strong>${esc(pair.current||'')}</strong> &rarr; Do&#287;ru: <strong>${esc(pair.desired||'')}</strong></div>`:'';
+  const countHtml=pair?`<div class="feedback-work-pair">Bildirilen metinde ge&ccedil;i&#351;: ${Number(counts.current||0)} hedef, ${Number(counts.desired||0)} do&#287;ru ifade.</div>`:'';
+  const historyHtml=triage.historyFilename||triage.historyStatus
+    ?`<div class="feedback-work-pair">Kay&#305;t: ${esc(triage.historyFilename||'-')} ${triage.historyStatus?`&middot; ${esc(triage.historyStatus)}`:''}</div>`
+    :'';
+  return `<div class="feedback-work ${severity}">
+    <div class="feedback-work-top">
+      <span class="feedback-work-pill">${esc(triage.label||'Kontrol')}</span>
+      <strong>${esc(triage.action||'Bu geri bildirim mevcut ekranda kontrol edilmeli.')}</strong>
+    </div>
+    ${pairHtml}
+    ${countHtml}
+    ${historyHtml}
+    ${canPrepare?`<div class="feedback-work-actions"><button class="btn-mini active" onclick="prepareCorrectionFromFeedback('${a.id}')">D&uuml;zeltmeye Haz&#305;rla</button></div>`:''}
+  </div>`;
+}
 
 function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml=''){
   const visibleFeedbackIds=new Set(filtered.filter(a=>a.type==='feedback'&&a.feedbackStatus!=='resolved').map(a=>a.id));
@@ -4151,6 +4728,7 @@ function renderAlertItems(container, filtered, showFeedbackToolbar, prefixHtml='
       <div class="feedback-user">${esc(a.userName||'Bilinmeyen kullanıcı')} ${a.userUsername?`<span class="mono">(${esc(a.userUsername)})</span>`:''}</div>
       ${root}
       ${match}
+      ${feedbackWorkHtml(a)}
       ${parts.map(p=>{
       const idx=p.indexOf(':');
       if(idx<0)return `<div>${esc(p)}</div>`;
@@ -4263,6 +4841,42 @@ async function downloadFeedbackWorkPackage(){
     setStatus(`✓ ${items.length} geri bildirimlik PDF paket indirildi.`,'ok');
     setTimeout(()=>setStatus('',''),3000);
   }catch(e){setStatus(e.message,'err');}
+}
+
+function prepareCorrectionFromFeedback(id){
+  const item=(feedbackRows||[]).find(a=>a.id===id);
+  const triage=item?.feedbackTriage;
+  const pair=triage?.pair;
+  if(!item||!pair){
+    setStatus('Bu geri bildirim i\u00e7in otomatik d\u00fczeltme bilgisi bulunamad\u0131.','err');
+    return;
+  }
+  selectedFeedbackIds=new Set([id]);
+  showTab('corrections');
+  const title=[triage.label||'Geri bildirim d\u00fczeltmesi',pair.current||'',pair.desired||''].filter(Boolean).join(' | ');
+  if(el('correctionTitle'))el('correctionTitle').value=title.slice(0,180);
+  if(el('correctionFrom'))el('correctionFrom').value=pair.current||'';
+  if(el('correctionTo'))el('correctionTo').value=pair.desired||'';
+  if(el('correctionNote'))el('correctionNote').value=[
+    'Geri bildirimden haz\u0131rland\u0131.',
+    triage.action||'',
+    `Kapsam: bildirilen dok\u00fcman / ${item.historyId||'-'}`,
+    triage.counts?`Ge\u00e7i\u015f: hedef ${Number(triage.counts.current||0)}, do\u011fru ${Number(triage.counts.desired||0)}`:''
+  ].filter(Boolean).join('\n');
+  if(el('correctionFieldCorrected'))el('correctionFieldCorrected').checked=true;
+  if(el('correctionFieldSummary'))el('correctionFieldSummary').checked=false;
+  if(el('correctionScopeReported')){
+    el('correctionScopeReported').checked=true;
+    el('correctionScopeReported').dataset.userPicked='';
+  }
+  if(el('correctionScopeAll')){
+    el('correctionScopeAll').checked=false;
+    el('correctionScopeAll').dataset.userPicked='';
+  }
+  if(el('correctionNeedsReview'))el('correctionNeedsReview').checked=true;
+  updateCorrectionSelectedInfo();
+  setStatus('Geri bildirim d\u00fczeltme formuna ta\u015f\u0131nd\u0131. \u00d6nce etki taramas\u0131 yap\u0131n; \u00e7oklu ge\u00e7i\u015flerde do\u011fru sat\u0131rlar\u0131 se\u00e7in.','ok');
+  setTimeout(()=>setStatus('',''),3200);
 }
 
 function updateCorrectionSelectedInfo(){
@@ -7198,6 +7812,77 @@ function archiveOutputPublicationHtml(pkg={},outputBelongs=false,readiness={read
     </div>
   `;
 }
+function archiveOutputPublicContractHtml(pkg={},outputBelongs=false,readiness={ready:false}){
+  const publicOutputReady=outputBelongs&&archiveOutputState.output?.format==='public-json'&&archiveOutputState.output?.content&&!archiveOutputState.output?.blocked;
+  const publicReadiness=outputBelongs&&archiveOutputState.output?.format==='public-json'?archiveOutputState.output?.publicReadiness:null;
+  return `
+    <div class="archive-output-publication">
+      <div class="archive-output-publication-head">
+        <div>
+          <div class="archive-output-publication-title">Public Kayıt Sözleşmesi</div>
+          <div class="archive-output-publication-meta">Ön yüz için temiz soru-cevap kayıtları</div>
+        </div>
+        <span class="badge">${publicOutputReady?'Hazır':'Hazırlanmadı'}</span>
+      </div>
+      <div class="ops-status ${readiness.ready?'ok':'err'}">
+        ${readiness.ready
+          ? 'Bu paket public arşiv ön yüzüne aktarılabilecek temiz JSON kayıtlarına çevrilebilir.'
+          : 'Public kayıt sözleşmesi için paket önce hazır, kilitli ve son kontrolü tamamlanmış olmalı.'}
+      </div>
+      <div class="archive-output-publication-actions">
+        <button class="btn-main" onclick="prepareArchivePublicRecordsOutput()" ${readiness.ready?'':'disabled'}>Public Kayıtları Hazırla</button>
+        <button class="btn-sec" onclick="copyArchivePackageOutput()" ${publicOutputReady?'':'disabled'}>Public JSON Kopyala</button>
+        <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${publicOutputReady?'':'disabled'}>Public JSON İndir</button>
+      </div>
+      ${archiveOutputPublicReadinessHtml(publicReadiness)}
+      <div class="ops-help-text">
+        Bu çıktı kullanıcıya admin, denetim, prompt veya iç süreç bilgisini göstermez; yalnız başlık, soru, cevap, özet, kategori, kavramlar ve kaynak izini taşır.
+      </div>
+    </div>
+  `;
+}
+function archiveOutputPublicReadinessHtml(readiness=null){
+  if(!readiness){
+    return `
+      <div class="archive-public-readiness">
+        <div class="archive-public-readiness-head">
+          <div class="archive-public-readiness-title">Public yayın kontrolü</div>
+          <span class="badge">Henüz kontrol edilmedi</span>
+        </div>
+        <div class="ops-status">Public kayıtları hazırladığınızda başlık, metin, kaynak izi ve iç süreç ifadeleri burada kontrol edilir.</div>
+      </div>
+    `;
+  }
+  const blockers=Array.isArray(readiness.blockers)?readiness.blockers:[];
+  const warnings=Array.isArray(readiness.warnings)?readiness.warnings:[];
+  const issues=[...blockers.slice(0,8),...warnings.slice(0,Math.max(0,8-blockers.length))];
+  const hidden=Math.max(0,Number(readiness.blockerCount||0)+Number(readiness.warningCount||0)-issues.length);
+  return `
+    <div class="archive-public-readiness">
+      <div class="archive-public-readiness-head">
+        <div>
+          <div class="archive-public-readiness-title">Public yayın kontrolü</div>
+          <div class="archive-output-publication-meta">${Number(readiness.recordCount||0).toLocaleString('tr-TR')} kayıt incelendi</div>
+        </div>
+        <div class="archive-public-readiness-counts">
+          <span class="badge ${Number(readiness.blockerCount||0)?'danger':''}">${Number(readiness.blockerCount||0).toLocaleString('tr-TR')} engel</span>
+          <span class="badge">${Number(readiness.warningCount||0).toLocaleString('tr-TR')} uyarı</span>
+        </div>
+      </div>
+      ${readiness.ready
+        ? '<div class="ops-status ok">Public JSON hazır. Kopyalanabilir veya indirilebilir.</div>'
+        : '<div class="ops-status err">Public JSON hazırlanmadı. Önce aşağıdaki engeller düzeltilmeli.</div>'}
+      ${issues.length?`<div class="archive-public-readiness-list">${issues.map(issue=>`
+        <div class="archive-public-readiness-item ${issue.type==='blocker'?'blocker':'warning'}">
+          <strong>${esc(issue.title||issue.slug||'Kayıt')}</strong>
+          <span>${esc(issue.field||'alan')} · ${esc(issue.type==='blocker'?'Engel':'Uyarı')}</span>
+          <div>${esc(issue.message||'Kontrol notu yok.')}</div>
+        </div>
+      `).join('')}</div>`:''}
+      ${hidden?`<div class="ops-status">${hidden.toLocaleString('tr-TR')} ek kontrol notu daha var.</div>`:''}
+    </div>
+  `;
+}
 function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   const box=el('archiveOutputDetail');
   if(!box)return;
@@ -7208,6 +7893,7 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
   const readiness=archiveOutputPackageReady(pkg);
   const output=archiveOutputState.output;
   const outputBelongs=output?.packageId===pkg.id&&output?.format===archiveOutputState.format;
+  const outputReady=outputBelongs&&output?.content&&!output?.blocked;
   box.innerHTML=`
     <div class="ops-detail-head">
       <div>
@@ -7226,11 +7912,12 @@ function renderArchiveOutputDetail(pkg=archiveOutputState.activePackage){
       ${archiveOutputChecksHtml(pkg)}
       <div class="archive-output-actions">
         <button class="btn-main" onclick="generateArchivePackageOutput()" ${readiness.ready?'':'disabled'}>${archiveOutputState.generating?'Hazırlanıyor...':'Çıktıyı Oluştur'}</button>
-        <button class="btn-sec" onclick="copyArchivePackageOutput()" ${outputBelongs?'':'disabled'}>Kopyala</button>
-        <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${outputBelongs?'':'disabled'}>İndir</button>
+        <button class="btn-sec" onclick="copyArchivePackageOutput()" ${outputReady?'':'disabled'}>Kopyala</button>
+        <button class="btn-sec" onclick="downloadArchivePackageOutput()" ${outputReady?'':'disabled'}>İndir</button>
       </div>
       ${readiness.ready?'<div class="ops-status ok">Paket çıktı oluşturmaya hazır.</div>':`<div class="ops-status err">Çıktı için önce paket kilidi ve son kontrol eksikleri tamamlanmalı.</div>`}
-      <div class="archive-output-preview">${outputBelongs?esc(output.content):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
+      <div class="archive-output-preview">${outputBelongs?(output?.blocked?'Public JSON kalite kontrolünden geçmedi. Engel listesi aşağıda görünüyor.':esc(output.content)):'Çıktı oluşturulduğunda ön izleme burada görünür.'}</div>
+      ${archiveOutputPublicContractHtml(pkg,outputBelongs,readiness)}
       ${archiveOutputPublicationHtml(pkg,outputBelongs,readiness)}
     </div>
   `;
@@ -7278,7 +7965,7 @@ function setArchiveOutputSearch(value){
   renderArchiveOutputPackages();
 }
 function setArchiveOutputFormat(value){
-  archiveOutputState.format=['json','markdown','csv'].includes(value)?value:'json';
+  archiveOutputState.format=['json','markdown','csv','public-json'].includes(value)?value:'json';
   archiveOutputState.output=null;
   renderArchiveOutputDetail();
 }
@@ -7302,19 +7989,37 @@ async function generateArchivePackageOutput(){
     setArchiveOutputStatus(data.error,'err');
     return showSystemAlert('Çıktı oluşturulamadı',data.error,'danger');
   }
-  archiveOutputState.output={packageId:pkg.id,format:data.format,content:data.content||'',filename:data.filename||'yayin-paketi.json',contentType:data.contentType||'text/plain'};
+  archiveOutputState.output={
+    packageId:pkg.id,
+    format:data.format,
+    content:data.content||'',
+    filename:data.filename||'yayin-paketi.json',
+    contentType:data.contentType||'text/plain',
+    publicReadiness:data.publicReadiness||data.publicRecords?.readiness||null,
+    blocked:Boolean(data.blocked)
+  };
   renderArchiveOutputDetail();
+  if(data.blocked){
+    setArchiveOutputStatus('Public JSON hazırlanmadı. Engel listesi kontrol edilmeli.','err');
+    return showSystemAlert('Public JSON hazır değil','Bu pakette public ön yüze taşınmadan önce düzeltilmesi gereken kayıtlar var. Engel listesi ekranda görünüyor.','danger');
+  }
   setArchiveOutputStatus('Paket çıktısı hazırlandı.','ok');
+}
+async function prepareArchivePublicRecordsOutput(){
+  archiveOutputState.format='public-json';
+  const format=el('archiveOutputFormat');
+  if(format)format.value='public-json';
+  await generateArchivePackageOutput();
 }
 async function copyArchivePackageOutput(){
   const output=archiveOutputState.output;
-  if(!output?.content)return;
+  if(!output?.content||output?.blocked)return;
   await navigator.clipboard.writeText(output.content);
   setArchiveOutputStatus('Çıktı panoya kopyalandı.','ok');
 }
 function downloadArchivePackageOutput(){
   const output=archiveOutputState.output;
-  if(!output?.content)return;
+  if(!output?.content||output?.blocked)return;
   const blob=new Blob([output.content],{type:output.contentType||'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -7470,6 +8175,180 @@ function archivePublicQuestionCardHtml(item){
     </button>
   `;
 }
+function setHistoryTagImportStatus(message='',kind=''){
+  const box=el('historyTagImportStatusMsg');
+  if(!box)return;
+  box.textContent=message;
+  box.className=`ops-status ${kind||''}`.trim();
+}
+function historyTagImportStatusLabel(status){
+  return {
+    ready:'Hazır',
+    review:'Kontrol gerekli',
+    unmatched:'Eşleşmedi',
+    applied:'Uygulandı',
+    skipped:'Atlandı'
+  }[status]||'Kontrol gerekli';
+}
+function historyTagImportStatusClass(status){
+  return ['ready','review','unmatched','applied','skipped'].includes(status)?status:'review';
+}
+function triggerHistoryTagImportPicker(){
+  el('historyTagImportFile')?.click();
+}
+function historyTagImportBytesToBase64(bytes){
+  let binary='';
+  const step=0x8000;
+  for(let i=0;i<bytes.length;i+=step){
+    binary+=String.fromCharCode(...bytes.subarray(i,i+step));
+  }
+  return btoa(binary);
+}
+async function postHistoryTagImportUploadJson(url,payload){
+  const data=await api('POST',url,payload);
+  if(data.error)throw new Error(data.error);
+  return data;
+}
+async function uploadHistoryTagImportFile(file){
+  if(!file)return;
+  if(historyTagImportState.uploading)return;
+  historyTagImportState.uploading=true;
+  setHistoryTagImportStatus('Excel güvenli şekilde hazırlanıyor...','');
+  try{
+    const totalChunks=Math.max(1,Math.ceil(file.size/HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES));
+    const start=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/start',{
+      fileName:file.name,
+      fileSize:file.size,
+      totalChunks
+    });
+    const buffer=await file.arrayBuffer();
+    for(let index=0;index<totalChunks;index++){
+      const begin=index*HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES;
+      const end=Math.min(buffer.byteLength,begin+HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES);
+      const chunk=historyTagImportBytesToBase64(new Uint8Array(buffer.slice(begin,end)));
+      setHistoryTagImportStatus(`Dosya aktarılıyor: ${index+1}/${totalChunks} parça...`,'');
+      await postHistoryTagImportUploadJson('/api/history-tags/import/upload/chunk',{
+        uploadId:start.uploadId,
+        index,
+        totalChunks,
+        chunk
+      });
+    }
+    setHistoryTagImportStatus('Dosya alındı. Etiketler denetim geçmişiyle eşleştiriliyor...','');
+    const data=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/complete',{uploadId:start.uploadId});
+    historyTagImportState.activeBatch=data.batch||null;
+    historyTagImportState.matches=data.matches||[];
+    historyTagImportState.status='ready';
+    historyTagImportState.candidatePanels={};
+    await loadHistoryTagImportBatches({keepActive:true});
+    renderHistoryTagImport();
+    setHistoryTagImportStatus('Ön izleme hazır. Yalnız doğru eşleşmeleri uygulayın.','ok');
+  }catch(e){
+    setHistoryTagImportStatus(e.message||'Etiket aktarımı tamamlanamadı.','err');
+    await showSystemAlert('Etiket aktarımı tamamlanamadı',e.message||'Dosya okunamadı veya eşleştirme yapılamadı.','danger');
+  }finally{
+    historyTagImportState.uploading=false;
+  }
+}
+async function readHistoryTagImportUploadResponse(res){
+  const contentType=res.headers.get('content-type')||'';
+  if(contentType.includes('application/json')){
+    return await res.json().catch(()=>({error:`Sunucu yanıtı eksik geldi. Lütfen sayfayı yenileyip tekrar deneyin. (${res.status})`}));
+  }
+  const text=await res.text().catch(()=>'');
+  const clean=text.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const suffix=clean?` Detay: ${clean.slice(0,180)}`:'';
+  return {error:`Sunucu etiket aktarımı için beklenen cevabı veremedi. Lütfen tekrar deneyin. (${res.status})${suffix}`};
+}
+async function loadHistoryTagImportBatches(options={}){
+  if(!canUseArchiveOps())return;
+  historyTagImportState.loading=true;
+  const list=el('historyTagImportBatchList');
+  if(list&&!historyTagImportState.batches.length)list.innerHTML='<div class="archive-release-empty">Etiket aktarım listeleri yükleniyor...</div>';
+  const data=await api('GET','/api/history-tags/import-batches');
+  historyTagImportState.loading=false;
+  if(data.error){
+    if(list)list.innerHTML=`<div class="archive-release-empty">${esc(data.error)}</div>`;
+    setHistoryTagImportStatus(data.error,'err');
+    return;
+  }
+  historyTagImportState.batches=data.batches||[];
+  if(historyTagImportState.activeBatch){
+    historyTagImportState.activeBatch=historyTagImportState.batches.find(batch=>batch.id===historyTagImportState.activeBatch.id)||null;
+  }
+  if(!historyTagImportState.activeBatch&&historyTagImportState.batches.length){
+    historyTagImportState.activeBatch=historyTagImportState.batches[0];
+  }
+  renderHistoryTagImport();
+  if(historyTagImportState.activeBatch&&!options.keepMatches){
+    await openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
+  }else if(!historyTagImportState.activeBatch){
+    historyTagImportState.matches=[];
+    renderHistoryTagImport();
+  }
+}
+async function openHistoryTagImportBatch(id,options={}){
+  if(!id)return;
+  historyTagImportState.activeBatch=historyTagImportState.batches.find(batch=>batch.id===id)||historyTagImportState.activeBatch;
+  historyTagImportState.loading=true;
+  renderHistoryTagImport();
+  const params=new URLSearchParams();
+  if(historyTagImportState.status)params.set('status',historyTagImportState.status);
+  if(historyTagImportState.query.trim())params.set('q',historyTagImportState.query.trim());
+  const data=await api('GET',`/api/history-tags/import-batches/${encodeURIComponent(id)}?${params.toString()}`);
+  historyTagImportState.loading=false;
+  if(data.error){
+    setHistoryTagImportStatus(data.error,'err');
+    renderHistoryTagImport();
+    return;
+  }
+  historyTagImportState.activeBatch=data.batch||historyTagImportState.activeBatch;
+  historyTagImportState.matches=data.matches||[];
+  if(!options.keepCandidatePanels)historyTagImportState.candidatePanels={};
+  renderHistoryTagImport();
+  if(!options.silent)setHistoryTagImportStatus('Eşleşmeler listelendi.','ok');
+  refreshHistoryTagImportQuestionStatus({silent:true,reload:false}).then(job=>{
+    if(job?.status==='running')startHistoryTagImportQuestionPolling(id);
+    else if(hasHistoryTagImportQuestionPending(id))resumePendingHistoryTagImportQuestions();
+  }).catch(()=>{});
+}
+function setHistoryTagImportFilter(){
+  historyTagImportState.query=el('historyTagImportSearch')?.value||'';
+  historyTagImportState.status=el('historyTagImportStatusFilter')?.value||'';
+  historyTagImportState.candidatePanels={};
+  if(historyTagImportState.activeBatch)openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
+  else renderHistoryTagImport();
+}
+function clearHistoryTagImportFilters(){
+  historyTagImportState.query='';
+  historyTagImportState.status='ready';
+  historyTagImportState.candidatePanels={};
+  if(el('historyTagImportSearch'))el('historyTagImportSearch').value='';
+  if(el('historyTagImportStatusFilter'))el('historyTagImportStatusFilter').value='ready';
+  if(historyTagImportState.activeBatch)openHistoryTagImportBatch(historyTagImportState.activeBatch.id,{silent:true});
+  else renderHistoryTagImport();
+}
+function historyTagImportBatchCardHtml(batch){
+  const active=historyTagImportState.activeBatch?.id===batch.id?' active':'';
+  const dateText=batch.updatedAt?new Date(batch.updatedAt).toLocaleString('tr-TR'):'Tarih yok';
+  return `
+    <button class="tag-import-batch-card${active}" onclick="openHistoryTagImportBatch(${attrJson(batch.id)})">
+      <div class="tag-import-batch-title">${esc(batch.filename||'Etiket dosyası')}</div>
+      <div class="tag-import-meta">
+        <span>${esc(batch.sheetName||'Sayfa')}</span>
+        <span>${Number(batch.usableRows||0).toLocaleString('tr-TR')} Excel satırı</span>
+        <span>${Number(batch.historyCount||0).toLocaleString('tr-TR')} denetim kaydı</span>
+        <span>${esc(dateText)}</span>
+      </div>
+      <div class="tag-import-meta">
+        <span class="tag-import-badge ready">${Number(batch.readyCount||0).toLocaleString('tr-TR')} hazır</span>
+        <span class="tag-import-badge review">${Number(batch.reviewCount||0).toLocaleString('tr-TR')} kontrol</span>
+        <span class="tag-import-badge unmatched">${Number(batch.unmatchedCount||0).toLocaleString('tr-TR')} eşleşmedi</span>
+        <span class="tag-import-badge applied">${Number(batch.appliedCount||0).toLocaleString('tr-TR')} uygulandı</span>
+      </div>
+    </button>
+  `;
+}
 function renderArchivePublicQuestions(){
   const summary=el('archivePublicQuestionSummary');
   const list=el('archivePublicQuestionList');
@@ -7531,6 +8410,534 @@ async function loadArchivePublicQuestions(){
   }
   renderArchivePublicQuestions();
 }
+function historyTagImportSummaryHtml(batch){
+  if(!batch)return `
+    <div class="ops-file-summary-item"><strong>0</strong><span>Liste</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Hazır</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Kontrol</span></div>
+    <div class="ops-file-summary-item"><strong>0</strong><span>Eşleşmedi</span></div>
+  `;
+  return `
+    <div class="ops-file-summary-item"><strong>${Number(batch.historyCount||0).toLocaleString('tr-TR')}</strong><span>Denetim kaydı</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(batch.readyCount||0).toLocaleString('tr-TR')}</strong><span>Hazır</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(batch.reviewCount||0).toLocaleString('tr-TR')}</strong><span>Kontrol</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(batch.unmatchedCount||0).toLocaleString('tr-TR')}</strong><span>Eşleşmedi</span></div>
+  `;
+}
+function updateHistoryTagImportMatchInState(match){
+  if(!match?.id)return;
+  historyTagImportState.matches=(historyTagImportState.matches||[]).map(item=>item.id===match.id?match:item);
+}
+function historyTagImportCandidateCardHtml(matchId,candidate){
+  const tags=historyTagsChips(candidate.tags||[]);
+  const inherited=candidate.inheritedQuestionRow?` · soru ${Number(candidate.inheritedQuestionRow).toLocaleString('tr-TR')}. satırdan alındı`:'';
+  return `
+    <div class="tag-import-candidate-card">
+      <div class="tag-import-candidate-head">
+        <div>
+          <div class="tag-import-candidate-title">${Number(candidate.rowNumber||0).toLocaleString('tr-TR')}. Excel satırı${esc(inherited)}</div>
+          <div class="tag-import-meta">
+            <span>%${Number(candidate.confidence||0).toLocaleString('tr-TR')} güven</span>
+            <span>${esc(candidate.reason||'Aday eşleşme')}</span>
+          </div>
+        </div>
+        <button class="btn-mini primary" onclick="selectHistoryTagImportCandidate(${attrJson(matchId)},${Number(candidate.rowNumber||0)},true,this)">Bu Satırı Seç</button>
+      </div>
+      ${candidate.question?`<div class="tag-import-candidate-preview"><strong>Soru</strong><br>${esc(candidate.question)}</div>`:''}
+      <div class="tag-import-candidate-preview"><strong>Cevap ön izlemesi</strong><br>${esc(candidate.answerPreview||'Ön izleme yok.')}</div>
+      <div class="tag-import-candidate-tags">${tags||'<span class="tag-import-badge">Etiket yok</span>'}</div>
+    </div>
+  `;
+}
+function historyTagImportCandidatePanelHtml(item){
+  const panel=historyTagImportState.candidatePanels?.[item.id];
+  if(!panel?.open)return '';
+  const candidates=panel.candidates||[];
+  return `
+    <div class="tag-import-candidate-panel">
+      <div class="tag-import-candidate-tools">
+        <input class="ops-field" value="${esc(panel.query||'')}" placeholder="Excel soru, cevap veya etikette ara..." oninput="setHistoryTagImportCandidateQuery(${attrJson(item.id)},this.value)">
+        <button class="btn-mini" onclick="loadHistoryTagImportCandidates(${attrJson(item.id)},this)">Adayları Yenile</button>
+      </div>
+      <div class="ops-status ${panel.error?'err':''}">${esc(panel.loading?'Excel adayları aranıyor...':(panel.error||`${candidates.length.toLocaleString('tr-TR')} aday gösteriliyor.`))}</div>
+      <div class="tag-import-candidate-list">
+        ${candidates.length?candidates.map(candidate=>historyTagImportCandidateCardHtml(item.id,candidate)).join(''):'<div class="empty-state">Bu aramaya uygun Excel adayı bulunamadı.</div>'}
+      </div>
+    </div>
+  `;
+}
+function setHistoryTagImportCandidateQuery(id,value){
+  const panel=historyTagImportState.candidatePanels[id]||{open:true,candidates:[]};
+  historyTagImportState.candidatePanels[id]={...panel,query:value||''};
+}
+async function toggleHistoryTagImportCandidates(id){
+  if(!id)return;
+  const current=historyTagImportState.candidatePanels[id]||{open:false,candidates:[],query:''};
+  if(current.open){
+    historyTagImportState.candidatePanels[id]={...current,open:false};
+    return renderHistoryTagImport();
+  }
+  historyTagImportState.candidatePanels[id]={...current,open:true,loading:true,error:''};
+  renderHistoryTagImport();
+  await loadHistoryTagImportCandidates(id);
+}
+async function loadHistoryTagImportCandidates(id,button){
+  if(!id)return;
+  if(button)button.disabled=true;
+  const panel=historyTagImportState.candidatePanels[id]||{open:true,candidates:[],query:''};
+  historyTagImportState.candidatePanels[id]={...panel,open:true,loading:true,error:''};
+  renderHistoryTagImport();
+  const params=new URLSearchParams();
+  if((panel.query||'').trim())params.set('q',(panel.query||'').trim());
+  const data=await api('GET',`/api/history-tags/import-matches/${encodeURIComponent(id)}/candidates${params.toString()?`?${params.toString()}`:''}`);
+  if(button)button.disabled=false;
+  if(data.error){
+    historyTagImportState.candidatePanels[id]={...panel,open:true,loading:false,error:data.error,candidates:[]};
+    renderHistoryTagImport();
+    return showSystemAlert('Excel adayı alınamadı',data.error,'danger');
+  }
+  historyTagImportState.candidatePanels[id]={...panel,open:true,loading:false,error:'',candidates:data.candidates||[]};
+  renderHistoryTagImport();
+}
+async function selectHistoryTagImportCandidate(id,rowNumber,applyNow=false,button){
+  if(!id||!rowNumber)return;
+  if(typeof applyNow==='object'){
+    button=applyNow;
+    applyNow=false;
+  }
+  if(button)button.disabled=true;
+  const data=await api('POST',`/api/history-tags/import-matches/${encodeURIComponent(id)}/select-candidate`,{rowNumber,applyNow});
+  if(button)button.disabled=false;
+  if(data.error)return showSystemAlert('Excel satırı seçilemedi',data.error,'danger');
+  updateHistoryTagImportMatchInState(data.match);
+  if(data.batch)historyTagImportState.activeBatch=data.batch;
+  if(historyTagImportState.candidatePanels[id])historyTagImportState.candidatePanels[id]={...historyTagImportState.candidatePanels[id],open:false};
+  await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
+  renderHistoryTagImport();
+  setHistoryTagImportStatus(data.applied?'Excel satırı seçildi; soru ve etiketler kayda uygulandı.':'Excel adayı seçildi. Kontrol edip bu kayda uygulayabilirsiniz.','ok');
+}
+function historyTagImportMatchCardHtml(item){
+  const statusClass=historyTagImportStatusClass(item.status);
+  const history=item.history||{};
+  const title=history.filename||history.summary||item.question||'Denetim kaydı';
+  const currentTags=historyTagsChips(item.currentTags||[]);
+  const newTags=historyTagsChips(item.tags||[]);
+  const canApply=['ready','review'].includes(item.status)&&item.historyId&&Array.isArray(item.tags)&&item.tags.length;
+  const canSkip=!['applied','skipped'].includes(item.status);
+  return `
+    <div class="tag-import-match-card ${statusClass}">
+      <div class="tag-import-match-head">
+        <div>
+          <div class="tag-import-match-title">${esc(title)}</div>
+          <div class="tag-import-meta">
+            <span>${esc(history.name||history.username||'Kullanıcı yok')}</span>
+            <span>${esc(history.status||'durum yok')}</span>
+            <span>${item.excelRow?`${Number(item.excelRow).toLocaleString('tr-TR')}. Excel satırı`:'Excel eşleşmesi yok'}</span>
+          </div>
+        </div>
+        <div class="tag-import-score">%${Number(item.confidence||0).toLocaleString('tr-TR')} güven</div>
+      </div>
+      <div class="tag-import-meta">
+        <span class="tag-import-badge ${statusClass}">${historyTagImportStatusLabel(item.status)}</span>
+        <span>${esc(item.reason||'Eşleşme notu yok')}</span>
+      </div>
+      <div class="tag-import-map">
+        <div class="tag-import-old">${currentTags||'<span>Mevcut etiket yok</span>'}</div>
+        <div class="tag-import-arrow">→</div>
+        <div class="tag-import-new">${newTags||'<span>Excel etiketi yok</span>'}</div>
+      </div>
+      <div class="tag-import-preview"><strong>Excel soru/cevap ön izlemesi</strong><br>${esc([item.question,item.answerPreview].filter(Boolean).join('\n\n')||'Ön izleme yok.')}</div>
+      ${history.correctedText?`<div class="tag-import-preview"><strong>Denetim kaydı ön izlemesi</strong><br>${esc(history.correctedText.slice(0,520))}${history.correctedText.length>520?'...':''}</div>`:''}
+      ${historyTagImportCandidatePanelHtml(item)}
+      <div class="tag-import-actions-row">
+        <button class="btn-mini" onclick="toggleHistoryTagImportCandidates(${attrJson(item.id)})" ${canSkip?'':'disabled'}>Excel Adayları</button>
+        <button class="btn-mini primary" onclick="applyHistoryTagImportMatch(${attrJson(item.id)},this)" ${canApply?'':'disabled'}>Etiketi Bu Kayda Uygula</button>
+        <button class="btn-mini" onclick="skipHistoryTagImportMatch(${attrJson(item.id)},this)" ${canSkip?'':'disabled'}>Atla</button>
+        ${item.historyId?`<button class="btn-mini" onclick="showDetail(${attrJson(item.historyId)})">Denetim Kaydını Aç</button>`:''}
+      </div>
+      ${item.appliedAt?`<div class="ops-status ok" style="margin-top:9px">Uygulandı: ${esc(new Date(item.appliedAt).toLocaleString('tr-TR'))}${item.appliedBy?` · ${esc(item.appliedBy)}`:''}</div>`:''}
+    </div>
+  `;
+}
+function renderHistoryTagImport(){
+  const search=el('historyTagImportSearch');
+  const status=el('historyTagImportStatusFilter');
+  if(search&&search.value!==historyTagImportState.query)search.value=historyTagImportState.query;
+  if(status&&status.value!==historyTagImportState.status)status.value=historyTagImportState.status;
+  const summary=el('historyTagImportSummary');
+  if(summary)summary.innerHTML=historyTagImportSummaryHtml(historyTagImportState.activeBatch);
+  const readyBulkBtn=el('historyTagImportApplyReadyBtn');
+  if(readyBulkBtn){
+    const readyCount=Number(historyTagImportState.activeBatch?.readyCount||0);
+    readyBulkBtn.disabled=historyTagImportState.applying||!readyCount;
+  }
+  const reviewBulkBtn=el('historyTagImportApplyReviewBtn');
+  if(reviewBulkBtn){
+    const reviewCount=Number(historyTagImportState.activeBatch?.reviewCount||0);
+    const showReviewBulk=historyTagImportState.status==='review'&&reviewCount>0;
+    reviewBulkBtn.hidden=!showReviewBulk;
+    reviewBulkBtn.disabled=historyTagImportState.applying||!showReviewBulk;
+  }
+  const questionBackfillBtn=el('historyTagImportBackfillQuestionsBtn');
+  if(questionBackfillBtn){
+    const appliedCount=Number(historyTagImportState.activeBatch?.appliedCount||0);
+    const job=historyTagImportState.questionBackfillJob;
+    const jobRunning=job&&job.batchId===historyTagImportState.activeBatch?.id&&job.status==='running';
+    questionBackfillBtn.disabled=historyTagImportState.applying||jobRunning||!appliedCount;
+    questionBackfillBtn.textContent=jobRunning?'Sorular Arka Planda Ekleniyor':'Excel Sorularını Ekle';
+  }
+  const batchList=el('historyTagImportBatchList');
+  if(batchList){
+    batchList.innerHTML=historyTagImportState.batches.length
+      ? historyTagImportState.batches.map(historyTagImportBatchCardHtml).join('')
+      : '<div class="archive-release-empty">Henüz etiket aktarım listesi yok. Excel dosyası seçerek başlayın.</div>';
+  }
+  const matchList=el('historyTagImportMatchList');
+  if(matchList){
+    if(historyTagImportState.loading){
+      matchList.innerHTML='<div class="empty-state">Eşleşmeler yükleniyor...</div>';
+    }else if(!historyTagImportState.activeBatch){
+      matchList.innerHTML='<div class="empty-state">Bir aktarım listesi seçildiğinde eşleşmeler burada görünür.</div>';
+    }else if(!historyTagImportState.matches.length){
+      matchList.innerHTML='<div class="empty-state">Bu filtrede eşleşme yok.</div>';
+    }else{
+      matchList.innerHTML=historyTagImportState.matches.map(historyTagImportMatchCardHtml).join('');
+    }
+  }
+}
+async function applyHistoryTagImportMatch(id,button){
+  if(!id)return;
+  if(button)button.disabled=true;
+  setHistoryTagImportStatus('Etiket bu denetim kaydına uygulanıyor...','');
+  const data=await api('POST',`/api/history-tags/import-matches/${encodeURIComponent(id)}/apply`,{});
+  if(data.error){
+    if(button)button.disabled=false;
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Etiket uygulanamadı',data.error,'danger');
+  }
+  updateHistoryTagImportMatchInState(data.match);
+  if(historyTagImportState.candidatePanels[id])delete historyTagImportState.candidatePanels[id];
+  await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
+  renderHistoryTagImport();
+  setHistoryTagImportStatus('Etiket uygulandı.','ok');
+}
+async function skipHistoryTagImportMatch(id,button){
+  if(!id)return;
+  if(button)button.disabled=true;
+  const data=await api('POST',`/api/history-tags/import-matches/${encodeURIComponent(id)}/skip`,{});
+  if(data.error){
+    if(button)button.disabled=false;
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Kayıt atlanamadı',data.error,'danger');
+  }
+  updateHistoryTagImportMatchInState(data.match);
+  if(historyTagImportState.candidatePanels[id])delete historyTagImportState.candidatePanels[id];
+  await loadHistoryTagImportBatches({keepActive:true,keepMatches:true});
+  renderHistoryTagImport();
+  setHistoryTagImportStatus('Eşleşme atlandı.','ok');
+}
+async function deleteHistoryTagImportBatch(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Silmek için önce bir Excel aktarım listesi seçin.','danger');
+  const ok=await openSystemConfirm({
+    title:'Bu aktarım kaldırılsın mı?',
+    badge:'Etiket aktarımı',
+    message:`${batch.filename||'Seçili Excel aktarımı'} ekrandaki aktarım listesinden kaldırılacak.`,
+    detail:'Bu işlem denetim kayıtlarını silmez. Daha önce uygulanmış etiketleri geri almaz. Yalnız bu Excel aktarım listesini ve ona ait eşleşme önerilerini temizler.',
+    confirmText:'Aktarımı Sil',
+    tone:'danger'
+  });
+  if(!ok)return;
+  setHistoryTagImportStatus('Aktarım kaldırılıyor...','');
+  const data=await api('DELETE',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}`);
+  if(data.error){
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Aktarım silinemedi',data.error,'danger');
+  }
+  historyTagImportState.batches=(historyTagImportState.batches||[]).filter(item=>item.id!==batch.id);
+  historyTagImportState.activeBatch=historyTagImportState.batches[0]||null;
+  historyTagImportState.matches=[];
+  historyTagImportState.candidatePanels={};
+  renderHistoryTagImport();
+  await loadHistoryTagImportBatches();
+  setHistoryTagImportStatus('Aktarım kaydı kaldırıldı. Yeni Excel seçerek temiz başlayabilirsiniz.','ok');
+}
+function waitForHistoryTagImportStep(ms=90){
+  return new Promise(resolve=>setTimeout(resolve,ms));
+}
+async function applyHistoryTagImportMatchesInSteps({batch, endpoint, total, startedMessage, progressLabel, doneLabel, failTitle}){
+  historyTagImportState.applying=true;
+  renderHistoryTagImport();
+  let appliedTotal=0;
+  let remaining=Number(total||0);
+  const errors=[];
+  try{
+    for(let step=0;step<500;step++){
+      setHistoryTagImportStatus(`${progressLabel}: ${appliedTotal.toLocaleString('tr-TR')} / ${Number(total||0).toLocaleString('tr-TR')} uygulandı...`,'');
+      const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/${endpoint}`,{limit:60});
+      if(data.error)throw new Error(data.error);
+      appliedTotal+=Number(data.applied||0);
+      remaining=Number(data.remaining||0);
+      if(data.batch)historyTagImportState.activeBatch=data.batch;
+      if(data.errors?.length)errors.push(...data.errors);
+      setHistoryTagImportStatus(`${progressLabel}: ${appliedTotal.toLocaleString('tr-TR')} uygulandı, ${remaining.toLocaleString('tr-TR')} kaldı...`,'');
+      if(data.errors?.length||data.done||remaining<=0||Number(data.applied||0)<=0)break;
+      await waitForHistoryTagImportStep();
+    }
+  }catch(error){
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    const message=error.message||'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.';
+    setHistoryTagImportStatus(message,'err');
+    return showSystemAlert(failTitle,message,'danger');
+  }
+  historyTagImportState.applying=false;
+  await loadHistoryTagImportBatches({keepActive:true});
+  const suffix=remaining>0?` ${remaining.toLocaleString('tr-TR')} kayıt kaldı.`:'';
+  setHistoryTagImportStatus(`${appliedTotal.toLocaleString('tr-TR')} ${doneLabel}.${suffix}`,'ok');
+  if(errors.length){
+    await showSystemAlert('Bazı kayıtlar uygulanamadı',errors.slice(0,6).join('\n'),'danger');
+  }
+  return {applied:appliedTotal,remaining,errors};
+}
+async function applyReadyHistoryTagImportMatches(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Toplu uygulama için önce bir etiket aktarım listesi seçin.','danger');
+  const readyCount=Number(batch.readyCount||0);
+  if(!readyCount)return showSystemAlert('Hazır eşleşme yok','Bu listede güvenli hazır eşleşme bulunmuyor. Kontrol gerekenleri tek tek inceleyin.','danger');
+  const ok=await openSystemConfirm({
+    title:'Yüksek güvenli etiketler uygulansın mı?',
+    badge:'Etiket aktarımı',
+    message:`Bu işlem yalnız hazır görünen ${readyCount.toLocaleString('tr-TR')} eşleşmeye Excel etiketlerini uygular.`,
+    detail:'Kontrol gereken veya eşleşmeyen kayıtlar değişmez. Uygulanan kayıtlar listede Uygulandı olarak görünür.',
+    confirmText:'Uygula',
+    tone:'success'
+  });
+  if(!ok)return;
+  return applyHistoryTagImportMatchesInSteps({
+    batch,
+    endpoint:'apply-ready',
+    total:readyCount,
+    progressLabel:'Güvenli eşleşmeler uygulanıyor',
+    doneLabel:'güvenli eşleşme uygulandı',
+    failTitle:'Toplu uygulama tamamlanamadı'
+  });
+}
+async function applyReviewHistoryTagImportMatches(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Toplu uygulama için önce bir etiket aktarım listesi seçin.','danger');
+  const reviewCount=Number(batch.reviewCount||0);
+  if(historyTagImportState.status!=='review')return showSystemAlert('Kontrol grubu seçili değil','Bu işlem için önce filtreyi Kontrol gerekenler olarak seçin.','danger');
+  if(!reviewCount)return showSystemAlert('Kontrol gereken kayıt yok','Bu listede toplu uygulanacak kontrol gereken eşleşme bulunmuyor.','danger');
+  const ok=await openSystemConfirm({
+    title:'Kontrol gereken etiketler uygulansın mı?',
+    badge:'Etiket aktarımı',
+    message:`Bu işlem seçili aktarım listesindeki ${reviewCount.toLocaleString('tr-TR')} kontrol gereken eşleşmeye Excel etiketlerini uygular.`,
+    detail:'Hazır ve eşleşmeyen kayıtlar değişmez. Emin değilseniz önce aşağıdaki örnekleri kontrol edin.',
+    confirmText:'Kontrol Gerekenleri Uygula',
+    tone:'success'
+  });
+  if(!ok)return;
+  return applyHistoryTagImportMatchesInSteps({
+    batch,
+    endpoint:'apply-review',
+    total:reviewCount,
+    progressLabel:'Kontrol gerekenler uygulanıyor',
+    doneLabel:'kontrol gereken eşleşme uygulandı',
+    failTitle:'Toplu uygulama tamamlanamadı'
+  });
+}
+function applyHistoryTagImportQuestionJob(job){
+  historyTagImportState.questionBackfillJob=job||null;
+  if(job?.batch)historyTagImportState.activeBatch=job.batch;
+  renderHistoryTagImport();
+}
+function historyTagImportQuestionPendingKey(batchId){
+  return `archive-question-backfill-pending:${batchId}`;
+}
+function setHistoryTagImportQuestionPending(batchId){
+  if(!batchId)return;
+  try{localStorage.setItem(historyTagImportQuestionPendingKey(batchId),String(Date.now()));}catch{}
+}
+function clearHistoryTagImportQuestionPending(batchId){
+  if(!batchId)return;
+  try{localStorage.removeItem(historyTagImportQuestionPendingKey(batchId));}catch{}
+}
+function hasHistoryTagImportQuestionPending(batchId){
+  if(!batchId)return false;
+  try{return Boolean(localStorage.getItem(historyTagImportQuestionPendingKey(batchId)));}catch{return false;}
+}
+function historyTagImportQuestionJobStatusText(job){
+  if(!job)return '';
+  const updated=Number(job.updatedTotal||0);
+  const total=Number(job.totalMissing||0);
+  const remaining=Number(job.remaining||0);
+  if(job.status==='completed'){
+    return updated>0
+      ? `${updated.toLocaleString('tr-TR')} soru denetim kayıtlarına eklendi.`
+      : 'Eklenecek boş soru alanı kalmadı. Daha önce yazılmış sorular korundu.';
+  }
+  if(job.status==='failed')return job.lastError||'Soru aktarımı tamamlanamadı.';
+  const totalText=total?` / ${total.toLocaleString('tr-TR')}`:'';
+  const remainText=remaining?`, ${remaining.toLocaleString('tr-TR')} kaldı`:'';
+  return `Soru aktarımı ilerliyor: ${updated.toLocaleString('tr-TR')}${totalText} boş soru alanı tamamlandı${remainText}.`;
+}
+function stopHistoryTagImportQuestionPolling(){
+  if(historyTagImportState.questionBackfillPoll){
+    clearTimeout(historyTagImportState.questionBackfillPoll);
+    historyTagImportState.questionBackfillPoll=null;
+  }
+}
+async function refreshHistoryTagImportQuestionStatus(options={}){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return null;
+  const data=await api('GET',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions/status`);
+  if(data.error){
+    if(!options.silent){
+      setHistoryTagImportStatus('Soru aktarımı kayıt altında. Sayfaya döndüğünüzde durum tekrar kontrol edilecek.','');
+    }
+    return null;
+  }
+  const job=data.job||null;
+  applyHistoryTagImportQuestionJob(job);
+  if(job?.status==='completed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    if(options.reload!==false)await loadHistoryTagImportBatches({keepActive:true});
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'ok');
+  }else if(job?.status==='failed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'err');
+  }else if(job?.status==='running'){
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'');
+  }
+  return job;
+}
+function startHistoryTagImportQuestionPolling(batchId){
+  stopHistoryTagImportQuestionPolling();
+  const tick=async()=>{
+    if(!historyTagImportState.activeBatch||historyTagImportState.activeBatch.id!==batchId){
+      stopHistoryTagImportQuestionPolling();
+      return;
+    }
+    if(document.hidden){
+      historyTagImportState.questionBackfillPoll=setTimeout(tick,5000);
+      return;
+    }
+    const job=await refreshHistoryTagImportQuestionStatus({silent:true});
+    if(job?.status==='running'){
+      historyTagImportState.questionBackfillPoll=setTimeout(tick,2500);
+    }
+  };
+  historyTagImportState.questionBackfillPoll=setTimeout(tick,1200);
+}
+async function resumePendingHistoryTagImportQuestions(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch||!hasHistoryTagImportQuestionPending(batch.id))return null;
+  const current=await refreshHistoryTagImportQuestionStatus({silent:true,reload:false}).catch(()=>null);
+  if(current?.status==='running'){
+    startHistoryTagImportQuestionPolling(batch.id);
+    return current;
+  }
+  if(current?.status==='completed'||current?.status==='failed')return current;
+  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions/start`,{});
+  if(data.error){
+    setHistoryTagImportStatus('Soru aktarımı bağlantı bekliyor. Sayfaya döndüğünüzde sistem tekrar kontrol edecek.','');
+    return null;
+  }
+  const job=data.job||null;
+  applyHistoryTagImportQuestionJob(job);
+  if(job?.status==='completed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    if(job.batch)historyTagImportState.activeBatch=job.batch;
+    renderHistoryTagImport();
+    await loadHistoryTagImportBatches({keepActive:true});
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'ok');
+    return job;
+  }
+  if(job?.status==='failed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'err');
+    return job;
+  }
+  setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job)||'Soru aktarımı kayıt altında. Sayfadan ayrılsanız bile durum korunur.','ok');
+  startHistoryTagImportQuestionPolling(batch.id);
+  return job;
+}
+async function backfillHistoryTagImportQuestions(){
+  const batch=historyTagImportState.activeBatch;
+  if(!batch)return showSystemAlert('Aktarım seçilmedi','Soruları eklemek için önce bir Excel aktarım listesi seçin.','danger');
+  const appliedCount=Number(batch.appliedCount||0);
+  if(!appliedCount)return showSystemAlert('Uygulanmış eşleşme yok','Soruları eklemek için önce güvenli veya kontrol edilen eşleşmeleri uygulayın.','danger');
+  const ok=await openSystemConfirm({
+    title:'Excel soruları kayıtlara eklensin mi?',
+    badge:'Soru aktarımı',
+    message:`Bu işlem uygulanmış ${appliedCount.toLocaleString('tr-TR')} eşleşmede boş kalan Soru alanlarını Excel’deki soru bilgisiyle tamamlar.`,
+    detail:'Daha önce elle yazılmış sorular korunur. İşlem kayıt altında ilerler; sayfadan ayrılsanız bile durum sonradan devam ettirilebilir.',
+    confirmText:'Soruları Ekle',
+    tone:'success'
+  });
+  if(!ok)return;
+  historyTagImportState.applying=true;
+  renderHistoryTagImport();
+  setHistoryTagImportStatus('Soru aktarımı başlatılıyor...','');
+  setHistoryTagImportQuestionPending(batch.id);
+  const data=await api('POST',`/api/history-tags/import-batches/${encodeURIComponent(batch.id)}/backfill-questions/start`,{});
+  if(data.error){
+    const maybeJob=await resumePendingHistoryTagImportQuestions().catch(()=>null);
+    if(maybeJob?.status==='running'||maybeJob?.status==='completed')return;
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    if(String(data.error||'').includes('Bağlantı tamamlanamadı')){
+      setHistoryTagImportStatus('Soru aktarımı isteği kayıt altında kontrol edilecek. Sayfaya döndüğünüzde sistem otomatik devam etmeyi dener.','');
+      return;
+    }
+    clearHistoryTagImportQuestionPending(batch.id);
+    setHistoryTagImportStatus(data.error,'err');
+    return showSystemAlert('Soru aktarımı başlatılamadı',data.error,'danger');
+  }
+  const job=data.job||null;
+  applyHistoryTagImportQuestionJob(job);
+  if(job?.status==='completed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    if(job.batch)historyTagImportState.activeBatch=job.batch;
+    renderHistoryTagImport();
+    await loadHistoryTagImportBatches({keepActive:true});
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'ok');
+    return;
+  }
+  if(job?.status==='failed'){
+    clearHistoryTagImportQuestionPending(batch.id);
+    stopHistoryTagImportQuestionPolling();
+    historyTagImportState.applying=false;
+    renderHistoryTagImport();
+    setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job),'err');
+    return showSystemAlert('Soru aktarımı tamamlanamadı',historyTagImportQuestionJobStatusText(job),'danger');
+  }
+  setHistoryTagImportStatus(historyTagImportQuestionJobStatusText(job)||'Soru aktarımı başladı. Sayfadan ayrılsanız bile işlem kayıt altında kalır.','ok');
+  startHistoryTagImportQuestionPolling(batch.id);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  if(historyTagImportState.activeBatch&&hasHistoryTagImportQuestionPending(historyTagImportState.activeBatch.id)){
+    resumePendingHistoryTagImportQuestions();
+    return;
+  }
+  if(historyTagImportState.questionBackfillJob?.status==='running'){
+    refreshHistoryTagImportQuestionStatus({silent:true});
+    startHistoryTagImportQuestionPolling(historyTagImportState.questionBackfillJob.batchId);
+  }
+});
 function archiveWorkStatusLabel(status){
   return {
     taslak:'Taslak',
@@ -8252,7 +9659,7 @@ function renderArchiveImportBatches(){
   const list=el('archiveImportBatchList');
   if(!list)return;
   if(!archiveImportState.batches.length){
-    list.innerHTML='<div class="empty-state">Henüz kalıcı içe aktarım partisi yok. Dosya seçtiğinizde sistem otomatik parti açabilir veya üstten başlık vererek parti oluşturabilirsiniz.</div>';
+    list.innerHTML='<div class="empty-state">Henüz kalıcı içe aktarım listesi yok. Dosya seçtiğinizde sistem otomatik liste açabilir veya üstten başlık vererek liste oluşturabilirsiniz.</div>';
     return;
   }
   list.innerHTML=archiveImportState.batches.map(batch=>{
@@ -8274,7 +9681,7 @@ async function loadArchiveImportBatches(){
   if(!canUseArchiveOps())return;
   if(archiveImportState.loading)return;
   archiveImportState.loading=true;
-  setArchiveImportStatus('İçe aktarım partileri yükleniyor...');
+  setArchiveImportStatus('İçe aktarım listeleri yükleniyor...');
   const data=await api('GET','/api/archive-ops/import-batches');
   archiveImportState.loading=false;
   if(data.error){
@@ -8297,7 +9704,7 @@ async function loadArchiveImportBatches(){
     archiveImportState.activeBatch=null;
     archiveImportState.items=[];
     renderArchiveImportQueue();
-    setArchiveImportStatus('Kalıcı parti açıldığında dosyalar burada saklanır.');
+    setArchiveImportStatus('Kalıcı liste açıldığında dosyalar burada saklanır.');
   }
 }
 async function createArchiveImportBatch(title=null,note=null){
@@ -8306,7 +9713,7 @@ async function createArchiveImportBatch(title=null,note=null){
     title:String(title??el('archiveImportBatchTitle')?.value??'').trim()||archiveImportTodayTitle(),
     note:String(note??el('archiveImportBatchNote')?.value??'').trim()
   };
-  setArchiveImportStatus('İçe aktarım partisi oluşturuluyor...');
+  setArchiveImportStatus('İçe aktarım listesi oluşturuluyor...');
   const data=await api('POST','/api/archive-ops/import-batches',payload);
   if(data.error){
     setArchiveImportStatus(data.error,'err');
@@ -8318,7 +9725,7 @@ async function createArchiveImportBatch(title=null,note=null){
   archiveImportState.activeBatchId=data.batch.id;
   renderArchiveImportBatches();
   await loadArchiveImportBatchDetail(data.batch.id);
-  setArchiveImportStatus('Kalıcı içe aktarım partisi açıldı. Dosyaları bu partiye ekleyebilirsiniz.','ok');
+  setArchiveImportStatus('Kalıcı içe aktarım listesi açıldı. Dosyaları bu listeye ekleyebilirsiniz.','ok');
   return data.batch;
 }
 async function ensureArchiveImportBatch(){
@@ -8345,7 +9752,7 @@ async function loadArchiveImportBatchDetail(id){
   renderArchiveImportBatches();
   renderArchiveImportQueue();
   const total=archiveImportState.items.length;
-  setArchiveImportStatus(total?`${total} dosya bu partide kayıtlı.`:'Bu parti boş. Dosya seçerek başlayabilirsiniz.',total?'ok':'');
+  setArchiveImportStatus(total?`${total} dosya bu listede kayıtlı.`:'Bu liste boş. Dosya seçerek başlayabilirsiniz.',total?'ok':'');
 }
 function archiveImportDrag(event,active){
   event.preventDefault();
@@ -8390,7 +9797,7 @@ async function handleArchiveImportFiles(fileList){
   const batchId=await ensureArchiveImportBatch();
   if(!batchId)return;
   archiveImportState.processing=true;
-  setArchiveImportStatus(`${files.length} dosya aktif partiye ekleniyor...`);
+  setArchiveImportStatus(`${files.length} dosya aktif listeye ekleniyor...`);
   for(const file of files){
     const tempId=`tmp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
     const item={
@@ -8634,7 +10041,7 @@ function renderArchiveImportQueue(){
   const preview=el('archiveImportPreview');
   if(!list||!preview)return;
   if(!archiveImportState.items.length){
-    list.innerHTML='<div class="empty-state">Aktif partide dosya yok.</div>';
+    list.innerHTML='<div class="empty-state">Aktif listede dosya yok.</div>';
     preview.innerHTML='<div class="empty-state">Bir dosya seçildiğinde çıkarılan metin, durum ve kayıt önerisi burada görünür.</div>';
     return;
   }
