@@ -144,6 +144,17 @@ tespit edilir).
   root cutover yapılmadı. Public veri senkronu henüz çalıştırılmadı; `Onaylıları Siteye Hazırla`
   işlemi Supabase public tablolarına tüm onaylı kayıtları yazacağı için ayrıca açık kullanıcı onayı
   bekliyor. Okuma smoke'una göre preview hâlâ mevcut `11 soru cevap` public verisini gösteriyor.
+- **Onaylı kayıtlar public okuma modeline senkronlandı:** Kullanıcının açık onayıyla tüm onaylı
+  geçmiş kayıtları Supabase public okuma tablolarına taşındı. Büyük veri sync sırasında iki kalıcı
+  sağlamlaştırma yapıldı: `public_question_stats` slug okuması parçalara bölündü, `public_qa_topics`
+  bağlantı temizliği daha küçük paketlere indirildi ve `public_qa` upsert'i eski public slug
+  çakışmalarını çözmek için `slug` üzerinden yapılır hale getirildi. Senkron sonucu:
+  `history status=onaylandi` 3147, `public_qa status=published` 3147, `public_categories` 2590,
+  `public_topics` 2590, `public_qa_topics` 8646. Yerel doğrulama tekrar geçti:
+  `node --check server.js`, `node scripts/check-frontend.js`, `npm.cmd run check`; tam check
+  `97/97` test başarılı. Not: canlı Supabase'de `public_users` ve `public_question_submissions`
+  tabloları hâlâ yok; bu yüzden Google oturumlu `Soru Sor` akışı ilgili SQL uygulanana kadar pasif
+  kalır.
 
 ### 2026-08-16
 - **Public preview sınıflandırma modeli etiketlerden kategoriye çevrildi:** Kullanıcı kararıyla

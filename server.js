@@ -4868,6 +4868,8 @@ function clearPublicSession(req) {
 }
 
 const PUBLIC_ARCHIVE_DATA_CACHE_MS = 60_000;
+const PUBLIC_ARCHIVE_STATS_LOOKUP_CHUNK_SIZE = 35;
+const PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE = 20;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 
 function publicArchiveDefaultData() {
@@ -4991,10 +4993,14 @@ async function loadPublicArchiveStatsMap(slugs = []) {
   const cleanSlugs = [...new Set(slugs.filter(Boolean))].slice(0, 5000);
   if (!cleanSlugs.length) return new Map();
   if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return loadPublicQuestionStatsFallbackMap(cleanSlugs);
-  const rows = await fetchAllPages(() => supabase
-    .from('public_question_stats')
-    .select('slug,read_count')
-    .in('slug', cleanSlugs), 1000);
+  const rows = [];
+  for (let index = 0; index < cleanSlugs.length; index += PUBLIC_ARCHIVE_STATS_LOOKUP_CHUNK_SIZE) {
+    const slice = cleanSlugs.slice(index, index + PUBLIC_ARCHIVE_STATS_LOOKUP_CHUNK_SIZE);
+    rows.push(...await fetchAllPages(() => supabase
+      .from('public_question_stats')
+      .select('slug,read_count')
+      .in('slug', slice), 1000));
+  }
   return publicArchiveRowsFromStats(rows);
 }
 
@@ -5383,13 +5389,13 @@ async function syncApprovedHistoryToPublicArchive() {
     if (error) throw new Error(error.message);
   }
   if (qaRows.length) {
-    const { error } = await supabase.from('public_qa').upsert(qaRows, { onConflict: 'source_history_id' });
+    const { error } = await supabase.from('public_qa').upsert(qaRows, { onConflict: 'slug' });
     if (error) throw new Error(error.message);
   }
 
   const qaSlugs = qaRows.map(row => row.slug).filter(Boolean);
-  for (let index = 0; index < qaSlugs.length; index += 400) {
-    const slice = qaSlugs.slice(index, index + 400);
+  for (let index = 0; index < qaSlugs.length; index += PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE) {
+    const slice = qaSlugs.slice(index, index + PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE);
     const { error } = await supabase.from('public_qa_topics').delete().in('qa_slug', slice);
     if (error) throw new Error(error.message);
   }

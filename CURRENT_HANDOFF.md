@@ -31,6 +31,24 @@
   public okuma modeline senkronla, ardından preview'da gerçek kayıt sayıları ve mobil/desktop smoke
   yap. Root `/` ancak ayrıca açık onayla public siteye çevrilecek.
 
+## 2026-08-19 Codex Public Veri Senkronu
+
+- Kullanıcı açık onay verdi: tüm onaylı kayıtlar public okuma tablolarına senkronlandı.
+- İlk sync denemelerinde büyük veriyle iki sorun yakalandı ve kalıcı düzeltildi:
+  `public_question_stats` çok uzun slug listesiyle 414 veriyordu, stats okuma parçalandı;
+  `public_qa_topics` bağlantı temizliği küçük paketlere indirildi; eski public satır çakışmaları
+  için `public_qa` upsert'i `slug` üzerinden yapılır hale getirildi.
+- Supabase doğrulama sayıları:
+  `history status=onaylandi`: 3147,
+  `public_qa status=published`: 3147,
+  `public_categories`: 2590,
+  `public_topics`: 2590,
+  `public_qa_topics`: 8646.
+- Yerel doğrulama tekrar geçti: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`; tam check `97/97` test başarılı.
+- Not: `public_users` ve `public_question_submissions` tabloları canlı Supabase'de hâlâ yok;
+  bu yüzden Google oturumlu `Soru Sor` akışı tablo SQL'i uygulanana kadar pasif kalır.
+
 ## 2026-08-16 Codex Public Preview Etiketlerden Kategori Modeli
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch
