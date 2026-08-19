@@ -106,6 +106,7 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /class="pa-mobile-nav"/);
   assert.match(home, /class="pa-scroll-top"/);
   assert.match(home, /data-scroll-top/);
+  assert.match(home, /pa-scroll-top-icon/);
   assert.match(home, /aria-label="Yukarı çık"/);
   assert.match(home, /<a class="pa-archive-shortcut" href="\/public-preview\/arsiv"/);
   assert.match(home, /Arşivin tamamını açın\./);
@@ -201,6 +202,37 @@ test('archive lists are paginated for large public data', () => {
   assert.equal((categorySecondPage.match(/class="pa-question-card/g) || []).length, 30);
   assert.match(categorySecondPage, /31-60 \/ 75 soru gösteriliyor/);
   assert.match(categorySecondPage, /href="\/public-preview\/kategori\/hidayet\?sayfa=3#sorular"/);
+});
+
+test('public renderer accepts route-sized server data with global stats', () => {
+  const pagedRows = Array.from({ length: 30 }, (_, index) => {
+    const number = index + 31;
+    return {
+      id: `qa-${number}`,
+      slug: `soru-${number}`,
+      title: `Soru ${number}`,
+      question: `Soru ${number}`,
+      answer: [],
+      categorySlug: 'hidayet',
+      categorySlugs: ['hidayet'],
+      topicSlugs: ['hidayet'],
+      publishedAt: '2026-08-10',
+      readTime: 1
+    };
+  });
+  const archive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { sayfa: '2' }, {
+    stats: { questionCount: 3147, answerCount: 3147 },
+    pagination: { scope: 'archive', prePaginated: true, page: 2, pageSize: 30, total: 3147 },
+    categories: [{ slug: 'hidayet', name: 'Hidayet', questionCount: 3147 }],
+    topics: [],
+    qa: pagedRows
+  }).html;
+
+  assert.equal((archive.match(/class="pa-question-card/g) || []).length, 30);
+  assert.match(archive, /3\.147 soru cevap/);
+  assert.match(archive, /31-60 \/ 3\.147 soru gösteriliyor/);
+  assert.match(archive, /Sayfa 2 \/ 105/);
+  assert.match(archive, /Hidayet/);
 });
 
 test('public preview search and missing states are deterministic', () => {

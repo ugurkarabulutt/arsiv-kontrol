@@ -49,6 +49,24 @@
 - Not: `public_users` ve `public_question_submissions` tabloları canlı Supabase'de hâlâ yok;
   bu yüzden Google oturumlu `Soru Sor` akışı tablo SQL'i uygulanana kadar pasif kalır.
 
+## 2026-08-20 Codex Public Preview Performans Hattı
+
+- Kullanıcı ilk soğuk ana sayfa isteğinin yaklaşık `9.2 sn` sürdüğünü bildirdi; hedef canlıda
+  `3 sn` altı olarak netleşti.
+- Public preview veri yükleme hattı route bazlı hale getirildi. `/public-preview` ana sayfa artık
+  3147 kaydın tamamını ve tüm kategori bağlantılarını çekmez; yalnız öne çıkan/son kayıtlar ve
+  toplam sayaç bilgisini alır. `/public-preview/arsiv` ve kategori sayfaları 30 kayıtlık sayfalı
+  listeyle çalışır; soru detay sayfası yalnız ilgili soru ve az sayıda ilişkili kaydı okur.
+- Route cache eklendi; public sync sonrası hem genel dataset cache'i hem route cache temizlenir.
+- Büyük sayı gösterimleri `3.147 soru cevap` gibi Türkçe formatla sabitlendi.
+- Yukarı çık butonunda sağ ok görünmesine yol açabilen SVG cache sorunu düzeltildi; ikon cache'i
+  artık ikon adı ve CSS sınıfı birlikte kullanılarak tutulur.
+- Yerel doğrulama geçti: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
+  Tam check `99/99` test başarılı.
+- Root `/` public cutover yapılmadı; çalışma hâlâ public preview hattındadır.
+
 ## 2026-08-16 Codex Public Preview Etiketlerden Kategori Modeli
 
 - Public preview worktree: `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`, branch

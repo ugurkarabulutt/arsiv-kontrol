@@ -4868,9 +4868,14 @@ function clearPublicSession(req) {
 }
 
 const PUBLIC_ARCHIVE_DATA_CACHE_MS = 60_000;
+const PUBLIC_ARCHIVE_ROUTE_CACHE_MS = 60_000;
 const PUBLIC_ARCHIVE_STATS_LOOKUP_CHUNK_SIZE = 35;
 const PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE = 20;
+const PUBLIC_ARCHIVE_PAGE_SIZE = 30;
+const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
+const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
+const publicArchiveRouteCache = new Map();
 
 function publicArchiveDefaultData() {
   try {
@@ -5137,7 +5142,7 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
   };
 }
 
-function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], topicRows = [], statsMap = new Map() } = {}) {
+function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], topicRows = [], statsMap = new Map(), allowEmpty = false } = {}) {
   const defaults = publicArchiveDefaultData();
   const categoryRowMap = new Map((categoryRows || []).map(row => [row.slug, row]));
   const topicRowMap = new Map((topicRows || []).map(row => [row.slug, row]));
@@ -5147,7 +5152,8 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
     if (tagSlugs.length) tagSlugs.forEach(slug => usedCategorySlugs.add(slug));
     else if (row.category_slug) usedCategorySlugs.add(row.category_slug);
   }
-  const categories = [...usedCategorySlugs].map(slug => {
+  const categorySlugs = categoryRowMap.size ? [...categoryRowMap.keys()] : [...usedCategorySlugs];
+  const categories = categorySlugs.map(slug => {
     const row = categoryRowMap.get(slug) || topicRowMap.get(slug) || { slug, name: slug };
     return {
       id: `category-${row.slug}`,
@@ -5155,9 +5161,10 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
       name: row.name,
       description: row.description || publicArchiveCategoryDescription(row.name),
       topicSlugs: [row.slug],
-      featured: row.featured !== false
+      featured: row.featured !== false,
+      questionCount: Number(row.question_count || row.questionCount || 0) || 0
     };
-  }).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  }).filter(category => category.slug && category.name).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
   const topics = (topicRows || []).map(row => ({
     id: `topic-${row.slug}`,
     slug: row.slug,
@@ -5196,8 +5203,294 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
       relatedSlugs: Array.isArray(row.related_slugs) ? row.related_slugs : []
     };
   });
-  if (!qa.length) return defaults;
+  if (!qa.length && !allowEmpty) return defaults;
   return { ...defaults, categories, topics, qa };
+}
+
+function publicArchiveRouteCacheKey(routePath = '', query = {}) {
+  const cleanQuery = {};
+  for (const key of ['harf', 'kategori', 'kategoriAra', 'sayfa', 'q']) {
+    if (query[key]) cleanQuery[key] = String(query[key]);
+  }
+  return `${routePath}?${new URLSearchParams(cleanQuery).toString()}`;
+}
+
+function getPublicArchiveRouteCache(key) {
+  const cached = publicArchiveRouteCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) return null;
+  return cached.data;
+}
+
+function setPublicArchiveRouteCache(key, data) {
+  if (publicArchiveRouteCache.size > 80) {
+    const firstKey = publicArchiveRouteCache.keys().next().value;
+    if (firstKey) publicArchiveRouteCache.delete(firstKey);
+  }
+  publicArchiveRouteCache.set(key, { expiresAt: Date.now() + PUBLIC_ARCHIVE_ROUTE_CACHE_MS, data });
+  return data;
+}
+
+function clearPublicArchiveCaches() {
+  publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
+  publicArchiveRouteCache.clear();
+}
+
+function publicArchivePageNumber(value) {
+  const page = Number.parseInt(String(value || '1'), 10);
+  return Number.isFinite(page) && page > 1 ? page : 1;
+}
+
+function publicArchiveTagSlugsFromRows(rows = []) {
+  const slugs = new Set();
+  for (const row of rows || []) {
+    if (row.category_slug) slugs.add(row.category_slug);
+    for (const slug of Array.isArray(row.topic_slugs) ? row.topic_slugs : []) {
+      if (slug) slugs.add(slug);
+    }
+  }
+  return [...slugs];
+}
+
+async function loadPublicArchiveCategoryRowsBySlug(slugs = []) {
+  const cleanSlugs = [...new Set(slugs.filter(Boolean))];
+  if (!cleanSlugs.length) return [];
+  const rows = [];
+  for (let index = 0; index < cleanSlugs.length; index += 100) {
+    const slice = cleanSlugs.slice(index, index + 100);
+    const { data, error } = await supabase
+      .from('public_categories')
+      .select('slug,name,description,topic_slugs,featured,sort_order')
+      .in('slug', slice);
+    if (error) throw new Error(error.message);
+    rows.push(...(data || []));
+  }
+  return rows;
+}
+
+async function loadPublicArchiveCategoryIndexRows() {
+  const [categoryRows, linkRows] = await Promise.all([
+    fetchAllPages(() => supabase
+      .from('public_categories')
+      .select('slug,name,description,topic_slugs,featured,sort_order')
+      .order('sort_order', { ascending: true }), 1000),
+    fetchAllPages(() => supabase
+      .from('public_qa_topics')
+      .select('topic_slug'), 1000)
+  ]);
+  const counts = new Map();
+  for (const row of linkRows || []) {
+    if (!row.topic_slug) continue;
+    counts.set(row.topic_slug, (counts.get(row.topic_slug) || 0) + 1);
+  }
+  return (categoryRows || [])
+    .map(row => ({ ...row, question_count: counts.get(row.slug) || 0 }))
+    .filter(row => row.question_count > 0);
+}
+
+function publicArchiveStats(total = 0) {
+  const count = Number.isFinite(Number(total)) && Number(total) > 0 ? Math.round(Number(total)) : 0;
+  return { questionCount: count, answerCount: count };
+}
+
+async function publicArchiveListPage(baseQuery, page = 1, pageSize = PUBLIC_ARCHIVE_PAGE_SIZE) {
+  let safePage = publicArchivePageNumber(page);
+  let from = (safePage - 1) * pageSize;
+  let to = from + pageSize - 1;
+  let { data, error, count } = await baseQuery().range(from, to);
+  if (error) throw new Error(error.message);
+  const total = Number(count || 0);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if ((!data || !data.length) && total > 0 && safePage > totalPages) {
+    safePage = totalPages;
+    from = (safePage - 1) * pageSize;
+    to = from + pageSize - 1;
+    const retry = await baseQuery().range(from, to);
+    if (retry.error) throw new Error(retry.error.message);
+    data = retry.data || [];
+    count = retry.count || total;
+  }
+  return { rows: data || [], total: Number(count || total), page: safePage, pageSize };
+}
+
+async function publicArchiveDatasetForRows({ rows = [], categoryRows = [], stats = null, pagination = null, search = null, allowEmpty = true } = {}) {
+  const neededCategoryRows = categoryRows.length
+    ? categoryRows
+    : await loadPublicArchiveCategoryRowsBySlug(publicArchiveTagSlugsFromRows(rows));
+  const dataset = publicArchiveDatasetFromPublicRows({
+    qaRows: rows,
+    categoryRows: neededCategoryRows,
+    topicRows: [],
+    allowEmpty
+  });
+  return { ...dataset, stats, pagination, search };
+}
+
+async function loadPublicArchiveHomeDataset() {
+  const [featuredResult, latestResult] = await Promise.all([
+    supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+      .eq('status', 'published')
+      .eq('is_featured', true)
+      .order('published_at', { ascending: false })
+      .range(0, 2),
+    supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .range(0, 2)
+  ]);
+  if (featuredResult.error) throw new Error(featuredResult.error.message);
+  if (latestResult.error) throw new Error(latestResult.error.message);
+  const rows = [...(featuredResult.data || []), ...(latestResult.data || [])];
+  const total = Number(latestResult.count || rows.length || 0);
+  return publicArchiveDatasetForRows({
+    rows,
+    stats: publicArchiveStats(total),
+    allowEmpty: false
+  });
+}
+
+async function loadPublicArchivePageDataset(query = {}) {
+  const selectedCategory = String(query.kategori || '').trim();
+  const page = publicArchivePageNumber(query.sayfa);
+  const pageResult = await publicArchiveListPage(() => {
+    let builder = supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    if (selectedCategory) builder = builder.contains('topic_slugs', [selectedCategory]);
+    return builder;
+  }, page);
+  const categoryRows = await loadPublicArchiveCategoryIndexRows();
+  return publicArchiveDatasetForRows({
+    rows: pageResult.rows,
+    categoryRows,
+    stats: publicArchiveStats(pageResult.total),
+    pagination: {
+      scope: 'archive',
+      prePaginated: true,
+      page: pageResult.page,
+      pageSize: pageResult.pageSize,
+      total: pageResult.total
+    }
+  });
+}
+
+async function loadPublicArchiveCategoryDataset(slug = '', query = {}) {
+  const cleanSlug = String(slug || '').trim();
+  const pageResult = await publicArchiveListPage(() => supabase
+    .from('public_qa')
+    .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+    .eq('status', 'published')
+    .contains('topic_slugs', [cleanSlug])
+    .order('published_at', { ascending: false }), publicArchivePageNumber(query.sayfa));
+  const categoryRows = await loadPublicArchiveCategoryRowsBySlug([cleanSlug, ...publicArchiveTagSlugsFromRows(pageResult.rows)]);
+  return publicArchiveDatasetForRows({
+    rows: pageResult.rows,
+    categoryRows,
+    stats: publicArchiveStats(pageResult.total),
+    pagination: {
+      scope: 'category',
+      slug: cleanSlug,
+      prePaginated: true,
+      page: pageResult.page,
+      pageSize: pageResult.pageSize,
+      total: pageResult.total
+    }
+  });
+}
+
+async function loadPublicArchiveSearchDataset(query = {}) {
+  const q = publicArchiveText(query.q || '', 80).replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+  let builder = supabase
+    .from('public_qa')
+    .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+    .limit(60);
+  if (q) {
+    const pattern = `%${q}%`;
+    builder = builder.or(`title.ilike.${pattern},question.ilike.${pattern},summary.ilike.${pattern},excerpt.ilike.${pattern},answer_text.ilike.${pattern}`);
+  }
+  const { data, error, count } = await builder;
+  if (error) throw new Error(error.message);
+  return publicArchiveDatasetForRows({
+    rows: data || [],
+    stats: publicArchiveStats(count || 0),
+    search: { preFiltered: true, query: q, total: count || 0 },
+    allowEmpty: true
+  });
+}
+
+async function loadPublicArchiveCategoryIndexDataset() {
+  const categoryRows = await loadPublicArchiveCategoryIndexRows();
+  const totalResult = await supabase
+    .from('public_qa')
+    .select('slug', { count: 'exact', head: true })
+    .eq('status', 'published');
+  if (totalResult.error) throw new Error(totalResult.error.message);
+  return publicArchiveDatasetForRows({
+    rows: [],
+    categoryRows,
+    stats: publicArchiveStats(totalResult.count || 0),
+    allowEmpty: true
+  });
+}
+
+async function loadPublicArchiveQuestionDataset(slug = '') {
+  const cleanSlug = String(slug || '').trim();
+  const { data: row, error } = await supabase
+    .from('public_qa')
+    .select(PUBLIC_ARCHIVE_DETAIL_SELECT)
+    .eq('status', 'published')
+    .eq('slug', cleanSlug)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!row) return publicArchiveDatasetForRows({ rows: [], allowEmpty: true });
+  let relatedRows = [];
+  const relatedSlugs = Array.isArray(row.related_slugs) ? row.related_slugs.filter(Boolean).slice(0, 3) : [];
+  if (relatedSlugs.length) {
+    const relatedResult = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .eq('status', 'published')
+      .in('slug', relatedSlugs);
+    if (relatedResult.error) throw new Error(relatedResult.error.message);
+    relatedRows = relatedResult.data || [];
+  }
+  const rows = [row, ...relatedRows.filter(item => item.slug !== row.slug)];
+  return publicArchiveDatasetForRows({
+    rows,
+    stats: publicArchiveStats(1),
+    allowEmpty: true
+  });
+}
+
+async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
+  await startupReady;
+  if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) return loadPublicArchiveDataset();
+  const key = publicArchiveRouteCacheKey(routePath, query);
+  const cached = getPublicArchiveRouteCache(key);
+  if (cached) return cached;
+  const pathname = String(routePath || '').replace(/\/+$/, '') || '/public-preview';
+  let dataset = null;
+  if (pathname === '/public-preview') dataset = await loadPublicArchiveHomeDataset();
+  else if (pathname === '/public-preview/arsiv') dataset = await loadPublicArchivePageDataset(query);
+  else if (pathname === '/public-preview/arama') dataset = await loadPublicArchiveSearchDataset(query);
+  else if (pathname === '/public-preview/kategoriler' || pathname === '/public-preview/konular') dataset = await loadPublicArchiveCategoryIndexDataset();
+  else {
+    const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
+    const categoryMatch = pathname.match(/^\/public-preview\/kategori\/([^/]+)$/);
+    const topicMatch = pathname.match(/^\/public-preview\/konu\/([^/]+)$/);
+    if (questionMatch) dataset = await loadPublicArchiveQuestionDataset(questionMatch[1]);
+    else if (categoryMatch) dataset = await loadPublicArchiveCategoryDataset(categoryMatch[1], query);
+    else if (topicMatch) dataset = await loadPublicArchiveCategoryDataset(topicMatch[1], query);
+  }
+  if (!dataset) dataset = await loadPublicArchiveHomeDataset();
+  return setPublicArchiveRouteCache(key, dataset);
 }
 
 async function loadApprovedHistoryForPublicArchive() {
@@ -5255,6 +5548,16 @@ async function knownPublicQuestionSlugs() {
 async function validPublicQuestionSlug(slug) {
   const cleanSlug = String(slug || '').trim();
   if (!/^[a-z0-9-]{2,120}$/.test(cleanSlug)) return '';
+  if (HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
+    const { data, error } = await supabase
+      .from('public_qa')
+      .select('slug')
+      .eq('status', 'published')
+      .eq('slug', cleanSlug)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.slug ? cleanSlug : '';
+  }
   return (await knownPublicQuestionSlugs()).has(cleanSlug) ? cleanSlug : '';
 }
 
@@ -5403,6 +5706,7 @@ async function syncApprovedHistoryToPublicArchive() {
     if (error) throw new Error(error.message);
   }
 
+  clearPublicArchiveCaches();
   publicArchiveDatasetCache = {
     expiresAt: Date.now() + PUBLIC_ARCHIVE_DATA_CACHE_MS,
     data: dataset,
@@ -9512,10 +9816,7 @@ if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
   const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
   app.use('/public-preview', createPublicArchivePreviewRouter({
     cssFile: path.join(__dirname, 'public-archive.css'),
-    loadArchiveData: async () => {
-      await startupReady;
-      return loadPublicArchiveDataset();
-    }
+    loadArchiveData: loadPublicArchiveRouteDataset
   }));
 }
 

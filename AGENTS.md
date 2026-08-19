@@ -155,6 +155,18 @@ tespit edilir).
   `97/97` test başarılı. Not: canlı Supabase'de `public_users` ve `public_question_submissions`
   tabloları hâlâ yok; bu yüzden Google oturumlu `Soru Sor` akışı ilgili SQL uygulanana kadar pasif
   kalır.
+- **Public preview route bazlı veri yüklemeye geçirildi:** Kullanıcının ilk soğuk ana sayfa
+  isteğinde yaklaşık `9.2 sn` gecikme bildirmesi üzerine `/public-preview` artık tüm public arşiv
+  dataset'ini çekmez. Ana sayfa yalnız öne çıkan/son kayıtlar ve toplam sayaçları okur; `/arsiv`
+  ve kategori sayfaları 30 kayıtlık sayfalı listeyle çalışır; soru detay sayfası yalnız ilgili
+  detay kaydını ve az sayıda ilişkili kaydı okur. Route cache eklendi ve public sync sonrası tüm
+  public cache'ler temizlenir. Renderer server'dan gelen global `stats`, `pagination` ve
+  `search` bilgisini kabul eder; büyük sayılar Türkçe formatlanır. Yukarı çık butonunda sağ ok
+  görünmesine yol açabilen SVG cache sınıf çakışması düzeltildi. Yerel doğrulama geçti:
+  `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`;
+  tam check `99/99` test başarılı. Root `/` public cutover yapılmadı.
 
 ### 2026-08-16
 - **Public preview sınıflandırma modeli etiketlerden kategoriye çevrildi:** Kullanıcı kararıyla

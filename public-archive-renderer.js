@@ -14,7 +14,10 @@ function normalizePublicArchiveData(archiveData = {}) {
     brand: { ...publicArchiveFixtures.brand, ...(archiveData.brand || {}) },
     categories: Array.isArray(archiveData.categories) ? archiveData.categories : publicArchiveFixtures.categories,
     topics: Array.isArray(archiveData.topics) ? archiveData.topics : publicArchiveFixtures.topics,
-    qa: Array.isArray(archiveData.qa) ? archiveData.qa : publicArchiveFixtures.qa
+    qa: Array.isArray(archiveData.qa) ? archiveData.qa : publicArchiveFixtures.qa,
+    stats: archiveData.stats || null,
+    pagination: archiveData.pagination || null,
+    search: archiveData.search || null
   };
 }
 
@@ -24,13 +27,19 @@ function withPublicArchiveData(archiveData, renderFn) {
     brand: publicArchiveFixtures.brand,
     categories: publicArchiveFixtures.categories,
     topics: publicArchiveFixtures.topics,
-    qa: publicArchiveFixtures.qa
+    qa: publicArchiveFixtures.qa,
+    stats: publicArchiveFixtures.stats,
+    pagination: publicArchiveFixtures.pagination,
+    search: publicArchiveFixtures.search
   };
   const next = normalizePublicArchiveData(archiveData);
   publicArchiveFixtures.brand = next.brand;
   publicArchiveFixtures.categories = next.categories;
   publicArchiveFixtures.topics = next.topics;
   publicArchiveFixtures.qa = next.qa;
+  publicArchiveFixtures.stats = next.stats;
+  publicArchiveFixtures.pagination = next.pagination;
+  publicArchiveFixtures.search = next.search;
   try {
     return renderFn();
   } finally {
@@ -38,6 +47,9 @@ function withPublicArchiveData(archiveData, renderFn) {
     publicArchiveFixtures.categories = previous.categories;
     publicArchiveFixtures.topics = previous.topics;
     publicArchiveFixtures.qa = previous.qa;
+    publicArchiveFixtures.stats = previous.stats;
+    publicArchiveFixtures.pagination = previous.pagination;
+    publicArchiveFixtures.search = previous.search;
   }
 }
 
@@ -102,7 +114,8 @@ function asPublicCategory(item) {
     name: item.name,
     description: `${item.name} kategorisindeki soru ve cevaplar.`,
     topicSlugs: Array.isArray(item.topicSlugs) && item.topicSlugs.length ? item.topicSlugs : [item.slug],
-    featured: item.featured !== false
+    featured: item.featured !== false,
+    questionCount: Number(item.questionCount ?? item.question_count ?? 0) || 0
   };
 }
 
@@ -150,6 +163,11 @@ function entriesForTopic(slug) {
 
 function entriesForCategory(slug) {
   return publicArchiveFixtures.qa.filter(entry => categorySlugsFor(entry).includes(slug));
+}
+
+function categoryQuestionCount(category) {
+  const count = Number(category?.questionCount ?? category?.question_count);
+  return Number.isFinite(count) && count > 0 ? Math.round(count) : entriesForCategory(category?.slug).length;
 }
 
 function relatedEntries(entry) {
@@ -214,16 +232,17 @@ const TOPIC_ICONS = {
 function iconSvg(name, className = 'pa-svg-icon') {
   const safeName = String(name || '').replace(/[^a-z0-9-]/gi, '');
   if (!safeName) return '';
-  if (!svgIconCache.has(safeName)) {
+  const cacheKey = `${safeName}|${className}`;
+  if (!svgIconCache.has(cacheKey)) {
     try {
       const svg = fs.readFileSync(path.join(ICON_DIR, safeName + '.svg'), 'utf8');
       const openTag = '<svg class=\"' + className + '\" aria-hidden=\"true\" focusable=\"false\" ';
-      svgIconCache.set(safeName, svg.replace('<svg ', openTag));
+      svgIconCache.set(cacheKey, svg.replace('<svg ', openTag));
     } catch (error) {
-      svgIconCache.set(safeName, '');
+      svgIconCache.set(cacheKey, '');
     }
   }
-  return svgIconCache.get(safeName);
+  return svgIconCache.get(cacheKey);
 }
 
 function categoryIconName(category) {
@@ -400,11 +419,17 @@ function archiveCountLabel(count) {
   return Number(count || 0).toLocaleString('tr-TR');
 }
 
+function archiveStatCount(key, fallback = 0) {
+  const value = Number(publicArchiveFixtures.stats?.[key]);
+  return Number.isFinite(value) && value >= 0 ? Math.round(value) : fallback;
+}
+
 function activeArchiveStatsBand(entries = []) {
-  const questionCount = entries.length;
-  const answerCount = entries.filter(entry => Array.isArray(entry.answer)
+  const fallbackAnswerCount = entries.filter(entry => Array.isArray(entry.answer)
     ? entry.answer.some(paragraph => String(paragraph || '').trim())
     : String(entry.answer || entry.answerText || entry.answer_text || '').trim()).length;
+  const questionCount = archiveStatCount('questionCount', entries.length);
+  const answerCount = archiveStatCount('answerCount', fallbackAnswerCount);
   return `
     <section class="pa-active-stats" data-active-stats aria-label="Arşiv sayacı">
       <div class="pa-active-stats-copy">
@@ -593,7 +618,7 @@ function topicCard(topic) {
     <a class="pa-topic-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(topic.slug)}">
       <span class="pa-topic-mark">${iconSvg(topicIconName(topic))}</span>
       <strong>${escapeHtml(topic.name)}</strong>
-      <span>${entriesForCategory(topic.slug).length} soru</span>
+      <span>${categoryQuestionCount(topic)} soru</span>
     </a>
   `;
 }
@@ -604,7 +629,7 @@ function categoryCard(category) {
       <span class="pa-category-mark">${iconSvg(categoryIconName(category))}</span>
       <span class="pa-category-copy">
         <strong>${escapeHtml(category.name)}</strong>
-        <span>${entriesForCategory(category.slug).length} soru</span>
+        <span>${categoryQuestionCount(category)} soru</span>
       </span>
     </a>
   `;
@@ -703,6 +728,9 @@ function renderHome() {
 
 function searchResults(query) {
   const normalized = normalizeSearchText(query);
+  const preFiltered = publicArchiveFixtures.search?.preFiltered === true;
+  const preFilteredQuery = normalizeSearchText(publicArchiveFixtures.search?.query || '');
+  if (preFiltered && normalized === preFilteredQuery) return publicArchiveFixtures.qa;
   if (!normalized) return publicArchiveFixtures.qa;
   return publicArchiveFixtures.qa.filter(entry => {
     const category = categoryFor(entry);
@@ -758,12 +786,14 @@ function archivePageNumber(value) {
   return Number.isFinite(page) && page > 1 ? page : 1;
 }
 
-function archivePaginationState(entries = [], requestedPage = 1) {
-  const total = entries.length;
-  const totalPages = Math.max(1, Math.ceil(total / ARCHIVE_PAGE_SIZE));
-  const page = Math.min(Math.max(archivePageNumber(requestedPage), 1), totalPages);
-  const startIndex = (page - 1) * ARCHIVE_PAGE_SIZE;
-  const pageEntries = entries.slice(startIndex, startIndex + ARCHIVE_PAGE_SIZE);
+function archivePaginationState(entries = [], requestedPage = 1, serverState = null) {
+  const serverTotal = Number(serverState?.total);
+  const pageSize = Number(serverState?.pageSize) > 0 ? Number(serverState.pageSize) : ARCHIVE_PAGE_SIZE;
+  const total = Number.isFinite(serverTotal) && serverTotal >= 0 ? Math.round(serverTotal) : entries.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(archivePageNumber(serverState?.page || requestedPage), 1), totalPages);
+  const startIndex = (page - 1) * pageSize;
+  const pageEntries = serverState?.prePaginated ? entries : entries.slice(startIndex, startIndex + pageSize);
   return {
     end: total ? Math.min(total, startIndex + pageEntries.length) : 0,
     page,
@@ -863,7 +893,7 @@ function archiveCategoryIndex(query = {}) {
               ${state.visibleCategories.map(category => `
                 <a class="pa-index-category${state.selectedCategory?.slug === category.slug ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: state.activeLetter, kategori: category.slug, hash: 'sorular' }))}">
                   <strong>${escapeHtml(category.name)}</strong>
-                  <span>${entriesForCategory(category.slug).length} soru</span>
+                  <span>${categoryQuestionCount(category)} soru</span>
                 </a>
               `).join('')}
             </div>
@@ -875,13 +905,18 @@ function archiveCategoryIndex(query = {}) {
 }
 
 function renderArchive(query = {}) {
+  const serverPagination = publicArchiveFixtures.pagination?.scope === 'archive'
+    ? publicArchiveFixtures.pagination
+    : null;
   const entries = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
-  const answeredCount = entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length || entries.length;
+  const answeredCount = archiveStatCount('answerCount', entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length || entries.length);
   const categoryIndex = archiveCategoryIndex(query);
-  const visibleEntries = categoryIndex.selectedCategory
+  const visibleEntries = serverPagination?.prePaginated
+    ? entries
+    : categoryIndex.selectedCategory
     ? entries.filter(entry => categorySlugsFor(entry).includes(categoryIndex.selectedCategory.slug))
     : entries;
-  const pageState = archivePaginationState(visibleEntries, query.sayfa);
+  const pageState = archivePaginationState(visibleEntries, query.sayfa, serverPagination);
   const paginationParams = {
     harf: (query.harf || categoryIndex.selectedCategory || categoryIndex.categorySearch) ? categoryIndex.activeLetter : '',
     kategori: categoryIndex.selectedCategory?.slug || '',
@@ -899,7 +934,7 @@ function renderArchive(query = {}) {
           <h1>Merak ettiğiniz konunun cevaplarına ulaşın.</h1>
           <p>Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.</p>
           <div class="pa-collection-meta">
-            <span>${answeredCount} soru cevap</span>
+            <span>${archiveCountLabel(answeredCount)} soru cevap</span>
           </div>
           ${categoryIndex.html}
         </section>
@@ -947,6 +982,7 @@ function renderTopicsIndex() {
 
 function renderCategoriesIndex() {
   const categories = sortedCategories();
+  const questionCount = archiveStatCount('questionCount', publicArchiveFixtures.qa.length);
   return renderShell({
     active: 'categories',
     title: 'Kategoriler',
@@ -959,7 +995,7 @@ function renderCategoriesIndex() {
           <p>Kategoriler, arşivdeki soru ve cevapları daha düzenli taramak için ana kapılar olarak kullanılır.</p>
           <div class="pa-collection-meta">
             <span>${categories.length} kategori</span>
-            <span>${publicArchiveFixtures.qa.length} soru</span>
+            <span>${archiveCountLabel(questionCount)} soru</span>
           </div>
         </section>
         <section class="pa-section">
@@ -1045,8 +1081,11 @@ function renderTopic(slug, query = {}) {
 function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/${slug}`) {
   const category = publicCategoryBySlug(slug);
   if (!category) return renderNotFound();
-  const entries = entriesForCategory(category.slug);
-  const pageState = archivePaginationState(entries, query.sayfa);
+  const serverPagination = publicArchiveFixtures.pagination?.scope === 'category' && publicArchiveFixtures.pagination?.slug === slug
+    ? publicArchiveFixtures.pagination
+    : null;
+  const entries = serverPagination?.prePaginated ? publicArchiveFixtures.qa : entriesForCategory(category.slug);
+  const pageState = archivePaginationState(entries, query.sayfa, serverPagination);
   return renderShell({
     active: 'categories',
     title: category.name,
@@ -1059,7 +1098,7 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
           <h1>${escapeHtml(category.name)}</h1>
           <p>${escapeHtml(category.description)}</p>
           <div class="pa-collection-meta">
-            <span>${entries.length} ilgili soru</span>
+            <span>${archiveCountLabel(pageState.total)} ilgili soru</span>
           </div>
         </section>
         <section class="pa-section" id="sorular">
@@ -1718,7 +1757,7 @@ function createPublicArchivePreviewRouter(options = {}) {
     : async () => publicArchiveFixtures;
   async function sendRoute(req, res, next, routePath, query = {}) {
     try {
-      const archiveData = await loadArchiveData(req);
+      const archiveData = await loadArchiveData(req, routePath, query);
       sendRendered(res, renderPublicArchivePreviewRoute(routePath, query, archiveData));
     } catch (error) {
       next(error);

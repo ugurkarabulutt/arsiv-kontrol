@@ -236,6 +236,10 @@ assert(server.includes("cssFile: path.join(__dirname, 'public-archive.css')"), '
 assert(!server.includes('PUBLIC_ARCHIVE_DEMO'), 'Eski PUBLIC_ARCHIVE_DEMO mekanizmasi server.js icinde kalmamali.');
 assert(!server.includes("require('./public-archive-demo')"), 'Eski public-archive-demo router server.js icinde kalmamali.');
 assert(!server.includes('archive-public.css'), 'Eski archive-public.css referansi server.js icinde kalmamali.');
+assert(server.includes('loadPublicArchiveRouteDataset'), 'Public preview route bazli veri yukleyici kullanilmali.');
+assert(server.includes('PUBLIC_ARCHIVE_LIST_SELECT') && server.includes('PUBLIC_ARCHIVE_DETAIL_SELECT'), 'Public preview liste/detay kolon secimleri ayrilmali.');
+assert(server.includes('publicArchiveRouteCache') && server.includes('PUBLIC_ARCHIVE_ROUTE_CACHE_MS'), 'Public preview route cache eksik.');
+assert(!server.includes('loadArchiveData: async () =>'), 'Public preview router tum dataset yukleyen eski loadArchiveData imzasina donmemeli.');
 assert(!server.includes('loadPublicArchiveStatsMap(qaRows.map'), 'Public dataset ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(!server.includes('const usedSlugs = rows.map'), 'Public history fallback ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(!fs.existsSync(path.join(root, 'scripts', 'build-archive-demo-static.js')), 'Eski statik demo build scripti repoda kalmamali.');
@@ -1008,7 +1012,7 @@ for (const marker of [
   'loadPublicArchiveDataset',
   'loadApprovedHistoryForPublicArchive',
   'syncApprovedHistoryToPublicArchive',
-  'loadArchiveData: async () =>',
+  'loadArchiveData: loadPublicArchiveRouteDataset',
   'await startupReady',
   'PUBLIC_QUESTION_STATS_FALLBACK_KEY',
   'incrementPublicQuestionReadFallback',
