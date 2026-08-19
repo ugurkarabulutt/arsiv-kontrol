@@ -133,8 +133,17 @@ tespit edilir).
   alias değiştirmez. Yerel doğrulama geçti: `node --check server.js`,
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
-  `npm.cmd run check`, `git diff --check`; tam check `97/97` test başarılı. Sıradaki adım preview
-  deploy ve gerçek veri smoke'tur.
+  `npm.cmd run check`, `git diff --check`; tam check `97/97` test başarılı. Runtime commit
+  `258c066` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde preview deploy
+  alındı:
+  `https://arsiv-kontrol-r85ezx2rz-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_CWnchCt9un95iJr5gtfMmHoazGsX`, status `Ready`. Preview smoke başarılı:
+  `/health`, `/public-preview`, `/public-preview/arsiv`, `/public-preview/kategori/zikir` ve
+  `/admin` 200 döndü; public sayfalar noindex/nofollow public içerik, `/admin` admin içerik
+  gösterdi. Production `https://arsiv.ibrahimlive.ai` root ve `/admin` hâlâ admin içerik gösteriyor;
+  root cutover yapılmadı. Public veri senkronu henüz çalıştırılmadı; `Onaylıları Siteye Hazırla`
+  işlemi Supabase public tablolarına tüm onaylı kayıtları yazacağı için ayrıca açık kullanıcı onayı
+  bekliyor. Okuma smoke'una göre preview hâlâ mevcut `11 soru cevap` public verisini gösteriyor.
 
 ### 2026-08-16
 - **Public preview sınıflandırma modeli etiketlerden kategoriye çevrildi:** Kullanıcı kararıyla

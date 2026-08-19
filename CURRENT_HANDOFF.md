@@ -16,9 +16,20 @@
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check`, `git diff --check`.
   Tam check `97/97` test başarılı.
-- Sıradaki adım: entegrasyon commit/push, Vercel preview deploy, `/public-preview` üzerinde gerçek
-  veri smoke, ardından admin içinden onaylı kayıtları siteye hazırlama/senkron kontrolü. Root `/`
-  ancak ayrıca açık onayla public siteye çevrilecek.
+- Runtime commit `258c066` GitHub'a push edildi. Doğru Vercel projesi `arsiv-kontrol` üzerinde
+  preview deploy alındı:
+  `https://arsiv-kontrol-r85ezx2rz-ugurkarabulutts-projects.vercel.app/public-preview`,
+  deployment `dpl_CWnchCt9un95iJr5gtfMmHoazGsX`, status `Ready`.
+- Preview smoke başarılı: `/health`, `/public-preview`, `/public-preview/arsiv`,
+  `/public-preview/kategori/zikir` ve `/admin` 200 döndü. Public preview sayfaları noindex/nofollow
+  ve public içerik gösteriyor; `/admin` admin içerik gösteriyor. Production `https://arsiv.ibrahimlive.ai`
+  root ve `/admin` hâlâ admin içerik gösteriyor; root cutover yapılmadı.
+- Public veri senkronu henüz çalıştırılmadı. `Onaylıları Siteye Hazırla` işlemi Supabase public
+  tablolarına tüm onaylı kayıtları yazacağı için ayrıca açık kullanıcı onayı bekliyor. Okuma smoke'una
+  göre preview hâlâ mevcut `11 soru cevap` public verisini gösteriyor.
+- Sıradaki adım: kullanıcı açık onay verirse korumalı admin endpoint üzerinden onaylı kayıtları
+  public okuma modeline senkronla, ardından preview'da gerçek kayıt sayıları ve mobil/desktop smoke
+  yap. Root `/` ancak ayrıca açık onayla public siteye çevrilecek.
 
 ## 2026-08-16 Codex Public Preview Etiketlerden Kategori Modeli
 
