@@ -136,7 +136,8 @@ tespit edilir).
   endpoint'leri eklendi. Aynı e-posta adresi Google ve e-posta girişinde tek public kullanıcıya
   bağlanır; admin `/admin` oturum sistemi değiştirilmedi. `/public-preview/api/session` admin
   startup/seed zincirinden ayrıldı ve yalnız `public_users` hesap hazırlığını hafifçe yoklar; ilk
-  sayfa açılışında hesap durumu gereksiz bekleme üretmez. `schema.sql` içinde `public_users`
+  sayfa açılışında hesap durumu gereksiz bekleme üretmez. Soru gönderimindeki yetkisiz hata metni
+  Google-only dilden genel hesap diline çekildi. `schema.sql` içinde `public_users`
   tablosu e-posta girişi için genişletildi: `google_sub` boş olabilir, `password_hash`,
   `auth_provider` kolonları ve `lower(email)` benzersiz index'i eklendi. Canlı Supabase'de bu SQL
   uygulanmadan e-posta formları hazırlık/503 durumunda kalır; `public_question_submissions`

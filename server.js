@@ -5817,7 +5817,7 @@ async function syncApprovedHistoryToPublicArchive() {
 function requirePublicUser(req, res) {
   const user = publicSessionUser(req);
   if (!user) {
-    res.status(401).json({ error: 'Soru göndermek için Google ile oturum açın.' });
+    res.status(401).json({ error: 'Soru göndermek için önce hesabınızla oturum açın.' });
     return null;
   }
   return user;

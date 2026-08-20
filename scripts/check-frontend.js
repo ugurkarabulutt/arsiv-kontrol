@@ -1025,6 +1025,8 @@ for (const marker of [
 ]) {
   assert(server.includes(marker), `Public archive live preview backend marker eksik: ${marker}`);
 }
+assert(!server.includes('Soru göndermek için Google ile oturum açın.'), 'Public soru gonderim hatasi artik Google-only olmamali.');
+assert(server.includes('Soru göndermek için önce hesabınızla oturum açın.'), 'Public soru gonderim hatasi hesap diliyle donmeli.');
 for (const marker of [
   'create table if not exists public.public_users',
   'password_hash text',

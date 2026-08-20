@@ -21,6 +21,9 @@
 - Public oturum durumunu okuyan `/public-preview/api/session` endpoint'i admin startup/seed
   zincirinden ayrıldı. Google/e-posta hazırlığını yalnız `public_users` tablosu üzerinden hafif
   kontrol eder; böylece ilk sayfa açılışında hesap durumu gereksiz bekleme üretmez.
+- Supabase SQL uygulandıktan sonra preview `emailConfigured:true` döndü. E-posta giriş endpoint'i
+  hazırlık `503` durumundan çıktı; hatalı giriş için normal `401` dönüyor. Soru gönderimindeki
+  yetkisiz hata metni Google-only dilden `hesabınızla oturum açın` diline çekildi.
 - Aynı e-posta adresi Google ve e-posta girişinde tek public kullanıcıya bağlanır. E-posta ile
   açılan hesabın daha sonra Google ile devam etmesi halinde kayıt ayrışmaz; mevcut public kullanıcı
   güncellenir.
