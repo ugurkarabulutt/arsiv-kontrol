@@ -5,7 +5,9 @@
 - Public preview üst barı kullanıcı geri bildirimine göre güçlendirildi: header artık gerçek
   `fixed` davranışla sayfanın üstünde kalır, içerik `--pa-header-height` kadar aşağıdan başlar ve
   anchor/scroll hedefleri header altında ezilmesin diye `scroll-padding-top` kullanır. Son görsel
-  pass'te yalnız sabit kalmakla yetinmeyip scroll sonrası küçülen/yüzen header davranışı eklendi.
+  pass'te yalnız sabit kalmakla yetinmeyip scroll sonrası küçülen header davranışı eklendi.
+  Mobilde yüzen kapsül hissi vermemesi için scrolled header üst kenara sıfır oturur; yalnız alt
+  köşeler yumuşak kalır.
 - `/public-preview/hesabim` sayfası yalnız Google'a bağlı değil. Kullanıcılar Google hesabıyla
   devam edebilir veya e-posta/şifre ile hesap oluşturup giriş yapabilir. `Soru Sor` akışı artık
   doğrudan Google linkine değil, hesap sayfasına yönlendirir.

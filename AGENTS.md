@@ -124,8 +124,8 @@ tespit edilir).
 - **Public preview sticky header ve e-posta oturumu eklendi:** Kullanıcı geri bildirimiyle public
   preview üst barı gerçek `fixed` header davranışına alındı; sayfa içeriği header yüksekliği kadar
   aşağıdan başlar ve scroll hedefleri header altında kalmasın diye `scroll-padding-top` kullanır.
-  Son görsel pass'te header yalnız sabit kalmakla bırakılmadı; scroll sonrası küçülen/yüzen kapsül
-  davranışı eklendi. Mobil bottom nav cam hissi daha şeffaf/katmanlı zemin, yüksek blur/saturate,
+  Son görsel pass'te header yalnız sabit kalmakla bırakılmadı; scroll sonrası küçülen ama üst
+  kenara bitişik kalan davranış eklendi. Mobil bottom nav cam hissi daha şeffaf/katmanlı zemin, yüksek blur/saturate,
   iç parlama çizgisi ve aktif sekmede cam kapsül ile güçlendirildi. `/public-preview/hesabim`
   sayfası artık yalnız Google'a bağlı değildir; kullanıcılar Google ile devam edebilir veya
   e-posta/şifre ile hesap oluşturup giriş yapabilir. İlk üç ayrı kartlı auth tasarımı kaldırıldı;
