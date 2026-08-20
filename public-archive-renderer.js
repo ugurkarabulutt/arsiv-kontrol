@@ -1112,52 +1112,56 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
 }
 
 function renderAccount() {
+  const googleIcon = '<span class="pa-google-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06L5.84 9.9C6.71 7.3 9.14 5.38 12 5.38z"/></svg></span>';
   return renderShell({
     active: 'account',
     title: 'Hesabım',
     description: 'Soru gönderimi için hesap sayfası.',
     content: `
       <main class="pa-main pa-narrow-main">
-        <section class="pa-account-page" data-account-panel>
-          <p class="pa-kicker">Hesabım</p>
-          <h1>Hesabınızla soru gönderimini takip edin.</h1>
-          <p>Google hesabınızla veya e-posta adresinizle giriş yapabilirsiniz. Gönderdiğiniz sorular hesabınıza bağlanır ve ileride aynı yerden takip edilebilir.</p>
+        <section class="pa-account-page pa-auth-shell" data-account-panel>
+          <div class="pa-auth-intro">
+            <p class="pa-kicker">Hesabım</p>
+            <h1>Soru göndermek için hesabınıza giriş yapın.</h1>
+            <p>Google hesabınızla hızlıca devam edebilir veya e-posta adresinizle oturum açabilirsiniz. Gönderdiğiniz sorular hesabınıza bağlanır.</p>
+          </div>
           <div class="pa-account-status" data-account-status>Oturum durumu kontrol ediliyor...</div>
           <div class="pa-empty-actions" data-account-actions></div>
-          <div class="pa-auth-grid" data-public-auth>
-            <section class="pa-auth-card">
-              <strong>Google ile devam edin</strong>
-              <p>Google hesabınızla hızlıca giriş yapabilirsiniz.</p>
-              <a class="pa-button" data-google-auth-button href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/hesabim')}">Google ile Devam Et</a>
-            </section>
-            <form class="pa-auth-card pa-auth-form" data-email-login-form data-auth-endpoint="${PREVIEW_BASE}/api/auth/email/login">
-              <strong>E-posta ile giriş</strong>
-              <label>
-                <span>E-posta</span>
-                <input name="email" type="email" autocomplete="email" placeholder="ornek@mail.com" required>
-              </label>
-              <label>
-                <span>Şifre</span>
-                <input name="password" type="password" autocomplete="current-password" minlength="8" required>
-              </label>
-              <button class="pa-button" type="submit">Giriş Yap</button>
-            </form>
-            <form class="pa-auth-card pa-auth-form" data-email-register-form data-auth-endpoint="${PREVIEW_BASE}/api/auth/email/register">
-              <strong>Yeni hesap oluştur</strong>
-              <label>
-                <span>Adınız</span>
-                <input name="name" type="text" autocomplete="name" placeholder="Adınız" required>
-              </label>
-              <label>
-                <span>E-posta</span>
-                <input name="email" type="email" autocomplete="email" placeholder="ornek@mail.com" required>
-              </label>
-              <label>
-                <span>Şifre</span>
-                <input name="password" type="password" autocomplete="new-password" minlength="8" required>
-              </label>
-              <button class="pa-button" type="submit">Hesap Oluştur</button>
-            </form>
+          <div class="pa-auth-panel" data-public-auth data-auth-mode="login">
+            <a class="pa-google-button" data-google-auth-button href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/hesabim')}">${googleIcon}<span>Google ile Devam Et</span></a>
+            <div class="pa-auth-divider"><span>veya e-posta ile</span></div>
+            <div class="pa-auth-tabs" role="tablist" aria-label="Hesap işlemi">
+              <button type="button" class="is-active" data-auth-tab="login" role="tab" aria-selected="true">Oturum Aç</button>
+              <button type="button" data-auth-tab="register" role="tab" aria-selected="false">Kayıt Ol</button>
+            </div>
+            <div class="pa-auth-forms">
+              <form class="pa-auth-form is-active" data-email-login-form data-auth-form="login" data-auth-endpoint="${PREVIEW_BASE}/api/auth/email/login">
+                <label>
+                  <span>E-posta</span>
+                  <input name="email" type="email" autocomplete="email" placeholder="ornek@mail.com" required>
+                </label>
+                <label>
+                  <span>Şifre</span>
+                  <input name="password" type="password" autocomplete="current-password" minlength="8" required>
+                </label>
+                <button class="pa-button" type="submit">Oturum Aç</button>
+              </form>
+              <form class="pa-auth-form" data-email-register-form data-auth-form="register" data-auth-endpoint="${PREVIEW_BASE}/api/auth/email/register">
+                <label>
+                  <span>Adınız</span>
+                  <input name="name" type="text" autocomplete="name" placeholder="Adınız" required>
+                </label>
+                <label>
+                  <span>E-posta</span>
+                  <input name="email" type="email" autocomplete="email" placeholder="ornek@mail.com" required>
+                </label>
+                <label>
+                  <span>Şifre</span>
+                  <input name="password" type="password" autocomplete="new-password" minlength="8" required>
+                </label>
+                <button class="pa-button" type="submit">Kayıt Ol</button>
+              </form>
+            </div>
           </div>
           <p class="pa-form-status" data-email-auth-status aria-live="polite"></p>
         </section>
@@ -1697,7 +1701,9 @@ function renderShell({ title, description, active, content, status = 200, questi
         }
         if (googleButton && !session.googleConfigured) {
           googleButton.setAttribute('aria-disabled', 'true');
-          googleButton.textContent = 'Google hazırlığı bekleniyor';
+          googleButton.classList.add('is-disabled');
+          var googleText = googleButton.querySelector('span:last-child');
+          if (googleText) googleText.textContent = 'Google hazırlığı bekleniyor';
           googleButton.addEventListener('click', function(event){ event.preventDefault(); });
         }
         document.querySelectorAll('[data-email-login-form], [data-email-register-form]').forEach(function(form){
@@ -1706,6 +1712,10 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (disabled) form.setAttribute('data-disabled', 'true');
           else form.removeAttribute('data-disabled');
         });
+        if (authPanel) {
+          if (session.emailConfigured === false) authPanel.setAttribute('data-email-disabled', 'true');
+          else authPanel.removeAttribute('data-email-disabled');
+        }
         if (askSession) {
           if (session.loggedIn && session.user) askSession.textContent = 'Sorunuz ' + (session.user.name || session.user.email) + ' hesabıyla kaydedilecek.';
           else if (session.googleConfigured || session.emailConfigured) askSession.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/hesabim">hesabınızla oturum açın</a>.';
@@ -1717,6 +1727,38 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.location.href = '${PREVIEW_BASE}/hesabim';
           });
         });
+      }
+      function bindShrinkingHeader() {
+        var root = document.documentElement;
+        var update = function(){
+          if (window.scrollY > 16) root.setAttribute('data-pa-scrolled', 'true');
+          else root.removeAttribute('data-pa-scrolled');
+        };
+        update();
+        window.addEventListener('scroll', update, { passive: true });
+      }
+      function bindPublicAuthTabs() {
+        var panel = document.querySelector('[data-public-auth]');
+        if (!panel) return;
+        var tabs = Array.prototype.slice.call(panel.querySelectorAll('[data-auth-tab]'));
+        var forms = Array.prototype.slice.call(panel.querySelectorAll('[data-auth-form]'));
+        var setMode = function(mode){
+          panel.setAttribute('data-auth-mode', mode);
+          tabs.forEach(function(tab){
+            var active = tab.getAttribute('data-auth-tab') === mode;
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          forms.forEach(function(form){
+            form.classList.toggle('is-active', form.getAttribute('data-auth-form') === mode);
+          });
+          var status = document.querySelector('[data-email-auth-status]');
+          if (status) status.textContent = '';
+        };
+        tabs.forEach(function(tab){
+          tab.addEventListener('click', function(){ setMode(tab.getAttribute('data-auth-tab') || 'login'); });
+        });
+        setMode(panel.getAttribute('data-auth-mode') || 'login');
       }
       function bindPublicEmailAuth() {
         document.querySelectorAll('[data-email-login-form], [data-email-register-form]').forEach(function(form){
@@ -1798,6 +1840,8 @@ function renderShell({ title, description, active, content, status = 200, questi
       bindConceptSliders();
       bindActiveStatsCounters();
       bindScrollTopControl();
+      bindShrinkingHeader();
+      bindPublicAuthTabs();
       bindPublicEmailAuth();
       loadPublicSession().then(renderSessionUi);
       bindQuestionForm();

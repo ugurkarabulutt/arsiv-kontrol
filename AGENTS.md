@@ -124,9 +124,14 @@ tespit edilir).
 - **Public preview sticky header ve e-posta oturumu eklendi:** Kullanıcı geri bildirimiyle public
   preview üst barı gerçek `fixed` header davranışına alındı; sayfa içeriği header yüksekliği kadar
   aşağıdan başlar ve scroll hedefleri header altında kalmasın diye `scroll-padding-top` kullanır.
-  `/public-preview/hesabim` sayfası artık yalnız Google'a bağlı değildir; kullanıcılar Google ile
-  devam edebilir veya e-posta/şifre ile hesap oluşturup giriş yapabilir. `Soru Sor` akışı doğrudan
-  Google linkine değil hesap sayfasına yönlenir. Backend'e
+  Son görsel pass'te header yalnız sabit kalmakla bırakılmadı; scroll sonrası küçülen/yüzen kapsül
+  davranışı eklendi. Mobil bottom nav cam hissi daha şeffaf/katmanlı zemin, yüksek blur/saturate,
+  iç parlama çizgisi ve aktif sekmede cam kapsül ile güçlendirildi. `/public-preview/hesabim`
+  sayfası artık yalnız Google'a bağlı değildir; kullanıcılar Google ile devam edebilir veya
+  e-posta/şifre ile hesap oluşturup giriş yapabilir. İlk üç ayrı kartlı auth tasarımı kaldırıldı;
+  yerine resmi görünüme yakın Google butonu, `Oturum Aç / Kayıt Ol` sekmeleri ve tek aktif e-posta
+  formundan oluşan modern auth paneli eklendi. `Soru Sor` akışı doğrudan Google linkine değil hesap
+  sayfasına yönlenir. Backend'e
   `POST /public-preview/api/auth/email/register` ve `POST /public-preview/api/auth/email/login`
   endpoint'leri eklendi. Aynı e-posta adresi Google ve e-posta girişinde tek public kullanıcıya
   bağlanır; admin `/admin` oturum sistemi değiştirilmedi. `/public-preview/api/session` admin

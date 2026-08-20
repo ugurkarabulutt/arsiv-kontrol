@@ -155,8 +155,11 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.doesNotMatch(filteredArchive, /<h2>Tüm Sorular<\/h2>/);
 
   const account = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
-  assert.match(account, /Hesabınızla soru gönderimini takip edin\./);
+  assert.match(account, /Soru göndermek için hesabınıza giriş yapın\./);
   assert.match(account, /Google ile Devam Et/);
+  assert.match(account, /data-auth-tab="login"/);
+  assert.match(account, /data-auth-tab="register"/);
+  assert.match(account, /class="pa-google-button"/);
   assert.match(account, /\/public-preview\/auth\/google/);
   assertOnlyPublicPreviewApi(account);
 });
@@ -364,11 +367,15 @@ test('public account page offers Google and email authentication', () => {
   const account = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
   assert.match(account, /data-public-auth/);
   assert.match(account, /data-google-auth-button/);
+  assert.match(account, /class="pa-google-button"/);
+  assert.match(account, /data-auth-mode="login"/);
+  assert.match(account, /data-auth-tab="login"/);
+  assert.match(account, /data-auth-tab="register"/);
   assert.match(account, /data-email-login-form/);
   assert.match(account, /data-email-register-form/);
   assert.match(account, /\/public-preview\/api\/auth\/email\/login/);
   assert.match(account, /\/public-preview\/api\/auth\/email\/register/);
-  assert.match(account, /Google veya e-posta ile giriş yapabilirsiniz/);
+  assert.match(account, /Google hesabınızla hızlıca devam edebilir/);
 });
 
 test('question cards are whole-card navigable without helpful voting', () => {

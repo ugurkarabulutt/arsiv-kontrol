@@ -1166,7 +1166,8 @@ assert(!searchPreview.includes('class="pa-breadcrumb"') && !searchPreview.includ
 const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' }).html;
 assert(noResultPreview.includes('Sonuç bulunamadı.') && noResultPreview.includes('Aklınızda bir soru mu var?'), 'Public search no-results state soru CTA ile gorunmeli.');
 const accountPreview = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
-assert(accountPreview.includes('Hesabınızla soru gönderimini takip edin.') && accountPreview.includes('Google ile Devam Et'), 'Public hesap sayfasi Google oturum girisi sunmali.');
+assert(accountPreview.includes('Soru göndermek için hesabınıza giriş yapın.') && accountPreview.includes('Google ile Devam Et'), 'Public hesap sayfasi Google oturum girisi sunmali.');
+assert(accountPreview.includes('class="pa-google-button"') && accountPreview.includes('data-auth-tab="login"') && accountPreview.includes('data-auth-tab="register"'), 'Public hesap sayfasi modern sekmeli auth paneli sunmali.');
 assert(accountPreview.includes('data-email-login-form') && accountPreview.includes('data-email-register-form'), 'Public hesap sayfasi e-posta giris ve kayit formlarini sunmali.');
 assert(accountPreview.includes('/public-preview/auth/google'), 'Public hesap sayfasi Google auth route una baglanmali.');
 assert(accountPreview.includes('/public-preview/api/auth/email/login') && accountPreview.includes('/public-preview/api/auth/email/register'), 'Public hesap sayfasi e-posta auth API lerine baglanmali.');
@@ -1210,6 +1211,9 @@ for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-pause
 for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-count-up', 'data-count-target', 'duration = 2400', 'data-counted']) {
   assert(publicRendererSource.includes(marker), `Aktif arsiv sayac animasyon marker eksik: ${marker}`);
 }
+for (const marker of ['bindShrinkingHeader', 'data-pa-scrolled', 'bindPublicAuthTabs', 'data-auth-tab']) {
+  assert(publicRendererSource.includes(marker), `Public sticky header/auth JS marker eksik: ${marker}`);
+}
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kategori slider CSS marker eksik: ${marker}`);
 }
@@ -1223,10 +1227,10 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
 assert(!publicCss.includes('.pa-question-card.has-strong-cta .pa-card-cta'), 'Public soru karti CTA stili yalniz featured kartlara bagli olmamali.');
-for (const marker of ['.pa-mobile-nav::before', '-webkit-backdrop-filter: blur(28px) saturate(1.45)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
+for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
 }
-for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', '.pa-auth-grid', '.pa-auth-card', '.pa-auth-form']) {
+for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', ':root[data-pa-scrolled="true"] .pa-header', '.pa-auth-shell', '.pa-auth-panel', '.pa-google-button', '.pa-auth-tabs', '.pa-auth-form']) {
   assert(publicCss.includes(marker), `Public sticky header/e-posta auth CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-live-dot', '@keyframes pa-live-pulse', '@keyframes pa-live-blink']) {
