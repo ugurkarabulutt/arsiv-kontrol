@@ -120,6 +120,28 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-20
+- **Public preview sticky header ve e-posta oturumu eklendi:** Kullanıcı geri bildirimiyle public
+  preview üst barı gerçek `fixed` header davranışına alındı; sayfa içeriği header yüksekliği kadar
+  aşağıdan başlar ve scroll hedefleri header altında kalmasın diye `scroll-padding-top` kullanır.
+  `/public-preview/hesabim` sayfası artık yalnız Google'a bağlı değildir; kullanıcılar Google ile
+  devam edebilir veya e-posta/şifre ile hesap oluşturup giriş yapabilir. `Soru Sor` akışı doğrudan
+  Google linkine değil hesap sayfasına yönlenir. Backend'e
+  `POST /public-preview/api/auth/email/register` ve `POST /public-preview/api/auth/email/login`
+  endpoint'leri eklendi. Aynı e-posta adresi Google ve e-posta girişinde tek public kullanıcıya
+  bağlanır; admin `/admin` oturum sistemi değiştirilmedi. `/public-preview/api/session` admin
+  startup/seed zincirinden ayrıldı ve yalnız `public_users` hesap hazırlığını hafifçe yoklar; ilk
+  sayfa açılışında hesap durumu gereksiz bekleme üretmez. `schema.sql` içinde `public_users`
+  tablosu e-posta girişi için genişletildi: `google_sub` boş olabilir, `password_hash`,
+  `auth_provider` kolonları ve `lower(email)` benzersiz index'i eklendi. Canlı Supabase'de bu SQL
+  uygulanmadan e-posta formları hazırlık/503 durumunda kalır; `public_question_submissions`
+  tablosu da `Soru Sor` için hâlâ zorunludur. Bu adım public-preview hattıyla sınırlıdır; root `/`
+  public cutover yapılmadı. Yerel doğrulama geçti: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `git diff --check`; tam check `100/100`, public renderer özel testleri
+  `14/14` başarılı.
+
 ### 2026-08-19
 - **Public launch entegrasyon branch'i hazırlandı:** Public preview hattı (`codex/public-preview-phase1`)
   ile canlı admin review hattı (`codex/admin-review-flow`) yeni `codex/public-launch-integration`

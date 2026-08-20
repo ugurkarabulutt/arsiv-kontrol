@@ -1004,6 +1004,9 @@ for (const marker of [
   "app.get('/public-preview/auth/google'",
   "app.get('/public-preview/auth/google/callback'",
   "app.get('/public-preview/api/session'",
+  'async function ensurePublicArchiveAuthReady',
+  "app.post('/public-preview/api/auth/email/register'",
+  "app.post('/public-preview/api/auth/email/login'",
   "app.get('/public-preview/api/question-stats'",
   "app.post('/public-preview/api/questions/:slug/read'",
   "app.post('/public-preview/api/question-submissions'",
@@ -1024,6 +1027,9 @@ for (const marker of [
 }
 for (const marker of [
   'create table if not exists public.public_users',
+  'password_hash text',
+  'auth_provider text not null default',
+  'public_users_email_unique_idx',
   'create table if not exists public.public_question_submissions',
   'create table if not exists public.public_question_stats',
   'create table if not exists public.public_categories',
@@ -1161,7 +1167,9 @@ const noResultPreview = renderPublicArchivePreviewRoute('/public-preview/arama',
 assert(noResultPreview.includes('Sonuç bulunamadı.') && noResultPreview.includes('Aklınızda bir soru mu var?'), 'Public search no-results state soru CTA ile gorunmeli.');
 const accountPreview = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
 assert(accountPreview.includes('Hesabınızla soru gönderimini takip edin.') && accountPreview.includes('Google ile Devam Et'), 'Public hesap sayfasi Google oturum girisi sunmali.');
+assert(accountPreview.includes('data-email-login-form') && accountPreview.includes('data-email-register-form'), 'Public hesap sayfasi e-posta giris ve kayit formlarini sunmali.');
 assert(accountPreview.includes('/public-preview/auth/google'), 'Public hesap sayfasi Google auth route una baglanmali.');
+assert(accountPreview.includes('/public-preview/api/auth/email/login') && accountPreview.includes('/public-preview/api/auth/email/register'), 'Public hesap sayfasi e-posta auth API lerine baglanmali.');
 assertOnlyPublicPreviewApi('/public-preview/hesabim', accountPreview);
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
 for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
@@ -1218,6 +1226,9 @@ assert(!publicCss.includes('.pa-question-card.has-strong-cta .pa-card-cta'), 'Pu
 for (const marker of ['.pa-mobile-nav::before', '-webkit-backdrop-filter: blur(28px) saturate(1.45)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
 }
+for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', '.pa-auth-grid', '.pa-auth-card', '.pa-auth-form']) {
+  assert(publicCss.includes(marker), `Public sticky header/e-posta auth CSS marker eksik: ${marker}`);
+}
 for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-live-dot', '@keyframes pa-live-pulse', '@keyframes pa-live-blink']) {
   assert(publicCss.includes(marker), `Public aktif arsiv sayaci CSS marker eksik: ${marker}`);
 }
@@ -1229,7 +1240,7 @@ assert(categoryPreview.includes('Kategori') && categoryPreview.includes('Bu Kate
 const askPreview = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
 assert(askPreview.includes('data-question-form') && !askPreview.includes('data-static-question-form'), 'Soru Sor gercek public talep formu olarak isaretlenmeli.');
 assert(askPreview.includes('/public-preview/api/question-submissions'), 'Soru Sor public preview submission endpoint ine baglanmali.');
-assert(askPreview.includes('/public-preview/auth/google'), 'Soru Sor Google oturum girisine baglanmali.');
+assert(askPreview.includes('/public-preview/hesabim'), 'Soru Sor hesap girisine baglanmali.');
 assert(askPreview.includes('Sorunuzu kısa ve açık şekilde yazabilirsiniz.'), 'Soru Sor public mikrocopy eksik.');
 assert(askPreview.includes('Tek soruya odaklanın') && askPreview.includes('Mahrem bilgi yazmayın'), 'Soru Sor rehber metinleri eksik.');
 assert(!askPreview.includes('Kategori seçin') && !askPreview.includes('İsteğe bağlı kategori') && !askPreview.includes('İsteğe bağlı konu'), 'Soru Sor kullaniciya kategori/kavram sectirmemeli.');

@@ -359,17 +359,23 @@ create table if not exists public.settings (
 -- RLS açık kalır; public/anon doğrudan tablo okuyamaz. Erişim yalnız server API üzerinden yapılır.
 create table if not exists public.public_users (
   id uuid primary key default gen_random_uuid(),
-  google_sub text unique not null,
+  google_sub text unique,
   email text not null,
   name text not null,
   avatar_url text,
+  password_hash text,
+  auth_provider text not null default 'google',
   email_verified boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   last_login_at timestamptz
 );
+alter table public.public_users alter column google_sub drop not null;
+alter table public.public_users add column if not exists password_hash text;
+alter table public.public_users add column if not exists auth_provider text not null default 'google';
 alter table public.public_users enable row level security;
 create index if not exists public_users_email_idx on public.public_users (email);
+create unique index if not exists public_users_email_unique_idx on public.public_users (lower(email));
 create index if not exists public_users_last_login_idx on public.public_users (last_login_at desc);
 
 -- public_question_submissions

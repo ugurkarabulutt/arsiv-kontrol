@@ -1,5 +1,37 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-20 Codex Public Sticky Header ve E-Posta Oturumu
+
+- Public preview üst barı kullanıcı geri bildirimine göre güçlendirildi: header artık gerçek
+  `fixed` davranışla sayfanın üstünde kalır, içerik `--pa-header-height` kadar aşağıdan başlar ve
+  anchor/scroll hedefleri header altında ezilmesin diye `scroll-padding-top` kullanır.
+- `/public-preview/hesabim` sayfası yalnız Google'a bağlı değil. Kullanıcılar Google hesabıyla
+  devam edebilir veya e-posta/şifre ile hesap oluşturup giriş yapabilir. `Soru Sor` akışı artık
+  doğrudan Google linkine değil, hesap sayfasına yönlendirir.
+- Backend'e public e-posta oturum endpoint'leri eklendi:
+  `POST /public-preview/api/auth/email/register` ve
+  `POST /public-preview/api/auth/email/login`. Admin kullanıcı sistemi ve `/admin` oturumu
+  değiştirilmedi.
+- Public oturum durumunu okuyan `/public-preview/api/session` endpoint'i admin startup/seed
+  zincirinden ayrıldı. Google/e-posta hazırlığını yalnız `public_users` tablosu üzerinden hafif
+  kontrol eder; böylece ilk sayfa açılışında hesap durumu gereksiz bekleme üretmez.
+- Aynı e-posta adresi Google ve e-posta girişinde tek public kullanıcıya bağlanır. E-posta ile
+  açılan hesabın daha sonra Google ile devam etmesi halinde kayıt ayrışmaz; mevcut public kullanıcı
+  güncellenir.
+- `schema.sql` içinde `public_users` tablosu e-posta girişi için genişletildi:
+  `google_sub` artık boş olabilir, `password_hash`, `auth_provider` kolonları ve
+  `lower(email)` benzersiz index'i eklendi. Canlı Supabase'de bu SQL uygulanmadan e-posta giriş
+  formları `503` hazırlık mesajı döndürür.
+- Not: `public_question_submissions` tablosu hâlâ `Soru Sor` akışının zorunlu canlı bağıdır.
+  SQL uygulanmadan kullanıcı oturumu açılsa bile soru gönderimi aktif hale gelmez.
+- Yerel doğrulama geçti: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check`. Tam check `100/100`
+  test başarılı; public renderer özel testleri `14/14` başarılı.
+- Root `/` public cutover yapılmadı; çalışma hâlâ public preview hattındadır. Sıradaki adım:
+  commit/push sonrası Vercel preview deploy, ardından `/public-preview`, `/public-preview/hesabim`,
+  `/public-preview/soru-sor`, `/public-preview/api/session` ve `/admin` smoke.
+
 ## 2026-08-19 Codex Public Launch Entegrasyon Hazırlığı
 
 - Public launch entegrasyonu için `C:\Users\ugur\Desktop\arsiv-kontrol-public-preview`
