@@ -351,13 +351,24 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   assert.match(ask, />Soruyu Gönder</);
   assert.doesNotMatch(ask, /disabled aria-disabled="true">Soruyu Gönder/);
   assert.match(ask, /\/public-preview\/api\/question-submissions/);
-  assert.match(ask, /\/public-preview\/auth\/google/);
+  assert.match(ask, /\/public-preview\/hesabim/);
   assert.match(ask, /Sorunuzu kısa ve açık şekilde yazabilirsiniz./);
   assert.match(ask, /Tek soruya odaklanın/);
   assert.match(ask, /Mahrem bilgi yazmayın/);
   assert.doesNotMatch(ask, /Kategori seçin|İsteğe bağlı kategori|İsteğe bağlı konu/);
   assert.doesNotMatch(ask, /Bu ekranda kayıt alınmıyor|yalnızca arayüz davranışı gösteriliyor|Bu ekranda kayıt alınmaz/);
   assertOnlyPublicPreviewApi(ask);
+});
+
+test('public account page offers Google and email authentication', () => {
+  const account = renderPublicArchivePreviewRoute('/public-preview/hesabim').html;
+  assert.match(account, /data-public-auth/);
+  assert.match(account, /data-google-auth-button/);
+  assert.match(account, /data-email-login-form/);
+  assert.match(account, /data-email-register-form/);
+  assert.match(account, /\/public-preview\/api\/auth\/email\/login/);
+  assert.match(account, /\/public-preview\/api\/auth\/email\/register/);
+  assert.match(account, /Google veya e-posta ile giriş yapabilirsiniz/);
 });
 
 test('question cards are whole-card navigable without helpful voting', () => {

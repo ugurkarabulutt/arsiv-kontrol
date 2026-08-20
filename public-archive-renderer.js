@@ -1121,12 +1121,45 @@ function renderAccount() {
         <section class="pa-account-page" data-account-panel>
           <p class="pa-kicker">Hesabım</p>
           <h1>Hesabınızla soru gönderimini takip edin.</h1>
-          <p>Google ile devam ettiğinizde gönderdiğiniz sorular size bağlanır. Böylece ileride sorularınızı aynı hesaptan takip edebilirsiniz.</p>
+          <p>Google hesabınızla veya e-posta adresinizle giriş yapabilirsiniz. Gönderdiğiniz sorular hesabınıza bağlanır ve ileride aynı yerden takip edilebilir.</p>
           <div class="pa-account-status" data-account-status>Oturum durumu kontrol ediliyor...</div>
-          <div class="pa-empty-actions" data-account-actions>
-            <a class="pa-button" href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/hesabim')}">Google ile Devam Et</a>
-            <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
+          <div class="pa-empty-actions" data-account-actions></div>
+          <div class="pa-auth-grid" data-public-auth>
+            <section class="pa-auth-card">
+              <strong>Google ile devam edin</strong>
+              <p>Google hesabınızla hızlıca giriş yapabilirsiniz.</p>
+              <a class="pa-button" data-google-auth-button href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/hesabim')}">Google ile Devam Et</a>
+            </section>
+            <form class="pa-auth-card pa-auth-form" data-email-login-form data-auth-endpoint="${PREVIEW_BASE}/api/auth/email/login">
+              <strong>E-posta ile giriş</strong>
+              <label>
+                <span>E-posta</span>
+                <input name="email" type="email" autocomplete="email" placeholder="ornek@mail.com" required>
+              </label>
+              <label>
+                <span>Şifre</span>
+                <input name="password" type="password" autocomplete="current-password" minlength="8" required>
+              </label>
+              <button class="pa-button" type="submit">Giriş Yap</button>
+            </form>
+            <form class="pa-auth-card pa-auth-form" data-email-register-form data-auth-endpoint="${PREVIEW_BASE}/api/auth/email/register">
+              <strong>Yeni hesap oluştur</strong>
+              <label>
+                <span>Adınız</span>
+                <input name="name" type="text" autocomplete="name" placeholder="Adınız" required>
+              </label>
+              <label>
+                <span>E-posta</span>
+                <input name="email" type="email" autocomplete="email" placeholder="ornek@mail.com" required>
+              </label>
+              <label>
+                <span>Şifre</span>
+                <input name="password" type="password" autocomplete="new-password" minlength="8" required>
+              </label>
+              <button class="pa-button" type="submit">Hesap Oluştur</button>
+            </form>
           </div>
+          <p class="pa-form-status" data-email-auth-status aria-live="polite"></p>
         </section>
       </main>
     `
@@ -1641,30 +1674,85 @@ function renderShell({ title, description, active, content, status = 200, questi
           var response = await fetch('${PREVIEW_BASE}/api/session', { headers: { Accept: 'application/json' } });
           return await response.json();
         } catch (error) {
-          return { loggedIn: false, googleConfigured: false };
+          return { loggedIn: false, googleConfigured: false, emailConfigured: false };
         }
       }
       function renderSessionUi(session) {
         var status = document.querySelector('[data-account-status]');
         var actions = document.querySelector('[data-account-actions]');
+        var authPanel = document.querySelector('[data-public-auth]');
+        var googleButton = document.querySelector('[data-google-auth-button]');
         var askSession = document.querySelector('[data-ask-session]');
         if (status) {
           if (session.loggedIn && session.user) status.textContent = 'Oturum açık: ' + (session.user.name || session.user.email);
-          else if (session.googleConfigured) status.textContent = 'Soru göndermek için Google ile devam edebilirsiniz.';
-          else status.textContent = 'Soru gönderimi şu anda açık değil. Arşivi incelemeye devam edebilirsiniz.';
+          else if (session.googleConfigured || session.emailConfigured) status.textContent = 'Soru göndermek için Google veya e-posta ile giriş yapabilirsiniz.';
+          else status.textContent = 'Soru gönderimi için hesap hazırlığı tamamlanıyor. Arşivi incelemeye devam edebilirsiniz.';
         }
         if (actions && session.loggedIn) {
           actions.innerHTML = '<button class="pa-button is-secondary" type="button" data-public-logout>Çıkış Yap</button><a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>';
         }
+        if (authPanel) {
+          if (session.loggedIn) authPanel.setAttribute('hidden', '');
+          else authPanel.removeAttribute('hidden');
+        }
+        if (googleButton && !session.googleConfigured) {
+          googleButton.setAttribute('aria-disabled', 'true');
+          googleButton.textContent = 'Google hazırlığı bekleniyor';
+          googleButton.addEventListener('click', function(event){ event.preventDefault(); });
+        }
+        document.querySelectorAll('[data-email-login-form], [data-email-register-form]').forEach(function(form){
+          var disabled = session.emailConfigured === false;
+          form.querySelectorAll('input, button').forEach(function(input){ input.disabled = disabled; });
+          if (disabled) form.setAttribute('data-disabled', 'true');
+          else form.removeAttribute('data-disabled');
+        });
         if (askSession) {
           if (session.loggedIn && session.user) askSession.textContent = 'Sorunuz ' + (session.user.name || session.user.email) + ' hesabıyla kaydedilecek.';
-          else if (session.googleConfigured) askSession.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/soru-sor')}">Google ile oturum açın</a>.';
-          else askSession.textContent = 'Soru gönderimi şu anda açık değil. Arşivi incelemeye devam edebilirsiniz.';
+          else if (session.googleConfigured || session.emailConfigured) askSession.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/hesabim">hesabınızla oturum açın</a>.';
+          else askSession.textContent = 'Soru gönderimi için hesap hazırlığı tamamlanıyor. Arşivi incelemeye devam edebilirsiniz.';
         }
         document.querySelectorAll('[data-public-logout]').forEach(function(button){
           button.addEventListener('click', async function(){
             await fetch('${PREVIEW_BASE}/auth/logout', { method: 'POST', headers: { Accept: 'application/json' } });
             window.location.href = '${PREVIEW_BASE}/hesabim';
+          });
+        });
+      }
+      function bindPublicEmailAuth() {
+        document.querySelectorAll('[data-email-login-form], [data-email-register-form]').forEach(function(form){
+          if (form.dataset.bound === 'true') return;
+          form.dataset.bound = 'true';
+          form.addEventListener('submit', async function(event){
+            event.preventDefault();
+            var status = document.querySelector('[data-email-auth-status]');
+            var button = form.querySelector('button[type="submit"]');
+            var isRegister = form.hasAttribute('data-email-register-form');
+            var payload = {
+              email: form.elements.email && form.elements.email.value,
+              password: form.elements.password && form.elements.password.value
+            };
+            if (isRegister) payload.name = form.elements.name && form.elements.name.value;
+            if (button) button.disabled = true;
+            if (status) status.textContent = isRegister ? 'Hesabınız oluşturuluyor...' : 'Giriş yapılıyor...';
+            try {
+              var endpoint = form.getAttribute('data-auth-endpoint') || '${PREVIEW_BASE}/api/auth/email/' + (isRegister ? 'register' : 'login');
+              var response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              var data = await response.json().catch(function(){ return {}; });
+              if (!response.ok) {
+                if (status) status.textContent = data.error || 'İşlem tamamlanamadı.';
+                return;
+              }
+              if (status) status.textContent = 'Oturum açıldı. Yönlendiriliyorsunuz...';
+              window.location.href = '${PREVIEW_BASE}/hesabim';
+            } catch (error) {
+              if (status) status.textContent = 'Bağlantı kurulamadı. Lütfen tekrar deneyin.';
+            } finally {
+              if (button) button.disabled = false;
+            }
           });
         });
       }
@@ -1692,7 +1780,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             var data = await response.json();
             if (!response.ok) {
               if (response.status === 401) {
-                if (status) status.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/auth/google?returnTo=${encodeURIComponent(PREVIEW_BASE + '/soru-sor')}">Google ile oturum açın</a>.';
+                if (status) status.innerHTML = 'Soru göndermek için önce <a href="${PREVIEW_BASE}/hesabim">hesabınızla oturum açın</a>.';
               } else if (status) status.textContent = data.error || 'Soru kaydedilemedi.';
               return;
             }
@@ -1710,6 +1798,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       bindConceptSliders();
       bindActiveStatsCounters();
       bindScrollTopControl();
+      bindPublicEmailAuth();
       loadPublicSession().then(renderSessionUi);
       bindQuestionForm();
     })();

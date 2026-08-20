@@ -4733,6 +4733,11 @@ async function seed() {
   const { error: publicUsersErr } = await supabase.from('public_users').select('id').limit(1);
   HAS_PUBLIC_ARCHIVE_USER_TABLES = !publicUsersErr;
   if (!HAS_PUBLIC_ARCHIVE_USER_TABLES) console.warn('⚠ public_users tablosu yok — public Google oturumu pasif.');
+  const { error: publicEmailAuthErr } = HAS_PUBLIC_ARCHIVE_USER_TABLES
+    ? await supabase.from('public_users').select('password_hash,auth_provider').limit(1)
+    : { error: publicUsersErr };
+  HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = !publicEmailAuthErr;
+  if (!HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) console.warn('⚠ public_users e-posta giriş kolonları yok — public e-posta oturumu pasif.');
 
   const { error: publicQuestionSubmissionsErr } = await supabase.from('public_question_submissions').select('id').limit(1);
   HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = !publicQuestionSubmissionsErr;
@@ -4846,6 +4851,46 @@ function publicSessionUser(req) {
     email: req.session.publicUserEmail || '',
     avatarUrl: req.session.publicUserAvatarUrl || ''
   };
+}
+
+function normalizePublicEmail(value = '') {
+  return String(value || '').trim().toLowerCase().slice(0, 180);
+}
+
+function normalizePublicName(value = '') {
+  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+}
+
+function validPublicEmail(email = '') {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+function validPublicPassword(password = '') {
+  return typeof password === 'string' && password.length >= 8 && password.length <= 128;
+}
+
+function publicEmailSyntheticSub(email = '') {
+  return `email:${crypto.createHash('sha256').update(normalizePublicEmail(email)).digest('hex')}`;
+}
+
+function setPublicSession(req, user = {}) {
+  req.session.publicUserId = user.id;
+  req.session.publicUserName = user.name || user.email || '';
+  req.session.publicUserEmail = user.email || '';
+  req.session.publicUserAvatarUrl = user.avatar_url || user.avatarUrl || '';
+}
+
+async function findPublicUserByEmail(email = '') {
+  const cleanEmail = normalizePublicEmail(email);
+  if (!cleanEmail) return null;
+  const { data, error } = await supabase
+    .from('public_users')
+    .select('*')
+    .ilike('email', cleanEmail)
+    .order('last_login_at', { ascending: false, nullsFirst: false })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return data?.[0] || null;
 }
 
 function clearPublicSession(req) {
@@ -9522,6 +9567,7 @@ let HAS_ARCHIVE_IMPORT_TABLES = false; // startup'ta tespit edilir (kalıcı iç
 let HAS_ARCHIVE_WORK_TABLES = false; // startup'ta tespit edilir (çalışma kayıtları)
 let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın görevleri)
 let HAS_PUBLIC_ARCHIVE_USER_TABLES = false; // startup'ta tespit edilir (public Google kullanıcıları)
+let HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = false; // startup'ta tespit edilir (public e-posta giriş kolonları)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
 let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
@@ -9684,12 +9730,18 @@ app.use('/public-preview/api', (req, res, next) => {
   next();
 });
 
-app.get('/public-preview/api/session', async (req, res) => {
-  res.json({
-    loggedIn: Boolean(publicSessionUser(req)),
-    user: publicSessionUser(req),
-    googleConfigured: publicGoogleAuthConfigured()
-  });
+app.get('/public-preview/api/session', async (req, res, next) => {
+  try {
+    await startupReady;
+    res.json({
+      loggedIn: Boolean(publicSessionUser(req)),
+      user: publicSessionUser(req),
+      googleConfigured: publicGoogleAuthConfigured(),
+      emailConfigured: HAS_PUBLIC_ARCHIVE_USER_TABLES && HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get('/public-preview/auth/google', (req, res) => {
@@ -9744,34 +9796,118 @@ app.get('/public-preview/auth/google/callback', async (req, res, next) => {
     if (profile.email_verified === false) return res.redirect('/public-preview/hesabim?auth=email');
 
     const now = new Date().toISOString();
-    const { data: existing, error: existingError } = await supabase
+    let { data: existing, error: existingError } = await supabase
       .from('public_users')
       .select('*')
       .eq('google_sub', profile.sub)
       .maybeSingle();
     if (existingError) throw new Error(existingError.message);
+    const email = normalizePublicEmail(profile.email);
+    if (!existing) existing = await findPublicUserByEmail(email);
     const row = {
       google_sub: profile.sub,
-      email: profile.email,
-      name: profile.name || profile.email,
+      email,
+      name: normalizePublicName(profile.name) || email,
       avatar_url: profile.picture || '',
       email_verified: profile.email_verified !== false,
       last_login_at: now,
       updated_at: now
     };
+    if (HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) row.auth_provider = existing?.password_hash ? 'email_google' : 'google';
     const query = existing
       ? supabase.from('public_users').update(row).eq('id', existing.id).select('*').single()
       : supabase.from('public_users').insert(row).select('*').single();
     const { data: user, error: upsertError } = await query;
     if (upsertError) throw new Error(upsertError.message);
 
-    req.session.publicUserId = user.id;
-    req.session.publicUserName = user.name || user.email;
-    req.session.publicUserEmail = user.email;
-    req.session.publicUserAvatarUrl = user.avatar_url || '';
+    setPublicSession(req, user);
     res.redirect(safePublicReturnTo(req.session.publicAuthReturnTo) || '/public-preview/hesabim');
   } catch (error) {
     next(error);
+  }
+});
+
+app.post('/public-preview/api/auth/email/register', async (req, res) => {
+  try {
+    await startupReady;
+    if (!HAS_PUBLIC_ARCHIVE_USER_TABLES || !HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) {
+      return res.status(503).json({ error: 'E-posta ile giriş için veri tabanı hazırlığı bekleniyor.' });
+    }
+    const email = normalizePublicEmail(req.body?.email);
+    const name = normalizePublicName(req.body?.name);
+    const password = String(req.body?.password || '');
+    if (!name || name.length < 2) return res.status(400).json({ error: 'Lütfen adınızı yazın.' });
+    if (!validPublicEmail(email)) return res.status(400).json({ error: 'Geçerli bir e-posta adresi yazın.' });
+    if (!validPublicPassword(password)) return res.status(400).json({ error: 'Şifre en az 8 karakter olmalı.' });
+
+    const existing = await findPublicUserByEmail(email);
+    const now = new Date().toISOString();
+    const passwordHash = bcrypt.hashSync(password, 10);
+    let user = null;
+    if (existing) {
+      if (existing.password_hash) return res.status(409).json({ error: 'Bu e-posta ile zaten hesap var. Giriş yapabilirsiniz.' });
+      const { data, error } = await supabase.from('public_users')
+        .update({
+          name: name || existing.name,
+          email,
+          password_hash: passwordHash,
+          auth_provider: existing.google_sub ? 'email_google' : 'email',
+          updated_at: now,
+          last_login_at: now
+        })
+        .eq('id', existing.id)
+        .select('*')
+        .single();
+      if (error) throw new Error(error.message);
+      user = data;
+    } else {
+      const { data, error } = await supabase.from('public_users')
+        .insert({
+          google_sub: publicEmailSyntheticSub(email),
+          email,
+          name,
+          password_hash: passwordHash,
+          auth_provider: 'email',
+          email_verified: false,
+          last_login_at: now,
+          updated_at: now
+        })
+        .select('*')
+        .single();
+      if (error) throw new Error(error.message);
+      user = data;
+    }
+    setPublicSession(req, user);
+    res.json({ success: true, user: publicSessionUser(req) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Hesap oluşturulamadı.' });
+  }
+});
+
+app.post('/public-preview/api/auth/email/login', async (req, res) => {
+  try {
+    await startupReady;
+    if (!HAS_PUBLIC_ARCHIVE_USER_TABLES || !HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) {
+      return res.status(503).json({ error: 'E-posta ile giriş için veri tabanı hazırlığı bekleniyor.' });
+    }
+    const email = normalizePublicEmail(req.body?.email);
+    const password = String(req.body?.password || '');
+    if (!validPublicEmail(email) || !password) return res.status(400).json({ error: 'E-posta ve şifre gerekli.' });
+    const user = await findPublicUserByEmail(email);
+    if (!user || !user.password_hash || !bcrypt.compareSync(password, user.password_hash)) {
+      return res.status(401).json({ error: 'E-posta veya şifre hatalı.' });
+    }
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from('public_users')
+      .update({ last_login_at: now, updated_at: now })
+      .eq('id', user.id)
+      .select('*')
+      .single();
+    if (error) throw new Error(error.message);
+    setPublicSession(req, data);
+    res.json({ success: true, user: publicSessionUser(req) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Giriş yapılamadı.' });
   }
 });
 
