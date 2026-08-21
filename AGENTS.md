@@ -137,7 +137,15 @@ tespit edilir).
   doğrular. Yerel doğrulama: `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` (`103/103`) ve
-  `git diff --check` başarılı. Root production cutover bu maddede henüz yapılmadı.
+  `git diff --check` başarılı. Commit `705b74d feat: add public launch icons and home rotation`
+  remote `codex/public-launch-integration` branch'ine push edildi. Preview deploy:
+  `https://arsiv-kontrol-1x9u9x9kb-ugurkarabulutts-projects.vercel.app`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi. Preview smoke:
+  `/health` ok; `/public-preview` 200/noindex; public favicon/app/social asset'leri 200;
+  ana sayfada mükerrer başlık sayısı `0`. Production root cutover henüz yapılmadı; canlı root
+  `/` public ve indexlenebilir olacak şekilde açılmadan önce
+  `PUBLIC_ARCHIVE_ROOT_ENABLED=1` ve `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1` production
+  bayrakları için açık kullanıcı onayı gerekir.
 
 - **Public logo mark eklendi:** Kullanıcının verdiği kitap/kalp/ışık sembolü arka planı
   şeffaf olacak şekilde kesildi. AI yeniden çizimi yeterli temiz olmadığı için orijinal

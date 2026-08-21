@@ -22,8 +22,21 @@
 - Doğrulama: `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `npm.cmd run check` ve `git diff --check` başarılı; tam test `103/103` geçti.
-- Sonraki adım: commit/push, preview deploy + smoke; ardından kullanıcı canlı root açılışını
-  kesinleştirirse production root bayrakları açılıp production deploy yapılacak.
+- Commit/push: `705b74d feat: add public launch icons and home rotation` remote
+  `codex/public-launch-integration` branch'ine push edildi.
+- Preview deploy: doğru `arsiv-kontrol` Vercel projesine temiz `git archive HEAD` kaynağıyla
+  deploy alındı. Deployment:
+  `https://arsiv-kontrol-1x9u9x9kb-ugurkarabulutts-projects.vercel.app`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi.
+- Preview smoke: `/health` ok; `/public-preview` 200 ve `X-Robots-Tag: noindex, nofollow`;
+  `favicon-32.png`, `apple-touch-icon.png`, `app-icon-512.png`, `app-icon-maskable-512.png`,
+  `public-share-card.png` ve `site.webmanifest` 200 döndü. Ana sayfada 3 soru kartı ve
+  mükerrer başlık sayısı `0`; sosyal/app meta markerları canlı HTML'de mevcut.
+- Production root cutover denenmedi/tamamlanmadı: güvenlik onayı iki kalıcı production bayrağı
+  (`PUBLIC_ARCHIVE_ROOT_ENABLED=1`, `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1`) için daha açık
+  kullanıcı onayı gerektirdi. Kullanıcı şu net kapsamı onaylarsa production env güncellenip
+  production deploy yapılacak: canlı root `/` public arşive geçecek ve `index,follow` açılacak;
+  `/admin` admin olarak kalacak.
 
 ## 2026-08-22 Codex Public Logo Mark Ekleme
 
