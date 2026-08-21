@@ -28,6 +28,26 @@
   olmadan `index,follow` üretebildiği doğrulanır. Production root public'e çevrilmeden önce
   ayrıca Vercel env, Google OAuth callback, gerçek mobil/desktop smoke ve explicit final onay
   gerekir.
+- Yerel doğrulama tamamlandı: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `102/102` geçti.
+- Yerel bayrak smoke: `PUBLIC_ARCHIVE_ROOT_ENABLED=1` iken root `/` public HTML döndürdü,
+  `/admin` admin kaldı, `/api/session` JSON döndü, `/public-preview` preview path'leriyle
+  çalıştı. Dummy Google değerleriyle `/auth/google` root callback olarak
+  `/auth/google/callback` üretti. Bayrak kapalıyken root `/` admin kaldı ve `/api/session`
+  public JSON endpoint olarak açılmadı.
+- Commit/push/deploy: `6d41014 feat: add gated public root routes` remote branch'e push edildi.
+  Doğru `arsiv-kontrol` Vercel projesine preview deploy alındı:
+  `https://arsiv-kontrol-cjrfqt4x2-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_9t87Aguimzd8WNB9SKvVXx48tNR3`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a bağlandı.
+- Canlı smoke: `https://arsiv-kontrol-preview.vercel.app/` root admin kalıyor;
+  `/public-preview`, `/public-preview/hesabim`, `/public-preview/soru-sor` public dönüyor;
+  `/public-preview/api/session` JSON içinde `googleConfigured:true` ve `emailConfigured:true`
+  döndü; `/public-preview/auth/google` 302 ile Google'a giderken preview callback
+  `https://arsiv-kontrol-preview.vercel.app/public-preview/auth/google/callback` üretti.
+  `https://arsiv.ibrahimlive.ai/` ve `/admin` hâlâ admin. Root production cutover yapılmadı.
 
 ## 2026-08-21 Codex Public Footer Bilgi Sayfaları
 

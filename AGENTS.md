@@ -133,7 +133,17 @@ tespit edilir).
   `/server.js` tarafına alındı; bayrak kapalıyken server fallback'i root'ta legacy admin
   `index.html` döndürmeye devam eder. `/admin` ve `/admin/*` Vercel route'ları admin SPA olarak
   korunur. Bu adım root `/` public cutover değildir; canlı root ancak ayrı env bayrağı ve final
-  kullanıcı onayıyla public'e döner.
+  kullanıcı onayıyla public'e döner. Doğrulama: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `102/102` geçti. Commit
+  `6d41014` remote'a push edildi ve doğru `arsiv-kontrol` Vercel projesine preview deploy alındı:
+  `https://arsiv-kontrol-cjrfqt4x2-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_9t87Aguimzd8WNB9SKvVXx48tNR3`, stabil alias
+  `https://arsiv-kontrol-preview.vercel.app`. Smoke: stabil preview root `/` admin,
+  `/public-preview` public, `/admin` admin, `/public-preview/api/session` JSON ve
+  `googleConfigured:true`, `emailConfigured:true`; canlı `https://arsiv.ibrahimlive.ai/`
+  hâlâ admin.
 
 - **Public footer bilgi sayfaları sayfa bazlı açıklayıcı metinlere ayrıldı:** Footer içindeki
   Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları sayfaları tekrar eden
