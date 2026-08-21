@@ -146,17 +146,42 @@ svg {
 
 .pa-logo {
   display: inline-flex;
-  flex-direction: column;
-  gap: 0;
+  align-items: center;
+  gap: 10px;
   width: max-content;
-  max-width: 210px;
+  max-width: min(270px, 100%);
   color: var(--pa-text);
   font-family: var(--pa-font-serif);
   font-size: 22px;
   font-weight: 700;
   line-height: 0.95;
   letter-spacing: 0;
-  transition: font-size 180ms ease, transform 180ms ease;
+  transition: font-size 180ms ease, gap 180ms ease, transform 180ms ease;
+}
+
+.pa-logo-mark {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgb(145 111 43 / 0.18));
+  transform: translateY(1px);
+  transition: width 180ms ease, height 180ms ease, filter 180ms ease;
+}
+
+:root[data-theme="dark"] .pa-logo-mark {
+  filter: drop-shadow(0 5px 14px rgb(255 217 136 / 0.16));
+}
+
+.pa-logo-text {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.pa-logo-text span {
+  display: block;
 }
 
 .pa-desktop-nav {
@@ -270,6 +295,12 @@ svg {
 
 :root[data-pa-scrolled="true"] .pa-logo {
   font-size: 19px;
+  gap: 8px;
+}
+
+:root[data-pa-scrolled="true"] .pa-logo-mark {
+  width: 36px;
+  height: 36px;
 }
 
 :root[data-pa-scrolled="true"] .pa-desktop-nav a {
@@ -2710,12 +2741,23 @@ a.pa-chip:hover,
   }
 
   .pa-logo {
-    max-width: 210px;
+    max-width: min(244px, 100%);
     font-size: 22px;
+    gap: 9px;
+  }
+
+  .pa-logo-mark {
+    width: 40px;
+    height: 40px;
   }
 
   :root[data-pa-scrolled="true"] .pa-logo {
     font-size: 19px;
+  }
+
+  :root[data-pa-scrolled="true"] .pa-logo-mark {
+    width: 34px;
+    height: 34px;
   }
 
   .pa-desktop-nav {
@@ -3145,6 +3187,27 @@ a.pa-chip:hover,
   .pa-header {
     padding-right: 18px;
     padding-left: 18px;
+  }
+
+  .pa-logo {
+    max-width: 220px;
+    font-size: 20px;
+    gap: 8px;
+  }
+
+  .pa-logo-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  :root[data-pa-scrolled="true"] .pa-logo {
+    font-size: 18px;
+    gap: 7px;
+  }
+
+  :root[data-pa-scrolled="true"] .pa-logo-mark {
+    width: 32px;
+    height: 32px;
   }
 
   .pa-main,

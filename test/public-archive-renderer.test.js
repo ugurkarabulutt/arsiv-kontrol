@@ -118,6 +118,9 @@ test('public preview output avoids internal and fake feature language', () => {
 
 test('public preview uses final handoff assets and icon system', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
+  assert.match(home, /\/public-preview\/assets\/arsiv-logo-mark\.png/);
+  assert.match(home, /class="pa-logo-mark"/);
+  assert.match(home, /class="pa-logo-text"/);
   assert.match(home, /\/public-preview\/assets\/hero-open-book-warm\.jpg/);
   assert.doesNotMatch(home, /hero-bookshelf/);
   assert.match(home, /Sorularınıza, kaynaklarıyla birlikte cevap bulun\./);

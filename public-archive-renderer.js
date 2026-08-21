@@ -325,6 +325,14 @@ function previewActionNav(active) {
   `).join('');
 }
 
+function brandLogo() {
+  const logoText = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
+  return `
+    <img class="pa-logo-mark" src="${ASSET_PATH}/arsiv-logo-mark.png" alt="" aria-hidden="true" width="256" height="256" decoding="async">
+    <span class="pa-logo-text">${logoText}</span>
+  `;
+}
+
 function header(active) {
   const nav = [
     ['Ana Sayfa', publicArchiveHomeHref(), 'home'],
@@ -332,10 +340,9 @@ function header(active) {
     ['Ara', PREVIEW_BASE + '/arama#arama', 'search'],
     ['Soru Sor', PREVIEW_BASE + '/soru-sor', 'ask']
   ];
-  const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
     <header class="pa-header">
-      <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
+      <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
       <nav class="pa-desktop-nav" aria-label="Ana gezinme">
         ${nav.map(([label, url, key]) => `<a class="${active === key ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
       </nav>
@@ -354,11 +361,10 @@ function header(active) {
 }
 
 function footer() {
-  const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
     <footer class="pa-footer">
       <div class="pa-footer-brand">
-        <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
+        <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
         <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
       </div>
       <div class="pa-footer-groups">

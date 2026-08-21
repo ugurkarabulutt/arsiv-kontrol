@@ -1128,9 +1128,13 @@ assert(!rootLaunchPreview.includes('/public-preview/'), 'Root public mode public
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [
-  '/public-preview/assets/hero-open-book-warm.jpg'
+  '/public-preview/assets/hero-open-book-warm.jpg',
+  '/public-preview/assets/arsiv-logo-mark.png'
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
+}
+for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="256" height="256"', 'aria-hidden="true"']) {
+  assert(homePreview.includes(marker), `Public logo mark HTML marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
@@ -1299,6 +1303,9 @@ for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-us
 }
 for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', ':root[data-pa-scrolled="true"] .pa-header', '.pa-auth-shell', '.pa-auth-panel', '.pa-google-button', '.pa-auth-tabs', '.pa-auth-form']) {
   assert(publicCss.includes(marker), `Public sticky header/e-posta auth CSS marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-logo-mark', 'width: 42px', 'height: 42px', '.pa-logo-text', ':root[data-theme="dark"] .pa-logo-mark', ':root[data-pa-scrolled="true"] .pa-logo-mark', 'width: 32px']) {
+  assert(publicCss.includes(marker), `Public logo mark CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-active-stats', '.pa-active-stats-grid', '.pa-active-stat strong', '.pa-live-dot', '@keyframes pa-live-pulse', '@keyframes pa-live-blink']) {
   assert(publicCss.includes(marker), `Public aktif arsiv sayaci CSS marker eksik: ${marker}`);
