@@ -1,5 +1,45 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public Mükerrer Temizliği ve Ziyaret İstatistikleri
+
+- Public okuma modeli için aynı soru metninin birden fazla kart olarak görünmesini engelleyen
+  tekilleştirme katmanı eklendi: `publicArchiveQuestionIdentity`, `uniquePublicArchiveRecords`,
+  `betterPublicArchiveDuplicateCandidate`.
+- Yeni senkronlarda mükerrer üretimi azaltıldı: onaylı kayıtlar public dataset'e aktarılırken
+  aynı soru kimliği tek kayda iner. Public tablo satırları okunurken de route dataset'i tekil
+  kayıtlardan üretilir.
+- Ana sayfa artık featured için 24, son yayınlananlar için 36 kayıtlık havuzdan tekilleştirerek
+  seçim yapar; aynı soru vitrinde tekrar etmez.
+- Kategori/sayaç dizini `public_qa_topics` bağlantılarını kör saymak yerine yalnız
+  `public_qa.status='published'` ve tekil soru kayıtlarını sayar.
+- Süper admin korumalı mükerrer API'leri eklendi:
+  `GET /api/public-archive/duplicates` ve `POST /api/public-archive/duplicates/hide`.
+  Gizleme kayıt silmez; fazla public kayıtları `duplicate_hidden` durumuna alır.
+- Public ziyaret istatistikleri eklendi:
+  `POST /api/public-analytics/visit` ve preview karşılığı
+  `POST /public-preview/api/public-analytics/visit`. Public renderer sayfa açılışında
+  `trackPublicVisit()` ile path, referrer, UTM, ekran, dil, timezone ve local/session visitor id
+  bilgisini arka planda gönderir.
+- Schema'ya `public_visit_events` tablosu eklendi. Ham IP saklanmaz; yalnız
+  `SESSION_SECRET` ile hashlenmiş `ip_hash` tutulur. Vercel ülke/şehir başlıkları, kaynak
+  sınıflandırması, cihaz/tarayıcı/işletim sistemi ve bot bilgisi kaydedilir.
+- Admin `Canlı Site` menüsüne `Ziyaret İstatistikleri` ekranı eklendi. Ekran ziyaret, tekil
+  kişi, soru okuma, kaynak türleri, ülke, şehir, cihaz, en çok açılan sayfalar/sorular,
+  referans kaynaklar ve son ziyaretleri gösterir.
+- Yukarı çık butonu gerçek `arrow-up.svg` ikonu kullanır.
+- Değişen dosyalar: `server.js`, `index.html`, `public-archive-renderer.js`, `schema.sql`,
+  `scripts/check-frontend.js`, `public-archive-assets/icons/arrow-up.svg`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `git diff --check`, `node scripts/check-frontend.js`
+  ve `npm.cmd run check` başarılı; tam test `103/103` geçti.
+- Canlı analitik için Supabase SQL Editor'de `schema.sql` içindeki `public_visit_events`
+  bloğu uygulanmalı. Tablo yoksa endpoint ve admin ekranı güvenli şekilde “SQL bekleniyor”
+  durumunda kalır.
+- Canlı public veride bu çalışma öncesi ölçüm: `3.058` published kayıt, `398` mükerrer soru
+  grubu ve `619` fazla published satır. Kod deploy sonrası `POST /api/public-archive/duplicates/hide`
+  veya service-role script ile bu fazla satırlar `duplicate_hidden` yapılmalı.
+
 ## 2026-08-22 Codex Public Favicon, Paylaşım Kartı ve Ana Sayfa Vitrini
 
 - Public arşiv için mevcut `arsiv-logo-mark.png` üzerinden favicon ve app ikonları üretildi:

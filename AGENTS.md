@@ -121,6 +121,25 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
+- **Public mükerrer temizliği ve ziyaret istatistikleri:** Public okuma modeli artık aynı soru
+  metnini birden fazla kayıtla göstermemek için `publicArchiveQuestionIdentity` /
+  `uniquePublicArchiveRecords` tekilleştirme katmanını kullanır. Onaylı kayıt senkronu yeni
+  mükerrer üretmeyecek şekilde güncellendi; ana sayfa daha geniş havuzdan tekil kart seçer ve
+  kategori sayaçları yalnız `status='published'` public kayıtları sayar. Süper admin korumalı
+  `/api/public-archive/duplicates` raporu ve `/api/public-archive/duplicates/hide` işlemi
+  eklendi; gizleme kayıt silmez, fazla public satırları `duplicate_hidden` durumuna alır.
+  Public siteye `POST /api/public-analytics/visit` / `POST /public-preview/api/public-analytics/visit`
+  ziyaret olayı eklendi. Yeni `public_visit_events` tablosu ham IP saklamaz; IP sadece
+  `SESSION_SECRET` ile hashlenir. Admin `Canlı Site > Ziyaret İstatistikleri` ekranı ziyaret,
+  tekil kişi, soru okuma, kaynak türü (AI, Google/arama, sosyal/paylaşım, doğrudan), ülke,
+  şehir, cihaz, en çok açılan sayfalar/sorular ve son ziyaret akışını gösterir. Yukarı çık
+  butonu için gerçek `arrow-up.svg` ikonu eklendi. Schema'ya `public_visit_events` bloğu ve
+  guard'lara analitik/mükerrer markerları eklendi. Yerel doğrulama: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` (`103/103`) ve `git diff --check`
+  başarılı. Canlı analitik için `schema.sql` içindeki `public_visit_events` bloğu Supabase SQL
+  Editor'de uygulanmalıdır.
+
 - **Public favicon, paylaşım kartı ve saatlik ana sayfa vitrini:** Public arşiv için mevcut
   şeffaf logo marktan ayrı favicon/app ikonları üretildi:
   `favicon-16.png`, `favicon-32.png`, `favicon-48.png`, `apple-touch-icon.png`,

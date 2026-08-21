@@ -4755,6 +4755,10 @@ async function seed() {
   HAS_PUBLIC_ARCHIVE_STATS_TABLES = !publicQuestionStatsErr;
   if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) console.warn('⚠ public_question_stats tablosu yok — public okunma sayaçları pasif.');
 
+  const { error: publicVisitEventsErr } = await supabase.from('public_visit_events').select('id').limit(1);
+  HAS_PUBLIC_ARCHIVE_VISIT_TABLES = !publicVisitEventsErr;
+  if (!HAS_PUBLIC_ARCHIVE_VISIT_TABLES) console.warn('⚠ public_visit_events tablosu yok — public ziyaret istatistikleri pasif.');
+
   const { error: historyPublicFieldsErr } = await supabase.from('history').select('question_text,tags').limit(1);
   HAS_HISTORY_PUBLIC_FIELDS = !historyPublicFieldsErr;
   if (!HAS_HISTORY_PUBLIC_FIELDS) console.warn('⚠ history.question_text/tags alanları yok — onaylı kayıtlardan public veri üretimi pasif.');
@@ -4944,6 +4948,7 @@ const PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE = 20;
 const PUBLIC_ARCHIVE_PAGE_SIZE = 30;
 const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
+const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 const publicArchiveRouteCache = new Map();
 let publicArchiveContentReady = null;
@@ -5110,6 +5115,52 @@ function publicArchiveSummaryFromAnswer(answerText = '', question = '') {
   return (firstSentence || String(question || '').trim()).trim().slice(0, 260);
 }
 
+function publicArchiveQuestionIdentity(record = {}) {
+  const question = record.question || record.question_text || record.title || record.filename || '';
+  const normalized = publicArchiveComparable(question);
+  return normalized ? normalized.slice(0, 260) : '';
+}
+
+function publicArchiveCandidateTime(record = {}) {
+  const date = new Date(record.published_at || record.publishedAt || record.approved_at || record.updated_at || record.updatedAt || record.created_at || record.createdAt || 0);
+  const time = date.getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function publicArchiveSlugDuplicateRank(slug = '') {
+  const match = String(slug || '').match(/-(\d+)$/);
+  return match ? Number(match[1]) : 1;
+}
+
+function betterPublicArchiveDuplicateCandidate(next = {}, current = {}) {
+  const nextReads = Number(next.read_count || next.readCount || 0);
+  const currentReads = Number(current.read_count || current.readCount || 0);
+  if (nextReads !== currentReads) return nextReads > currentReads;
+  if (Boolean(next.is_featured || next.isFeatured) !== Boolean(current.is_featured || current.isFeatured)) {
+    return Boolean(next.is_featured || next.isFeatured);
+  }
+  const nextAnswerLength = publicArchiveText(next.answerText || next.answer_text || next.corrected_text || '', 120000).length;
+  const currentAnswerLength = publicArchiveText(current.answerText || current.answer_text || current.corrected_text || '', 120000).length;
+  if (nextAnswerLength !== currentAnswerLength) return nextAnswerLength > currentAnswerLength;
+  const nextRank = publicArchiveSlugDuplicateRank(next.slug);
+  const currentRank = publicArchiveSlugDuplicateRank(current.slug);
+  if (nextRank !== currentRank) return nextRank < currentRank;
+  const timeDiff = publicArchiveCandidateTime(next) - publicArchiveCandidateTime(current);
+  if (timeDiff !== 0) return timeDiff > 0;
+  return String(next.slug || next.id || '').localeCompare(String(current.slug || current.id || ''), 'tr') < 0;
+}
+
+function uniquePublicArchiveRecords(records = []) {
+  const byIdentity = new Map();
+  for (const record of records || []) {
+    const key = publicArchiveQuestionIdentity(record);
+    if (!key) continue;
+    const current = byIdentity.get(key);
+    if (!current || betterPublicArchiveDuplicateCandidate(record, current)) byIdentity.set(key, record);
+  }
+  return [...byIdentity.values()];
+}
+
 function normalizePublicArchiveTags(value) {
   return normalizeArchiveTags(value)
     .map(item => String(item || '').trim())
@@ -5221,7 +5272,7 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
     return topicMap.get(slug);
   }
 
-  const cleanRecords = records
+  const cleanRecords = uniquePublicArchiveRecords(records
     .map(record => {
       const question = publicArchiveText(record.question || record.question_text || record.title || '', 1200);
       const answerText = publicArchiveText(record.answerText || record.answer_text || record.corrected_text || '', 120000);
@@ -5229,7 +5280,7 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
       if (!question || !answerText || !tags.length) return null;
       return { ...record, question, answerText, tags };
     })
-    .filter(Boolean);
+    .filter(Boolean));
 
   for (const record of cleanRecords) {
     const tagCategories = record.tags.map(tag => ensureCategory(tag)).filter(Boolean);
@@ -5314,10 +5365,11 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
 
 function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], topicRows = [], statsMap = new Map(), allowEmpty = false } = {}) {
   const defaults = publicArchiveDefaultData();
+  const safeQaRows = uniquePublicArchiveRecords(qaRows || []);
   const categoryRowMap = new Map((categoryRows || []).map(row => [row.slug, row]));
   const topicRowMap = new Map((topicRows || []).map(row => [row.slug, row]));
   const usedCategorySlugs = new Set();
-  for (const row of qaRows || []) {
+  for (const row of safeQaRows) {
     const tagSlugs = Array.isArray(row.topic_slugs) ? row.topic_slugs.filter(Boolean) : [];
     if (tagSlugs.length) tagSlugs.forEach(slug => usedCategorySlugs.add(slug));
     else if (row.category_slug) usedCategorySlugs.add(row.category_slug);
@@ -5344,7 +5396,7 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
     relatedTopicSlugs: Array.isArray(row.related_topic_slugs) ? row.related_topic_slugs : [],
     featured: row.featured !== false
   }));
-  const qa = (qaRows || []).map(row => {
+  const qa = safeQaRows.map(row => {
     const tagSlugs = Array.isArray(row.topic_slugs) ? row.topic_slugs.filter(Boolean) : [];
     const categorySlugs = tagSlugs.length ? tagSlugs : (row.category_slug ? [row.category_slug] : []);
     const answer = Array.isArray(row.answer_paragraphs) && row.answer_paragraphs.length
@@ -5491,19 +5543,25 @@ async function loadPublicArchiveCategoryRowsBySlug(slugs = []) {
 }
 
 async function loadPublicArchiveCategoryIndexRows() {
-  const [categoryRows, linkRows] = await Promise.all([
+  const [categoryRows, qaRows] = await Promise.all([
     fetchAllPages(() => supabase
       .from('public_categories')
       .select('slug,name,description,topic_slugs,featured,sort_order')
       .order('sort_order', { ascending: true }), 1000),
     fetchAllPages(() => supabase
-      .from('public_qa_topics')
-      .select('topic_slug'), 1000)
+      .from('public_qa')
+      .select('slug,category_slug,topic_slugs')
+      .eq('status', 'published'), 1000)
   ]);
   const counts = new Map();
-  for (const row of linkRows || []) {
-    if (!row.topic_slug) continue;
-    counts.set(row.topic_slug, (counts.get(row.topic_slug) || 0) + 1);
+  for (const row of uniquePublicArchiveRecords(qaRows || [])) {
+    const slugs = Array.isArray(row.topic_slugs) && row.topic_slugs.length
+      ? row.topic_slugs
+      : (row.category_slug ? [row.category_slug] : []);
+    for (const slug of slugs) {
+      if (!slug) continue;
+      counts.set(slug, (counts.get(slug) || 0) + 1);
+    }
   }
   return (categoryRows || [])
     .map(row => ({ ...row, question_count: counts.get(row.slug) || 0 }))
@@ -5556,13 +5614,13 @@ async function loadPublicArchiveHomeDataset() {
       .eq('status', 'published')
       .eq('is_featured', true)
       .order('published_at', { ascending: false })
-      .range(0, 2),
+      .range(0, 23),
     supabase
       .from('public_qa')
       .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
       .eq('status', 'published')
       .order('published_at', { ascending: false })
-      .range(0, 2)
+      .range(0, 35)
   ]);
   if (featuredResult.error) throw new Error(featuredResult.error.message);
   if (latestResult.error) throw new Error(latestResult.error.message);
@@ -5843,6 +5901,306 @@ async function incrementPublicQuestionRead(slug) {
   });
   if (upsertError) throw new Error(upsertError.message);
   return { available: true, slug: cleanSlug, readCount: nextCount };
+}
+
+function publicArchiveSafeString(value = '', max = 500) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function publicArchiveHeaderValue(req, name = '') {
+  const value = req.headers[String(name).toLowerCase()];
+  if (Array.isArray(value)) return value[0] || '';
+  return value || '';
+}
+
+function publicArchiveDecodeHeader(value = '') {
+  const raw = publicArchiveSafeString(value, 160);
+  if (!raw) return '';
+  try { return decodeURIComponent(raw); } catch { return raw; }
+}
+
+function publicArchiveVisitorToken(value = '') {
+  const clean = String(value || '').trim();
+  return /^[a-zA-Z0-9._:-]{8,120}$/.test(clean) ? clean.slice(0, 120) : '';
+}
+
+function publicArchivePathValue(value = '') {
+  const clean = String(value || '').trim().split('#')[0].slice(0, 240);
+  if (!clean || !clean.startsWith('/')) return '/';
+  return clean.replace(/\/{2,}/g, '/');
+}
+
+function publicArchiveRouteTypeFromPath(pathname = '') {
+  const pathValue = publicArchivePathValue(pathname);
+  if (pathValue === '/' || pathValue === '/public-preview') return 'home';
+  if (/(^|\/)soru\/[^/]+/.test(pathValue)) return 'question';
+  if (pathValue.endsWith('/arsiv') || pathValue === '/arsiv') return 'archive';
+  if (pathValue.endsWith('/arama') || pathValue === '/arama') return 'search';
+  if (/(^|\/)kategori\/[^/]+/.test(pathValue)) return 'category';
+  if (pathValue.endsWith('/soru-sor') || pathValue === '/soru-sor') return 'ask';
+  if (pathValue.endsWith('/hesabim') || pathValue === '/hesabim') return 'account';
+  return 'info';
+}
+
+function publicArchiveQuestionSlugFromPath(pathname = '') {
+  const match = publicArchivePathValue(pathname).match(/(?:^|\/)soru\/([^/?#]+)/);
+  return match ? publicArchiveSafeString(match[1], 140) : '';
+}
+
+function publicArchiveReferrerHost(value = '') {
+  const referrer = publicArchiveSafeString(value, 500);
+  if (!referrer) return '';
+  try {
+    return new URL(referrer).hostname.replace(/^www\./, '').toLocaleLowerCase('tr-TR').slice(0, 160);
+  } catch {
+    return '';
+  }
+}
+
+function publicArchiveTrafficSource(payload = {}, referrerHost = '') {
+  const utmSource = publicArchiveSafeString(payload.utmSource || payload.utm_source || '', 80).toLocaleLowerCase('tr-TR');
+  const utmMedium = publicArchiveSafeString(payload.utmMedium || payload.utm_medium || '', 80).toLocaleLowerCase('tr-TR');
+  const host = String(referrerHost || '').toLocaleLowerCase('tr-TR');
+  const haystack = `${utmSource} ${utmMedium} ${host}`;
+  if (/(chatgpt|openai|perplexity|claude|anthropic|gemini|bard|copilot|poe\.com|you\.com|phind|komo|arc\.net)/.test(haystack)) return 'ai';
+  if (/(google|bing|yandex|duckduckgo|yahoo|search)/.test(haystack)) return 'search';
+  if (/(whatsapp|telegram|t\.me|instagram|facebook|fb\.com|x\.com|twitter|linkedin|threads|pinterest|social|share)/.test(haystack)) return 'social';
+  if (!host && !utmSource && !utmMedium) return 'direct';
+  return 'referral';
+}
+
+function publicArchiveDeviceType(userAgent = '') {
+  const ua = String(userAgent || '').toLowerCase();
+  if (/bot|crawler|spider|slurp|bingpreview|google-inspectiontool/.test(ua)) return 'bot';
+  if (/ipad|tablet/.test(ua)) return 'tablet';
+  if (/mobile|iphone|android/.test(ua)) return 'mobile';
+  return 'desktop';
+}
+
+function publicArchiveBrowserName(userAgent = '') {
+  const ua = String(userAgent || '');
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/OPR\//.test(ua)) return 'Opera';
+  if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) return 'Chrome';
+  if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return 'Safari';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  return 'Bilinmiyor';
+}
+
+function publicArchiveOsName(userAgent = '') {
+  const ua = String(userAgent || '');
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+  if (/Android/.test(ua)) return 'Android';
+  if (/Windows/.test(ua)) return 'Windows';
+  if (/Mac OS X|Macintosh/.test(ua)) return 'macOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Bilinmiyor';
+}
+
+function publicArchiveIsBot(userAgent = '') {
+  return /bot|crawler|spider|slurp|bingpreview|google-inspectiontool|facebookexternalhit|whatsapp|telegrambot|linkedinbot/i.test(String(userAgent || ''));
+}
+
+async function ensurePublicArchiveVisitEventsReady() {
+  if (HAS_PUBLIC_ARCHIVE_VISIT_TABLES) return true;
+  const { error } = await supabase.from('public_visit_events').select('id').limit(1);
+  HAS_PUBLIC_ARCHIVE_VISIT_TABLES = !error;
+  return HAS_PUBLIC_ARCHIVE_VISIT_TABLES;
+}
+
+function publicArchiveClientIp(req) {
+  const forwarded = publicArchiveHeaderValue(req, 'x-forwarded-for').split(',')[0].trim();
+  return forwarded || req.socket?.remoteAddress || req.ip || '';
+}
+
+function publicArchiveIpHash(req) {
+  const ip = publicArchiveClientIp(req);
+  if (!ip) return '';
+  return crypto.createHmac('sha256', SESSION_SECRET).update(ip).digest('hex').slice(0, 40);
+}
+
+function publicArchiveAnalyticsRange(value = '') {
+  const key = String(value || '7d').trim().toLowerCase();
+  const ranges = {
+    '24h': { key: '24h', label: 'Son 24 saat', ms: 24 * 60 * 60 * 1000, bucket: 'hour' },
+    '7d': { key: '7d', label: 'Son 7 gün', ms: 7 * 24 * 60 * 60 * 1000, bucket: 'day' },
+    '30d': { key: '30d', label: 'Son 30 gün', ms: 30 * 24 * 60 * 60 * 1000, bucket: 'day' },
+    '90d': { key: '90d', label: 'Son 90 gün', ms: 90 * 24 * 60 * 60 * 1000, bucket: 'day' }
+  };
+  return ranges[key] || ranges['7d'];
+}
+
+function publicArchiveAnalyticsTop(rows = [], getKey, limit = 8) {
+  const counts = new Map();
+  for (const row of rows) {
+    const key = publicArchiveSafeString(getKey(row), 180);
+    if (!key) continue;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'))
+    .slice(0, limit)
+    .map(([key, count]) => ({ key, label: key, count }));
+}
+
+function publicArchiveAnalyticsSeries(rows = [], bucket = 'day') {
+  const counts = new Map();
+  for (const row of rows) {
+    const date = new Date(row.created_at || row.createdAt || 0);
+    if (!Number.isFinite(date.getTime())) continue;
+    const key = bucket === 'hour'
+      ? date.toISOString().slice(0, 13) + ':00'
+      : date.toISOString().slice(0, 10);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([label, count]) => ({ label, count }));
+}
+
+async function recordPublicArchiveVisit(req, payload = {}) {
+  if (!await ensurePublicArchiveVisitEventsReady()) return { available: false };
+  const userAgent = publicArchiveSafeString(publicArchiveHeaderValue(req, 'user-agent'), 700);
+  const pathValue = publicArchivePathValue(payload.path || req.originalUrl || req.path || '/');
+  const referrer = publicArchiveSafeString(payload.referrer || publicArchiveHeaderValue(req, 'referer'), 500);
+  const referrerHost = publicArchiveReferrerHost(referrer);
+  const row = {
+    site_area: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
+    visitor_id: publicArchiveVisitorToken(payload.visitorId || payload.visitor_id),
+    session_id: publicArchiveVisitorToken(payload.sessionId || payload.session_id),
+    path: pathValue,
+    route_type: publicArchiveRouteTypeFromPath(pathValue),
+    question_slug: publicArchiveQuestionSlugFromPath(pathValue) || null,
+    referrer: referrer || null,
+    referrer_host: referrerHost || null,
+    source_type: publicArchiveTrafficSource(payload, referrerHost),
+    utm_source: publicArchiveSafeString(payload.utmSource || payload.utm_source, 80) || null,
+    utm_medium: publicArchiveSafeString(payload.utmMedium || payload.utm_medium, 80) || null,
+    utm_campaign: publicArchiveSafeString(payload.utmCampaign || payload.utm_campaign, 120) || null,
+    country: publicArchiveDecodeHeader(publicArchiveHeaderValue(req, 'x-vercel-ip-country')) || null,
+    region: publicArchiveDecodeHeader(publicArchiveHeaderValue(req, 'x-vercel-ip-country-region')) || null,
+    city: publicArchiveDecodeHeader(publicArchiveHeaderValue(req, 'x-vercel-ip-city')) || null,
+    timezone: publicArchiveSafeString(payload.timezone, 80) || null,
+    language: publicArchiveSafeString(payload.language || publicArchiveHeaderValue(req, 'accept-language'), 160) || null,
+    device_type: publicArchiveDeviceType(userAgent),
+    browser_name: publicArchiveBrowserName(userAgent),
+    os_name: publicArchiveOsName(userAgent),
+    screen_width: Number.isFinite(Number(payload.screenWidth || payload.screen_width)) ? Math.round(Number(payload.screenWidth || payload.screen_width)) : null,
+    screen_height: Number.isFinite(Number(payload.screenHeight || payload.screen_height)) ? Math.round(Number(payload.screenHeight || payload.screen_height)) : null,
+    ip_hash: publicArchiveIpHash(req) || null,
+    user_agent: userAgent || null,
+    is_bot: publicArchiveIsBot(userAgent)
+  };
+  const { error } = await supabase.from('public_visit_events').insert(row);
+  if (error) throw new Error(error.message);
+  return { available: true };
+}
+
+async function loadPublicArchiveAnalytics(rangeValue = '7d') {
+  if (!await ensurePublicArchiveVisitEventsReady()) return { available: false, error: 'public_visit_events tablosu yok. schema.sql içindeki ziyaret istatistikleri bölümü uygulanmalı.' };
+  const range = publicArchiveAnalyticsRange(rangeValue);
+  const since = new Date(Date.now() - range.ms).toISOString();
+  const rows = await fetchAllPages(() => supabase
+    .from('public_visit_events')
+    .select('*')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false }), 1000);
+  const limitedRows = rows.slice(0, PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS);
+  const uniqueVisitors = new Set(limitedRows.map(row => row.visitor_id || row.ip_hash).filter(Boolean));
+  const topQuestions = publicArchiveAnalyticsTop(limitedRows.filter(row => row.question_slug), row => row.question_slug, 10);
+  if (topQuestions.length) {
+    const { data } = await supabase
+      .from('public_qa')
+      .select('slug,title')
+      .in('slug', topQuestions.map(item => item.key));
+    const titles = new Map((data || []).map(row => [row.slug, row.title]));
+    for (const item of topQuestions) item.label = titles.get(item.key) || item.key;
+  }
+  return {
+    available: true,
+    range,
+    totalVisits: limitedRows.length,
+    uniqueVisitors: uniqueVisitors.size,
+    questionViews: limitedRows.filter(row => row.route_type === 'question').length,
+    botVisits: limitedRows.filter(row => row.is_bot).length,
+    sourceTypes: publicArchiveAnalyticsTop(limitedRows, row => row.source_type || 'direct', 8),
+    countries: publicArchiveAnalyticsTop(limitedRows, row => row.country || 'Bilinmiyor', 8),
+    cities: publicArchiveAnalyticsTop(limitedRows, row => [row.city, row.country].filter(Boolean).join(', ') || 'Bilinmiyor', 10),
+    referrers: publicArchiveAnalyticsTop(limitedRows, row => row.referrer_host || (row.source_type === 'direct' ? 'Doğrudan' : ''), 10),
+    devices: publicArchiveAnalyticsTop(limitedRows, row => row.device_type || 'Bilinmiyor', 6),
+    pages: publicArchiveAnalyticsTop(limitedRows, row => row.path || '/', 10),
+    questions: topQuestions,
+    series: publicArchiveAnalyticsSeries(limitedRows, range.bucket),
+    recent: limitedRows.slice(0, 20).map(row => ({
+      createdAt: row.created_at,
+      path: row.path,
+      sourceType: row.source_type,
+      country: row.country,
+      city: row.city,
+      deviceType: row.device_type,
+      referrerHost: row.referrer_host,
+      isBot: row.is_bot
+    }))
+  };
+}
+
+async function analyzePublicArchiveDuplicates() {
+  if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) return { available: false, error: 'public_qa tablosu hazır değil.' };
+  const rows = await fetchAllPages(() => supabase
+    .from('public_qa')
+    .select('slug,title,question,answer_text,topic_slugs,category_slug,published_at,updated_at,is_featured,status')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false }), 1000);
+  const statsMap = await loadPublicArchiveStatsMap(rows.map(row => row.slug));
+  const groups = new Map();
+  for (const row of rows) {
+    const enriched = { ...row, read_count: statsMap.get(row.slug) || 0 };
+    const key = publicArchiveQuestionIdentity(enriched);
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(enriched);
+  }
+  const duplicateGroups = [];
+  const duplicateSlugs = [];
+  for (const [identity, items] of groups.entries()) {
+    if (items.length < 2) continue;
+    let canonical = items[0];
+    for (const item of items.slice(1)) {
+      if (betterPublicArchiveDuplicateCandidate(item, canonical)) canonical = item;
+    }
+    const hidden = items.filter(item => item.slug !== canonical.slug);
+    duplicateSlugs.push(...hidden.map(item => item.slug));
+    duplicateGroups.push({
+      identity,
+      question: canonical.question || canonical.title || '',
+      canonicalSlug: canonical.slug,
+      count: items.length,
+      duplicateSlugs: hidden.map(item => item.slug)
+    });
+  }
+  duplicateGroups.sort((a, b) => b.count - a.count || a.question.localeCompare(b.question, 'tr'));
+  return {
+    available: true,
+    publishedRecords: rows.length,
+    duplicateGroupCount: duplicateGroups.length,
+    duplicateRowCount: duplicateSlugs.length,
+    duplicateGroups,
+    duplicateSlugs
+  };
+}
+
+async function hidePublicArchiveDuplicateRows() {
+  const report = await analyzePublicArchiveDuplicates();
+  if (!report.available || !report.duplicateSlugs?.length) return { ...report, hiddenRows: 0 };
+  const now = new Date().toISOString();
+  for (let index = 0; index < report.duplicateSlugs.length; index += 80) {
+    const slice = report.duplicateSlugs.slice(index, index + 80);
+    const { error } = await supabase
+      .from('public_qa')
+      .update({ status: 'duplicate_hidden', updated_at: now })
+      .in('slug', slice);
+    if (error) throw new Error(error.message);
+  }
+  clearPublicArchiveCaches();
+  return { ...report, hiddenRows: report.duplicateSlugs.length };
 }
 
 async function syncApprovedHistoryToPublicArchive() {
@@ -6316,6 +6674,44 @@ app.post('/api/public-archive/sync-approved', auth, admin, superAdmin, async (re
     const result = await syncApprovedHistoryToPublicArchive();
     const status = result.available === false ? 503 : 200;
     res.status(status).json({ success: result.available !== false, ...result });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/public-archive/analytics', auth, admin, async (req, res) => {
+  try {
+    await startupReady;
+    res.json(await loadPublicArchiveAnalytics(req.query.range || '7d'));
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, error: error.message });
+  }
+});
+
+app.get('/api/public-archive/duplicates', auth, admin, superAdmin, async (req, res) => {
+  try {
+    await startupReady;
+    const report = await analyzePublicArchiveDuplicates();
+    res.json({
+      ...report,
+      duplicateGroups: (report.duplicateGroups || []).slice(0, 80),
+      duplicateSlugs: undefined
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, error: error.message });
+  }
+});
+
+app.post('/api/public-archive/duplicates/hide', auth, admin, superAdmin, async (req, res) => {
+  try {
+    await startupReady;
+    const result = await hidePublicArchiveDuplicateRows();
+    res.json({
+      success: true,
+      ...result,
+      duplicateGroups: (result.duplicateGroups || []).slice(0, 80),
+      duplicateSlugs: undefined
+    });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, error: error.message });
   }
@@ -9776,6 +10172,7 @@ let HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = false; // startup'ta tespit edilir (p
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = false; // startup'ta tespit edilir (public soru cevap akışı)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
+let HAS_PUBLIC_ARCHIVE_VISIT_TABLES = false; // startup'ta tespit edilir (public ziyaret istatistikleri)
 let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
 let HAS_HISTORY_PUBLIC_FIELDS = false; // startup'ta tespit edilir (onaylı kayıtlardaki soru/etiket alanları)
 let HAS_HISTORY_TAG_IMPORT_TABLES = false; // startup'ta tespit edilir (Excel etiket aktarimi)
@@ -10227,12 +10624,23 @@ async function publicArchiveQuestionSeenHandler(req, res) {
   }
 }
 
+async function publicArchiveVisitHandler(req, res) {
+  try {
+    await startupReady;
+    const result = await recordPublicArchiveVisit(req, req.body || {});
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, error: error.message });
+  }
+}
+
 app.get('/public-preview/api/session', publicArchiveSessionHandler);
 app.get('/public-preview/auth/google', publicArchiveGoogleStartHandler);
 app.get('/public-preview/auth/google/callback', publicArchiveGoogleCallbackHandler);
 app.post('/public-preview/api/auth/email/register', publicArchiveEmailRegisterHandler);
 app.post('/public-preview/api/auth/email/login', publicArchiveEmailLoginHandler);
 app.post('/public-preview/auth/logout', publicArchiveLogoutHandler);
+app.post('/public-preview/api/public-analytics/visit', publicArchiveVisitHandler);
 app.get('/public-preview/api/question-stats', publicArchiveQuestionStatsHandler);
 app.post('/public-preview/api/questions/:slug/read', publicArchiveQuestionReadHandler);
 app.post('/public-preview/api/question-submissions', publicArchiveQuestionSubmissionHandler);
@@ -10246,6 +10654,7 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler);
   app.post('/api/auth/email/login', publicArchiveEmailLoginHandler);
   app.post('/auth/logout', publicArchiveLogoutHandler);
+  app.post('/api/public-analytics/visit', publicArchiveVisitHandler);
   app.get('/api/question-stats', publicArchiveQuestionStatsHandler);
   app.post('/api/questions/:slug/read', publicArchiveQuestionReadHandler);
   app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler);

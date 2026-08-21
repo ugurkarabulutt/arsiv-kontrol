@@ -449,6 +449,15 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-ready-hero{border:1px solid rgba(var(--green-rgb),.38);background:linear-gradient(135deg,rgba(var(--green-rgb),.1),rgba(var(--gold-rgb),.06));padding:14px;margin-bottom:12px;min-width:0;}
 .archive-ready-hero strong{display:block;font-size:16px;line-height:1.35;color:var(--ink);margin-bottom:5px;overflow-wrap:anywhere;}
 .archive-ready-hero span{display:block;font-size:13px;line-height:1.55;color:var(--ink2);}
+.ops-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}
+.ops-analytics-card{border:1px solid var(--bord2);background:var(--surface);padding:13px;min-width:0;}
+.ops-analytics-card h4{margin:0 0 10px;font-size:14px;color:var(--ink);}
+.ops-analytics-list{display:grid;gap:8px;}
+.ops-analytics-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px;color:var(--ink2);}
+.ops-analytics-row strong{min-width:0;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ops-analytics-bar{grid-column:1/-1;height:6px;border-radius:999px;background:rgba(var(--green-rgb),.1);overflow:hidden;}
+.ops-analytics-bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--green),rgba(var(--gold-rgb),.9));}
+.ops-analytics-empty{padding:12px;border:1px dashed var(--bord2);color:var(--ink3);font-size:12px;background:var(--surface-soft);}
 .archive-ready-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;align-items:start;margin-top:12px;}
 .archive-ready-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;min-width:0;}
 .archive-ready-card{border:1px solid var(--border);background:var(--bg);padding:12px;text-align:left;width:100%;cursor:pointer;color:var(--ink);min-width:0;}
@@ -673,7 +682,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .work-return-note.compact{margin-top:6px;padding:7px 8px;font-size:11px;}
 @media(max-width:900px){.workflow-board{grid-template-columns:1fr}}
 @media(max-width:640px){.approval-tools{justify-content:stretch}.approval-review-toggle{width:100%;justify-content:space-between}.approval-review-panel-head{display:grid;grid-template-columns:1fr}.work-actions button{flex:1;min-width:96px}.work-star{flex:0 0 36px;width:36px;height:36px}}
-@media(max-width:900px){.archive-ready-layout,.archive-release-layout{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
+@media(max-width:900px){.archive-ready-layout,.archive-release-layout,.ops-analytics-grid{grid-template-columns:1fr}.archive-ready-list,.archive-release-package-list,.archive-release-ready-list{max-height:none;overflow:visible}}
 @media(max-width:900px){.archive-output-layout,.tag-import-layout{grid-template-columns:1fr}.archive-output-package-list,.tag-import-batch-list{max-height:none;overflow:visible}.tag-import-actions{grid-template-columns:1fr}}
 @media(max-width:640px){.archive-ready-hero{padding:12px}.archive-ready-detail-actions,.archive-release-actions,.archive-release-lock-actions,.archive-release-review-actions,.archive-output-actions,.tag-import-actions-row{display:grid;grid-template-columns:1fr;gap:8px}.archive-ready-detail-actions button,.archive-release-actions button,.archive-release-lock-actions button,.archive-release-review-actions button,.archive-output-actions button,.tag-import-actions-row button{width:100%}.archive-release-item .btn-mini{width:100%}.archive-release-review-head,.archive-release-item-head,.archive-release-lock-head,.archive-output-publication-head,.archive-public-readiness-head,.tag-import-match-head,.tag-import-candidate-head{display:grid;grid-template-columns:1fr}.archive-release-review-score{white-space:normal}.archive-release-checks,.tag-import-map,.tag-import-candidate-tools{grid-template-columns:1fr}.tag-import-arrow{text-align:center}.tag-import-candidate-list{max-height:none}.archive-output-preview{font-size:11px;max-height:380px}.archive-output-publication-actions{grid-template-columns:1fr}.archive-output-publication-actions button{width:100%}}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -1154,6 +1163,7 @@ canvas{width:100%!important;}
       <div class="mobile-menu-group live-site-menu-group super-admin-only admin-route-only" style="display:none">
         <button class="mobile-menu-label live-site-parent" data-tab="archiveOps" onclick="toggleLiveSiteMenu()"><span>Canlı Site</span><span class="side-caret" aria-hidden="true"></span></button>
         <div class="mobile-subnav">
+          <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="siteAnalytics" onclick="mLiveSite('siteAnalytics')">Ziyaret İstatistikleri</button>
           <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="publicQuestions" onclick="mLiveSite('publicQuestions')">Soru Talepleri</button>
         </div>
       </div>
@@ -1201,6 +1211,7 @@ canvas{width:100%!important;}
     <div class="side-group live-site-menu-group super-admin-only admin-route-only" style="display:none">
       <button class="side-link side-group-main live-site-parent" data-tab="archiveOps" onclick="toggleLiveSiteMenu()"><span>Canlı Site</span><span class="side-caret" aria-hidden="true"></span></button>
       <div class="side-subnav">
+        <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="siteAnalytics" onclick="openLiveSite('siteAnalytics')"><span>Ziyaret İstatistikleri</span></button>
         <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="publicQuestions" onclick="openLiveSite('publicQuestions')"><span>Soru Talepleri</span></button>
       </div>
     </div>
@@ -2052,6 +2063,33 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section" data-ops-view="siteAnalytics" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">Ziyaret İstatistikleri</div>
+            <div class="ops-panel-sub">Canlı sitenin ziyaret, kaynak, konum ve en çok açılan sayfa verilerini buradan izleyin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadArchivePublicAnalytics()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="archive-ready-hero">
+            <strong>Veri buradan okunur.</strong>
+            <span>Ziyaret sayısı, tekil kişi, şehir/ülke, sosyal medya, Google, AI araçları ve doğrudan gelen trafik ayrı ayrı takip edilir.</span>
+          </div>
+          <div class="ops-filter-row">
+            <select class="ops-field" id="archivePublicAnalyticsRange" onchange="setArchivePublicAnalyticsRange(this.value)">
+              <option value="24h">Son 24 saat</option>
+              <option value="7d" selected>Son 7 gün</option>
+              <option value="30d">Son 30 gün</option>
+              <option value="90d">Son 90 gün</option>
+            </select>
+            <span class="ops-status" id="archivePublicAnalyticsStatus">Veri bekleniyor.</span>
+          </div>
+          <div class="ops-file-summary" id="archivePublicAnalyticsSummary"></div>
+          <div class="ops-analytics-grid" id="archivePublicAnalyticsGrid"></div>
+        </div>
+      </div>
+
       <div class="ops-panel archive-ops-section" data-ops-view="publicQuestions" hidden>
         <div class="ops-panel-head">
           <div>
@@ -2468,9 +2506,10 @@ let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loa
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
 let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
+let archivePublicAnalyticsState={range:'7d',data:null,loading:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','publicQuestions','tagImport'];
-const LIVE_SITE_OPS_VIEWS=new Set(['publicQuestions']);
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','siteAnalytics','publicQuestions','tagImport'];
+const LIVE_SITE_OPS_VIEWS=new Set(['siteAnalytics','publicQuestions']);
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -2854,6 +2893,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchiveReleaseReadyCandidates();
   }
   if(archiveOpsState.view==='packageOutput')loadArchiveOutputPackages();
+  if(archiveOpsState.view==='siteAnalytics')loadArchivePublicAnalytics();
   if(archiveOpsState.view==='publicQuestions'){
     loadArchivePublicSyncStatus();
     loadArchivePublicQuestions();
@@ -2866,7 +2906,7 @@ function openArchiveOps(view='overview'){
   archiveOpsState.liveSiteMenuOpen=false;
   showTab('archiveOps');
 }
-function openLiveSite(view='publicQuestions'){
+function openLiveSite(view='siteAnalytics'){
   archiveOpsState.view=normalizeArchiveOpsView(view);
   archiveOpsState.menuOpen=false;
   archiveOpsState.liveSiteMenuOpen=true;
@@ -2876,7 +2916,7 @@ function mArchiveOps(view='overview'){
   closeMobileMenu();
   openArchiveOps(view);
 }
-function mLiveSite(view='publicQuestions'){
+function mLiveSite(view='siteAnalytics'){
   closeMobileMenu();
   openLiveSite(view);
 }
@@ -8061,6 +8101,98 @@ function openArchiveOutputFromReleasePackage(){
   archiveOutputState.activePackage=pkg;
   archiveOutputState.output=null;
   openArchiveOps('packageOutput');
+}
+function publicAnalyticsSourceLabel(source){
+  return {
+    ai:'AI araçları',
+    search:'Google / arama',
+    social:'Sosyal / paylaşım',
+    direct:'Doğrudan / tarayıcı',
+    referral:'Diğer siteler'
+  }[source]||source||'Bilinmiyor';
+}
+function publicAnalyticsRouteLabel(path){
+  if(!path||path==='/')return 'Ana sayfa';
+  if(path.includes('/soru/'))return 'Soru detayı';
+  if(path.includes('/arsiv'))return 'Arşiv';
+  if(path.includes('/arama'))return 'Arama';
+  if(path.includes('/soru-sor'))return 'Soru Sor';
+  if(path.includes('/hesabim'))return 'Hesabım';
+  return path;
+}
+function publicAnalyticsDate(value){
+  const date=value?new Date(value):null;
+  if(!date||!Number.isFinite(date.getTime()))return '';
+  return date.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function publicAnalyticsListHtml(items=[],options={}){
+  const max=Math.max(1,...items.map(item=>Number(item.count||0)));
+  if(!items.length)return '<div class="ops-analytics-empty">Henüz veri yok.</div>';
+  return `<div class="ops-analytics-list">${items.map(item=>{
+    const label=options.label?options.label(item):item.label||item.key;
+    const count=Number(item.count||0);
+    const width=Math.max(4,Math.round((count/max)*100));
+    return `
+      <div class="ops-analytics-row">
+        <strong title="${esc(label)}">${esc(label)}</strong>
+        <span>${count.toLocaleString('tr-TR')}</span>
+        <div class="ops-analytics-bar"><span style="width:${width}%"></span></div>
+      </div>
+    `;
+  }).join('')}</div>`;
+}
+function renderArchivePublicAnalytics(){
+  const summary=el('archivePublicAnalyticsSummary');
+  const grid=el('archivePublicAnalyticsGrid');
+  const status=el('archivePublicAnalyticsStatus');
+  const data=archivePublicAnalyticsState.data||{};
+  if(status){
+    status.textContent=archivePublicAnalyticsState.loading?'Yükleniyor...':data.available===false?(data.error||'İstatistik tablosu bekleniyor.'):data.available?'Veri güncel.':'Veri bekleniyor.';
+    status.className=`ops-status ${data.available?'ok':data.available===false?'err':''}`.trim();
+  }
+  if(summary){
+    summary.innerHTML=data.available?`
+      <div class="ops-file-summary-item"><strong>${Number(data.totalVisits||0).toLocaleString('tr-TR')}</strong><span>Ziyaret</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.uniqueVisitors||0).toLocaleString('tr-TR')}</strong><span>Tekil kişi</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.questionViews||0).toLocaleString('tr-TR')}</strong><span>Soru okuma</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.botVisits||0).toLocaleString('tr-TR')}</strong><span>Bot / ön izleme</span></div>
+    `:'<div class="ops-file-summary-item"><strong>--</strong><span>İstatistik bekleniyor</span></div>';
+  }
+  if(!grid)return;
+  if(!data.available){
+    grid.innerHTML=`<div class="ops-analytics-card"><h4>Kurulum gerekli</h4><div class="ops-analytics-empty">${esc(data.error||'Ziyaret istatistikleri için SQL hazırlığı bekleniyor.')}</div></div>`;
+    return;
+  }
+  grid.innerHTML=`
+    <div class="ops-analytics-card"><h4>Nereden geldiler?</h4>${publicAnalyticsListHtml(data.sourceTypes||[],{label:item=>publicAnalyticsSourceLabel(item.key)})}</div>
+    <div class="ops-analytics-card"><h4>Hangi ülkeler?</h4>${publicAnalyticsListHtml(data.countries||[])}</div>
+    <div class="ops-analytics-card"><h4>Hangi şehirler?</h4>${publicAnalyticsListHtml(data.cities||[])}</div>
+    <div class="ops-analytics-card"><h4>Cihazlar</h4>${publicAnalyticsListHtml(data.devices||[])}</div>
+    <div class="ops-analytics-card"><h4>En çok açılan sayfalar</h4>${publicAnalyticsListHtml(data.pages||[],{label:item=>publicAnalyticsRouteLabel(item.key)})}</div>
+    <div class="ops-analytics-card"><h4>En çok okunan sorular</h4>${publicAnalyticsListHtml(data.questions||[])}</div>
+    <div class="ops-analytics-card"><h4>Referans kaynaklar</h4>${publicAnalyticsListHtml(data.referrers||[])}</div>
+    <div class="ops-analytics-card"><h4>Son ziyaretler</h4>${(data.recent||[]).length?`<div class="ops-analytics-list">${data.recent.map(item=>`
+      <div class="ops-analytics-row">
+        <strong title="${esc(item.path||'/')}">${esc(publicAnalyticsRouteLabel(item.path||'/'))}</strong>
+        <span>${esc(publicAnalyticsSourceLabel(item.sourceType))}</span>
+        <div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px">${esc([publicAnalyticsDate(item.createdAt),item.city,item.country,item.deviceType].filter(Boolean).join(' · '))}</div>
+      </div>
+    `).join('')}</div>`:'<div class="ops-analytics-empty">Henüz ziyaret yok.</div>'}</div>
+  `;
+}
+function setArchivePublicAnalyticsRange(value){
+  archivePublicAnalyticsState.range=value||'7d';
+  loadArchivePublicAnalytics();
+}
+async function loadArchivePublicAnalytics(){
+  if(!canUseArchiveOps())return;
+  archivePublicAnalyticsState.loading=true;
+  renderArchivePublicAnalytics();
+  const params=new URLSearchParams({range:archivePublicAnalyticsState.range||'7d'});
+  const data=await api('GET',`/api/public-archive/analytics?${params.toString()}`);
+  archivePublicAnalyticsState.loading=false;
+  archivePublicAnalyticsState.data=data.error?{available:false,error:data.error}:data;
+  renderArchivePublicAnalytics();
 }
 function publicArchiveSyncSourceLabel(source){
   return {

@@ -1692,7 +1692,7 @@ function renderShell({ title, description, active, content, status = 200, questi
     ${previewActionNav(active)}
   </nav>
   <button class="pa-scroll-top" type="button" data-scroll-top aria-label="Yukarı çık" aria-hidden="true">
-    ${iconSvg('arrow-right', 'pa-scroll-top-icon')}
+    ${iconSvg('arrow-up', 'pa-scroll-top-icon')}
   </button>
   <script>
     (function(){
@@ -1979,6 +1979,43 @@ function renderShell({ title, description, active, content, status = 200, questi
           await loadReadCounts();
         }
       }
+      function publicArchiveClientId(storage, key) {
+        try {
+          var current = storage.getItem(key);
+          if (current) return current;
+          var next = (window.crypto && window.crypto.randomUUID)
+            ? window.crypto.randomUUID()
+            : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+          storage.setItem(key, next);
+          return next;
+        } catch (error) {
+          return String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+        }
+      }
+      function trackPublicVisit() {
+        try {
+          var params = new URLSearchParams(window.location.search || '');
+          var payload = {
+            visitorId: publicArchiveClientId(window.localStorage, 'dsca-visitor-id'),
+            sessionId: publicArchiveClientId(window.sessionStorage, 'dsca-session-id'),
+            path: window.location.pathname + window.location.search,
+            referrer: document.referrer || '',
+            utmSource: params.get('utm_source') || '',
+            utmMedium: params.get('utm_medium') || '',
+            utmCampaign: params.get('utm_campaign') || '',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            language: navigator.language || '',
+            screenWidth: window.screen && window.screen.width,
+            screenHeight: window.screen && window.screen.height
+          };
+          window.fetch('${PREVIEW_BASE}/api/public-analytics/visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true
+          }).catch(function(){});
+        } catch (error) {}
+      }
       async function loadPublicSession() {
         try {
           var response = await fetch('${PREVIEW_BASE}/api/session', { headers: { Accept: 'application/json' } });
@@ -2247,6 +2284,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       }
       loadReadCounts();
       trackQuestionRead();
+      trackPublicVisit();
       bindConceptSliders();
       bindActiveStatsCounters();
       bindScrollTopControl();

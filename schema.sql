@@ -424,6 +424,45 @@ create table if not exists public.public_question_stats (
 alter table public.public_question_stats enable row level security;
 create index if not exists public_question_stats_updated_idx on public.public_question_stats (updated_at desc);
 
+-- public_visit_events
+-- Public site ziyaret istatistikleri. Ham IP saklanmaz; sunucu yalnız gizli hash tutar.
+-- RLS açık kalır; kayıt ve okuma server API/service role üzerinden yapılır.
+create table if not exists public.public_visit_events (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  site_area text not null default 'public-root',
+  visitor_id text,
+  session_id text,
+  path text not null,
+  route_type text,
+  question_slug text,
+  referrer text,
+  referrer_host text,
+  source_type text,
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
+  country text,
+  region text,
+  city text,
+  timezone text,
+  language text,
+  device_type text,
+  browser_name text,
+  os_name text,
+  screen_width integer,
+  screen_height integer,
+  ip_hash text,
+  user_agent text,
+  is_bot boolean not null default false
+);
+alter table public.public_visit_events enable row level security;
+create index if not exists public_visit_events_created_idx on public.public_visit_events (created_at desc);
+create index if not exists public_visit_events_source_idx on public.public_visit_events (source_type, created_at desc);
+create index if not exists public_visit_events_location_idx on public.public_visit_events (country, city, created_at desc);
+create index if not exists public_visit_events_visitor_idx on public.public_visit_events (visitor_id, created_at desc);
+create index if not exists public_visit_events_question_idx on public.public_visit_events (question_slug, created_at desc);
+
 create or replace function public.increment_public_question_read(p_slug text)
 returns table(slug text, read_count integer, updated_at timestamptz)
 language plpgsql

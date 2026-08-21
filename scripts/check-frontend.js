@@ -239,6 +239,7 @@ assert(server.includes('GOOGLE_ROOT_REDIRECT_URI'), 'Root Google callback icin G
 assert(server.includes("app.get('/api/session', publicArchiveSessionHandler)"), 'Root public session endpoint bayrakli olarak tanimli olmali.');
 assert(server.includes("app.get('/auth/google', publicArchiveGoogleStartHandler)"), 'Root public Google login endpoint bayrakli olarak tanimli olmali.');
 assert(server.includes("app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler)"), 'Root public e-posta kayit endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/public-analytics/visit', publicArchiveVisitHandler)"), 'Root public analitik endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler)"), 'Root public soru gonderim endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("app.get('/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler)"), 'Root public kullanici soru takip endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("app.post('/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler)"), 'Root public soru okundu endpointi bayrakli olarak tanimli olmali.');
@@ -1061,6 +1062,7 @@ for (const marker of [
   'user_seen_at timestamptz',
   'public_question_submissions_answered_idx',
   'create table if not exists public.public_question_stats',
+  'create table if not exists public.public_visit_events',
   'create table if not exists public.public_categories',
   'create table if not exists public.public_topics',
   'create table if not exists public.public_qa',
@@ -1070,16 +1072,19 @@ for (const marker of [
   'alter table public.public_users enable row level security',
   'alter table public.public_question_submissions enable row level security',
   'alter table public.public_question_stats enable row level security',
+  'alter table public.public_visit_events enable row level security',
   'alter table public.public_categories enable row level security',
   'alter table public.public_topics enable row level security',
   'alter table public.public_qa enable row level security',
   'alter table public.public_qa_topics enable row level security',
+  'public_visit_events_source_idx',
   'create or replace function public.increment_public_question_read'
 ]) {
   assert(schema.includes(marker), `Public archive schema marker eksik: ${marker}`);
 }
 for (const marker of [
   'Canlı Site',
+  'Ziyaret İstatistikleri',
   'Soru Talepleri',
   'live-site-menu-group',
   'openLiveSite',
@@ -1088,11 +1093,14 @@ for (const marker of [
   'archivePublicQuestionAnswer',
   'answerArchivePublicQuestion',
   'archivePublicSyncSummary',
+  'archivePublicAnalyticsSummary',
+  'loadArchivePublicAnalytics',
   'syncApprovedPublicArchive',
   'Onaylıları Siteye Hazırla',
   '/api/public-archive/question-submissions',
   '/api/public-archive/sync-status',
-  '/api/public-archive/sync-approved'
+  '/api/public-archive/sync-approved',
+  '/api/public-archive/analytics'
 ]) {
   assert(html.includes(marker), `Admin panel public soru talepleri gorunurluk marker eksik: ${marker}`);
 }
@@ -1167,6 +1175,12 @@ for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hı
 }
 for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeScore', 'homeRotationHour', 'hashString']) {
   assert(publicRendererSource.includes(marker), `Public ana sayfa saatlik vitrin marker eksik: ${marker}`);
+}
+for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-visitor-id', "iconSvg('arrow-up'"]) {
+  assert(publicRendererSource.includes(marker), `Public analitik/yukari cik marker eksik: ${marker}`);
+}
+for (const marker of ['uniquePublicArchiveRecords', 'hidePublicArchiveDuplicateRows', '/api/public-archive/duplicates/hide', 'publicArchiveQuestionIdentity']) {
+  assert(server.includes(marker), `Public mukerrer temizlik marker eksik: ${marker}`);
 }
 const duplicateHomePreview = renderPublicArchivePreviewRoute('/public-preview', {}, {
   brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
