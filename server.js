@@ -4962,10 +4962,108 @@ function publicArchiveText(value = '', max = 20000) {
   return String(value || '').replace(/\s+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, max);
 }
 
+const PUBLIC_ARCHIVE_PARAGRAPH_MIN_LENGTH = 180;
+const PUBLIC_ARCHIVE_PARAGRAPH_TARGET_LENGTH = 620;
+const PUBLIC_ARCHIVE_PARAGRAPH_HARD_LENGTH = 920;
+const PUBLIC_ARCHIVE_SENTENCE_ABBREVIATIONS = new Set([
+  'a', 'as', 'c', 'dr', 'haz', 'hz', 'prof', 's', 'sav', 'sn', 'vb', 'vs'
+]);
+
+function publicArchiveInsertStructuralBreaks(value = '') {
+  return String(value || '')
+    .replace(/\s+(HAD[İIÎ]S[-\s]?[İIÎ]\s+ŞER[İIÎ]F\b)/giu, '\n\n$1')
+    .replace(/\s+([ÂA]YET[-\s]?[İIÎ]\s+KER[İIÎ]ME\b)/giu, '\n\n$1')
+    .replace(/\s+(\d+\.\s+[A-ZÇĞİÖŞÜÂÎÛ][A-ZÇĞİÖŞÜÂÎÛ'’\-\s]{1,42}\s*-\s*\d{1,3}\b)/gu, '\n\n$1')
+    .replace(/\s+((?:\d{1,3}[./]\s*)?[A-ZÇĞİÖŞÜÂÎÛ][A-ZÇĞİÖŞÜÂÎÛ'’\-\s]{1,42}\s*-\s*\d{1,3}\b)/gu, '\n\n$1')
+    .trim();
+}
+
+function publicArchiveSentenceTokenBefore(text, index) {
+  const prefix = text.slice(Math.max(0, index - 18), index);
+  return prefix.match(/[\p{L}]+$/u)?.[0] || '';
+}
+
+function publicArchiveIsSentenceBoundary(text, index) {
+  const char = text[index];
+  if (!/[.!?؟！？]/u.test(char)) return false;
+  if (char !== '.') return true;
+  const prev = text[index - 1] || '';
+  const next = text[index + 1] || '';
+  if (/\d/.test(prev) && /\d/.test(next)) return false;
+  const token = publicArchiveSentenceTokenBefore(text, index);
+  const lower = token.toLocaleLowerCase('tr-TR').replace(/\./g, '');
+  if (PUBLIC_ARCHIVE_SENTENCE_ABBREVIATIONS.has(lower)) return false;
+  if (/^[A-ZÇĞİÖŞÜÂÎÛ]$/u.test(token)) return false;
+  return true;
+}
+
+function publicArchiveSentenceSegments(value = '') {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return [];
+  const segments = [];
+  let start = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    if (!publicArchiveIsSentenceBoundary(text, index)) continue;
+    let end = index + 1;
+    while (end < text.length && /["'”’)\]]/u.test(text[end])) end += 1;
+    segments.push(text.slice(start, end).trim());
+    while (end < text.length && /\s/u.test(text[end])) end += 1;
+    start = end;
+    index = end - 1;
+  }
+  if (start < text.length) segments.push(text.slice(start).trim());
+  return segments.filter(Boolean);
+}
+
+function publicArchiveStructuralParagraphStart(value = '') {
+  return /^(HAD[İIÎ]S[-\s]?[İIÎ]\s+ŞER[İIÎ]F|[ÂA]YET[-\s]?[İIÎ]\s+KER[İIÎ]ME|\d+\.\s+[A-ZÇĞİÖŞÜÂÎÛ]|(?:\d{1,3}[./]\s*)?[A-ZÇĞİÖŞÜÂÎÛ][A-ZÇĞİÖŞÜÂÎÛ'’\-\s]{1,42}\s*-\s*\d{1,3}\b)/u.test(String(value || '').trim());
+}
+
+function publicArchiveSplitLongParagraph(value = '') {
+  const structuralBlocks = publicArchiveInsertStructuralBreaks(value)
+    .split(/\n{2,}/)
+    .map(item => item.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  const paragraphs = [];
+  for (const block of structuralBlocks) {
+    if (block.length <= PUBLIC_ARCHIVE_PARAGRAPH_HARD_LENGTH) {
+      paragraphs.push(block);
+      continue;
+    }
+    const sentences = publicArchiveSentenceSegments(block);
+    if (sentences.length <= 1) {
+      paragraphs.push(block);
+      continue;
+    }
+    let current = '';
+    for (const sentence of sentences) {
+      const structuralStart = publicArchiveStructuralParagraphStart(sentence);
+      const next = current ? `${current} ${sentence}` : sentence;
+      if (
+        current &&
+        (
+          structuralStart ||
+          (next.length > PUBLIC_ARCHIVE_PARAGRAPH_TARGET_LENGTH && current.length >= PUBLIC_ARCHIVE_PARAGRAPH_MIN_LENGTH) ||
+          next.length > PUBLIC_ARCHIVE_PARAGRAPH_HARD_LENGTH
+        )
+      ) {
+        paragraphs.push(current);
+        current = sentence;
+      } else {
+        current = next;
+      }
+    }
+    if (current) paragraphs.push(current);
+  }
+  return paragraphs;
+}
+
 function publicArchiveParagraphs(value = '') {
   return publicArchiveText(value, 120000)
     .split(/\n{2,}/)
     .map(item => item.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .flatMap(item => item.length > PUBLIC_ARCHIVE_PARAGRAPH_HARD_LENGTH ? publicArchiveSplitLongParagraph(item) : [item])
     .filter(Boolean);
 }
 

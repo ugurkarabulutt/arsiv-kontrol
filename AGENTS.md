@@ -121,6 +121,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-21
+- **Public cevap paragraf düzeni canlı veriye uygulandı:** Public okuma modelinde yayındaki
+  `3.058` kaydın tamamında `answer_paragraphs` tek paragraf görünüyordu; `2.268` cevap 1000
+  karakterden, `1.032` cevap 3000 karakterden uzun olmasına rağmen tek blok halindeydi.
+  `publicArchiveParagraphs` fonksiyonu gelecek senkronlarda sadece mevcut boş satırlara değil,
+  cümle sınırlarına, ayet/hadis başlıklarına ve `3/ÂLİ İMRÂN-73`, `HADÎS-İ ŞERİF`,
+  `ÂYET-İ KERİME` gibi kaynak geçişlerine göre okunabilir bloklar üretir hale getirildi.
+  Canlı backfill yalnız `public_qa.answer_paragraphs` alanını güncelledi; soru, cevap metni,
+  etiketler, status, `published_at`, `updated_at`, `history` kayıtları ve admin onay durumu
+  değiştirilmedi. Sonuçta `2.333` yayınlı kayıt çoklu paragrafa bölündü, `725` kısa/uygun kayıt
+  tek paragraf kaldı; 1000+ veya 3000+ karakter olup tek paragraf kalan yayınlı kayıt sayısı
+  `0`. Boşluklar hariç içerik karşılaştırmasında fark `0`; `568` kayıtta yalnız okuma boşluğu
+  farkı oluştu. İşlem izi
+  `settings.public-answer-paragraph-backfill-2026-08-21T13-25-10-563Z` anahtarına yazıldı.
+  Preview doğrulamada `/public-preview/soru/1-soru-hidayet-nedir` 200 döndü ve çoklu paragraf
+  blokları ile `3/ÂLİ İMRÂN-73` referansı görünür. Root `/` public cutover yapılmadı.
+
 - **Public soru işareti kontrolü canlı veriye uygulandı:** Kullanıcı isteğiyle yayındaki
   `public_qa` kayıtlarında `question` alanında `?`, `؟` veya `？` bulunmayanlar canlı Supabase'de
   tarandı. Ön kontrolde `3.147` yayındaki kayıttan `89` kayıt hedef çıktı; hedeflerin tamamının

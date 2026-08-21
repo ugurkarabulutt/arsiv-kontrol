@@ -1,5 +1,27 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Public Cevap Paragraf Düzeni
+
+- Canlı public okuma tablosunda `public_qa.status = 'published'` olan `3.058` kaydın tamamında
+  `answer_paragraphs` tek paragraf görünüyordu. `2.268` cevap 1000 karakterden, `1.032` cevap
+  3000 karakterden uzun olmasına rağmen tek blok halindeydi.
+- Backend public sync hattındaki `publicArchiveParagraphs` fonksiyonu güçlendirildi. Gelecek
+  senkronlarda cevaplar sadece mevcut boş satırlara göre değil; cümle sınırları, ayet/hadis
+  başlıkları ve `3/ÂLİ İMRÂN-73`, `HADÎS-İ ŞERİF`, `ÂYET-İ KERİME` gibi kaynak geçişleri dikkate
+  alınarak okunabilir bloklara ayrılır.
+- Canlı veriye kontrollü backfill uygulandı: yalnız `public_qa.answer_paragraphs` güncellendi.
+  Soru, cevap metni, etiketler, status, `published_at`, `updated_at`, `history` kayıtları ve
+  admin onay durumu değiştirilmedi.
+- Uygulama sonucu `2.333` yayındaki kayıt çoklu paragrafa bölündü; `725` kısa/uygun kayıt tek
+  paragraf kaldı. Backfill sonrası 1000+ karakter veya 3000+ karakter olup tek paragraf kalan
+  yayınlı kayıt sayısı `0`.
+- Güvenlik kontrolü: boşluklar hariç içerik karşılaştırmasında fark `0`. `568` kayıtta yalnız
+  okuma boşluğu farkı oluştu; örneğin yapışık cümle geçişlerine görünür boşluk eklendi.
+- İşlem kaydı `settings` içinde
+  `public-answer-paragraph-backfill-2026-08-21T13-25-10-563Z` anahtarıyla saklandı.
+- Preview doğrulama: `/public-preview/soru/1-soru-hidayet-nedir` 200 döndü; HTML'de `Hidayet
+  nedir?`, `3/ÂLİ İMRÂN-73` ve çoklu paragraf blokları görünür. Root `/` public cutover yapılmadı.
+
 ## 2026-08-21 Codex Public Soru İşareti Kontrolü
 
 - Kullanıcı isteğiyle yayındaki public kayıtlar içinde soru alanında soru işareti olmayanlar
