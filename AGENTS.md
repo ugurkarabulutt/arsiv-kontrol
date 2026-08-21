@@ -138,7 +138,27 @@ tespit edilir).
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` (`103/103`) ve `git diff --check`
   başarılı. Canlı analitik için `schema.sql` içindeki `public_visit_events` bloğu Supabase SQL
-  Editor'de uygulanmalıdır.
+  Editor'de uygulanmalıdır. Canlı data cleanup tamamlandı: `3.058` published kayıttaki `398`
+  mükerrer soru grubuna ait `619` fazla satır silinmeden `duplicate_hidden` yapıldı; doğrulama
+  sonrası `2.439` published kayıt, `0` mükerrer soru grubu ve `0` fazla published satır kaldı.
+  Production deploy:
+  `https://arsiv-kontrol-qnlqb9a0k-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_HumfCPfwWE5XhvWBA1LbjGeWu4Kx`, canlı alias `https://arsiv.ibrahimlive.ai`.
+
+- **Public SEO giriş dosyaları:** Root public açıldıktan sonra `/robots.txt`, `/sitemap.xml`
+  ve `/llms.txt` route'ları eklendi. `robots.txt` public root/index bayrakları açıkken root'u
+  taramaya açar, `/admin`, `/api/`, `/auth/` ve `/public-preview` yollarını dışarıda bırakır
+  ve sitemap linkini verir; bayraklar kapalıysa güvenli noindex/disallow döner. `sitemap.xml`
+  statik public sayfaları, published soru sayfalarını ve kategori sayfalarını üretir.
+  `llms.txt` site amacını, canonical adresi, yayınlanan soru-cevap sayısını, sitemap'i ve
+  kaynak gösterim kuralını sade metinle verir. Yerel doğrulama: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` (`103/103`) ve `git diff --check`
+  başarılı. Commit/push: `063dadf fix: expose public seo entry files`. Production deploy:
+  `https://arsiv-kontrol-l94nx9h04-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_FdPvjeui4xbe8KmuhCvySyEs3CBf`, canlı alias `https://arsiv.ibrahimlive.ai`. Smoke:
+  `/robots.txt` 200, `/sitemap.xml` 200 ve `3.623` URL, `/llms.txt` 200, root `/` public,
+  `/admin` noindex/no-store.
 
 - **Public favicon, paylaşım kartı ve saatlik ana sayfa vitrini:** Public arşiv için mevcut
   şeffaf logo marktan ayrı favicon/app ikonları üretildi:

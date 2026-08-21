@@ -37,8 +37,30 @@
   bloğu uygulanmalı. Tablo yoksa endpoint ve admin ekranı güvenli şekilde “SQL bekleniyor”
   durumunda kalır.
 - Canlı public veride bu çalışma öncesi ölçüm: `3.058` published kayıt, `398` mükerrer soru
-  grubu ve `619` fazla published satır. Kod deploy sonrası `POST /api/public-archive/duplicates/hide`
-  veya service-role script ile bu fazla satırlar `duplicate_hidden` yapılmalı.
+  grubu ve `619` fazla published satırdı. Service-role operasyonuyla bu `619` fazla satır
+  silinmeden `duplicate_hidden` durumuna alındı. Son doğrulama: `2.439` published kayıt,
+  `0` mükerrer soru grubu, `0` fazla published satır.
+- Production deploy: `https://arsiv-kontrol-qnlqb9a0k-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_HumfCPfwWE5XhvWBA1LbjGeWu4Kx`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Smoke: `/health` 200; root `/` public ve index/follow; `/admin` noindex/no-store; `/arsiv`,
+  `/arama`, `/soru-sor`, `/hakkimizda` 200. Analytics endpoint tablo yokken güvenli şekilde
+  `available:false` dönüyor.
+
+## 2026-08-22 Codex Public SEO Giriş Dosyaları
+
+- Root public açılışından sonra eksik kalan SEO/LLM giriş dosyaları eklendi:
+  `/robots.txt`, `/sitemap.xml`, `/llms.txt`.
+- `robots.txt` public root açık ve index bayrağı açıksa root'u taramaya açar; `/admin`,
+  `/api/`, `/auth/` ve `/public-preview` yollarını dışarıda bırakır; sitemap linkini verir.
+  Root/index bayrakları kapalıysa güvenli noindex/disallow davranışına döner.
+- `sitemap.xml` statik public sayfaları, published soru sayfalarını ve kategori sayfalarını
+  üretir. Son canlı smoke `3.623` sitemap URL'si doğruladı.
+- `llms.txt` site amacını, canonical adresi, yayınlanan soru-cevap sayısını, sitemap'i ve
+  kaynak gösterim kuralını sade metinle verir.
+- Commit/push: `063dadf fix: expose public seo entry files`.
+- Production deploy: `https://arsiv-kontrol-l94nx9h04-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_FdPvjeui4xbe8KmuhCvySyEs3CBf`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Smoke: `/robots.txt`, `/sitemap.xml`, `/llms.txt`, root `/` ve `/admin` başarılı.
 
 ## 2026-08-22 Codex Public Favicon, Paylaşım Kartı ve Ana Sayfa Vitrini
 
