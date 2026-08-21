@@ -23,8 +23,8 @@
   `codex/public-launch-integration` branch'ine push edildi.
 - Preview deploy: doğru `arsiv-kontrol` Vercel projesine temiz `git archive HEAD` kaynağıyla
   deploy alındı. Deployment:
-  `https://arsiv-kontrol-jmyphg4xw-ugurkarabulutts-projects.vercel.app`,
-  `dpl_7yWCj3cCcPrJXHxVMp4exqNy3nQ2`; stabil alias
+  `https://arsiv-kontrol-228cs4dn7-ugurkarabulutts-projects.vercel.app`,
+  `dpl_4aXkU1AHsx7ScezWZp8ESY5Z1v89`; stabil alias
   `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi.
 - Preview smoke: `/health`, `/public-preview`, gerçek veriyle bir `/public-preview/soru/...`,
   `/public-preview/hesabim` ve `/admin` 200 döndü. Public preview ve admin noindex; detay
