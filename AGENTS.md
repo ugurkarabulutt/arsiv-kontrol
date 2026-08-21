@@ -121,6 +121,24 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
+- **Public favicon, paylaşım kartı ve saatlik ana sayfa vitrini:** Public arşiv için mevcut
+  şeffaf logo marktan ayrı favicon/app ikonları üretildi:
+  `favicon-16.png`, `favicon-32.png`, `favicon-48.png`, `apple-touch-icon.png`,
+  `app-icon-192.png`, `app-icon-512.png`, `app-icon-maskable-512.png`. WhatsApp/Telegram/X/LinkedIn
+  paylaşım kartı için `public-share-card.png` (`1200x630`) ve PWA manifest için
+  `site.webmanifest` eklendi. Public head artık favicon, Apple touch icon, manifest,
+  `og:image`, `og:image:width/height/alt`, `twitter:card=summary_large_image` ve
+  `twitter:image` üretir; JSON-LD `WebSite` yapısına görsel ve publisher logo bilgisi eklendi.
+  Ana sayfa soru vitrini veri silmeden mükerrer soruları tekilleştirir; aynı sorunun birden çok
+  kaydı varsa okunma sayısı, featured durumu ve yayın tarihiyle en iyi kayıt seçilir. Öne çıkan
+  alan okunma ağırlıklı ve saatlik rotasyonlu çalışır; son yayınlanan alan da öne çıkanlarla
+  çakışmadan saatlik dönen güncel havuzdan seçilir. Guard/testler asset ölçülerini, sosyal meta
+  tag'lerini, manifest içeriğini, mükerrer slug temizliğini ve okuma ağırlıklı vitrin davranışını
+  doğrular. Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` (`103/103`) ve
+  `git diff --check` başarılı. Root production cutover bu maddede henüz yapılmadı.
+
 - **Public logo mark eklendi:** Kullanıcının verdiği kitap/kalp/ışık sembolü arka planı
   şeffaf olacak şekilde kesildi. AI yeniden çizimi yeterli temiz olmadığı için orijinal
   görselden deterministik alfa maskesiyle public logo mark üretildi ve optimize asset olarak

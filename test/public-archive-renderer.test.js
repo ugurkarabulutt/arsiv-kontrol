@@ -76,8 +76,13 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /\/api\/my-question-submissions/);
   assert.match(home, /<meta name="robots" content="index,follow">/);
   assert.match(home, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/">/);
+  assert.match(home, /property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png"/);
+  assert.match(home, /name="twitter:card" content="summary_large_image"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"SearchAction"/);
+  assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png"/);
   assert.doesNotMatch(home, /\/public-preview\//);
 
   const detail = renderPublicArchivePreviewRoute('/soru/ornek-soru', {}, rootData);
@@ -448,6 +453,50 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /pa-question-excerpt/);
   assert.doesNotMatch(home, /Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur\./);
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
+});
+
+test('home page question selection is deduplicated and read-weighted', () => {
+  const archiveData = {
+    brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
+    categories: [{ slug: 'karar-vermek', name: 'Karar Vermek', description: 'Karar verme soruları.', topicSlugs: [] }],
+    topics: [],
+    qa: [
+      {
+        slug: 'mukerrer-soru-a',
+        title: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+        question: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+        answer: ['Bu kayıt ilk örnek olarak gelir.'],
+        categorySlug: 'karar-vermek',
+        publishedAt: '2026-08-20T09:00:00.000Z',
+        readCount: 1,
+        isFeatured: true
+      },
+      {
+        slug: 'mukerrer-soru-b',
+        title: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+        question: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+        answer: ['Bu kayıt aynı sorunun daha çok okunan sürümüdür.'],
+        categorySlug: 'karar-vermek',
+        publishedAt: '2026-08-21T09:00:00.000Z',
+        readCount: 20,
+        isFeatured: true
+      },
+      {
+        slug: 'cok-okunan-vitrin-sorusu',
+        title: 'Çok okunan soru vitrinde yer bulur mu?',
+        question: 'Çok okunan soru vitrinde yer bulur mu?',
+        answer: ['Bu kayıt okuma ağırlığı kontrolü için kullanılır.'],
+        categorySlug: 'karar-vermek',
+        publishedAt: '2026-08-19T09:00:00.000Z',
+        readCount: 999
+      }
+    ]
+  };
+  const home = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
+
+  assert.match(home, /\/public-preview\/soru\/mukerrer-soru-b/);
+  assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-a/);
+  assert.match(home, /Çok okunan soru vitrinde yer bulur mu\?/);
 });
 
 test('mobile search copy stays compact but accessible', () => {

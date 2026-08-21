@@ -1129,12 +1129,35 @@ assert(!rootLaunchPreview.includes('/public-preview/'), 'Root public mode public
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [
   '/public-preview/assets/hero-open-book-warm.jpg',
-  '/public-preview/assets/arsiv-logo-mark.png'
+  '/public-preview/assets/arsiv-logo-mark.png',
+  '/public-preview/assets/favicon-16.png',
+  '/public-preview/assets/favicon-32.png',
+  '/public-preview/assets/favicon-48.png',
+  '/public-preview/assets/apple-touch-icon.png',
+  '/public-preview/assets/site.webmanifest'
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
+for (const [fileName, expectedSize] of [
+  ['favicon-16.png', '16x16'],
+  ['favicon-32.png', '32x32'],
+  ['favicon-48.png', '48x48'],
+  ['apple-touch-icon.png', '180x180'],
+  ['app-icon-192.png', '192x192'],
+  ['app-icon-512.png', '512x512'],
+  ['app-icon-maskable-512.png', '512x512'],
+  ['public-share-card.png', '1200x630']
+]) {
+  assert(readPngSize(path.join(publicAssetRoot, 'assets', fileName)) === expectedSize, `Public asset olcusu hatali: ${fileName}`);
+}
+const publicManifest = JSON.parse(fs.readFileSync(path.join(publicAssetRoot, 'assets', 'site.webmanifest'), 'utf8'));
+assert(publicManifest.name === 'Dini Sorular ve Cevaplar Arşivi' && publicManifest.short_name === 'Dini Sorular', 'Public app manifest isimleri dogru olmali.');
+assert((publicManifest.icons || []).some(icon => icon.src === 'app-icon-maskable-512.png' && icon.purpose === 'maskable'), 'Public manifest maskable icon icermeli.');
 for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="256" height="256"', 'aria-hidden="true"']) {
   assert(homePreview.includes(marker), `Public logo mark HTML marker eksik: ${marker}`);
+}
+for (const marker of ['property="og:image"', 'public-share-card.png', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:image"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
+  assert(homePreview.includes(marker), `Public sosyal/app meta marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
@@ -1142,6 +1165,48 @@ assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada
 for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeScore', 'homeRotationHour', 'hashString']) {
+  assert(publicRendererSource.includes(marker), `Public ana sayfa saatlik vitrin marker eksik: ${marker}`);
+}
+const duplicateHomePreview = renderPublicArchivePreviewRoute('/public-preview', {}, {
+  brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
+  categories: [{ slug: 'karar-vermek', name: 'Karar Vermek', description: 'Karar verme soruları.', topicSlugs: [] }],
+  topics: [],
+  qa: [
+    {
+      slug: 'mukerrer-soru-a',
+      title: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+      question: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+      answer: ['Bu kayıt ilk örnek olarak gelir.'],
+      categorySlug: 'karar-vermek',
+      publishedAt: '2026-08-20T09:00:00.000Z',
+      readCount: 1,
+      isFeatured: true
+    },
+    {
+      slug: 'mukerrer-soru-b',
+      title: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+      question: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+      answer: ['Bu kayıt aynı sorunun daha çok okunan sürümüdür.'],
+      categorySlug: 'karar-vermek',
+      publishedAt: '2026-08-21T09:00:00.000Z',
+      readCount: 20,
+      isFeatured: true
+    },
+    {
+      slug: 'cok-okunan-vitrin-sorusu',
+      title: 'Çok okunan soru vitrinde yer bulur mu?',
+      question: 'Çok okunan soru vitrinde yer bulur mu?',
+      answer: ['Bu kayıt okuma ağırlığı kontrolü için kullanılır.'],
+      categorySlug: 'karar-vermek',
+      publishedAt: '2026-08-19T09:00:00.000Z',
+      readCount: 999
+    }
+  ]
+}).html;
+assert(duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-b'), 'Public ana sayfa mukerrer sorunun secilen surumunu gostermeli.');
+assert(!duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-a'), 'Public ana sayfa mukerrer sorunun eski surumunu tekrar gostermemeli.');
+assert(duplicateHomePreview.includes('Çok okunan soru vitrinde yer bulur mu?'), 'Public ana sayfa okuma agirlikli soruyu vitrine alabilmeli.');
 assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
 assert(!homePreview.includes('Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır.'), 'Public home eski okuma duzeni basligini icermemeli.');
 assert(!homePreview.includes('Öne Çıkan Cevaplar'), 'Public home eski One Cikan Cevaplar basligini icermemeli.');

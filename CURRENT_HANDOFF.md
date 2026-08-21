@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public Favicon, Paylaşım Kartı ve Ana Sayfa Vitrini
+
+- Public arşiv için mevcut `arsiv-logo-mark.png` üzerinden favicon ve app ikonları üretildi:
+  `favicon-16.png`, `favicon-32.png`, `favicon-48.png`, `apple-touch-icon.png`,
+  `app-icon-192.png`, `app-icon-512.png`, `app-icon-maskable-512.png`.
+- Public PWA manifest eklendi: `public-archive-assets/assets/site.webmanifest`. App adı
+  `Dini Sorular ve Cevaplar Arşivi`, kısa ad `Dini Sorular`; Android için `192`, `512` ve
+  `maskable 512` ikonları kullanır.
+- Sosyal paylaşım kartı eklendi: `public-archive-assets/assets/public-share-card.png`
+  (`1200x630`). Public head artık `og:image`, `og:image:width/height/alt`,
+  `twitter:card=summary_large_image`, `twitter:image`, favicon, Apple touch icon ve manifest
+  linklerini üretir. JSON-LD `WebSite` yapısına share image ve publisher logo bilgisi eklendi.
+- Ana sayfa vitrini veri silmeden tekilleştirildi. Aynı soru farklı slug/kayıtla gelirse ana
+  sayfada tek kart görünür; okunma sayısı, featured durumu ve yayın tarihiyle en iyi sürüm seçilir.
+- `Öne Çıkan Sorular` okunma ağırlıklı ve saatlik rotasyonlu seçilir. `Son Yayınlanan Sorular`
+  öne çıkanlarla çakışmaz ve güncel havuz içinde saatlik döner. Böylece ana sayfada mükerrer
+  görünmez; en çok okunanlar genellikle vitrine düşer ama vitrin saatlik tazelenir.
+- Guard/test eklendi: public asset ölçüleri, manifest içeriği, sosyal meta tag'leri, root mode
+  OG/manifest linkleri, mükerrer slug temizliği ve okuma ağırlıklı vitrin davranışı.
+- Doğrulama: `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `103/103` geçti.
+- Sonraki adım: commit/push, preview deploy + smoke; ardından kullanıcı canlı root açılışını
+  kesinleştirirse production root bayrakları açılıp production deploy yapılacak.
+
 ## 2026-08-22 Codex Public Logo Mark Ekleme
 
 - Kullanıcının verdiği kitap/kalp/ışık sembolü arka planı şeffaf olacak şekilde kesildi; AI

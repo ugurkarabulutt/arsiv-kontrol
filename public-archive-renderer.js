@@ -11,6 +11,7 @@ let PUBLIC_ARCHIVE_NOINDEX = true;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 const ARCHIVE_PAGE_SIZE = 30;
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
+const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card.png';
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
@@ -33,6 +34,14 @@ function publicArchiveCanonicalUrl(pathname = '') {
   const clean = String(pathname || '').trim();
   const suffix = !clean || clean === '/' ? '/' : clean.startsWith('/') ? clean : `/${clean}`;
   return `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${suffix === '/' ? '/' : suffix}`;
+}
+
+function publicArchiveAssetHref(filename) {
+  return `${ASSET_PATH}/${filename}`;
+}
+
+function publicArchiveAssetUrl(filename) {
+  return publicArchiveCanonicalUrl(`/assets/${filename}`);
 }
 
 function publicArchiveRoutePattern(section = '') {
@@ -661,9 +670,14 @@ function publicArchiveSiteStructuredData() {
     name: publicArchiveFixtures.brand.name,
     description: publicArchiveFixtures.brand.sentence,
     inLanguage: 'tr',
+    image: publicArchiveAssetUrl(PUBLIC_SHARE_IMAGE_FILE),
     publisher: {
       '@type': 'Organization',
-      name: publicArchiveFixtures.brand.name
+      name: publicArchiveFixtures.brand.name,
+      logo: {
+        '@type': 'ImageObject',
+        url: publicArchiveAssetUrl('app-icon-512.png')
+      }
     },
     potentialAction: {
       '@type': 'SearchAction',
@@ -756,6 +770,94 @@ function questionCard(entry, options = {}) {
   `;
 }
 
+function homeQuestionIdentity(entry = {}) {
+  const question = normalizeSearchText(entry.question || entry.title || '');
+  if (question) return question.slice(0, 220);
+  const answer = normalizeSearchText(plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body || ''));
+  return answer ? answer.slice(0, 220) : String(entry.slug || entry.id || '');
+}
+
+function entryPublishedTime(entry = {}) {
+  const date = new Date(entry.publishedAt || entry.updatedAt || 0);
+  const time = date.getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function betterHomeDuplicate(nextEntry = {}, currentEntry = {}) {
+  const readDiff = normalizedReadCount(nextEntry) - normalizedReadCount(currentEntry);
+  if (readDiff !== 0) return readDiff > 0;
+  if (Boolean(nextEntry.isFeatured) !== Boolean(currentEntry.isFeatured)) return Boolean(nextEntry.isFeatured);
+  const dateDiff = entryPublishedTime(nextEntry) - entryPublishedTime(currentEntry);
+  if (dateDiff !== 0) return dateDiff > 0;
+  return String(nextEntry.slug || '').localeCompare(String(currentEntry.slug || ''), 'tr') < 0;
+}
+
+function uniqueHomeQuestions(entries = []) {
+  const byIdentity = new Map();
+  for (const entry of entries || []) {
+    if (!entry?.slug) continue;
+    const key = homeQuestionIdentity(entry);
+    if (!key) continue;
+    const current = byIdentity.get(key);
+    if (!current || betterHomeDuplicate(entry, current)) byIdentity.set(key, entry);
+  }
+  return [...byIdentity.values()];
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+  for (const character of String(value || '')) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function homeRotationHour(now = Date.now()) {
+  return Math.floor(Number(now || 0) / 3600000);
+}
+
+function weightedHomeScore(entry = {}, hour = homeRotationHour(), slot = 'popular') {
+  const reads = Math.log1p(normalizedReadCount(entry)) * 1100;
+  const featuredBoost = entry.isFeatured ? 450 : 0;
+  const publishedBoost = entryPublishedTime(entry) ? Math.min(320, Math.max(0, entryPublishedTime(entry) / 100000000000)) : 0;
+  const rotation = hashString(`${slot}:${hour}:${entry.slug || ''}:${entry.title || ''}`) % 720;
+  return reads + featuredBoost + publishedBoost + rotation;
+}
+
+function rotateByHour(entries = [], hour = homeRotationHour()) {
+  if (!entries.length) return [];
+  const offset = hour % entries.length;
+  return [...entries.slice(offset), ...entries.slice(0, offset)];
+}
+
+function homeQuestionSets(entries = []) {
+  const unique = uniqueHomeQuestions(entries);
+  const hour = homeRotationHour();
+  const featured = unique
+    .map(entry => ({ entry, score: weightedHomeScore(entry, hour, 'featured') }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => item.entry);
+  const used = new Set(featured.map(homeQuestionIdentity));
+  const latestPool = unique
+    .filter(entry => !used.has(homeQuestionIdentity(entry)))
+    .sort((a, b) => entryPublishedTime(b) - entryPublishedTime(a))
+    .slice(0, 18);
+  const latest = rotateByHour(latestPool, hour).slice(0, 3);
+  const latestUsed = new Set([...used, ...latest.map(homeQuestionIdentity)]);
+  if (latest.length < 3) {
+    const fallback = unique
+      .filter(entry => !latestUsed.has(homeQuestionIdentity(entry)))
+      .map(entry => ({ entry, score: weightedHomeScore(entry, hour, 'latest') }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3 - latest.length)
+      .map(item => item.entry);
+    latest.push(...fallback);
+  }
+  return { featured, latest };
+}
+
 function topicCard(topic) {
   return `
     <a class="pa-topic-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(topic.slug)}">
@@ -829,8 +931,7 @@ function trustBand() {
 }
 
 function renderHome() {
-  const featured = publicArchiveFixtures.qa.filter(entry => entry.isFeatured).slice(0, 3);
-  const latest = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0, 3);
+  const { featured, latest } = homeQuestionSets(publicArchiveFixtures.qa);
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
@@ -1529,6 +1630,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   const safeTitle = pageTitle(title);
   const safeDescription = description || publicArchiveFixtures.brand.sentence;
   const canonicalHref = canonicalPath ? publicArchiveCanonicalUrl(canonicalPath) : '';
+  const shareImageHref = publicArchiveAssetUrl(PUBLIC_SHARE_IMAGE_FILE);
   const structuredItems = [
     publicArchiveSiteStructuredData(),
     ...(Array.isArray(structuredData) ? structuredData : structuredData ? [structuredData] : [])
@@ -1542,16 +1644,28 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="${PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : 'index,follow'}">
   <meta name="description" content="${escapeHtml(safeDescription)}">
+  <meta name="application-name" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
+  <meta name="apple-mobile-web-app-title" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
   ${!PUBLIC_ARCHIVE_NOINDEX && canonicalHref ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
   <meta property="og:site_name" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
   <meta property="og:title" content="${escapeHtml(safeTitle)}">
   <meta property="og:description" content="${escapeHtml(safeDescription)}">
   <meta property="og:type" content="${questionSlug ? 'article' : 'website'}">
   ${canonicalHref ? `<meta property="og:url" content="${escapeHtml(canonicalHref)}">` : ''}
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="${escapeHtml(shareImageHref)}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="${escapeHtml(shareImageHref)}">
   <meta name="theme-color" content="#F7F3EA">
   <title>${escapeHtml(safeTitle)}</title>
   ${structuredItems.map(jsonLdScript).join('\n  ')}
+  <link rel="icon" type="image/png" sizes="16x16" href="${publicArchiveAssetHref('favicon-16.png')}">
+  <link rel="icon" type="image/png" sizes="32x32" href="${publicArchiveAssetHref('favicon-32.png')}">
+  <link rel="icon" type="image/png" sizes="48x48" href="${publicArchiveAssetHref('favicon-48.png')}">
+  <link rel="apple-touch-icon" sizes="180x180" href="${publicArchiveAssetHref('apple-touch-icon.png')}">
+  <link rel="manifest" href="${publicArchiveAssetHref('site.webmanifest')}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
