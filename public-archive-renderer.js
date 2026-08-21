@@ -10,6 +10,7 @@ let ASSET_PATH = `${PREVIEW_BASE}/assets`;
 let PUBLIC_ARCHIVE_NOINDEX = true;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 const ARCHIVE_PAGE_SIZE = 30;
+const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
@@ -26,6 +27,12 @@ function publicArchivePath(pathname = '') {
   if (!clean || clean === '/') return publicArchiveHomeHref();
   const suffix = clean.startsWith('/') ? clean : `/${clean}`;
   return `${PREVIEW_BASE}${suffix}` || '/';
+}
+
+function publicArchiveCanonicalUrl(pathname = '') {
+  const clean = String(pathname || '').trim();
+  const suffix = !clean || clean === '/' ? '/' : clean.startsWith('/') ? clean : `/${clean}`;
+  return `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${suffix === '/' ? '/' : suffix}`;
 }
 
 function publicArchiveRoutePattern(section = '') {
@@ -119,6 +126,11 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function jsonLdScript(data) {
+  const payload = JSON.stringify(data).replace(/</g, '\\u003c');
+  return `<script type="application/ld+json">${payload}</script>`;
 }
 
 function normalizeSearchText(value) {
@@ -618,7 +630,7 @@ function sourceReferencesPanel(entry) {
   return `
     <aside class="pa-source-box">
       <h2>Kaynak ve deliller</h2>
-      <p>Cevap metninde atıf yapılan ayetler:</p>
+      <p>Bu cevapta açıkça adı geçen ayet atıfları:</p>
       <div class="pa-source-references">
         ${references.map(reference => {
           const href = `${PREVIEW_BASE}/arama?q=${encodeURIComponent(reference.label)}`;
@@ -627,6 +639,90 @@ function sourceReferencesPanel(entry) {
       </div>
     </aside>
   `;
+}
+
+function plainText(value) {
+  if (Array.isArray(value)) return value.map(plainText).filter(Boolean).join('\n\n');
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function publicArchiveSiteStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${publicArchiveCanonicalUrl('/')}#website`,
+    url: publicArchiveCanonicalUrl('/'),
+    name: publicArchiveFixtures.brand.name,
+    description: publicArchiveFixtures.brand.sentence,
+    inLanguage: 'tr',
+    publisher: {
+      '@type': 'Organization',
+      name: publicArchiveFixtures.brand.name
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${publicArchiveCanonicalUrl('/arama')}?q={search_term_string}`
+      },
+      'query-input': 'required name=search_term_string'
+    }
+  };
+}
+
+function questionPageStructuredData(entry, category) {
+  const canonicalUrl = publicArchiveCanonicalUrl(`/soru/${entry.slug}`);
+  const categoryNames = categoriesFor(entry).map(item => item.name).filter(Boolean);
+  const references = extractQuranReferences(entry).map(reference => reference.label);
+  const answerText = plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body);
+  const answererName = publicArchiveFixtures.brand.authorName || publicArchiveFixtures.brand.answererLabel || '';
+  const question = plainText(entry.question || entry.title);
+  const acceptedAnswer = {
+    '@type': 'Answer',
+    text: answerText,
+    author: answererName ? { '@type': 'Person', name: answererName } : undefined,
+    datePublished: entry.publishedAt || undefined,
+    dateModified: entry.updatedAt || undefined,
+    citation: references.length ? references : undefined
+  };
+  const breadcrumbItems = [
+    { name: 'Ana Sayfa', url: publicArchiveCanonicalUrl('/') },
+    { name: 'Arşiv', url: publicArchiveCanonicalUrl('/arsiv') },
+    category ? { name: category.name, url: publicArchiveCanonicalUrl(`/kategori/${category.slug}`) } : null,
+    { name: entry.title, url: canonicalUrl }
+  ].filter(Boolean);
+
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'QAPage',
+      '@id': `${canonicalUrl}#qa`,
+      url: canonicalUrl,
+      name: entry.title,
+      description: entry.excerpt || entry.summary || question,
+      inLanguage: 'tr',
+      about: categoryNames,
+      keywords: categoryNames.join(', '),
+      mainEntity: {
+        '@type': 'Question',
+        name: entry.title,
+        text: question,
+        answerCount: 1,
+        datePublished: entry.publishedAt || undefined,
+        acceptedAnswer
+      }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbItems.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.url
+      }))
+    }
+  ];
 }
 
 function questionCard(entry, options = {}) {
@@ -733,6 +829,7 @@ function renderHome() {
     active: 'home',
     title: 'Ana Sayfa',
     description: 'Dini Sorular ve Cevaplar Arşivi içinde soru, cevap ve kategorileri birlikte okuyun.',
+    canonicalPath: '/',
     content: `
       <main class="pa-main">
         <section class="pa-hero">
@@ -968,6 +1065,7 @@ function renderArchive(query = {}) {
     active: 'archive',
     title: 'Arşiv',
     description: 'Merak ettiğiniz konunun cevaplarına ulaşın.',
+    canonicalPath: '/arsiv',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-archive-hero">
@@ -997,6 +1095,7 @@ function renderSearch(query = '') {
     active: 'search',
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
     description: 'Arşivde soru ve kategori arayın.',
+    canonicalPath: '/arama',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-search-page">
@@ -1028,6 +1127,7 @@ function renderCategoriesIndex() {
     active: 'categories',
     title: 'Kategoriler',
     description: 'Arşivdeki soru-cevap kategorileri.',
+    canonicalPath: '/kategoriler',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-collection-hero">
@@ -1071,6 +1171,8 @@ function renderQuestion(slug) {
     active: 'archive',
     title: entry.title,
     description: entry.excerpt || entry.summary,
+    canonicalPath: `/soru/${entry.slug}`,
+    structuredData: questionPageStructuredData(entry, category),
     questionSlug: entry.slug,
     content: `
       <main class="pa-main pa-detail-main">
@@ -1094,7 +1196,6 @@ function renderQuestion(slug) {
             <div class="pa-tool-row" aria-label="Sayfa araçları">
               <button type="button" class="pa-icon-button" data-share>Paylaş</button>
               <button type="button" class="pa-icon-button" data-copy-link>Bağlantıyı kopyala</button>
-              <button type="button" class="pa-icon-button" data-print>Yazdır</button>
             </div>
           </div>
           <aside class="pa-answer-aside">
@@ -1131,6 +1232,7 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
     active: 'categories',
     title: category.name,
     description: category.description,
+    canonicalPath: `/kategori/${category.slug}`,
     content: `
       <main class="pa-main pa-narrow-main">
         ${breadcrumb([{ label: 'Kategoriler', href: `${PREVIEW_BASE}/kategoriler` }, { label: category.name }])}
@@ -1158,6 +1260,7 @@ function renderAccount() {
     active: 'account',
     title: 'Hesabım',
     description: 'Soru gönderimi için hesap sayfası.',
+    canonicalPath: '/hesabim',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-account-page pa-auth-shell" data-account-panel>
@@ -1227,6 +1330,7 @@ function renderAsk() {
     active: 'ask',
     title: 'Soru Sor',
     description: 'Arşive soru göndermek için sade form.',
+    canonicalPath: '/soru-sor',
     content: `
       <main class="pa-main pa-form-main">
         ${breadcrumb([{ label: 'Soru Sor' }])}
@@ -1373,6 +1477,7 @@ function renderInfoPage(kind) {
     active: kind === 'iletisim' ? 'ask' : 'archive',
     title: page.title,
     description: page.heading,
+    canonicalPath: `/${kind}`,
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-info-page">
@@ -1414,9 +1519,14 @@ function renderNotFound() {
   });
 }
 
-function renderShell({ title, description, active, content, status = 200, questionSlug = '' }) {
+function renderShell({ title, description, active, content, status = 200, questionSlug = '', canonicalPath = '', structuredData = [] }) {
   const safeTitle = pageTitle(title);
   const safeDescription = description || publicArchiveFixtures.brand.sentence;
+  const canonicalHref = canonicalPath ? publicArchiveCanonicalUrl(canonicalPath) : '';
+  const structuredItems = [
+    publicArchiveSiteStructuredData(),
+    ...(Array.isArray(structuredData) ? structuredData : structuredData ? [structuredData] : [])
+  ];
   return {
     status,
     html: `<!doctype html>
@@ -1426,8 +1536,16 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="${PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : 'index,follow'}">
   <meta name="description" content="${escapeHtml(safeDescription)}">
+  ${!PUBLIC_ARCHIVE_NOINDEX && canonicalHref ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
+  <meta property="og:site_name" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
+  <meta property="og:title" content="${escapeHtml(safeTitle)}">
+  <meta property="og:description" content="${escapeHtml(safeDescription)}">
+  <meta property="og:type" content="${questionSlug ? 'article' : 'website'}">
+  ${canonicalHref ? `<meta property="og:url" content="${escapeHtml(canonicalHref)}">` : ''}
+  <meta name="twitter:card" content="summary">
   <meta name="theme-color" content="#F7F3EA">
   <title>${escapeHtml(safeTitle)}</title>
+  ${structuredItems.map(jsonLdScript).join('\n  ')}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1496,9 +1614,6 @@ function renderShell({ title, description, active, content, status = 200, questi
             if (copyButton) copyButton.click();
           }
         });
-      });
-      document.querySelectorAll('[data-print]').forEach(function(button){
-        button.addEventListener('click', function(){ window.print(); });
       });
       document.querySelectorAll('[data-card-href]').forEach(function(card){
         function openCard(event) {

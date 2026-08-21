@@ -120,6 +120,22 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-22
+- **Public SEO/LLM detay verisi ve Yazdır kaldırma:** Public soru detayındaki gereksiz
+  `Yazdır` aracı kaldırıldı; `data-print` frontend dinleyicisi silindi. Public renderer root
+  açılışına hazırlık için canonical URL altyapısı ekledi: preview modunda sayfalar
+  `noindex,nofollow` kalır ve canonical üretmez; root public index bayrağı açıldığında canonical
+  adresler `https://arsiv.ibrahimlive.ai/...` olarak üretilir. Tüm public sayfalara `WebSite`
+  + `SearchAction` JSON-LD, soru detaylarına `QAPage` + `BreadcrumbList` JSON-LD eklendi.
+  Yapılandırılmış veri yalnız publicte görünen soru, cevap, yanıtlayan kişi, yayın/güncelleme
+  tarihi, kategori etiketleri ve cevap metninde açık geçen ayet atıflarını taşır; admin notu,
+  skor, prompt/model veya iç süreç bilgisi public çıktıya girmez. `Kaynak ve deliller` metni
+  “Bu cevapta açıkça adı geçen ayet atıfları” olarak netleştirildi ve aynı atıflar
+  `acceptedAnswer.citation` alanına yazılır. Doğrulama: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `102/102` geçti.
+
 ### 2026-08-21
 - **Public soru talebi cevap akışı eklendi:** Public soru detayında üstte görünen büyük tekrar
   soru başlığı kaldırıldı; başlık SEO/erişilebilirlik için yalnız `pa-sr-only` gizli başlık

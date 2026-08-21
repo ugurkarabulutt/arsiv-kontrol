@@ -30,6 +30,7 @@ const PUBLIC_FORBIDDEN_WORDS = ['AI', 'prompt', 'model', 'admin', 'denetim', 'on
 
 function publicForbiddenWordHits(content, options = {}) {
   let scan = String(content || '');
+  scan = scan.replace(/https?:\/\/arsiv\.ibrahimlive\.ai\/?/gi, '');
   if (options.allowRobotsAdminPath) {
     scan = scan.replace(/^\s*(?:Disallow|Allow):\s*\/admin\/?\s*$/gmi, '');
   }
@@ -1110,6 +1111,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
   assert(rendered.html.includes('/public-preview/public-archive.css'), `${item.route} yalniz public CSS yuklemeli.`);
+  assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
 }
@@ -1120,6 +1122,8 @@ assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim 
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/public-archive.css"'), 'Root public mode CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
+assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
+assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
 assert(!rootLaunchPreview.includes('/public-preview/'), 'Root public mode public-preview path sizintisi icermemeli.');
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
@@ -1213,14 +1217,18 @@ assert(accountPreview.includes('data-user-questions') && accountPreview.includes
 assert(accountPreview.includes('/public-preview/api/my-question-submissions'), 'Public hesap sayfasi kullanicinin soru cevap durum API sine baglanmali.');
 assertOnlyPublicPreviewApi('/public-preview/hesabim', accountPreview);
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
-for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
+for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala']) {
   assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);
+}
+for (const marker of ['application/ld+json', '"@type":"QAPage"', '"acceptedAnswer"', '"@type":"BreadcrumbList"', '"@type":"SearchAction"']) {
+  assert(detailPreview.includes(marker), `Public detail SEO/LLM yapisal veri eksik: ${marker}`);
 }
 assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('class="pa-detail-subtitle"'), 'Public detail ust ozet paragrafinin geri gelmemesi gerekir.');
 assert(!detailPreview.includes('<h1>Allah’a ulaşmayı dilemek ne demektir?</h1>'), 'Public detail ustte buyuk tekrar soru basligini gostermemeli.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
+assert(!detailPreview.includes('Yazdır') && !detailPreview.includes('data-print') && !publicRendererSource.includes('data-print'), 'Public detail yazdir aksiyonu geri gelmemeli.');
 const sourceDetailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/kaynakli-soru', {}, {
   brand: { authorLine: 'Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.', answererLabel: 'Yanıtlayan: Dr. Abdulcabbar Boran' },
   categories: [{ slug: 'hidayet', name: 'Hidayet', description: 'Hidayet kayıtları.', topicSlugs: ['zikir'], featured: true }],
@@ -1244,6 +1252,8 @@ const sourceDetailPreview = renderPublicArchivePreviewRoute('/public-preview/sor
 for (const marker of ['Kaynak ve deliller', 'Bakara-256', 'Yâsîn-62', 'data-source-reference']) {
   assert(sourceDetailPreview.includes(marker), `Public detail kaynak marker eksik: ${marker}`);
 }
+assert(sourceDetailPreview.includes('Bu cevapta açıkça adı geçen ayet atıfları'), 'Public kaynak metni gorunur ve acik olmali.');
+assert(sourceDetailPreview.includes('"citation":["Bakara-256","Yâsîn-62"]'), 'Public kaynaklar QAPage acceptedAnswer citation alanina yazilmali.');
 assert(!sourceDetailPreview.includes('Bu özet detay üstünde görünmemeli.</p>'), 'Public detail kaynakli kayitta ust ozet gorunmemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {

@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public SEO/LLM Detay Verisi ve Yazdır Kaldırma
+
+- Public soru detayındaki `Yazdır` aracı kaldırıldı; `Paylaş` ve `Bağlantıyı kopyala` kaldı.
+  Renderer içinde `data-print` dinleyicisi silindi ve guard/testler `Yazdır` veya `data-print`
+  geri gelirse hata verecek şekilde güncellendi.
+- Public renderer root açılışına hazırlık için canonical URL altyapısı eklendi. Preview modunda
+  sayfalar hâlâ `noindex,nofollow` ve canonical üretmez; root public index bayrağı açıldığında
+  canonical adresler `https://arsiv.ibrahimlive.ai/...` olarak üretilir.
+- SEO/LLM okunabilirliği için tüm public sayfalara `WebSite` + `SearchAction` JSON-LD, soru
+  detaylarına ise `QAPage` + `BreadcrumbList` JSON-LD eklendi. Yapılandırılmış veriye yalnız
+  publicte zaten görünen soru, cevap, yanıtlayan kişi, yayın/güncelleme tarihi, kategori
+  etiketleri ve cevap metninde açık geçen ayet atıfları girer; admin notu, skor, prompt/model
+  veya iç süreç bilgisi public çıktıya taşınmaz.
+- `Kaynak ve deliller` görünür metni “Bu cevapta açıkça adı geçen ayet atıfları” şeklinde
+  netleştirildi; aynı atıflar QAPage `acceptedAnswer.citation` alanına da yazılır.
+- Doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `102/102` geçti.
+- Henüz commit/push/deploy yapılmadı. Dirty dosyalar: `public-archive-renderer.js`,
+  `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`, `CURRENT_HANDOFF.md`,
+  `AGENTS.md`.
+
 ## 2026-08-21 Codex Public Soru Talebi Cevap Akışı
 
 - Public soru detayında üstte görünen büyük tekrar soru başlığı kaldırıldı. Soru başlığı SEO ve

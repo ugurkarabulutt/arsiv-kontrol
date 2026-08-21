@@ -60,6 +60,7 @@ test('public preview routes render isolated noindex pages', () => {
     assert.match(rendered.html, /ve Cevaplar Arşivi/);
     assert.match(rendered.html, /Hesab\u0131m/);
     assert.match(rendered.html, /Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın\./);
+    assert.doesNotMatch(rendered.html, /rel="canonical"/);
     assertOnlyPublicPreviewApi(rendered.html);
   }
 });
@@ -74,11 +75,17 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /\/api\/session/);
   assert.match(home, /\/api\/my-question-submissions/);
   assert.match(home, /<meta name="robots" content="index,follow">/);
+  assert.match(home, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/">/);
+  assert.match(home, /"@type":"WebSite"/);
+  assert.match(home, /"@type":"SearchAction"/);
   assert.doesNotMatch(home, /\/public-preview\//);
 
   const detail = renderPublicArchivePreviewRoute('/soru/ornek-soru', {}, rootData);
   assert.equal(detail.status, 200);
   assert.match(detail.html, /href="\/kategori\//);
+  assert.match(detail.html, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/soru\/ornek-soru">/);
+  assert.match(detail.html, /"@type":"QAPage"/);
+  assert.match(detail.html, /"@type":"BreadcrumbList"/);
   assert.doesNotMatch(detail.html, /\/public-preview\//);
 });
 
@@ -338,6 +345,11 @@ test('public preview can render approved records instead of fixture data', () =>
   assert.match(detail.html, /Kaynak ve deliller/);
   assert.match(detail.html, /Bakara-256/);
   assert.match(detail.html, /Yâsîn-62/);
+  assert.match(detail.html, /application\/ld\+json/);
+  assert.match(detail.html, /"@type":"QAPage"/);
+  assert.match(detail.html, /"acceptedAnswer"/);
+  assert.match(detail.html, /"@type":"BreadcrumbList"/);
+  assert.match(detail.html, /"citation":\["Bakara-256","Yâsîn-62"\]/);
   assert.doesNotMatch(detail.html, /Public okuma bağlamı\./);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/zikir', {}, approvedArchiveData);
@@ -357,6 +369,8 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   assert.match(detail, /Cevap bilgileri/);
   assert.match(detail, /İlgili Sorular/);
   assert.match(detail, /data-public-read-count="ornek-soru"/);
+  assert.match(detail, /"@type":"SearchAction"/);
+  assert.doesNotMatch(detail, /Yazdır|data-print/);
   assert.doesNotMatch(detail, /class="pa-detail-subtitle"/);
   assert.doesNotMatch(detail, /<h1>Allah’a ulaşmayı dilemek ne demektir\?<\/h1>/);
   assertOnlyPublicPreviewApi(detail);
