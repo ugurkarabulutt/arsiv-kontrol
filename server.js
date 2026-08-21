@@ -43,6 +43,7 @@ const ADMIN_PARALLEL_ROUTE_ENABLED = process.env.ADMIN_PARALLEL_ROUTE_ENABLED !=
 const PUBLIC_ARCHIVE_PREVIEW_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_PREVIEW_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_ROOT_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
+const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
@@ -10634,6 +10635,147 @@ async function publicArchiveVisitHandler(req, res) {
   }
 }
 
+function publicArchiveRootIndexingAllowed() {
+  return PUBLIC_ARCHIVE_ROOT_ENABLED && PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED;
+}
+
+function publicArchiveXmlEscape(value = '') {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function publicArchiveAbsoluteUrl(pathname = '/') {
+  const clean = `/${String(pathname || '/').replace(/^\/+/, '')}`.replace(/\/+/g, '/');
+  return `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${clean === '//' ? '/' : clean}`;
+}
+
+function publicArchiveSitemapEntry(pathname, lastmod = '', priority = '0.6', changefreq = 'weekly') {
+  const safeLastmod = lastmod ? new Date(lastmod).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+  return [
+    '  <url>',
+    `    <loc>${publicArchiveXmlEscape(publicArchiveAbsoluteUrl(pathname))}</loc>`,
+    `    <lastmod>${publicArchiveXmlEscape(safeLastmod)}</lastmod>`,
+    `    <changefreq>${publicArchiveXmlEscape(changefreq)}</changefreq>`,
+    `    <priority>${publicArchiveXmlEscape(priority)}</priority>`,
+    '  </url>'
+  ].join('\n');
+}
+
+async function publicArchiveSitemapEntries() {
+  const today = new Date().toISOString();
+  const entries = [
+    publicArchiveSitemapEntry('/', today, '1.0', 'hourly'),
+    publicArchiveSitemapEntry('/arsiv', today, '0.9', 'daily'),
+    publicArchiveSitemapEntry('/arama', today, '0.7', 'weekly'),
+    publicArchiveSitemapEntry('/soru-sor', today, '0.5', 'monthly'),
+    publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
+    publicArchiveSitemapEntry('/nasil-kullanilir', today, '0.4', 'monthly'),
+    publicArchiveSitemapEntry('/iletisim', today, '0.3', 'monthly'),
+    publicArchiveSitemapEntry('/gizlilik', today, '0.2', 'yearly'),
+    publicArchiveSitemapEntry('/kullanim-kosullari', today, '0.2', 'yearly')
+  ];
+
+  if (await ensurePublicArchiveContentReady()) {
+    const rows = await fetchAllPages(() => supabase
+      .from('public_qa')
+      .select('slug,category_slug,updated_at,published_at')
+      .eq('status', 'published')
+      .order('updated_at', { ascending: false }), 1000);
+    const categories = new Map();
+    for (const row of rows || []) {
+      if (row.slug) entries.push(publicArchiveSitemapEntry(`/soru/${row.slug}`, row.updated_at || row.published_at, '0.8', 'monthly'));
+      if (row.category_slug && !categories.has(row.category_slug)) categories.set(row.category_slug, row.updated_at || row.published_at || today);
+    }
+    for (const [slug, lastmod] of categories.entries()) {
+      entries.push(publicArchiveSitemapEntry(`/kategori/${slug}`, lastmod, '0.7', 'weekly'));
+    }
+  }
+
+  return entries;
+}
+
+function publicArchiveRobotsHandler(req, res) {
+  res.type('text/plain; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+  if (!publicArchiveRootIndexingAllowed()) {
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    return res.send([
+      'User-agent: *',
+      'Disallow: /',
+      ''
+    ].join('\n'));
+  }
+  res.send([
+    'User-agent: *',
+    'Allow: /',
+    'Disallow: /admin',
+    'Disallow: /api/',
+    'Disallow: /auth/',
+    'Disallow: /public-preview',
+    `Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
+    ''
+  ].join('\n'));
+}
+
+async function publicArchiveSitemapHandler(req, res) {
+  try {
+    await startupReady;
+    res.type('application/xml; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+    if (!publicArchiveRootIndexingAllowed()) res.set('X-Robots-Tag', 'noindex, nofollow');
+    const entries = publicArchiveRootIndexingAllowed() ? await publicArchiveSitemapEntries() : [];
+    res.send([
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      ...entries,
+      '</urlset>'
+    ].join('\n'));
+  } catch (error) {
+    res.status(500).type('text/plain; charset=utf-8').send(error.message || 'Sitemap üretilemedi.');
+  }
+}
+
+async function publicArchiveLlmsHandler(req, res) {
+  try {
+    await startupReady;
+    const totalResult = await ensurePublicArchiveContentReady()
+      ? await supabase.from('public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')
+      : { count: 0 };
+    const total = Number(totalResult.count || 0);
+    res.type('text/plain; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+    if (!publicArchiveRootIndexingAllowed()) res.set('X-Robots-Tag', 'noindex, nofollow');
+    res.send([
+      '# Dini Sorular ve Cevaplar Arşivi',
+      '',
+      'Dini Sorular ve Cevaplar Arşivi, soru-cevapları delilleri ve kaynak bağlamıyla okunabilir hale getiren Türkçe bir arşivdir.',
+      'Cevaplar Dr. Abdulcabbar Boran tarafından verilen arşiv kayıtlarından hazırlanır.',
+      '',
+      `Canlı adres: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}`,
+      `Yayınlanan soru-cevap sayısı: ${total}`,
+      `Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
+      '',
+      'Önemli sayfalar:',
+      `- Ana sayfa: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`,
+      `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
+      `- Arama: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arama`,
+      `- Soru sorma: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/soru-sor`,
+      '',
+      'Kaynak gösterimi:',
+      '- Tekil soru-cevap sayfaları /soru/{slug} biçimindedir.',
+      '- Alıntı veya özetlerde mümkünse tekil soru-cevap URL’si kullanılmalıdır.',
+      '- Admin, kullanıcı bilgisi ve iç süreç ekranları public kaynak değildir.',
+      ''
+    ].join('\n'));
+  } catch (error) {
+    res.status(500).type('text/plain; charset=utf-8').send(error.message || 'llms.txt üretilemedi.');
+  }
+}
+
 app.get('/public-preview/api/session', publicArchiveSessionHandler);
 app.get('/public-preview/auth/google', publicArchiveGoogleStartHandler);
 app.get('/public-preview/auth/google/callback', publicArchiveGoogleCallbackHandler);
@@ -10646,6 +10788,9 @@ app.post('/public-preview/api/questions/:slug/read', publicArchiveQuestionReadHa
 app.post('/public-preview/api/question-submissions', publicArchiveQuestionSubmissionHandler);
 app.get('/public-preview/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);
 app.post('/public-preview/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler);
+app.get('/robots.txt', publicArchiveRobotsHandler);
+app.get('/sitemap.xml', publicArchiveSitemapHandler);
+app.get('/llms.txt', publicArchiveLlmsHandler);
 
 if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/api/session', publicArchiveSessionHandler);
