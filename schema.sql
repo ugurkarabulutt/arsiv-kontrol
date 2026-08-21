@@ -394,13 +394,24 @@ create table if not exists public.public_question_submissions (
   source text not null default 'public-preview',
   user_agent text,
   admin_note text,
+  answer_text text,
+  answered_by text,
+  answered_at timestamptz,
+  user_notified_at timestamptz,
+  user_seen_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.public_question_submissions add column if not exists answer_text text;
+alter table public.public_question_submissions add column if not exists answered_by text;
+alter table public.public_question_submissions add column if not exists answered_at timestamptz;
+alter table public.public_question_submissions add column if not exists user_notified_at timestamptz;
+alter table public.public_question_submissions add column if not exists user_seen_at timestamptz;
 alter table public.public_question_submissions enable row level security;
 create index if not exists public_question_submissions_created_idx on public.public_question_submissions (created_at desc);
 create index if not exists public_question_submissions_status_idx on public.public_question_submissions (status, created_at desc);
 create index if not exists public_question_submissions_user_idx on public.public_question_submissions (public_user_id, created_at desc);
+create index if not exists public_question_submissions_answered_idx on public.public_question_submissions (answered_at desc);
 
 -- public_question_stats
 -- Public soru kartları ve detay sayfaları için kişisel veri tutmayan okunma sayacı.

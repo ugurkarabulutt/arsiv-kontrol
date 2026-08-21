@@ -121,6 +121,28 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-21
+- **Public soru talebi cevap akışı eklendi:** Public soru detayında üstte görünen büyük tekrar
+  soru başlığı kaldırıldı; başlık SEO/erişilebilirlik için yalnız `pa-sr-only` gizli başlık
+  olarak kaldı. `/admin` içindeki Canlı Site > Soru Talepleri ekranı artık yalnız izleme ekranı
+  değildir: admin/süper admin seçili soru talebine cevap yazabilir, iç not tutabilir,
+  `İnceleniyor` veya `Kapandı` durumuna alabilir. `Cevabı Kaydet ve Kullanıcıya Göster` cevabı
+  `public_question_submissions.answer_text` alanına yazar, kaydı `answered` durumuna alır ve
+  kullanıcı tarafındaki `/public-preview/hesabim` > `Sorularım` alanında görünür yapar. Kullanıcı
+  kendi gönderdiği soruların durumunu ve cevabını görebilir; okunmamış cevap için hesap ikonunda
+  küçük bildirim noktası görünür ve `Okundu olarak işaretle` ile `user_seen_at` yazılır. Admin iç
+  notu ve yönetici bilgisi kullanıcı API'sine verilmez; bu akış cevabı public arşive otomatik
+  yayınlamaz. Yeni API'ler: `POST /api/public-archive/question-submissions/:id/answer`,
+  `GET /public-preview/api/my-question-submissions`,
+  `POST /public-preview/api/my-question-submissions/:id/seen` ve root bayrağı açıldığında
+  `/api/my-question-submissions` karşılıkları. `schema.sql` içinde
+  `public_question_submissions` tablosuna `answer_text`, `answered_by`, `answered_at`,
+  `user_notified_at`, `user_seen_at` kolonları ve `public_question_submissions_answered_idx`
+  eklendi. SQL canlı Supabase'e uygulanmadan cevap gösterimi 503 hazırlık mesajı döner. Doğrulama:
+  `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `102/102` geçti.
+
 - **Root public altyapısı bayraklı hale getirildi:** Public arşiv renderer'ı artık yalnız
   `/public-preview` için sabit path üretmez; `basePath: ''` ile root `/` üzerinde `/arsiv`,
   `/arama`, `/hesabim`, `/soru-sor`, `/soru/:slug` ve `/kategori/:slug` linklerini üretebilir.

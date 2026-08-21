@@ -2056,7 +2056,7 @@ canvas{width:100%!important;}
         <div class="ops-panel-head">
           <div>
             <div class="ops-panel-title">Soru Talepleri</div>
-            <div class="ops-panel-sub">Canlı site Soru Sor ekranından Google oturumuyla gönderilen soruları burada izleyin.</div>
+            <div class="ops-panel-sub">Canlı site Soru Sor ekranından hesapla gönderilen soruları burada yanıtlayın.</div>
           </div>
           <button class="btn-sec" onclick="loadArchivePublicQuestions()">Yenile</button>
         </div>
@@ -2086,7 +2086,7 @@ canvas{width:100%!important;}
               <div class="archive-release-empty">Soru talepleri yükleniyor...</div>
             </div>
             <div class="ops-detail" id="archivePublicQuestionDetail">
-              <div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih ve soru metni burada görünür.</div>
+              <div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih, soru metni ve cevap alanı burada görünür.</div>
             </div>
           </div>
         </div>
@@ -8164,12 +8164,13 @@ function setArchivePublicQuestionFilter(){
 function archivePublicQuestionCardHtml(item){
   const active=archivePublicQuestionState.activeItem?.id===item.id?' active':'';
   const when=archivePublicQuestionDate(item.created_at||item.createdAt);
+  const answered=item.answer_text?' · cevap hazır':'';
   return `
     <button class="archive-release-card${active}" onclick="selectArchivePublicQuestion(${attrJson(item.id)})">
       <div class="archive-release-title">${esc(item.question||'Soru metni yok')}</div>
       <div class="archive-release-preview">${esc(item.submitter_name||item.submitter_email||'Site kullanıcısı')}</div>
       <div class="ops-source-meta">
-        <span>${esc(archivePublicQuestionStatusLabel(item.status))}</span>
+        <span>${esc(archivePublicQuestionStatusLabel(item.status)+answered)}</span>
         ${when?`<span>${esc(when)}</span>`:''}
       </div>
     </button>
@@ -8357,6 +8358,7 @@ function renderArchivePublicQuestions(){
   if(summary)summary.innerHTML=`
     <div class="ops-file-summary-item"><strong>${Number(archivePublicQuestionState.count||items.length).toLocaleString('tr-TR')}</strong><span>Toplam</span></div>
     <div class="ops-file-summary-item"><strong>${Number(items.filter(item=>item.status==='new').length).toLocaleString('tr-TR')}</strong><span>Yeni</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(items.filter(item=>item.status==='reviewing').length).toLocaleString('tr-TR')}</strong><span>İnceleniyor</span></div>
     <div class="ops-file-summary-item"><strong>${Number(items.filter(item=>item.status==='answered').length).toLocaleString('tr-TR')}</strong><span>Cevaplandı</span></div>
   `;
   if(list){
@@ -8367,9 +8369,10 @@ function renderArchivePublicQuestions(){
   const selected=archivePublicQuestionState.activeItem;
   if(detail){
     if(!selected){
-      detail.innerHTML='<div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih ve soru metni burada görünür.</div>';
+      detail.innerHTML='<div class="empty-state">Bir soru seçildiğinde gönderen kişi, tarih, soru metni ve cevap alanı burada görünür.</div>';
     }else{
       const when=archivePublicQuestionDate(selected.created_at||selected.createdAt);
+      const answeredAt=archivePublicQuestionDate(selected.answered_at||selected.answeredAt);
       detail.innerHTML=`
         <div class="ops-detail-head">
           <div>
@@ -8384,6 +8387,21 @@ function renderArchivePublicQuestions(){
         <div class="ops-detail-body">
           <p><strong>Gönderen:</strong><br>${esc(selected.submitter_name||'Site kullanıcısı')} ${selected.submitter_email?`<span class="mono">${esc(selected.submitter_email)}</span>`:''}</p>
           <p><strong>Soru:</strong><br>${esc(selected.question||'')}</p>
+          ${selected.answer_text?`<div class="ops-status ok" style="margin:10px 0">Kullanıcıya gösterilen cevap${answeredAt?`: ${esc(answeredAt)}`:''}</div>`:''}
+          <label style="display:block;margin-top:12px">
+            <strong>Cevap</strong>
+            <textarea class="ops-field" id="archivePublicQuestionAnswer" placeholder="Kullanıcıya gösterilecek cevabı buraya yazın." style="margin-top:8px;min-height:180px;resize:vertical">${esc(selected.answer_text||'')}</textarea>
+          </label>
+          <label style="display:block;margin-top:12px">
+            <strong>İç not</strong>
+            <textarea class="ops-field" id="archivePublicQuestionAdminNote" placeholder="Bu not sadece admin tarafında kalır." style="margin-top:8px;min-height:80px;resize:vertical">${esc(selected.admin_note||'')}</textarea>
+          </label>
+          <div class="ops-filter-row" style="margin-top:12px">
+            <button class="btn-primary" onclick="answerArchivePublicQuestion(${attrJson(selected.id)},this)">Cevabı Kaydet ve Kullanıcıya Göster</button>
+            <button class="btn-sec" onclick="setArchivePublicQuestionStatus(${attrJson(selected.id)},'reviewing',this)">İnceleniyor</button>
+            <button class="btn-sec" onclick="setArchivePublicQuestionStatus(${attrJson(selected.id)},'closed',this)">Kapat</button>
+          </div>
+          <div class="ops-status" id="archivePublicQuestionActionStatus"></div>
         </div>
       `;
     }
@@ -8392,6 +8410,41 @@ function renderArchivePublicQuestions(){
 function selectArchivePublicQuestion(id){
   archivePublicQuestionState.activeItem=(archivePublicQuestionState.items||[]).find(item=>item.id===id)||null;
   renderArchivePublicQuestions();
+}
+function updateArchivePublicQuestionState(submission){
+  if(!submission?.id)return;
+  archivePublicQuestionState.items=(archivePublicQuestionState.items||[]).map(item=>item.id===submission.id?submission:item);
+  archivePublicQuestionState.activeItem=submission;
+}
+async function saveArchivePublicQuestionUpdate(id,payload,button){
+  const statusBox=el('archivePublicQuestionActionStatus');
+  if(button)button.disabled=true;
+  if(statusBox){statusBox.textContent='Kaydediliyor...';statusBox.className='ops-status';}
+  const data=await api('POST',`/api/public-archive/question-submissions/${encodeURIComponent(id)}/answer`,payload);
+  if(button)button.disabled=false;
+  if(data.error){
+    if(statusBox){statusBox.textContent=data.error;statusBox.className='ops-status err';}
+    await showSystemAlert('Soru talebi güncellenemedi',data.error,'danger');
+    return null;
+  }
+  updateArchivePublicQuestionState(data.submission);
+  renderArchivePublicQuestions();
+  return data.submission;
+}
+async function answerArchivePublicQuestion(id,button){
+  const answerText=el('archivePublicQuestionAnswer')?.value?.trim()||'';
+  const adminNote=el('archivePublicQuestionAdminNote')?.value?.trim()||'';
+  if(!answerText){
+    await showSystemAlert('Cevap gerekli','Kullanıcıya göstermek için önce cevap metnini yazın.','danger');
+    return;
+  }
+  const saved=await saveArchivePublicQuestionUpdate(id,{answerText,adminNote},button);
+  if(saved)await showSystemAlert('Cevap kaydedildi','Cevap artık kullanıcının hesabındaki Sorularım alanında görünür.','success');
+}
+async function setArchivePublicQuestionStatus(id,status,button){
+  const adminNote=el('archivePublicQuestionAdminNote')?.value?.trim()||'';
+  const saved=await saveArchivePublicQuestionUpdate(id,{status,adminNote},button);
+  if(saved)await showSystemAlert('Durum güncellendi',`Soru talebi durumu: ${archivePublicQuestionStatusLabel(saved.status)}.`,'success');
 }
 async function loadArchivePublicQuestions(){
   const list=el('archivePublicQuestionList');

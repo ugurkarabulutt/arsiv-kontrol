@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Public Soru Talebi Cevap Akışı
+
+- Public soru detayında üstte görünen büyük tekrar soru başlığı kaldırıldı. Soru başlığı SEO ve
+  erişilebilirlik için yalnız `pa-sr-only` gizli başlık olarak kalır; görünür okuma düzeninde
+  `Soru` ve `Cevap` blokları ana içerik olur.
+- Admin `/admin` içindeki Canlı Site > Soru Talepleri ekranı yalnız izleme ekranı olmaktan
+  çıkarıldı. Yetkili kullanıcı seçili soru talebine cevap yazabilir, iç not tutabilir,
+  `İnceleniyor` veya `Kapandı` durumuna alabilir. `Cevabı Kaydet ve Kullanıcıya Göster`
+  kaydı `answered` yapar ve cevap kullanıcının public hesabına düşer.
+- Public kullanıcı tarafında `/public-preview/hesabim` artık `Sorularım` alanı gösterir.
+  Kullanıcı kendi gönderdiği soruları, durumunu ve cevap geldiyse cevabı görür. Cevap okunmamışsa
+  hesap ikonunda küçük bildirim noktası görünür ve kullanıcı cevabı `Okundu olarak işaretle`
+  ile kapatabilir. Admin iç notu ve yönetici bilgisi kullanıcı API'sine verilmez.
+- Yeni/eklenen API'ler: admin için
+  `POST /api/public-archive/question-submissions/:id/answer`; preview kullanıcı için
+  `GET /public-preview/api/my-question-submissions` ve
+  `POST /public-preview/api/my-question-submissions/:id/seen`; root public bayrağı açıldığında
+  karşılıkları `/api/my-question-submissions` ve `/api/my-question-submissions/:id/seen`.
+- `schema.sql` içinde `public_question_submissions` tablosuna `answer_text`, `answered_by`,
+  `answered_at`, `user_notified_at`, `user_seen_at` kolonları ve `answered_at` index'i eklendi.
+  Bu SQL canlı Supabase'e uygulanmadan cevap gösterimi 503 hazırlık mesajı döner.
+- Doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `102/102` geçti. Henüz commit/push/deploy yapılmadı.
+
 ## 2026-08-21 Codex Production Bayrak Kapalı Deploy
 
 - Kullanıcı Vercel Production'da `PUBLIC_ARCHIVE_ROOT_ENABLED=0` ve

@@ -239,6 +239,8 @@ assert(server.includes("app.get('/api/session', publicArchiveSessionHandler)"), 
 assert(server.includes("app.get('/auth/google', publicArchiveGoogleStartHandler)"), 'Root public Google login endpoint bayrakli olarak tanimli olmali.');
 assert(server.includes("app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler)"), 'Root public e-posta kayit endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler)"), 'Root public soru gonderim endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.get('/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler)"), 'Root public kullanici soru takip endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler)"), 'Root public soru okundu endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root'"), 'Soru gonderimi preview/root kaynagini ayirmali.');
 assert(server.includes("basePath: ''"), 'Root public renderer bos basePath ile baglanmali.');
 assert(server.includes('noindex: !PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED'), 'Root public indexing flag noindex davranisina baglanmali.');
@@ -1021,7 +1023,10 @@ for (const marker of [
   "app.get('/public-preview/api/question-stats'",
   "app.post('/public-preview/api/questions/:slug/read'",
   "app.post('/public-preview/api/question-submissions'",
+  "app.get('/public-preview/api/my-question-submissions'",
+  "app.post('/public-preview/api/my-question-submissions/:id/seen'",
   "app.get('/api/public-archive/question-submissions'",
+  "app.post('/api/public-archive/question-submissions/:id/answer'",
   "app.get('/api/public-archive/sync-status'",
   "app.post('/api/public-archive/sync-approved'",
   'loadPublicArchiveDataset',
@@ -1048,6 +1053,12 @@ for (const marker of [
   'auth_provider text not null default',
   'public_users_email_unique_idx',
   'create table if not exists public.public_question_submissions',
+  'answer_text text',
+  'answered_by text',
+  'answered_at timestamptz',
+  'user_notified_at timestamptz',
+  'user_seen_at timestamptz',
+  'public_question_submissions_answered_idx',
   'create table if not exists public.public_question_stats',
   'create table if not exists public.public_categories',
   'create table if not exists public.public_topics',
@@ -1073,6 +1084,8 @@ for (const marker of [
   'openLiveSite',
   'archivePublicQuestionList',
   'archivePublicQuestionDetail',
+  'archivePublicQuestionAnswer',
+  'answerArchivePublicQuestion',
   'archivePublicSyncSummary',
   'syncApprovedPublicArchive',
   'Onaylıları Siteye Hazırla',
@@ -1196,6 +1209,8 @@ assert(accountPreview.includes('class="pa-google-button"') && accountPreview.inc
 assert(accountPreview.includes('data-email-login-form') && accountPreview.includes('data-email-register-form'), 'Public hesap sayfasi e-posta giris ve kayit formlarini sunmali.');
 assert(accountPreview.includes('/public-preview/auth/google'), 'Public hesap sayfasi Google auth route una baglanmali.');
 assert(accountPreview.includes('/public-preview/api/auth/email/login') && accountPreview.includes('/public-preview/api/auth/email/register'), 'Public hesap sayfasi e-posta auth API lerine baglanmali.');
+assert(accountPreview.includes('data-user-questions') && accountPreview.includes('data-user-questions-list'), 'Public hesap sayfasi kullanici soru takip alanini sunmali.');
+assert(accountPreview.includes('/public-preview/api/my-question-submissions'), 'Public hesap sayfasi kullanicinin soru cevap durum API sine baglanmali.');
 assertOnlyPublicPreviewApi('/public-preview/hesabim', accountPreview);
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
 for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala', 'Yazdır']) {
@@ -1204,6 +1219,7 @@ for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Pa
 assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('class="pa-detail-subtitle"'), 'Public detail ust ozet paragrafinin geri gelmemesi gerekir.');
+assert(!detailPreview.includes('<h1>Allah’a ulaşmayı dilemek ne demektir?</h1>'), 'Public detail ustte buyuk tekrar soru basligini gostermemeli.');
 assert(!detailPreview.includes('görüntülenme') && !detailPreview.includes('Faydalı oldu mu'), 'Public detail fake canli ozellik gostermemeli.');
 const sourceDetailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/kaynakli-soru', {}, {
   brand: { authorLine: 'Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.', answererLabel: 'Yanıtlayan: Dr. Abdulcabbar Boran' },
@@ -1239,6 +1255,9 @@ for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-c
 for (const marker of ['bindShrinkingHeader', 'data-pa-scrolled', 'bindPublicAuthTabs', 'data-auth-tab']) {
   assert(publicRendererSource.includes(marker), `Public sticky header/auth JS marker eksik: ${marker}`);
 }
+for (const marker of ['loadPublicUserQuestions', 'publicSubmissionCardHtml', 'data-account-notice-dot', 'data-mark-question-seen']) {
+  assert(publicRendererSource.includes(marker), `Public kullanici soru takip JS marker eksik: ${marker}`);
+}
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kategori slider CSS marker eksik: ${marker}`);
 }
@@ -1264,6 +1283,9 @@ for (const [name, source] of [['pa-card-meta', cardMetaCss], ['pa-chip-wrap', ch
 assert(publicCss.includes('white-space: nowrap;') && publicCss.includes('.pa-card-meta::-webkit-scrollbar'), 'Public etiket chipleri tek satir ve gizli scrollbar olmali.');
 for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {
+  assert(publicCss.includes(marker), `Public hesap soru takip CSS marker eksik: ${marker}`);
 }
 for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', ':root[data-pa-scrolled="true"] .pa-header', '.pa-auth-shell', '.pa-auth-panel', '.pa-google-button', '.pa-auth-tabs', '.pa-auth-form']) {
   assert(publicCss.includes(marker), `Public sticky header/e-posta auth CSS marker eksik: ${marker}`);

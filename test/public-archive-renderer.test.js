@@ -72,6 +72,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
+  assert.match(home, /\/api\/my-question-submissions/);
   assert.match(home, /<meta name="robots" content="index,follow">/);
   assert.doesNotMatch(home, /\/public-preview\//);
 
@@ -178,6 +179,9 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(account, /data-auth-tab="register"/);
   assert.match(account, /class="pa-google-button"/);
   assert.match(account, /\/public-preview\/auth\/google/);
+  assert.match(account, /data-user-questions/);
+  assert.match(account, /data-user-questions-list/);
+  assert.match(account, /\/public-preview\/api\/my-question-submissions/);
   assertOnlyPublicPreviewApi(account);
 });
 
@@ -354,6 +358,7 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   assert.match(detail, /İlgili Sorular/);
   assert.match(detail, /data-public-read-count="ornek-soru"/);
   assert.doesNotMatch(detail, /class="pa-detail-subtitle"/);
+  assert.doesNotMatch(detail, /<h1>Allah’a ulaşmayı dilemek ne demektir\?<\/h1>/);
   assertOnlyPublicPreviewApi(detail);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/kalbin-yonelisi').html;
@@ -390,8 +395,11 @@ test('public account page offers Google and email authentication', () => {
   assert.match(account, /data-auth-tab="register"/);
   assert.match(account, /data-email-login-form/);
   assert.match(account, /data-email-register-form/);
+  assert.match(account, /data-user-questions/);
+  assert.match(account, /Gönderdiğiniz sorular ve cevap durumları/);
   assert.match(account, /\/public-preview\/api\/auth\/email\/login/);
   assert.match(account, /\/public-preview\/api\/auth\/email\/register/);
+  assert.match(account, /\/public-preview\/api\/my-question-submissions/);
   assert.match(account, /Google hesabınızla hızlıca devam edebilir/);
 });
 

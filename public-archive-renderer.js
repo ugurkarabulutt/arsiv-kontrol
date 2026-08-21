@@ -329,6 +329,7 @@ function header(active) {
       </nav>
       <div class="pa-header-actions">
         <a class="pa-account-button${active === 'account' ? ' is-active' : ''}" href="${PREVIEW_BASE}/hesabim" aria-label="Hesab\u0131m">
+          <span class="pa-account-notice-dot" data-account-notice-dot hidden aria-hidden="true"></span>
           <span class="pa-account-icon">${iconSvg('user')}</span>
           <span class="pa-account-text">Hesab\u0131m</span>
         </a>
@@ -1079,7 +1080,7 @@ function renderQuestion(slug) {
         ])}
         <article class="pa-answer-layout">
           <div class="pa-answer-primary">
-            <h1>${escapeHtml(entry.title)}</h1>
+            <h1 class="pa-sr-only">${escapeHtml(entry.title)}</h1>
             <section class="pa-reading-block">
               <h2>Soru</h2>
               <p>${escapeHtml(entry.question)}</p>
@@ -1204,6 +1205,17 @@ function renderAccount() {
             </div>
           </div>
           <p class="pa-form-status" data-email-auth-status aria-live="polite"></p>
+        </section>
+        <section class="pa-account-questions" data-user-questions hidden>
+          <div class="pa-section-heading">
+            <div>
+              <p class="pa-kicker">Sorularım</p>
+              <h2>Gönderdiğiniz sorular ve cevap durumları</h2>
+            </div>
+          </div>
+          <div class="pa-user-question-list" data-user-questions-list>
+            <div class="pa-mini-empty">Sorularınız yükleniyor...</div>
+          </div>
         </section>
       </main>
     `
@@ -1740,6 +1752,110 @@ function renderShell({ title, description, active, content, status = 200, questi
           return { loggedIn: false, googleConfigured: false, emailConfigured: false };
         }
       }
+      function escapeClientHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+      function publicSubmissionStatusLabel(status) {
+        return {
+          new: 'Alındı',
+          reviewing: 'İnceleniyor',
+          answered: 'Cevabınız hazır',
+          closed: 'Kapandı'
+        }[status] || 'Alındı';
+      }
+      function publicSubmissionDate(value) {
+        var date = value ? new Date(value) : null;
+        if (!date || !Number.isFinite(date.getTime())) return '';
+        return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+      }
+      function publicSubmissionCardHtml(item) {
+        var answered = Boolean(item && item.answer_text);
+        var unseen = answered && !item.user_seen_at;
+        var question = escapeClientHtml(item.question || 'Soru metni');
+        var answer = escapeClientHtml(item.answer_text || '');
+        var created = publicSubmissionDate(item.created_at);
+        var answeredAt = publicSubmissionDate(item.answered_at);
+        return [
+          '<article class="pa-user-question-card' + (unseen ? ' has-new-answer' : '') + '">',
+          '  <div class="pa-user-question-head">',
+          '    <span class="pa-user-question-status">' + escapeClientHtml(publicSubmissionStatusLabel(item.status)) + '</span>',
+          unseen ? '    <span class="pa-new-answer-badge">Yeni cevap</span>' : '',
+          '  </div>',
+          '  <h3>' + question + '</h3>',
+          created ? '  <p class="pa-user-question-date">Gönderim: ' + escapeClientHtml(created) + '</p>' : '',
+          answered ? [
+            '  <div class="pa-user-answer">',
+            answeredAt ? '    <span>Cevap tarihi: ' + escapeClientHtml(answeredAt) + '</span>' : '',
+            '    <p>' + answer.replace(/\\n{2,}/g, '</p><p>').replace(/\\n/g, '<br>') + '</p>',
+            '  </div>',
+            unseen ? '  <button type="button" class="pa-mini-action" data-mark-question-seen="' + escapeClientHtml(item.id) + '">Okundu olarak işaretle</button>' : ''
+          ].join('') : '  <p class="pa-user-question-wait">Sorunuz ekibe ulaştı. Cevap hazırlandığında bu alanda görünecek.</p>',
+          '</article>'
+        ].join('');
+      }
+      function setAccountNoticeDot(count) {
+        document.querySelectorAll('[data-account-notice-dot]').forEach(function(dot){
+          var active = Number(count || 0) > 0;
+          dot.hidden = !active;
+          dot.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+      }
+      async function loadPublicUserQuestions(session) {
+        var section = document.querySelector('[data-user-questions]');
+        var list = document.querySelector('[data-user-questions-list]');
+        if (!session || !session.loggedIn) {
+          setAccountNoticeDot(0);
+          if (section) section.hidden = true;
+          return;
+        }
+        try {
+          var response = await fetch('${PREVIEW_BASE}/api/my-question-submissions', { headers: { Accept: 'application/json' } });
+          var data = await response.json().catch(function(){ return {}; });
+          if (!response.ok || data.available === false) {
+            setAccountNoticeDot(0);
+            if (section && list) {
+              section.hidden = false;
+              list.innerHTML = '<div class="pa-mini-empty">' + escapeClientHtml(data.error || 'Sorularınız şu anda alınamadı.') + '</div>';
+            }
+            return;
+          }
+          var items = Array.isArray(data.submissions) ? data.submissions : [];
+          var unseenCount = Number(data.unseenAnsweredCount || 0);
+          setAccountNoticeDot(unseenCount);
+          if (!section || !list) return;
+          section.hidden = false;
+          list.innerHTML = items.length
+            ? items.map(publicSubmissionCardHtml).join('')
+            : '<div class="pa-mini-empty">Henüz gönderdiğiniz soru yok.</div>';
+          list.querySelectorAll('[data-mark-question-seen]').forEach(function(button){
+            button.addEventListener('click', async function(){
+              var id = button.getAttribute('data-mark-question-seen');
+              if (!id) return;
+              button.disabled = true;
+              try {
+                await fetch('${PREVIEW_BASE}/api/my-question-submissions/' + encodeURIComponent(id) + '/seen', {
+                  method: 'POST',
+                  headers: { Accept: 'application/json' }
+                });
+                await loadPublicUserQuestions(session);
+              } catch (error) {
+                button.disabled = false;
+              }
+            });
+          });
+        } catch (error) {
+          setAccountNoticeDot(0);
+          if (section && list) {
+            section.hidden = false;
+            list.innerHTML = '<div class="pa-mini-empty">Sorularınız şu anda alınamadı.</div>';
+          }
+        }
+      }
       function renderSessionUi(session) {
         var status = document.querySelector('[data-account-status]');
         var actions = document.querySelector('[data-account-actions]');
@@ -1902,7 +2018,10 @@ function renderShell({ title, description, active, content, status = 200, questi
       bindShrinkingHeader();
       bindPublicAuthTabs();
       bindPublicEmailAuth();
-      loadPublicSession().then(renderSessionUi);
+      loadPublicSession().then(function(session){
+        renderSessionUi(session);
+        loadPublicUserQuestions(session);
+      });
       bindQuestionForm();
     })();
   </script>

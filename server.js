@@ -4745,6 +4745,11 @@ async function seed() {
   const { error: publicQuestionSubmissionsErr } = await supabase.from('public_question_submissions').select('id').limit(1);
   HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = !publicQuestionSubmissionsErr;
   if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) console.warn('⚠ public_question_submissions tablosu yok — public soru gönderimi pasif.');
+  const { error: publicQuestionSubmissionAnswerErr } = HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES
+    ? await supabase.from('public_question_submissions').select('answer_text,answered_by,answered_at,user_notified_at,user_seen_at').limit(1)
+    : { error: publicQuestionSubmissionsErr };
+  HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = !publicQuestionSubmissionAnswerErr;
+  if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS) console.warn('⚠ public_question_submissions cevap kolonları yok — kullanıcıya cevap gösterimi pasif.');
 
   const { error: publicQuestionStatsErr } = await supabase.from('public_question_stats').select('slug').limit(1);
   HAS_PUBLIC_ARCHIVE_STATS_TABLES = !publicQuestionStatsErr;
@@ -6237,6 +6242,49 @@ app.get('/api/public-archive/question-submissions', auth, admin, async (req, res
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
     res.json({ submissions: data || [], count: count || 0 });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, async (req, res) => {
+  try {
+    await startupReady;
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) return res.status(503).json({ error: 'public_question_submissions tablosu yok. schema.sql uygulanmalı.' });
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS) return res.status(503).json({ error: 'Soru cevap alanları için ek SQL uygulanmalı.' });
+    const id = String(req.params.id || '').trim();
+    if (!id) return res.status(400).json({ error: 'Soru talebi seçilmedi.' });
+    const answerText = String(req.body?.answerText ?? req.body?.answer_text ?? '').trim().slice(0, 50000);
+    const adminNote = String(req.body?.adminNote ?? req.body?.admin_note ?? '').trim().slice(0, 3000);
+    const requestedStatus = String(req.body?.status || '').trim();
+    const allowedStatuses = new Set(['new', 'reviewing', 'answered', 'closed']);
+    const now = new Date().toISOString();
+    const actor = req.session?.name || req.session?.username || 'Yönetici';
+    const updates = { updated_at: now };
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'adminNote') || Object.prototype.hasOwnProperty.call(req.body || {}, 'admin_note')) {
+      updates.admin_note = adminNote;
+    }
+    if (answerText) {
+      updates.answer_text = answerText;
+      updates.answered_by = actor;
+      updates.answered_at = now;
+      updates.user_notified_at = now;
+      updates.user_seen_at = null;
+      updates.status = 'answered';
+    } else if (requestedStatus === 'answered') {
+      return res.status(400).json({ error: 'Cevaplandı durumuna almak için cevap metni yazın.' });
+    } else if (allowedStatuses.has(requestedStatus)) {
+      updates.status = requestedStatus;
+    }
+    const { data, error } = await supabase
+      .from('public_question_submissions')
+      .update(updates)
+      .eq('id', id)
+      .select('*')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return res.status(404).json({ error: 'Soru talebi bulunamadı.' });
+    res.json({ success: true, submission: data });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
@@ -9726,6 +9774,7 @@ let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın gör
 let HAS_PUBLIC_ARCHIVE_USER_TABLES = false; // startup'ta tespit edilir (public Google kullanıcıları)
 let HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = false; // startup'ta tespit edilir (public e-posta giriş kolonları)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
+let HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = false; // startup'ta tespit edilir (public soru cevap akışı)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
 let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
 let HAS_HISTORY_PUBLIC_FIELDS = false; // startup'ta tespit edilir (onaylı kayıtlardaki soru/etiket alanları)
@@ -10127,6 +10176,57 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
   }
 }
 
+async function publicArchiveMyQuestionSubmissionsHandler(req, res) {
+  try {
+    await startupReady;
+    const user = requirePublicUser(req, res);
+    if (!user) return;
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) return res.status(503).json({ available: false, error: 'Soru gönderimi için veri tabanı hazırlığı bekleniyor.' });
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS) return res.status(503).json({ available: false, error: 'Cevap görüntüleme alanları için veri tabanı hazırlığı bekleniyor.' });
+    const { data, error } = await supabase
+      .from('public_question_submissions')
+      .select('id,question,status,answer_text,answered_at,user_notified_at,user_seen_at,created_at,updated_at')
+      .eq('public_user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(80);
+    if (error) throw new Error(error.message);
+    const submissions = data || [];
+    res.json({
+      available: true,
+      submissions,
+      unseenAnsweredCount: submissions.filter(item => item.answer_text && !item.user_seen_at).length
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, error: error.message });
+  }
+}
+
+async function publicArchiveQuestionSeenHandler(req, res) {
+  try {
+    await startupReady;
+    const user = requirePublicUser(req, res);
+    if (!user) return;
+    if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES || !HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS) {
+      return res.status(503).json({ error: 'Cevap görüntüleme alanları için veri tabanı hazırlığı bekleniyor.' });
+    }
+    const id = String(req.params.id || '').trim();
+    if (!id) return res.status(400).json({ error: 'Soru talebi seçilmedi.' });
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('public_question_submissions')
+      .update({ user_seen_at: now, updated_at: now })
+      .eq('id', id)
+      .eq('public_user_id', user.id)
+      .select('id,user_seen_at')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return res.status(404).json({ error: 'Soru talebi bulunamadı.' });
+    res.json({ success: true, submission: data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+}
+
 app.get('/public-preview/api/session', publicArchiveSessionHandler);
 app.get('/public-preview/auth/google', publicArchiveGoogleStartHandler);
 app.get('/public-preview/auth/google/callback', publicArchiveGoogleCallbackHandler);
@@ -10136,6 +10236,8 @@ app.post('/public-preview/auth/logout', publicArchiveLogoutHandler);
 app.get('/public-preview/api/question-stats', publicArchiveQuestionStatsHandler);
 app.post('/public-preview/api/questions/:slug/read', publicArchiveQuestionReadHandler);
 app.post('/public-preview/api/question-submissions', publicArchiveQuestionSubmissionHandler);
+app.get('/public-preview/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);
+app.post('/public-preview/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler);
 
 if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/api/session', publicArchiveSessionHandler);
@@ -10147,6 +10249,8 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/api/question-stats', publicArchiveQuestionStatsHandler);
   app.post('/api/questions/:slug/read', publicArchiveQuestionReadHandler);
   app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler);
+  app.get('/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);
+  app.post('/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler);
 }
 
 const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
