@@ -30,6 +30,7 @@ const SUPABASE_KEY      = process.env.SUPABASE_KEY;
 const GOOGLE_CLIENT_ID  = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || '';
+const GOOGLE_ROOT_REDIRECT_URI = process.env.GOOGLE_ROOT_REDIRECT_URI || '';
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -40,6 +41,8 @@ const OPENAI_RETRY_DELAYS_MS = [800, 1800];
 const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
 const ADMIN_PARALLEL_ROUTE_ENABLED = process.env.ADMIN_PARALLEL_ROUTE_ENABLED !== '0';
 const PUBLIC_ARCHIVE_PREVIEW_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_PREVIEW_ENABLED || '').toLowerCase());
+const PUBLIC_ARCHIVE_ROOT_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_ENABLED || '').toLowerCase());
+const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
@@ -4831,15 +4834,44 @@ function requestOrigin(req) {
   return `${String(proto).split(',')[0]}://${String(host).split(',')[0]}`;
 }
 
-function publicGoogleRedirectUri(req) {
-  return GOOGLE_REDIRECT_URI || `${requestOrigin(req)}/public-preview/auth/google/callback`;
+function normalizePublicArchiveRouteBase(value = '/public-preview') {
+  const raw = String(value ?? '/public-preview').trim();
+  if (!raw || raw === '/') return '';
+  return `/${raw.replace(/^\/+|\/+$/g, '')}`;
 }
 
-function safePublicReturnTo(value) {
+function publicArchiveRoutePath(basePath = '/public-preview', suffix = '') {
+  const base = normalizePublicArchiveRouteBase(basePath);
+  const clean = String(suffix || '').trim();
+  if (!clean) return base || '/';
+  if (clean.startsWith('?')) return `${base || '/'}${clean}`;
+  return `${base}${clean.startsWith('/') ? clean : `/${clean}`}` || '/';
+}
+
+function publicArchiveRequestBasePath(req) {
+  const originalUrl = String(req.originalUrl || req.url || '');
+  return originalUrl.startsWith('/public-preview') ? '/public-preview' : '';
+}
+
+function publicGoogleRedirectUri(req) {
+  const basePath = publicArchiveRequestBasePath(req);
+  if (basePath && GOOGLE_REDIRECT_URI) return GOOGLE_REDIRECT_URI;
+  if (!basePath && GOOGLE_ROOT_REDIRECT_URI) return GOOGLE_ROOT_REDIRECT_URI;
+  return `${requestOrigin(req)}${publicArchiveRoutePath(basePath, '/auth/google/callback')}`;
+}
+
+function safePublicReturnTo(value, basePath = '/public-preview') {
+  const base = normalizePublicArchiveRouteBase(basePath);
+  const fallback = publicArchiveRoutePath(base, '/hesabim');
   const target = String(value || '').trim();
-  if (!target.startsWith('/public-preview')) return '/public-preview/hesabim';
-  if (target.startsWith('/public-preview/auth/')) return '/public-preview/hesabim';
-  if (target.includes('://')) return '/public-preview/hesabim';
+  if (target.includes('://')) return fallback;
+  if (base) {
+    if (!target.startsWith(base)) return fallback;
+    if (target.startsWith(`${base}/auth/`)) return fallback;
+  } else {
+    if (!target.startsWith('/')) return fallback;
+    if (target === '/auth' || target.startsWith('/auth/') || target === '/api' || target.startsWith('/api/') || target === '/admin' || target.startsWith('/admin/') || target.startsWith('/public-preview')) return fallback;
+  }
   return target.slice(0, 240);
 }
 
@@ -9842,20 +9874,8 @@ if (ADMIN_PARALLEL_ROUTE_ENABLED) {
   app.get(['/admin', '/admin/'], sendAdminIndex);
   app.get('/admin/*', sendAdminIndex);
 }
-app.use('/public-preview', (req, res, next) => {
-  res.set('X-Robots-Tag', 'noindex, nofollow');
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);
-  next();
-});
 
-app.use('/public-preview/api', (req, res, next) => {
-  res.set('X-Robots-Tag', 'noindex, nofollow');
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  next();
-});
-
-app.get('/public-preview/api/session', async (req, res, next) => {
+async function publicArchiveSessionHandler(req, res, next) {
   try {
     await ensurePublicArchiveAuthReady();
     res.json({
@@ -9867,15 +9887,17 @@ app.get('/public-preview/api/session', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}
 
-app.get('/public-preview/auth/google', (req, res) => {
+function publicArchiveGoogleStartHandler(req, res) {
+  const basePath = publicArchiveRequestBasePath(req);
+  const accountPath = publicArchiveRoutePath(basePath, '/hesabim');
   if (!publicGoogleAuthConfigured()) {
-    return res.status(503).type('html').send('<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Soru gönderimi açık değil</title><body><main><h1>Soru gönderimi şu anda açık değil.</h1><p>Arşivi incelemeye devam edebilir veya daha sonra tekrar deneyebilirsiniz.</p><p><a href="/public-preview/hesabim">Hesabım sayfasına dön</a></p></main></body></html>');
+    return res.status(503).type('html').send(`<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Soru gönderimi açık değil</title><body><main><h1>Soru gönderimi şu anda açık değil.</h1><p>Arşivi incelemeye devam edebilir veya daha sonra tekrar deneyebilirsiniz.</p><p><a href="${accountPath}">Hesabım sayfasına dön</a></p></main></body></html>`);
   }
   const state = crypto.randomBytes(18).toString('hex');
   req.session.publicGoogleState = state;
-  req.session.publicAuthReturnTo = safePublicReturnTo(req.query.returnTo);
+  req.session.publicAuthReturnTo = safePublicReturnTo(req.query.returnTo, basePath);
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: publicGoogleRedirectUri(req),
@@ -9885,19 +9907,21 @@ app.get('/public-preview/auth/google', (req, res) => {
     prompt: 'select_account'
   });
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
-});
+}
 
-app.get('/public-preview/auth/google/callback', async (req, res, next) => {
+async function publicArchiveGoogleCallbackHandler(req, res, next) {
+  const basePath = publicArchiveRequestBasePath(req);
+  const accountPath = publicArchiveRoutePath(basePath, '/hesabim');
   try {
     await ensurePublicArchiveAuthReady();
-    if (!publicGoogleAuthConfigured()) return res.redirect('/public-preview/hesabim?auth=not-configured');
+    if (!publicGoogleAuthConfigured()) return res.redirect(`${accountPath}?auth=not-configured`);
     const state = String(req.query.state || '');
     const expectedState = String(req.session.publicGoogleState || '');
     req.session.publicGoogleState = null;
-    if (!state || !expectedState || state !== expectedState) return res.redirect('/public-preview/hesabim?auth=state');
-    if (!HAS_PUBLIC_ARCHIVE_USER_TABLES) return res.redirect('/public-preview/hesabim?auth=storage');
+    if (!state || !expectedState || state !== expectedState) return res.redirect(`${accountPath}?auth=state`);
+    if (!HAS_PUBLIC_ARCHIVE_USER_TABLES) return res.redirect(`${accountPath}?auth=storage`);
     const code = String(req.query.code || '');
-    if (!code) return res.redirect('/public-preview/hesabim?auth=missing-code');
+    if (!code) return res.redirect(`${accountPath}?auth=missing-code`);
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -9918,7 +9942,7 @@ app.get('/public-preview/auth/google/callback', async (req, res, next) => {
     });
     const profile = await userInfoResponse.json().catch(() => ({}));
     if (!userInfoResponse.ok || !profile.sub || !profile.email) throw new Error('Google kullanıcı bilgisi alınamadı.');
-    if (profile.email_verified === false) return res.redirect('/public-preview/hesabim?auth=email');
+    if (profile.email_verified === false) return res.redirect(`${accountPath}?auth=email`);
 
     const now = new Date().toISOString();
     let { data: existing, error: existingError } = await supabase
@@ -9946,13 +9970,13 @@ app.get('/public-preview/auth/google/callback', async (req, res, next) => {
     if (upsertError) throw new Error(upsertError.message);
 
     setPublicSession(req, user);
-    res.redirect(safePublicReturnTo(req.session.publicAuthReturnTo) || '/public-preview/hesabim');
+    res.redirect(safePublicReturnTo(req.session.publicAuthReturnTo, basePath) || accountPath);
   } catch (error) {
     next(error);
   }
-});
+}
 
-app.post('/public-preview/api/auth/email/register', async (req, res) => {
+async function publicArchiveEmailRegisterHandler(req, res) {
   try {
     await ensurePublicArchiveAuthReady();
     if (!HAS_PUBLIC_ARCHIVE_USER_TABLES || !HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) {
@@ -10007,9 +10031,9 @@ app.post('/public-preview/api/auth/email/register', async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message || 'Hesap oluşturulamadı.' });
   }
-});
+}
 
-app.post('/public-preview/api/auth/email/login', async (req, res) => {
+async function publicArchiveEmailLoginHandler(req, res) {
   try {
     await ensurePublicArchiveAuthReady();
     if (!HAS_PUBLIC_ARCHIVE_USER_TABLES || !HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) {
@@ -10034,14 +10058,26 @@ app.post('/public-preview/api/auth/email/login', async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message || 'Giriş yapılamadı.' });
   }
-});
+}
 
-app.post('/public-preview/auth/logout', (req, res) => {
+function publicArchiveLogoutHandler(req, res) {
   clearPublicSession(req);
   res.json({ success: true });
+}
+app.use('/public-preview', (req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);
+  next();
 });
 
-app.get('/public-preview/api/question-stats', async (req, res, next) => {
+app.use('/public-preview/api', (req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  next();
+});
+
+async function publicArchiveQuestionStatsHandler(req, res, next) {
   try {
     await startupReady;
     const slugs = String(req.query.slugs || '').split(',').map(item => item.trim()).filter(Boolean);
@@ -10049,18 +10085,18 @@ app.get('/public-preview/api/question-stats', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}
 
-app.post('/public-preview/api/questions/:slug/read', async (req, res, next) => {
+async function publicArchiveQuestionReadHandler(req, res) {
   try {
     await startupReady;
     res.json(await incrementPublicQuestionRead(req.params.slug));
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
-});
+}
 
-app.post('/public-preview/api/question-submissions', async (req, res) => {
+async function publicArchiveQuestionSubmissionHandler(req, res) {
   try {
     await startupReady;
     const user = requirePublicUser(req, res);
@@ -10081,7 +10117,7 @@ app.post('/public-preview/api/question-submissions', async (req, res) => {
       topic,
       privacy_accepted: true,
       status: 'new',
-      source: 'public-preview',
+      source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
       user_agent: String(req.headers['user-agent'] || '').slice(0, 500)
     }).select('id,created_at,status').single();
     if (error) throw new Error(error.message);
@@ -10089,11 +10125,43 @@ app.post('/public-preview/api/question-submissions', async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
-});
+}
+
+app.get('/public-preview/api/session', publicArchiveSessionHandler);
+app.get('/public-preview/auth/google', publicArchiveGoogleStartHandler);
+app.get('/public-preview/auth/google/callback', publicArchiveGoogleCallbackHandler);
+app.post('/public-preview/api/auth/email/register', publicArchiveEmailRegisterHandler);
+app.post('/public-preview/api/auth/email/login', publicArchiveEmailLoginHandler);
+app.post('/public-preview/auth/logout', publicArchiveLogoutHandler);
+app.get('/public-preview/api/question-stats', publicArchiveQuestionStatsHandler);
+app.post('/public-preview/api/questions/:slug/read', publicArchiveQuestionReadHandler);
+app.post('/public-preview/api/question-submissions', publicArchiveQuestionSubmissionHandler);
+
+if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
+  app.get('/api/session', publicArchiveSessionHandler);
+  app.get('/auth/google', publicArchiveGoogleStartHandler);
+  app.get('/auth/google/callback', publicArchiveGoogleCallbackHandler);
+  app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler);
+  app.post('/api/auth/email/login', publicArchiveEmailLoginHandler);
+  app.post('/auth/logout', publicArchiveLogoutHandler);
+  app.get('/api/question-stats', publicArchiveQuestionStatsHandler);
+  app.post('/api/questions/:slug/read', publicArchiveQuestionReadHandler);
+  app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler);
+}
+
+const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
 
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
-  const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
   app.use('/public-preview', createPublicArchivePreviewRouter({
+    cssFile: path.join(__dirname, 'public-archive.css'),
+    loadArchiveData: loadPublicArchiveRouteDataset
+  }));
+}
+
+if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
+  app.use('/', createPublicArchivePreviewRouter({
+    basePath: '',
+    noindex: !PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED,
     cssFile: path.join(__dirname, 'public-archive.css'),
     loadArchiveData: loadPublicArchiveRouteDataset
   }));

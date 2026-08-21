@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-21
+- **Root public altyapısı bayraklı hale getirildi:** Public arşiv renderer'ı artık yalnız
+  `/public-preview` için sabit path üretmez; `basePath: ''` ile root `/` üzerinde `/arsiv`,
+  `/arama`, `/hesabim`, `/soru-sor`, `/soru/:slug` ve `/kategori/:slug` linklerini üretebilir.
+  Backend'de Google auth, e-posta auth, oturum, okunma sayacı ve soru gönderimi API'leri ortak
+  handler'lara taşındı; preview adresleri aynı kaldı, root API/auth adresleri yalnız
+  `PUBLIC_ARCHIVE_ROOT_ENABLED=1` iken açılır. Google root callback için
+  `GOOGLE_ROOT_REDIRECT_URI` desteklenir; verilmezse aktif origin üzerinden
+  `/auth/google/callback` üretilir. Root public sayfaların index davranışı ayrıca
+  `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED` ile kontrol edilir. `vercel.json` final catch-all'ı
+  `/server.js` tarafına alındı; bayrak kapalıyken server fallback'i root'ta legacy admin
+  `index.html` döndürmeye devam eder. `/admin` ve `/admin/*` Vercel route'ları admin SPA olarak
+  korunur. Bu adım root `/` public cutover değildir; canlı root ancak ayrı env bayrağı ve final
+  kullanıcı onayıyla public'e döner.
+
 - **Public footer bilgi sayfaları sayfa bazlı açıklayıcı metinlere ayrıldı:** Footer içindeki
   Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları sayfaları tekrar eden
   genel metinlerden çıkarıldı. Hakkımızda arşivin amacını ve delil/kaynak bağlamıyla okuma

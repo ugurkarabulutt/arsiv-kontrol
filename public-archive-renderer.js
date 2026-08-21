@@ -3,11 +3,42 @@ const fs = require('fs');
 const path = require('path');
 const { publicArchiveFixtures } = require('./public-archive-fixtures');
 
-const PREVIEW_BASE = '/public-preview';
-const CSS_PATH = `${PREVIEW_BASE}/public-archive.css`;
-const ASSET_PATH = `${PREVIEW_BASE}/assets`;
+const DEFAULT_PUBLIC_ARCHIVE_BASE = '/public-preview';
+let PREVIEW_BASE = DEFAULT_PUBLIC_ARCHIVE_BASE;
+let CSS_PATH = `${PREVIEW_BASE}/public-archive.css`;
+let ASSET_PATH = `${PREVIEW_BASE}/assets`;
+let PUBLIC_ARCHIVE_NOINDEX = true;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 const ARCHIVE_PAGE_SIZE = 30;
+
+function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
+  const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
+  if (!raw || raw === '/') return '';
+  return `/${raw.replace(/^\/+|\/+$/g, '')}`;
+}
+
+function publicArchiveHomeHref() {
+  return PREVIEW_BASE || '/';
+}
+
+function publicArchivePath(pathname = '') {
+  const clean = String(pathname || '').trim();
+  if (!clean || clean === '/') return publicArchiveHomeHref();
+  const suffix = clean.startsWith('/') ? clean : `/${clean}`;
+  return `${PREVIEW_BASE}${suffix}` || '/';
+}
+
+function publicArchiveRoutePattern(section = '') {
+  const escapedBase = PREVIEW_BASE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^${escapedBase}/${section}/([^/]+)$`);
+}
+
+function setPublicArchiveRuntime({ basePath = DEFAULT_PUBLIC_ARCHIVE_BASE, noindex = true } = {}) {
+  PREVIEW_BASE = normalizePublicArchiveBasePath(basePath);
+  CSS_PATH = publicArchivePath('public-archive.css');
+  ASSET_PATH = publicArchivePath('assets');
+  PUBLIC_ARCHIVE_NOINDEX = noindex !== false;
+}
 
 function normalizePublicArchiveData(archiveData = {}) {
   return {
@@ -17,12 +48,17 @@ function normalizePublicArchiveData(archiveData = {}) {
     qa: Array.isArray(archiveData.qa) ? archiveData.qa : publicArchiveFixtures.qa,
     stats: archiveData.stats || null,
     pagination: archiveData.pagination || null,
-    search: archiveData.search || null
+    search: archiveData.search || null,
+    basePath: normalizePublicArchiveBasePath(archiveData.basePath ?? DEFAULT_PUBLIC_ARCHIVE_BASE),
+    noindex: archiveData.noindex !== false
   };
 }
 
 function withPublicArchiveData(archiveData, renderFn) {
-  if (!archiveData || archiveData === publicArchiveFixtures) return renderFn();
+  if (!archiveData || archiveData === publicArchiveFixtures) {
+    setPublicArchiveRuntime({ basePath: DEFAULT_PUBLIC_ARCHIVE_BASE, noindex: true });
+    return renderFn();
+  }
   const previous = {
     brand: publicArchiveFixtures.brand,
     categories: publicArchiveFixtures.categories,
@@ -30,9 +66,12 @@ function withPublicArchiveData(archiveData, renderFn) {
     qa: publicArchiveFixtures.qa,
     stats: publicArchiveFixtures.stats,
     pagination: publicArchiveFixtures.pagination,
-    search: publicArchiveFixtures.search
+    search: publicArchiveFixtures.search,
+    basePath: PREVIEW_BASE,
+    noindex: PUBLIC_ARCHIVE_NOINDEX
   };
   const next = normalizePublicArchiveData(archiveData);
+  setPublicArchiveRuntime({ basePath: next.basePath, noindex: next.noindex });
   publicArchiveFixtures.brand = next.brand;
   publicArchiveFixtures.categories = next.categories;
   publicArchiveFixtures.topics = next.topics;
@@ -50,6 +89,7 @@ function withPublicArchiveData(archiveData, renderFn) {
     publicArchiveFixtures.stats = previous.stats;
     publicArchiveFixtures.pagination = previous.pagination;
     publicArchiveFixtures.search = previous.search;
+    setPublicArchiveRuntime({ basePath: previous.basePath, noindex: previous.noindex });
   }
 }
 
@@ -183,7 +223,7 @@ function relatedTopics(topic) {
 }
 
 function href(route) {
-  if (!route) return PREVIEW_BASE;
+  if (!route) return publicArchiveHomeHref();
   return route.startsWith('/') ? route : `${PREVIEW_BASE}/${route}`;
 }
 
@@ -260,7 +300,7 @@ function questionIconName(entry, category, topics) {
 
 function previewActionNav(active) {
   const items = [
-    ['Ana Sayfa', PREVIEW_BASE, 'home'],
+    ['Ana Sayfa', publicArchiveHomeHref(), 'home'],
     ['Arşiv', `${PREVIEW_BASE}/arsiv`, 'archive'],
     ['Ara', `${PREVIEW_BASE}/arama#arama`, 'search'],
     ['Soru Sor', `${PREVIEW_BASE}/soru-sor`, 'ask']
@@ -275,7 +315,7 @@ function previewActionNav(active) {
 
 function header(active) {
   const nav = [
-    ['Ana Sayfa', PREVIEW_BASE, 'home'],
+    ['Ana Sayfa', publicArchiveHomeHref(), 'home'],
     ['Ar\u015fiv', PREVIEW_BASE + '/arsiv', 'archive'],
     ['Ara', PREVIEW_BASE + '/arama#arama', 'search'],
     ['Soru Sor', PREVIEW_BASE + '/soru-sor', 'ask']
@@ -283,7 +323,7 @@ function header(active) {
   const logo = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
     <header class="pa-header">
-      <a class="pa-logo" href="${PREVIEW_BASE}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
+      <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
       <nav class="pa-desktop-nav" aria-label="Ana gezinme">
         ${nav.map(([label, url, key]) => `<a class="${active === key ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
       </nav>
@@ -305,7 +345,7 @@ function footer() {
   return `
     <footer class="pa-footer">
       <div class="pa-footer-brand">
-        <a class="pa-logo" href="${PREVIEW_BASE}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
+        <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${logo}</a>
         <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
       </div>
       <div class="pa-footer-groups">
@@ -368,18 +408,18 @@ function chip(label, hrefValue) {
 }
 
 const HERO_CONCEPT_ITEMS = [
-  ['Hidayet', `${PREVIEW_BASE}/kategori/hidayet`],
-  ['Zikir', `${PREVIEW_BASE}/kategori/zikir`],
-  ['Takva', `${PREVIEW_BASE}/kategori/takva`],
-  ['Tabiiyet', `${PREVIEW_BASE}/kategori/tabiiyet`],
-  ['Allah’a Ulaşmayı Dilemek', `${PREVIEW_BASE}/kategori/allaha-ulasmayi-dilemek`],
-  ['Nefs', `${PREVIEW_BASE}/kategori/nefs`],
-  ['Ruh', `${PREVIEW_BASE}/kategori/ruh`]
+  ['Hidayet', 'hidayet'],
+  ['Zikir', 'zikir'],
+  ['Takva', 'takva'],
+  ['Tabiiyet', 'tabiiyet'],
+  ['Allah’a Ulaşmayı Dilemek', 'allaha-ulasmayi-dilemek'],
+  ['Nefs', 'nefs'],
+  ['Ruh', 'ruh']
 ];
 
 function conceptSliderItems(isClone = false) {
-  return HERO_CONCEPT_ITEMS.map(([label, url]) => `
-    <a class="pa-concept-pill" href="${escapeHtml(url)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>
+  return HERO_CONCEPT_ITEMS.map(([label, slug]) => `
+    <a class="pa-concept-pill" href="${PREVIEW_BASE}/kategori/${escapeHtml(slug)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>
       <span>${escapeHtml(label)}</span>
     </a>
   `).join('');
@@ -638,7 +678,7 @@ function categoryCard(category) {
 function breadcrumb(items) {
   return `
     <nav class="pa-breadcrumb" aria-label="Sayfa yolu">
-      <a href="${PREVIEW_BASE}">Ana Sayfa</a>
+      <a href="${publicArchiveHomeHref()}">Ana Sayfa</a>
       ${items.map(item => `${item.href ? `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>` : `<span>${escapeHtml(item.label)}</span>`}`).join('')}
     </nav>
   `;
@@ -1353,7 +1393,7 @@ function renderNotFound() {
           <p>Aradığınız içerik şu anda görünmüyor. Arama yapabilir veya ana sayfaya dönebilirsiniz.</p>
           ${searchBox()}
           <div class="pa-empty-actions">
-            <a class="pa-button" href="${PREVIEW_BASE}">Ana Sayfa</a>
+            <a class="pa-button" href="${publicArchiveHomeHref()}">Ana Sayfa</a>
             <a class="pa-button is-secondary" href="${PREVIEW_BASE}/arama">Arşivde Ara</a>
           </div>
         </section>
@@ -1372,7 +1412,7 @@ function renderShell({ title, description, active, content, status = 200, questi
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="${PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : 'index,follow'}">
   <meta name="description" content="${escapeHtml(safeDescription)}">
   <meta name="theme-color" content="#F7F3EA">
   <title>${escapeHtml(safeTitle)}</title>
@@ -1873,8 +1913,8 @@ function renderShell({ title, description, active, content, status = 200, questi
 
 function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = publicArchiveFixtures) {
   return withPublicArchiveData(archiveData, () => {
-    const pathname = routePath.replace(/\/+$/, '') || PREVIEW_BASE;
-    if (pathname === PREVIEW_BASE) return renderHome();
+    const pathname = String(routePath || '').replace(/\/+$/, '') || publicArchiveHomeHref();
+    if (pathname === publicArchiveHomeHref()) return renderHome();
     if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive(query);
     if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
     if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
@@ -1886,11 +1926,11 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
     if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
     if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
-    const questionMatch = pathname.match(/^\/public-preview\/soru\/([^/]+)$/);
+    const questionMatch = pathname.match(publicArchiveRoutePattern('soru'));
     if (questionMatch) return renderQuestion(questionMatch[1]);
-    const topicMatch = pathname.match(/^\/public-preview\/konu\/([^/]+)$/);
+    const topicMatch = pathname.match(publicArchiveRoutePattern('konu'));
     if (topicMatch) return renderTopic(topicMatch[1], query);
-    const categoryMatch = pathname.match(/^\/public-preview\/kategori\/([^/]+)$/);
+    const categoryMatch = pathname.match(publicArchiveRoutePattern('kategori'));
     if (categoryMatch) return renderCategory(categoryMatch[1], query);
     return renderNotFound();
   });
@@ -1902,22 +1942,38 @@ function sendRendered(res, rendered) {
 
 function createPublicArchivePreviewRouter(options = {}) {
   const router = express.Router();
+  const basePath = normalizePublicArchiveBasePath(options.basePath ?? DEFAULT_PUBLIC_ARCHIVE_BASE);
+  const noindex = options.noindex !== false;
   const cssFile = options.cssFile || path.join(__dirname, 'public-archive.css');
   const assetDir = options.assetDir || path.join(__dirname, 'public-archive-assets', 'assets');
   const loadArchiveData = typeof options.loadArchiveData === 'function'
     ? options.loadArchiveData
     : async () => publicArchiveFixtures;
+  function routeFor(pathname = '') {
+    const clean = String(pathname || '').replace(/^\/+|\/+$/g, '');
+    return clean ? `${basePath}/${clean}` || `/${clean}` : (basePath || '/');
+  }
+  function dataRouteFor(pathname = '') {
+    const clean = String(pathname || '').replace(/^\/+|\/+$/g, '');
+    return clean ? `${DEFAULT_PUBLIC_ARCHIVE_BASE}/${clean}` : DEFAULT_PUBLIC_ARCHIVE_BASE;
+  }
   async function sendRoute(req, res, next, routePath, query = {}) {
     try {
-      const archiveData = await loadArchiveData(req, routePath, query);
-      sendRendered(res, renderPublicArchivePreviewRoute(routePath, query, archiveData));
+      const archiveData = await loadArchiveData(req, dataRouteFor(routePath), query);
+      sendRendered(res, renderPublicArchivePreviewRoute(routeFor(routePath), query, {
+        ...(archiveData || {}),
+        basePath,
+        noindex
+      }));
     } catch (error) {
       next(error);
     }
   }
   router.use((req, res, next) => {
-    res.set('X-Robots-Tag', 'noindex, nofollow');
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    if (noindex) {
+      res.set('X-Robots-Tag', 'noindex, nofollow');
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    }
     next();
   });
   router.use('/assets', express.static(assetDir, {
@@ -1928,27 +1984,27 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/public-archive.css', (req, res) => {
     res.type('text/css').sendFile(cssFile);
   });
-  router.get(['/', ''], (req, res, next) => sendRoute(req, res, next, PREVIEW_BASE));
-  router.get('/arsiv', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arsiv`, {
+  router.get(['/', ''], (req, res, next) => sendRoute(req, res, next, ''));
+  router.get('/arsiv', (req, res, next) => sendRoute(req, res, next, 'arsiv', {
     harf: req.query.harf || '',
     kategori: req.query.kategori || '',
     kategoriAra: req.query.kategoriAra || '',
     sayfa: req.query.sayfa || ''
   }));
-  router.get('/arama', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/arama`, { q: req.query.q || '' }));
-  router.get('/konular', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konular`));
-  router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategoriler`));
-  router.get('/hesabim', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/hesabim`));
-  router.get('/soru-sor', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/soru-sor`));
-  router.get('/hakkimizda', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/hakkimizda`));
-  router.get('/nasil-kullanilir', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/nasil-kullanilir`));
-  router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/iletisim`));
-  router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/gizlilik`));
-  router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kullanim-kosullari`));
-  router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/soru/${req.params.slug}`));
-  router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/konu/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
-  router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/kategori/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
-  router.use((req, res, next) => sendRoute(req, res, next, `${PREVIEW_BASE}/bulunamadi`));
+  router.get('/arama', (req, res, next) => sendRoute(req, res, next, 'arama', { q: req.query.q || '' }));
+  router.get('/konular', (req, res, next) => sendRoute(req, res, next, 'konular'));
+  router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, 'kategoriler'));
+  router.get('/hesabim', (req, res, next) => sendRoute(req, res, next, 'hesabim'));
+  router.get('/soru-sor', (req, res, next) => sendRoute(req, res, next, 'soru-sor'));
+  router.get('/hakkimizda', (req, res, next) => sendRoute(req, res, next, 'hakkimizda'));
+  router.get('/nasil-kullanilir', (req, res, next) => sendRoute(req, res, next, 'nasil-kullanilir'));
+  router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, 'iletisim'));
+  router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, 'gizlilik'));
+  router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, 'kullanim-kosullari'));
+  router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `soru/${req.params.slug}`));
+  router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `konu/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
+  router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `kategori/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
+  router.use((req, res, next) => sendRoute(req, res, next, 'bulunamadi'));
   return router;
 }
 

@@ -1,6 +1,6 @@
 ﻿const assert = require('node:assert/strict');
 const test = require('node:test');
-const { ROUTE_PATHS, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
+const { ROUTE_PATHS, publicArchiveFixtures, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
 
 const forbiddenSnippets = [
   'hocamız',
@@ -62,6 +62,23 @@ test('public preview routes render isolated noindex pages', () => {
     assert.match(rendered.html, /Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın\./);
     assertOnlyPublicPreviewApi(rendered.html);
   }
+});
+
+test('public renderer can render root launch paths behind root mode', () => {
+  const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
+  const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
+
+  assert.match(home, /href="\/public-archive\.css"/);
+  assert.match(home, /href="\/arsiv"/);
+  assert.match(home, /href="\/hesabim"/);
+  assert.match(home, /\/api\/session/);
+  assert.match(home, /<meta name="robots" content="index,follow">/);
+  assert.doesNotMatch(home, /\/public-preview\//);
+
+  const detail = renderPublicArchivePreviewRoute('/soru/ornek-soru', {}, rootData);
+  assert.equal(detail.status, 200);
+  assert.match(detail.html, /href="\/kategori\//);
+  assert.doesNotMatch(detail.html, /\/public-preview\//);
 });
 
 test('public preview shows direct authorship without broad expert language', () => {

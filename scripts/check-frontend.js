@@ -10,7 +10,7 @@ const root = path.join(__dirname, '..');
 const publicCss = fs.readFileSync(path.join(root, 'public-archive.css'), 'utf8');
 const publicRendererSource = fs.readFileSync(path.join(root, 'public-archive-renderer.js'), 'utf8');
 const publicAssetRoot = path.join(root, 'public-archive-assets');
-const { ROUTE_PATHS, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
+const { ROUTE_PATHS, publicArchiveFixtures, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -216,15 +216,16 @@ assert(server.includes("res.set('X-Robots-Tag', 'noindex, nofollow')"), '/admin 
 assert(server.includes("app.get(['/admin', '/admin/'], sendAdminIndex)"), '/admin ve /admin/ explicit admin fallback olmali.');
 assert(server.includes("app.get('/admin/*', sendAdminIndex)"), '/admin/* deep link fallback olmali.');
 
-const lastApiRouteIndex = [...server.matchAll(/app\.(?:get|post|put|patch|delete)\('\/api\//g)].pop()?.index ?? -1;
+const adminAuthApiRouteIndex = indexOfRequired(server, "app.post('/api/auth/login'", 'Admin auth API route');
 const adminRouteIndex = indexOfRequired(server, "app.get(['/admin', '/admin/'], sendAdminIndex)", 'Explicit /admin route');
 const publicPreviewFlagIndex = indexOfRequired(server, 'const PUBLIC_ARCHIVE_PREVIEW_ENABLED', 'Public archive preview flag');
+const publicRootFlagIndex = indexOfRequired(server, 'const PUBLIC_ARCHIVE_ROOT_ENABLED', 'Public archive root flag');
 const publicPreviewDisabledIndex = indexOfRequired(server, 'function sendPublicArchivePreviewDisabled', 'Public archive preview disabled handler');
 const publicPreviewGateIndex = indexOfRequired(server, "app.use('/public-preview', (req, res, next) => {", 'Public archive preview gate');
 const publicPreviewRouterRequireIndex = indexOfRequired(server, "const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');", 'Public archive preview lazy require');
 const errorHandlerIndex = indexOfRequired(server, 'app.use((err, req, res, next) => {', 'Express error handler');
 const rootFallbackIndex = indexOfRequired(server, rootFallback, 'Root legacy fallback');
-assert(lastApiRouteIndex > -1 && lastApiRouteIndex < adminRouteIndex, '/api route lari /admin fallback tarafindan yutulmamali.');
+assert(adminAuthApiRouteIndex < adminRouteIndex, 'Admin auth API route lari /admin fallback tarafindan once tanimli kalmali.');
 assert(publicPreviewFlagIndex < publicPreviewGateIndex, 'PUBLIC_ARCHIVE_PREVIEW_ENABLED gate kullanilmadan once okunmali.');
 assert(publicPreviewDisabledIndex < publicPreviewGateIndex, 'Public preview kapali handler route tanimindan once bulunmali.');
 assert(adminRouteIndex < publicPreviewGateIndex, '/admin fallback public preview route undan once korunmali.');
@@ -232,6 +233,16 @@ assert(publicPreviewGateIndex < publicPreviewRouterRequireIndex, 'Public preview
 assert(publicPreviewGateIndex < errorHandlerIndex, '/public-preview route error handler dan once kayit edilmeli.');
 assert(publicPreviewGateIndex < rootFallbackIndex, '/public-preview final root fallback a dusmemeli.');
 assert(server.includes("if (!PUBLIC_ARCHIVE_PREVIEW_ENABLED) return sendPublicArchivePreviewDisabled(req, res);"), 'Preview gate kapaliyken /public-preview 404 donmeli.');
+assert(server.includes('const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED'), 'Public root indexing flag okunmali.');
+assert(server.includes('GOOGLE_ROOT_REDIRECT_URI'), 'Root Google callback icin GOOGLE_ROOT_REDIRECT_URI destegi bulunmali.');
+assert(server.includes("app.get('/api/session', publicArchiveSessionHandler)"), 'Root public session endpoint bayrakli olarak tanimli olmali.');
+assert(server.includes("app.get('/auth/google', publicArchiveGoogleStartHandler)"), 'Root public Google login endpoint bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler)"), 'Root public e-posta kayit endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler)"), 'Root public soru gonderim endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root'"), 'Soru gonderimi preview/root kaynagini ayirmali.');
+assert(server.includes("basePath: ''"), 'Root public renderer bos basePath ile baglanmali.');
+assert(server.includes('noindex: !PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED'), 'Root public indexing flag noindex davranisina baglanmali.');
+assert(publicRootFlagIndex < publicPreviewRouterRequireIndex, 'PUBLIC_ARCHIVE_ROOT_ENABLED renderer baglantisindan once okunmali.');
 assert(server.includes("cssFile: path.join(__dirname, 'public-archive.css')"), 'Public preview CSS yalniz public-preview router icinden servis edilmeli.');
 assert(!server.includes('PUBLIC_ARCHIVE_DEMO'), 'Eski PUBLIC_ARCHIVE_DEMO mekanizmasi server.js icinde kalmamali.');
 assert(!server.includes("require('./public-archive-demo')"), 'Eski public-archive-demo router server.js icinde kalmamali.');
@@ -249,8 +260,8 @@ assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback
 
 const routes = vercelConfig.routes || [];
 const apiVercelIndex = routes.findIndex(route => route.src === '/api/(.*)' && route.dest === '/server.js');
-const finalIndexRouteIndex = routes.findIndex(route => route.src === '/(.*)' && route.dest === '/index.html');
-assert(apiVercelIndex !== -1 && finalIndexRouteIndex !== -1 && apiVercelIndex < finalIndexRouteIndex, 'Vercel /api route final index catch-all dan once kalmali.');
+const finalServerRouteIndex = routes.findIndex(route => route.src === '/(.*)' && route.dest === '/server.js');
+assert(apiVercelIndex !== -1 && finalServerRouteIndex !== -1 && apiVercelIndex < finalServerRouteIndex, 'Vercel /api route final server catch-all dan once kalmali.');
 const routeIndex = src => routes.findIndex(route => route.src === src);
 const routeBySrc = src => routes.find(route => route.src === src);
 const explicitRootRoutes = routes.filter(route => route.src === '/' || route.src === '/$');
@@ -293,7 +304,7 @@ const previewVercelIndexes = [
 assert(previewVercelRoutes.every(Boolean), 'Vercel public preview route lari explicit tanimli olmali.');
 for (const [i, route] of previewVercelRoutes.entries()) {
   assert(route.dest === '/server.js', 'Vercel public preview route server.js uzerinden gate e gitmeli.');
-  assert(previewVercelIndexes[i] < adminVercelIndex && previewVercelIndexes[i] < finalIndexRouteIndex, 'Vercel public preview route final catch-all ve admin route larindan once kalmali.');
+  assert(previewVercelIndexes[i] < adminVercelIndex && previewVercelIndexes[i] < finalServerRouteIndex, 'Vercel public preview route final catch-all ve admin route larindan once kalmali.');
   assert(route.headers?.['X-Robots-Tag'] === 'noindex, nofollow', 'Vercel public preview route noindex,nofollow header almali.');
   const cacheControl = String(route.headers?.['Cache-Control'] || '');
   for (const token of ['no-store', 'no-cache', 'must-revalidate', 'proxy-revalidate']) {
@@ -303,8 +314,8 @@ for (const [i, route] of previewVercelRoutes.entries()) {
 assert(routeIndex('/public-preview') < routeIndex('/public-preview/(.*)'), 'Vercel /public-preview route deep route tanimindan once kalmali.');
 
 assert(adminVercelIndex < adminDeepVercelIndex, '/admin Vercel route /admin/(.*) route undan once kalmali.');
-assert(adminVercelIndex < finalIndexRouteIndex, '/admin Vercel route final index catch-all dan once kalmali.');
-assert(adminDeepVercelIndex < finalIndexRouteIndex, '/admin/(.*) Vercel route final index catch-all dan once kalmali.');
+assert(adminVercelIndex < finalServerRouteIndex, '/admin Vercel route final server catch-all dan once kalmali.');
+assert(adminDeepVercelIndex < finalServerRouteIndex, '/admin/(.*) Vercel route final server catch-all dan once kalmali.');
 assert(adminVercelRoute.dest === '/index.html', '/admin Vercel route index.html dondurmeli.');
 assert(adminDeepVercelRoute.dest === '/index.html', '/admin/(.*) Vercel route index.html dondurmeli.');
 
@@ -1089,6 +1100,14 @@ for (const item of publicRenderCases) {
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
 }
+
+const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
+assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css"'), 'Root public mode CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
+assert(!rootLaunchPreview.includes('/public-preview/'), 'Root public mode public-preview path sizintisi icermemeli.');
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [

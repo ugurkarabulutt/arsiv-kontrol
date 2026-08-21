@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Root Public Bayraklı Altyapı
+
+- Kullanıcı root public altyapısı için Google auth, e-posta auth, soru gönderimi API'leri ve
+  Vercel catch-all yönlendirmesinin bayraklı düzenlenmesini onayladı. Bu çalışma root `/`
+  canlı cutover değildir; bayrak kapalıyken canlı root admin kalır.
+- Public renderer artık `basePath` ve `noindex` alır. `/public-preview` mevcut preview path'i
+  olarak kalır; `basePath: ''` ile root modunda linkler `/arsiv`, `/arama`, `/hesabim`,
+  `/soru-sor`, `/soru/:slug` ve `/kategori/:slug` şeklinde üretilir. Root modunda CSS
+  `/public-archive.css`, API'ler `/api/session`, `/api/question-submissions` gibi kök
+  adreslerle çalışır.
+- Backend'de public oturum, Google başlatma/callback, e-posta kayıt/giriş, çıkış, okunma
+  sayacı ve soru gönderimi ortak handler'lara taşındı. Preview endpoint'leri korunur; root
+  endpoint'leri yalnız `PUBLIC_ARCHIVE_ROOT_ENABLED=1` ise açılır.
+- Soru gönderiminde kaynak ayrımı yapılır: preview'den gelenler `public-preview`, root'tan
+  gelenler `public-root` olarak kaydedilir.
+- Google root callback için `GOOGLE_ROOT_REDIRECT_URI` desteklenir. Üretim root cutover
+  yapılacağı zaman Google Cloud OAuth Authorized redirect URI listesine
+  `https://arsiv.ibrahimlive.ai/auth/google/callback` eklenmeli ve Vercel Production env'e
+  `GOOGLE_ROOT_REDIRECT_URI=https://arsiv.ibrahimlive.ai/auth/google/callback` girilmelidir.
+- Root public sayfalarının arama motoruna açık olup olmaması ayrı bayraktır:
+  `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1` verilmeden root public `noindex` davranışında kalır.
+- `vercel.json` final catch-all `/server.js` tarafına alındı. `/admin` ve `/admin/*` route'ları
+  hâlâ `/index.html` döndürür ve noindex/no-store header'ları korur. Bayrak kapalıyken server
+  fallback'i root'ta legacy admin index'i döndürmeye devam eder.
+- Doğrulama notu: root modu için renderer test/guard eklendi; `/public-preview` path sızıntısı
+  olmadan `index,follow` üretebildiği doğrulanır. Production root public'e çevrilmeden önce
+  ayrıca Vercel env, Google OAuth callback, gerçek mobil/desktop smoke ve explicit final onay
+  gerekir.
+
 ## 2026-08-21 Codex Public Footer Bilgi Sayfaları
 
 - Footer içindeki Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları
