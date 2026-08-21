@@ -121,6 +121,25 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
+- **Public logo mark eklendi:** Kullanıcının verdiği kitap/kalp/ışık sembolü arka planı
+  şeffaf olacak şekilde kesildi. AI yeniden çizimi yeterli temiz olmadığı için orijinal
+  görselden deterministik alfa maskesiyle public logo mark üretildi ve optimize asset olarak
+  `public-archive-assets/assets/arsiv-logo-mark.png` (`49 KB`, PNG, şeffaf) eklendi. Public
+  logo artık `brandLogo()` ile ikon + iki satır yazıdan oluşur; header ve footer aynı logo
+  kilidini kullanır. İkon `alt=""` ve `aria-hidden="true"` ile tekrar okutulmaz; link adı
+  mevcut marka `aria-label` değerinden gelir. Ölçüler: masaüstü `42px`, sticky `36px`, mobil
+  `40/34px`, 430px altı `36/32px`; açık/koyu tema için hafif drop-shadow ayarlandı. Guard/test
+  zinciri logo asset, `pa-logo-mark`, `pa-logo-text` ve CSS boyut markerlarını kontrol eder.
+  Doğrulama: `node --check public-archive-renderer.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `102/102` geçti. Commit `16024b3 feat: add public archive logo mark`
+  remote `codex/public-launch-integration` branch'ine push edildi. Preview deploy:
+  `https://arsiv-kontrol-cgczk846e-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_AYC6wZT1T9mzEXQ4VKJWL5Cf28jS`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi. Smoke: `/health`,
+  `/public-preview`, `/public-preview/assets/arsiv-logo-mark.png` ve `/admin` 200 döndü.
+  Public preview ve admin noindex; root production cutover yapılmadı.
+
 - **Public SEO/LLM detay verisi ve Yazdır kaldırma:** Public soru detayındaki gereksiz
   `Yazdır` aracı kaldırıldı; `data-print` frontend dinleyicisi silindi. Public renderer root
   açılışına hazırlık için canonical URL altyapısı ekledi: preview modunda sayfalar

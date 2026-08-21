@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public Logo Mark Ekleme
+
+- Kullanıcının verdiği kitap/kalp/ışık sembolü arka planı şeffaf olacak şekilde kesildi; AI
+  yeniden çizimi yeterli temiz olmadığı için deterministik alfa maskesiyle orijinal görselden
+  şeffaf logo mark üretildi.
+- Optimize edilmiş public asset eklendi:
+  `public-archive-assets/assets/arsiv-logo-mark.png` (`49 KB`, PNG, şeffaf).
+- Public logo artık `brandLogo()` ile ikon + iki satır yazıdan oluşur. Header ve footer aynı
+  logo kilidini kullanır. İkon erişilebilirlikte tekrar okunmaz: `alt=""`, `aria-hidden="true"`;
+  bağlantının erişilebilir adı mevcut marka adından gelir.
+- Header ölçüleri: masaüstü logo mark `42px`, sticky durumda `36px`; mobilde `40/34px`, 430px
+  altı küçük ekranda `36/32px`. Açık ve koyu tema için ayrı hafif drop-shadow tanımlandı.
+- Guard/test: public HTML'de `/assets/arsiv-logo-mark.png`, `pa-logo-mark`, `pa-logo-text`
+  markerları; CSS'te logo mark ve dark/sticky/mobile boyut markerları kontrol edilir.
+- Doğrulama: `node --check public-archive-renderer.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `102/102` geçti.
+- Commit/push: `16024b3 feat: add public archive logo mark` remote
+  `codex/public-launch-integration` branch'ine push edildi.
+- Preview deploy: `https://arsiv-kontrol-cgczk846e-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_AYC6wZT1T9mzEXQ4VKJWL5Cf28jS`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi.
+- Preview smoke: `/health`, `/public-preview`, `/public-preview/assets/arsiv-logo-mark.png` ve
+  `/admin` 200 döndü. Public preview ve admin noindex; logo asset `image/png`, `49 KB`.
+  Root production cutover yapılmadı.
+
 ## 2026-08-22 Codex Public SEO/LLM Detay Verisi ve Yazdır Kaldırma
 
 - Public soru detayındaki `Yazdır` aracı kaldırıldı; `Paylaş` ve `Bağlantıyı kopyala` kaldı.
