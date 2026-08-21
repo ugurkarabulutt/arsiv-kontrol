@@ -142,10 +142,16 @@ tespit edilir).
   `https://arsiv-kontrol-1x9u9x9kb-ugurkarabulutts-projects.vercel.app`; stabil alias
   `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi. Preview smoke:
   `/health` ok; `/public-preview` 200/noindex; public favicon/app/social asset'leri 200;
-  ana sayfada mükerrer başlık sayısı `0`. Production root cutover henüz yapılmadı; canlı root
-  `/` public ve indexlenebilir olacak şekilde açılmadan önce
-  `PUBLIC_ARCHIVE_ROOT_ENABLED=1` ve `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1` production
-  bayrakları için açık kullanıcı onayı gerekir.
+  ana sayfada mükerrer başlık sayısı `0`. Kullanıcının açık onayı sonrası production env
+  bayrakları `PUBLIC_ARCHIVE_ROOT_ENABLED=1` ve `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1`
+  yapıldı ve production deploy alındı. Production:
+  `https://arsiv-kontrol-iittygvr4-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_B8m3Hz4yhVeaEYudq4LKJtqpWVkx`, target `production`, durum `READY`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health` ok; root `/` public HTML ve
+  `index,follow`; canonical doğru; `/public-preview/` sızıntısı yok; sosyal kart ve ikon
+  asset'leri 200; `/arsiv` 200; `/api/session` JSON içinde Google/e-posta hazır; `/admin`,
+  `/admin/`, `/admin/smoke-test` 200 ve noindex/no-store; root ana sayfada mükerrer kart başlığı
+  sayısı `0`.
 
 - **Public logo mark eklendi:** Kullanıcının verdiği kitap/kalp/ışık sembolü arka planı
   şeffaf olacak şekilde kesildi. AI yeniden çizimi yeterli temiz olmadığı için orijinal

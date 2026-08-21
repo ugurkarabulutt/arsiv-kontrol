@@ -32,11 +32,23 @@
   `favicon-32.png`, `apple-touch-icon.png`, `app-icon-512.png`, `app-icon-maskable-512.png`,
   `public-share-card.png` ve `site.webmanifest` 200 döndü. Ana sayfada 3 soru kartı ve
   mükerrer başlık sayısı `0`; sosyal/app meta markerları canlı HTML'de mevcut.
-- Production root cutover denenmedi/tamamlanmadı: güvenlik onayı iki kalıcı production bayrağı
-  (`PUBLIC_ARCHIVE_ROOT_ENABLED=1`, `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1`) için daha açık
-  kullanıcı onayı gerektirdi. Kullanıcı şu net kapsamı onaylarsa production env güncellenip
-  production deploy yapılacak: canlı root `/` public arşive geçecek ve `index,follow` açılacak;
-  `/admin` admin olarak kalacak.
+- Production root cutover kullanıcı tarafından net onaylandı ve tamamlandı. Production env
+  bayrakları `PUBLIC_ARCHIVE_ROOT_ENABLED=1` ve `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=1`
+  olarak güncellendi.
+- Production deploy: temiz `git archive HEAD` kaynağıyla doğru `arsiv-kontrol` Vercel projesine
+  alındı. Deployment:
+  `https://arsiv-kontrol-iittygvr4-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_B8m3Hz4yhVeaEYudq4LKJtqpWVkx`, target `production`, durum `READY`.
+  Canlı alias: `https://arsiv.ibrahimlive.ai`.
+- Production smoke: `/health` ok; root `/` 200 public HTML ve `<meta name="robots"
+  content="index,follow">`; root canonical `https://arsiv.ibrahimlive.ai/`; root HTML'de
+  `/public-preview/` sızıntısı yok; `public-share-card.png` meta mevcut; admin marka markerı
+  root'ta yok. `/arsiv` 200; `/api/session` JSON döndü ve `googleConfigured:true`,
+  `emailConfigured:true`; `/admin`, `/admin/`, `/admin/smoke-test` 200 ve
+  `X-Robots-Tag: noindex, nofollow` + no-store headerları doğru. `/public-archive.css`,
+  `/assets/favicon-32.png`, `/assets/apple-touch-icon.png`, `/assets/public-share-card.png` ve
+  `/assets/site.webmanifest` 200 döndü. Root ana sayfada soru kartı sayısı `3`, mükerrer kart
+  başlığı sayısı `0`.
 
 ## 2026-08-22 Codex Public Logo Mark Ekleme
 
