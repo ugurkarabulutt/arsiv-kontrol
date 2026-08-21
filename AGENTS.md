@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-21
+- **Public footer bilgi sayfaları sayfa bazlı açıklayıcı metinlere ayrıldı:** Footer içindeki
+  Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları sayfaları tekrar eden
+  genel metinlerden çıkarıldı. Hakkımızda arşivin amacını ve delil/kaynak bağlamıyla okuma
+  düzenini anlatır; Nasıl Kullanılır arama, arşiv, alfabetik kategori seçimi ve soru detayına
+  geçişi açıklar; İletişim düzeltme notu ile yeni soru akışını ayırır; Gizlilik mahrem bilgi
+  paylaşmama uyarılarını netleştirir; Kullanım Koşulları okuma/paylaşım, soru gönderimi ve
+  arşiv düzeni ilkelerini açıklar. Sayfaların alt aksiyonları da aynı iki genel buton olmaktan
+  çıkarıldı ve sayfa bağlamına uygun hale getirildi. `test/public-archive-renderer.test.js`
+  içine `public info pages have page-specific explanatory copy and actions` testi,
+  `scripts/check-frontend.js` içine ilgili guard eklendi. Bu adım public preview içerik/guard
+  kapsamıdır; veri, admin, Google auth ve root `/` public cutover'a dokunulmadı.
+
 - **Public soru kartı etiketleri tek satır yatay rail'e alındı:** Kullanıcı geri bildirimiyle
   public soru kartlarında uzun etiketlerin iki satıra düşmesi engellendi. `.pa-card-meta` artık
   tek satır yatay kaydırılabilir etiket rail'i olarak çalışır; chip'ler `white-space: nowrap`

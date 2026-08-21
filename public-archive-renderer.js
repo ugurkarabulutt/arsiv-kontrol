@@ -1228,71 +1228,91 @@ function renderInfoPage(kind) {
     hakkimizda: {
       title: 'Hakkımızda',
       kicker: 'Hakkımızda',
-      heading: 'Soruları kategorileriyle birlikte okumak için hazırlanmış bir arşiv.',
+      heading: 'Dini soruların cevaplarını delilleri ve kaynak bağlamıyla birlikte sunan bir arşiv.',
       copy: [
-        'Dini Sorular ve Cevaplar Arşivi, yayınlanan soru ve cevapları kategorileriyle birlikte okunur hâle getirir.',
-        `${publicArchiveFixtures.brand.authorLine} Sayfalar, okuyucunun aradığı cevaba daha kolay ulaşması için düzenlenir.`
+        'Dini Sorular ve Cevaplar Arşivi, yayınlanmış soru-cevapları tek tek aramak yerine düzenli bir okuma yapısı içinde bulabilmeniz için hazırlanır.',
+        `${publicArchiveFixtures.brand.authorLine} Her cevap; ilgili kategori, bağlantılı sorular ve kaynak bağlamıyla birlikte sunularak okuyucunun konuyu daha rahat takip etmesine yardımcı olur.`
       ],
       points: [
-        { title: 'Arama', text: 'Soru başlıkları, cevap metinleri ve kategoriler birlikte aranır.' },
-        { title: 'Kategori bağı', text: 'Bir cevap tek başına bırakılmaz; ilgili kategorilerle birlikte gösterilir.' },
-        { title: 'Okuma rahatlığı', text: 'Uzun cevaplar mobil ve masaüstünde sakin bir okuma düzeniyle sunulur.' }
+        { title: 'Amacı', text: 'Merak edilen sorulara hızlı ulaşmayı, cevabı okurken ilgili başlıkları da görmeyi sağlar.' },
+        { title: 'Düzeni', text: 'Cevaplar kategori ve ilişkili soru bağlantılarıyla birlikte arşivlenir; böylece konu tek sayfada kalmaz.' },
+        { title: 'Okuma deneyimi', text: 'Uzun cevaplar mobil ve masaüstünde paragraflı, sakin ve takip edilebilir bir düzende gösterilir.' }
+      ],
+      actions: [
+        { label: 'Arşivi İncele', href: `${PREVIEW_BASE}/arsiv` },
+        { label: 'Nasıl Kullanılır?', href: `${PREVIEW_BASE}/nasil-kullanilir`, secondary: true }
       ]
     },
     'nasil-kullanilir': {
       title: 'Nasıl Kullanılır',
       kicker: 'Nasıl Kullanılır',
-      heading: 'Aradığınız cevaba birkaç sade adımla ulaşabilirsiniz.',
+      heading: 'Aradığınız cevaba arama, arşiv ve kategoriler üzerinden ulaşabilirsiniz.',
       copy: [
-        'Önce arama kutusuna merak ettiğiniz soruyu veya kategoriyi yazın. Sonra ilgili soru kartını açarak cevabı okuyun.',
-        'Cevabın yanında görünen kategoriler, aynı başlıktaki başka sorulara geçmenize yardımcı olur.'
+        'Ana sayfadaki arama kutusuna bir soru, kelime veya kategori yazabilirsiniz. Sonuçlarda ilgili soru kartını açarak cevabın tamamına geçebilirsiniz.',
+        'Arşiv sayfasında kayıtları alfabetik olarak inceleyebilir, bir harf seçip o harfe ait kategoriler içinden aradığınız başlığa ulaşabilirsiniz.'
       ],
       points: [
-        { title: 'Arayın', text: 'Soru veya kategori yazarak başlayın.' },
-        { title: 'Cevabı okuyun', text: 'Soru detayında cevabı, yayın tarihini ve ilgili kategorileri birlikte görün.' },
-        { title: 'Devam edin', text: 'İlgili sorular ve kategoriler üzerinden okumayı derinleştirin.' }
+        { title: 'Arayın', text: 'Soru veya kategori yazarak başlayın; kısa ve doğrudan kelimeler daha iyi sonuç verir.' },
+        { title: 'Cevabı okuyun', text: 'Soru detayında cevabı, yayın bilgisini, okunma sayısını ve ilgili kategorileri birlikte görün.' },
+        { title: 'Devam edin', text: 'Aynı kategori veya ilgili sorular üzerinden okumayı genişletin.' }
+      ],
+      actions: [
+        { label: 'Arama Yap', href: `${PREVIEW_BASE}/arama` },
+        { label: 'Arşive Git', href: `${PREVIEW_BASE}/arsiv`, secondary: true }
       ]
     },
     iletisim: {
       title: 'İletişim',
       kicker: 'İletişim',
-      heading: 'Arşivle ilgili notlarınızı sade şekilde iletebilirsiniz.',
+      heading: 'Arşivle ilgili düzeltme, eksik bilgi ve soru taleplerinizi doğru yerden iletebilirsiniz.',
       copy: [
-        'Arşivde bir eksik, yazım hatası veya iletmek istediğiniz bir not fark ederseniz bize bildirebilirsiniz.',
-        'Yeni bir dini soru göndermek için Soru Sor sayfasını kullanmanız yeterlidir.'
+        'Bir sayfada yazım hatası, çalışmayan bağlantı veya eksik görünen bir bilgi fark ederseniz bunu kısa ve anlaşılır bir notla iletebilirsiniz.',
+        'Yeni bir dini soru sormak istiyorsanız doğrudan Soru Sor sayfasını kullanmanız gerekir; böylece soru doğru akışa alınır.'
       ],
       points: [
-        { title: 'Arşiv notu', text: 'Sayfa, bağlantı veya yazım hatasıyla ilgili notlarınızı kısa şekilde iletin.' },
-        { title: 'Yeni soru', text: 'Dini sorular için Soru Sor sayfasındaki formu kullanın.' },
-        { title: 'Mahremiyet', text: 'İletişim veya soru metninde kişisel bilgi paylaşmayın.' }
+        { title: 'Düzeltme notu', text: 'Hangi sayfada ne gördüğünüzü belirtin; mümkünse sayfa başlığını veya bağlantıyı ekleyin.' },
+        { title: 'Yeni soru', text: 'Cevaplanmasını istediğiniz dini sorular için Soru Sor formunu kullanın.' },
+        { title: 'Mahremiyet', text: 'İletişim veya soru metninde telefon, adres, özel sağlık bilgisi ya da üçüncü kişilere ait mahrem bilgi yazmayın.' }
+      ],
+      actions: [
+        { label: 'Soru Sor', href: `${PREVIEW_BASE}/soru-sor` },
+        { label: 'Gizliliği Oku', href: `${PREVIEW_BASE}/gizlilik`, secondary: true }
       ]
     },
     gizlilik: {
       title: 'Gizlilik',
       kicker: 'Gizlilik',
-      heading: 'Soru gönderirken mahremiyeti korumak esastır.',
+      heading: 'Soru gönderirken ve arşivi kullanırken mahremiyetinizi korumanız önemlidir.',
       copy: [
-        'Soru gönderirken ad, telefon, adres, özel sağlık bilgisi veya üçüncü kişilere ait mahrem ayrıntılar yazmayın.',
-        'Google ile devam etmeniz, gönderdiğiniz soruyu kendi hesabınızla ilişkilendirmek içindir.'
+        'Soru metninde ad, telefon, adres, özel sağlık bilgisi, aile içi ayrıntılar veya üçüncü kişilere ait mahrem bilgiler paylaşılmamalıdır.',
+        'Oturum açmanız, gönderdiğiniz sorunun size ait bir hesapla ilişkilendirilmesi ve gerektiğinde sürecin sağlıklı yürütülmesi içindir.'
       ],
       points: [
-        { title: 'Az bilgi', text: 'Soruyu anlamaya yetmeyen kişisel ayrıntıları yazmayın.' },
-        { title: 'Mahremiyet', text: 'Kendinize veya başkasına ait özel bilgileri paylaşmayın.' },
-        { title: 'Hesap bağı', text: 'Hesap bilgisi, gönderdiğiniz soruyu takip edebilmeniz için kullanılır.' }
+        { title: 'Kişisel bilgi', text: 'Sorunun anlaşılması için zorunlu olmayan özel bilgileri yazmayın.' },
+        { title: 'Üçüncü kişiler', text: 'Başka kişileri tanıtacak isim, adres, olay detayı veya mahrem bilgi paylaşmayın.' },
+        { title: 'Hesap kullanımı', text: 'Hesap bilgisi arşiv okuma deneyimini değil, soru gönderim sürecini düzenli yürütmeyi destekler.' }
+      ],
+      actions: [
+        { label: 'Soru Sorarken Dikkat Edin', href: `${PREVIEW_BASE}/soru-sor` },
+        { label: 'Kullanım Koşulları', href: `${PREVIEW_BASE}/kullanim-kosullari`, secondary: true }
       ]
     },
     'kullanim-kosullari': {
       title: 'Kullanım Koşulları',
-      kicker: 'Kullanım',
-      heading: 'Arşiv okuma ve soru gönderimi için sade kullanım ilkeleri.',
+      kicker: 'Kullanım Koşulları',
+      heading: 'Arşivden yararlanırken ve soru gönderirken geçerli temel kullanım ilkeleri.',
       copy: [
-        'Arşiv; soru-cevap içeriklerini okumak, aramak ve kategoriler üzerinden keşfetmek için sunulur.',
-        'Soru gönderimi, cevabın hemen yayınlanacağı veya belirli bir sürede yanıtlanacağı anlamına gelmez.'
+        'Bu arşiv; yayınlanmış soru-cevapları okumak, aramak, kategoriler üzerinden incelemek ve ilgili cevaplara ulaşmak için sunulur.',
+        'Soru gönderimi, sorunun mutlaka yayınlanacağı veya belirli bir süre içinde cevaplanacağı anlamına gelmez. Gönderilen sorular uygunluk ve ihtiyaç durumuna göre değerlendirilir.'
       ],
       points: [
-        { title: 'Okuma', text: 'Cevapları arşiv sayfalarından okuyabilir, bağlantılarını paylaşabilirsiniz.' },
-        { title: 'Soru gönderimi', text: 'Gönderilen sorular içerik ve ihtiyaç durumuna göre ele alınır.' },
-        { title: 'Düzen', text: 'Arşivdeki başlıklar ve kategoriler okuyucunun kolay ulaşması için düzenlenir.' }
+        { title: 'Okuma ve paylaşım', text: 'Cevapları okuyabilir ve bağlantılarını paylaşabilirsiniz; içerik bütünlüğü korunmalıdır.' },
+        { title: 'Soru gönderimi', text: 'Gönderilen sorular açık, saygılı ve tek konuya odaklı olmalıdır.' },
+        { title: 'Arşiv düzeni', text: 'Başlıklar, kategoriler ve bağlantılar okuyucunun cevaba daha kolay ulaşması için düzenlenebilir.' }
+      ],
+      actions: [
+        { label: 'Arşivi Aç', href: `${PREVIEW_BASE}/arsiv` },
+        { label: 'Gizlilik', href: `${PREVIEW_BASE}/gizlilik`, secondary: true }
       ]
     }
   };
@@ -1311,8 +1331,7 @@ function renderInfoPage(kind) {
           </div>
           ${guideList(page.points || [])}
           <div class="pa-empty-actions">
-            <a class="pa-button" href="${PREVIEW_BASE}/arsiv">Arşive Git</a>
-            <a class="pa-button is-secondary" href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+            ${(page.actions || []).map(action => `<a class="pa-button${action.secondary ? ' is-secondary' : ''}" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`).join('')}
           </div>
         </section>
       </main>

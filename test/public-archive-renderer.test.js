@@ -431,3 +431,30 @@ test('public preview exposes separate index and info pages', () => {
     assertOnlyPublicPreviewApi(rendered.html);
   }
 });
+
+test('public info pages have page-specific explanatory copy and actions', () => {
+  const about = renderPublicArchivePreviewRoute('/public-preview/hakkimizda').html;
+  assert.match(about, /Dini soruların cevaplarını delilleri ve kaynak bağlamıyla birlikte sunan bir arşiv\./);
+  assert.match(about, /Arşivi İncele/);
+  assert.match(about, /Nasıl Kullanılır\?/);
+
+  const howTo = renderPublicArchivePreviewRoute('/public-preview/nasil-kullanilir').html;
+  assert.match(howTo, /Aradığınız cevaba arama, arşiv ve kategoriler üzerinden ulaşabilirsiniz\./);
+  assert.match(howTo, /Arama Yap/);
+  assert.match(howTo, /Arşive Git/);
+
+  const contact = renderPublicArchivePreviewRoute('/public-preview/iletisim').html;
+  assert.match(contact, /düzeltme, eksik bilgi ve soru taleplerinizi doğru yerden iletebilirsiniz/);
+  assert.match(contact, /Düzeltme notu/);
+  assert.match(contact, /Gizliliği Oku/);
+
+  const privacy = renderPublicArchivePreviewRoute('/public-preview/gizlilik').html;
+  assert.match(privacy, /mahremiyetinizi korumanız önemlidir/);
+  assert.match(privacy, /Üçüncü kişiler/);
+  assert.match(privacy, /Soru Sorarken Dikkat Edin/);
+
+  const terms = renderPublicArchivePreviewRoute('/public-preview/kullanim-kosullari').html;
+  assert.match(terms, /geçerli temel kullanım ilkeleri/);
+  assert.match(terms, /Okuma ve paylaşım/);
+  assert.match(terms, /Arşivi Aç/);
+});

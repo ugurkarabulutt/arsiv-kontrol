@@ -1268,6 +1268,15 @@ assert(!askPreview.includes('Bu ekranda kayıt alınmıyor') && !askPreview.incl
 assert(askPreview.includes('Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.'), 'Soru Sor author context eksik.');
 const howToPreview = renderPublicArchivePreviewRoute('/public-preview/nasil-kullanilir').html;
 assert(howToPreview.includes('Nasıl Kullanılır') && howToPreview.includes('Arayın') && howToPreview.includes('Cevabı okuyun'), 'Nasıl Kullanılır bilgilendirme sayfasi eksik.');
+const aboutPreview = renderPublicArchivePreviewRoute('/public-preview/hakkimizda').html;
+const contactPreview = renderPublicArchivePreviewRoute('/public-preview/iletisim').html;
+const privacyPreview = renderPublicArchivePreviewRoute('/public-preview/gizlilik').html;
+const termsPreview = renderPublicArchivePreviewRoute('/public-preview/kullanim-kosullari').html;
+assert(aboutPreview.includes('delilleri ve kaynak bağlamıyla') && aboutPreview.includes('Arşivi İncele'), 'Hakkımızda sayfasi kendi amacina uygun aciklayici metin tasimali.');
+assert(howToPreview.includes('Arama Yap') && howToPreview.includes('alfabetik olarak inceleyebilir'), 'Nasıl Kullanılır sayfasi arama/arsiv kullanimini aciklamali.');
+assert(contactPreview.includes('Düzeltme notu') && contactPreview.includes('Gizliliği Oku'), 'İletişim sayfasi duzeltme ve soru talebi ayrimini aciklamali.');
+assert(privacyPreview.includes('Üçüncü kişiler') && privacyPreview.includes('Soru Sorarken Dikkat Edin'), 'Gizlilik sayfasi mahremiyet odakli olmali.');
+assert(termsPreview.includes('Okuma ve paylaşım') && termsPreview.includes('Arşivi Aç'), 'Kullanım Koşulları sayfasi kullanim ilkelerini aciklamali.');
 const notFoundPreview = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
 assert(notFoundPreview.status === 404 && notFoundPreview.html.includes('Sayfa bulunamadı.'), 'Gizli veya eksik public icerik 404 state dondurmeli.');
 

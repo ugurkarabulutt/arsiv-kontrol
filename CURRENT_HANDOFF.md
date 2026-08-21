@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Public Footer Bilgi Sayfaları
+
+- Footer içindeki Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları
+  sayfaları tekrar eden genel metinlerden çıkarıldı. Her sayfa kendi başlığına uygun,
+  teknik olmayan ve açıklayıcı içerik taşır.
+- Hakkımızda sayfası arşivin amacını, Dr. Abdulcabbar Boran tarafından yanıtlanan cevapların
+  delil/kaynak bağlamıyla sunulmasını ve okuma düzenini anlatır.
+- Nasıl Kullanılır sayfası arama, arşiv, alfabetik kategori seçimi ve soru detayına geçişi
+  açıklar. İletişim sayfası düzeltme notu ile yeni soru akışını ayırır. Gizlilik sayfası
+  mahrem bilgi paylaşmama uyarılarını netleştirir. Kullanım Koşulları sayfası okuma/paylaşım,
+  soru gönderimi ve arşiv düzeni ilkelerini açıklar.
+- Sayfaların alt aksiyonları da aynı iki genel buton olmaktan çıkarıldı; her sayfa kendi
+  bağlamına uygun yönlendirme butonları kullanır.
+- Guard/test eklendi: `public info pages have page-specific explanatory copy and actions`.
+  Doğrulama: `node scripts/check-frontend.js`, `npm.cmd run check` (`101/101`) ve
+  `git diff --check` başarılı. Root `/` public cutover yapılmadı.
+
 ## 2026-08-21 Codex Public Kart Etiketleri Tek Satır
 
 - Kullanıcı geri bildirimiyle public soru kartlarındaki uzun etiketlerin iki satıra düşmesi
