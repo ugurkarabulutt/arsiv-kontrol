@@ -137,10 +137,9 @@ tespit edilir).
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `npm.cmd run check` ve `git diff --check` başarılı; tam test `102/102` geçti. Commit
-  `6d41014` remote'a push edildi ve doğru `arsiv-kontrol` Vercel projesine preview deploy alındı:
-  `https://arsiv-kontrol-cjrfqt4x2-ugurkarabulutts-projects.vercel.app`, deployment
-  `dpl_9t87Aguimzd8WNB9SKvVXx48tNR3`, stabil alias
-  `https://arsiv-kontrol-preview.vercel.app`. Smoke: stabil preview root `/` admin,
+  `6d41014` ve dokümantasyon follow-up commit'i `1022c25` remote'a push edildi; doğru
+  `arsiv-kontrol` Vercel projesine preview deploy alındı ve stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` güncellendi. Smoke: stabil preview root `/` admin,
   `/public-preview` public, `/admin` admin, `/public-preview/api/session` JSON ve
   `googleConfigured:true`, `emailConfigured:true`; canlı `https://arsiv.ibrahimlive.ai/`
   hâlâ admin.

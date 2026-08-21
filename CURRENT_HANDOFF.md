@@ -37,11 +37,10 @@
   çalıştı. Dummy Google değerleriyle `/auth/google` root callback olarak
   `/auth/google/callback` üretti. Bayrak kapalıyken root `/` admin kaldı ve `/api/session`
   public JSON endpoint olarak açılmadı.
-- Commit/push/deploy: `6d41014 feat: add gated public root routes` remote branch'e push edildi.
-  Doğru `arsiv-kontrol` Vercel projesine preview deploy alındı:
-  `https://arsiv-kontrol-cjrfqt4x2-ugurkarabulutts-projects.vercel.app`,
-  deployment `dpl_9t87Aguimzd8WNB9SKvVXx48tNR3`; stabil alias
-  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a bağlandı.
+- Commit/push/deploy: `6d41014 feat: add gated public root routes` ve dokümantasyon follow-up
+  commit'i `1022c25 docs: record gated public root deploy` remote branch'e push edildi. Doğru
+  `arsiv-kontrol` Vercel projesine preview deploy alındı; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` güncellendi.
 - Canlı smoke: `https://arsiv-kontrol-preview.vercel.app/` root admin kalıyor;
   `/public-preview`, `/public-preview/hesabim`, `/public-preview/soru-sor` public dönüyor;
   `/public-preview/api/session` JSON içinde `googleConfigured:true` ve `emailConfigured:true`
