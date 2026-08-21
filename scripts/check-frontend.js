@@ -1233,6 +1233,16 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
   assert(publicCss.includes(marker), `Public soru karti CTA CSS marker eksik: ${marker}`);
 }
 assert(!publicCss.includes('.pa-question-card.has-strong-cta .pa-card-cta'), 'Public soru karti CTA stili yalniz featured kartlara bagli olmamali.');
+const cardMetaCss = publicCss.match(/\.pa-card-meta\s*\{([\s\S]*?)\}/)?.[1] || '';
+const chipWrapCss = publicCss.match(/\.pa-chip-wrap\s*\{([\s\S]*?)\}/)?.[1] || '';
+for (const [name, source] of [['pa-card-meta', cardMetaCss], ['pa-chip-wrap', chipWrapCss]]) {
+  assert(source.includes('flex-wrap: nowrap'), `${name} tek satir yatay etiket rail olmali.`);
+  assert(source.includes('overflow-x: auto'), `${name} yatay kaydirilabilir olmali.`);
+  assert(source.includes('scroll-snap-type: x proximity'), `${name} scroll snap davranisi olmali.`);
+  assert(source.includes('overscroll-behavior-inline: contain'), `${name} yatay tasma davranisi izole olmali.`);
+  assert(!source.includes('flex-wrap: wrap'), `${name} etiketleri iki satira dusurmemeli.`);
+}
+assert(publicCss.includes('white-space: nowrap;') && publicCss.includes('.pa-card-meta::-webkit-scrollbar'), 'Public etiket chipleri tek satir ve gizli scrollbar olmali.');
 for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
 }

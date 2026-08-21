@@ -121,6 +121,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-21
+- **Public soru kartı etiketleri tek satır yatay rail'e alındı:** Kullanıcı geri bildirimiyle
+  public soru kartlarında uzun etiketlerin iki satıra düşmesi engellendi. `.pa-card-meta` artık
+  tek satır yatay kaydırılabilir etiket rail'i olarak çalışır; chip'ler `white-space: nowrap`
+  ve `flex: 0 0 auto` ile kırılmaz, mobil momentum scroll ve gizli scrollbar kullanır. Detay
+  sayfasındaki `.pa-chip-wrap` aynı davranışa alındı; etiket/kategori chip mantığı sitede
+  tutarlı kaldı. `scripts/check-frontend.js` içine guard eklendi; kart/detay etiket rail'leri
+  tekrar `flex-wrap: wrap` davranışına dönemeyecek. Bu adım public preview CSS/guard kapsamıdır;
+  veri, admin, Google auth ve root `/` public cutover'a dokunulmadı.
+
 - **Public cevap paragraf düzeni canlı veriye uygulandı:** Public okuma modelinde yayındaki
   `3.058` kaydın tamamında `answer_paragraphs` tek paragraf görünüyordu; `2.268` cevap 1000
   karakterden, `1.032` cevap 3000 karakterden uzun olmasına rağmen tek blok halindeydi.

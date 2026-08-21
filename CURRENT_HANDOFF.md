@@ -1,5 +1,18 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Public Kart Etiketleri Tek Satır
+
+- Kullanıcı geri bildirimiyle public soru kartlarındaki uzun etiketlerin iki satıra düşmesi
+  engellendi. `.pa-card-meta` artık tek satır yatay kaydırılabilir etiket rail'i olarak çalışır.
+- Etiket chip'leri küçülüp kırılmaz; `white-space: nowrap`, `flex: 0 0 auto`, yatay scroll,
+  mobil momentum scroll, gizli scrollbar ve sağ kenarda hafif fade mask kullanılır.
+- Aynı davranış detay sayfasındaki `.pa-chip-wrap` için de uygulandı; etiket/kategori chip
+  mantığı sitede tutarlı kalır.
+- `scripts/check-frontend.js` içine guard eklendi: kart ve detay etiket rail'leri tekrar
+  `flex-wrap: wrap` davranışına dönemeyecek.
+- Doğrulama: `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check`, `git diff --check` başarılı. Root `/` public cutover yapılmadı.
+
 ## 2026-08-21 Codex Public Cevap Paragraf Düzeni
 
 - Canlı public okuma tablosunda `public_qa.status = 'published'` olan `3.058` kaydın tamamında

@@ -1126,9 +1126,24 @@ svg {
 .pa-card-meta {
   grid-column: 1;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 7px;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 2px 2px 0;
+  margin-right: -2px;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, black 0, black calc(100% - 18px), transparent 100%);
+}
+
+.pa-card-meta::-webkit-scrollbar,
+.pa-chip-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .pa-card-bottom {
@@ -1143,6 +1158,7 @@ svg {
 .pa-chip,
 a.pa-chip {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   min-height: 25px;
   padding: 3px 10px;
@@ -1153,6 +1169,8 @@ a.pa-chip {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
+  white-space: nowrap;
+  scroll-snap-align: start;
 }
 
 a.pa-chip:hover,
@@ -1985,11 +2003,26 @@ a.pa-chip:hover,
   padding: 28px 0 0;
 }
 
-.pa-detail-meta,
-.pa-chip-wrap {
+.pa-detail-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.pa-chip-wrap {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 2px 2px 0;
+  margin-right: -2px;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, black 0, black calc(100% - 18px), transparent 100%);
 }
 
 .pa-answer-primary h1 {
