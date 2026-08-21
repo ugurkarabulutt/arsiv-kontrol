@@ -19,9 +19,17 @@
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
   başarılı; tam test `102/102` geçti.
-- Henüz commit/push/deploy yapılmadı. Dirty dosyalar: `public-archive-renderer.js`,
-  `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`, `CURRENT_HANDOFF.md`,
-  `AGENTS.md`.
+- Commit/push: `bca8906 feat: add public archive structured data` remote
+  `codex/public-launch-integration` branch'ine push edildi.
+- Preview deploy: doğru `arsiv-kontrol` Vercel projesine temiz `git archive HEAD` kaynağıyla
+  deploy alındı. Deployment:
+  `https://arsiv-kontrol-jmyphg4xw-ugurkarabulutts-projects.vercel.app`,
+  `dpl_7yWCj3cCcPrJXHxVMp4exqNy3nQ2`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi.
+- Preview smoke: `/health`, `/public-preview`, gerçek veriyle bir `/public-preview/soru/...`,
+  `/public-preview/hesabim` ve `/admin` 200 döndü. Public preview ve admin noindex; detay
+  sayfasında `QAPage`, `BreadcrumbList`, `SearchAction` var, `Yazdır/data-print` yok, preview
+  canonical üretmiyor. Root production cutover yapılmadı.
 
 ## 2026-08-21 Codex Public Soru Talebi Cevap Akışı
 

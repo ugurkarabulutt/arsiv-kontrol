@@ -134,7 +134,16 @@ tespit edilir).
   `acceptedAnswer.citation` alanına yazılır. Doğrulama: `node --check server.js`,
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
-  `npm.cmd run check` ve `git diff --check` başarılı; tam test `102/102` geçti.
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `102/102` geçti. Commit
+  `bca8906 feat: add public archive structured data` remote `codex/public-launch-integration`
+  branch'ine push edildi. Preview deploy:
+  `https://arsiv-kontrol-jmyphg4xw-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_7yWCj3cCcPrJXHxVMp4exqNy3nQ2`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi. Smoke: `/health`,
+  `/public-preview`, gerçek veriyle bir `/public-preview/soru/...`, `/public-preview/hesabim`
+  ve `/admin` 200 döndü. Public preview ve admin noindex; detayda `QAPage`, `BreadcrumbList`,
+  `SearchAction` var, `Yazdır/data-print` yok, preview canonical üretmiyor. Root production
+  cutover yapılmadı.
 
 ### 2026-08-21
 - **Public soru talebi cevap akışı eklendi:** Public soru detayında üstte görünen büyük tekrar
