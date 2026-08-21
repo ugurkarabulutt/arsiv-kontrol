@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Public Soru İşareti Kontrolü
+
+- Kullanıcı isteğiyle yayındaki public kayıtlar içinde soru alanında soru işareti olmayanlar
+  canlı Supabase'de kontrol edildi. Kriter: `public_qa.status = 'published'` ve `question`
+  alanında `?`, `؟` veya `？` bulunmaması.
+- Ön kontrolde `3.147` yayındaki kayıttan `89` kayıt hedef çıktı. Hedeflerin tamamında
+  `source_history_id` vardı ve karşılık gelen `history` kaydı bulundu; hepsi işlem öncesi
+  `onaylandi` durumundaydı.
+- Uygulama yapıldı: 89 `public_qa` satırı `needs_question_review` durumuna alındı ve canlı
+  public listeden kaldırıldı; karşılık gelen 89 `history` satırı `bekliyor` durumuna alındı,
+  `approved_by` ve `approved_at` temizlendi. Soru, cevap ve etiket alanları korunur.
+- İşlem kaydı `settings` içinde `question-mark-review-2026-08-21T12-25-28-760Z` anahtarıyla
+  saklandı. Bu kayıt önceki public slug, history id, soru ve önceki onay bilgisini içerir.
+- Doğrulama: canlı DB'de yayındaki kayıt sayısı `3.058`; yayında soru işareti olmayan kayıt
+  sayısı `0`. Preview HTML'de ana sayfa ve arşiv `3.058` gösteriyor; eski `3.147` görünmüyor.
+- Bu adım kod deploy'u gerektirmeyen canlı veri operasyonudur; root `/` public cutover yapılmadı.
+
 ## 2026-08-20 Codex Public Sticky Header ve E-Posta Oturumu
 
 - Public preview üst barı kullanıcı geri bildirimine göre güçlendirildi: header artık gerçek

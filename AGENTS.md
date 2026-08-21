@@ -120,6 +120,19 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-21
+- **Public soru işareti kontrolü canlı veriye uygulandı:** Kullanıcı isteğiyle yayındaki
+  `public_qa` kayıtlarında `question` alanında `?`, `؟` veya `？` bulunmayanlar canlı Supabase'de
+  tarandı. Ön kontrolde `3.147` yayındaki kayıttan `89` kayıt hedef çıktı; hedeflerin tamamının
+  `source_history_id` karşılığı vardı ve karşılık gelen `history` kayıtları işlem öncesi
+  `onaylandi` durumundaydı. Uygulamada 89 `public_qa` satırı `needs_question_review` durumuna
+  alınarak public listeden kaldırıldı; karşılık gelen 89 `history` satırı `bekliyor` durumuna
+  alındı, `approved_by` ve `approved_at` temizlendi. Soru, cevap ve etiket alanları korunur.
+  İşlem izi `settings.question-mark-review-2026-08-21T12-25-28-760Z` anahtarına yazıldı.
+  Doğrulamada yayındaki public kayıt sayısı `3.058`, yayında soru işareti olmayan kayıt sayısı
+  `0` oldu; preview HTML ana sayfa ve arşiv `3.058` gösteriyor. Kod deploy'u veya root `/`
+  public cutover yapılmadı.
+
 ### 2026-08-20
 - **Public preview sticky header ve e-posta oturumu eklendi:** Kullanıcı geri bildirimiyle public
   preview üst barı gerçek `fixed` header davranışına alındı; sayfa içeriği header yüksekliği kadar
