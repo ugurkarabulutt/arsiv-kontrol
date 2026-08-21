@@ -144,6 +144,16 @@ tespit edilir).
   `googleConfigured:true`, `emailConfigured:true`; canlı `https://arsiv.ibrahimlive.ai/`
   hâlâ admin.
 
+- **Bayrak kapalı production deploy alındı:** Kullanıcı `PUBLIC_ARCHIVE_ROOT_ENABLED=0` ve
+  `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=0` değerlerini Vercel Production'da teyit ettikten
+  sonra `386ec54` temiz HEAD'i doğru `arsiv-kontrol` Vercel projesine production deploy edildi.
+  Production deployment: `https://arsiv-kontrol-5bc0mefnh-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_792L64tVHZg83isnmWFNBadoZQYH`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Smoke sonucu: `/health` 200 JSON, root `/` admin HTML,
+  `/admin`, `/admin/`, `/admin/smoke-test` admin HTML ve `X-Robots-Tag: noindex, nofollow`,
+  `/api/auth/me` 200 JSON, manifest/sw/favicon başarılı. Production'da `/public-preview`
+  bayrak kapalı olduğu için 404 ve noindex döner. Root public cutover yapılmadı.
+
 - **Public footer bilgi sayfaları sayfa bazlı açıklayıcı metinlere ayrıldı:** Footer içindeki
   Hakkımızda, Nasıl Kullanılır, İletişim, Gizlilik ve Kullanım Koşulları sayfaları tekrar eden
   genel metinlerden çıkarıldı. Hakkımızda arşivin amacını ve delil/kaynak bağlamıyla okuma

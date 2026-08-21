@@ -1,5 +1,19 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-21 Codex Production Bayrak Kapalı Deploy
+
+- Kullanıcı Vercel Production'da `PUBLIC_ARCHIVE_ROOT_ENABLED=0` ve
+  `PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED=0` değerlerini kesin teyit etti. Bunun üzerine
+  `386ec54` temiz HEAD'i doğru `arsiv-kontrol` Vercel projesine production deploy edildi.
+- Production deployment:
+  `https://arsiv-kontrol-5bc0mefnh-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_792L64tVHZg83isnmWFNBadoZQYH`, canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke geçti: `/health` 200 JSON; root `/` hâlâ admin HTML; `/admin`, `/admin/`,
+  `/admin/smoke-test` admin HTML ve `X-Robots-Tag: noindex, nofollow`; `/api/auth/me` 200 JSON;
+  manifest, `sw.js` ve favicon başarılı.
+- Production'da `/public-preview` bayrak kapalı olduğu için 404/noindex dönüyor. Root public
+  cutover yapılmadı; canlı root admin kaldı.
+
 ## 2026-08-21 Codex Root Public Bayraklı Altyapı
 
 - Kullanıcı root public altyapısı için Google auth, e-posta auth, soru gönderimi API'leri ve
