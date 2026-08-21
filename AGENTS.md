@@ -141,7 +141,15 @@ tespit edilir).
   `node --check server.js`, `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
-  başarılı; tam test `102/102` geçti.
+  başarılı; tam test `102/102` geçti. Commit `6ca7358 feat: answer public question submissions`
+  remote `codex/public-launch-integration` branch'ine push edildi. Doğru `arsiv-kontrol`
+  Vercel projesine temiz arşivden preview deploy alındı:
+  `https://arsiv-kontrol-8s5cdknrd-ugurkarabulutts-projects.vercel.app`,
+  deployment `dpl_42Bvr8PyHFnEUnPFiYn1pULNkqKM`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi. Smoke:
+  `/health`, `/public-preview`, gerçek veriyle bir `/public-preview/soru/...`,
+  `/public-preview/hesabim`, `/public-preview/api/session` ve `/admin` 200 döndü. Public
+  preview ve admin noindex; root production cutover yapılmadı.
 
 - **Root public altyapısı bayraklı hale getirildi:** Public arşiv renderer'ı artık yalnız
   `/public-preview` için sabit path üretmez; `basePath: ''` ile root `/` üzerinde `/arsiv`,

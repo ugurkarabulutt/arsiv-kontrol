@@ -24,7 +24,20 @@
 - Doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
-  başarılı; tam test `102/102` geçti. Henüz commit/push/deploy yapılmadı.
+  başarılı; tam test `102/102` geçti.
+- Commit/push: `6ca7358 feat: answer public question submissions` remote
+  `codex/public-launch-integration` branch'ine push edildi.
+- Preview deploy: doğru `arsiv-kontrol` Vercel projesine temiz `git archive HEAD` kaynağıyla
+  deploy alındı. Deployment:
+  `https://arsiv-kontrol-8s5cdknrd-ugurkarabulutts-projects.vercel.app`,
+  `dpl_42Bvr8PyHFnEUnPFiYn1pULNkqKM`; stabil alias
+  `https://arsiv-kontrol-preview.vercel.app` bu deployment'a yönlendirildi.
+- Preview smoke: `/health`, `/public-preview`, gerçek veriyle bir `/public-preview/soru/...`
+  detay sayfası, `/public-preview/hesabim`, `/public-preview/api/session` ve `/admin` 200
+  döndü. Public preview sayfaları `X-Robots-Tag: noindex, nofollow`, admin `/admin` noindex.
+  Detayda görünür tekrar başlık yok; `pa-sr-only`, `data-user-questions` ve
+  `my-question-submissions` markerları canlı HTML'de görünüyor. Root production cutover
+  yapılmadı.
 
 ## 2026-08-21 Codex Production Bayrak Kapalı Deploy
 
