@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public iOS Safe Area ve Paylaşım Kartı Cache Turu
+
+- iPhone ana ekrana eklenen uygulamada header saat/pil status bar alanına taşıyordu.
+  Kök sebep: public head `apple-mobile-web-app-status-bar-style=black-translucent` kullanıyor
+  ve CSS header safe-area kadar aşağıdan başlamıyordu.
+- Public head `apple-mobile-web-app-status-bar-style=default` olarak değiştirildi. CSS'e
+  `--pa-safe-top`, `--pa-header-total-height` ve `--pa-header-compact-total-height`
+  eklendi; `.pa-page`, `.pa-header` ve scrolled mobil header bu değerlere bağlandı.
+  Masaüstünde safe-area 0 olduğu için görünüm değişmez.
+- Canlı root HTML doğru public paylaşım metalarını dönmesine rağmen WhatsApp eski admin
+  kartını (`Arşiv AI | Metin Denetim ve Düzeltme`) gösteriyordu; bu canlı HTML'den değil,
+  eski link-preview cache'inden geliyordu. Public paylaşım kartı URL'si
+  `public-share-card.png?v=20260822-public-card-v2` olarak versiyonlandı ve
+  `og:updated_time`, `og:image:secure_url`, `og:image:type`, temiz ana sayfa başlığı
+  eklendi.
+- Ana sayfa `<title>` ve `og:title` artık `Ana Sayfa | ...` yerine doğrudan
+  `Dini Sorular ve Cevaplar Arşivi` üretir. İç sayfalarda sayfa başlığı + marka formatı
+  korunur.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-22 Codex Public Mobil Footer ve App/Paylaşım Hazırlığı
 
 - Mobilde `Yukarı çık` butonundaki ok sola bakıyordu; sebep `.pa-scroll-top-icon` üzerinde

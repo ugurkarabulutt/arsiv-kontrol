@@ -18,6 +18,10 @@
   --pa-radius-sm: 8px;
   --pa-container: 1184px;
   --pa-header-height: 76px;
+  --pa-header-compact-height: 64px;
+  --pa-safe-top: env(safe-area-inset-top, 0px);
+  --pa-header-total-height: calc(var(--pa-header-height) + var(--pa-safe-top));
+  --pa-header-compact-total-height: calc(var(--pa-header-compact-height) + var(--pa-safe-top));
   --pa-shadow-soft: 0 22px 52px rgb(20 40 28 / 0.12);
   --pa-shadow-card: 0 12px 28px rgb(23 32 28 / 0.07);
 }
@@ -45,7 +49,7 @@
 
 html {
   min-width: 0;
-  scroll-padding-top: calc(var(--pa-header-height) + 18px);
+  scroll-padding-top: calc(var(--pa-header-total-height) + 18px);
   overflow-x: hidden;
   background: var(--pa-bg);
   color: var(--pa-text);
@@ -121,7 +125,7 @@ svg {
 
 .pa-page {
   min-height: 100dvh;
-  padding-top: var(--pa-header-height);
+  padding-top: var(--pa-header-total-height);
 }
 
 :root[data-pa-navigating="true"]::before {
@@ -154,7 +158,8 @@ svg {
   grid-template-columns: minmax(160px, auto) minmax(0, 1fr) auto;
   align-items: center;
   width: min(var(--pa-container), calc(100% - 48px));
-  min-height: var(--pa-header-height);
+  min-height: var(--pa-header-total-height);
+  padding-top: var(--pa-safe-top);
   margin: 0 auto;
   background: color-mix(in srgb, var(--pa-bg) 96%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
@@ -293,8 +298,8 @@ svg {
 :root[data-pa-scrolled="true"] .pa-header {
   top: 0;
   width: 100%;
-  min-height: 64px;
-  padding: 0 max(24px, calc((100% - var(--pa-container)) / 2));
+  min-height: var(--pa-header-compact-total-height);
+  padding: var(--pa-safe-top) max(24px, calc((100% - var(--pa-container)) / 2)) 0;
   background: color-mix(in srgb, var(--pa-bg) 88%, transparent);
   border-top: 0;
   border-right: 0;
@@ -2750,15 +2755,16 @@ a.pa-chip:hover,
 
   .pa-header {
     width: 100%;
-    min-height: 76px;
-    padding: 0 20px;
+    min-height: var(--pa-header-total-height);
+    padding: var(--pa-safe-top) 20px 0;
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
   :root[data-pa-scrolled="true"] .pa-header {
     top: 0;
     width: 100%;
-    min-height: 64px;
+    min-height: var(--pa-header-compact-total-height);
+    padding-top: var(--pa-safe-top);
     padding-right: 20px;
     padding-left: 20px;
     border-radius: 0 0 22px 22px;

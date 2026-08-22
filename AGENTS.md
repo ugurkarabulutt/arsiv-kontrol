@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
+- **Public iOS safe-area ve paylaşım kartı cache turu:** iPhone ana ekrana eklenen public
+  uygulamada header saat/pil status bar alanına taşıyordu. Public head
+  `apple-mobile-web-app-status-bar-style=black-translucent` yerine `default` kullanacak
+  şekilde değiştirildi. CSS'e `--pa-safe-top`, `--pa-header-total-height` ve
+  `--pa-header-compact-total-height` eklendi; `.pa-page`, `.pa-header` ve scrolled mobil
+  header iOS safe-area değerine bağlandı. WhatsApp eski admin kartını cache'ten
+  (`Arşiv AI | Metin Denetim ve Düzeltme`) gösterebildiği için public paylaşım görsel URL'si
+  `public-share-card.png?v=20260822-public-card-v2` olarak versiyonlandı; `og:updated_time`,
+  `og:image:secure_url`, `og:image:type` ve temiz ana sayfa paylaşım başlığı eklendi. Ana
+  sayfa `<title>`/`og:title` artık doğrudan `Dini Sorular ve Cevaplar Arşivi`; iç sayfalar
+  sayfa başlığı + marka formatını korur. Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` (`103/103`) ve
+  `git diff --check` başarılı.
 - **Public mobil footer ve app/paylaşım hazırlığı:** Mobilde `Yukarı çık` butonundaki ok
   yönünü bozan `.pa-scroll-top-icon { transform: rotate(-90deg); }` kuralı kaldırıldı; ikon
   gerçek `arrow-up.svg` yönünde yukarı bakar. Mobil footer altında görünen fazla boşluk

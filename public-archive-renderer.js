@@ -12,6 +12,8 @@ const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 const ARCHIVE_PAGE_SIZE = 30;
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card.png';
+const PUBLIC_SHARE_IMAGE_VERSION = '20260822-public-card-v2';
+const PUBLIC_SHARE_UPDATED_TIME = '2026-08-22T11:55:00+03:00';
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
@@ -42,6 +44,10 @@ function publicArchiveAssetHref(filename) {
 
 function publicArchiveAssetUrl(filename) {
   return publicArchiveCanonicalUrl(`/assets/${filename}`);
+}
+
+function publicArchiveShareImageUrl() {
+  return `${publicArchiveAssetUrl(PUBLIC_SHARE_IMAGE_FILE)}?v=${PUBLIC_SHARE_IMAGE_VERSION}`;
 }
 
 function publicArchiveRoutePattern(section = '') {
@@ -250,7 +256,8 @@ function href(route) {
 
 function pageTitle(title) {
   const brand = publicArchiveFixtures.brand.name;
-  return title ? `${title} | ${brand}` : brand;
+  const cleanTitle = String(title || '').trim();
+  return cleanTitle && cleanTitle !== 'Ana Sayfa' ? `${cleanTitle} | ${brand}` : brand;
 }
 
 const svgIconCache = new Map();
@@ -670,7 +677,7 @@ function publicArchiveSiteStructuredData() {
     name: publicArchiveFixtures.brand.name,
     description: publicArchiveFixtures.brand.sentence,
     inLanguage: 'tr',
-    image: publicArchiveAssetUrl(PUBLIC_SHARE_IMAGE_FILE),
+    image: publicArchiveShareImageUrl(),
     publisher: {
       '@type': 'Organization',
       name: publicArchiveFixtures.brand.name,
@@ -1632,7 +1639,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   const publicAppName = publicArchiveFixtures.brand.name;
   const publicShortAppName = 'Dini Sorular';
   const canonicalHref = canonicalPath ? publicArchiveCanonicalUrl(canonicalPath) : '';
-  const shareImageHref = publicArchiveAssetUrl(PUBLIC_SHARE_IMAGE_FILE);
+  const shareImageHref = publicArchiveShareImageUrl();
   const structuredItems = [
     publicArchiveSiteStructuredData(),
     ...(Array.isArray(structuredData) ? structuredData : structuredData ? [structuredData] : [])
@@ -1649,7 +1656,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="application-name" content="${escapeHtml(publicAppName)}">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="${escapeHtml(publicShortAppName)}">
   ${!PUBLIC_ARCHIVE_NOINDEX && canonicalHref ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
   <meta property="og:locale" content="tr_TR">
@@ -1658,7 +1665,10 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta property="og:description" content="${escapeHtml(safeDescription)}">
   <meta property="og:type" content="${questionSlug ? 'article' : 'website'}">
   ${canonicalHref ? `<meta property="og:url" content="${escapeHtml(canonicalHref)}">` : ''}
+  <meta property="og:updated_time" content="${PUBLIC_SHARE_UPDATED_TIME}">
   <meta property="og:image" content="${escapeHtml(shareImageHref)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(shareImageHref)}">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${escapeHtml(publicAppName)}">
