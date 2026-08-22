@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
+- **Public mobil footer ve app/paylaşım hazırlığı:** Mobilde `Yukarı çık` butonundaki ok
+  yönünü bozan `.pa-scroll-top-icon { transform: rotate(-90deg); }` kuralı kaldırıldı; ikon
+  gerçek `arrow-up.svg` yönünde yukarı bakar. Mobil footer altında görünen fazla boşluk
+  azaltıldı: `.pa-page` mobil alt payı 98px'ten 78px'e, footer mobil alt padding'i 30px'ten
+  12px'e indirildi; alt cam menü için safe-area korunur. Public app adı tam/kısa olarak
+  ayrıldı: `Dini Sorular ve Cevaplar Arşivi` tam ad, `Dini Sorular` ana ekran kısa adıdır.
+  Public head `mobile-web-app-capable`, `apple-mobile-web-app-capable`,
+  `apple-mobile-web-app-title`, `og:locale`, Twitter başlık/açıklama ve `twitter:image:alt`
+  metalarını üretir. Public manifest'e root `id`, `display_override` ve kategori bilgileri
+  eklendi. Paylaşım/app asset ölçüleri doğrulandı: 1200x630 paylaşım kartı, Apple 180,
+  Android 192/512/maskable 512 ve favicon 16/32/48. Yerel doğrulama:
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` (`103/103`) ve `git diff --check` başarılı.
 - **Public hızlı gezinme katmanı:** Public root ve preview tarafında alt menü/desktop menü,
   logo, footer, arşiv kısayolu, bölüm linkleri ve soru kartı linkleri için SEO'yu bozmayan
   hızlı sayfa geçişi eklendi. Sayfalar sunucuda gerçek HTML olarak üretilmeye devam eder;

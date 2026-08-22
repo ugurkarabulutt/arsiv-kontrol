@@ -4,11 +4,14 @@
   "description": "Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.",
   "lang": "tr",
   "dir": "ltr",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#F7F3EA",
   "theme_color": "#0D1412",
+  "categories": ["education", "books", "reference"],
   "icons": [
     {
       "src": "app-icon-192.png",

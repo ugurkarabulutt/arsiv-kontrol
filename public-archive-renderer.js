@@ -1629,6 +1629,8 @@ function renderNotFound() {
 function renderShell({ title, description, active, content, status = 200, questionSlug = '', canonicalPath = '', structuredData = [] }) {
   const safeTitle = pageTitle(title);
   const safeDescription = description || publicArchiveFixtures.brand.sentence;
+  const publicAppName = publicArchiveFixtures.brand.name;
+  const publicShortAppName = 'Dini Sorular';
   const canonicalHref = canonicalPath ? publicArchiveCanonicalUrl(canonicalPath) : '';
   const shareImageHref = publicArchiveAssetUrl(PUBLIC_SHARE_IMAGE_FILE);
   const structuredItems = [
@@ -1644,10 +1646,14 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="${PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : 'index,follow'}">
   <meta name="description" content="${escapeHtml(safeDescription)}">
-  <meta name="application-name" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
-  <meta name="apple-mobile-web-app-title" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
+  <meta name="application-name" content="${escapeHtml(publicAppName)}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="${escapeHtml(publicShortAppName)}">
   ${!PUBLIC_ARCHIVE_NOINDEX && canonicalHref ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
-  <meta property="og:site_name" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:site_name" content="${escapeHtml(publicAppName)}">
   <meta property="og:title" content="${escapeHtml(safeTitle)}">
   <meta property="og:description" content="${escapeHtml(safeDescription)}">
   <meta property="og:type" content="${questionSlug ? 'article' : 'website'}">
@@ -1655,9 +1661,12 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta property="og:image" content="${escapeHtml(shareImageHref)}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${escapeHtml(publicArchiveFixtures.brand.name)}">
+  <meta property="og:image:alt" content="${escapeHtml(publicAppName)}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(safeTitle)}">
+  <meta name="twitter:description" content="${escapeHtml(safeDescription)}">
   <meta name="twitter:image" content="${escapeHtml(shareImageHref)}">
+  <meta name="twitter:image:alt" content="${escapeHtml(publicAppName)}">
   <meta name="theme-color" content="#F7F3EA">
   <title>${escapeHtml(safeTitle)}</title>
   ${structuredItems.map(jsonLdScript).join('\n  ')}

@@ -77,7 +77,13 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<meta name="robots" content="index,follow">/);
   assert.match(home, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/">/);
   assert.match(home, /property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png"/);
+  assert.match(home, /property="og:locale" content="tr_TR"/);
   assert.match(home, /name="twitter:card" content="summary_large_image"/);
+  assert.match(home, /name="twitter:title"/);
+  assert.match(home, /name="twitter:description"/);
+  assert.match(home, /name="twitter:image:alt" content="Dini Sorular ve Cevaplar Arşivi"/);
+  assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
+  assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png"/);
   assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest"/);
   assert.match(home, /"@type":"WebSite"/);

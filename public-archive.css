@@ -2694,7 +2694,6 @@ a.pa-chip:hover,
   width: 22px;
   height: 22px;
   stroke-width: 1.8;
-  transform: rotate(-90deg);
 }
 
 :root[data-theme="dark"] .pa-scroll-top {
@@ -2746,7 +2745,7 @@ a.pa-chip:hover,
 
 @media (max-width: 899px) {
   .pa-page {
-    padding-bottom: calc(98px + env(safe-area-inset-bottom));
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
   }
 
   .pa-header {
@@ -3182,7 +3181,7 @@ a.pa-chip:hover,
     width: 100%;
     gap: 16px;
     margin-top: 46px;
-    padding: 24px 20px calc(30px + env(safe-area-inset-bottom));
+    padding: 24px 20px calc(12px + env(safe-area-inset-bottom));
   }
 
   .pa-footer-groups {

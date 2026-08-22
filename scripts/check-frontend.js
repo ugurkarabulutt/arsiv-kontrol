@@ -1160,11 +1160,12 @@ for (const [fileName, expectedSize] of [
 }
 const publicManifest = JSON.parse(fs.readFileSync(path.join(publicAssetRoot, 'assets', 'site.webmanifest'), 'utf8'));
 assert(publicManifest.name === 'Dini Sorular ve Cevaplar Arşivi' && publicManifest.short_name === 'Dini Sorular', 'Public app manifest isimleri dogru olmali.');
+assert(publicManifest.id === '/' && publicManifest.start_url === '/' && publicManifest.scope === '/', 'Public app manifest root uygulama kimligi/adresiyle acilmali.');
 assert((publicManifest.icons || []).some(icon => icon.src === 'app-icon-maskable-512.png' && icon.purpose === 'maskable'), 'Public manifest maskable icon icermeli.');
 for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="256" height="256"', 'aria-hidden="true"']) {
   assert(homePreview.includes(marker), `Public logo mark HTML marker eksik: ${marker}`);
 }
-for (const marker of ['property="og:image"', 'public-share-card.png', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:image"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
+for (const marker of ['name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'property="og:locale" content="tr_TR"', 'property="og:image"', 'public-share-card.png', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
   assert(homePreview.includes(marker), `Public sosyal/app meta marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
@@ -1391,6 +1392,8 @@ assert(publicCss.includes('white-space: nowrap;') && publicCss.includes('.pa-car
 for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-bottom-link.is-pending', 'data-pa-navigating="true"', '@keyframes pa-fast-nav-progress', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
 }
+const scrollTopIconCss = publicCss.match(/\.pa-scroll-top-icon\s*\{([\s\S]*?)\}/)?.[1] || '';
+assert(!scrollTopIconCss.includes('rotate('), 'Yukari cik ikonu CSS ile dondurulmemeli.');
 for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {
   assert(publicCss.includes(marker), `Public hesap soru takip CSS marker eksik: ${marker}`);
 }

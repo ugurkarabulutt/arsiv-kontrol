@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public Mobil Footer ve App/Paylaşım Hazırlığı
+
+- Mobilde `Yukarı çık` butonundaki ok sola bakıyordu; sebep `.pa-scroll-top-icon` üzerinde
+  kalan `rotate(-90deg)` kuralıydı. Kural kaldırıldı, ikon gerçek `arrow-up.svg` yönünde
+  yukarı bakar.
+- Mobil footer altında gereksiz boşluk azaltıldı. `.pa-page` mobil alt payı 98px'ten 78px'e,
+  footer mobil alt padding'i 30px'ten 12px'e indirildi; alt cam menü için güvenli alan
+  korunur.
+- Public app adı ve paylaşım meta katmanı sıkılaştırıldı. Tam uygulama adı
+  `Dini Sorular ve Cevaplar Arşivi`, ana ekran kısa adı `Dini Sorular` olarak ayrıldı.
+  Public head artık `mobile-web-app-capable`, `apple-mobile-web-app-capable`,
+  `apple-mobile-web-app-title="Dini Sorular"`, `og:locale=tr_TR`, Twitter başlık/açıklama
+  ve `twitter:image:alt` meta alanlarını üretir.
+- Public manifest root app kimliğiyle netleştirildi: `id`, `start_url`, `scope` `/`;
+  `display_override` ve kategori bilgileri eklendi.
+- Paylaşım ve app görsel ölçüleri tekrar doğrulandı: `public-share-card.png` 1200x630,
+  `apple-touch-icon.png` 180x180, `app-icon-192.png`, `app-icon-512.png`,
+  `app-icon-maskable-512.png`, favicon 16/32/48.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-22 Codex Public Hızlı Geçiş ve Ön Yüz Kalanları
 
 - Public root açıkken alt menü, desktop menü, logo, footer, arşiv kısayolu, bölüm linkleri
