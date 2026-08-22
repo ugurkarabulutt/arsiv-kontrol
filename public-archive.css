@@ -124,6 +124,27 @@ svg {
   padding-top: var(--pa-header-height);
 }
 
+:root[data-pa-navigating="true"]::before {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 120;
+  width: 42%;
+  height: 3px;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--pa-mint-strong), color-mix(in srgb, #FFFFFF 52%, var(--pa-mint-strong)), transparent);
+  border-radius: 999px;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--pa-mint-strong) 42%, transparent);
+  animation: pa-fast-nav-progress 780ms ease-in-out infinite;
+}
+
+@keyframes pa-fast-nav-progress {
+  0% { transform: translateX(-45vw); opacity: 0.28; }
+  22% { opacity: 1; }
+  100% { transform: translateX(105vw); opacity: 0.36; }
+}
+
 .pa-header {
   position: fixed;
   top: 0;
@@ -205,12 +226,14 @@ svg {
 }
 
 .pa-desktop-nav a:hover,
-.pa-desktop-nav a.is-active {
+.pa-desktop-nav a.is-active,
+.pa-desktop-nav a.is-pending {
   color: var(--pa-text);
   background: color-mix(in srgb, var(--pa-mint) 58%, transparent);
 }
 
-.pa-desktop-nav a.is-active::after {
+.pa-desktop-nav a.is-active::after,
+.pa-desktop-nav a.is-pending::after {
   position: absolute;
   right: 16px;
   bottom: 5px;
@@ -2607,7 +2630,8 @@ a.pa-chip:hover,
   font-size: 23px;
 }
 
-.pa-bottom-link.is-active {
+.pa-bottom-link.is-active,
+.pa-bottom-link.is-pending {
   color: var(--pa-primary);
   background:
     radial-gradient(circle at 50% 6%, rgb(255 255 255 / 0.78) 0%, transparent 58%),
@@ -2618,7 +2642,8 @@ a.pa-chip:hover,
     0 12px 28px color-mix(in srgb, var(--pa-primary) 14%, transparent);
 }
 
-:root[data-theme="dark"] .pa-bottom-link.is-active {
+:root[data-theme="dark"] .pa-bottom-link.is-active,
+:root[data-theme="dark"] .pa-bottom-link.is-pending {
   color: var(--pa-primary-hover);
   background:
     radial-gradient(circle at 50% 12%, rgb(255 255 255 / 0.14) 0%, transparent 62%),

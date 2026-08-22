@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
+- **Public hızlı gezinme katmanı:** Public root ve preview tarafında alt menü/desktop menü,
+  logo, footer, arşiv kısayolu, bölüm linkleri ve soru kartı linkleri için SEO'yu bozmayan
+  hızlı sayfa geçişi eklendi. Sayfalar sunucuda gerçek HTML olarak üretilmeye devam eder;
+  güvenli iç route'lar kullanıcı boşta kaldığında, hover/focus/touch sırasında önceden
+  alınır ve kısa süreli `sessionStorage` cache'e yazılır. Tıklamada hedef HTML hazırsa
+  `pushState` ile anında geçilir; değilse üstte ince progress çizgisi ve pending nav durumu
+  görünür. `/api`, `/auth`, `/assets`, dosya assetleri, harici linkler, paylaş/kopyala ve
+  download aksiyonları hızlı gezinme dışında tutulur. Public paylaşım kartı ve app ikonları
+  mevcut logo mark üzerinden hazırdır: `public-share-card.png` 1200x630, Apple 180,
+  Android 192/512/maskable 512 ve favicon 16/32/48. Guard'lar hızlı gezinme markerlarını
+  takip eder. Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` (`103/103`) ve
+  `git diff --check` başarılı.
 - **Public mükerrer temizliği ve ziyaret istatistikleri:** Public okuma modeli artık yalnız
   aynı soru + aynı cevap çiftini birden fazla kayıtla göstermemek için
   `publicArchiveQuestionIdentity` / `uniquePublicArchiveRecords` tekilleştirme katmanını

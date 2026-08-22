@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-22 Codex Public Hızlı Geçiş ve Ön Yüz Kalanları
+
+- Public root açıkken alt menü, desktop menü, logo, footer, arşiv kısayolu, bölüm linkleri
+  ve soru kartı linkleri için SEO'yu bozmayan hızlı gezinme katmanı eklendi.
+- Sayfalar yine sunucudan gerçek HTML olarak üretilir; arama motorları ve LLM botları normal
+  route/canonical/sitemap yapısını görür. Kullanıcı tarafında güvenli iç route'lar idle,
+  hover/focus/touch sırasında önceden alınır ve kısa süreli `sessionStorage` cache'e konur.
+- Kullanıcı alt bardan Ana Sayfa, Arşiv, Ara veya Soru Sor'a dokunduğunda hedef HTML hazırsa
+  geçiş anında yapılır; değilse üstte ince progress çizgisi ve aktif/pending nav durumu
+  gösterilerek normal fetch tamamlanır.
+- Güvenlik sınırı: `/api`, `/auth`, `/assets`, dosya uzantılı assetler, harici linkler,
+  paylaş/kopyala/download aksiyonları hızlı gezinmeye alınmaz.
+- Guard'lar güncellendi: `bindFastPublicNavigation`, `dsca-page-cache:v5`,
+  `X-Public-Navigation`, hızlı geçiş progress CSS'i ve pending nav stilleri artık
+  `scripts/check-frontend.js` ve public renderer testlerinde aranır.
+- Public paylaşım kartı ve app ikonları mevcut durumda hazırdır:
+  `public-share-card.png` 1200x630, `apple-touch-icon.png` 180x180,
+  `app-icon-192.png`, `app-icon-512.png`, `app-icon-maskable-512.png`, favicon 16/32/48.
+  Yeni görsel yön istenirse üretim yapılabilir; final kırpma/ölçü/manifest/OG entegrasyonu
+  bu worktree içinde test edilerek yapılmalıdır.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-22 Codex Public Mükerrer Temizliği ve Ziyaret İstatistikleri
 
 - Public okuma modeli için aynı soru + aynı cevap çiftinin birden fazla kart olarak görünmesini engelleyen

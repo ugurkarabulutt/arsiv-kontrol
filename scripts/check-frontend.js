@@ -1179,6 +1179,9 @@ for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeSc
 for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-visitor-id', "iconSvg('arrow-up'"]) {
   assert(publicRendererSource.includes(marker), `Public analitik/yukari cik marker eksik: ${marker}`);
 }
+for (const marker of ['bindFastPublicNavigation', 'dsca-page-cache:v5', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
+  assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
+}
 for (const marker of ['uniquePublicArchiveRecords', 'hidePublicArchiveDuplicateRows', '/api/public-archive/duplicates/hide', 'publicArchiveQuestionIdentity']) {
   assert(server.includes(marker), `Public mukerrer temizlik marker eksik: ${marker}`);
 }
@@ -1385,7 +1388,7 @@ for (const [name, source] of [['pa-card-meta', cardMetaCss], ['pa-chip-wrap', ch
   assert(!source.includes('flex-wrap: wrap'), `${name} etiketleri iki satira dusurmemeli.`);
 }
 assert(publicCss.includes('white-space: nowrap;') && publicCss.includes('.pa-card-meta::-webkit-scrollbar'), 'Public etiket chipleri tek satir ve gizli scrollbar olmali.');
-for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
+for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-bottom-link.is-pending', 'data-pa-navigating="true"', '@keyframes pa-fast-nav-progress', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {

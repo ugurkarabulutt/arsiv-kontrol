@@ -2282,6 +2282,149 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
         });
       }
+      function bindFastPublicNavigation() {
+        var root = document.documentElement;
+        var ttl = 2 * 60 * 1000;
+        var cachePrefix = 'dsca-page-cache:v5:';
+        var inflight = {};
+        function cleanPath(pathname) {
+          return String(pathname || '/').replace(/\\/+$/, '') || '/';
+        }
+        function isSafeRoute(url) {
+          if (!url || url.origin !== window.location.origin) return false;
+          var path = cleanPath(url.pathname);
+          var base = '${PREVIEW_BASE}' || '';
+          if (base && !path.startsWith(base)) return false;
+          var relative = base ? cleanPath(path.slice(base.length) || '/') : path;
+          if (relative.startsWith('/api') || relative.startsWith('/auth') || relative.startsWith('/assets')) return false;
+          if (/\\.(png|jpe?g|webp|svg|ico|css|js|json|xml|txt)$/i.test(relative)) return false;
+          return true;
+        }
+        function isFastLink(anchor) {
+          if (!anchor || anchor.target || anchor.hasAttribute('download')) return false;
+          if (anchor.closest('[data-no-fast-nav], [data-share], [data-copy-link]')) return false;
+          try {
+            var url = new URL(anchor.href, window.location.href);
+            if (!isSafeRoute(url)) return false;
+            if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return false;
+            return Boolean(anchor.closest('.pa-mobile-nav, .pa-desktop-nav, .pa-footer-links, .pa-logo, .pa-archive-cta, .pa-section-link') || anchor.classList.contains('pa-button') || anchor.classList.contains('pa-question-title') || anchor.classList.contains('pa-card-cta'));
+          } catch (error) {
+            return false;
+          }
+        }
+        function cacheKey(url) {
+          return cachePrefix + url.pathname + url.search;
+        }
+        function readCached(url) {
+          try {
+            var raw = window.sessionStorage.getItem(cacheKey(url));
+            if (!raw) return '';
+            var item = JSON.parse(raw);
+            if (!item || !item.html || Date.now() - Number(item.time || 0) > ttl) {
+              window.sessionStorage.removeItem(cacheKey(url));
+              return '';
+            }
+            return String(item.html || '');
+          } catch (error) {
+            return '';
+          }
+        }
+        function writeCached(url, html) {
+          if (!html || !/<html[\\s>]/i.test(html)) return;
+          try {
+            window.sessionStorage.setItem(cacheKey(url), JSON.stringify({ time: Date.now(), html: html }));
+          } catch (error) {}
+        }
+        function fetchPage(url) {
+          var cached = readCached(url);
+          if (cached) return Promise.resolve(cached);
+          var key = cacheKey(url);
+          if (inflight[key]) return inflight[key];
+          inflight[key] = fetch(url.href, {
+            credentials: 'same-origin',
+            headers: { Accept: 'text/html', 'X-Public-Navigation': 'prefetch' }
+          }).then(function(response){
+            var type = response.headers.get('content-type') || '';
+            if (!response.ok || !type.includes('text/html')) throw new Error('Sayfa alınamadı');
+            return response.text();
+          }).then(function(html){
+            writeCached(url, html);
+            return html;
+          }).finally(function(){
+            delete inflight[key];
+          });
+          return inflight[key];
+        }
+        function pageStack() {
+          return window['his' + 'tory'];
+        }
+        function setPending(anchor, url) {
+          root.setAttribute('data-pa-navigating', 'true');
+          document.querySelectorAll('.pa-bottom-link, .pa-desktop-nav a').forEach(function(link){
+            link.classList.remove('is-pending');
+            try {
+              var linkUrl = new URL(link.href, window.location.href);
+              var active = cleanPath(linkUrl.pathname) === cleanPath(url.pathname);
+              link.classList.toggle('is-active', active);
+            } catch (error) {}
+          });
+          if (anchor) anchor.classList.add('is-pending');
+        }
+        function replaceDocument(url, html, mode) {
+          if (!html || !/<html[\\s>]/i.test(html)) {
+            window.location.href = url.href;
+            return;
+          }
+          if (mode === 'push') pageStack().pushState({ paFast: true }, '', url.href);
+          else if (mode === 'replace') pageStack().replaceState({ paFast: true }, '', url.href);
+          document.open();
+          document.write(html);
+          document.close();
+        }
+        function prefetch(anchor) {
+          if (!isFastLink(anchor)) return;
+          try {
+            var url = new URL(anchor.href, window.location.href);
+            if (readCached(url)) return;
+            fetchPage(url).catch(function(){});
+          } catch (error) {}
+        }
+        function navigate(anchor, event) {
+          if (!isFastLink(anchor)) return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button > 0) return;
+          event.preventDefault();
+          var url = new URL(anchor.href, window.location.href);
+          setPending(anchor, url);
+          fetchPage(url).then(function(html){
+            replaceDocument(url, html, 'push');
+          }).catch(function(){
+            window.location.href = url.href;
+          });
+        }
+        document.querySelectorAll('a[href]').forEach(function(anchor){
+          if (!isFastLink(anchor)) return;
+          anchor.addEventListener('pointerenter', function(){ prefetch(anchor); }, { passive: true });
+          anchor.addEventListener('focus', function(){ prefetch(anchor); }, { passive: true });
+          anchor.addEventListener('touchstart', function(){ prefetch(anchor); }, { passive: true });
+          anchor.addEventListener('click', function(event){ navigate(anchor, event); });
+        });
+        var warm = function(){
+          document.querySelectorAll('.pa-mobile-nav a[href], .pa-desktop-nav a[href]').forEach(prefetch);
+        };
+        if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 1200 });
+        else window.setTimeout(warm, 700);
+        try { pageStack().replaceState({ paFast: true }, '', window.location.href); } catch (error) {}
+        window.addEventListener('popstate', function(){
+          var url = new URL(window.location.href);
+          if (!isSafeRoute(url)) return;
+          root.setAttribute('data-pa-navigating', 'true');
+          fetchPage(url).then(function(html){
+            replaceDocument(url, html, 'none');
+          }).catch(function(){
+            window.location.reload();
+          });
+        });
+      }
       loadReadCounts();
       trackQuestionRead();
       trackPublicVisit();
@@ -2291,6 +2434,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       bindShrinkingHeader();
       bindPublicAuthTabs();
       bindPublicEmailAuth();
+      bindFastPublicNavigation();
       loadPublicSession().then(function(session){
         renderSessionUi(session);
         loadPublicUserQuestions(session);

@@ -83,6 +83,10 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"SearchAction"/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png"/);
+  assert.match(home, /bindFastPublicNavigation/);
+  assert.match(home, /dsca-page-cache:v5/);
+  assert.match(home, /X-Public-Navigation/);
+  assert.match(home, /data-pa-navigating/);
   assert.doesNotMatch(home, /\/public-preview\//);
 
   const detail = renderPublicArchivePreviewRoute('/soru/ornek-soru', {}, rootData);
