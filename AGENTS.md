@@ -121,10 +121,12 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-22
-- **Public mükerrer temizliği ve ziyaret istatistikleri:** Public okuma modeli artık aynı soru
-  metnini birden fazla kayıtla göstermemek için `publicArchiveQuestionIdentity` /
-  `uniquePublicArchiveRecords` tekilleştirme katmanını kullanır. Onaylı kayıt senkronu yeni
-  mükerrer üretmeyecek şekilde güncellendi; ana sayfa daha geniş havuzdan tekil kart seçer ve
+- **Public mükerrer temizliği ve ziyaret istatistikleri:** Public okuma modeli artık yalnız
+  aynı soru + aynı cevap çiftini birden fazla kayıtla göstermemek için
+  `publicArchiveQuestionIdentity` / `uniquePublicArchiveRecords` tekilleştirme katmanını
+  kullanır. Aynı sorunun farklı cevap/versiyonları yayında kalabilir. Onaylı kayıt senkronu
+  bu kurala göre yeni birebir mükerrer üretmeyecek şekilde güncellendi; ana sayfa daha geniş
+  havuzdan tekil soru+cevap kartı seçer ve
   kategori sayaçları yalnız `status='published'` public kayıtları sayar. Süper admin korumalı
   `/api/public-archive/duplicates` raporu ve `/api/public-archive/duplicates/hide` işlemi
   eklendi; gizleme kayıt silmez, fazla public satırları `duplicate_hidden` durumuna alır.
@@ -138,9 +140,12 @@ tespit edilir).
   `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` (`103/103`) ve `git diff --check`
   başarılı. Canlı analitik için `schema.sql` içindeki `public_visit_events` bloğu Supabase SQL
-  Editor'de uygulanmalıdır. Canlı data cleanup tamamlandı: `3.058` published kayıttaki `398`
-  mükerrer soru grubuna ait `619` fazla satır silinmeden `duplicate_hidden` yapıldı; doğrulama
-  sonrası `2.439` published kayıt, `0` mükerrer soru grubu ve `0` fazla published satır kaldı.
+  Editor'de uygulanmalıdır. Canlı data cleanup önce aynı soru metnine göre fazla agresif
+  yapılmıştı: `3.058` published kayıttan `619` satır `duplicate_hidden` olunca `2.439`
+  published kayıt kalmıştı. Kullanıcı kuralı netleştirdi: yalnız soru ve cevap birlikte
+  birebir aynıysa mükerrer sayılacak. Bu nedenle aynı soru ama farklı cevap olan `516` kayıt
+  tekrar `published` yapıldı. Son doğru durum: `2.955` published kayıt, `103`
+  `duplicate_hidden` birebir soru+cevap kopyası ve `0` yayında birebir soru+cevap kopyası.
   Production deploy:
   `https://arsiv-kontrol-qnlqb9a0k-ugurkarabulutts-projects.vercel.app`, deployment
   `dpl_HumfCPfwWE5XhvWBA1LbjGeWu4Kx`, canlı alias `https://arsiv.ibrahimlive.ai`.

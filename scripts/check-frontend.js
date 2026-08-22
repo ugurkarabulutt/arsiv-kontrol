@@ -1208,6 +1208,16 @@ const duplicateHomePreview = renderPublicArchivePreviewRoute('/public-preview', 
       isFeatured: true
     },
     {
+      slug: 'mukerrer-soru-c',
+      title: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+      question: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+      answer: ['Bu kayıt aynı sorunun daha çok okunan sürümüdür.'],
+      categorySlug: 'karar-vermek',
+      publishedAt: '2026-08-18T09:00:00.000Z',
+      readCount: 2,
+      isFeatured: true
+    },
+    {
       slug: 'cok-okunan-vitrin-sorusu',
       title: 'Çok okunan soru vitrinde yer bulur mu?',
       question: 'Çok okunan soru vitrinde yer bulur mu?',
@@ -1219,7 +1229,8 @@ const duplicateHomePreview = renderPublicArchivePreviewRoute('/public-preview', 
   ]
 }).html;
 assert(duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-b'), 'Public ana sayfa mukerrer sorunun secilen surumunu gostermeli.');
-assert(!duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-a'), 'Public ana sayfa mukerrer sorunun eski surumunu tekrar gostermemeli.');
+assert(duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-a'), 'Public ana sayfa ayni sorunun farkli cevabini gizlememeli.');
+assert(!duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-c'), 'Public ana sayfa yalniz birebir soru-cevap kopyasini gizlemeli.');
 assert(duplicateHomePreview.includes('Çok okunan soru vitrinde yer bulur mu?'), 'Public ana sayfa okuma agirlikli soruyu vitrine alabilmeli.');
 assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
 assert(!homePreview.includes('Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır.'), 'Public home eski okuma duzeni basligini icermemeli.');

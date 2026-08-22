@@ -2,16 +2,17 @@
 
 ## 2026-08-22 Codex Public Mükerrer Temizliği ve Ziyaret İstatistikleri
 
-- Public okuma modeli için aynı soru metninin birden fazla kart olarak görünmesini engelleyen
+- Public okuma modeli için aynı soru + aynı cevap çiftinin birden fazla kart olarak görünmesini engelleyen
   tekilleştirme katmanı eklendi: `publicArchiveQuestionIdentity`, `uniquePublicArchiveRecords`,
   `betterPublicArchiveDuplicateCandidate`.
 - Yeni senkronlarda mükerrer üretimi azaltıldı: onaylı kayıtlar public dataset'e aktarılırken
-  aynı soru kimliği tek kayda iner. Public tablo satırları okunurken de route dataset'i tekil
-  kayıtlardan üretilir.
+  aynı soru + aynı cevap kimliği tek kayda iner. Aynı sorunun farklı cevap/versiyonları
+  yayında kalabilir. Public tablo satırları okunurken de route dataset'i bu kurala göre
+  tekil kayıtlardan üretilir.
 - Ana sayfa artık featured için 24, son yayınlananlar için 36 kayıtlık havuzdan tekilleştirerek
-  seçim yapar; aynı soru vitrinde tekrar etmez.
+  seçim yapar; yalnız birebir soru+cevap kopyası vitrinde tekrar etmez.
 - Kategori/sayaç dizini `public_qa_topics` bağlantılarını kör saymak yerine yalnız
-  `public_qa.status='published'` ve tekil soru kayıtlarını sayar.
+  `public_qa.status='published'` ve tekil soru+cevap kayıtlarını sayar.
 - Süper admin korumalı mükerrer API'leri eklendi:
   `GET /api/public-archive/duplicates` ve `POST /api/public-archive/duplicates/hide`.
   Gizleme kayıt silmez; fazla public kayıtları `duplicate_hidden` durumuna alır.
@@ -36,10 +37,12 @@
 - Canlı analitik için Supabase SQL Editor'de `schema.sql` içindeki `public_visit_events`
   bloğu uygulanmalı. Tablo yoksa endpoint ve admin ekranı güvenli şekilde “SQL bekleniyor”
   durumunda kalır.
-- Canlı public veride bu çalışma öncesi ölçüm: `3.058` published kayıt, `398` mükerrer soru
-  grubu ve `619` fazla published satırdı. Service-role operasyonuyla bu `619` fazla satır
-  silinmeden `duplicate_hidden` durumuna alındı. Son doğrulama: `2.439` published kayıt,
-  `0` mükerrer soru grubu, `0` fazla published satır.
+- Canlı public veride ilk agresif temizlik aynı soru metnine göre yapılmıştı:
+  `3.058` published kayıt içinden `619` satır `duplicate_hidden` yapılınca `2.439`
+  published kayıt kalmıştı. Kullanıcı kuralı netleştirdi: yalnız soru ve cevap birlikte
+  birebir aynıysa mükerrer sayılacak. Bunun üzerine aynı soru ama farklı cevap olan `516`
+  kayıt tekrar `published` yapıldı. Son doğru durum: `2.955` published kayıt,
+  `103` `duplicate_hidden` birebir soru+cevap kopyası ve `0` yayında birebir soru+cevap kopyası.
 - Production deploy: `https://arsiv-kontrol-qnlqb9a0k-ugurkarabulutts-projects.vercel.app`,
   deployment `dpl_HumfCPfwWE5XhvWBA1LbjGeWu4Kx`, canlı alias `https://arsiv.ibrahimlive.ai`.
   Smoke: `/health` 200; root `/` public ve index/follow; `/admin` noindex/no-store; `/arsiv`,

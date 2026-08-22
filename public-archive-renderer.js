@@ -772,9 +772,9 @@ function questionCard(entry, options = {}) {
 
 function homeQuestionIdentity(entry = {}) {
   const question = normalizeSearchText(entry.question || entry.title || '');
-  if (question) return question.slice(0, 220);
   const answer = normalizeSearchText(plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body || ''));
-  return answer ? answer.slice(0, 220) : String(entry.slug || entry.id || '');
+  if (question && answer) return `${question}\u0000${answer}`;
+  return question || answer || String(entry.slug || entry.id || '');
 }
 
 function entryPublishedTime(entry = {}) {

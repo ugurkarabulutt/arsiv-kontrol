@@ -5118,8 +5118,11 @@ function publicArchiveSummaryFromAnswer(answerText = '', question = '') {
 
 function publicArchiveQuestionIdentity(record = {}) {
   const question = record.question || record.question_text || record.title || record.filename || '';
-  const normalized = publicArchiveComparable(question);
-  return normalized ? normalized.slice(0, 260) : '';
+  const answer = record.answerText || record.answer_text || record.corrected_text || record.fullAnswer || record.body || record.answer || '';
+  const normalizedQuestion = publicArchiveComparable(question);
+  const normalizedAnswer = publicArchiveComparable(publicArchiveText(answer, 120000));
+  if (normalizedQuestion && normalizedAnswer) return `${normalizedQuestion}\u0000${normalizedAnswer}`;
+  return normalizedQuestion || normalizedAnswer || '';
 }
 
 function publicArchiveCandidateTime(record = {}) {

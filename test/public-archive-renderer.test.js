@@ -455,7 +455,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
 });
 
-test('home page question selection is deduplicated and read-weighted', () => {
+test('home page question selection only deduplicates exact question-answer copies', () => {
   const archiveData = {
     brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
     categories: [{ slug: 'karar-vermek', name: 'Karar Vermek', description: 'Karar verme soruları.', topicSlugs: [] }],
@@ -482,6 +482,16 @@ test('home page question selection is deduplicated and read-weighted', () => {
         isFeatured: true
       },
       {
+        slug: 'mukerrer-soru-c',
+        title: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+        question: 'Aynı karar sorusu mükerrer görünmemeli mi?',
+        answer: ['Bu kayıt aynı sorunun daha çok okunan sürümüdür.'],
+        categorySlug: 'karar-vermek',
+        publishedAt: '2026-08-18T09:00:00.000Z',
+        readCount: 2,
+        isFeatured: true
+      },
+      {
         slug: 'cok-okunan-vitrin-sorusu',
         title: 'Çok okunan soru vitrinde yer bulur mu?',
         question: 'Çok okunan soru vitrinde yer bulur mu?',
@@ -495,7 +505,8 @@ test('home page question selection is deduplicated and read-weighted', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
 
   assert.match(home, /\/public-preview\/soru\/mukerrer-soru-b/);
-  assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-a/);
+  assert.match(home, /\/public-preview\/soru\/mukerrer-soru-a/);
+  assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-c/);
   assert.match(home, /Çok okunan soru vitrinde yer bulur mu\?/);
 });
 
