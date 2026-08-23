@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Hero Üst Boşluk Düzeltmesi
+
+- Ana sayfa hero banner'ında üst küçük cümle kaldırıldıktan sonra mobilde başlığın üstünde
+  eski cümlenin yeri gibi görünen gereksiz boşluk kaldığı görüldü.
+- Mobil hero içeriği artık dikeyde ortalanmaz; kontrollü üst boşlukla yukarıdan başlar.
+  Böylece başlık, açıklama, arama ve kategori slider'ı kart içinde daha dengeli durur.
+- Değişiklik yalnız public ana sayfa hero CSS'ini kapsar; SEO/meta, paylaşım kartı, veri
+  akışı, `/admin` ve root cutover bayrakları değişmedi.
+- `scripts/check-frontend.js` içine mobil hero üst boşluğu geri gelirse yakalayacak guard
+  eklendi.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-23 Codex Public Hero Üst Cümle Kaldırma
 
 - Kullanıcı isteğiyle ana sayfa hero banner'ında başlığın üstündeki

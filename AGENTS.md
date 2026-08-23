@@ -121,6 +121,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Public ana sayfa hero üst boşluğu sıkılaştırıldı:** Hero banner içindeki üst küçük cümle
+  kaldırıldıktan sonra mobilde başlığın üstünde gereksiz boşluk kaldı. Mobil hero içeriği artık
+  dikeyde ortalanmaz; kontrollü üst padding ile yukarıdan başlar. Başlık, açıklama, arama alanı
+  ve öne çıkan kategori slider'ı kart içinde daha dengeli durur. Değişiklik yalnız public ana
+  sayfa hero CSS'ini kapsar; SEO/meta, paylaşım kartı, veri akışı, `/admin` ve root cutover
+  bayrakları değişmedi. `scripts/check-frontend.js` içine bu mobil boşluk regresyonunu
+  yakalayan guard eklendi. Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve `git diff --check`
+  başarılı; tam test `103/103` geçti.
+
 - **Public ana sayfa hero üst cümlesi kaldırıldı:** Kullanıcı isteğiyle hero banner içinde
   başlığın üstünde görünen `Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.` cümlesi
   kaldırıldı. SEO/meta/footer açıklaması korunur; değişiklik yalnız ana hero içindeki görünür

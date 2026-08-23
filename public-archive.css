@@ -2847,8 +2847,9 @@ a.pa-chip:hover,
   }
 
   .pa-hero-copy {
+    justify-content: flex-start;
     min-height: 530px;
-    padding: 28px 24px 24px;
+    padding: 36px 24px 24px;
   }
 
   .pa-hero h1,
@@ -3254,7 +3255,7 @@ a.pa-chip:hover,
 
   .pa-hero-copy {
     min-height: 520px;
-    padding: 26px 22px 22px;
+    padding: 34px 22px 22px;
   }
 
   .pa-kicker {
