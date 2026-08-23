@@ -1125,6 +1125,9 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
   assert(rendered.html.includes('/public-preview/public-archive.css?v=20260823-public-cache-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('<style data-pa-critical>'), `${item.route} ilk ekran kritik CSS icermeli.`);
+  assert(rendered.html.includes('rel="preload" as="style" href="/public-preview/public-archive.css?v=20260823-public-cache-v1"'), `${item.route} public CSS preload ile yuklenmeli.`);
+  assert(rendered.html.includes('<noscript><link rel="stylesheet" href="/public-preview/public-archive.css?v=20260823-public-cache-v1"></noscript>'), `${item.route} JS kapali CSS fallback icermeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1135,6 +1138,7 @@ assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv link
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260823-public-cache-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('rel="preload" as="style" href="/public-archive.css?v=20260823-public-cache-v1"'), 'Root public mode public CSS preload etmelidir.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1157,6 +1161,9 @@ for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSI
 }
 for (const marker of ['hero-open-book-warm.jpg', 'width="1280" height="1024"', 'fetchpriority="high"']) {
   assert(homePreview.includes(marker), `Public hero LCP/CLS marker eksik: ${marker}`);
+}
+for (const marker of ['publicArchiveCriticalCss', 'PUBLIC_FONT_STYLESHEET', '<style data-pa-critical>', 'rel="preload" as="style"', 'onload="this.onload=null;this.rel=']) {
+  assert(publicRendererSource.includes(marker) || homePreview.includes(marker), `Public kritik CSS/preload marker eksik: ${marker}`);
 }
 for (const [fileName, expectedSize] of [
   ['favicon-16.png', '16x16'],
@@ -1193,6 +1200,9 @@ for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeSc
 }
 for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-visitor-id', "iconSvg('arrow-up'"]) {
   assert(publicRendererSource.includes(marker), `Public analitik/yukari cik marker eksik: ${marker}`);
+}
+for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
+  assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
 }
 for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v5', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
