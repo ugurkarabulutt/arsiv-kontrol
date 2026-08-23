@@ -78,9 +78,9 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/">/);
   assert.match(home, /<title>Dini Sorular ve Cevaplar Arşivi<\/title>/);
   assert.match(home, /property="og:title" content="Dini Sorular ve Cevaplar Arşivi"/);
-  assert.match(home, /property="og:updated_time" content="2026-08-22T11:55:00\+03:00"/);
-  assert.match(home, /property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png\?v=20260822-public-card-v2"/);
-  assert.match(home, /property="og:image:secure_url" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png\?v=20260822-public-card-v2"/);
+  assert.match(home, /property="og:updated_time" content="2026-08-23T14:42:53\+03:00"/);
+  assert.match(home, /property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
+  assert.match(home, /property="og:image:secure_url" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /property="og:image:type" content="image\/png"/);
   assert.match(home, /property="og:locale" content="tr_TR"/);
   assert.match(home, /name="twitter:card" content="summary_large_image"/);
@@ -94,7 +94,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"SearchAction"/);
-  assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card\.png\?v=20260822-public-card-v2"/);
+  assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
   assert.match(home, /dsca-page-cache:v5/);
   assert.match(home, /X-Public-Navigation/);

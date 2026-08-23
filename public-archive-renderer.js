@@ -11,9 +11,9 @@ let PUBLIC_ARCHIVE_NOINDEX = true;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 const ARCHIVE_PAGE_SIZE = 30;
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
-const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card.png';
-const PUBLIC_SHARE_IMAGE_VERSION = '20260822-public-card-v2';
-const PUBLIC_SHARE_UPDATED_TIME = '2026-08-22T11:55:00+03:00';
+const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
+const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
+const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();

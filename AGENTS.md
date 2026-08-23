@@ -121,6 +121,16 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Telegram paylaşım kartı cache kırma:** Telegram eski admin/Arşiv AI link kartını göstermeye
+  devam ettiği için public paylaşım görseli yalnız query string ile versiyonlanmak yerine yeni
+  fiziksel dosya adına taşındı. Yeni asset:
+  `public-archive-assets/assets/public-share-card-20260823-v3.png` (`1200x630`). Eski
+  `public-share-card.png` geriye uyumluluk için tutuldu. Public OG/Twitter/JSON-LD artık
+  `https://arsiv.ibrahimlive.ai/assets/public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823`
+  URL'sini kullanır; `og:updated_time` `2026-08-23T14:42:53+03:00` oldu. Guard/testler yeni
+  fiziksel paylaşım kartını ve yeni meta URL'sini doğrular. Yerel doğrulama:
+  `npm.cmd run check` başarılı; tam test `103/103` geçti.
+
 - **Public arşiv alfabetik kategori dizini düzeltildi:** Root canlı arşivde `/arsiv?harf=C`
   gibi harf seçimleri veri tabanındaki tüm aktif kategorileri göstermiyor, yalnız o anki soru
   listesinde görünen birkaç etikete düşüyordu. Kök sebep `loadPublicArchiveCategoryIndexRows()`

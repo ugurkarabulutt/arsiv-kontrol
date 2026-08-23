@@ -1,5 +1,17 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Telegram Paylaşım Kartı Cache Kırma
+
+- Telegram link paylaşımında eski admin/Arşiv AI kartı görünmeye devam ettiği için OG/Twitter
+  paylaşım görseli query string versiyonlamasından çıkarılıp yeni fiziksel dosya adına taşındı.
+- Yeni public paylaşım görseli: `public-archive-assets/assets/public-share-card-20260823-v3.png`
+  (`1200x630`). Eski `public-share-card.png` geriye uyumluluk için tutuldu.
+- Public meta/JSON-LD artık
+  `https://arsiv.ibrahimlive.ai/assets/public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823`
+  URL'sini kullanır. `og:updated_time` `2026-08-23T14:42:53+03:00` olarak güncellendi.
+- Guard/testler yeni fiziksel paylaşım kartını ve yeni OG/JSON-LD URL'sini doğrular.
+- Yerel doğrulama: `npm.cmd run check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-23 Codex Public Arşiv Harf Dizini Düzeltmesi
 
 - Canlıda `/arsiv?harf=C` gibi harf seçimlerinde kategori sayısı eksik görünüyordu.

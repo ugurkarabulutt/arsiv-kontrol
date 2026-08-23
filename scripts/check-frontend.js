@@ -1154,7 +1154,8 @@ for (const [fileName, expectedSize] of [
   ['app-icon-192.png', '192x192'],
   ['app-icon-512.png', '512x512'],
   ['app-icon-maskable-512.png', '512x512'],
-  ['public-share-card.png', '1200x630']
+  ['public-share-card.png', '1200x630'],
+  ['public-share-card-20260823-v3.png', '1200x630']
 ]) {
   assert(readPngSize(path.join(publicAssetRoot, 'assets', fileName)) === expectedSize, `Public asset olcusu hatali: ${fileName}`);
 }
@@ -1165,7 +1166,7 @@ assert((publicManifest.icons || []).some(icon => icon.src === 'app-icon-maskable
 for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="256" height="256"', 'aria-hidden="true"']) {
   assert(homePreview.includes(marker), `Public logo mark HTML marker eksik: ${marker}`);
 }
-for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card.png?v=20260822-public-card-v2', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
+for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
   assert(homePreview.includes(marker), `Public sosyal/app meta marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
