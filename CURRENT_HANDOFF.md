@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Soru Metni Güvenli Düzeltme Turu
+
+- Kullanıcı canlı sorularda denetimden geçmeyen yazım hataları olduğunu bildirdi; ilk örnek
+  olarak hocamızın isminin `Abdülcabbar` yazıldığı, doğru standardın `Abdulcabbar` olduğu
+  belirtildi.
+- Canlı Supabase public verisi tarandı. `public_qa.title/question` alanlarında 7 kayıt,
+  bağlı `history.question_text` alanlarında aynı 7 kaynak kayıt `Abdülcabbar` içeriyordu.
+  `answer_text` ve `answer_paragraphs` içinde bu yanlış geçiş bulunmadı.
+- `public-question-spelling-abdulcabbar-2026-08-23` düzeltme paketiyle `Abdülcabbar` →
+  `Abdulcabbar` uygulandı. 7 `public_qa`, 7 `history` kaydı güncellendi; 21 satır
+  `content_correction_log` kaydı yazıldı. Son doğrulamada `public_qa` ve `history.question_text`
+  içinde `Abdülcabbar` kalan sayı `0`.
+- Ardından güvenli soru düzeltmeleri ayrı uygulandı: `Müşid` → `Mürşid` ve cümle sonu
+  noktalama sonrası eksik boşluklar (`1.Soru` → `1. Soru`, `?Ne` → `? Ne`,
+  `çalışıyorum.Ama` → `çalışıyorum. Ama` gibi). `public-question-safe-spelling-spacing-2026-08-23`
+  paketiyle 71 `public_qa`, 70 bağlı `history` kaydı güncellendi; 211 satır
+  `content_correction_log` kaydı yazıldı. Tekrar güvenli taramada değişiklik adayı `0`.
+- Canlı örnek sayfa kontrolü: `Abdülcabbar` görünmüyor, `Abdulcabbar` görünüyor.
+- Kalan soru standardı adayları ayrı karar gerektirir: son taramada 3147 public kayıt içinde
+  126 kayıt, 50 tür aday üretti. Başlıca adaylar `dîn` ailesi, `Kur’an/Kur'ân`, `her şey/herşey`,
+  `şer/şerr`, `Hadîs-i Şerif` biçimleri. Bunlar TDK ve mevcut arşiv standardı çatışabileceği
+  için bu turda otomatik uygulanmadı.
+
 ## 2026-08-23 Codex Public Hero Üst Boşluk Düzeltmesi
 
 - Ana sayfa hero banner'ında üst küçük cümle kaldırıldıktan sonra mobilde başlığın üstünde

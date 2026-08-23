@@ -121,6 +121,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Public soru metni güvenli düzeltme turu:** Kullanıcı canlı sorularda denetimden geçmeyen
+  yazım hataları olduğunu bildirdi; ilk örnek olarak hocamızın isminin `Abdülcabbar` değil
+  `Abdulcabbar` olması gerektiği netleştirildi. Canlı Supabase public verisi tarandı:
+  `public_qa.title/question` içinde 7 kayıt, bağlı `history.question_text` içinde aynı 7 kaynak
+  kayıt `Abdülcabbar` içeriyordu; `answer_text` ve `answer_paragraphs` içinde bu yanlış geçiş
+  bulunmadı. `public-question-spelling-abdulcabbar-2026-08-23` paketiyle 7 `public_qa`, 7
+  `history` kaydı düzeltildi ve 21 `content_correction_log` satırı yazıldı; son doğrulamada
+  `Abdülcabbar` kalan sayı `0`. Ardından güvenli soru düzeltmeleri uygulandı: `Müşid` →
+  `Mürşid` ve cümle sonu noktalama sonrası eksik boşluklar (`1.Soru` → `1. Soru`, `?Ne` →
+  `? Ne`, `çalışıyorum.Ama` → `çalışıyorum. Ama` gibi). Bu tur
+  `public-question-safe-spelling-spacing-2026-08-23` paketiyle 71 `public_qa`, 70 bağlı
+  `history` kaydını güncelledi ve 211 `content_correction_log` satırı yazdı. Tekrar güvenli
+  taramada aday `0`. Kalan soru standardı adayları ayrı karar gerektirir: 3147 public kayıt
+  içinde 126 kayıt, 50 tür aday kaldı; başlıca adaylar `dîn` ailesi, `Kur’an/Kur'ân`,
+  `her şey/herşey`, `şer/şerr`, `Hadîs-i Şerif` biçimleri. Bunlar TDK ve mevcut arşiv standardı
+  çatışabileceği için bu turda otomatik uygulanmadı.
+
 - **Public ana sayfa hero üst boşluğu sıkılaştırıldı:** Hero banner içindeki üst küçük cümle
   kaldırıldıktan sonra mobilde başlığın üstünde gereksiz boşluk kaldı. Mobil hero içeriği artık
   dikeyde ortalanmaz; kontrollü üst padding ile yukarıdan başlar. Başlık, açıklama, arama alanı
