@@ -11,9 +11,12 @@ let PUBLIC_ARCHIVE_NOINDEX = true;
 const ICON_DIR = path.join(__dirname, 'public-archive-assets', 'icons');
 const ARCHIVE_PAGE_SIZE = 30;
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
+const PUBLIC_ARCHIVE_HTML_CACHE = 'public, max-age=0, s-maxage=300, stale-while-revalidate=1800';
+const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260823-public-cache-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'allaha-ulasmayi-dilemek',
@@ -51,7 +54,7 @@ function publicArchiveCanonicalUrl(pathname = '') {
 }
 
 function publicArchiveAssetHref(filename) {
-  return `${ASSET_PATH}/${filename}`;
+  return `${ASSET_PATH}/${filename}?v=${PUBLIC_ARCHIVE_ASSET_VERSION}`;
 }
 
 function publicArchiveAssetUrl(filename) {
@@ -69,7 +72,7 @@ function publicArchiveRoutePattern(section = '') {
 
 function setPublicArchiveRuntime({ basePath = DEFAULT_PUBLIC_ARCHIVE_BASE, noindex = true } = {}) {
   PREVIEW_BASE = normalizePublicArchiveBasePath(basePath);
-  CSS_PATH = publicArchivePath('public-archive.css');
+  CSS_PATH = `${publicArchivePath('public-archive.css')}?v=${PUBLIC_ARCHIVE_ASSET_VERSION}`;
   ASSET_PATH = publicArchivePath('assets');
   PUBLIC_ARCHIVE_NOINDEX = noindex !== false;
 }
@@ -362,7 +365,7 @@ function previewActionNav(active) {
 function brandLogo() {
   const logoText = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
-    <img class="pa-logo-mark" src="${ASSET_PATH}/arsiv-logo-mark.png" alt="" aria-hidden="true" width="256" height="256" decoding="async">
+    <img class="pa-logo-mark" src="${publicArchiveAssetHref('arsiv-logo-mark.png')}" alt="" aria-hidden="true" width="256" height="256" decoding="async">
     <span class="pa-logo-text">${logoText}</span>
   `;
 }
@@ -439,7 +442,7 @@ function stillLife() {
   return `
     <div class="pa-still-life" aria-hidden="true">
       <picture class="pa-hero-asset pa-hero-asset-book">
-        <img src="${ASSET_PATH}/hero-open-book-warm.jpg" alt="" loading="eager" decoding="async">
+        <img src="${publicArchiveAssetHref('hero-open-book-warm.jpg')}" alt="" width="1280" height="1024" loading="eager" fetchpriority="high" decoding="async">
       </picture>
     </div>
   `;
@@ -722,14 +725,6 @@ function questionPageStructuredData(entry, category) {
   const answerText = plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body);
   const answererName = publicArchiveFixtures.brand.authorName || publicArchiveFixtures.brand.answererLabel || '';
   const question = plainText(entry.question || entry.title);
-  const acceptedAnswer = {
-    '@type': 'Answer',
-    text: answerText,
-    author: answererName ? { '@type': 'Person', name: answererName } : undefined,
-    datePublished: entry.publishedAt || undefined,
-    dateModified: entry.updatedAt || undefined,
-    citation: references.length ? references : undefined
-  };
   const breadcrumbItems = [
     { name: 'Ana Sayfa', url: publicArchiveCanonicalUrl('/') },
     { name: 'Arşiv', url: publicArchiveCanonicalUrl('/arsiv') },
@@ -740,22 +735,33 @@ function questionPageStructuredData(entry, category) {
   return [
     {
       '@context': 'https://schema.org',
-      '@type': 'QAPage',
-      '@id': `${canonicalUrl}#qa`,
+      '@type': 'Article',
+      '@id': `${canonicalUrl}#article`,
       url: canonicalUrl,
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': canonicalUrl
+      },
+      headline: entry.title,
       name: entry.title,
       description: entry.excerpt || entry.summary || question,
       inLanguage: 'tr',
-      about: categoryNames,
+      articleSection: categoryNames,
+      about: categoryNames.map(name => ({ '@type': 'Thing', name })),
       keywords: categoryNames.join(', '),
-      mainEntity: {
-        '@type': 'Question',
-        name: entry.title,
-        text: question,
-        answerCount: 1,
-        datePublished: entry.publishedAt || undefined,
-        acceptedAnswer
-      }
+      articleBody: answerText,
+      datePublished: entry.publishedAt || undefined,
+      dateModified: entry.updatedAt || undefined,
+      author: answererName ? { '@type': 'Person', name: answererName } : undefined,
+      publisher: {
+        '@type': 'Organization',
+        name: publicArchiveFixtures.brand.name,
+        logo: {
+          '@type': 'ImageObject',
+          url: publicArchiveAssetUrl('app-icon-512.png')
+        }
+      },
+      citation: references.length ? references : undefined
     },
     {
       '@context': 'https://schema.org',
@@ -2713,15 +2719,22 @@ function createPublicArchivePreviewRouter(options = {}) {
     if (noindex) {
       res.set('X-Robots-Tag', 'noindex, nofollow');
       res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    } else if (req.method === 'GET' || req.method === 'HEAD') {
+      res.set('Cache-Control', PUBLIC_ARCHIVE_HTML_CACHE);
     }
     next();
   });
   router.use('/assets', express.static(assetDir, {
-    etag: false,
+    etag: true,
+    immutable: !noindex,
     index: false,
-    maxAge: 0
+    maxAge: noindex ? 0 : '1y',
+    setHeaders(res) {
+      res.setHeader('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE);
+    }
   }));
   router.get('/public-archive.css', (req, res) => {
+    res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE);
     res.type('text/css').sendFile(cssFile);
   });
   router.get(['/', ''], (req, res, next) => sendRoute(req, res, next, ''));

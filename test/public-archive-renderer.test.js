@@ -69,7 +69,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260823-public-cache-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -90,8 +90,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260823-public-cache-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260823-public-cache-v1"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"SearchAction"/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
@@ -113,7 +113,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.equal(detail.status, 200);
   assert.match(detail.html, /href="\/kategori\//);
   assert.match(detail.html, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/soru\/ornek-soru">/);
-  assert.match(detail.html, /"@type":"QAPage"/);
+  assert.match(detail.html, /"@type":"Article"/);
   assert.match(detail.html, /"@type":"BreadcrumbList"/);
   assert.doesNotMatch(detail.html, /\/public-preview\//);
 });
@@ -435,10 +435,12 @@ test('public preview can render approved records instead of fixture data', () =>
   assert.match(detail.html, /Bakara-256/);
   assert.match(detail.html, /Yâsîn-62/);
   assert.match(detail.html, /application\/ld\+json/);
-  assert.match(detail.html, /"@type":"QAPage"/);
-  assert.match(detail.html, /"acceptedAnswer"/);
+  assert.match(detail.html, /"@type":"Article"/);
+  assert.match(detail.html, /"mainEntityOfPage"/);
   assert.match(detail.html, /"@type":"BreadcrumbList"/);
   assert.match(detail.html, /"citation":\["Bakara-256","Yâsîn-62"\]/);
+  assert.doesNotMatch(detail.html, /"@type":"QAPage"/);
+  assert.doesNotMatch(detail.html, /"acceptedAnswer"/);
   assert.doesNotMatch(detail.html, /Public okuma bağlamı\./);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/zikir', {}, approvedArchiveData);

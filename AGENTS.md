@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Public SEO/hız iyileştirme turu eklendi:** Canlı audit sonucunda public CSS ve görsellerin
+  `Cache-Control: public, max-age=0` döndüğü görüldü. Public renderer asset çağrılarına
+  `?v=20260823-public-cache-v1` versiyonlaması eklendi; CSS, favicon, apple-touch-icon,
+  manifest, logo ve hero görseli bu versiyonla çağrılır. Production public router CSS ve
+  `/assets/*` için `Cache-Control: public, max-age=31536000, immutable` döndürür; preview/noindex
+  modunda no-store korunur. Ana sayfa hero görseli gerçek `1280x1024` ölçüsüyle ve
+  `fetchpriority="high"` ile basılır. Geniş Vercel `no-store` kuralını kaldırmak admin/API/auth
+  cache riski doğurabileceği için yapılmadı; public HTML root cache ayrı kontrollü değişiklik
+  olarak ele alınmalıdır. Soru detay JSON-LD yapısı forum tipi `QAPage/acceptedAnswer`
+  modelinden çıkarıldı; artık `Article` + `BreadcrumbList` kullanılır, cevap gövdesi
+  `articleBody`, yazar/tarih/kategori ve ayet atıfları `citation` alanında tutulur.
+
 - **Az sorulu kategori sayfaları için SEO filtresi eklendi:** Kullanıcıyla yapılan istişare
   sonucunda az sorulu kategorilerin public siteden kaldırılmamasına, ancak SEO açısından
   olgunlaşmadan indexe açılmamasına karar verildi. Public kategori sayfası 5 sorudan azsa ve

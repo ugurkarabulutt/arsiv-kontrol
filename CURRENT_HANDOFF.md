@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public SEO/Hız İyileştirme Turu
+
+- Public hız auditinde canlı CSS ve görsellerin `Cache-Control: public, max-age=0` döndüğü
+  görüldü. Bu, özellikle mobilde tekrar ziyaretlerde gereksiz yeniden doğrulama üretir.
+- Public renderer içinde asset versiyonlama eklendi: CSS, favicon, apple-touch-icon, manifest,
+  logo ve hero görseli `?v=20260823-public-cache-v1` ile çağrılır. Versiyon değiştirildiğinde
+  uzun cache güvenli şekilde kırılır.
+- Public root router içinde CSS ve `/assets/*` için production modunda
+  `Cache-Control: public, max-age=31536000, immutable` ayarlandı; preview/noindex modunda
+  no-store korunur.
+- Ana sayfa hero görseli `1280x1024` gerçek ölçüsüyle basılır ve `fetchpriority="high"`
+  alır. Bu, ilk ekran görseli için LCP/CLS tarafını iyileştirir.
+- Geniş Vercel `no-store` kuralını kaldırma girişimi güvenlik açısından fazla geniş kapsamlı
+  kabul edildi; admin/API/auth cache riski doğurabileceği için yapılmadı. Public HTML root
+  cache'i ayrı, daha kontrollü bir değişiklik olarak ayrıca ele alınmalıdır.
+- Soru detay sayfası yapısal verisi forum tipi `QAPage/acceptedAnswer` yapısından çıkarıldı.
+  Yeni yapı: `Article` + `BreadcrumbList`; cevap gövdesi `articleBody`, yazar
+  `Dr. Abdulcabbar Boran`, kategori kelimeleri, tarih ve açık ayet atıfları `citation`
+  alanında tutulur. Ana site `WebSite` + `SearchAction` şeması korunur.
+- Guard/testler güncellendi: versiyonlu CSS/asset linkleri, immutable static cache markerları,
+  hero LCP/CLS markerları, `Article/mainEntityOfPage/articleBody` ve QAPage regresyon yasağı
+  doğrulanır.
+- Yerel hedefli doğrulama başarılı: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`.
+
 ## 2026-08-23 Codex Public Az Sorulu Kategori SEO Filtresi
 
 - Kullanıcıyla yapılan istişare sonucunda az sorulu kategorilerin siteden kaldırılmamasına,
