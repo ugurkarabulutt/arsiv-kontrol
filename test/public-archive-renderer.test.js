@@ -99,6 +99,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /dsca-page-cache:v5/);
   assert.match(home, /X-Public-Navigation/);
   assert.match(home, /data-pa-navigating/);
+  assert.match(home, /data-pa-theme-boot/);
+  assert.match(home, /freezeRouteBackground/);
   assert.doesNotMatch(home, /\/public-preview\//);
 
   const detail = renderPublicArchivePreviewRoute('/soru/ornek-soru', {}, rootData);
@@ -214,6 +216,14 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(account, /data-user-questions-list/);
   assert.match(account, /\/public-preview\/api\/my-question-submissions/);
   assertOnlyPublicPreviewApi(account);
+
+  const ask = renderPublicArchivePreviewRoute('/public-preview/soru-sor').html;
+  assert.match(ask, /<h2>Gönderdiğiniz sorular<\/h2>/);
+  assert.match(ask, /Sorduğunuz sorular, inceleme durumu ve gelen cevaplar bu alanda görünür\./);
+  assert.match(ask, /class="pa-account-questions pa-ask-questions"/);
+  assert.match(ask, /data-user-questions-list/);
+  assert.match(ask, /\/public-preview\/api\/my-question-submissions/);
+  assertOnlyPublicPreviewApi(ask);
 });
 
 test('archive lists are paginated for large public data', () => {

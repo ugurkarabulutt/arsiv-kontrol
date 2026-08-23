@@ -1,5 +1,27 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Geçiş Flash ve Kullanıcı Soru Takibi
+
+- Public ön yüzde sayfalar arası hızlı geçişte, özellikle koyu temada kısa beyaz zemin
+  parlaması hissediliyordu. Public shell'e CSS yüklenmeden önce çalışan `data-pa-theme-boot`
+  eklendi; kaydedilmiş tema/prefers-color-scheme ilk paint öncesi uygulanır ve HTML zemini
+  güvenli arka plan rengine sabitlenir.
+- Hızlı gezinme akışı linke dokunulduğunda ve `document.write` öncesinde mevcut tema zeminini
+  `freezeRouteBackground()` ile dondurur. Bu, yeni HTML yazılırken tarayıcının beyaz varsayılan
+  canvas'a düşmesini azaltır.
+- `Soru Sor` sayfasına oturumlu kullanıcı için `Sorularım / Gönderdiğiniz sorular` takip
+  bölümü eklendi. Kullanıcı artık gönderdiği soruları, inceleme durumunu ve admin cevabını
+  aynı ekranda görebilir; `Hesabım` sayfasındaki mevcut liste korunur.
+- Soru başarıyla gönderildiğinde form sıfırlanır, kullanıcı soru takip bölümüne yönlendirilir
+  ve `loadPublicUserQuestions()` yeniden çağrılarak liste anında güncellenir.
+- Guard/testler güncellendi: `data-pa-theme-boot`, `freezeRouteBackground`,
+  `window.__publicArchiveSession`, `.pa-ask-questions` ve `Soru Sor` sayfasındaki
+  `data-user-questions-list` artık doğrulanır.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-23 Codex Public Soru Metni Güvenli Düzeltme Turu
 
 - Kullanıcı canlı sorularda denetimden geçmeyen yazım hataları olduğunu bildirdi; ilk örnek

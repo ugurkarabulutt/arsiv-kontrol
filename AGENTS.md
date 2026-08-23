@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Public geçiş flash ve kullanıcı soru takibi düzeltildi:** Public hızlı gezinmede koyu
+  temada görülen kısa beyaz ekran parlamasını azaltmak için public shell'e CSS'ten önce çalışan
+  `data-pa-theme-boot` eklendi; tema ve zemin rengi ilk paint öncesi uygulanır. Hızlı route
+  değişiminde `freezeRouteBackground()` mevcut tema zeminini `document.write` öncesi
+  dondurur. `Soru Sor` sayfasına oturumlu kullanıcı için `Sorularım / Gönderdiğiniz sorular`
+  takip bölümü eklendi; kullanıcı gönderdiği soruları, inceleme durumunu ve admin cevabını
+  aynı ekranda görebilir. Soru başarıyla gönderilince liste anında yenilenir ve kullanıcı takip
+  bölümüne yönlendirilir. `Hesabım` içindeki mevcut liste korunur. Guard/testler
+  `data-pa-theme-boot`, `freezeRouteBackground`, `window.__publicArchiveSession`,
+  `.pa-ask-questions` ve `data-user-questions-list` marker'larını doğrular. Yerel doğrulama:
+  `node --check public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `103/103` geçti.
+
 - **Public soru metni güvenli düzeltme turu:** Kullanıcı canlı sorularda denetimden geçmeyen
   yazım hataları olduğunu bildirdi; ilk örnek olarak hocamızın isminin `Abdülcabbar` değil
   `Abdulcabbar` olması gerektiği netleştirildi. Canlı Supabase public verisi tarandı:

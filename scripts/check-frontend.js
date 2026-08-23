@@ -1373,8 +1373,11 @@ for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-c
 for (const marker of ['bindShrinkingHeader', 'data-pa-scrolled', 'bindPublicAuthTabs', 'data-auth-tab']) {
   assert(publicRendererSource.includes(marker), `Public sticky header/auth JS marker eksik: ${marker}`);
 }
-for (const marker of ['loadPublicUserQuestions', 'publicSubmissionCardHtml', 'data-account-notice-dot', 'data-mark-question-seen']) {
+for (const marker of ['loadPublicUserQuestions', 'publicSubmissionCardHtml', 'data-account-notice-dot', 'data-mark-question-seen', 'window.__publicArchiveSession']) {
   assert(publicRendererSource.includes(marker), `Public kullanici soru takip JS marker eksik: ${marker}`);
+}
+for (const marker of ['data-pa-theme-boot', 'freezeRouteBackground', 'style="background-color:#0D1412;color-scheme:dark"']) {
+  assert(publicRendererSource.includes(marker), `Public sayfa gecisi tema/zemin marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kategori slider CSS marker eksik: ${marker}`);
@@ -1407,7 +1410,7 @@ for (const marker of ['--pa-safe-top: env(safe-area-inset-top, 0px)', '--pa-head
 }
 const scrollTopIconCss = publicCss.match(/\.pa-scroll-top-icon\s*\{([\s\S]*?)\}/)?.[1] || '';
 assert(!scrollTopIconCss.includes('rotate('), 'Yukari cik ikonu CSS ile dondurulmemeli.');
-for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {
+for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-ask-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {
   assert(publicCss.includes(marker), `Public hesap soru takip CSS marker eksik: ${marker}`);
 }
 for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', ':root[data-pa-scrolled="true"] .pa-header', '.pa-auth-shell', '.pa-auth-panel', '.pa-google-button', '.pa-auth-tabs', '.pa-auth-form']) {

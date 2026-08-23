@@ -1487,6 +1487,19 @@ function renderAsk() {
             <p class="pa-form-status" data-question-form-status aria-live="polite"></p>
           </form>
         </section>
+        <section class="pa-account-questions pa-ask-questions" data-user-questions hidden>
+          <div class="pa-section-heading">
+            <div>
+              <p class="pa-kicker">Sorularım</p>
+              <h2>Gönderdiğiniz sorular</h2>
+              <p>Sorduğunuz sorular, inceleme durumu ve gelen cevaplar bu alanda görünür.</p>
+            </div>
+            <a class="pa-section-link" href="${PREVIEW_BASE}/hesabim">Hesabım</a>
+          </div>
+          <div class="pa-user-question-list" data-user-questions-list>
+            <div class="pa-mini-empty">Sorularınız yükleniyor...</div>
+          </div>
+        </section>
       </main>
     `
   });
@@ -1643,10 +1656,11 @@ function renderShell({ title, description, active, content, status = 200, questi
     publicArchiveSiteStructuredData(),
     ...(Array.isArray(structuredData) ? structuredData : structuredData ? [structuredData] : [])
   ];
+  const themeBootScript = `(function(){try{var saved=localStorage.getItem('dsca-theme');var preferred=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var theme=saved==='dark'||saved==='light'?saved:preferred;var root=document.documentElement;var bg=theme==='dark'?'#0D1412':'#F7F3EA';root.setAttribute('data-theme',theme);root.style.backgroundColor=bg;root.style.colorScheme=theme;var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',bg);}catch(error){document.documentElement.style.backgroundColor='#0D1412';}})();`;
   return {
     status,
     html: `<!doctype html>
-<html lang="tr" data-theme="light">
+<html lang="tr" data-theme="light" style="background-color:#0D1412;color-scheme:dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1677,6 +1691,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="twitter:image" content="${escapeHtml(shareImageHref)}">
   <meta name="twitter:image:alt" content="${escapeHtml(publicAppName)}">
   <meta name="theme-color" content="#F7F3EA">
+  <script data-pa-theme-boot>${themeBootScript}</script>
   <title>${escapeHtml(safeTitle)}</title>
   ${structuredItems.map(jsonLdScript).join('\n  ')}
   <link rel="icon" type="image/png" sizes="16x16" href="${publicArchiveAssetHref('favicon-16.png')}">
@@ -2292,7 +2307,15 @@ function renderShell({ title, description, active, content, status = 200, questi
               return;
             }
             form.reset();
-            if (status) status.textContent = 'Sorunuz kaydedildi. Teşekkür ederiz.';
+            if (status) status.textContent = 'Sorunuz kaydedildi. Gönderdiğiniz sorular bölümünde görünecek.';
+            if (window.__publicArchiveSession) await loadPublicUserQuestions(window.__publicArchiveSession);
+            var questionsSection = document.querySelector('[data-user-questions]');
+            if (questionsSection) {
+              questionsSection.hidden = false;
+              window.setTimeout(function(){
+                try { questionsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (error) {}
+              }, 120);
+            }
           } catch (error) {
             if (status) status.textContent = 'Bağlantı kurulamadı. Lütfen tekrar deneyin.';
           } finally {
@@ -2376,7 +2399,17 @@ function renderShell({ title, description, active, content, status = 200, questi
         function pageStack() {
           return window['his' + 'tory'];
         }
+        function freezeRouteBackground() {
+          try {
+            var styles = window.getComputedStyle(document.documentElement);
+            var bg = (styles && styles.getPropertyValue('--pa-bg') || '').trim();
+            if (!bg) bg = document.documentElement.getAttribute('data-theme') === 'dark' ? '#0D1412' : '#F7F3EA';
+            document.documentElement.style.backgroundColor = bg;
+            if (document.body) document.body.style.backgroundColor = bg;
+          } catch (error) {}
+        }
         function setPending(anchor, url) {
+          freezeRouteBackground();
           root.setAttribute('data-pa-navigating', 'true');
           document.querySelectorAll('.pa-bottom-link, .pa-desktop-nav a').forEach(function(link){
             link.classList.remove('is-pending');
@@ -2395,6 +2428,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           if (mode === 'push') pageStack().pushState({ paFast: true }, '', url.href);
           else if (mode === 'replace') pageStack().replaceState({ paFast: true }, '', url.href);
+          freezeRouteBackground();
           document.open();
           document.write(html);
           document.close();
@@ -2454,6 +2488,7 @@ function renderShell({ title, description, active, content, status = 200, questi
       bindPublicEmailAuth();
       bindFastPublicNavigation();
       loadPublicSession().then(function(session){
+        window.__publicArchiveSession = session;
         renderSessionUi(session);
         loadPublicUserQuestions(session);
       });
