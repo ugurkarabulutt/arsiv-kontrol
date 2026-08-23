@@ -121,6 +121,22 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Public sayfa geçişindeki açılıp kapanma hissi kökten düzeltildi:** Beyaz flash giderildikten
+  sonra kalan takılma hissinin kök sebebi hızlı gezinmenin hâlâ
+  `document.open()` / `document.write()` / `document.close()` ile tam HTML yazmasıydı. Bu yapı
+  kaldırıldı. Yeni geçiş akışı hedef HTML'i `DOMParser` ile parse eder, yönetilen head alanlarını
+  senkronlar, yalnız `.pa-page`, `.pa-mobile-nav` ve yukarı çık butonunu `replaceWith` ile
+  değiştirir, sonra `initializePublicArchivePage()` ile yeni DOM davranışlarını bağlar. Link
+  dinleme tek seferlik delegated fast-nav katmanına taşındı (`__publicArchiveFastNavBound`);
+  route değişiminde eski slider RAF döngüleri, scroll/resize dinleyicileri ve sayaç
+  observer'ları `cleanupPublicArchivePage()` ile temizlenir. Guard/testler
+  `replacePublicArchiveShell`, `DOMParser`, `replaceWith`, `cleanupPublicArchivePage`,
+  `__publicArchiveFastNavBound` marker'larını zorunlu kılar; `document.write(` ve
+  `document.open(` public renderer içinde yasaktır. Yerel doğrulama: `node --check
+  public-archive-renderer.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `103/103` geçti.
+
 - **Public geçiş flash ve kullanıcı soru takibi düzeltildi:** Public hızlı gezinmede koyu
   temada görülen kısa beyaz ekran parlamasını azaltmak için public shell'e CSS'ten önce çalışan
   `data-pa-theme-boot` eklendi; tema ve zemin rengi ilk paint öncesi uygulanır. Hızlı route

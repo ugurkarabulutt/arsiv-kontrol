@@ -1,5 +1,32 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Sayfa Geçiş Takılma Kök Çözümü
+
+- Kullanıcı beyaz flash düzelse bile sayfalar arası geçişte açılıp kapanma/takılma hissi
+  kaldığını bildirdi.
+- Kök sebep doğrulandı: hızlı gezinme katmanı HTML'i önceden alsa bile route değişiminde
+  `document.open()` / `document.write()` / `document.close()` kullanıyordu. Bu yöntem tarayıcıya
+  tam sayfa yeniden yazma gibi davrandığı için özellikle iOS'ta sayfa kapanıp açılıyormuş
+  hissi oluşturuyordu.
+- Hızlı geçiş tam sayfa yazmadan çıkarıldı. Yeni akış:
+  - hedef HTML `DOMParser` ile parse edilir,
+  - title/meta/OG/JSON-LD gibi yönetilen head alanları senkronlanır,
+  - yalnız `.pa-page`, `.pa-mobile-nav` ve `data-scroll-top` butonu `replaceWith` ile değiştirilir,
+  - scroll hedefi hash varsa ilgili bölüme, yoksa üste alınır,
+  - sayfa davranışları `initializePublicArchivePage()` ile yeni DOM'a yeniden bağlanır.
+- Link dinleme tek tek anchor'lara bağlanmak yerine tek seferlik delegated fast-nav katmanına
+  taşındı (`__publicArchiveFastNavBound`). Böylece parça geçişinden sonra yeni linkler ekstra
+  listener yığını üretmeden çalışır.
+- Eski sayfanın slider RAF döngüleri, resize/scroll dinleyicileri, aktif sayaç gözlemcileri ve
+  scroll-top/header dinleyicileri `cleanupPublicArchivePage()` ile route değişiminde temizlenir.
+- Guard/testler güncellendi: `replacePublicArchiveShell`, `DOMParser`, `replaceWith`,
+  `cleanupPublicArchivePage`, `__publicArchiveFastNavBound` zorunlu; `document.write(` ve
+  `document.open(` public renderer içinde yasak.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-23 Codex Public Geçiş Flash ve Kullanıcı Soru Takibi
 
 - Public ön yüzde sayfalar arası hızlı geçişte, özellikle koyu temada kısa beyaz zemin
