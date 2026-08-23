@@ -1288,6 +1288,8 @@ assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda ki
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
 assert(archivePreview.includes('soru cevap') && !/<span>\d+ soru<\/span>\s*<span>\d+ cevap<\/span>/.test(archivePreview), 'Public arsiv sayacinda soru/cevap ayrimi tek ifadeye inmeli.');
+assert(!/for \(const row of uniquePublicArchiveRecords\(qaRows \|\| \[\]\)\)\s*{\s*const slugs = Array\.isArray\(row\.topic_slugs\)/.test(server), 'Public arsiv kategori dizini yalniz slug/topic alanlariyla dedupe edilmemeli; bu harflerde kategorileri eksiltir.');
+assert(/for \(const row of qaRows \|\| \[\]\)\s*{\s*const slugs = Array\.isArray\(row\.topic_slugs\)/.test(server), 'Public arsiv kategori dizini aktif published topic_slugs havuzunu dogrudan saymali.');
 for (const marker of ['pa-alpha-index', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
   assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
 }

@@ -5558,7 +5558,7 @@ async function loadPublicArchiveCategoryIndexRows() {
       .eq('status', 'published'), 1000)
   ]);
   const counts = new Map();
-  for (const row of uniquePublicArchiveRecords(qaRows || [])) {
+  for (const row of qaRows || []) {
     const slugs = Array.isArray(row.topic_slugs) && row.topic_slugs.length
       ? row.topic_slugs
       : (row.category_slug ? [row.category_slug] : []);

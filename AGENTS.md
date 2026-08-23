@@ -120,6 +120,20 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-23
+- **Public arşiv alfabetik kategori dizini düzeltildi:** Root canlı arşivde `/arsiv?harf=C`
+  gibi harf seçimleri veri tabanındaki tüm aktif kategorileri göstermiyor, yalnız o anki soru
+  listesinde görünen birkaç etikete düşüyordu. Kök sebep `loadPublicArchiveCategoryIndexRows()`
+  içinde yalnız `slug/category_slug/topic_slugs` alanlarıyla çekilen satırların
+  `uniquePublicArchiveRecords()` üzerinden geçirilmesiydi; bu fonksiyon soru+cevap metni
+  olmadan kimlik çıkaramadığı için kategori sayım havuzunu boşaltıyordu. Fonksiyon artık
+  `published` satırların `topic_slugs` bağlantılarını doğrudan sayar; birebir kopyalar zaten
+  `duplicate_hidden` statüsünde olduğu için public dizinde tekrar sayılmaz. Guard olarak
+  `scripts/check-frontend.js` içine bu regresyonu yakalayan kontrol eklendi. Yerel doğrulama:
+  `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `103/103` geçti.
+
 ### 2026-08-22
 - **Public iOS safe-area ve paylaşım kartı cache turu:** iPhone ana ekrana eklenen public
   uygulamada header saat/pil status bar alanına taşıyordu. Public head

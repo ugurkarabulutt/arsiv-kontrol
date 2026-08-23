@@ -1,5 +1,23 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Arşiv Harf Dizini Düzeltmesi
+
+- Canlıda `/arsiv?harf=C` gibi harf seçimlerinde kategori sayısı eksik görünüyordu.
+  Örnek: canlı DB'de `C` harfinde `49` toplam, `46` aktif kategori varken canlı HTML yalnız
+  `3` kategori basıyordu.
+- Kök sebep veri kaybı değildi. `public_categories` ve `public_qa_topics` tabloları tamdı;
+  sorun arşiv kategori dizini sayacı için yalnız `slug/category_slug/topic_slugs` çekilen
+  satırların `uniquePublicArchiveRecords()` içine verilmesiydi. Bu fonksiyon soru+cevap metni
+  olmadan kimlik çıkaramadığı için aktif kategori havuzunu boşaltıyor, sayfa da sadece mevcut
+  soru listesindeki birkaç etikete düşüyordu.
+- `loadPublicArchiveCategoryIndexRows()` artık aktif `published` satırların `topic_slugs`
+  bağlantılarını doğrudan sayıyor. Birebir kopyalar zaten `duplicate_hidden` statüsünde olduğu
+  için public dizinde tekrar sayılmaz.
+- `scripts/check-frontend.js` içine bu regresyonu yakalayan guard eklendi.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-22 Codex Public iOS Safe Area ve Paylaşım Kartı Cache Turu
 
 - iPhone ana ekrana eklenen uygulamada header saat/pil status bar alanına taşıyordu.
