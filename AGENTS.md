@@ -121,6 +121,13 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Public ana sayfa hero üst cümlesi kaldırıldı:** Kullanıcı isteğiyle hero banner içinde
+  başlığın üstünde görünen `Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.` cümlesi
+  kaldırıldı. SEO/meta/footer açıklaması korunur; değişiklik yalnız ana hero içindeki görünür
+  küçük üst metni kapsar. `scripts/check-frontend.js` içine bu cümle hero'da geri gelirse
+  yakalayacak guard eklendi. Yerel doğrulama: `npm.cmd run check` başarılı; tam test `103/103`
+  geçti.
+
 - **Telegram paylaşım kartı cache kırma:** Telegram eski admin/Arşiv AI link kartını göstermeye
   devam ettiği için public paylaşım görseli yalnız query string ile versiyonlanmak yerine yeni
   fiziksel dosya adına taşındı. Yeni asset:

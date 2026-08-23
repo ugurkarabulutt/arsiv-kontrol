@@ -1,5 +1,14 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Hero Üst Cümle Kaldırma
+
+- Kullanıcı isteğiyle ana sayfa hero banner'ında başlığın üstündeki
+  `Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.` görünür cümlesi kaldırıldı.
+- SEO/meta/footer açıklaması korunur; değişiklik yalnız hero içindeki görünür küçük üst metni
+  kapsar.
+- `scripts/check-frontend.js` içine bu hero üst cümlesi geri gelirse yakalayacak guard eklendi.
+- Yerel doğrulama: `npm.cmd run check` başarılı; tam test `103/103` geçti.
+
 ## 2026-08-23 Codex Telegram Paylaşım Kartı Cache Kırma
 
 - Telegram link paylaşımında eski admin/Arşiv AI kartı görünmeye devam ettiği için OG/Twitter

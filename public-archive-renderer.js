@@ -948,7 +948,6 @@ function renderHome() {
       <main class="pa-main">
         <section class="pa-hero">
           <div class="pa-hero-copy">
-            <p class="pa-kicker">${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
             <h1>Sorularınıza, kaynaklarıyla birlikte cevap bulun.</h1>
             <p>Hidayet, mürşid, zikir ve teslimiyet gibi temel kategorilerden başlayın; ilgili soruları, cevapları ve delilleri bir arada okuyun.</p>
             ${searchBox()}
