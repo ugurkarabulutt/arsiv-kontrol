@@ -2186,7 +2186,7 @@ a.pa-chip:hover,
 }
 
 .pa-answer-primary {
-  padding: 28px 0 0;
+  padding: 10px 0 0;
 }
 
 .pa-detail-meta {
@@ -2282,10 +2282,15 @@ a.pa-chip:hover,
 }
 
 .pa-reading-block:first-of-type {
+  margin-top: 0;
   padding: 22px;
   background: color-mix(in srgb, var(--pa-mint) 34%, var(--pa-surface));
   border: 1px solid color-mix(in srgb, var(--pa-border) 86%, transparent);
   border-radius: var(--pa-radius-md);
+}
+
+.pa-detail-main .pa-breadcrumb {
+  margin-bottom: 8px;
 }
 
 .pa-reading-block h2,
