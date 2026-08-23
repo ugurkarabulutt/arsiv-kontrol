@@ -44,6 +44,18 @@ const PUBLIC_ARCHIVE_PREVIEW_ENABLED = ['1', 'true', 'yes'].includes(String(proc
 const PUBLIC_ARCHIVE_ROOT_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
+const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
+const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
+  'allaha-ulasmayi-dilemek',
+  'mursid',
+  'hidayet',
+  'zikir',
+  'takva',
+  'tabiiyet',
+  'nefs',
+  'ruh',
+  'teslimiyet'
+]);
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
@@ -10668,6 +10680,17 @@ function publicArchiveSitemapEntry(pathname, lastmod = '', priority = '0.6', cha
   ].join('\n');
 }
 
+function publicArchiveLatestDate(current = '', next = '') {
+  if (!current) return next || '';
+  if (!next) return current;
+  return new Date(next).getTime() > new Date(current).getTime() ? next : current;
+}
+
+function publicArchiveCategorySeoIndexable(slug = '', questionCount = 0) {
+  const count = Number(questionCount);
+  return (Number.isFinite(count) && count >= PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS) || PUBLIC_CATEGORY_SEO_SLUGS.has(String(slug || ''));
+}
+
 async function publicArchiveSitemapEntries() {
   const today = new Date().toISOString();
   const entries = [
@@ -10685,16 +10708,28 @@ async function publicArchiveSitemapEntries() {
   if (await ensurePublicArchiveContentReady()) {
     const rows = await fetchAllPages(() => supabase
       .from('public_qa')
-      .select('slug,category_slug,updated_at,published_at')
+      .select('slug,category_slug,topic_slugs,updated_at,published_at')
       .eq('status', 'published')
       .order('updated_at', { ascending: false }), 1000);
     const categories = new Map();
     for (const row of rows || []) {
       if (row.slug) entries.push(publicArchiveSitemapEntry(`/soru/${row.slug}`, row.updated_at || row.published_at, '0.8', 'monthly'));
-      if (row.category_slug && !categories.has(row.category_slug)) categories.set(row.category_slug, row.updated_at || row.published_at || today);
+      const slugs = Array.isArray(row.topic_slugs) && row.topic_slugs.length
+        ? row.topic_slugs
+        : (row.category_slug ? [row.category_slug] : []);
+      for (const slug of slugs) {
+        if (!slug) continue;
+        const current = categories.get(slug) || { count: 0, lastmod: '' };
+        categories.set(slug, {
+          count: current.count + 1,
+          lastmod: publicArchiveLatestDate(current.lastmod, row.updated_at || row.published_at || today)
+        });
+      }
     }
-    for (const [slug, lastmod] of categories.entries()) {
-      entries.push(publicArchiveSitemapEntry(`/kategori/${slug}`, lastmod, '0.7', 'weekly'));
+    for (const [slug, meta] of categories.entries()) {
+      if (publicArchiveCategorySeoIndexable(slug, meta.count)) {
+        entries.push(publicArchiveSitemapEntry(`/kategori/${slug}`, meta.lastmod, '0.7', 'weekly'));
+      }
     }
   }
 

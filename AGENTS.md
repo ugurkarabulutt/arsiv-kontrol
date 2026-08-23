@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-23
+- **Az sorulu kategori sayfaları için SEO filtresi eklendi:** Kullanıcıyla yapılan istişare
+  sonucunda az sorulu kategorilerin public siteden kaldırılmamasına, ancak SEO açısından
+  olgunlaşmadan indexe açılmamasına karar verildi. Public kategori sayfası 5 sorudan azsa ve
+  stratejik ana kavram değilse sayfa kullanıcıya görünür kalır, soru linkleri takip edilebilir
+  olur, fakat `noindex,follow` meta etiketi alır ve canonical link üretmez. Stratejik ana
+  kavram istisnaları: `allaha-ulasmayi-dilemek`, `mursid`, `hidayet`, `zikir`, `takva`,
+  `tabiiyet`, `nefs`, `ruh`, `teslimiyet`. Sitemap üretimi aynı kurala bağlandı; kategori
+  URL'leri yalnız 5+ soru sayısına ulaşmışsa veya stratejik kategori ise `/sitemap.xml` içine
+  girer. Kategori sayımı yalnız `category_slug` değil, canlı public etiket havuzu olan
+  `topic_slugs` üzerinden de yapılır. Guard/testler sıradan 1 sorulu kategori için
+  `noindex,follow`, stratejik 1 sorulu `Hidayet` için `index,follow` davranışını doğrular.
+
 - **Public sayfa geçişindeki açılıp kapanma hissi kökten düzeltildi:** Beyaz flash giderildikten
   sonra kalan takılma hissinin kök sebebi hızlı gezinmenin hâlâ
   `document.open()` / `document.write()` / `document.close()` ile tam HTML yazmasıydı. Bu yapı

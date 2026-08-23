@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-23 Codex Public Az Sorulu Kategori SEO Filtresi
+
+- Kullanıcıyla yapılan istişare sonucunda az sorulu kategorilerin siteden kaldırılmamasına,
+  fakat SEO açısından olgunlaşmadan Google indexine açılmamasına karar verildi.
+- Kural: kategori sayfası kullanıcıya görünür ve kategori içindeki soru linkleri takip
+  edilebilir kalır; ancak kategori 5 sorudan azsa ve stratejik ana kavram değilse sayfa
+  `noindex,follow` meta etiketi alır ve canonical link üretmez.
+- Stratejik ana kavram istisnaları: `allaha-ulasmayi-dilemek`, `mursid`, `hidayet`,
+  `zikir`, `takva`, `tabiiyet`, `nefs`, `ruh`, `teslimiyet`. Bu kategoriler az sorulu olsa
+  bile indexlenebilir kabul edilir.
+- Sitemap üretimi aynı kurala bağlandı. `/sitemap.xml` artık kategori URL'lerini yalnız
+  5+ soru sayısına ulaşmışsa veya stratejik kategori ise ekler. Sayım yalnız `category_slug`
+  değil, canlı public etiket havuzu olan `topic_slugs` üzerinden de yapılır.
+- Arşiv alfabetik kategori dizini değişmedi; zayıf kategoriler kullanıcı tarafında görünür
+  kalır ve soru detaylarına bağlantı vermeye devam eder.
+- Guard/testler güncellendi: renderer testinde 1 sorulu sıradan kategori için `noindex,follow`,
+  1 sorulu stratejik `Hidayet` kategorisi için `index,follow` doğrulanır. Frontend guard,
+  renderer ve sitemap tarafındaki kategori SEO kural markerlarını kontrol eder.
+- Yerel doğrulama şu ana kadar başarılı: `node --check public-archive-renderer.js`,
+  `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `git diff --check`.
+
 ## 2026-08-23 Codex Public Sayfa Geçiş Takılma Kök Çözümü
 
 - Kullanıcı beyaz flash düzelse bile sayfalar arası geçişte açılıp kapanma/takılma hissi

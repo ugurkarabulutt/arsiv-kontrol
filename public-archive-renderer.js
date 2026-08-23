@@ -14,6 +14,18 @@ const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
+const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
+const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
+  'allaha-ulasmayi-dilemek',
+  'mursid',
+  'hidayet',
+  'zikir',
+  'takva',
+  'tabiiyet',
+  'nefs',
+  'ruh',
+  'teslimiyet'
+]);
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
@@ -235,6 +247,12 @@ function entriesForCategory(slug) {
 function categoryQuestionCount(category) {
   const count = Number(category?.questionCount ?? category?.question_count);
   return Number.isFinite(count) && count > 0 ? Math.round(count) : entriesForCategory(category?.slug).length;
+}
+
+function publicCategorySeoIndexable(category, explicitCount = null) {
+  const count = Number(explicitCount);
+  const questionCount = Number.isFinite(count) && count >= 0 ? Math.round(count) : categoryQuestionCount(category);
+  return questionCount >= PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS || PUBLIC_CATEGORY_SEO_SLUGS.has(String(category?.slug || ''));
 }
 
 function relatedEntries(entry) {
@@ -1341,11 +1359,13 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
     : null;
   const entries = serverPagination?.prePaginated ? publicArchiveFixtures.qa : entriesForCategory(category.slug);
   const pageState = archivePaginationState(entries, query.sayfa, serverPagination);
+  const pageNoindex = !publicCategorySeoIndexable(category, pageState.total);
   return renderShell({
     active: 'categories',
     title: category.name,
     description: category.description,
     canonicalPath: `/kategori/${category.slug}`,
+    pageNoindex,
     content: `
       <main class="pa-main pa-narrow-main">
         ${breadcrumb([{ label: 'Kategoriler', href: `${PREVIEW_BASE}/kategoriler` }, { label: category.name }])}
@@ -1645,12 +1665,14 @@ function renderNotFound() {
   });
 }
 
-function renderShell({ title, description, active, content, status = 200, questionSlug = '', canonicalPath = '', structuredData = [] }) {
+function renderShell({ title, description, active, content, status = 200, questionSlug = '', canonicalPath = '', structuredData = [], pageNoindex = false }) {
   const safeTitle = pageTitle(title);
   const safeDescription = description || publicArchiveFixtures.brand.sentence;
   const publicAppName = publicArchiveFixtures.brand.name;
   const publicShortAppName = 'Dini Sorular';
   const canonicalHref = canonicalPath ? publicArchiveCanonicalUrl(canonicalPath) : '';
+  const robotsContent = PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : pageNoindex ? 'noindex,follow' : 'index,follow';
+  const shouldExposeCanonical = robotsContent === 'index,follow' && canonicalHref;
   const shareImageHref = publicArchiveShareImageUrl();
   const structuredItems = [
     publicArchiveSiteStructuredData(),
@@ -1664,14 +1686,14 @@ function renderShell({ title, description, active, content, status = 200, questi
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="${PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : 'index,follow'}">
+  <meta name="robots" content="${robotsContent}">
   <meta name="description" content="${escapeHtml(safeDescription)}">
   <meta name="application-name" content="${escapeHtml(publicAppName)}">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="${escapeHtml(publicShortAppName)}">
-  ${!PUBLIC_ARCHIVE_NOINDEX && canonicalHref ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
+  ${shouldExposeCanonical ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
   <meta property="og:locale" content="tr_TR">
   <meta property="og:site_name" content="${escapeHtml(publicAppName)}">
   <meta property="og:title" content="${escapeHtml(safeTitle)}">

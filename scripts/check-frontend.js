@@ -1299,6 +1299,12 @@ assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.'
 assert(archivePreview.includes('soru cevap') && !/<span>\d+ soru<\/span>\s*<span>\d+ cevap<\/span>/.test(archivePreview), 'Public arsiv sayacinda soru/cevap ayrimi tek ifadeye inmeli.');
 assert(!/for \(const row of uniquePublicArchiveRecords\(qaRows \|\| \[\]\)\)\s*{\s*const slugs = Array\.isArray\(row\.topic_slugs\)/.test(server), 'Public arsiv kategori dizini yalniz slug/topic alanlariyla dedupe edilmemeli; bu harflerde kategorileri eksiltir.');
 assert(/for \(const row of qaRows \|\| \[\]\)\s*{\s*const slugs = Array\.isArray\(row\.topic_slugs\)/.test(server), 'Public arsiv kategori dizini aktif published topic_slugs havuzunu dogrudan saymali.');
+for (const marker of ['PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5', 'PUBLIC_CATEGORY_SEO_SLUGS', 'publicCategorySeoIndexable', 'noindex,follow', 'pageNoindex']) {
+  assert(publicRendererSource.includes(marker), `Public kategori SEO index kural marker eksik: ${marker}`);
+}
+for (const marker of ['publicArchiveCategorySeoIndexable', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))']) {
+  assert(server.includes(marker), `Public sitemap kategori SEO kural marker eksik: ${marker}`);
+}
 for (const marker of ['pa-alpha-index', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
   assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
 }

@@ -275,6 +275,55 @@ test('archive lists are paginated for large public data', () => {
   assert.match(categorySecondPage, /href="\/public-preview\/kategori\/hidayet\?sayfa=3#sorular"/);
 });
 
+test('weak category pages stay visible but are not indexed', () => {
+  const weakData = {
+    noindex: false,
+    categories: [
+      { slug: 'cok-dar-baslik', name: 'Çok Dar Başlık', description: 'Az sorulu kategori.' }
+    ],
+    topics: [],
+    qa: [{
+      id: 'qa-weak',
+      slug: 'weak-soru',
+      title: 'Az sorulu kategori görünür mü?',
+      question: 'Az sorulu kategori görünür mü?',
+      answer: ['Evet, kullanıcı için görünür kalır.'],
+      categorySlug: 'cok-dar-baslik',
+      categorySlugs: ['cok-dar-baslik'],
+      topicSlugs: ['cok-dar-baslik'],
+      publishedAt: '2026-08-10',
+      readTime: 1
+    }]
+  };
+  const weak = renderPublicArchivePreviewRoute('/public-preview/kategori/cok-dar-baslik', {}, weakData).html;
+  assert.match(weak, /Az sorulu kategori görünür mü\?/);
+  assert.match(weak, /<meta name="robots" content="noindex,follow">/);
+  assert.doesNotMatch(weak, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/kategori\/cok-dar-baslik">/);
+
+  const strategicData = {
+    noindex: false,
+    categories: [
+      { slug: 'hidayet', name: 'Hidayet', description: 'Stratejik kategori.' }
+    ],
+    topics: [],
+    qa: [{
+      id: 'qa-hidayet-small',
+      slug: 'hidayet-small',
+      title: 'Hidayet az soruyla indexlenir mi?',
+      question: 'Hidayet az soruyla indexlenir mi?',
+      answer: ['Evet, stratejik ana kategori olduğu için indexlenebilir.'],
+      categorySlug: 'hidayet',
+      categorySlugs: ['hidayet'],
+      topicSlugs: ['hidayet'],
+      publishedAt: '2026-08-10',
+      readTime: 1
+    }]
+  };
+  const strategic = renderPublicArchivePreviewRoute('/public-preview/kategori/hidayet', {}, strategicData).html;
+  assert.match(strategic, /<meta name="robots" content="index,follow">/);
+  assert.match(strategic, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/kategori\/hidayet">/);
+});
+
 test('public renderer accepts route-sized server data with global stats', () => {
   const pagedRows = Array.from({ length: 30 }, (_, index) => {
     const number = index + 31;
