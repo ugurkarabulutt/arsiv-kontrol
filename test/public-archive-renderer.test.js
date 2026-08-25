@@ -118,6 +118,12 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(detail.html, /"@type":"Article"/);
   assert.match(detail.html, /"@type":"BreadcrumbList"/);
   assert.doesNotMatch(detail.html, /\/public-preview\//);
+
+  for (const route of ['/arama', '/soru-sor', '/hesabim', '/kategoriler', '/gizlilik', '/kullanim-kosullari']) {
+    const rendered = renderPublicArchivePreviewRoute(route, {}, rootData).html;
+    assert.match(rendered, /<meta name="robots" content="noindex,follow">/);
+    assert.doesNotMatch(rendered, /rel="canonical"/);
+  }
 });
 
 test('public preview shows direct authorship without broad expert language', () => {

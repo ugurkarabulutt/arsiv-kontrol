@@ -1233,6 +1233,7 @@ function renderSearch(query = '') {
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
     description: 'Arşivde soru ve kategori arayın.',
     canonicalPath: '/arama',
+    pageNoindex: true,
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-search-page">
@@ -1265,6 +1266,7 @@ function renderCategoriesIndex() {
     title: 'Kategoriler',
     description: 'Arşivdeki soru-cevap kategorileri.',
     canonicalPath: '/kategoriler',
+    pageNoindex: true,
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-collection-hero">
@@ -1400,6 +1402,7 @@ function renderAccount() {
     title: 'Hesabım',
     description: 'Soru gönderimi için hesap sayfası.',
     canonicalPath: '/hesabim',
+    pageNoindex: true,
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-account-page pa-auth-shell" data-account-panel>
@@ -1470,6 +1473,7 @@ function renderAsk() {
     title: 'Soru Sor',
     description: 'Arşive soru göndermek için sade form.',
     canonicalPath: '/soru-sor',
+    pageNoindex: true,
     content: `
       <main class="pa-main pa-form-main">
         ${breadcrumb([{ label: 'Soru Sor' }])}
@@ -1630,6 +1634,7 @@ function renderInfoPage(kind) {
     title: page.title,
     description: page.heading,
     canonicalPath: `/${kind}`,
+    pageNoindex: kind === 'gizlilik' || kind === 'kullanim-kosullari',
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-info-page">

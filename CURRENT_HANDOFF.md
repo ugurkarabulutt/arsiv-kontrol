@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-26 Codex Public SEO Index Sinyali Netleştirme
+
+- Canlı SEO kontrolünde `/arama`, `/soru-sor`, `/hesabim` ve `/kategoriler` gibi yardımcı
+  sayfaların `index,follow` döndüğü görüldü. Bunlar kullanıcı akışı için gerekli olsa da
+  arama motorlarında asıl hedef sayfa değildir.
+- Public renderer'da yardımcı sayfalar `noindex,follow` yapıldı ve noindex sayfalarda canonical
+  üretilmemesi mevcut shell davranışıyla korundu. Kapsam: `/arama`, `/soru-sor`, `/hesabim`,
+  `/kategoriler`, `/gizlilik`, `/kullanim-kosullari`.
+- Sitemap sadeleştirildi: yalnız ana sayfa, arşiv, temel bilgi sayfaları, tekil soru-cevaplar
+  ve SEO kuralını geçen güçlü kategori sayfaları sitemap'e girer. Arama, hesap, soru gönderme,
+  gizlilik ve kullanım koşulları sitemap'ten çıkarıldı.
+- `llms.txt` içinde kaynak kabul edilecek sayfalar netleştirildi: tekil soru-cevaplar ve
+  sitemap'te yer alan güçlü kategori sayfaları kaynak kabul edilir; arama/hesap/soru gönderme
+  gibi kullanıcı akışı sayfaları kaynak olarak alıntılanmamalıdır.
+- Guard/testler root modunda yardımcı sayfaların `noindex,follow` olduğunu, canonical
+  üretmediğini ve sitemap'te SEO dışı yardımcı sayfaların kalmadığını doğrular.
+
 ## 2026-08-26 Codex Public Analitik Konum ve Kırılım Netleştirmesi
 
 - Canlı site duyurusu öncesinde kullanıcı, şehir bilgisinin sürekli Antalya görünmesini ve

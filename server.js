@@ -10708,13 +10708,9 @@ async function publicArchiveSitemapEntries() {
   const entries = [
     publicArchiveSitemapEntry('/', today, '1.0', 'hourly'),
     publicArchiveSitemapEntry('/arsiv', today, '0.9', 'daily'),
-    publicArchiveSitemapEntry('/arama', today, '0.7', 'weekly'),
-    publicArchiveSitemapEntry('/soru-sor', today, '0.5', 'monthly'),
     publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/nasil-kullanilir', today, '0.4', 'monthly'),
-    publicArchiveSitemapEntry('/iletisim', today, '0.3', 'monthly'),
-    publicArchiveSitemapEntry('/gizlilik', today, '0.2', 'yearly'),
-    publicArchiveSitemapEntry('/kullanim-kosullari', today, '0.2', 'yearly')
+    publicArchiveSitemapEntry('/iletisim', today, '0.3', 'monthly')
   ];
 
   if (await ensurePublicArchiveContentReady()) {
@@ -10812,8 +10808,11 @@ async function publicArchiveLlmsHandler(req, res) {
       'Önemli sayfalar:',
       `- Ana sayfa: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`,
       `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
-      `- Arama: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arama`,
-      `- Soru sorma: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/soru-sor`,
+      `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
+      '',
+      'Index önceliği:',
+      '- Tekil soru-cevap sayfaları ve sitemap içinde yer alan güçlü kategori sayfaları public kaynak kabul edilir.',
+      '- Arama, hesap, soru gönderme, gizlilik ve kullanım koşulları sayfaları kullanıcı akışı içindir; kaynak sayfa olarak alıntılanmamalıdır.',
       '',
       'Kaynak gösterimi:',
       '- Tekil soru-cevap sayfaları /soru/{slug} biçimindedir.',
