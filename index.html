@@ -2074,7 +2074,7 @@ canvas{width:100%!important;}
         <div class="ops-panel-body">
           <div class="archive-ready-hero">
             <strong>Veri buradan okunur.</strong>
-            <span>Ziyaret sayısı, tekil kişi, şehir/ülke, sosyal medya, Google, AI araçları ve doğrudan gelen trafik ayrı ayrı takip edilir.</span>
+            <span>Ziyaret sayısı, tekil kişi, kaynak, cihaz ve IP ağına göre ülke/şehir dağılımı ayrı ayrı takip edilir. Şehir bilgisi kesin adres değildir; operatör veya VPN çıkışına göre değişebilir.</span>
           </div>
           <div class="ops-filter-row">
             <select class="ops-field" id="archivePublicAnalyticsRange" onchange="setArchivePublicAnalyticsRange(this.value)">
@@ -8111,6 +8111,18 @@ function publicAnalyticsSourceLabel(source){
     referral:'Diğer siteler'
   }[source]||source||'Bilinmiyor';
 }
+function publicAnalyticsRouteTypeLabel(type){
+  return {
+    home:'Ana sayfa',
+    question:'Soru detayı',
+    archive:'Arşiv',
+    search:'Arama',
+    category:'Kategori',
+    ask:'Soru Sor',
+    account:'Hesabım',
+    info:'Bilgi sayfası'
+  }[type]||type||'Bilinmiyor';
+}
 function publicAnalyticsRouteLabel(path){
   if(!path||path==='/')return 'Ana sayfa';
   if(path.includes('/soru/'))return 'Soru detayı';
@@ -8152,7 +8164,8 @@ function renderArchivePublicAnalytics(){
   }
   if(summary){
     summary.innerHTML=data.available?`
-      <div class="ops-file-summary-item"><strong>${Number(data.totalVisits||0).toLocaleString('tr-TR')}</strong><span>Ziyaret</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.totalVisits||0).toLocaleString('tr-TR')}</strong><span>Toplam ziyaret</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.humanVisits||0).toLocaleString('tr-TR')}</strong><span>İnsan ziyareti</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.uniqueVisitors||0).toLocaleString('tr-TR')}</strong><span>Tekil kişi</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.questionViews||0).toLocaleString('tr-TR')}</strong><span>Soru okuma</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.botVisits||0).toLocaleString('tr-TR')}</strong><span>Bot / ön izleme</span></div>
@@ -8164,10 +8177,16 @@ function renderArchivePublicAnalytics(){
     return;
   }
   grid.innerHTML=`
+    <div class="ops-analytics-card"><h4>Konum Notu</h4><div class="ops-analytics-empty">${esc(data.locationNotice||'Şehir bilgisi IP ağına göre gelir; kesin adres gibi yorumlanmamalıdır.')}</div></div>
     <div class="ops-analytics-card"><h4>Nereden geldiler?</h4>${publicAnalyticsListHtml(data.sourceTypes||[],{label:item=>publicAnalyticsSourceLabel(item.key)})}</div>
     <div class="ops-analytics-card"><h4>Hangi ülkeler?</h4>${publicAnalyticsListHtml(data.countries||[])}</div>
-    <div class="ops-analytics-card"><h4>Hangi şehirler?</h4>${publicAnalyticsListHtml(data.cities||[])}</div>
+    <div class="ops-analytics-card"><h4>Bölgeler</h4>${publicAnalyticsListHtml(data.regions||[])}</div>
+    <div class="ops-analytics-card"><h4>Şehirler (IP ağına göre)</h4>${publicAnalyticsListHtml(data.cities||[])}</div>
+    <div class="ops-analytics-card"><h4>Saat dilimleri</h4>${publicAnalyticsListHtml(data.timezones||[])}</div>
     <div class="ops-analytics-card"><h4>Cihazlar</h4>${publicAnalyticsListHtml(data.devices||[])}</div>
+    <div class="ops-analytics-card"><h4>Tarayıcılar</h4>${publicAnalyticsListHtml(data.browsers||[])}</div>
+    <div class="ops-analytics-card"><h4>İşletim sistemleri</h4>${publicAnalyticsListHtml(data.operatingSystems||[])}</div>
+    <div class="ops-analytics-card"><h4>Sayfa türleri</h4>${publicAnalyticsListHtml(data.routeTypes||[],{label:item=>publicAnalyticsRouteTypeLabel(item.key)})}</div>
     <div class="ops-analytics-card"><h4>En çok açılan sayfalar</h4>${publicAnalyticsListHtml(data.pages||[],{label:item=>publicAnalyticsRouteLabel(item.key)})}</div>
     <div class="ops-analytics-card"><h4>En çok okunan sorular</h4>${publicAnalyticsListHtml(data.questions||[])}</div>
     <div class="ops-analytics-card"><h4>Referans kaynaklar</h4>${publicAnalyticsListHtml(data.referrers||[])}</div>
@@ -8175,7 +8194,7 @@ function renderArchivePublicAnalytics(){
       <div class="ops-analytics-row">
         <strong title="${esc(item.path||'/')}">${esc(publicAnalyticsRouteLabel(item.path||'/'))}</strong>
         <span>${esc(publicAnalyticsSourceLabel(item.sourceType))}</span>
-        <div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px">${esc([publicAnalyticsDate(item.createdAt),item.city,item.country,item.deviceType].filter(Boolean).join(' · '))}</div>
+        <div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px">${esc([publicAnalyticsDate(item.createdAt),item.city,item.region,item.country,item.timezone,item.deviceType,item.browserName,item.osName].filter(Boolean).join(' · '))}</div>
       </div>
     `).join('')}</div>`:'<div class="ops-analytics-empty">Henüz ziyaret yok.</div>'}</div>
   `;

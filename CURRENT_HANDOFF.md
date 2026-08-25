@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-26 Codex Public Analitik Konum ve Kırılım Netleştirmesi
+
+- Canlı site duyurusu öncesinde kullanıcı, şehir bilgisinin sürekli Antalya görünmesini ve
+  verinin sağlıklı olup olmadığını sorguladı.
+- Mevcut ziyaret sistemi ham IP saklamaz; `public_visit_events` içinde IP yalnız gizli hash
+  olarak tutulur. Ülke/bölge/şehir verisi Vercel'in IP ağı başlıklarından gelir; bu bilgi kesin
+  adres değil, operatör/VPN/proxy çıkışına bağlı yaklaşık ağ konumudur.
+- Admin `Canlı Site > Ziyaret İstatistikleri` ekranındaki dil bu nedenle netleştirildi:
+  şehir artık `Şehirler (IP ağına göre)` olarak gösterilir ve ekranda konum notu görünür.
+- Analitik çıktısı genişletildi: toplam ziyaret yanında `İnsan ziyareti`, bölge, saat dilimi,
+  tarayıcı, işletim sistemi ve sayfa türü kırılımları eklendi. Son ziyaret satırları artık şehir,
+  bölge, ülke, saat dilimi, cihaz, tarayıcı ve işletim sistemi bilgisini birlikte gösterir.
+- Bu adım public kullanıcı ekranını, SEO meta alanlarını, public veri senkronunu ve `/admin`
+  güvenlik başlıklarını değiştirmez.
+
 ## 2026-08-23 Codex Public SEO/Hız İyileştirme Turu
 
 - Public hız auditinde canlı CSS ve görsellerin `Cache-Control: public, max-age=0` döndüğü
