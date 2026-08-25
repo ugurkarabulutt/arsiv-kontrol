@@ -100,6 +100,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /X-Public-Navigation/);
   assert.match(home, /data-pa-navigating/);
   assert.match(home, /data-pa-theme-boot/);
+  assert.match(home, /<html lang="tr" data-theme="dark"/);
+  assert.match(home, /name="theme-color" content="#0D1412"/);
   assert.match(home, /freezeRouteBackground/);
   assert.match(home, /replacePublicArchiveShell/);
   assert.match(home, /new DOMParser/);

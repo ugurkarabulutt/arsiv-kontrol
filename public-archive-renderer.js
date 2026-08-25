@@ -1684,11 +1684,11 @@ function renderShell({ title, description, active, content, status = 200, questi
     publicArchiveSiteStructuredData(),
     ...(Array.isArray(structuredData) ? structuredData : structuredData ? [structuredData] : [])
   ];
-  const themeBootScript = `(function(){try{var saved=localStorage.getItem('dsca-theme');var preferred=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var theme=saved==='dark'||saved==='light'?saved:preferred;var root=document.documentElement;var bg=theme==='dark'?'#0D1412':'#F7F3EA';root.setAttribute('data-theme',theme);root.style.backgroundColor=bg;root.style.colorScheme=theme;var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',bg);}catch(error){document.documentElement.style.backgroundColor='#0D1412';}})();`;
+  const themeBootScript = `(function(){try{var saved=localStorage.getItem('dsca-theme');var theme=saved==='dark'||saved==='light'?saved:'dark';var root=document.documentElement;var bg=theme==='dark'?'#0D1412':'#F7F3EA';root.setAttribute('data-theme',theme);root.style.backgroundColor=bg;root.style.colorScheme=theme;var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',bg);}catch(error){document.documentElement.style.backgroundColor='#0D1412';}})();`;
   return {
     status,
     html: `<!doctype html>
-<html lang="tr" data-theme="light" style="background-color:#0D1412;color-scheme:dark">
+<html lang="tr" data-theme="dark" style="background-color:#0D1412;color-scheme:dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1718,7 +1718,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="twitter:description" content="${escapeHtml(safeDescription)}">
   <meta name="twitter:image" content="${escapeHtml(shareImageHref)}">
   <meta name="twitter:image:alt" content="${escapeHtml(publicAppName)}">
-  <meta name="theme-color" content="#F7F3EA">
+  <meta name="theme-color" content="#0D1412">
   <script data-pa-theme-boot>${themeBootScript}</script>
   <title>${escapeHtml(safeTitle)}</title>
   ${structuredItems.map(jsonLdScript).join('\n  ')}
@@ -1735,8 +1735,7 @@ function renderShell({ title, description, active, content, status = 200, questi
     (function(){
       try {
         var saved = localStorage.getItem('dsca-theme');
-        var preferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        var theme = saved === 'dark' || saved === 'light' ? saved : preferred;
+        var theme = saved === 'dark' || saved === 'light' ? saved : 'dark';
         document.documentElement.setAttribute('data-theme', theme);
         document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#0D1412' : '#F7F3EA');
       } catch (error) {}
@@ -2628,7 +2627,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         else window.setTimeout(warm, 700);
       }
       function initializePublicArchivePage() {
-        applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+        applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
         bindThemeControls();
         bindCopyControls();
         bindShareControls();

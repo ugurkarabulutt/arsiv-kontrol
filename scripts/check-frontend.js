@@ -1393,7 +1393,7 @@ for (const marker of ['bindShrinkingHeader', 'data-pa-scrolled', 'bindPublicAuth
 for (const marker of ['loadPublicUserQuestions', 'publicSubmissionCardHtml', 'data-account-notice-dot', 'data-mark-question-seen', 'window.__publicArchiveSession']) {
   assert(publicRendererSource.includes(marker), `Public kullanici soru takip JS marker eksik: ${marker}`);
 }
-for (const marker of ['data-pa-theme-boot', 'freezeRouteBackground', 'style="background-color:#0D1412;color-scheme:dark"']) {
+for (const marker of ['data-pa-theme-boot', 'data-theme="dark"', 'freezeRouteBackground', 'style="background-color:#0D1412;color-scheme:dark"']) {
   assert(publicRendererSource.includes(marker), `Public sayfa gecisi tema/zemin marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
