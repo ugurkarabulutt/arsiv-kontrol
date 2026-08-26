@@ -22,6 +22,9 @@
   değiştirmemeli; yalnız görünmeyen harfleri göstermek için yatay şeridi kaydırmalı. Oklar bu
   nedenle yeniden `button` yapıldı, link davranışı kaldırıldı ve kaydırma mesafesi tek tıkta
   sona fırlamayacak şekilde kısıldı.
+- Kaydırma davranışı `scrollTo/scrollBy` yerine doğrudan `scrollLeft = hedef` ile verilir;
+  CSS `scroll-behavior: smooth` ile yumuşak görünür. Canlı testte URL ve aktif harf sabit
+  kalmalı, yalnız şeritte görünen harf aralığı değişmelidir.
 - Kullanıcı `/arsiv` sorgusuz açıldığında şeridin yine en sona, `#` harfine gittiğini bildirdi.
   Kök sebep: boş `harf` değeri de `#` gibi normalize ediliyordu. Boş harf artık “harf
   seçilmedi” kabul edilir ve ilk gerçek harf seçilir; `#` yalnız açıkça `harf=#` ile seçilirse

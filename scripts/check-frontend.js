@@ -1471,7 +1471,7 @@ for (const marker of ['data-pa-theme-boot', 'data-theme="dark"', 'freezeRouteBac
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kategori slider CSS marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-alpha-index', '.pa-alpha-shell', '.pa-alpha-nav', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
+for (const marker of ['.pa-alpha-index', '.pa-alpha-shell', '.pa-alpha-nav', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'scroll-behavior: smooth', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
   assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini CSS marker eksik: ${marker}`);
 }
 for (const marker of ['ARCHIVE_LETTER_ALIASES', 'normalizeArchiveLetter', 'bindArchiveAlphaIndexes', 'data-alpha-scroll']) {

@@ -1878,11 +1878,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           function scrollDirection(direction) {
             var amount = Math.min(340, Math.max(180, Math.round(track.clientWidth * 0.42)));
             var target = Math.min(maxScroll(), Math.max(0, track.scrollLeft + direction * amount));
-            if (typeof track.scrollTo === 'function') {
-              track.scrollTo({ left: target, behavior: 'smooth' });
-            } else {
-              track.scrollLeft = target;
-            }
+            track.scrollLeft = target;
             window.clearTimeout(scrollTimer);
             scrollTimer = window.setTimeout(updateButtons, 320);
           }
@@ -1899,8 +1895,14 @@ function renderShell({ title, description, active, content, status = 200, questi
             try { active.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (error) {}
             window.setTimeout(updateButtons, 120);
           }
-          function onPreviousClick() { scrollDirection(-1); }
-          function onNextClick() { scrollDirection(1); }
+          function onPreviousClick(event) {
+            event.preventDefault();
+            scrollDirection(-1);
+          }
+          function onNextClick(event) {
+            event.preventDefault();
+            scrollDirection(1);
+          }
           if (previous) previous.addEventListener('click', onPreviousClick);
           if (next) next.addEventListener('click', onNextClick);
           track.addEventListener('scroll', onScroll, { passive: true });
