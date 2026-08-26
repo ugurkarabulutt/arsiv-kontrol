@@ -25,6 +25,9 @@
 - Kaydırma davranışı `scrollTo/scrollBy` yerine doğrudan `scrollLeft = hedef` ile verilir;
   CSS `scroll-behavior: smooth` ile yumuşak görünür. Canlı testte URL ve aktif harf sabit
   kalmalı, yalnız şeritte görünen harf aralığı değişmelidir.
+- Sol kaydırma kutusunda ikon görünmediği bildirildi. Kök sebep `arrow-left.svg` asset'inin
+  eksik olmasıydı; sağ okla aynı çizgi stilinde `public-archive-assets/icons/arrow-left.svg`
+  eklendi ve frontend guard dosya varlığını kontrol eder.
 - Kullanıcı `/arsiv` sorgusuz açıldığında şeridin yine en sona, `#` harfine gittiğini bildirdi.
   Kök sebep: boş `harf` değeri de `#` gibi normalize ediliyordu. Boş harf artık “harf
   seçilmedi” kabul edilir ve ilk gerçek harf seçilir; `#` yalnız açıkça `harf=#` ile seçilirse

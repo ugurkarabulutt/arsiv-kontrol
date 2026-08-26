@@ -948,6 +948,7 @@ assert(publicCss.includes('--pa-primary: #145A3A') && publicCss.includes('--pa-p
 for (const asset of [
   'assets/hero-open-book-warm.jpg',
   'icons/search.svg',
+  'icons/arrow-left.svg',
   'icons/arrow-right.svg',
   'icons/user.svg',
   'icons/home.svg',
@@ -962,6 +963,7 @@ for (const marker of [
   'public-archive-assets',
   'hero-open-book-warm.jpg',
   "iconSvg('search')",
+  "iconSvg('arrow-left')",
   "iconSvg('arrow-right')",
   "iconSvg('user')",
   "ask: 'edit'",
