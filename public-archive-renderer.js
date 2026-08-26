@@ -1158,7 +1158,7 @@ function archiveCategoryIndex(query = {}) {
   return {
     ...state,
     html: `
-      <div class="pa-alpha-index" aria-label="Alfabetik kategori dizini">
+      <div class="pa-alpha-index" data-alpha-index aria-label="Alfabetik kategori dizini">
         <div class="pa-alpha-shell">
           <button class="pa-alpha-nav" type="button" data-alpha-scroll="prev" aria-label="Önceki harfler">${iconSvg('arrow-left')}</button>
           <div class="pa-alpha-track" data-alpha-track role="list" aria-label="Kategori harfleri">

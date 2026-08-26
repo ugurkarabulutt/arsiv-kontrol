@@ -12,6 +12,10 @@
 - Şapkalı harf başlangıçları ana harfte toplandı: `Â -> A`, `Ê -> E`, `Î -> İ`, `Ô -> O`,
   `Û -> U`. Böylece `Âdem` gibi kategoriler ayrı `Â` harfi altında değil, `A` harfi altında
   görünür; `?harf=Â` gibi eski/manuel linkler de `A` seçimine normalize edilir.
+- İlk canlı doğrulamada HTML markerları görülse de gerçek tıklama testinde okların çalışmadığı
+  tespit edildi. Kök sebep: JS bağlayıcısı `[data-alpha-index]` arıyor fakat markup yalnız
+  `pa-alpha-index` class'ı basıyordu. Markup'a `data-alpha-index` eklendi ve frontend guard
+  artık bu işareti zorunlu kontrol eder.
 - Frontend guard ve renderer testleri harf okları, şapkalı harf normalizasyonu ve CSS/JS
   markerlarını doğrulayacak şekilde güncellendi.
 
