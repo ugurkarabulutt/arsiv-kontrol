@@ -1999,11 +1999,13 @@ a.pa-chip:hover,
   transform: translateY(-1px);
 }
 
-.pa-alpha-nav:disabled {
+.pa-alpha-nav:disabled,
+.pa-alpha-nav.is-disabled {
   color: var(--pa-text-3);
   opacity: 0.34;
   cursor: default;
   transform: none;
+  pointer-events: none;
 }
 
 .pa-alpha-nav svg {

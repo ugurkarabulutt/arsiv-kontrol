@@ -213,6 +213,8 @@ test('archive and account routes are explicit public preview pages', () => {
   const hArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H' }).html;
   assert.match(hArchive, /H harfiyle başlayan kategoriler/);
   assert.match(hArchive, /href="\/public-preview\/arsiv\?harf=H&amp;kategori=hidayet#sorular"/);
+  assert.match(hArchive, /class="pa-alpha-nav" href="\/public-preview\/arsiv\?harf=[^"]+" data-alpha-scroll="prev"/);
+  assert.match(hArchive, /class="pa-alpha-nav" href="\/public-preview\/arsiv\?harf=[^"]+" data-alpha-scroll="next"/);
 
   const circumflexArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'Â' }, {
     ...publicArchiveFixtures,

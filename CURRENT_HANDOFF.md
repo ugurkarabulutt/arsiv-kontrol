@@ -16,6 +16,9 @@
   tespit edildi. Kök sebep: JS bağlayıcısı `[data-alpha-index]` arıyor fakat markup yalnız
   `pa-alpha-index` class'ı basıyordu. Markup'a `data-alpha-index` eklendi ve frontend guard
   artık bu işareti zorunlu kontrol eder.
+- Masaüstü okları ayrıca gerçek harf linklerine çevrildi. Böylece sağ/sol oklar JS kaydırma
+  çalışmasa bile aktif harfi bir önceki/sonraki harfe taşıyabilir; mobilde dokunarak kaydırma
+  davranışı değişmez.
 - Frontend guard ve renderer testleri harf okları, şapkalı harf normalizasyonu ve CSS/JS
   markerlarını doğrulayacak şekilde güncellendi.
 

@@ -1155,18 +1155,24 @@ function archiveCategoryIndexState(query = {}) {
 function archiveCategoryIndex(query = {}) {
   const state = archiveCategoryIndexState(query);
   if (!state.letters.length) return { html: '', selectedCategory: null, activeLetter: '' };
+  const activeLetterIndex = state.letters.indexOf(state.activeLetter);
+  const previousLetter = activeLetterIndex > 0 ? state.letters[activeLetterIndex - 1] : '';
+  const nextLetter = activeLetterIndex >= 0 && activeLetterIndex < state.letters.length - 1 ? state.letters[activeLetterIndex + 1] : '';
+  const alphaNav = (direction, letter) => letter
+    ? `<a class="pa-alpha-nav" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}" data-alpha-scroll="${direction}" aria-label="${direction === 'prev' ? 'Önceki harfler' : 'Sonraki harfler'}">${iconSvg(direction === 'prev' ? 'arrow-left' : 'arrow-right')}</a>`
+    : `<span class="pa-alpha-nav is-disabled" data-alpha-scroll="${direction}" aria-hidden="true">${iconSvg(direction === 'prev' ? 'arrow-left' : 'arrow-right')}</span>`;
   return {
     ...state,
     html: `
       <div class="pa-alpha-index" data-alpha-index aria-label="Alfabetik kategori dizini">
         <div class="pa-alpha-shell">
-          <button class="pa-alpha-nav" type="button" data-alpha-scroll="prev" aria-label="Önceki harfler">${iconSvg('arrow-left')}</button>
+          ${alphaNav('prev', previousLetter)}
           <div class="pa-alpha-track" data-alpha-track role="list" aria-label="Kategori harfleri">
             ${state.letters.map(letter => `
               <a class="pa-alpha-letter${letter === state.activeLetter ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}"${letter === state.activeLetter ? ' aria-current="true"' : ''} role="listitem">${escapeHtml(letter)}</a>
             `).join('')}
           </div>
-          <button class="pa-alpha-nav" type="button" data-alpha-scroll="next" aria-label="Sonraki harfler">${iconSvg('arrow-right')}</button>
+          ${alphaNav('next', nextLetter)}
         </div>
         <div class="pa-letter-panel">
           <div class="pa-letter-head">
@@ -1869,8 +1875,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           function updateButtons() {
             var max = maxScroll();
-            if (previous) previous.disabled = track.scrollLeft <= 2;
-            if (next) next.disabled = track.scrollLeft >= max - 2;
+            if (previous && previous.tagName === 'BUTTON') previous.disabled = track.scrollLeft <= 2;
+            if (next && next.tagName === 'BUTTON') next.disabled = track.scrollLeft >= max - 2;
           }
           function scrollDirection(direction) {
             var amount = Math.max(220, Math.round(track.clientWidth * 0.72));
@@ -1897,8 +1903,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           function onPreviousClick() { scrollDirection(-1); }
           function onNextClick() { scrollDirection(1); }
-          if (previous) previous.addEventListener('click', onPreviousClick);
-          if (next) next.addEventListener('click', onNextClick);
+          if (previous && !previous.classList.contains('is-disabled')) previous.addEventListener('click', onPreviousClick);
+          if (next && !next.classList.contains('is-disabled')) next.addEventListener('click', onNextClick);
           track.addEventListener('scroll', onScroll, { passive: true });
           window.addEventListener('resize', onResize, { passive: true });
           updateButtons();
@@ -1909,8 +1915,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           addPageCleanup(function(){
             window.clearTimeout(scrollTimer);
-            if (previous) previous.removeEventListener('click', onPreviousClick);
-            if (next) next.removeEventListener('click', onNextClick);
+            if (previous && !previous.classList.contains('is-disabled')) previous.removeEventListener('click', onPreviousClick);
+            if (next && !next.classList.contains('is-disabled')) next.removeEventListener('click', onNextClick);
             track.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onResize);
           });

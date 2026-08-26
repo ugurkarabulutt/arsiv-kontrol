@@ -1333,6 +1333,8 @@ for (const forbidden of ["publicArchiveSitemapEntry('/arama'", "publicArchiveSit
 for (const marker of ['pa-alpha-index', 'data-alpha-index', 'pa-alpha-shell', 'data-alpha-track', 'data-alpha-scroll="prev"', 'data-alpha-scroll="next"', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
   assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
 }
+assert(/class="pa-alpha-nav" href="\/public-preview\/arsiv\?harf=[^"]+" data-alpha-scroll="next"/.test(archivePreview), 'Public arsiv harf ileri oku gercek harf linki tasimali.');
+assert(archivePreview.includes('pa-alpha-nav is-disabled'), 'Public arsiv ilk harfte geri oku pasif gorunmeli.');
 for (const marker of ['ARCHIVE_PAGE_SIZE', 'archivePaginationState', 'archivePagination(', 'pa-pagination', 'pa-pagination-actions', 'Sayfa ', 'soru gösteriliyor', 'sayfa: req.query.sayfa']) {
   assert(publicRendererSource.includes(marker) || publicArchiveCss.includes(marker), `Public arsiv sayfalama marker eksik: ${marker}`);
 }
