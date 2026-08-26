@@ -1330,7 +1330,7 @@ for (const marker of ['publicArchiveCategorySeoIndexable', ".select('slug,catego
 for (const forbidden of ["publicArchiveSitemapEntry('/arama'", "publicArchiveSitemapEntry('/soru-sor'", "publicArchiveSitemapEntry('/gizlilik'", "publicArchiveSitemapEntry('/kullanim-kosullari'"]) {
   assert(!server.includes(forbidden), `SEO disi yardimci sayfa sitemap icinde kalmamali: ${forbidden}`);
 }
-for (const marker of ['pa-alpha-index', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
+for (const marker of ['pa-alpha-index', 'pa-alpha-shell', 'data-alpha-track', 'data-alpha-scroll="prev"', 'data-alpha-scroll="next"', 'pa-alpha-track', 'pa-alpha-letter', 'pa-letter-panel', 'pa-letter-search', 'Bu harfte ara...', 'A harfiyle başlayan kategoriler', '/public-preview/arsiv?harf=A']) {
   assert(archivePreview.includes(marker), `Public arsiv alfabetik kategori dizini eksik: ${marker}`);
 }
 for (const marker of ['ARCHIVE_PAGE_SIZE', 'archivePaginationState', 'archivePagination(', 'pa-pagination', 'pa-pagination-actions', 'Sayfa ', 'soru gösteriliyor', 'sayfa: req.query.sayfa']) {
@@ -1340,6 +1340,25 @@ assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keş
 assert(!archivePreview.includes('<h2>Kategoriler</h2>') && !archivePreview.includes('<h2>Kavramlar</h2>') && !archivePreview.includes('/public-preview/konular'), 'Public arsiv sayfasinda kategori/kavram vitrinleri gorunmemeli.');
 const hArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H' }).html;
 assert(hArchivePreview.includes('H harfiyle başlayan kategoriler') && hArchivePreview.includes('/public-preview/arsiv?harf=H&amp;kategori=hidayet#sorular'), 'Public arsiv H harfi kategori listesi calismali.');
+const circumflexArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'Â' }, {
+  ...publicArchiveFixtures,
+  categories: [
+    { slug: 'adem', name: 'Âdem', description: 'Âdem soruları.', topicSlugs: [] },
+    { slug: 'ahlak', name: 'Ahlak', description: 'Ahlak soruları.', topicSlugs: [] }
+  ],
+  topics: [],
+  qa: [{
+    slug: 'adem-sorusu',
+    title: 'Âdem hakkında soru',
+    question: 'Âdem hakkında soru',
+    answer: ['Cevap metni.'],
+    categorySlug: 'adem',
+    topicSlugs: [],
+    publishedAt: '2026-08-23T00:00:00.000Z',
+    updatedAt: '2026-08-23T00:00:00.000Z'
+  }]
+}).html;
+assert(circumflexArchivePreview.includes('A harfiyle başlayan kategoriler') && circumflexArchivePreview.includes('Âdem') && !circumflexArchivePreview.includes('Â harfiyle başlayan kategoriler') && !circumflexArchivePreview.includes('harf=Â'), 'Public arsiv sapkali harfleri ana harfte birlestirmeli.');
 const filteredArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H', kategori: 'hidayet' }).html;
 assert(filteredArchivePreview.includes('Hidayet soruları') && filteredArchivePreview.includes('Tümünü göster') && !filteredArchivePreview.includes('<h2>Tüm Sorular</h2>'), 'Public arsiv kategori seciminde soru listesi filtrelenmeli.');
 const searchPreview = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' }).html;
@@ -1415,8 +1434,11 @@ for (const marker of ['data-pa-theme-boot', 'data-theme="dark"', 'freezeRouteBac
 for (const marker of ['.pa-concept-track', 'overflow: hidden;', 'touch-action: pan-y;', 'mask-image: linear-gradient', '.pa-concept-rail', 'will-change: transform;', '.pa-concept-pill']) {
   assert(publicCss.includes(marker), `Kategori slider CSS marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-alpha-index', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
+for (const marker of ['.pa-alpha-index', '.pa-alpha-shell', '.pa-alpha-nav', '.pa-alpha-track', 'scroll-snap-type: x proximity', 'mask-image: linear-gradient', '.pa-alpha-letter', '.pa-letter-search', '.pa-letter-categories', '.pa-index-category']) {
   assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini CSS marker eksik: ${marker}`);
+}
+for (const marker of ['ARCHIVE_LETTER_ALIASES', 'normalizeArchiveLetter', 'bindArchiveAlphaIndexes', 'data-alpha-scroll']) {
+  assert(publicRendererSource.includes(marker), `Arsiv alfabetik kategori dizini JS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-archive-hero .pa-collection-meta span', 'border-radius: 11px', 'border-radius: 12px', 'border-radius: 14px']) {
   assert(publicCss.includes(marker), `Arsiv alfabetik kategori dizini koseli stil marker eksik: ${marker}`);

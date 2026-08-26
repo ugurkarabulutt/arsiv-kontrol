@@ -214,6 +214,28 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(hArchive, /H harfiyle başlayan kategoriler/);
   assert.match(hArchive, /href="\/public-preview\/arsiv\?harf=H&amp;kategori=hidayet#sorular"/);
 
+  const circumflexArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'Â' }, {
+    ...publicArchiveFixtures,
+    categories: [
+      { slug: 'adem', name: 'Âdem', description: 'Âdem soruları.', topicSlugs: [] },
+      { slug: 'ahlak', name: 'Ahlak', description: 'Ahlak soruları.', topicSlugs: [] }
+    ],
+    topics: [],
+    qa: [{
+      slug: 'adem-sorusu',
+      title: 'Âdem hakkında soru',
+      question: 'Âdem hakkında soru',
+      answer: ['Cevap metni.'],
+      categorySlug: 'adem',
+      topicSlugs: [],
+      publishedAt: '2026-08-23T00:00:00.000Z',
+      updatedAt: '2026-08-23T00:00:00.000Z'
+    }]
+  }).html;
+  assert.match(circumflexArchive, /A harfiyle başlayan kategoriler/);
+  assert.match(circumflexArchive, /Âdem/);
+  assert.doesNotMatch(circumflexArchive, /Â harfiyle başlayan kategoriler|harf=Â/);
+
   const filteredArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H', kategori: 'hidayet' }).html;
   assert.match(filteredArchive, /Hidayet soruları/);
   assert.match(filteredArchive, /Tümünü göster/);

@@ -1958,6 +1958,14 @@ a.pa-chip:hover,
   margin-top: 24px;
 }
 
+.pa-alpha-shell {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .pa-alpha-track {
   display: flex;
   gap: 8px;
@@ -1968,6 +1976,39 @@ a.pa-chip:hover,
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   mask-image: linear-gradient(90deg, transparent 0, rgb(0 0 0) 20px, rgb(0 0 0) calc(100% - 28px), transparent 100%);
+}
+
+.pa-alpha-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--pa-primary);
+  background: color-mix(in srgb, var(--pa-surface) 86%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgb(20 40 28 / 0.08);
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+}
+
+.pa-alpha-nav:hover {
+  color: #FFFFFF;
+  background: var(--pa-primary);
+  transform: translateY(-1px);
+}
+
+.pa-alpha-nav:disabled {
+  color: var(--pa-text-3);
+  opacity: 0.34;
+  cursor: default;
+  transform: none;
+}
+
+.pa-alpha-nav svg {
+  width: 18px;
+  height: 18px;
 }
 
 .pa-alpha-track::-webkit-scrollbar {
@@ -3007,6 +3048,14 @@ a.pa-chip:hover,
   .pa-alpha-index {
     gap: 12px;
     margin-top: 20px;
+  }
+
+  .pa-alpha-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pa-alpha-nav {
+    display: none;
   }
 
   .pa-alpha-track {

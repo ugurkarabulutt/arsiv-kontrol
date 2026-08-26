@@ -1024,14 +1024,27 @@ function searchResults(query) {
 }
 
 const trCollator = new Intl.Collator('tr-TR', { numeric: true, sensitivity: 'base' });
+const ARCHIVE_LETTER_ALIASES = {
+  'Â': 'A',
+  'Ê': 'E',
+  'Î': 'İ',
+  'Ô': 'O',
+  'Û': 'U'
+};
 
 function sortedCategories() {
   return publicCategories().sort((a, b) => trCollator.compare(a.name || '', b.name || ''));
 }
 
+function normalizeArchiveLetter(value = '') {
+  const firstLetter = Array.from(String(value || '').trim()).find(char => /\p{L}/u.test(char));
+  if (!firstLetter) return '#';
+  const upper = firstLetter.toLocaleUpperCase('tr-TR');
+  return ARCHIVE_LETTER_ALIASES[upper] || upper;
+}
+
 function categoryInitial(category) {
-  const firstLetter = Array.from(String(category?.name || '').trim()).find(char => /\p{L}/u.test(char));
-  return firstLetter ? firstLetter.toLocaleUpperCase('tr-TR') : '#';
+  return normalizeArchiveLetter(category?.name || '');
 }
 
 function compareArchiveLetters(a, b) {
@@ -1118,7 +1131,7 @@ function archiveCategoryIndexState(query = {}) {
   const letters = [...categoriesByLetter.keys()].sort(compareArchiveLetters);
   const queryCategory = String(query.kategori || '').trim();
   const selectedCategory = queryCategory ? bySlug(categories, queryCategory) : null;
-  const queryLetter = String(query.harf || '').trim().toLocaleUpperCase('tr-TR');
+  const queryLetter = normalizeArchiveLetter(query.harf || '');
   const activeLetter = selectedCategory
     ? categoryInitial(selectedCategory)
     : letters.includes(queryLetter)
@@ -1146,10 +1159,14 @@ function archiveCategoryIndex(query = {}) {
     ...state,
     html: `
       <div class="pa-alpha-index" aria-label="Alfabetik kategori dizini">
-        <div class="pa-alpha-track" role="list" aria-label="Kategori harfleri">
-          ${state.letters.map(letter => `
-            <a class="pa-alpha-letter${letter === state.activeLetter ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}"${letter === state.activeLetter ? ' aria-current="true"' : ''} role="listitem">${escapeHtml(letter)}</a>
-          `).join('')}
+        <div class="pa-alpha-shell">
+          <button class="pa-alpha-nav" type="button" data-alpha-scroll="prev" aria-label="Önceki harfler">${iconSvg('arrow-left')}</button>
+          <div class="pa-alpha-track" data-alpha-track role="list" aria-label="Kategori harfleri">
+            ${state.letters.map(letter => `
+              <a class="pa-alpha-letter${letter === state.activeLetter ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}"${letter === state.activeLetter ? ' aria-current="true"' : ''} role="listitem">${escapeHtml(letter)}</a>
+            `).join('')}
+          </div>
+          <button class="pa-alpha-nav" type="button" data-alpha-scroll="next" aria-label="Sonraki harfler">${iconSvg('arrow-right')}</button>
         </div>
         <div class="pa-letter-panel">
           <div class="pa-letter-head">
@@ -1835,6 +1852,67 @@ function renderShell({ title, description, active, content, status = 200, questi
             event.preventDefault();
             var href = card.getAttribute('data-card-href');
             if (href) window.location.href = href;
+          });
+        });
+      }
+      function bindArchiveAlphaIndexes() {
+        document.querySelectorAll('[data-alpha-index]').forEach(function(index){
+          if (index.dataset.alphaBound === 'true') return;
+          index.dataset.alphaBound = 'true';
+          var track = index.querySelector('[data-alpha-track]');
+          var previous = index.querySelector('[data-alpha-scroll="prev"]');
+          var next = index.querySelector('[data-alpha-scroll="next"]');
+          if (!track) return;
+          var scrollTimer = 0;
+          function maxScroll() {
+            return Math.max(0, track.scrollWidth - track.clientWidth);
+          }
+          function updateButtons() {
+            var max = maxScroll();
+            if (previous) previous.disabled = track.scrollLeft <= 2;
+            if (next) next.disabled = track.scrollLeft >= max - 2;
+          }
+          function scrollDirection(direction) {
+            var amount = Math.max(220, Math.round(track.clientWidth * 0.72));
+            if (typeof track.scrollBy === 'function') {
+              track.scrollBy({ left: direction * amount, behavior: 'smooth' });
+            } else {
+              track.scrollLeft += direction * amount;
+            }
+            window.clearTimeout(scrollTimer);
+            scrollTimer = window.setTimeout(updateButtons, 320);
+          }
+          function onScroll() {
+            window.clearTimeout(scrollTimer);
+            scrollTimer = window.setTimeout(updateButtons, 80);
+          }
+          function onResize() {
+            updateButtons();
+          }
+          function centerActiveLetter() {
+            var active = track.querySelector('.pa-alpha-letter.is-active');
+            if (!active) return updateButtons();
+            try { active.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (error) {}
+            window.setTimeout(updateButtons, 120);
+          }
+          function onPreviousClick() { scrollDirection(-1); }
+          function onNextClick() { scrollDirection(1); }
+          if (previous) previous.addEventListener('click', onPreviousClick);
+          if (next) next.addEventListener('click', onNextClick);
+          track.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('resize', onResize, { passive: true });
+          updateButtons();
+          if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(centerActiveLetter);
+          } else {
+            window.setTimeout(centerActiveLetter, 0);
+          }
+          addPageCleanup(function(){
+            window.clearTimeout(scrollTimer);
+            if (previous) previous.removeEventListener('click', onPreviousClick);
+            if (next) next.removeEventListener('click', onNextClick);
+            track.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onResize);
           });
         });
       }
@@ -2640,6 +2718,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         loadReadCounts();
         trackQuestionRead();
         trackPublicVisit();
+        bindArchiveAlphaIndexes();
         bindConceptSliders();
         bindActiveStatsCounters();
         bindScrollTopControl();

@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-27 Codex Public Arşiv Harf Şeridi Düzeltmesi
+
+- Kullanıcı masaüstü arşiv sayfasında alfabetik harf şeridinin `M` sonrasına görünür şekilde
+  ilerlemediğini, yan okla devam edemediğini; telefonda ise elle kaydırmanın sorunsuz olduğunu
+  bildirdi.
+- Public arşiv alfabetik dizinine masaüstü için geri/ileri ok kontrolleri eklendi. Oklar harf
+  şeridini parça parça kaydırır, aktif harf açılışta görünür alana alınır ve başa/sona gelince
+  ilgili ok pasifleşir. Mobilde mevcut dokunarak kaydırma davranışı korunur; ekstra ok
+  gösterilmez.
+- Şapkalı harf başlangıçları ana harfte toplandı: `Â -> A`, `Ê -> E`, `Î -> İ`, `Ô -> O`,
+  `Û -> U`. Böylece `Âdem` gibi kategoriler ayrı `Â` harfi altında değil, `A` harfi altında
+  görünür; `?harf=Â` gibi eski/manuel linkler de `A` seçimine normalize edilir.
+- Frontend guard ve renderer testleri harf okları, şapkalı harf normalizasyonu ve CSS/JS
+  markerlarını doğrulayacak şekilde güncellendi.
+
 ## 2026-08-26 Codex Public SEO Index Sinyali Netleştirme
 
 - Canlı SEO kontrolünde `/arama`, `/soru-sor`, `/hesabim` ve `/kategoriler` gibi yardımcı
