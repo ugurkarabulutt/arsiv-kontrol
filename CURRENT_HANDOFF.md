@@ -16,9 +16,12 @@
   tespit edildi. Kök sebep: JS bağlayıcısı `[data-alpha-index]` arıyor fakat markup yalnız
   `pa-alpha-index` class'ı basıyordu. Markup'a `data-alpha-index` eklendi ve frontend guard
   artık bu işareti zorunlu kontrol eder.
-- Masaüstü okları ayrıca gerçek harf linklerine çevrildi. Böylece sağ/sol oklar JS kaydırma
-  çalışmasa bile aktif harfi bir önceki/sonraki harfe taşıyabilir; mobilde dokunarak kaydırma
-  davranışı değişmez.
+- Önceki ara çözümde masaüstü okları gerçek harf linklerine çevrilmişti; bu yaklaşım geri
+  alındı çünkü okların harf seçmesi kullanıcı beklentisine aykırı.
+- Kullanıcı bu davranışın yanlış olduğunu netleştirdi: oklar harf seçmemeli ve URL/aktif harfi
+  değiştirmemeli; yalnız görünmeyen harfleri göstermek için yatay şeridi kaydırmalı. Oklar bu
+  nedenle yeniden `button` yapıldı, link davranışı kaldırıldı ve kaydırma mesafesi tek tıkta
+  sona fırlamayacak şekilde kısıldı.
 - Kullanıcı `/arsiv` sorgusuz açıldığında şeridin yine en sona, `#` harfine gittiğini bildirdi.
   Kök sebep: boş `harf` değeri de `#` gibi normalize ediliyordu. Boş harf artık “harf
   seçilmedi” kabul edilir ve ilk gerçek harf seçilir; `#` yalnız açıkça `harf=#` ile seçilirse

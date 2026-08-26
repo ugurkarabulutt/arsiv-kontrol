@@ -1158,24 +1158,18 @@ function archiveCategoryIndexState(query = {}) {
 function archiveCategoryIndex(query = {}) {
   const state = archiveCategoryIndexState(query);
   if (!state.letters.length) return { html: '', selectedCategory: null, activeLetter: '' };
-  const activeLetterIndex = state.letters.indexOf(state.activeLetter);
-  const previousLetter = activeLetterIndex > 0 ? state.letters[activeLetterIndex - 1] : '';
-  const nextLetter = activeLetterIndex >= 0 && activeLetterIndex < state.letters.length - 1 ? state.letters[activeLetterIndex + 1] : '';
-  const alphaNav = (direction, letter) => letter
-    ? `<a class="pa-alpha-nav" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}" data-alpha-scroll="${direction}" aria-label="${direction === 'prev' ? 'Önceki harfler' : 'Sonraki harfler'}">${iconSvg(direction === 'prev' ? 'arrow-left' : 'arrow-right')}</a>`
-    : `<span class="pa-alpha-nav is-disabled" data-alpha-scroll="${direction}" aria-hidden="true">${iconSvg(direction === 'prev' ? 'arrow-left' : 'arrow-right')}</span>`;
   return {
     ...state,
     html: `
       <div class="pa-alpha-index" data-alpha-index aria-label="Alfabetik kategori dizini">
         <div class="pa-alpha-shell">
-          ${alphaNav('prev', previousLetter)}
+          <button class="pa-alpha-nav" type="button" data-alpha-scroll="prev" aria-label="Önceki harfleri göster">${iconSvg('arrow-left')}</button>
           <div class="pa-alpha-track" data-alpha-track role="list" aria-label="Kategori harfleri">
             ${state.letters.map(letter => `
               <a class="pa-alpha-letter${letter === state.activeLetter ? ' is-active' : ''}" href="${escapeHtml(archiveQueryUrl({ harf: letter }))}"${letter === state.activeLetter ? ' aria-current="true"' : ''} role="listitem">${escapeHtml(letter)}</a>
             `).join('')}
           </div>
-          ${alphaNav('next', nextLetter)}
+          <button class="pa-alpha-nav" type="button" data-alpha-scroll="next" aria-label="Sonraki harfleri göster">${iconSvg('arrow-right')}</button>
         </div>
         <div class="pa-letter-panel">
           <div class="pa-letter-head">
@@ -1878,15 +1872,16 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           function updateButtons() {
             var max = maxScroll();
-            if (previous && previous.tagName === 'BUTTON') previous.disabled = track.scrollLeft <= 2;
-            if (next && next.tagName === 'BUTTON') next.disabled = track.scrollLeft >= max - 2;
+            if (previous) previous.disabled = track.scrollLeft <= 2;
+            if (next) next.disabled = track.scrollLeft >= max - 2;
           }
           function scrollDirection(direction) {
-            var amount = Math.max(220, Math.round(track.clientWidth * 0.72));
-            if (typeof track.scrollBy === 'function') {
-              track.scrollBy({ left: direction * amount, behavior: 'smooth' });
+            var amount = Math.min(340, Math.max(180, Math.round(track.clientWidth * 0.42)));
+            var target = Math.min(maxScroll(), Math.max(0, track.scrollLeft + direction * amount));
+            if (typeof track.scrollTo === 'function') {
+              track.scrollTo({ left: target, behavior: 'smooth' });
             } else {
-              track.scrollLeft += direction * amount;
+              track.scrollLeft = target;
             }
             window.clearTimeout(scrollTimer);
             scrollTimer = window.setTimeout(updateButtons, 320);
@@ -1906,8 +1901,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           function onPreviousClick() { scrollDirection(-1); }
           function onNextClick() { scrollDirection(1); }
-          if (previous && !previous.classList.contains('is-disabled')) previous.addEventListener('click', onPreviousClick);
-          if (next && !next.classList.contains('is-disabled')) next.addEventListener('click', onNextClick);
+          if (previous) previous.addEventListener('click', onPreviousClick);
+          if (next) next.addEventListener('click', onNextClick);
           track.addEventListener('scroll', onScroll, { passive: true });
           window.addEventListener('resize', onResize, { passive: true });
           updateButtons();
@@ -1918,8 +1913,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           addPageCleanup(function(){
             window.clearTimeout(scrollTimer);
-            if (previous && !previous.classList.contains('is-disabled')) previous.removeEventListener('click', onPreviousClick);
-            if (next && !next.classList.contains('is-disabled')) next.removeEventListener('click', onNextClick);
+            if (previous) previous.removeEventListener('click', onPreviousClick);
+            if (next) next.removeEventListener('click', onNextClick);
             track.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onResize);
           });
