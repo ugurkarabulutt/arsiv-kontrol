@@ -216,6 +216,43 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(hArchive, /class="pa-alpha-nav" href="\/public-preview\/arsiv\?harf=[^"]+" data-alpha-scroll="prev"/);
   assert.match(hArchive, /class="pa-alpha-nav" href="\/public-preview\/arsiv\?harf=[^"]+" data-alpha-scroll="next"/);
 
+  const numericArchiveData = {
+    ...publicArchiveFixtures,
+    categories: [
+      { slug: 'iki', name: '2', description: '2 başlığı.', topicSlugs: [] },
+      { slug: 'adem', name: 'Âdem', description: 'Âdem soruları.', topicSlugs: [] }
+    ],
+    topics: [],
+    qa: [
+      {
+        slug: 'iki-sorusu',
+        title: '2 hakkında soru',
+        question: '2 hakkında soru',
+        answer: ['Cevap metni.'],
+        categorySlug: 'iki',
+        topicSlugs: [],
+        publishedAt: '2026-08-23T00:00:00.000Z',
+        updatedAt: '2026-08-23T00:00:00.000Z'
+      },
+      {
+        slug: 'adem-sorusu',
+        title: 'Âdem hakkında soru',
+        question: 'Âdem hakkında soru',
+        answer: ['Cevap metni.'],
+        categorySlug: 'adem',
+        topicSlugs: [],
+        publishedAt: '2026-08-23T00:00:00.000Z',
+        updatedAt: '2026-08-23T00:00:00.000Z'
+      }
+    ]
+  };
+  const defaultNumericArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', {}, numericArchiveData).html;
+  assert.match(defaultNumericArchive, /A harfiyle başlayan kategoriler/);
+  assert.doesNotMatch(defaultNumericArchive, /# harfiyle başlayan kategoriler/);
+  const hashArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: '#' }, numericArchiveData).html;
+  assert.match(hashArchive, /# harfiyle başlayan kategoriler/);
+  assert.match(hashArchive, />2<\/strong>/);
+
   const circumflexArchive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'Â' }, {
     ...publicArchiveFixtures,
     categories: [

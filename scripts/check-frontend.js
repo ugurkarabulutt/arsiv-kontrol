@@ -1342,6 +1342,40 @@ assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keş
 assert(!archivePreview.includes('<h2>Kategoriler</h2>') && !archivePreview.includes('<h2>Kavramlar</h2>') && !archivePreview.includes('/public-preview/konular'), 'Public arsiv sayfasinda kategori/kavram vitrinleri gorunmemeli.');
 const hArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'H' }).html;
 assert(hArchivePreview.includes('H harfiyle başlayan kategoriler') && hArchivePreview.includes('/public-preview/arsiv?harf=H&amp;kategori=hidayet#sorular'), 'Public arsiv H harfi kategori listesi calismali.');
+const numericArchiveData = {
+  ...publicArchiveFixtures,
+  categories: [
+    { slug: 'iki', name: '2', description: '2 başlığı.', topicSlugs: [] },
+    { slug: 'adem', name: 'Âdem', description: 'Âdem soruları.', topicSlugs: [] }
+  ],
+  topics: [],
+  qa: [
+    {
+      slug: 'iki-sorusu',
+      title: '2 hakkında soru',
+      question: '2 hakkında soru',
+      answer: ['Cevap metni.'],
+      categorySlug: 'iki',
+      topicSlugs: [],
+      publishedAt: '2026-08-23T00:00:00.000Z',
+      updatedAt: '2026-08-23T00:00:00.000Z'
+    },
+    {
+      slug: 'adem-sorusu',
+      title: 'Âdem hakkında soru',
+      question: 'Âdem hakkında soru',
+      answer: ['Cevap metni.'],
+      categorySlug: 'adem',
+      topicSlugs: [],
+      publishedAt: '2026-08-23T00:00:00.000Z',
+      updatedAt: '2026-08-23T00:00:00.000Z'
+    }
+  ]
+};
+const defaultNumericArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', {}, numericArchiveData).html;
+const hashArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: '#' }, numericArchiveData).html;
+assert(defaultNumericArchivePreview.includes('A harfiyle başlayan kategoriler') && !defaultNumericArchivePreview.includes('# harfiyle başlayan kategoriler'), 'Public arsiv bos harfte # yerine ilk gercek harfle acilmali.');
+assert(hashArchivePreview.includes('# harfiyle başlayan kategoriler') && hashArchivePreview.includes('>2</strong>'), 'Public arsiv # harfi sadece acikca istenirse acilmali.');
 const circumflexArchivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'Â' }, {
   ...publicArchiveFixtures,
   categories: [

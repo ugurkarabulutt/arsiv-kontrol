@@ -1036,15 +1036,17 @@ function sortedCategories() {
   return publicCategories().sort((a, b) => trCollator.compare(a.name || '', b.name || ''));
 }
 
-function normalizeArchiveLetter(value = '') {
-  const firstLetter = Array.from(String(value || '').trim()).find(char => /\p{L}/u.test(char));
-  if (!firstLetter) return '#';
+function normalizeArchiveLetter(value = '', fallback = '') {
+  const rawValue = String(value || '').trim();
+  if (rawValue === '#') return '#';
+  const firstLetter = Array.from(rawValue).find(char => /\p{L}/u.test(char));
+  if (!firstLetter) return fallback;
   const upper = firstLetter.toLocaleUpperCase('tr-TR');
   return ARCHIVE_LETTER_ALIASES[upper] || upper;
 }
 
 function categoryInitial(category) {
-  return normalizeArchiveLetter(category?.name || '');
+  return normalizeArchiveLetter(category?.name || '', '#');
 }
 
 function compareArchiveLetters(a, b) {
@@ -1132,11 +1134,12 @@ function archiveCategoryIndexState(query = {}) {
   const queryCategory = String(query.kategori || '').trim();
   const selectedCategory = queryCategory ? bySlug(categories, queryCategory) : null;
   const queryLetter = normalizeArchiveLetter(query.harf || '');
+  const defaultLetter = letters.find(letter => letter !== '#') || letters[0] || '';
   const activeLetter = selectedCategory
     ? categoryInitial(selectedCategory)
-    : letters.includes(queryLetter)
+    : queryLetter && letters.includes(queryLetter)
       ? queryLetter
-      : letters[0] || '';
+      : defaultLetter;
   const letterCategories = categoriesByLetter.get(activeLetter) || [];
   const categorySearch = String(query.kategoriAra || '').trim();
   const normalizedCategorySearch = normalizeSearchText(categorySearch);

@@ -19,6 +19,10 @@
 - Masaüstü okları ayrıca gerçek harf linklerine çevrildi. Böylece sağ/sol oklar JS kaydırma
   çalışmasa bile aktif harfi bir önceki/sonraki harfe taşıyabilir; mobilde dokunarak kaydırma
   davranışı değişmez.
+- Kullanıcı `/arsiv` sorgusuz açıldığında şeridin yine en sona, `#` harfine gittiğini bildirdi.
+  Kök sebep: boş `harf` değeri de `#` gibi normalize ediliyordu. Boş harf artık “harf
+  seçilmedi” kabul edilir ve ilk gerçek harf seçilir; `#` yalnız açıkça `harf=#` ile seçilirse
+  aktif olur.
 - Frontend guard ve renderer testleri harf okları, şapkalı harf normalizasyonu ve CSS/JS
   markerlarını doğrulayacak şekilde güncellendi.
 
