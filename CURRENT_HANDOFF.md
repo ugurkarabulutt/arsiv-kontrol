@@ -14,6 +14,8 @@
   eski güvenli cümle/kaynak kırma mantığı çalışır.
 - Soru detay ekranındaki cevap paragrafları `white-space: pre-line` ile basılır; böylece paragraf
   içinde kalan anlamlı satır sonları da görselde korunur.
+- Public CSS/görsel asset versiyonu `20260827-answer-format-v1` olarak yükseltildi; immutable
+  cache kullanan tarayıcılarda eski CSS'in tutulması engellenir.
 - Frontend guard, public cevap paragraf üretiminin satırları korumasını ve CSS tarafındaki
   `white-space: pre-line` davranışını zorunlu kontrol edecek şekilde güncellendi.
 - Yerel doğrulama başarılı: `node --check server.js`, `node --check public-archive-renderer.js`,

@@ -127,8 +127,9 @@ tespit edilir).
   içi düzenin `replace(/\s+/g, ' ')` ile ezilebilmesiydi. `publicArchiveParagraphs()` artık
   onaylanan cevap metnindeki anlamlı satırları paragraf blokları olarak korur; yalnız satırsız
   uzun bloklarda eski cümle/kaynak kırma mantığını kullanır. Soru detay ekranındaki cevap
-  paragrafları `white-space: pre-line` ile basılır. Frontend guard bu davranışı kalıcı olarak
-  kontrol eder. Yerel doğrulama: `node --check server.js`, `node --check
+  paragrafları `white-space: pre-line` ile basılır. Public asset versiyonu
+  `20260827-answer-format-v1` olarak yükseltilerek eski CSS cache'i kırılır. Frontend guard bu
+  davranışı kalıcı olarak kontrol eder. Yerel doğrulama: `node --check server.js`, `node --check
   public-archive-renderer.js`, `node scripts/check-frontend.js`, `git diff --check`,
   `npm.cmd run check` (104/104) başarılı. Mevcut canlı kayıtların düzelmesi için deploy
   sonrası onaylı kayıtlardan public senkron yeniden çalıştırılmalıdır.
