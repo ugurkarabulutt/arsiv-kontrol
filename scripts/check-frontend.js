@@ -1039,6 +1039,7 @@ for (const marker of [
   "app.post('/api/public-archive/question-submissions/:id/answer'",
   "app.get('/api/public-archive/sync-status'",
   "app.get('/api/public-archive/content-audit'",
+  "app.get('/api/public-archive/content-review-items'",
   "app.post('/api/public-archive/sync-approved'",
   "app.post('/api/public-archive/refresh-format'",
   "app.post('/api/public-archive/content-audit/hide-copied-questions'",
@@ -1050,6 +1051,9 @@ for (const marker of [
   'refreshPublicArchiveFormattingFromHistory',
   'hidePublicArchiveCopiedQuestionRows',
   'setPublicArchiveContentItemStatus',
+  'publicArchiveContentReviewPage',
+  'publicArchiveContentReviewType',
+  'includeReviewQueue',
   'PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS',
   'contentReviewHiddenCount',
   'publicArchiveWhitespaceComparable',
@@ -1118,8 +1122,12 @@ for (const marker of [
   'openLiveSite',
   'archivePublicContentSummary',
   'archivePublicContentGrid',
+  'archivePublicContentQueuePanel',
+  'archivePublicContentQueueType',
   'questionCopiedIntoAnswerCount',
   'loadArchivePublicContentAudit',
+  'loadArchivePublicContentQueue',
+  'pageArchivePublicContentQueue',
   'previewArchivePublicFormatRefresh',
   'applyArchivePublicFormatRefresh',
   'archivePublicQuestionList',
@@ -1142,6 +1150,7 @@ for (const marker of [
   '/api/public-archive/question-submissions',
   '/api/public-archive/sync-status',
   '/api/public-archive/content-audit',
+  '/api/public-archive/content-review-items',
   '/api/public-archive/sync-approved',
   '/api/public-archive/refresh-format',
   '/api/public-archive/content-audit/hide-copied-questions',
@@ -1151,7 +1160,7 @@ for (const marker of [
   assert(html.includes(marker), `Admin panel public soru talepleri gorunurluk marker eksik: ${marker}`);
 }
 
-for (const marker of ['Soru Taşanları Yayından Al', 'hideArchivePublicCopiedQuestionAnswers', 'setArchivePublicContentStatus', 'Yayından alınan kontrol']) {
+for (const marker of ['Soru Taşanları Yayından Al', 'hideArchivePublicCopiedQuestionAnswers', 'setArchivePublicContentStatus', 'Yayından alınan kontrol', 'Kontrol Listesini Aç', 'Sitede Aç']) {
   assert(html.includes(marker), `Admin panel public icerik kontrol aksiyonu marker eksik: ${marker}`);
 }
 

@@ -2113,6 +2113,22 @@ canvas{width:100%!important;}
             <button class="btn-danger" onclick="hideArchivePublicCopiedQuestionAnswers()">Soru Taşanları Yayından Al</button>
             <span class="ops-status" id="archivePublicContentStatus">Rapor bekleniyor.</span>
           </div>
+          <div class="ops-filter-row">
+            <select id="archivePublicContentQueueType" onchange="setArchivePublicContentQueueType(this.value)">
+              <option value="partial">Kısa / yarım adayları</option>
+              <option value="split">Parçalı cevap adayları</option>
+              <option value="hidden">Yayından alınan kontrol</option>
+              <option value="copied">Soru cevaba taşmış</option>
+              <option value="stale">Public ile kaynak farklı</option>
+              <option value="duplicates">Birebir kopya gruplar</option>
+              <option value="format">Güvenli format adayları</option>
+            </select>
+            <button class="btn-sec" onclick="loadArchivePublicContentQueue(0)">Kontrol Listesini Aç</button>
+            <button class="btn-sec" onclick="pageArchivePublicContentQueue(-1)">Geri</button>
+            <button class="btn-sec" onclick="pageArchivePublicContentQueue(1)">İleri</button>
+            <span class="ops-status" id="archivePublicContentQueueStatus">Liste bekleniyor.</span>
+          </div>
+          <div class="ops-analytics-card" id="archivePublicContentQueuePanel" hidden></div>
           <div class="ops-analytics-grid" id="archivePublicContentGrid"></div>
         </div>
       </div>
@@ -2534,7 +2550,7 @@ let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
 let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
 let archivePublicAnalyticsState={range:'7d',data:null,loading:false};
-let archivePublicContentState={audit:null,refresh:null,loading:false,refreshing:false,acting:false};
+let archivePublicContentState={audit:null,refresh:null,loading:false,refreshing:false,acting:false,queue:null,queueType:'partial',queueOffset:0,queueLimit:40,queueLoading:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','siteAnalytics','publicContent','publicQuestions','tagImport'];
 const LIVE_SITE_OPS_VIEWS=new Set(['siteAnalytics','publicContent','publicQuestions']);
@@ -8339,6 +8355,7 @@ function publicContentActionButtons(item={},mode=''){
   const historyId=item.sourceHistoryId||item.source_history_id||'';
   const buttons=[];
   if(historyId)buttons.push(`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="showDetail(${attrJson(historyId)})">Admin Kaydı</button>`);
+  if(slug&&mode!=='hidden')buttons.push(`<button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="window.open('/soru/${encodeURIComponent(slug)}','_blank','noopener')">Sitede Aç</button>`);
   if(slug&&mode==='published')buttons.push(`<button class="btn-danger" style="padding:5px 10px;font-size:10px" onclick="setArchivePublicContentStatus(${attrJson(slug)},'content_review_hidden')">Yayından Al</button>`);
   if(slug&&mode==='hidden')buttons.push(`<button class="btn-green" style="padding:5px 10px;font-size:10px" onclick="setArchivePublicContentStatus(${attrJson(slug)},'published')">Yayına Al</button>`);
   return buttons.length?`<div class="work-actions" style="grid-column:1/-1;justify-content:flex-start;margin-top:2px">${buttons.join('')}</div>`:'';
@@ -8355,15 +8372,71 @@ function publicContentSampleRows(items=[],options={}){
     </div>
   `).join('')}</div>`;
 }
-function publicContentGroupRows(groups=[]){
+function publicContentGroupRows(groups=[],options={}){
   if(!groups.length)return '<div class="ops-analytics-empty">Şu an aday grup yok.</div>';
+  const actionMode=options.actions||'';
   return `<div class="ops-analytics-list">${groups.map(group=>`
     <div class="ops-analytics-row">
       <strong title="${esc(group.question||'')}">${esc(group.question||'Soru')}</strong>
       <span>${publicContentCount(group.count)} kayıt</span>
-      <div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px">${esc((group.items||[]).map(item=>`${item.slug} (${publicContentCount(item.answerLength||0)} kr)`).join(' · '))}</div>
+      <div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px">
+        ${(group.items||[]).map(item=>`
+          <div class="ops-analytics-row" style="padding:7px 0;border-bottom:1px solid var(--bord2)">
+            <strong title="${escAttr(item.title||item.slug||'')}">${esc(item.title||item.slug||'Kayıt')}</strong>
+            <span>${publicContentCount(item.answerLength||0)} kr</span>
+            <span style="grid-column:1/-1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(item.slug||'')}</span>
+            ${publicContentActionButtons(item,actionMode)}
+          </div>
+        `).join('')}
+      </div>
     </div>
   `).join('')}</div>`;
+}
+function publicContentReviewTypeLabel(type){
+  return {
+    partial:'Kısa / yarım adayları',
+    split:'Parçalı cevap adayları',
+    hidden:'Yayından alınan kontrol',
+    copied:'Soru cevaba taşmış',
+    stale:'Public ile kaynak farklı',
+    duplicates:'Birebir kopya gruplar',
+    format:'Güvenli format adayları'
+  }[type]||'Kontrol listesi';
+}
+function publicContentQueueActionMode(type){
+  return type==='hidden'?'hidden':'published';
+}
+function renderArchivePublicContentQueue(){
+  const panel=el('archivePublicContentQueuePanel');
+  const status=el('archivePublicContentQueueStatus');
+  const data=archivePublicContentState.queue;
+  if(status){
+    const label=publicContentReviewTypeLabel(archivePublicContentState.queueType);
+    status.textContent=archivePublicContentState.queueLoading?'Liste hazırlanıyor...':data?.available?`${label}: ${publicContentCount(data.total)} kayıt`:data?.available===false?(data.error||'Liste alınamadı.'):'Liste bekleniyor.';
+    status.className=`ops-status ${data?.available?'ok':data?.available===false?'err':''}`.trim();
+  }
+  if(!panel)return;
+  if(!data){
+    panel.hidden=true;
+    panel.innerHTML='';
+    return;
+  }
+  panel.hidden=false;
+  if(data.available===false){
+    panel.innerHTML=`<h4>Kontrol listesi</h4><div class="ops-analytics-empty">${esc(data.error||'Liste alınamadı.')}</div>`;
+    return;
+  }
+  const type=data.type||archivePublicContentState.queueType;
+  const start=data.total?Number(data.offset||0)+1:0;
+  const end=Math.min(Number(data.total||0),Number(data.offset||0)+(data.items||[]).length);
+  const rows=(type==='split'||type==='duplicates')
+    ? publicContentGroupRows(data.items||[],{actions:'published'})
+    : publicContentSampleRows(data.items||[],{actions:publicContentQueueActionMode(type)});
+  panel.innerHTML=`
+    <h4>${esc(publicContentReviewTypeLabel(type))}</h4>
+    <div class="ops-analytics-empty">${publicContentCount(start)}-${publicContentCount(end)} / ${publicContentCount(data.total)} gösteriliyor. Yayından alma işlemi kaydı silmez, yalnız canlı siteden ayırır.</div>
+    ${rows}
+  `;
 }
 function renderArchivePublicContentAudit(){
   const summary=el('archivePublicContentSummary');
@@ -8396,11 +8469,18 @@ function renderArchivePublicContentAudit(){
     <div class="ops-analytics-card"><h4>Public ile onaylı kaynak farklı</h4><div class="ops-analytics-empty">Bu kayıtlar otomatik değiştirilmeyecek; önce insan kontrolü gerekir.</div>${publicContentSampleRows(data.samples?.stalePublicContent||[])}</div>
     <div class="ops-analytics-card"><h4>Soru cevaba taşmış olabilir</h4><div class="ops-analytics-empty">Cevabın başı soru metniyle aynı görünüyorsa burada listelenir. Gerekirse canlı siteden ayırıp admin kontrolünde tutun.</div>${publicContentSampleRows(data.samples?.questionCopiedIntoAnswer||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Yayından alınan kontrol kayıtları</h4><div class="ops-analytics-empty">Bu kayıtlar silinmedi; sadece canlı siteden ayrıldı. Kontrol edilince tekrar yayına alınabilir.</div>${publicContentSampleRows(data.samples?.contentReviewHidden||[],{actions:'hidden'})}</div>
-    <div class="ops-analytics-card"><h4>Parçalı cevap adayları</h4><div class="ops-analytics-empty">Aynı sorunun farklı cevap parçaları gibi duran kayıtlar. Birleştirme manuel karar ister.</div>${publicContentGroupRows(data.samples?.splitQuestionCandidates||[])}</div>
-    <div class="ops-analytics-card"><h4>Birebir kopya gruplar</h4><div class="ops-analytics-empty">Soru ve cevap aynıysa ayrıca gizlenebilir; benzer cevaplar bu gruba girmez.</div>${publicContentGroupRows(data.samples?.exactDuplicateGroups||[])}</div>
+    <div class="ops-analytics-card"><h4>Parçalı cevap adayları</h4><div class="ops-analytics-empty">Aynı sorunun farklı cevap parçaları gibi duran kayıtlar. Birleştirme manuel karar ister.</div>${publicContentGroupRows(data.samples?.splitQuestionCandidates||[],{actions:'published'})}</div>
+    <div class="ops-analytics-card"><h4>Birebir kopya gruplar</h4><div class="ops-analytics-empty">Soru ve cevap aynıysa ayrıca gizlenebilir; benzer cevaplar bu gruba girmez.</div>${publicContentGroupRows(data.samples?.exactDuplicateGroups||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Kısa veya yarım sinyali</h4>${publicContentSampleRows(data.samples?.partialAnswerSignals||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Önizleme sonucu</h4><div class="ops-analytics-empty">${refresh?`${publicContentCount(refresh.candidateCount)} kayıt güvenli format tazelemeye uygun görünüyor. ${refresh.updatedRows?`${publicContentCount(refresh.updatedRows)} kayıt güncellendi.`:'Henüz uygulanmadı.'}`:'Güvenli format önizlemesi henüz çalıştırılmadı.'}</div>${publicContentSampleRows(refresh?.samples||[])}</div>
   `;
+}
+function setArchivePublicContentQueueType(type){
+  archivePublicContentState.queueType=type||'partial';
+  archivePublicContentState.queueOffset=0;
+  archivePublicContentState.queue=null;
+  renderArchivePublicContentQueue();
+  loadArchivePublicContentQueue(0);
 }
 async function loadArchivePublicContentAudit(){
   if(!canUseArchiveOps())return;
@@ -8410,6 +8490,36 @@ async function loadArchivePublicContentAudit(){
   archivePublicContentState.loading=false;
   archivePublicContentState.audit=data.error?{available:false,error:data.error}:data;
   renderArchivePublicContentAudit();
+  renderArchivePublicContentQueue();
+}
+async function loadArchivePublicContentQueue(offset=archivePublicContentState.queueOffset||0){
+  if(!canUseArchiveOps())return;
+  const select=el('archivePublicContentQueueType');
+  if(select)archivePublicContentState.queueType=select.value||archivePublicContentState.queueType;
+  const cleanOffset=Math.max(0,Number(offset||0));
+  archivePublicContentState.queueOffset=cleanOffset;
+  archivePublicContentState.queueLoading=true;
+  renderArchivePublicContentQueue();
+  const params=new URLSearchParams({
+    type:archivePublicContentState.queueType,
+    offset:String(cleanOffset),
+    limit:String(archivePublicContentState.queueLimit||40)
+  });
+  const data=await api('GET',`/api/public-archive/content-review-items?${params.toString()}`);
+  archivePublicContentState.queueLoading=false;
+  archivePublicContentState.queue=data.error?{available:false,error:data.error}:data;
+  archivePublicContentState.queueOffset=Number(data.offset||cleanOffset);
+  renderArchivePublicContentQueue();
+}
+function pageArchivePublicContentQueue(direction){
+  if(archivePublicContentState.queueLoading)return;
+  const current=archivePublicContentState.queue||{};
+  const limit=Number(current.limit||archivePublicContentState.queueLimit||40);
+  const offset=Number(current.offset||archivePublicContentState.queueOffset||0);
+  const total=Number(current.total||0);
+  const next=direction>0?Math.min(Math.max(0,total-limit),offset+limit):Math.max(0,offset-limit);
+  if(next===offset&&current.available)return;
+  loadArchivePublicContentQueue(next);
 }
 async function previewArchivePublicFormatRefresh(){
   if(!canUseArchiveOps())return;
@@ -8466,6 +8576,7 @@ async function hideArchivePublicCopiedQuestionAnswers(){
     return;
   }
   await loadArchivePublicContentAudit();
+  if(archivePublicContentState.queue)await loadArchivePublicContentQueue(archivePublicContentState.queueOffset||0);
   await showSystemAlert('Yayından alma tamamlandı',`${publicContentCount(data.hiddenRows||0)} kayıt canlı siteden ayrıldı. ${publicContentCount(data.candidateCount||0)} aday kontrol edildi.`,'success');
 }
 async function setArchivePublicContentStatus(slug,status){
@@ -8491,6 +8602,7 @@ async function setArchivePublicContentStatus(slug,status){
     return;
   }
   await loadArchivePublicContentAudit();
+  if(archivePublicContentState.queue)await loadArchivePublicContentQueue(archivePublicContentState.queueOffset||0);
   await showSystemAlert('Durum güncellendi',publish?'Kayıt tekrar yayına alındı.':'Kayıt yayından alındı ve kontrol listesine eklendi.','success');
 }
 function archivePublicQuestionStatusLabel(status){

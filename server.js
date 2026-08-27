@@ -6373,7 +6373,9 @@ async function loadPublicArchiveContentAuditRows() {
   };
 }
 
-function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], historyRows = [] } = {}) {
+function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], historyRows = [] } = {}, options = {}) {
+  const sampleLimit = Math.max(1, Math.min(80, Number(options.sampleLimit || 12)));
+  const includeReviewQueue = Boolean(options.includeReviewQueue);
   const historyById = new Map(historyRows.map(row => [row.id, row]));
   const publicByHistoryId = new Map();
   const duplicateSourceIds = [];
@@ -6500,7 +6502,8 @@ function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], hist
     }))
     .sort((a, b) => b.count - a.count || a.question.localeCompare(b.question, 'tr'));
 
-  return {
+  const contentReviewHidden = reviewRows.map(row => publicArchiveAuditSample(row, row.source_history_id ? historyById.get(row.source_history_id) : null));
+  const report = {
     available: true,
     publicRecords: publicRows.length,
     approvedHistoryRecords: historyRows.length,
@@ -6517,14 +6520,69 @@ function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], hist
     splitQuestionCandidateCount: splitQuestionCandidates.length,
     exactDuplicateGroupCount: exactDuplicateGroups.length,
     samples: {
-      stalePublicContent: stalePublicContent.slice(0, 12),
-      safeFormatRefreshCandidates: safeFormatRefreshCandidates.slice(0, 12),
-      paragraphMismatch: paragraphMismatch.slice(0, 12),
-      partialAnswerSignals: partialAnswerSignals.slice(0, 12),
-      questionCopiedIntoAnswer: questionCopiedIntoAnswer.slice(0, 12),
-      contentReviewHidden: reviewRows.slice(0, 24).map(row => publicArchiveAuditSample(row, row.source_history_id ? historyById.get(row.source_history_id) : null)),
-      splitQuestionCandidates: splitQuestionCandidates.slice(0, 12),
-      exactDuplicateGroups: exactDuplicateGroups.slice(0, 12)
+      stalePublicContent: stalePublicContent.slice(0, sampleLimit),
+      safeFormatRefreshCandidates: safeFormatRefreshCandidates.slice(0, sampleLimit),
+      paragraphMismatch: paragraphMismatch.slice(0, sampleLimit),
+      partialAnswerSignals: partialAnswerSignals.slice(0, sampleLimit),
+      questionCopiedIntoAnswer: questionCopiedIntoAnswer.slice(0, sampleLimit),
+      contentReviewHidden: contentReviewHidden.slice(0, Math.max(sampleLimit, 24)),
+      splitQuestionCandidates: splitQuestionCandidates.slice(0, sampleLimit),
+      exactDuplicateGroups: exactDuplicateGroups.slice(0, sampleLimit)
+    }
+  };
+  if (includeReviewQueue) {
+    report.reviewQueue = {
+      stalePublicContent,
+      safeFormatRefreshCandidates,
+      paragraphMismatch,
+      partialAnswerSignals,
+      questionCopiedIntoAnswer,
+      contentReviewHidden,
+      splitQuestionCandidates,
+      exactDuplicateGroups
+    };
+  }
+  return report;
+}
+
+function publicArchiveContentReviewType(value = '') {
+  const type = String(value || '').trim();
+  const allowed = new Set(['partial', 'split', 'hidden', 'copied', 'stale', 'duplicates', 'format']);
+  return allowed.has(type) ? type : 'partial';
+}
+
+function publicArchiveContentReviewPage(report = {}, type = 'partial', offset = 0, limit = 40) {
+  const normalizedType = publicArchiveContentReviewType(type);
+  const queue = report.reviewQueue || {};
+  const keyByType = {
+    partial: 'partialAnswerSignals',
+    split: 'splitQuestionCandidates',
+    hidden: 'contentReviewHidden',
+    copied: 'questionCopiedIntoAnswer',
+    stale: 'stalePublicContent',
+    duplicates: 'exactDuplicateGroups',
+    format: 'safeFormatRefreshCandidates'
+  };
+  const key = keyByType[normalizedType] || 'partialAnswerSignals';
+  const items = Array.isArray(queue[key]) ? queue[key] : [];
+  const cleanLimit = Math.max(10, Math.min(80, Number(limit || 40)));
+  const cleanOffset = Math.max(0, Number(offset || 0));
+  return {
+    available: true,
+    type: normalizedType,
+    offset: cleanOffset,
+    limit: cleanLimit,
+    total: items.length,
+    hasMore: cleanOffset + cleanLimit < items.length,
+    items: items.slice(cleanOffset, cleanOffset + cleanLimit),
+    counts: {
+      partial: report.partialAnswerSignalCount || 0,
+      split: report.splitQuestionCandidateCount || 0,
+      hidden: report.contentReviewHiddenCount || 0,
+      copied: report.questionCopiedIntoAnswerCount || 0,
+      stale: report.stalePublicContentCount || 0,
+      duplicates: report.exactDuplicateGroupCount || 0,
+      format: report.safeFormatRefreshCandidateCount || 0
     }
   };
 }
@@ -7152,6 +7210,17 @@ app.get('/api/public-archive/sync-status', auth, admin, superAdmin, async (req, 
 app.get('/api/public-archive/content-audit', auth, admin, superAdmin, async (req, res) => {
   try {
     res.json(await analyzePublicArchiveContentHealth());
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, error: error.message });
+  }
+});
+
+app.get('/api/public-archive/content-review-items', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const rows = await loadPublicArchiveContentAuditRows();
+    if (!rows.available) return res.status(503).json(rows);
+    const report = buildPublicArchiveContentAudit(rows, { includeReviewQueue: true, sampleLimit: 24 });
+    res.json(publicArchiveContentReviewPage(report, req.query.type, req.query.offset, req.query.limit));
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, error: error.message });
   }

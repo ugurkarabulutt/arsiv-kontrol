@@ -136,6 +136,15 @@ tespit edilir).
   görülmesine rağmen aynı slug tekrarı nedeniyle `hiddenRows: 8` oldu; uygulama sonrası
   `afterPublished: 2911`, `afterReviewHidden: 8`, `afterCandidateCount: 0` doğrulandı.
 
+- **Public içerik kontrol listesi sayfalı iş akışına çevrildi:** Admin `Canlı Site >
+  İçerik Kontrolü` ekranı yalnız özet rapor göstermenin ötesine geçti. Yeni süper admin
+  korumalı `GET /api/public-archive/content-review-items` endpoint'i seçilen kontrol grubunu
+  sayfalı döndürür: kısa/yarım adayları, parçalı cevap adayları, yayından alınan kontrol
+  kayıtları, soru-cevaba-taşma adayları, public-kaynak farkları, birebir kopya grupları ve
+  güvenli format adayları. Aynı ekranda `Kontrol Listesini Aç`, `Geri`, `İleri`, `Admin Kaydı`,
+  `Sitede Aç`, `Yayından Al` ve `Yayına Al` aksiyonları bulunur. Amaç şüpheli kayıtları
+  otomatik değiştirmek değil, süper adminin seri ve geri alınabilir şekilde kontrol etmesidir.
+
 ### 2026-08-27
 - **Public içerik kontrolü ve güvenli format tazeleme hazırlandı:** Canlı cevaplarda bazı
   kayıtların geçmişte 2-3 parça denetime girmiş olabileceği ve Arapça/okunuş/meal/açıklama

@@ -32,6 +32,15 @@
   `GET /api/public-archive/content-audit`,
   `POST /api/public-archive/content-audit/hide-copied-questions` ve
   `POST /api/public-archive/content-items/test/status` 401 döndü.
+- Devam geliştirmesi: `GET /api/public-archive/content-review-items` eklendi. Bu endpoint
+  İçerik Kontrolü ekranındaki seçili grubu sayfalı getirir (`partial`, `split`, `hidden`,
+  `copied`, `stale`, `duplicates`, `format`).
+- Admin `İçerik Kontrolü` ekranına mevcut ekran içinde sayfalı `Kontrol Listesi` eklendi.
+  Süper admin grup seçip `Kontrol Listesini Aç`, `Geri`, `İleri` ile ilerleyebilir; kayıt
+  satırlarında `Admin Kaydı`, `Sitede Aç`, `Yayından Al` ve gizlenenlerde `Yayına Al`
+  aksiyonları bulunur.
+- Hâlâ otomatik parçalı cevap birleştirme yoktur. Parçalı/yarım adaylar bu liste üzerinden
+  insan kontrolüne alınmalıdır.
 
 ## 2026-08-27 Codex Public İçerik Kontrolü ve Format Tazeleme Hazırlığı
 
