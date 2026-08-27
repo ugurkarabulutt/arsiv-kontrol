@@ -2,6 +2,17 @@
 
 ## 2026-08-27 Codex Public İçerik Kontrolü ve Format Tazeleme Hazırlığı
 
+- Commit/deploy durumu: `08a74bc` ile içerik kontrol ekranı, `3524acc` ile soru-cevaba-taşma
+  raporu, `cbc69fe` ile hitap temizliği düzeltmesi pushlandı ve production'a alındı. Son canlı
+  deploy: `dpl_9MUYYDWMMUYYZceM92aV5k83ZStT`, alias `https://arsiv.ibrahimlive.ai`.
+- Local `.env` ile production Supabase üzerinde güvenli format tazeleme çalıştırıldı. Uygulama
+  öncesi 2.680 kayıt yalnız satır/paragraf düzeni açısından adaydı; `--apply-safe-format`
+  sonrası tekrar audit edildi ve `safe_format_refresh_candidates: 0` doğrulandı. İçerik
+  kelimeleri değiştirilmedi; `stale_public_content: 0` idi.
+- Son veri audit özeti: `public_records: 2919`, `approved_history_records: 3022`,
+  `approved_history_without_public_row: 103`, `question_copied_into_answer: 8`,
+  `partial_answer_signals: 228`, `split_question_candidates: 322`, `exact_duplicate_groups: 0`.
+  Bu kalan gruplar otomatik düzeltilmedi; admin/süper admin insan kontrolüyle ele alınmalı.
 - Kullanıcı canlı cevaplarda iki ana risk bildirdi: bazı uzun cevapların geçmişte 2-3 parça
   denetime girildiği için canlıda yarım/parçalı görünmesi ve ekip denetiminde düzgün olan
   Arapça/okunuş/meal/açıklama satırlarının public yayında karışık görünmesi.

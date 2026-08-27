@@ -138,6 +138,17 @@ tespit edilir).
   değişmez. Admin panel Canlı Site menüsüne `İçerik Kontrolü` ekranı eklendi. Gelecek yeni
   senkronlarda yeni kayıtların `answer_text` alanı paragraf listesi birleştirilmiş metinden
   değil, onaylı kaynaktaki ham düzenli cevap metninden beslenir.
+  Runtime commit'leri `08a74bc`, `3524acc` ve `cbc69fe` GitHub'a push edilip production'a
+  alındı; son deploy `dpl_9MUYYDWMMUYYZceM92aV5k83ZStT`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Local `.env` ile production Supabase'de güvenli format
+  tazeleme uygulandı: 2.680 kayıt yalnız satır/paragraf düzeni açısından onaylı kaynaktan
+  tazelendi, tekrar audit'te `safe_format_refresh_candidates: 0` doğrulandı. İçerik kelimeleri
+  değiştirilmedi; audit sırasında `stale_public_content: 0`, `public_records: 2919`,
+  `approved_history_records: 3022`, `approved_history_without_public_row: 103`,
+  `question_copied_into_answer: 8`, `partial_answer_signals: 228`,
+  `split_question_candidates: 322`, `exact_duplicate_groups: 0` görüldü. Kalan soru-cevaba
+  taşma, kısa/yarım ve parçalı cevap adayları otomatik düzeltilmedi; insan kontrollü ele
+  alınmalıdır.
 
 - **Public root demo fallback koruması eklendi:** Canlı sitede yalnız birkaç soru görünmesi
   üzerine root public veri zinciri kontrol edildi. Vercel loglarında `Seed kontrolü başarısız:
