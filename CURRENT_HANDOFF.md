@@ -13,10 +13,12 @@
   value doğrulaması kullanıcı/Vercel paneli üzerinden yapılmalıdır.
 - Production root için güvenli davranış değiştirildi: public içerik tabloları hazır değilse
   veya tablo kontrolü başarısız olursa root `/` ve public route'lar artık eski demo/fixture
-  sorularına düşmez. Bunun yerine 503 durum kodlu, `Retry-After: 120`, `X-Robots-Tag:
+  sorularına düşmez. Site yine 200 durum koduyla açılır; fakat sayfa `X-Robots-Tag:
   noindex, nofollow` ve geçici arşiv hazırlık ekranı döner.
 - Preview/demo hattı geliştirme için korunur; bu koruma canlı root'un kullanıcıya ve arama
   motorlarına yanlış sayıda örnek soru göstermesini engeller.
+- Kullanıcı site kapalı görünmesini istemediği için ilk 503 yaklaşımı 200 açılır geçici sayfaya
+  çevrildi; amaç canlı siteyi açık tutarken yanlış/demo soru göstermemektir.
 - Yerel doğrulama başarılı: `node --check server.js`, `node --check public-archive-renderer.js`,
   `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
   `npm.cmd run check` (105/105) ve `git diff --check`.

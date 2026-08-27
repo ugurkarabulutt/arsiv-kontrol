@@ -433,7 +433,7 @@ test('public renderer accepts route-sized server data with global stats', () => 
 test('public unavailable page does not expose fixture questions', () => {
   const result = renderPublicArchiveUnavailableRoute({ basePath: '' });
 
-  assert.equal(result.status, 503);
+  assert.equal(result.status, 200);
   assert.match(result.html, /Arşiv geçici olarak hazırlanıyor/);
   assert.match(result.html, /<meta name="robots" content="noindex,nofollow">/);
   assert.doesNotMatch(result.html, /Hidayet yolu nasıl başlar\?/);

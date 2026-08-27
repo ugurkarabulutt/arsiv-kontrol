@@ -1701,7 +1701,7 @@ function renderPublicArchiveUnavailable() {
     active: 'archive',
     title: 'Arşiv geçici olarak hazırlanıyor',
     description: 'Soru-cevap arşivi kısa süre içinde yeniden okunabilir olacak.',
-    status: 503,
+    status: 200,
     pageNoindex: true,
     content: `
       <main class="pa-main pa-narrow-main">
@@ -2833,7 +2833,6 @@ function createPublicArchivePreviewRouter(options = {}) {
       }));
     } catch (error) {
       if (error?.code === 'PUBLIC_ARCHIVE_DATA_UNAVAILABLE') {
-        res.set('Retry-After', '120');
         res.set('X-Robots-Tag', 'noindex, nofollow');
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         sendRendered(res, renderPublicArchiveUnavailableRoute({ basePath }));
