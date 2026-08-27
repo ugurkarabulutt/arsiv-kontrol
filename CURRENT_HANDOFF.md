@@ -19,6 +19,19 @@
   ve `Admin Kaydı` aksiyonları eklendi.
 - Bu karar, parçalı cevapları otomatik birleştirmez. `partial_answer_signals` ve
   `split_question_candidates` insan kontrolünde ele alınacak iş listesidir.
+- Runtime commit `1201d16` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-1t8ubshtj-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_5U5Dy48zkcFSsbVepVD6TB8x5FEj`, canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı veri uygulaması yapıldı: dry-run canlı tabloda `beforePublished: 2919`,
+  `candidateCount: 9` döndürdü; aynı slug'lı tekrar nedeniyle güncelleme sonucunda
+  `hiddenRows: 8` oldu. Uygulama sonrası `afterPublished: 2911`,
+  `afterReviewHidden: 8`, `afterCandidateCount: 0` doğrulandı.
+- Canlı smoke: `/`, `/arsiv`, `/admin`, `/sitemap.xml` 200 döndü; `/admin` header'ı
+  `X-Robots-Tag: noindex, nofollow`; canlı admin HTML'de `İçerik Kontrolü`,
+  `Soru Taşanları Yayından Al` ve yeni endpoint marker'ı mevcut. Oturumsuz
+  `GET /api/public-archive/content-audit`,
+  `POST /api/public-archive/content-audit/hide-copied-questions` ve
+  `POST /api/public-archive/content-items/test/status` 401 döndü.
 
 ## 2026-08-27 Codex Public İçerik Kontrolü ve Format Tazeleme Hazırlığı
 

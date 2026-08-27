@@ -131,7 +131,10 @@ tespit edilir).
   `POST /api/public-archive/content-audit/hide-copied-questions` ve
   `POST /api/public-archive/content-items/:slug/status` endpoint'leri eklendi. Kısa/yarım
   cevap sinyalleri ve parçalı cevap adayları otomatik yayından alınmaz; yalnız insan kontrolü
-  için listelenir.
+  için listelenir. Runtime commit `1201d16` production'a alındı
+  (`dpl_5U5Dy48zkcFSsbVepVD6TB8x5FEj`). Canlı veri uygulamasında `candidateCount: 9`
+  görülmesine rağmen aynı slug tekrarı nedeniyle `hiddenRows: 8` oldu; uygulama sonrası
+  `afterPublished: 2911`, `afterReviewHidden: 8`, `afterCandidateCount: 0` doğrulandı.
 
 ### 2026-08-27
 - **Public içerik kontrolü ve güvenli format tazeleme hazırlandı:** Canlı cevaplarda bazı
