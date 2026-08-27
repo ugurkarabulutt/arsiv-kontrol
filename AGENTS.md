@@ -130,8 +130,9 @@ tespit edilir).
   yol açabilir. Backend'e süper admin korumalı `GET /api/public-archive/content-audit` ve
   `POST /api/public-archive/refresh-format` endpoint'leri eklendi. İçerik kontrolü canlı
   public kayıtları onaylı `history` kaynağıyla karşılaştırır; güvenli format tazeleme adayları,
-  public-history içerik farkları, parçalı cevap adayları, kısa/yarım cevap sinyalleri ve
-  birebir kopya gruplarını örnekleriyle gösterir. `refresh-format` yalnız kelimesi aynı olan
+  public-history içerik farkları, soru metninin cevaba taşmış olabileceği kayıtlar, parçalı
+  cevap adayları, kısa/yarım cevap sinyalleri ve birebir kopya gruplarını örnekleriyle
+  gösterir. `refresh-format` yalnız kelimesi aynı olan
   cevaplarda `answer_text` ve `answer_paragraphs` alanını onaylı kaynaktaki satır/paragraf
   düzeninden tazeler; içeriği farklı görünen kayıtlar ve parçalı cevap adayları otomatik
   değişmez. Admin panel Canlı Site menüsüne `İçerik Kontrolü` ekranı eklendi. Gelecek yeni

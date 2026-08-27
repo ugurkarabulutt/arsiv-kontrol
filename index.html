@@ -8368,6 +8368,7 @@ function renderArchivePublicContentAudit(){
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.publicRecords)}</strong><span>Canlı kayıt</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.approvedHistoryRecords)}</strong><span>Onaylı kaynak</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.safeFormatRefreshCandidateCount)}</strong><span>Güvenli format</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(data.questionCopiedIntoAnswerCount)}</strong><span>Soru cevaba taşmış</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.splitQuestionCandidateCount)}</strong><span>Parçalı aday</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.exactDuplicateGroupCount)}</strong><span>Birebir kopya grup</span></div>
     `:'<div class="ops-file-summary-item"><strong>--</strong><span>Rapor bekleniyor</span></div>';
@@ -8380,6 +8381,7 @@ function renderArchivePublicContentAudit(){
   grid.innerHTML=`
     <div class="ops-analytics-card"><h4>Güvenli format tazeleme</h4><div class="ops-analytics-empty">Kelimesi aynı olan, yalnız satır/paragraf düzeni farklı duran kayıtlar.</div>${publicContentSampleRows(data.samples?.safeFormatRefreshCandidates||[])}</div>
     <div class="ops-analytics-card"><h4>Public ile onaylı kaynak farklı</h4><div class="ops-analytics-empty">Bu kayıtlar otomatik değiştirilmeyecek; önce insan kontrolü gerekir.</div>${publicContentSampleRows(data.samples?.stalePublicContent||[])}</div>
+    <div class="ops-analytics-card"><h4>Soru cevaba taşmış olabilir</h4><div class="ops-analytics-empty">Cevabın başı soru metniyle aynı görünüyorsa burada listelenir. Otomatik düzeltilmez.</div>${publicContentSampleRows(data.samples?.questionCopiedIntoAnswer||[])}</div>
     <div class="ops-analytics-card"><h4>Parçalı cevap adayları</h4><div class="ops-analytics-empty">Aynı sorunun farklı cevap parçaları gibi duran kayıtlar. Birleştirme manuel karar ister.</div>${publicContentGroupRows(data.samples?.splitQuestionCandidates||[])}</div>
     <div class="ops-analytics-card"><h4>Birebir kopya gruplar</h4><div class="ops-analytics-empty">Soru ve cevap aynıysa ayrıca gizlenebilir; benzer cevaplar bu gruba girmez.</div>${publicContentGroupRows(data.samples?.exactDuplicateGroups||[])}</div>
     <div class="ops-analytics-card"><h4>Kısa veya yarım sinyali</h4>${publicContentSampleRows(data.samples?.partialAnswerSignals||[])}</div>

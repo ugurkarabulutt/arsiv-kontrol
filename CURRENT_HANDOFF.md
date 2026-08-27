@@ -11,8 +11,9 @@
   yol açabilir.
 - Yeni admin/süper admin korumalı endpoint'ler eklendi:
   - `GET /api/public-archive/content-audit`: canlı public kayıtları onaylı `history` kaynağıyla
-    karşılaştırır; güvenli format tazeleme adaylarını, public-history içerik farklarını, parçalı
-    cevap adaylarını, kısa/yarım sinyallerini ve birebir kopya gruplarını örnekleriyle döner.
+    karşılaştırır; güvenli format tazeleme adaylarını, public-history içerik farklarını, soru
+    metninin cevaba taşmış olabileceği kayıtları, parçalı cevap adaylarını, kısa/yarım
+    sinyallerini ve birebir kopya gruplarını örnekleriyle döner.
   - `POST /api/public-archive/refresh-format`: `apply:false` ile önizleme, `apply:true` ile yalnız
     kelimesi aynı olan cevaplarda `answer_text` ve `answer_paragraphs` alanını onaylı kaynaktaki
     satır/paragraf düzeninden tazeler. İçeriği farklı görünen kayıtlar ve parçalı cevap adayları

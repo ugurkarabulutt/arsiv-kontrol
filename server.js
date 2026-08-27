@@ -6337,6 +6337,16 @@ function publicArchiveAnswerLooksPartial(row = {}) {
   return false;
 }
 
+function publicArchiveQuestionCopiedIntoAnswer(row = {}) {
+  const questionKey = publicArchiveQuestionAuditKey(row.question || row.title || '');
+  const answerKey = publicArchiveComparable(row.answer_text || '');
+  if (!questionKey || !answerKey || questionKey.length < 48) return false;
+  const questionWords = questionKey.split(/\s+/).filter(Boolean);
+  const prefix = questionWords.slice(0, Math.min(18, questionWords.length)).join(' ');
+  if (prefix.length < 48) return false;
+  return answerKey.startsWith(prefix);
+}
+
 async function loadPublicArchiveContentAuditRows() {
   await startupReady;
   if (!await ensurePublicArchiveContentReady()) {
@@ -6370,6 +6380,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = 
   const safeFormatRefreshCandidates = [];
   const paragraphMismatch = [];
   const partialAnswerSignals = [];
+  const questionCopiedIntoAnswer = [];
 
   for (const row of publicRows) {
     const historyRow = row.source_history_id ? historyById.get(row.source_history_id) : null;
@@ -6420,6 +6431,13 @@ function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = 
       partialAnswerSignals.push({
         ...publicArchiveAuditSample(row, historyRow),
         answerEnd: publicArchiveText(publicAnswer.slice(-180), 180)
+      });
+    }
+
+    if (publicArchiveQuestionCopiedIntoAnswer(row)) {
+      questionCopiedIntoAnswer.push({
+        ...publicArchiveAuditSample(row, historyRow),
+        answerStart: publicArchiveText(publicAnswer, 260)
       });
     }
   }
@@ -6487,6 +6505,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = 
     safeFormatRefreshCandidateCount: safeFormatRefreshCandidates.length,
     paragraphMismatchCount: paragraphMismatch.length,
     partialAnswerSignalCount: partialAnswerSignals.length,
+    questionCopiedIntoAnswerCount: questionCopiedIntoAnswer.length,
     splitQuestionCandidateCount: splitQuestionCandidates.length,
     exactDuplicateGroupCount: exactDuplicateGroups.length,
     samples: {
@@ -6494,6 +6513,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = 
       safeFormatRefreshCandidates: safeFormatRefreshCandidates.slice(0, 12),
       paragraphMismatch: paragraphMismatch.slice(0, 12),
       partialAnswerSignals: partialAnswerSignals.slice(0, 12),
+      questionCopiedIntoAnswer: questionCopiedIntoAnswer.slice(0, 12),
       splitQuestionCandidates: splitQuestionCandidates.slice(0, 12),
       exactDuplicateGroups: exactDuplicateGroups.slice(0, 12)
     }
