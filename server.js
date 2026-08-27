@@ -5074,10 +5074,24 @@ function publicArchiveStructuralParagraphStart(value = '') {
   return /^(HAD[İIÎ]S[-\s]?[İIÎ]\s+ŞER[İIÎ]F|[ÂA]YET[-\s]?[İIÎ]\s+KER[İIÎ]ME|\d+\.\s+[A-ZÇĞİÖŞÜÂÎÛ]|(?:\d{1,3}[./]\s*)?[A-ZÇĞİÖŞÜÂÎÛ][A-ZÇĞİÖŞÜÂÎÛ'’\-\s]{1,42}\s*-\s*\d{1,3}\b)/u.test(String(value || '').trim());
 }
 
+function publicArchiveInlineText(value = '') {
+  return String(value || '').replace(/[ \t\f\v]+/g, ' ').trim();
+}
+
+function publicArchiveSubmittedText(value = '', max = 120000) {
+  return String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/\n{4,}/g, '\n\n\n')
+    .trim()
+    .slice(0, max);
+}
+
 function publicArchiveSplitLongParagraph(value = '') {
   const structuralBlocks = publicArchiveInsertStructuralBreaks(value)
     .split(/\n{2,}/)
-    .map(item => item.replace(/\s+/g, ' ').trim())
+    .map(item => publicArchiveInlineText(item.replace(/\n+/g, ' ')))
     .filter(Boolean);
   const paragraphs = [];
   for (const block of structuralBlocks) {
@@ -5114,11 +5128,19 @@ function publicArchiveSplitLongParagraph(value = '') {
 }
 
 function publicArchiveParagraphs(value = '') {
-  return publicArchiveText(value, 120000)
+  const text = publicArchiveSubmittedText(value, 120000);
+  if (!text) return [];
+  return text
     .split(/\n{2,}/)
-    .map(item => item.replace(/\s+/g, ' ').trim())
-    .filter(Boolean)
+    .flatMap(block => {
+      const lines = block
+        .split(/\n+/)
+        .map(publicArchiveInlineText)
+        .filter(Boolean);
+      return lines.length > 1 ? lines : lines.slice(0, 1);
+    })
     .flatMap(item => item.length > PUBLIC_ARCHIVE_PARAGRAPH_HARD_LENGTH ? publicArchiveSplitLongParagraph(item) : [item])
+    .map(publicArchiveInlineText)
     .filter(Boolean);
 }
 

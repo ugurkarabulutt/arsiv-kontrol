@@ -2379,6 +2379,7 @@ a.pa-chip:hover,
   color: var(--pa-text);
   font-size: 17px;
   line-height: 1.82;
+  white-space: pre-line;
 }
 
 .pa-source-box,

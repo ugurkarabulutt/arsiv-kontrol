@@ -1046,6 +1046,7 @@ for (const marker of [
   'publicArchiveInsertStructuralBreaks',
   'publicArchiveSentenceSegments',
   'publicArchiveSplitLongParagraph',
+  'publicArchiveSubmittedText',
   'loadArchiveData: loadPublicArchiveRouteDataset',
   'await startupReady',
   'PUBLIC_QUESTION_STATS_FALLBACK_KEY',
@@ -1055,6 +1056,8 @@ for (const marker of [
 ]) {
   assert(server.includes(marker), `Public archive live preview backend marker eksik: ${marker}`);
 }
+assert(server.includes('.split(/\\n+/)'), 'Public cevap paragraflari onaylanan metindeki anlamli satirlari korumali.');
+assert(publicCss.includes('white-space: pre-line'), 'Public cevap ekrani satir sonlarini gorsel olarak korumali.');
 assert(!server.includes('Soru göndermek için Google ile oturum açın.'), 'Public soru gonderim hatasi artik Google-only olmamali.');
 assert(server.includes('Soru göndermek için önce hesabınızla oturum açın.'), 'Public soru gonderim hatasi hesap diliyle donmeli.');
 for (const marker of [

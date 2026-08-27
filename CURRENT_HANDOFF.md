@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-27 Codex Public Cevap Biçimi Koruma Düzeltmesi
+
+- Kullanıcı canlı soru detaylarında cevapların “çorba gibi” göründüğünü, özellikle ayet Arapçası,
+  Türkçe meal ve açıklama bloklarının birbirine karıştığını; bazı cevapların da yarım gibi
+  durduğunu bildirdi.
+- Kök neden kod tarafında doğrulandı: onaylı kayıtlar `public_qa` tablosuna senkronlanırken
+  `publicArchiveParagraphs()` mevcut tek satırdan bölme mantığını kullanıyor ve satır içi
+  boşlukları `replace(/\s+/g, ' ')` ile tek boşluğa indiriyordu. Bu, onayda düzgün duran
+  anlamlı satırları public paragraf üretiminde ezebiliyordu.
+- Public paragraf üretimi değiştirildi: cevap metni CRLF/boşluk temizliğiyle alınır, onaylı
+  metindeki anlamlı satırlar paragraf blokları olarak korunur; yalnız satırsız uzun bloklarda
+  eski güvenli cümle/kaynak kırma mantığı çalışır.
+- Soru detay ekranındaki cevap paragrafları `white-space: pre-line` ile basılır; böylece paragraf
+  içinde kalan anlamlı satır sonları da görselde korunur.
+- Frontend guard, public cevap paragraf üretiminin satırları korumasını ve CSS tarafındaki
+  `white-space: pre-line` davranışını zorunlu kontrol edecek şekilde güncellendi.
+- Yerel doğrulama başarılı: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node scripts/check-frontend.js`, `git diff --check`, `npm.cmd run check` (104/104).
+- Mevcut canlı `public_qa` kayıtlarının düzelmesi için bu kod production'a alındıktan sonra
+  onaylı kayıtlardan public senkron yeniden çalıştırılmalı. Yerel ortamdan doğrudan Supabase
+  okuma denemesi DNS `ENOTFOUND` nedeniyle yapılamadı; bu nedenle canlı veri dry-run'ı server
+  ortamı veya admin senkron ekranı üzerinden yapılmalıdır.
+
 ## 2026-08-27 Codex Public Arşiv Harf Şeridi Düzeltmesi
 
 - Kullanıcı masaüstü arşiv sayfasında alfabetik harf şeridinin `M` sonrasına görünür şekilde

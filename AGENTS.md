@@ -120,6 +120,19 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-27
+- **Public cevap biçimi koruma düzeltmesi eklendi:** Canlı soru detaylarında cevapların tek
+  blok/karmaşık görünmesi üzerine public yayınlama zinciri kontrol edildi. Kök neden, onaylı
+  `history.corrected_text` içeriği `public_qa.answer_paragraphs` alanına aktarılırken satır
+  içi düzenin `replace(/\s+/g, ' ')` ile ezilebilmesiydi. `publicArchiveParagraphs()` artık
+  onaylanan cevap metnindeki anlamlı satırları paragraf blokları olarak korur; yalnız satırsız
+  uzun bloklarda eski cümle/kaynak kırma mantığını kullanır. Soru detay ekranındaki cevap
+  paragrafları `white-space: pre-line` ile basılır. Frontend guard bu davranışı kalıcı olarak
+  kontrol eder. Yerel doğrulama: `node --check server.js`, `node --check
+  public-archive-renderer.js`, `node scripts/check-frontend.js`, `git diff --check`,
+  `npm.cmd run check` (104/104) başarılı. Mevcut canlı kayıtların düzelmesi için deploy
+  sonrası onaylı kayıtlardan public senkron yeniden çalıştırılmalıdır.
+
 ### 2026-08-23
 - **Public SEO/hız iyileştirme turu eklendi:** Canlı audit sonucunda public CSS ve görsellerin
   `Cache-Control: public, max-age=0` döndüğü görüldü. Public renderer asset çağrılarına
