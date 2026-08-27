@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-28 Codex Public İçerik Kontrolü Yayından Alma Kararı
+
+- Kullanıcı, soru metninin cevabın başına taşmış göründüğü yüksek riskli kayıtların yayında
+  kalmamasını; fakat kısa/yarım cevap ve parçalı cevap adaylarının otomatik silinmemesini
+  onayladı.
+- Kod değişikliği: `public_qa.status='content_review_hidden'` durumu eklendi. Bu durumdaki
+  kayıtlar public liste/detay/sitemap akışına girmez; admin `Canlı Site > İçerik Kontrolü`
+  ekranında `Yayından alınan kontrol` olarak görünür.
+- Kaynak denetim kayıtları korunur: `history.status` değiştirilmez, onaylı kayıt silinmez.
+  Geri dönüş gerekirse tek kayıt `Yayına Al` ile tekrar `published` yapılabilir.
+- Yeni süper admin korumalı endpoint'ler:
+  - `POST /api/public-archive/content-audit/hide-copied-questions`: cevabın başında soru metni
+    tekrar eden yüksek riskli adayları toplu `content_review_hidden` yapar.
+  - `POST /api/public-archive/content-items/:slug/status`: tek public kaydı `published` veya
+    `content_review_hidden` durumuna alır.
+- Admin ekranında `Soru Taşanları Yayından Al`, tek kayıt `Yayından Al`, tek kayıt `Yayına Al`
+  ve `Admin Kaydı` aksiyonları eklendi.
+- Bu karar, parçalı cevapları otomatik birleştirmez. `partial_answer_signals` ve
+  `split_question_candidates` insan kontrolünde ele alınacak iş listesidir.
+
 ## 2026-08-27 Codex Public İçerik Kontrolü ve Format Tazeleme Hazırlığı
 
 - Commit/deploy durumu: `08a74bc` ile içerik kontrol ekranı, `3524acc` ile soru-cevaba-taşma

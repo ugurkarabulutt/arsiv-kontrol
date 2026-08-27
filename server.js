@@ -4959,6 +4959,8 @@ const PUBLIC_ARCHIVE_ROUTE_CACHE_MS = 60_000;
 const PUBLIC_ARCHIVE_STATS_LOOKUP_CHUNK_SIZE = 35;
 const PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE = 20;
 const PUBLIC_ARCHIVE_PAGE_SIZE = 30;
+const PUBLIC_ARCHIVE_PUBLISHED_STATUS = 'published';
+const PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS = 'content_review_hidden';
 const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
@@ -6355,18 +6357,23 @@ async function loadPublicArchiveContentAuditRows() {
       error: publicArchiveContentReadyError?.message || 'Public soru-cevap tabloları hazır değil.'
     };
   }
-  const [publicRows, historyRows] = await Promise.all([
+  const [contentRows, historyRows] = await Promise.all([
     fetchAllPages(() => supabase
       .from('public_qa')
       .select('slug,source_history_id,title,question,answer_text,answer_paragraphs,summary,category_slug,topic_slugs,published_at,updated_at,created_at,status')
-      .eq('status', 'published')
+      .in('status', [PUBLIC_ARCHIVE_PUBLISHED_STATUS, PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS])
       .order('published_at', { ascending: false }), 1000),
     loadApprovedHistoryForPublicArchive()
   ]);
-  return { available: true, publicRows, historyRows };
+  return {
+    available: true,
+    publicRows: contentRows.filter(row => (row.status || PUBLIC_ARCHIVE_PUBLISHED_STATUS) === PUBLIC_ARCHIVE_PUBLISHED_STATUS),
+    reviewRows: contentRows.filter(row => row.status === PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS),
+    historyRows
+  };
 }
 
-function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = {}) {
+function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], historyRows = [] } = {}) {
   const historyById = new Map(historyRows.map(row => [row.id, row]));
   const publicByHistoryId = new Map();
   const duplicateSourceIds = [];
@@ -6497,6 +6504,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = 
     available: true,
     publicRecords: publicRows.length,
     approvedHistoryRecords: historyRows.length,
+    contentReviewHiddenCount: reviewRows.length,
     publicRowsWithSourceHistory: publicRows.filter(row => row.source_history_id).length,
     duplicateSourceIdCount: duplicateSourceIds.length,
     missingHistoryForPublicRows: publicRows.filter(row => row.source_history_id && !historyById.has(row.source_history_id)).length,
@@ -6514,6 +6522,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = 
       paragraphMismatch: paragraphMismatch.slice(0, 12),
       partialAnswerSignals: partialAnswerSignals.slice(0, 12),
       questionCopiedIntoAnswer: questionCopiedIntoAnswer.slice(0, 12),
+      contentReviewHidden: reviewRows.slice(0, 24).map(row => publicArchiveAuditSample(row, row.source_history_id ? historyById.get(row.source_history_id) : null)),
       splitQuestionCandidates: splitQuestionCandidates.slice(0, 12),
       exactDuplicateGroups: exactDuplicateGroups.slice(0, 12)
     }
@@ -6574,6 +6583,71 @@ async function refreshPublicArchiveFormattingFromHistory({ apply = false } = {})
       expectedParagraphs: item.expectedParagraphs.length
     }))
   };
+}
+
+async function hidePublicArchiveCopiedQuestionRows() {
+  const rows = await loadPublicArchiveContentAuditRows();
+  if (!rows.available) return rows;
+  const historyById = new Map(rows.historyRows.map(row => [row.id, row]));
+  const candidates = rows.publicRows.filter(row => publicArchiveQuestionCopiedIntoAnswer(row));
+  const now = new Date().toISOString();
+  const hiddenSlugs = [];
+  for (let index = 0; index < candidates.length; index += 80) {
+    const slice = candidates.slice(index, index + 80).map(row => row.slug).filter(Boolean);
+    if (!slice.length) continue;
+    const { data, error } = await supabase
+      .from('public_qa')
+      .update({ status: PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS, updated_at: now })
+      .in('slug', slice)
+      .eq('status', PUBLIC_ARCHIVE_PUBLISHED_STATUS)
+      .select('slug');
+    if (error) throw new Error(error.message);
+    hiddenSlugs.push(...(data || []).map(row => row.slug));
+  }
+  if (hiddenSlugs.length) clearPublicArchiveCaches();
+  return {
+    available: true,
+    hiddenRows: hiddenSlugs.length,
+    candidateCount: candidates.length,
+    samples: candidates.slice(0, 24).map(row => publicArchiveAuditSample(row, row.source_history_id ? historyById.get(row.source_history_id) : null)),
+    hiddenSlugs
+  };
+}
+
+async function setPublicArchiveContentItemStatus(slug = '', status = '') {
+  const cleanSlug = String(slug || '').trim();
+  const cleanStatus = String(status || '').trim();
+  const allowedStatuses = new Set([PUBLIC_ARCHIVE_PUBLISHED_STATUS, PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS]);
+  if (!/^[a-z0-9-]{2,140}$/.test(cleanSlug)) {
+    const error = new Error('Geçersiz kayıt adresi.');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (!allowedStatuses.has(cleanStatus)) {
+    const error = new Error('Bu yayın durumu kullanılamaz.');
+    error.statusCode = 400;
+    throw error;
+  }
+  await startupReady;
+  if (!await ensurePublicArchiveContentReady()) {
+    const error = new Error(publicArchiveContentReadyError?.message || 'Public soru-cevap tabloları hazır değil.');
+    error.statusCode = 503;
+    throw error;
+  }
+  const { data, error } = await supabase
+    .from('public_qa')
+    .update({ status: cleanStatus, updated_at: new Date().toISOString() })
+    .eq('slug', cleanSlug)
+    .select('slug,title,question,status,source_history_id,updated_at')
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    const notFound = new Error('Kayıt bulunamadı.');
+    notFound.statusCode = 404;
+    throw notFound;
+  }
+  clearPublicArchiveCaches();
+  return { success: true, item: data };
 }
 
 async function loadExistingPublicArchiveRowsByHistoryId(historyIds = []) {
@@ -7100,6 +7174,22 @@ app.post('/api/public-archive/refresh-format', auth, admin, superAdmin, async (r
     res.json(await refreshPublicArchiveFormattingFromHistory({ apply }));
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
+  }
+});
+
+app.post('/api/public-archive/content-audit/hide-copied-questions', auth, admin, superAdmin, async (req, res) => {
+  try {
+    res.json({ success: true, ...await hidePublicArchiveCopiedQuestionRows() });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
+  }
+});
+
+app.post('/api/public-archive/content-items/:slug/status', auth, admin, superAdmin, async (req, res) => {
+  try {
+    res.json(await setPublicArchiveContentItemStatus(req.params.slug, req.body?.status));
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, error: error.message });
   }
 });
 

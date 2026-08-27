@@ -1041,11 +1041,17 @@ for (const marker of [
   "app.get('/api/public-archive/content-audit'",
   "app.post('/api/public-archive/sync-approved'",
   "app.post('/api/public-archive/refresh-format'",
+  "app.post('/api/public-archive/content-audit/hide-copied-questions'",
+  "app.post('/api/public-archive/content-items/:slug/status'",
   'loadPublicArchiveDataset',
   'loadApprovedHistoryForPublicArchive',
   'syncApprovedHistoryToPublicArchive',
   'analyzePublicArchiveContentHealth',
   'refreshPublicArchiveFormattingFromHistory',
+  'hidePublicArchiveCopiedQuestionRows',
+  'setPublicArchiveContentItemStatus',
+  'PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS',
+  'contentReviewHiddenCount',
   'publicArchiveWhitespaceComparable',
   'publicArchiveQuestionCopiedIntoAnswer',
   'loadExistingPublicArchiveRowsByHistoryId',
@@ -1138,9 +1144,15 @@ for (const marker of [
   '/api/public-archive/content-audit',
   '/api/public-archive/sync-approved',
   '/api/public-archive/refresh-format',
+  '/api/public-archive/content-audit/hide-copied-questions',
+  '/api/public-archive/content-items/',
   '/api/public-archive/analytics'
 ]) {
   assert(html.includes(marker), `Admin panel public soru talepleri gorunurluk marker eksik: ${marker}`);
+}
+
+for (const marker of ['Soru Taşanları Yayından Al', 'hideArchivePublicCopiedQuestionAnswers', 'setArchivePublicContentStatus', 'Yayından alınan kontrol']) {
+  assert(html.includes(marker), `Admin panel public icerik kontrol aksiyonu marker eksik: ${marker}`);
 }
 
 const publicRenderCases = [

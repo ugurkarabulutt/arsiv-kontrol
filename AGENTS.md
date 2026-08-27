@@ -120,6 +120,19 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-28
+- **Public içerik kontrolüne yayından alma aksiyonu eklendi:** Canlı cevaplarda cevabın
+  başında soru metninin tekrar ettiği yüksek riskli kayıtlar için silmeden/denetim kaynağını
+  bozmadan yayından ayırma akışı eklendi. Yeni `content_review_hidden` durumu yalnız
+  `public_qa.status` üzerinde tutulur; `history.status` değiştirilmez. Böylece kayıtlar canlı
+  siteden ve sitemap'ten çıkar, fakat admin `Canlı Site > İçerik Kontrolü` ekranında
+  `Yayından alınan kontrol` olarak görünür ve kontrol sonrası tekrar `published` durumuna
+  alınabilir. Backend'e süper admin korumalı
+  `POST /api/public-archive/content-audit/hide-copied-questions` ve
+  `POST /api/public-archive/content-items/:slug/status` endpoint'leri eklendi. Kısa/yarım
+  cevap sinyalleri ve parçalı cevap adayları otomatik yayından alınmaz; yalnız insan kontrolü
+  için listelenir.
+
 ### 2026-08-27
 - **Public içerik kontrolü ve güvenli format tazeleme hazırlandı:** Canlı cevaplarda bazı
   kayıtların geçmişte 2-3 parça denetime girmiş olabileceği ve Arapça/okunuş/meal/açıklama
