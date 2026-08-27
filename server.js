@@ -6339,7 +6339,7 @@ function publicArchiveAnswerLooksPartial(row = {}) {
 
 function publicArchiveQuestionCopiedIntoAnswer(row = {}) {
   const questionKey = publicArchiveQuestionAuditKey(row.question || row.title || '');
-  const answerKey = publicArchiveComparable(row.answer_text || '');
+  const answerKey = publicArchiveQuestionAuditKey(row.answer_text || '');
   if (!questionKey || !answerKey || questionKey.length < 48) return false;
   const questionWords = questionKey.split(/\s+/).filter(Boolean);
   const prefix = questionWords.slice(0, Math.min(18, questionWords.length)).join(' ');
