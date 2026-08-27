@@ -1221,6 +1221,12 @@ for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', '
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');
+for (const marker of ['PUBLIC_ARCHIVE_DATA_UNAVAILABLE', 'publicArchiveDataUnavailableError', 'isPublicArchiveRootRequest']) {
+  assert(server.includes(marker), `Public root veri hatasi fallback korumasi eksik: ${marker}`);
+}
+for (const marker of ['renderPublicArchiveUnavailableRoute', 'Arşiv geçici olarak hazırlanıyor', "res.set('Retry-After', '120')"]) {
+  assert(publicRendererSource.includes(marker), `Public root gecici veri hatasi ekrani eksik: ${marker}`);
+}
 for (const marker of ['uniquePublicArchiveRecords', 'hidePublicArchiveDuplicateRows', '/api/public-archive/duplicates/hide', 'publicArchiveQuestionIdentity']) {
   assert(server.includes(marker), `Public mukerrer temizlik marker eksik: ${marker}`);
 }

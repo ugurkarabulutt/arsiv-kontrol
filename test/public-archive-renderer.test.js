@@ -1,6 +1,11 @@
 ﻿const assert = require('node:assert/strict');
 const test = require('node:test');
-const { ROUTE_PATHS, publicArchiveFixtures, renderPublicArchivePreviewRoute } = require('../public-archive-renderer');
+const {
+  ROUTE_PATHS,
+  publicArchiveFixtures,
+  renderPublicArchivePreviewRoute,
+  renderPublicArchiveUnavailableRoute
+} = require('../public-archive-renderer');
 
 const forbiddenSnippets = [
   'hocamız',
@@ -423,6 +428,16 @@ test('public renderer accepts route-sized server data with global stats', () => 
   assert.match(archive, /31-60 \/ 3\.147 soru gösteriliyor/);
   assert.match(archive, /Sayfa 2 \/ 105/);
   assert.match(archive, /Hidayet/);
+});
+
+test('public unavailable page does not expose fixture questions', () => {
+  const result = renderPublicArchiveUnavailableRoute({ basePath: '' });
+
+  assert.equal(result.status, 503);
+  assert.match(result.html, /Arşiv geçici olarak hazırlanıyor/);
+  assert.match(result.html, /<meta name="robots" content="noindex,nofollow">/);
+  assert.doesNotMatch(result.html, /Hidayet yolu nasıl başlar\?/);
+  assert.doesNotMatch(result.html, /<link rel="canonical"/);
 });
 
 test('public preview search and missing states are deterministic', () => {

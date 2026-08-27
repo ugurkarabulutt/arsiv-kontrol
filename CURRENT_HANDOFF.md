@@ -1,5 +1,26 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-27 Codex Public Root Demo Fallback Koruması
+
+- Kullanıcı canlı sitede yalnız birkaç soru göründüğünü bildirdi. Canlı HTTP kontrolünde
+  `/arsiv` sayfasının gerçek `public_qa` verisi yerine eski fixture/demo kayıtlarına düştüğü
+  doğrulandı; sayfada 6 benzersiz demo soru linki ve `Hidayet yolu nasıl başlar?` gibi örnek
+  içerikler görünüyordu.
+- Vercel loglarında aynı zaman aralığında `Seed kontrolü başarısız: TypeError: fetch failed`
+  ve `public_qa/public_categories/public_topics tabloları yok` uyarıları görüldü. Bu, veri
+  silinmesinden çok production fonksiyonunun Supabase'e erişememesi/okuyamaması olarak ele
+  alınmalıdır. Sensitive Vercel env değerleri CLI tarafından geri okunamadığı için gerçek
+  value doğrulaması kullanıcı/Vercel paneli üzerinden yapılmalıdır.
+- Production root için güvenli davranış değiştirildi: public içerik tabloları hazır değilse
+  veya tablo kontrolü başarısız olursa root `/` ve public route'lar artık eski demo/fixture
+  sorularına düşmez. Bunun yerine 503 durum kodlu, `Retry-After: 120`, `X-Robots-Tag:
+  noindex, nofollow` ve geçici arşiv hazırlık ekranı döner.
+- Preview/demo hattı geliştirme için korunur; bu koruma canlı root'un kullanıcıya ve arama
+  motorlarına yanlış sayıda örnek soru göstermesini engeller.
+- Yerel doğrulama başarılı: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node scripts/check-frontend.js`, `node --test test/public-archive-renderer.test.js`,
+  `npm.cmd run check` (105/105) ve `git diff --check`.
+
 ## 2026-08-27 Codex Public Cevap Biçimi Koruma Düzeltmesi
 
 - Kullanıcı canlı soru detaylarında cevapların “çorba gibi” göründüğünü, özellikle ayet Arapçası,

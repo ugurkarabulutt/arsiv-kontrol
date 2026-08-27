@@ -121,6 +121,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-27
+- **Public root demo fallback koruması eklendi:** Canlı sitede yalnız birkaç soru görünmesi
+  üzerine root public veri zinciri kontrol edildi. Vercel loglarında `Seed kontrolü başarısız:
+  TypeError: fetch failed` ve public tablo kontrol uyarıları görüldü; bu durum veri
+  silinmesinden çok production fonksiyonunun Supabase'e erişememesi/okuyamaması olarak ele
+  alınır. Production root artık public içerik tabloları hazır değilse veya tablo kontrolü
+  başarısız olursa eski demo/fixture sorularına düşmez; 503 durum kodlu, `Retry-After: 120`,
+  `X-Robots-Tag: noindex, nofollow` ve geçici arşiv hazırlık ekranı döner. Preview/demo hattı
+  geliştirme için korunur. Yerel doğrulama: `node --check server.js`,
+  `node --check public-archive-renderer.js`, `node scripts/check-frontend.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` (105/105) ve
+  `git diff --check` başarılı.
+
 - **Public cevap biçimi koruma düzeltmesi eklendi:** Canlı soru detaylarında cevapların tek
   blok/karmaşık görünmesi üzerine public yayınlama zinciri kontrol edildi. Kök neden, onaylı
   `history.corrected_text` içeriği `public_qa.answer_paragraphs` alanına aktarılırken satır

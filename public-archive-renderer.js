@@ -1696,6 +1696,36 @@ function renderNotFound() {
   });
 }
 
+function renderPublicArchiveUnavailable() {
+  return renderShell({
+    active: 'archive',
+    title: 'Arşiv geçici olarak hazırlanıyor',
+    description: 'Soru-cevap arşivi kısa süre içinde yeniden okunabilir olacak.',
+    status: 503,
+    pageNoindex: true,
+    content: `
+      <main class="pa-main pa-narrow-main">
+        <section class="pa-empty-state is-large">
+          <p class="pa-kicker">Arşiv</p>
+          <h1>Arşiv geçici olarak hazırlanıyor.</h1>
+          <p>Sorular ve cevaplar kısa süre içinde yeniden okunabilir olacak. Lütfen biraz sonra tekrar deneyin.</p>
+        </section>
+      </main>
+    `
+  });
+}
+
+function renderPublicArchiveUnavailableRoute(archiveData = {}) {
+  return withPublicArchiveData({
+    ...(archiveData || {}),
+    categories: [],
+    topics: [],
+    qa: [],
+    stats: { questionCount: 0, answerCount: 0 },
+    noindex: true
+  }, () => renderPublicArchiveUnavailable());
+}
+
 function renderShell({ title, description, active, content, status = 200, questionSlug = '', canonicalPath = '', structuredData = [], pageNoindex = false }) {
   const safeTitle = pageTitle(title);
   const safeDescription = description || publicArchiveFixtures.brand.sentence;
@@ -2802,6 +2832,13 @@ function createPublicArchivePreviewRouter(options = {}) {
         noindex
       }));
     } catch (error) {
+      if (error?.code === 'PUBLIC_ARCHIVE_DATA_UNAVAILABLE') {
+        res.set('Retry-After', '120');
+        res.set('X-Robots-Tag', 'noindex, nofollow');
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        sendRendered(res, renderPublicArchiveUnavailableRoute({ basePath }));
+        return;
+      }
       next(error);
     }
   }
@@ -2856,6 +2893,7 @@ module.exports = {
   ROUTE_PATHS,
   createPublicArchivePreviewRouter,
   normalizePublicArchiveData,
+  renderPublicArchiveUnavailableRoute,
   renderPublicArchivePreviewRoute,
   publicArchiveFixtures
 };

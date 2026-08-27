@@ -4965,7 +4965,20 @@ const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 const publicArchiveRouteCache = new Map();
 let publicArchiveContentReady = null;
+let publicArchiveContentReadyError = null;
 let publicArchiveAuthReady = null;
+
+function isPublicArchiveRootRequest(req) {
+  return PUBLIC_ARCHIVE_ROOT_ENABLED && String(req?.baseUrl || '') !== '/public-preview';
+}
+
+function publicArchiveDataUnavailableError(reason = '') {
+  const error = new Error('Public arşiv verisi şu anda okunamadı.');
+  error.code = 'PUBLIC_ARCHIVE_DATA_UNAVAILABLE';
+  error.statusCode = 503;
+  error.reason = reason;
+  return error;
+}
 
 function publicArchiveDefaultData() {
   try {
@@ -5510,11 +5523,18 @@ async function ensurePublicArchiveContentReady() {
         supabase.from('public_qa_topics').select('qa_slug').limit(1)
       ]);
       HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = !publicQaProbe.error && !publicCategoriesProbe.error && !publicTopicsProbe.error && !publicQaTopicsProbe.error;
+      publicArchiveContentReadyError = [
+        publicQaProbe.error,
+        publicCategoriesProbe.error,
+        publicTopicsProbe.error,
+        publicQaTopicsProbe.error
+      ].filter(Boolean)[0] || null;
       if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) console.warn('⚠ public_qa/public_categories/public_topics tabloları yok — public arşiv onaylı kayıt köprüsüyle çalışacak.');
       return HAS_PUBLIC_ARCHIVE_CONTENT_TABLES;
     })().catch(error => {
       publicArchiveContentReady = null;
       HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false;
+      publicArchiveContentReadyError = error;
       console.warn('Public arşiv tablo kontrolü başarısız:', error.message);
       return false;
     });
@@ -5667,7 +5687,7 @@ async function loadPublicArchiveHomeDataset() {
   return publicArchiveDatasetForRows({
     rows,
     stats: publicArchiveStats(total),
-    allowEmpty: false
+    allowEmpty: true
   });
 }
 
@@ -5791,6 +5811,9 @@ async function loadPublicArchiveQuestionDataset(slug = '') {
 async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
   if (!await ensurePublicArchiveContentReady()) {
     await startupReady;
+    if (isPublicArchiveRootRequest(req)) {
+      throw publicArchiveDataUnavailableError(publicArchiveContentReadyError?.message || '');
+    }
     return loadPublicArchiveDataset();
   }
   const key = publicArchiveRouteCacheKey(routePath, query);
