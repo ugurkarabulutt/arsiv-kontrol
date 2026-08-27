@@ -86,6 +86,7 @@ function normalizePublicArchiveData(archiveData = {}) {
     stats: archiveData.stats || null,
     pagination: archiveData.pagination || null,
     search: archiveData.search || null,
+    dataUnavailable: archiveData.dataUnavailable === true,
     basePath: normalizePublicArchiveBasePath(archiveData.basePath ?? DEFAULT_PUBLIC_ARCHIVE_BASE),
     noindex: archiveData.noindex !== false
   };
@@ -104,6 +105,7 @@ function withPublicArchiveData(archiveData, renderFn) {
     stats: publicArchiveFixtures.stats,
     pagination: publicArchiveFixtures.pagination,
     search: publicArchiveFixtures.search,
+    dataUnavailable: publicArchiveFixtures.dataUnavailable,
     basePath: PREVIEW_BASE,
     noindex: PUBLIC_ARCHIVE_NOINDEX
   };
@@ -116,6 +118,7 @@ function withPublicArchiveData(archiveData, renderFn) {
   publicArchiveFixtures.stats = next.stats;
   publicArchiveFixtures.pagination = next.pagination;
   publicArchiveFixtures.search = next.search;
+  publicArchiveFixtures.dataUnavailable = next.dataUnavailable;
   try {
     return renderFn();
   } finally {
@@ -126,6 +129,7 @@ function withPublicArchiveData(archiveData, renderFn) {
     publicArchiveFixtures.stats = previous.stats;
     publicArchiveFixtures.pagination = previous.pagination;
     publicArchiveFixtures.search = previous.search;
+    publicArchiveFixtures.dataUnavailable = previous.dataUnavailable;
     setPublicArchiveRuntime({ basePath: previous.basePath, noindex: previous.noindex });
   }
 }
@@ -474,10 +478,11 @@ const HERO_CONCEPT_ITEMS = [
 ];
 
 function conceptSliderItems(isClone = false) {
+  const disabled = publicArchiveFixtures.dataUnavailable === true;
   return HERO_CONCEPT_ITEMS.map(([label, slug]) => `
-    <a class="pa-concept-pill" href="${PREVIEW_BASE}/kategori/${escapeHtml(slug)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>
+    ${disabled ? `<span class="pa-concept-pill"${isClone ? ' aria-hidden="true"' : ''}>` : `<a class="pa-concept-pill" href="${PREVIEW_BASE}/kategori/${escapeHtml(slug)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>`}
       <span>${escapeHtml(label)}</span>
-    </a>
+    ${disabled ? '</span>' : '</a>'}
   `).join('');
 }
 
@@ -962,6 +967,7 @@ function trustBand() {
 }
 
 function renderHome() {
+  const dataUnavailable = publicArchiveFixtures.dataUnavailable === true;
   const { featured, latest } = homeQuestionSets(publicArchiveFixtures.qa);
   return renderShell({
     active: 'home',
@@ -982,17 +988,17 @@ function renderHome() {
 
         ${archiveShortcutBand()}
 
-        <section class="pa-section">
+        ${!dataUnavailable && featured.length ? `<section class="pa-section">
           ${sectionHeader('Öne Çıkan Sorular', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
-        </section>
+        </section>` : ''}
 
-        ${activeArchiveStatsBand(publicArchiveFixtures.qa)}
+        ${!dataUnavailable ? activeArchiveStatsBand(publicArchiveFixtures.qa) : ''}
 
-        <section class="pa-section">
+        ${!dataUnavailable && latest.length ? `<section class="pa-section">
           ${sectionHeader('Son Yayınlanan Sorular', 'Arşive Git', `${PREVIEW_BASE}/arsiv`)}
           <div class="pa-list">${latest.map(entry => questionCard(entry, true)).join('')}</div>
-        </section>
+        </section>` : ''}
 
         ${ctaBand()}
         ${trustBand()}
@@ -1200,6 +1206,7 @@ function archiveCategoryIndex(query = {}) {
 }
 
 function renderArchive(query = {}) {
+  const dataUnavailable = publicArchiveFixtures.dataUnavailable === true;
   const serverPagination = publicArchiveFixtures.pagination?.scope === 'archive'
     ? publicArchiveFixtures.pagination
     : null;
@@ -1229,17 +1236,17 @@ function renderArchive(query = {}) {
           <p class="pa-kicker">Arşiv</p>
           <h1>Merak ettiğiniz konunun cevaplarına ulaşın.</h1>
           <p>Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.</p>
-          <div class="pa-collection-meta">
+          ${!dataUnavailable ? `<div class="pa-collection-meta">
             <span>${archiveCountLabel(answeredCount)} soru cevap</span>
-          </div>
-          ${categoryIndex.html}
+          </div>` : ''}
+          ${!dataUnavailable ? categoryIndex.html : ''}
         </section>
-        <section class="pa-section" id="sorular">
+        ${!dataUnavailable ? `<section class="pa-section" id="sorular">
           ${sectionHeader(listTitle, categoryIndex.selectedCategory ? 'Tümünü göster' : '', categoryIndex.selectedCategory ? archiveQueryUrl({ harf: categoryIndex.activeLetter, hash: 'sorular' }) : '')}
           ${visibleEntries.length
             ? `<div class="pa-list">${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>${archivePagination(`${PREVIEW_BASE}/arsiv`, paginationParams, pageState)}`
             : `<div class="pa-empty-state"><h2>Bu kategoride soru görünmüyor.</h2><p>Arşivdeki diğer kategorileri inceleyebilirsiniz.</p></div>`}
-        </section>
+        </section>` : ''}
       </main>
     `
   });
@@ -1696,34 +1703,22 @@ function renderNotFound() {
   });
 }
 
-function renderPublicArchiveUnavailable() {
-  return renderShell({
-    active: 'archive',
-    title: 'Arşiv geçici olarak hazırlanıyor',
-    description: 'Soru-cevap arşivi kısa süre içinde yeniden okunabilir olacak.',
-    status: 200,
-    pageNoindex: true,
-    content: `
-      <main class="pa-main pa-narrow-main">
-        <section class="pa-empty-state is-large">
-          <p class="pa-kicker">Arşiv</p>
-          <h1>Arşiv geçici olarak hazırlanıyor.</h1>
-          <p>Sorular ve cevaplar kısa süre içinde yeniden okunabilir olacak. Lütfen biraz sonra tekrar deneyin.</p>
-        </section>
-      </main>
-    `
-  });
-}
-
-function renderPublicArchiveUnavailableRoute(archiveData = {}) {
-  return withPublicArchiveData({
+function publicArchiveUnavailableData(archiveData = {}) {
+  return {
     ...(archiveData || {}),
     categories: [],
     topics: [],
     qa: [],
-    stats: { questionCount: 0, answerCount: 0 },
+    stats: null,
+    pagination: null,
+    search: null,
+    dataUnavailable: true,
     noindex: true
-  }, () => renderPublicArchiveUnavailable());
+  };
+}
+
+function renderPublicArchiveUnavailableRoute(routePath = publicArchiveHomeHref(), query = {}, archiveData = {}) {
+  return renderPublicArchivePreviewRoute(routePath, query, publicArchiveUnavailableData(archiveData));
 }
 
 function renderShell({ title, description, active, content, status = 200, questionSlug = '', canonicalPath = '', structuredData = [], pageNoindex = false }) {
@@ -2835,7 +2830,7 @@ function createPublicArchivePreviewRouter(options = {}) {
       if (error?.code === 'PUBLIC_ARCHIVE_DATA_UNAVAILABLE') {
         res.set('X-Robots-Tag', 'noindex, nofollow');
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        sendRendered(res, renderPublicArchiveUnavailableRoute({ basePath }));
+        sendRendered(res, renderPublicArchiveUnavailableRoute(routeFor(routePath), query, { basePath }));
         return;
       }
       next(error);

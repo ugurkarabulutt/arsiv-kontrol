@@ -430,14 +430,23 @@ test('public renderer accepts route-sized server data with global stats', () => 
   assert.match(archive, /Hidayet/);
 });
 
-test('public unavailable page does not expose fixture questions', () => {
-  const result = renderPublicArchiveUnavailableRoute({ basePath: '' });
+test('public unavailable mode keeps site shell without fixture questions', () => {
+  const result = renderPublicArchiveUnavailableRoute('/', {}, { basePath: '' });
 
   assert.equal(result.status, 200);
-  assert.match(result.html, /Arşiv geçici olarak hazırlanıyor/);
+  assert.match(result.html, /Sorularınıza, kaynaklarıyla birlikte cevap bulun\./);
+  assert.match(result.html, /Aklınızda bir soru mu var\?/);
   assert.match(result.html, /<meta name="robots" content="noindex,nofollow">/);
   assert.doesNotMatch(result.html, /Hidayet yolu nasıl başlar\?/);
+  assert.doesNotMatch(result.html, /Arşiv geçici olarak hazırlanıyor/);
+  assert.doesNotMatch(result.html, /Öne Çıkan Sorular/);
   assert.doesNotMatch(result.html, /<link rel="canonical"/);
+
+  const archive = renderPublicArchiveUnavailableRoute('/arsiv', {}, { basePath: '' });
+  assert.equal(archive.status, 200);
+  assert.match(archive.html, /Merak ettiğiniz konunun cevaplarına ulaşın\./);
+  assert.doesNotMatch(archive.html, /<section class="pa-section" id="sorular">/);
+  assert.doesNotMatch(archive.html, /Hidayet yolu nasıl başlar\?/);
 });
 
 test('public preview search and missing states are deterministic', () => {

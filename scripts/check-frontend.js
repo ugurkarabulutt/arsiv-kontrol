@@ -1224,9 +1224,10 @@ assert(!publicRendererSource.includes('document.write(') && !publicRendererSourc
 for (const marker of ['PUBLIC_ARCHIVE_DATA_UNAVAILABLE', 'publicArchiveDataUnavailableError', 'isPublicArchiveRootRequest']) {
   assert(server.includes(marker), `Public root veri hatasi fallback korumasi eksik: ${marker}`);
 }
-for (const marker of ['renderPublicArchiveUnavailableRoute', 'Arşiv geçici olarak hazırlanıyor', "res.set('X-Robots-Tag', 'noindex, nofollow')"]) {
+for (const marker of ['renderPublicArchiveUnavailableRoute', 'publicArchiveUnavailableData', 'dataUnavailable: true', "res.set('X-Robots-Tag', 'noindex, nofollow')"]) {
   assert(publicRendererSource.includes(marker), `Public root gecici veri hatasi ekrani eksik: ${marker}`);
 }
+assert(!publicRendererSource.includes('Arşiv geçici olarak hazırlanıyor'), 'Public root veri yok modunda site kapali mesaji gorunmemeli.');
 for (const marker of ['uniquePublicArchiveRecords', 'hidePublicArchiveDuplicateRows', '/api/public-archive/duplicates/hide', 'publicArchiveQuestionIdentity']) {
   assert(server.includes(marker), `Public mukerrer temizlik marker eksik: ${marker}`);
 }

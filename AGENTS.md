@@ -127,10 +127,10 @@ tespit edilir).
   silinmesinden çok production fonksiyonunun Supabase'e erişememesi/okuyamaması olarak ele
   alınır. Production root artık public içerik tabloları hazır değilse veya tablo kontrolü
   başarısız olursa eski demo/fixture sorularına düşmez. Site 200 durum koduyla açık kalır;
-  fakat `X-Robots-Tag: noindex, nofollow` ve geçici arşiv hazırlık ekranı döner. Kullanıcının
-  canlı sitenin kapalı görünmesini istememesi üzerine ilk 503 yaklaşımı bu açılır geçici sayfa
-  davranışına çevrildi. Preview/demo hattı geliştirme için korunur. Yerel doğrulama:
-  `node --check server.js`,
+  fakat `X-Robots-Tag: noindex, nofollow` döner ve soru/kategori verisine bağlı bölümler
+  gizlenir. Kullanıcının canlı sitenin kapalı görünmesini ve `Arşiv geçici olarak hazırlanıyor`
+  mesajını istememesi üzerine ilk 503/geçici ekran yaklaşımı normal site kabuğuna çevrildi.
+  Preview/demo hattı geliştirme için korunur. Yerel doğrulama: `node --check server.js`,
   `node --check public-archive-renderer.js`, `node scripts/check-frontend.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` (105/105) ve
   `git diff --check` başarılı.
