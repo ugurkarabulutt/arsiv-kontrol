@@ -1042,6 +1042,8 @@ for (const marker of [
   'loadPublicArchiveDataset',
   'loadApprovedHistoryForPublicArchive',
   'syncApprovedHistoryToPublicArchive',
+  'loadExistingPublicArchiveRowsByHistoryId',
+  'preservedExistingContent',
   'PUBLIC_ARCHIVE_PARAGRAPH_TARGET_LENGTH',
   'publicArchiveInsertStructuralBreaks',
   'publicArchiveSentenceSegments',

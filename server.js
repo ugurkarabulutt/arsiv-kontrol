@@ -6253,6 +6253,26 @@ async function hidePublicArchiveDuplicateRows() {
   return { ...report, hiddenRows: report.duplicateSlugs.length };
 }
 
+async function loadExistingPublicArchiveRowsByHistoryId(historyIds = []) {
+  const cleanIds = [...new Set(historyIds.filter(Boolean))];
+  const rows = [];
+  for (let index = 0; index < cleanIds.length; index += 200) {
+    const slice = cleanIds.slice(index, index + 200);
+    rows.push(...await fetchAllPages(() => supabase
+      .from('public_qa')
+      .select('slug,source_history_id,title,question,answer_text,answer_paragraphs,summary,excerpt,published_at,created_at,read_time,is_featured,status')
+      .in('source_history_id', slice), 1000));
+  }
+  return new Map(rows
+    .filter(row => row.source_history_id)
+    .map(row => [row.source_history_id, row]));
+}
+
+function publicArchiveReadTime(answerText = '', fallback = 1) {
+  const count = String(answerText || '').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil((count || Number(fallback || 1) * 180) / 180));
+}
+
 async function syncApprovedHistoryToPublicArchive() {
   if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
     return {
@@ -6270,7 +6290,10 @@ async function syncApprovedHistoryToPublicArchive() {
   const records = await loadApprovedHistoryForPublicArchive();
   const statsMap = await loadPublicArchiveStatsMap(records.map(row => publicArchiveSlug(row.question_text || row.filename || row.id)));
   const dataset = publicArchiveDatasetFromRecords(records, statsMap);
+  const existingByHistoryId = await loadExistingPublicArchiveRowsByHistoryId(records.map(row => row.id));
   const now = new Date().toISOString();
+  let preservedExistingContent = 0;
+  let insertedNewContent = 0;
   const categories = (dataset.categories || []).map((item, index) => ({
     slug: item.slug,
     name: item.name,
@@ -6290,26 +6313,35 @@ async function syncApprovedHistoryToPublicArchive() {
     sort_order: index + 1,
     updated_at: now
   }));
-  const qaRows = (dataset.qa || []).map(item => ({
-    slug: item.slug,
-    source_history_id: item.sourceHistoryId || null,
-    title: item.title || item.question || 'Soru',
-    question: item.question || item.title || 'Soru',
-    answer_text: (item.answer || []).join('\n\n'),
-    answer_paragraphs: item.answer || [],
-    summary: item.summary || publicArchiveSummaryFromAnswer((item.answer || []).join('\n\n'), item.question),
-    excerpt: item.excerpt || item.summary || '',
-    category_slug: item.categorySlug || null,
-    topic_slugs: item.topicSlugs || [],
-    related_slugs: item.relatedSlugs || [],
-    source_context_title: item.sourceContext?.title || 'Kaynak ve bağlam',
-    source_context_text: item.sourceContext?.text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kategorilerle birlikte okunur.',
-    published_at: item.publishedAt || now,
-    updated_at: now,
-    read_time: Number(item.readTime || 1),
-    is_featured: item.isFeatured === true,
-    status: 'published'
-  }));
+  const qaRows = (dataset.qa || []).map(item => {
+    const existing = item.sourceHistoryId ? existingByHistoryId.get(item.sourceHistoryId) : null;
+    const existingAnswerText = publicArchiveSubmittedText(existing?.answer_text || '', 120000);
+    const generatedAnswerText = (item.answer || []).join('\n\n');
+    const answerText = existingAnswerText || generatedAnswerText;
+    const answerParagraphs = existingAnswerText ? publicArchiveParagraphs(existingAnswerText) : (item.answer || []);
+    if (existingAnswerText) preservedExistingContent += 1;
+    else insertedNewContent += 1;
+    return {
+      slug: existing?.slug || item.slug,
+      source_history_id: item.sourceHistoryId || null,
+      title: existing?.title || item.title || item.question || 'Soru',
+      question: existing?.question || item.question || item.title || 'Soru',
+      answer_text: answerText,
+      answer_paragraphs: answerParagraphs,
+      summary: existing?.summary || item.summary || publicArchiveSummaryFromAnswer(answerText, item.question),
+      excerpt: existing?.excerpt || item.excerpt || item.summary || '',
+      category_slug: item.categorySlug || null,
+      topic_slugs: item.topicSlugs || [],
+      related_slugs: item.relatedSlugs || [],
+      source_context_title: item.sourceContext?.title || 'Kaynak ve bağlam',
+      source_context_text: item.sourceContext?.text || 'Bu cevap, arşivdeki soru-cevap kayıtları içinde ilgili kategorilerle birlikte okunur.',
+      published_at: existing?.published_at || item.publishedAt || now,
+      updated_at: now,
+      read_time: publicArchiveReadTime(answerText, item.readTime),
+      is_featured: existing?.is_featured === true || item.isFeatured === true,
+      status: existing?.status && existing.status !== 'published' ? existing.status : 'published'
+    };
+  });
   const qaTopicRows = qaRows.flatMap(row => (Array.isArray(row.topic_slugs) ? row.topic_slugs : [])
     .map(topicSlug => ({ qa_slug: row.slug, topic_slug: topicSlug, updated_at: now })));
 
@@ -6351,6 +6383,8 @@ async function syncApprovedHistoryToPublicArchive() {
     source: 'approved_history',
     approvedRecords: records.length,
     publishedRecords: qaRows.length,
+    preservedExistingContent,
+    insertedNewContent,
     categories: categories.length,
     topics: topics.length,
     links: qaTopicRows.length

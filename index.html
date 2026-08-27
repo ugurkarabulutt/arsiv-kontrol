@@ -8298,7 +8298,11 @@ async function syncApprovedPublicArchive(){
     source:data.source||'approved_history_sync'
   };
   renderArchivePublicSyncStatus();
-  await showSystemAlert('Site verisi hazırlandı',`${Number(data.publishedRecords||0).toLocaleString('tr-TR')} onaylı soru-cevap public arşiv okuma yapısına alındı.`,'success');
+  await showSystemAlert(
+    'Site verisi hazırlandı',
+    `${Number(data.publishedRecords||0).toLocaleString('tr-TR')} kayıt hazırlandı. ${Number(data.preservedExistingContent||0).toLocaleString('tr-TR')} mevcut yayın içeriği korunarak işlendi, ${Number(data.insertedNewContent||0).toLocaleString('tr-TR')} yeni kayıt eklendi.`,
+    'success'
+  );
 }
 function archivePublicQuestionStatusLabel(status){
   return {new:'Yeni',reviewing:'İnceleniyor',answered:'Cevaplandı',closed:'Kapandı'}[status]||'Yeni';
