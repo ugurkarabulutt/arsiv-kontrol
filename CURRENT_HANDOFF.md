@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-27 Codex Public İçerik Kontrolü ve Format Tazeleme Hazırlığı
+
+- Kullanıcı canlı cevaplarda iki ana risk bildirdi: bazı uzun cevapların geçmişte 2-3 parça
+  denetime girildiği için canlıda yarım/parçalı görünmesi ve ekip denetiminde düzgün olan
+  Arapça/okunuş/meal/açıklama satırlarının public yayında karışık görünmesi.
+- Kök neden adayı kodda doğrulandı: `syncApprovedHistoryToPublicArchive()` mevcut
+  `public_qa.answer_text` varsa onu koruyor. Bu manuel public düzeltmeleri ezmemek için güvenli
+  bir davranış olsa da eski bozuk/tek blok verinin yeni paragraf düzeltmesinden etkilenmemesine
+  yol açabilir.
+- Yeni admin/süper admin korumalı endpoint'ler eklendi:
+  - `GET /api/public-archive/content-audit`: canlı public kayıtları onaylı `history` kaynağıyla
+    karşılaştırır; güvenli format tazeleme adaylarını, public-history içerik farklarını, parçalı
+    cevap adaylarını, kısa/yarım sinyallerini ve birebir kopya gruplarını örnekleriyle döner.
+  - `POST /api/public-archive/refresh-format`: `apply:false` ile önizleme, `apply:true` ile yalnız
+    kelimesi aynı olan cevaplarda `answer_text` ve `answer_paragraphs` alanını onaylı kaynaktaki
+    satır/paragraf düzeninden tazeler. İçeriği farklı görünen kayıtlar ve parçalı cevap adayları
+    otomatik değişmez.
+- Admin panel Canlı Site menüsüne `İçerik Kontrolü` eklendi. Bu ekran raporu kartlar halinde
+  gösterir ve güvenli format önizleme/uygulama aksiyonlarını içerir.
+- Gelecek yeni senkronlarda yeni kayıtların `answer_text` alanı paragraf listesi birleştirilmiş
+  metinden değil, onaylı kaynaktaki ham düzenli cevap metninden beslenir (`answerText:
+  record.answerText`).
+- Bu adım henüz parçalı cevapları otomatik birleştirmez; o iş rapor çıktılarına göre manuel
+  onaylı ayrı veri düzeltme adımı olarak yapılmalıdır.
+
 ## 2026-08-27 Codex Public Root Demo Fallback Koruması
 
 - Kullanıcı canlı sitede yalnız birkaç soru göründüğünü bildirdi. Canlı HTTP kontrolünde

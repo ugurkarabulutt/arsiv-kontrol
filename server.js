@@ -5363,6 +5363,7 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
       sourceHistoryId: record.id || null,
       title: publicArchiveText(record.title || record.question, 180),
       question: record.question,
+      answerText: record.answerText,
       summary: publicArchiveSummaryFromAnswer(record.answerText, record.question),
       answer,
       excerpt: publicArchiveSummaryFromAnswer(record.answerText, record.question),
@@ -6276,6 +6277,285 @@ async function hidePublicArchiveDuplicateRows() {
   return { ...report, hiddenRows: report.duplicateSlugs.length };
 }
 
+function publicArchiveWhitespaceComparable(value = '') {
+  return publicArchiveSubmittedText(value, 120000).replace(/\s+/g, ' ').trim();
+}
+
+function publicArchiveTextLineCount(value = '') {
+  const text = publicArchiveSubmittedText(value, 120000);
+  if (!text) return 0;
+  return text.split(/\n+/).map(item => item.trim()).filter(Boolean).length;
+}
+
+function publicArchiveTextParagraphCount(value = '') {
+  const text = publicArchiveSubmittedText(value, 120000);
+  if (!text) return 0;
+  return text.split(/\n{2,}/).map(item => item.trim()).filter(Boolean).length;
+}
+
+function publicArchiveRowParagraphs(row = {}) {
+  const value = row.answer_paragraphs;
+  if (Array.isArray(value)) return value.map(item => publicArchiveSubmittedText(item, 120000)).filter(Boolean);
+  if (typeof value === 'string' && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.map(item => publicArchiveSubmittedText(item, 120000)).filter(Boolean);
+    } catch (error) {
+      return publicArchiveParagraphs(value);
+    }
+  }
+  return [];
+}
+
+function publicArchiveQuestionAuditKey(value = '') {
+  return publicArchiveComparable(value)
+    .replace(/\b(muhterem|hocam|efendim)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function publicArchiveAuditSample(row = {}, historyRow = null) {
+  return {
+    slug: row.slug || '',
+    sourceHistoryId: row.source_history_id || historyRow?.id || null,
+    title: publicArchiveText(row.title || row.question || historyRow?.question_text || '', 160),
+    question: publicArchiveText(row.question || historyRow?.question_text || '', 220),
+    publicLength: String(row.answer_text || '').length,
+    historyLength: String(historyRow?.corrected_text || '').length,
+    publishedAt: row.published_at || '',
+    updatedAt: row.updated_at || ''
+  };
+}
+
+function publicArchiveAnswerLooksPartial(row = {}) {
+  const answer = publicArchiveSubmittedText(row.answer_text || '', 120000);
+  if (!answer) return false;
+  if (answer.length < 280) return true;
+  if (answer.length < 900 && /(?:devam|sonra|aşağıda|yukarıda|birinci|ikinci|üçüncü|parça|bölüm)/iu.test(answer)) return true;
+  if (/[,:;]\s*$/u.test(answer)) return true;
+  if (/\b(ve|veya|ama|fakat|çünkü|ki|ile|için)\s*$/iu.test(answer)) return true;
+  return false;
+}
+
+async function loadPublicArchiveContentAuditRows() {
+  await startupReady;
+  if (!await ensurePublicArchiveContentReady()) {
+    return {
+      available: false,
+      error: publicArchiveContentReadyError?.message || 'Public soru-cevap tabloları hazır değil.'
+    };
+  }
+  const [publicRows, historyRows] = await Promise.all([
+    fetchAllPages(() => supabase
+      .from('public_qa')
+      .select('slug,source_history_id,title,question,answer_text,answer_paragraphs,summary,category_slug,topic_slugs,published_at,updated_at,created_at,status')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false }), 1000),
+    loadApprovedHistoryForPublicArchive()
+  ]);
+  return { available: true, publicRows, historyRows };
+}
+
+function buildPublicArchiveContentAudit({ publicRows = [], historyRows = [] } = {}) {
+  const historyById = new Map(historyRows.map(row => [row.id, row]));
+  const publicByHistoryId = new Map();
+  const duplicateSourceIds = [];
+  for (const row of publicRows) {
+    if (!row.source_history_id) continue;
+    if (publicByHistoryId.has(row.source_history_id)) duplicateSourceIds.push(row.source_history_id);
+    publicByHistoryId.set(row.source_history_id, row);
+  }
+
+  const stalePublicContent = [];
+  const safeFormatRefreshCandidates = [];
+  const paragraphMismatch = [];
+  const partialAnswerSignals = [];
+
+  for (const row of publicRows) {
+    const historyRow = row.source_history_id ? historyById.get(row.source_history_id) : null;
+    const publicAnswer = publicArchiveSubmittedText(row.answer_text || '', 120000);
+    const historyAnswer = publicArchiveSubmittedText(historyRow?.corrected_text || '', 120000);
+    const rowParagraphs = publicArchiveRowParagraphs(row);
+    const joinedParagraphs = publicArchiveSubmittedText(rowParagraphs.join('\n\n'), 120000);
+    const expectedParagraphs = historyAnswer ? publicArchiveParagraphs(historyAnswer) : publicArchiveParagraphs(publicAnswer);
+
+    if (rowParagraphs.length && publicArchiveWhitespaceComparable(joinedParagraphs) !== publicArchiveWhitespaceComparable(publicAnswer)) {
+      paragraphMismatch.push({
+        ...publicArchiveAuditSample(row, historyRow),
+        paragraphCount: rowParagraphs.length,
+        answerLineCount: publicArchiveTextLineCount(publicAnswer),
+        paragraphLineCount: publicArchiveTextLineCount(joinedParagraphs)
+      });
+    }
+
+    if (historyRow && publicArchiveWhitespaceComparable(publicAnswer) !== publicArchiveWhitespaceComparable(historyAnswer)) {
+      stalePublicContent.push({
+        ...publicArchiveAuditSample(row, historyRow),
+        publicStart: publicArchiveText(publicAnswer, 220),
+        historyStart: publicArchiveText(historyAnswer, 220)
+      });
+    }
+
+    if (historyRow && publicArchiveWhitespaceComparable(publicAnswer) === publicArchiveWhitespaceComparable(historyAnswer)) {
+      const publicLines = publicArchiveTextLineCount(publicAnswer);
+      const historyLines = publicArchiveTextLineCount(historyAnswer);
+      const currentParagraphComparable = publicArchiveWhitespaceComparable(joinedParagraphs || publicAnswer);
+      const expectedParagraphComparable = publicArchiveWhitespaceComparable(expectedParagraphs.join('\n\n'));
+      if (
+        publicAnswer !== historyAnswer ||
+        currentParagraphComparable !== expectedParagraphComparable ||
+        (historyLines >= 4 && publicLines < historyLines)
+      ) {
+        safeFormatRefreshCandidates.push({
+          ...publicArchiveAuditSample(row, historyRow),
+          publicLines,
+          historyLines,
+          currentParagraphs: rowParagraphs.length,
+          expectedParagraphs: expectedParagraphs.length
+        });
+      }
+    }
+
+    if (publicArchiveAnswerLooksPartial(row)) {
+      partialAnswerSignals.push({
+        ...publicArchiveAuditSample(row, historyRow),
+        answerEnd: publicArchiveText(publicAnswer.slice(-180), 180)
+      });
+    }
+  }
+
+  const sameQuestionMap = new Map();
+  for (const row of publicRows) {
+    const key = publicArchiveQuestionAuditKey(row.question || row.title || '');
+    if (!key) continue;
+    if (!sameQuestionMap.has(key)) sameQuestionMap.set(key, []);
+    sameQuestionMap.get(key).push(row);
+  }
+  const splitQuestionCandidates = [];
+  for (const group of sameQuestionMap.values()) {
+    if (group.length < 2) continue;
+    const answerKeys = new Set(group.map(row => publicArchiveWhitespaceComparable(row.answer_text || '')));
+    if (answerKeys.size <= 1) continue;
+    splitQuestionCandidates.push({
+      count: group.length,
+      question: publicArchiveText(group[0].question || group[0].title || '', 220),
+      totalAnswerLength: group.reduce((sum, row) => sum + String(row.answer_text || '').length, 0),
+      items: group
+        .slice()
+        .sort((a, b) => String(a.published_at || '').localeCompare(String(b.published_at || '')))
+        .map(item => ({
+          slug: item.slug,
+          sourceHistoryId: item.source_history_id || null,
+          title: publicArchiveText(item.title || item.question || '', 120),
+          answerLength: String(item.answer_text || '').length,
+          publishedAt: item.published_at || ''
+        }))
+    });
+  }
+  splitQuestionCandidates.sort((a, b) => b.count - a.count || b.totalAnswerLength - a.totalAnswerLength);
+
+  const exactDuplicateMap = new Map();
+  for (const row of publicRows) {
+    const key = `${publicArchiveWhitespaceComparable(row.question || row.title || '')}\u0000${publicArchiveWhitespaceComparable(row.answer_text || '')}`;
+    if (!key.trim()) continue;
+    if (!exactDuplicateMap.has(key)) exactDuplicateMap.set(key, []);
+    exactDuplicateMap.get(key).push(row);
+  }
+  const exactDuplicateGroups = [...exactDuplicateMap.values()]
+    .filter(group => group.length > 1)
+    .map(group => ({
+      count: group.length,
+      question: publicArchiveText(group[0].question || group[0].title || '', 220),
+      items: group.map(item => ({
+        slug: item.slug,
+        sourceHistoryId: item.source_history_id || null,
+        title: publicArchiveText(item.title || item.question || '', 120),
+        answerLength: String(item.answer_text || '').length
+      }))
+    }))
+    .sort((a, b) => b.count - a.count || a.question.localeCompare(b.question, 'tr'));
+
+  return {
+    available: true,
+    publicRecords: publicRows.length,
+    approvedHistoryRecords: historyRows.length,
+    publicRowsWithSourceHistory: publicRows.filter(row => row.source_history_id).length,
+    duplicateSourceIdCount: duplicateSourceIds.length,
+    missingHistoryForPublicRows: publicRows.filter(row => row.source_history_id && !historyById.has(row.source_history_id)).length,
+    approvedHistoryWithoutPublicRow: historyRows.filter(row => !publicByHistoryId.has(row.id)).length,
+    stalePublicContentCount: stalePublicContent.length,
+    safeFormatRefreshCandidateCount: safeFormatRefreshCandidates.length,
+    paragraphMismatchCount: paragraphMismatch.length,
+    partialAnswerSignalCount: partialAnswerSignals.length,
+    splitQuestionCandidateCount: splitQuestionCandidates.length,
+    exactDuplicateGroupCount: exactDuplicateGroups.length,
+    samples: {
+      stalePublicContent: stalePublicContent.slice(0, 12),
+      safeFormatRefreshCandidates: safeFormatRefreshCandidates.slice(0, 12),
+      paragraphMismatch: paragraphMismatch.slice(0, 12),
+      partialAnswerSignals: partialAnswerSignals.slice(0, 12),
+      splitQuestionCandidates: splitQuestionCandidates.slice(0, 12),
+      exactDuplicateGroups: exactDuplicateGroups.slice(0, 12)
+    }
+  };
+}
+
+async function analyzePublicArchiveContentHealth() {
+  const rows = await loadPublicArchiveContentAuditRows();
+  if (!rows.available) return rows;
+  return buildPublicArchiveContentAudit(rows);
+}
+
+async function refreshPublicArchiveFormattingFromHistory({ apply = false } = {}) {
+  const rows = await loadPublicArchiveContentAuditRows();
+  if (!rows.available) return rows;
+  const historyById = new Map(rows.historyRows.map(row => [row.id, row]));
+  const candidates = [];
+  for (const row of rows.publicRows) {
+    const historyRow = row.source_history_id ? historyById.get(row.source_history_id) : null;
+    if (!historyRow?.corrected_text) continue;
+    const publicAnswer = publicArchiveSubmittedText(row.answer_text || '', 120000);
+    const historyAnswer = publicArchiveSubmittedText(historyRow.corrected_text || '', 120000);
+    if (!publicAnswer || !historyAnswer) continue;
+    if (publicArchiveWhitespaceComparable(publicAnswer) !== publicArchiveWhitespaceComparable(historyAnswer)) continue;
+    const expectedParagraphs = publicArchiveParagraphs(historyAnswer);
+    const currentParagraphs = publicArchiveRowParagraphs(row);
+    const currentParagraphComparable = publicArchiveWhitespaceComparable((currentParagraphs.length ? currentParagraphs : [publicAnswer]).join('\n\n'));
+    const expectedParagraphComparable = publicArchiveWhitespaceComparable(expectedParagraphs.join('\n\n'));
+    if (publicAnswer === historyAnswer && currentParagraphComparable === expectedParagraphComparable) continue;
+    candidates.push({ row, historyRow, historyAnswer, expectedParagraphs });
+  }
+  if (apply) {
+    const now = new Date().toISOString();
+    for (const item of candidates) {
+      const { error } = await supabase
+        .from('public_qa')
+        .update({
+          answer_text: item.historyAnswer,
+          answer_paragraphs: item.expectedParagraphs,
+          read_time: publicArchiveReadTime(item.historyAnswer),
+          updated_at: now
+        })
+        .eq('slug', item.row.slug)
+        .eq('status', 'published');
+      if (error) throw new Error(error.message);
+    }
+    clearPublicArchiveCaches();
+  }
+  return {
+    available: true,
+    dryRun: !apply,
+    candidateCount: candidates.length,
+    updatedRows: apply ? candidates.length : 0,
+    samples: candidates.slice(0, 20).map(item => ({
+      ...publicArchiveAuditSample(item.row, item.historyRow),
+      publicLines: publicArchiveTextLineCount(item.row.answer_text || ''),
+      historyLines: publicArchiveTextLineCount(item.historyAnswer),
+      expectedParagraphs: item.expectedParagraphs.length
+    }))
+  };
+}
+
 async function loadExistingPublicArchiveRowsByHistoryId(historyIds = []) {
   const cleanIds = [...new Set(historyIds.filter(Boolean))];
   const rows = [];
@@ -6339,7 +6619,7 @@ async function syncApprovedHistoryToPublicArchive() {
   const qaRows = (dataset.qa || []).map(item => {
     const existing = item.sourceHistoryId ? existingByHistoryId.get(item.sourceHistoryId) : null;
     const existingAnswerText = publicArchiveSubmittedText(existing?.answer_text || '', 120000);
-    const generatedAnswerText = (item.answer || []).join('\n\n');
+    const generatedAnswerText = publicArchiveSubmittedText(item.answerText || (item.answer || []).join('\n\n'), 120000);
     const answerText = existingAnswerText || generatedAnswerText;
     const answerParagraphs = existingAnswerText ? publicArchiveParagraphs(existingAnswerText) : (item.answer || []);
     if (existingAnswerText) preservedExistingContent += 1;
@@ -6775,6 +7055,14 @@ app.get('/api/public-archive/sync-status', auth, admin, superAdmin, async (req, 
   }
 });
 
+app.get('/api/public-archive/content-audit', auth, admin, superAdmin, async (req, res) => {
+  try {
+    res.json(await analyzePublicArchiveContentHealth());
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, error: error.message });
+  }
+});
+
 app.post('/api/public-archive/sync-approved', auth, admin, superAdmin, async (req, res) => {
   try {
     await startupReady;
@@ -6783,6 +7071,15 @@ app.post('/api/public-archive/sync-approved', auth, admin, superAdmin, async (re
     res.status(status).json({ success: result.available !== false, ...result });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/public-archive/refresh-format', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const apply = req.body?.apply === true;
+    res.json(await refreshPublicArchiveFormattingFromHistory({ apply }));
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
   }
 });
 

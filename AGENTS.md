@@ -121,6 +121,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-08-27
+- **Public içerik kontrolü ve güvenli format tazeleme hazırlandı:** Canlı cevaplarda bazı
+  kayıtların geçmişte 2-3 parça denetime girmiş olabileceği ve Arapça/okunuş/meal/açıklama
+  satırlarının public yayında karışık göründüğü bildirildi. Kök neden adayı olarak
+  `syncApprovedHistoryToPublicArchive()` fonksiyonunun mevcut `public_qa.answer_text` varsa
+  onu koruması tespit edildi; bu manuel public düzeltmeleri ezmemek için doğru bir güvenlik
+  katmanı olsa da eski bozuk/tek blok verinin yeni paragraf düzeltmesinden etkilenmemesine
+  yol açabilir. Backend'e süper admin korumalı `GET /api/public-archive/content-audit` ve
+  `POST /api/public-archive/refresh-format` endpoint'leri eklendi. İçerik kontrolü canlı
+  public kayıtları onaylı `history` kaynağıyla karşılaştırır; güvenli format tazeleme adayları,
+  public-history içerik farkları, parçalı cevap adayları, kısa/yarım cevap sinyalleri ve
+  birebir kopya gruplarını örnekleriyle gösterir. `refresh-format` yalnız kelimesi aynı olan
+  cevaplarda `answer_text` ve `answer_paragraphs` alanını onaylı kaynaktaki satır/paragraf
+  düzeninden tazeler; içeriği farklı görünen kayıtlar ve parçalı cevap adayları otomatik
+  değişmez. Admin panel Canlı Site menüsüne `İçerik Kontrolü` ekranı eklendi. Gelecek yeni
+  senkronlarda yeni kayıtların `answer_text` alanı paragraf listesi birleştirilmiş metinden
+  değil, onaylı kaynaktaki ham düzenli cevap metninden beslenir.
+
 - **Public root demo fallback koruması eklendi:** Canlı sitede yalnız birkaç soru görünmesi
   üzerine root public veri zinciri kontrol edildi. Vercel loglarında `Seed kontrolü başarısız:
   TypeError: fetch failed` ve public tablo kontrol uyarıları görüldü; bu durum veri
@@ -145,8 +162,9 @@ tespit edilir).
   `20260827-answer-format-v1` olarak yükseltilerek eski CSS cache'i kırılır. Frontend guard bu
   davranışı kalıcı olarak kontrol eder. Yerel doğrulama: `node --check server.js`, `node --check
   public-archive-renderer.js`, `node scripts/check-frontend.js`, `git diff --check`,
-  `npm.cmd run check` (104/104) başarılı. Mevcut canlı kayıtların düzelmesi için deploy
-  sonrası onaylı kayıtlardan public senkron yeniden çalıştırılmalıdır.
+  `npm.cmd run check` (104/104) başarılı. Mevcut canlı kayıtların düzelmesi için düz public
+  senkron tek başına yeterli değildir; mevcut `public_qa.answer_text` korunduğu için güvenli
+  format tazeleme veya ayrıca onaylı veri düzeltme adımı çalıştırılmalıdır.
 
 ### 2026-08-23
 - **Public SEO/hız iyileştirme turu eklendi:** Canlı audit sonucunda public CSS ve görsellerin
