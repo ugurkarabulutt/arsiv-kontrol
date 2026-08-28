@@ -622,16 +622,34 @@ async function fetchAllPages(makeQuery, pageSize = 1000) {
   return rows;
 }
 
-async function loadApprovalGroup(filterQuery) {
-  const { data, error, count } = await filterQuery(
+function approvalSearchTerm(value = '') {
+  return String(value || '').trim().replace(/[%,()]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
+}
+
+function applyApprovalSearch(builder, search = '') {
+  const term = approvalSearchTerm(search);
+  if (!term) return builder;
+  const pattern = `%${term}%`;
+  return builder.or([
+    `filename.ilike.${pattern}`,
+    `question_text.ilike.${pattern}`,
+    `corrected_text.ilike.${pattern}`,
+    `summary.ilike.${pattern}`,
+    `name.ilike.${pattern}`,
+    `username.ilike.${pattern}`
+  ].join(','));
+}
+
+async function loadApprovalGroup(filterQuery, search = '') {
+  const { data, error, count } = await applyApprovalSearch(filterQuery(
     supabase.from('history')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .limit(80)
-  );
+  ), search).limit(80);
   if (error) throw new Error(error.message);
   return {
     count: count || 0,
+    search: approvalSearchTerm(search),
     items: (data || []).map(mapHistory)
   };
 }
@@ -643,6 +661,7 @@ const ARCHIVE_OPS_WORK_ITEMS_KEY = 'archive_ops_work_items';
 const ARCHIVE_OPS_PUBLISH_TASKS_KEY = 'archive_ops_publish_tasks';
 const ARCHIVE_OPS_RELEASE_PACKAGES_KEY = 'archive_ops_release_packages';
 const PUBLIC_QUESTION_STATS_FALLBACK_KEY = 'public_question_stats_fallback';
+const PUBLIC_CATEGORY_REDIRECTS_KEY = 'public_category_redirects';
 const ARCHIVE_SOURCE_TEXT_LIMIT = 200000;
 const ARCHIVE_SOURCE_LIST_LIMIT = 300;
 const ARCHIVE_SOURCE_TYPES = ['transkript', 'hadis', 'slayt', 'dokuman', 'standart', 'not'];
@@ -5661,6 +5680,82 @@ function filterPublicArchiveByCategory(builder, slug = '') {
   return builder.or(`category_slug.eq.${safeSlug},topic_slugs.cs.${JSON.stringify([safeSlug])}`);
 }
 
+let publicCategoryRedirectCache = { expiresAt: 0, redirects: {} };
+
+function cleanPublicCategorySlug(slug = '') {
+  return String(slug || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 140);
+}
+
+function normalizePublicCategoryRedirects(value = {}) {
+  const redirects = {};
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  for (const [from, to] of Object.entries(source)) {
+    const cleanFrom = cleanPublicCategorySlug(from);
+    const cleanTo = cleanPublicCategorySlug(to);
+    if (cleanFrom && cleanTo && cleanFrom !== cleanTo) redirects[cleanFrom] = cleanTo;
+  }
+  return redirects;
+}
+
+async function loadPublicCategoryRedirects(force = false) {
+  const now = Date.now();
+  if (!force && publicCategoryRedirectCache.expiresAt > now) return publicCategoryRedirectCache.redirects;
+  const redirects = normalizePublicCategoryRedirects(await loadJsonSetting(PUBLIC_CATEGORY_REDIRECTS_KEY, {}));
+  publicCategoryRedirectCache = { expiresAt: now + PUBLIC_ARCHIVE_ROUTE_CACHE_MS, redirects };
+  return redirects;
+}
+
+async function resolvePublicCategoryRedirect(slug = '') {
+  const redirects = await loadPublicCategoryRedirects();
+  let current = cleanPublicCategorySlug(slug);
+  if (!current) return '';
+  const seen = new Set([current]);
+  for (let step = 0; step < 8; step += 1) {
+    const next = cleanPublicCategorySlug(redirects[current] || '');
+    if (!next || next === current) break;
+    if (seen.has(next)) break;
+    current = next;
+    seen.add(current);
+  }
+  const original = cleanPublicCategorySlug(slug);
+  return current && current !== original ? current : '';
+}
+
+function publicArchiveCategoryRedirectMiddleware(basePath = '') {
+  return async (req, res, next) => {
+    try {
+      await startupReady;
+      const target = await resolvePublicCategoryRedirect(req.params.slug || '');
+      if (!target) return next();
+      const query = new URLSearchParams();
+      if (req.query.sayfa) query.set('sayfa', String(req.query.sayfa));
+      const suffix = query.toString() ? `?${query}` : '';
+      return res.redirect(301, `${basePath}/kategori/${target}${suffix}`);
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
+function publicArchiveQueryCategoryRedirectMiddleware(basePath = '') {
+  return async (req, res, next) => {
+    try {
+      await startupReady;
+      const target = await resolvePublicCategoryRedirect(req.query.kategori || '');
+      if (!target) return next();
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(req.query || {})) {
+        if (Array.isArray(value)) value.forEach(item => query.append(key, String(item)));
+        else if (value !== undefined && value !== null) query.set(key, String(value));
+      }
+      query.set('kategori', target);
+      return res.redirect(301, `${basePath}/arsiv?${query.toString()}`);
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
 async function publicArchiveDatasetForRows({ rows = [], categoryRows = [], stats = null, pagination = null, search = null, allowEmpty = true } = {}) {
   const neededCategoryRows = categoryRows.length
     ? categoryRows
@@ -7880,11 +7975,17 @@ app.get('/api/history', auth, async (req, res) => {
 
 app.get('/api/history/approval-board', auth, admin, async (req, res) => {
   try {
+    const searches = {
+      bekliyor: approvalSearchTerm(req.query.bekliyorSearch || ''),
+      onaylandi: approvalSearchTerm(req.query.onaylandiSearch || ''),
+      reddedildi: approvalSearchTerm(req.query.reddedildiSearch || ''),
+      teyit_bekliyor: approvalSearchTerm(req.query.teyit_bekliyorSearch || '')
+    };
     const [pending, approved, rejected, review, favorites, reviewNotes, returnNotes] = await Promise.all([
-      loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor')),
-      loadApprovalGroup(q => q.eq('status', 'onaylandi')),
-      loadApprovalGroup(q => q.eq('status', 'reddedildi')),
-      loadApprovalGroup(q => q.eq('status', APPROVAL_REVIEW_STATUS)),
+      loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor'), searches.bekliyor),
+      loadApprovalGroup(q => q.eq('status', 'onaylandi'), searches.onaylandi),
+      loadApprovalGroup(q => q.eq('status', 'reddedildi'), searches.reddedildi),
+      loadApprovalGroup(q => q.eq('status', APPROVAL_REVIEW_STATUS), searches.teyit_bekliyor),
       loadApprovalFavoriteSet(req.session.userId),
       loadApprovalReviewNotes(),
       loadApprovalReturnNotes()
@@ -11422,6 +11523,9 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
 const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
 
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
+  app.get('/public-preview/arsiv', publicArchiveQueryCategoryRedirectMiddleware('/public-preview'));
+  app.get('/public-preview/kategori/:slug', publicArchiveCategoryRedirectMiddleware('/public-preview'));
+  app.get('/public-preview/konu/:slug', publicArchiveCategoryRedirectMiddleware('/public-preview'));
   app.use('/public-preview', createPublicArchivePreviewRouter({
     cssFile: path.join(__dirname, 'public-archive.css'),
     loadArchiveData: loadPublicArchiveRouteDataset
@@ -11429,6 +11533,9 @@ if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
 }
 
 if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
+  app.get('/arsiv', publicArchiveQueryCategoryRedirectMiddleware(''));
+  app.get('/kategori/:slug', publicArchiveCategoryRedirectMiddleware(''));
+  app.get('/konu/:slug', publicArchiveCategoryRedirectMiddleware(''));
   app.use('/', createPublicArchivePreviewRouter({
     basePath: '',
     noindex: !PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED,
