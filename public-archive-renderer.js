@@ -491,7 +491,6 @@ function heroConceptLane() {
     <div class="pa-hero-concepts" data-concept-slider aria-label="Öne çıkan kategoriler">
       <div class="pa-concept-head">
         <span>Öne çıkan kategoriler</span>
-        <span aria-hidden="true">→</span>
       </div>
       <div class="pa-concept-track" data-concept-track>
         <div class="pa-concept-rail" data-concept-rail>
