@@ -6452,6 +6452,211 @@ function publicArchiveQuestionCopiedIntoAnswer(row = {}) {
   return answerKey.startsWith(prefix);
 }
 
+function publicArchiveExcelAuditSeverity(type = '', ratio = 1, confidence = 0) {
+  if (type === 'prefix') return 'Kesin kısa';
+  if (type === 'substring') return 'Parça cevap';
+  if (ratio < 0.35 && confidence >= 62) return 'Çok kısa';
+  if (ratio < 0.8) return 'Kontrol gerekli';
+  return 'Yakın';
+}
+
+function publicArchiveExcelAuditReason(type = '', ratio = 1, confidence = 0) {
+  const percent = Math.round(Number(ratio || 0) * 100);
+  if (type === 'prefix') return `Canlı cevap Excel'deki tam cevabın başı gibi duruyor (${percent}%).`;
+  if (type === 'substring') return `Canlı cevap Excel'deki tam cevabın içinden bir parça gibi duruyor (${percent}%).`;
+  if (confidence < 62) return `Excel eşleşme güveni düşük; yine de cevap Excel'e göre kısa görünüyor (${percent}%).`;
+  return `Canlı cevap Excel'deki tam cevaba göre belirgin kısa görünüyor (${percent}%).`;
+}
+
+function publicArchiveExcelAuditSample(row = {}, historyRow = null, match = {}, excelItem = {}, type = 'short') {
+  const publicAnswer = publicArchiveSubmittedText(row.answer_text || '', 120000);
+  const historyAnswer = publicArchiveSubmittedText(historyRow?.corrected_text || '', 120000);
+  const excelAnswer = publicArchiveSubmittedText(excelItem.answer || '', 120000);
+  const publicLength = publicAnswer.length;
+  const excelLength = excelAnswer.length;
+  const ratio = excelLength ? publicLength / excelLength : 0;
+  const confidence = Number(match?.confidence || 0);
+  return {
+    ...publicArchiveAuditSample(row, historyRow),
+    excelRow: Number(excelItem.rowNumber || match?.excel_row || 0),
+    excelQuestion: publicArchiveText(excelItem.question || match?.excel_question || '', 260),
+    excelTags: normalizeHistoryTags(excelItem.tags || match?.tags || []),
+    excelLength,
+    publicLength,
+    historyLength: historyAnswer.length,
+    lengthRatio: Number(ratio.toFixed(3)),
+    lengthPercent: Math.round(ratio * 100),
+    confidence,
+    severity: publicArchiveExcelAuditSeverity(type, ratio, confidence),
+    reason: publicArchiveExcelAuditReason(type, ratio, confidence),
+    publicStart: publicArchiveText(publicAnswer, 360),
+    excelAnswerStart: publicArchiveText(excelAnswer, 520)
+  };
+}
+
+function pickPublicArchiveExcelImportBatch(batches = []) {
+  return (batches || [])
+    .filter(batch => batch?.id)
+    .slice()
+    .sort((a, b) => {
+      const appliedDiff = Number(b.applied_count || 0) - Number(a.applied_count || 0);
+      if (appliedDiff) return appliedDiff;
+      const usableDiff = Number(b.usable_rows || 0) - Number(a.usable_rows || 0);
+      if (usableDiff) return usableDiff;
+      return String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || ''));
+    });
+}
+
+async function loadPublicArchiveExcelAuditContext() {
+  if (!HAS_HISTORY_TAG_IMPORT_TABLES) {
+    return {
+      ready: false,
+      reason: 'Excel aktarım tabloları hazır değil.'
+    };
+  }
+  const batches = await fetchAllPages(() => supabase
+    .from('history_tag_import_batches')
+    .select('*')
+    .order('updated_at', { ascending: false }), 1000);
+  for (const batch of pickPublicArchiveExcelImportBatch(batches)) {
+    const excelItems = await loadHistoryTagImportExcelItems(batch.id);
+    if (!excelItems.length) continue;
+    const matches = await fetchAllPages(() => supabase
+      .from('history_tag_import_matches')
+      .select('batch_id,history_id,excel_row,excel_question,tags,confidence,match_status')
+      .eq('batch_id', batch.id), 1000);
+    return {
+      ready: true,
+      batch,
+      excelItems,
+      matches
+    };
+  }
+  return {
+    ready: false,
+    reason: 'Excel satır havuzu cache içinde bulunamadı. Etiket/Soru aktarım dosyası bir kez yeniden ön izlemeye alınmalı.'
+  };
+}
+
+async function buildPublicArchiveExcelAnswerAudit({ publicRows = [], historyRows = [] } = {}, options = {}) {
+  const sampleLimit = Math.max(1, Math.min(80, Number(options.sampleLimit || 12)));
+  const includeReviewQueue = Boolean(options.includeReviewQueue);
+  const context = await loadPublicArchiveExcelAuditContext();
+  if (!context.ready) {
+    return {
+      excelAuditReady: false,
+      excelAuditReason: context.reason,
+      excelShortAnswerCandidateCount: 0,
+      excelMatchedPublicCount: 0,
+      excelExactAnswerCount: 0,
+      excelNearAnswerCount: 0,
+      samples: { excelShortAnswerCandidates: [] },
+      reviewQueue: includeReviewQueue ? { excelShortAnswerCandidates: [] } : undefined
+    };
+  }
+
+  const historyById = new Map(historyRows.map(row => [row.id, row]));
+  const excelByRow = new Map(context.excelItems.map(item => [Number(item.rowNumber || 0), item]));
+  const matchByHistory = new Map();
+  for (const match of context.matches || []) {
+    if (!match.history_id || !match.excel_row) continue;
+    const existing = matchByHistory.get(match.history_id);
+    if (!existing || Number(match.confidence || 0) > Number(existing.confidence || 0)) {
+      matchByHistory.set(match.history_id, match);
+    }
+  }
+
+  const excelShortAnswerCandidates = [];
+  let excelMatchedPublicCount = 0;
+  let excelExactAnswerCount = 0;
+  let excelNearAnswerCount = 0;
+
+  for (const row of publicRows) {
+    const historyRow = row.source_history_id ? historyById.get(row.source_history_id) : null;
+    const match = historyRow ? matchByHistory.get(historyRow.id) : null;
+    const excelItem = match ? excelByRow.get(Number(match.excel_row || 0)) : null;
+    if (!historyRow || !match || !excelItem?.answer) continue;
+
+    const publicAnswer = publicArchiveSubmittedText(row.answer_text || '', 120000);
+    const excelAnswer = publicArchiveSubmittedText(excelItem.answer || '', 120000);
+    if (!publicAnswer || !excelAnswer) continue;
+
+    excelMatchedPublicCount += 1;
+    const publicComparable = publicArchiveWhitespaceComparable(publicAnswer);
+    const excelComparable = publicArchiveWhitespaceComparable(excelAnswer);
+    if (publicComparable === excelComparable) {
+      excelExactAnswerCount += 1;
+      continue;
+    }
+
+    const ratio = excelComparable.length ? publicComparable.length / excelComparable.length : 1;
+    const near = Math.abs(publicComparable.length - excelComparable.length) <= Math.max(80, excelComparable.length * 0.05);
+    if (near) {
+      excelNearAnswerCount += 1;
+      continue;
+    }
+
+    const isLongExcel = excelComparable.length >= 1000;
+    const isMeaningfullyShort = excelComparable.length > publicComparable.length * 1.25;
+    if (!isLongExcel || !isMeaningfullyShort) continue;
+
+    let type = 'short';
+    if (excelComparable.startsWith(publicComparable)) type = 'prefix';
+    else if (excelComparable.includes(publicComparable)) type = 'substring';
+    if (ratio >= 0.8 && type === 'short') continue;
+
+    excelShortAnswerCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, type));
+  }
+
+  excelShortAnswerCandidates.sort((a, b) => {
+    const severityOrder = { 'Kesin kısa': 0, 'Parça cevap': 1, 'Çok kısa': 2, 'Kontrol gerekli': 3 };
+    const severityDiff = (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9);
+    if (severityDiff) return severityDiff;
+    return Number(a.lengthRatio || 0) - Number(b.lengthRatio || 0);
+  });
+
+  return {
+    excelAuditReady: true,
+    excelAuditBatch: {
+      id: context.batch.id,
+      filename: context.batch.filename || '',
+      sheetName: context.batch.sheet_name || '',
+      usableRows: context.batch.usable_rows || context.excelItems.length,
+      appliedCount: context.batch.applied_count || 0,
+      updatedAt: context.batch.updated_at || context.batch.created_at || ''
+    },
+    excelMatchedPublicCount,
+    excelExactAnswerCount,
+    excelNearAnswerCount,
+    excelShortAnswerCandidateCount: excelShortAnswerCandidates.length,
+    samples: {
+      excelShortAnswerCandidates: excelShortAnswerCandidates.slice(0, sampleLimit)
+    },
+    reviewQueue: includeReviewQueue ? { excelShortAnswerCandidates } : undefined
+  };
+}
+
+function mergePublicArchiveExcelAudit(report = {}, excelReport = {}) {
+  return {
+    ...report,
+    excelAuditReady: Boolean(excelReport.excelAuditReady),
+    excelAuditReason: excelReport.excelAuditReason || '',
+    excelAuditBatch: excelReport.excelAuditBatch || null,
+    excelMatchedPublicCount: excelReport.excelMatchedPublicCount || 0,
+    excelExactAnswerCount: excelReport.excelExactAnswerCount || 0,
+    excelNearAnswerCount: excelReport.excelNearAnswerCount || 0,
+    excelShortAnswerCandidateCount: excelReport.excelShortAnswerCandidateCount || 0,
+    samples: {
+      ...(report.samples || {}),
+      ...(excelReport.samples || {})
+    },
+    reviewQueue: report.reviewQueue || excelReport.reviewQueue ? {
+      ...(report.reviewQueue || {}),
+      ...(excelReport.reviewQueue || {})
+    } : undefined
+  };
+}
+
 async function loadPublicArchiveContentAuditRows() {
   await startupReady;
   if (!await ensurePublicArchiveContentReady()) {
@@ -6650,7 +6855,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], hist
 
 function publicArchiveContentReviewType(value = '') {
   const type = String(value || '').trim();
-  const allowed = new Set(['partial', 'split', 'hidden', 'copied', 'stale', 'duplicates', 'format']);
+  const allowed = new Set(['partial', 'excelShort', 'split', 'hidden', 'copied', 'stale', 'duplicates', 'format']);
   return allowed.has(type) ? type : 'partial';
 }
 
@@ -6659,6 +6864,7 @@ function publicArchiveContentReviewPage(report = {}, type = 'partial', offset = 
   const queue = report.reviewQueue || {};
   const keyByType = {
     partial: 'partialAnswerSignals',
+    excelShort: 'excelShortAnswerCandidates',
     split: 'splitQuestionCandidates',
     hidden: 'contentReviewHidden',
     copied: 'questionCopiedIntoAnswer',
@@ -6680,6 +6886,7 @@ function publicArchiveContentReviewPage(report = {}, type = 'partial', offset = 
     items: items.slice(cleanOffset, cleanOffset + cleanLimit),
     counts: {
       partial: report.partialAnswerSignalCount || 0,
+      excelShort: report.excelShortAnswerCandidateCount || 0,
       split: report.splitQuestionCandidateCount || 0,
       hidden: report.contentReviewHiddenCount || 0,
       copied: report.questionCopiedIntoAnswerCount || 0,
@@ -6693,7 +6900,9 @@ function publicArchiveContentReviewPage(report = {}, type = 'partial', offset = 
 async function analyzePublicArchiveContentHealth() {
   const rows = await loadPublicArchiveContentAuditRows();
   if (!rows.available) return rows;
-  return buildPublicArchiveContentAudit(rows);
+  const report = buildPublicArchiveContentAudit(rows);
+  const excelReport = await buildPublicArchiveExcelAnswerAudit(rows);
+  return mergePublicArchiveExcelAudit(report, excelReport);
 }
 
 async function refreshPublicArchiveFormattingFromHistory({ apply = false } = {}) {
@@ -7323,7 +7532,8 @@ app.get('/api/public-archive/content-review-items', auth, admin, superAdmin, asy
     const rows = await loadPublicArchiveContentAuditRows();
     if (!rows.available) return res.status(503).json(rows);
     const report = buildPublicArchiveContentAudit(rows, { includeReviewQueue: true, sampleLimit: 24 });
-    res.json(publicArchiveContentReviewPage(report, req.query.type, req.query.offset, req.query.limit));
+    const excelReport = await buildPublicArchiveExcelAnswerAudit(rows, { includeReviewQueue: true, sampleLimit: 24 });
+    res.json(publicArchiveContentReviewPage(mergePublicArchiveExcelAudit(report, excelReport), req.query.type, req.query.offset, req.query.limit));
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, error: error.message });
   }

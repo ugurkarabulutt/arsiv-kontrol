@@ -1125,6 +1125,8 @@ for (const marker of [
   'archivePublicContentQueuePanel',
   'archivePublicContentQueueType',
   'questionCopiedIntoAnswerCount',
+  'excelShortAnswerCandidateCount',
+  "Excel'e göre kısa",
   'loadArchivePublicContentAudit',
   'loadArchivePublicContentQueue',
   'pageArchivePublicContentQueue',

@@ -1,5 +1,33 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-29 Codex Public Excel Tam Cevap Karşılaştırması
+
+- Kullanıcı, ekibin onaya gönderdiği/adminin onayladığı cevapların canlı sitede bazen yarım
+  veya daha kısa göründüğünü bildirdi; herhangi bir otomatik içerik değişikliği yapılmadan
+  önce Excel kaynağıyla karşılaştırmalı araştırma istendi.
+- Read-only canlı veri kontrolünde public kayıtların bağlı `history.corrected_text` kaydıyla
+  birebir aynı olduğu görüldü: public render/senkron katmanı o an cevabı ayrıca kesmiyordu.
+  Sorunun ana kaynağı bazı eski `history` kayıtlarının Excel'deki tam cevaba göre parça/parça
+  veya eksik onaylanmış olmasıdır.
+- Canlı Excel cache doğrulandı: `history_tag_import_excel_items:b46a4689-15b5-4db8-a917-cdb33ed6be3c`
+  batch cache'i var, `count: 3779`, `chunkCount: 69`; batch dosyası `Arşiv Data.xlsx`,
+  sayfa `Tümü 31.07.2026`, `applied_count: 2937`.
+- Kod değişikliği: `Canlı Site > İçerik Kontrolü` raporuna Excel aktarım cache'iyle
+  karşılaştırma yapan `Excel'e göre kısa` grubu eklendi. Bu grup canlı public cevabı,
+  bağlı admin onay kaydı ve eşleşmiş Excel satırındaki tam cevap adayını birlikte gösterir.
+- Yeni rapor alanları: `excelAuditReady`, `excelAuditBatch`, `excelMatchedPublicCount`,
+  `excelExactAnswerCount`, `excelNearAnswerCount`, `excelShortAnswerCandidateCount` ve
+  `samples.excelShortAnswerCandidates`.
+- Kontrol listesi `type=excelShort` ile sayfalı açılır. Satırlarda canlı uzunluk, Excel uzunluk,
+  yüzde, Excel satırı, eşleşme güveni, sebep, canlı başlangıç ve `Excel tam cevap adayı`
+  ön izlemesi görünür. Var olan `Admin Kaydı`, `Sitede Aç` ve `Yayından Al` aksiyonları
+  kullanılabilir.
+- Bu değişiklik cevapları otomatik tamamlamaz, AI ile yeniden yazmaz ve Excel cevabını
+  kendiliğinden yayına almaz. Amaç süper adminin eksik/parçalı adayları güvenilir kaynak
+  karşılaştırmasıyla tek tek kontrol edebilmesidir.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı; tam test `106/106` geçti.
+
 ## 2026-08-28 Codex Public İçerik Kontrolü Yayından Alma Kararı
 
 - Kullanıcı, soru metninin cevabın başına taşmış göründüğü yüksek riskli kayıtların yayında

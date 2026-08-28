@@ -120,6 +120,28 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-29
+- **Public içerik kontrolüne Excel tam cevap karşılaştırması eklendi:** Kullanıcı, onaya
+  gönderilen/admince onaylanan cevapların canlı sitede bazı kayıtlarda yarım veya eksik
+  göründüğünü bildirdi. Read-only canlı karşılaştırmada `public_qa.answer_text` ile bağlı
+  `history.corrected_text` metninin aynı olduğu, yani public render katmanının cevabı sonradan
+  kesmediği görüldü. Sorunun ana kaynağı bazı eski onaylı kayıtların Excel'deki tam cevaba göre
+  parça/parça veya kısa onaylanmış olmasıdır. `Canlı Site > İçerik Kontrolü` ekranına
+  `Excel'e göre kısa` kontrol grubu eklendi. Backend artık `history_tag_import_batches`,
+  `history_tag_import_matches` ve `settings` içindeki
+  `history_tag_import_excel_items:<batchId>:*` cache'ini okuyarak canlı public cevap, bağlı
+  onaylı kayıt ve Excel tam cevap adayını karşılaştırır. Rapor `excelAuditReady`,
+  `excelAuditBatch`, `excelMatchedPublicCount`, `excelExactAnswerCount`,
+  `excelNearAnswerCount`, `excelShortAnswerCandidateCount` ve
+  `samples.excelShortAnswerCandidates` alanlarını döner; kontrol listesi `type=excelShort`
+  ile sayfalı açılır. Bu akış hiçbir cevabı otomatik tamamlamaz, AI ile yeniden yazmaz ve
+  Excel cevabını kendiliğinden yayına almaz; süper adminin eksik/parçalı adayları güvenilir
+  kaynak karşılaştırmasıyla incelemesi için hazırlanmıştır. Canlı Excel cache read-only
+  doğrulandı: batch `b46a4689-15b5-4db8-a917-cdb33ed6be3c`, dosya `Arşiv Data.xlsx`,
+  `count: 3779`, `chunkCount: 69`. Yerel doğrulama: `node --check server.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js` ve
+  `npm.cmd run check` başarılı; tam test `106/106` geçti.
+
 ### 2026-08-28
 - **Public içerik kontrolüne yayından alma aksiyonu eklendi:** Canlı cevaplarda cevabın
   başında soru metninin tekrar ettiği yüksek riskli kayıtlar için silmeden/denetim kaynağını
