@@ -1149,7 +1149,9 @@ function archiveCategoryIndexState(query = {}) {
   const letterCategories = categoriesByLetter.get(activeLetter) || [];
   const categorySearch = String(query.kategoriAra || '').trim();
   const normalizedCategorySearch = normalizeSearchText(categorySearch);
-  const visibleCategories = normalizedCategorySearch
+  const visibleCategories = selectedCategory
+    ? [selectedCategory]
+    : normalizedCategorySearch
     ? letterCategories.filter(category => normalizeSearchText(category.name).includes(normalizedCategorySearch))
     : letterCategories;
   return {
@@ -1180,7 +1182,7 @@ function archiveCategoryIndex(query = {}) {
         <div class="pa-letter-panel">
           <div class="pa-letter-head">
             <span class="pa-letter-badge">${escapeHtml(state.activeLetter)}</span>
-            <strong>${escapeHtml(state.activeLetter)} harfiyle başlayan kategoriler</strong>
+            <strong>${escapeHtml(state.selectedCategory ? `${state.selectedCategory.name} seçildi` : `${state.activeLetter} harfiyle başlayan kategoriler`)}</strong>
             ${state.selectedCategory || state.categorySearch ? `<a href="${escapeHtml(archiveQueryUrl({ harf: state.activeLetter }))}">Tümünü göster</a>` : ''}
           </div>
           <form class="pa-letter-search" action="${PREVIEW_BASE}/arsiv" method="get" role="search">

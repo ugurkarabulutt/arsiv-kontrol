@@ -5654,6 +5654,13 @@ async function publicArchiveListPage(baseQuery, page = 1, pageSize = PUBLIC_ARCH
   return { rows: data || [], total: Number(count || total), page: safePage, pageSize };
 }
 
+function filterPublicArchiveByCategory(builder, slug = '') {
+  const cleanSlug = String(slug || '').trim();
+  if (!cleanSlug) return builder;
+  const safeSlug = cleanSlug.replace(/[(),]/g, '');
+  return builder.or(`category_slug.eq.${safeSlug},topic_slugs.cs.${JSON.stringify([safeSlug])}`);
+}
+
 async function publicArchiveDatasetForRows({ rows = [], categoryRows = [], stats = null, pagination = null, search = null, allowEmpty = true } = {}) {
   const neededCategoryRows = categoryRows.length
     ? categoryRows
@@ -5703,7 +5710,7 @@ async function loadPublicArchivePageDataset(query = {}) {
       .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
       .eq('status', 'published')
       .order('published_at', { ascending: false });
-    if (selectedCategory) builder = builder.filter('topic_slugs', 'cs', JSON.stringify([selectedCategory]));
+    if (selectedCategory) builder = filterPublicArchiveByCategory(builder, selectedCategory);
     return builder;
   }, page);
   const categoryRows = await loadPublicArchiveCategoryIndexRows();
@@ -5723,12 +5730,13 @@ async function loadPublicArchivePageDataset(query = {}) {
 
 async function loadPublicArchiveCategoryDataset(slug = '', query = {}) {
   const cleanSlug = String(slug || '').trim();
-  const pageResult = await publicArchiveListPage(() => supabase
-    .from('public_qa')
-    .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
-    .eq('status', 'published')
-    .filter('topic_slugs', 'cs', JSON.stringify([cleanSlug]))
-    .order('published_at', { ascending: false }), publicArchivePageNumber(query.sayfa));
+  const pageResult = await publicArchiveListPage(() => filterPublicArchiveByCategory(
+    supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+      .eq('status', 'published'),
+    cleanSlug
+  ).order('published_at', { ascending: false }), publicArchivePageNumber(query.sayfa));
   const categoryRows = await loadPublicArchiveCategoryRowsBySlug([cleanSlug, ...publicArchiveTagSlugsFromRows(pageResult.rows)]);
   return publicArchiveDatasetForRows({
     rows: pageResult.rows,

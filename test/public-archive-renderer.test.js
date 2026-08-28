@@ -430,6 +430,36 @@ test('public renderer accepts route-sized server data with global stats', () => 
   assert.match(archive, /Hidayet/);
 });
 
+test('archive selected category shows its questions immediately', () => {
+  const archive = renderPublicArchivePreviewRoute('/public-preview/arsiv', { harf: 'A', kategori: 'ana-baslik' }, {
+    stats: { questionCount: 1, answerCount: 1 },
+    pagination: { scope: 'archive', prePaginated: true, page: 1, pageSize: 30, total: 1 },
+    categories: [
+      { slug: 'ana-baslik', name: 'Ana Başlık', questionCount: 1 },
+      { slug: 'ayni-harf-baska-baslik', name: 'Aynı Harf Başka Başlık', questionCount: 4 }
+    ],
+    topics: [],
+    qa: [{
+      id: 'qa-selected-category',
+      slug: 'secili-kategori-sorusu',
+      title: 'Seçili kategori sorusu görünür mü?',
+      question: 'Seçili kategori sorusu görünür mü?',
+      answer: ['Evet, kategori seçilince ilgili soru listesi hemen görünür.'],
+      categorySlug: 'ana-baslik',
+      categorySlugs: ['ana-baslik'],
+      topicSlugs: ['ana-baslik'],
+      publishedAt: '2026-08-10',
+      readTime: 1
+    }]
+  }).html;
+
+  assert.match(archive, /Ana Başlık seçildi/);
+  assert.match(archive, /Ana Başlık soruları/);
+  assert.match(archive, /Seçili kategori sorusu görünür mü\?/);
+  assert.equal((archive.match(/class="pa-index-category/g) || []).length, 1);
+  assert.doesNotMatch(archive, /Aynı Harf Başka Başlık/);
+});
+
 test('public unavailable mode keeps site shell without fixture questions', () => {
   const result = renderPublicArchiveUnavailableRoute('/', {}, { basePath: '' });
 
