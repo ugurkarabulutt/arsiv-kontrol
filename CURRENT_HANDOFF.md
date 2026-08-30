@@ -34,6 +34,14 @@
 - Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
   `git diff --check`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı;
   tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
+- Canlı uygulama: Kullanıcı onayıyla şüpheli geri gönderim akışı production Supabase üzerinde
+  çalıştırıldı. İlk geçişte `890` kayıt, ikinci artık kontrolde `7` kayıt olmak üzere toplam
+  `897` public kayıt `content_review_hidden` durumuna alındı ve bağlı `897` denetim kaydı
+  `geri_gonderildi` olarak asıl denetleyen kullanıcılara döndü. Toplam `897` kullanıcı
+  bildirimi oluşturuldu; işlem `20` farklı kullanıcıya dağıldı. Son doğrulamada şüpheli geri
+  gönderim adayı `0` kaldı. Public soru-cevap sayısı `2.911` yayındaki kayıttan `2.014`
+  yayındaki kayda düştü; kontrol/gizli public kayıt sayısı `905` oldu. Bekleyen onay sayısı
+  bu işlemle değişmedi (`615`).
 
 ## 2026-08-29 Codex Public Excel Tam Cevap Karşılaştırması
 

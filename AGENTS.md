@@ -144,6 +144,15 @@ tespit edilir).
   Supabase SQL Editor'de `alter table public.history add column if not exists submission_note
   text;` uygulanmalıdır.
 
+- **Canlı şüpheli kayıt geri gönderimi uygulandı:** Kullanıcı onayıyla production Supabase
+  üzerinde şüpheli public kayıt geri gönderimi çalıştırıldı. İlk geçişte `890`, ikinci artık
+  kontrolde `7` olmak üzere toplam `897` kayıt `public_qa.status='content_review_hidden'`
+  yapıldı ve bağlı `897` onaylı denetim kaydı `history.status='geri_gonderildi'` olarak asıl
+  denetleyen kullanıcılara döndü. `897` `approval_return` bildirimi oluşturuldu ve işlem
+  `20` farklı kullanıcıya dağıldı. Son dry-run kontrolünde şüpheli geri gönderim adayı `0`
+  kaldı. Public yayındaki soru-cevap sayısı `2.911` iken işlem sonrası `2.014` oldu;
+  kontrol/gizli public kayıt sayısı `905` oldu.
+
 ### 2026-08-29
 - **Public içerik kontrolüne Excel tam cevap karşılaştırması eklendi:** Kullanıcı, onaya
   gönderilen/admince onaylanan cevapların canlı sitede bazı kayıtlarda yarım veya eksik
