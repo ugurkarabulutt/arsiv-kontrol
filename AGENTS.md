@@ -120,6 +120,30 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-08-30
+- **Şüpheli public kayıtları ekibe geri döndürme akışı eklendi:** Kullanıcı, Excel
+  karşılaştırmasında şüpheli görünen kayıtların Excel'den otomatik tamamlanmasını istemedi;
+  bunun yerine kayıtlar canlı siteden geçici olarak ayrılsın ve cevabı kim denetlettiyse o
+  ekip üyesine geri dönsün kararı alındı. `Canlı Site > İçerik Kontrolü` ekranına
+  `Şüpheli Geri Gönderimi Önizle` ve `Şüphelileri Ekibe Geri Gönder` aksiyonları eklendi.
+  Yeni süper admin korumalı `POST /api/public-archive/content-audit/return-suspicious`
+  endpoint'i `apply:false` ile kuru çalışma, `apply:true` ile gerçek uygulama yapar.
+  İşlem yalnız Excel karşılaştırmasından gelen şüpheli grupları kullanır; `source_history_id`
+  ve asıl `history.user_id` bulunmayan kayıtlar atlanır. Uygulamada `public_qa` kaydı
+  silinmez, `content_review_hidden` ile yayından ayrılır; bağlı `history` kaydı
+  `geri_gonderildi` olur, onay bilgileri temizlenir, kullanıcıya `approval_return`
+  bildirimi gider ve varsa `content_correction_log` içine geri alınabilir işlem izi yazılır.
+  Bu akış Excel cevabını public cevaba otomatik yazmaz, AI ile cevabı yeniden üretmez ve
+  içeriğe yeni metin eklemez.
+
+- **Onaya gönderim kontrol notu eklendi:** Denetim sonucu onaya gönderilirken isteğe bağlı
+  `Kontrol notu` alanı eklendi. Ekip üyesi örneğin `Soru, cevap ve etiket uyumlu.` gibi
+  kısa bir not yazabilir. Bu not yalnız admin/süper admin onay ekranlarında, detay modalında
+  ve geçmiş aramasında görünür. Kalıcı saklama için `history.submission_note` kolonu eklendi;
+  kolon canlı DB'de yoksa uygulama kırılmaz, fakat not saklanmaz. Canlı kullanım için
+  Supabase SQL Editor'de `alter table public.history add column if not exists submission_note
+  text;` uygulanmalıdır.
+
 ### 2026-08-29
 - **Public içerik kontrolüne Excel tam cevap karşılaştırması eklendi:** Kullanıcı, onaya
   gönderilen/admince onaylanan cevapların canlı sitede bazı kayıtlarda yarım veya eksik

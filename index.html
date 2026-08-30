@@ -265,6 +265,11 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .history-question-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
 .history-question-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:12px 13px;font-size:14px;line-height:1.55;resize:vertical;min-height:92px;}
 .history-question-display{border:1px solid var(--border);background:var(--surface2);color:var(--ink2);padding:11px 13px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+.history-note-field{margin-top:12px;}
+.history-note-field label{display:block;font-weight:800;color:var(--ink);font-size:13px;margin-bottom:7px;}
+.history-note-input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--ink);padding:11px 13px;font-size:13px;line-height:1.5;resize:vertical;min-height:54px;}
+.history-submission-note{margin-top:9px;border:1px solid rgba(var(--gold-rgb),.28);border-left:3px solid var(--gold);background:rgba(var(--gold-rgb),.07);padding:9px 11px;color:var(--ink2);font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
+.history-submission-note strong{color:var(--ink);}
 .work-audit-context{margin:0 0 14px;padding:13px 14px;border:1px solid rgba(var(--ai-rgb),.35);border-left:4px solid var(--ai);background:linear-gradient(135deg,rgba(var(--ai-rgb),.09),var(--surface));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:var(--soft-shadow);}
 .work-audit-context-title{font-size:13px;font-weight:900;color:var(--ink);line-height:1.35;}
 .work-audit-context-text{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;max-width:720px;}
@@ -2117,11 +2122,17 @@ canvas{width:100%!important;}
             <button class="btn-sec" onclick="previewArchivePublicFormatRefresh()">Güvenli Formatı Önizle</button>
             <button class="btn-sec" onclick="applyArchivePublicFormatRefresh()">Güvenli Formatı Uygula</button>
             <button class="btn-danger" onclick="hideArchivePublicCopiedQuestionAnswers()">Soru Taşanları Yayından Al</button>
+            <button class="btn-sec" onclick="previewArchivePublicSuspiciousReturns()">Şüpheli Geri Gönderimi Önizle</button>
+            <button class="btn-danger" onclick="returnArchivePublicSuspiciousToUsers()">Şüphelileri Ekibe Geri Gönder</button>
             <span class="ops-status" id="archivePublicContentStatus">Rapor bekleniyor.</span>
           </div>
           <div class="ops-filter-row">
             <select id="archivePublicContentQueueType" onchange="setArchivePublicContentQueueType(this.value)">
               <option value="partial">Kısa / yarım adayları</option>
+              <option value="excelMissing">Excel eşleşmesi yok</option>
+              <option value="excelQuestion">Excel sorusu uyumsuz</option>
+              <option value="excelMismatch">Excel cevabı uyumsuz</option>
+              <option value="excelReview">Excel cevap kontrolü</option>
               <option value="excelShort">Excel'e göre kısa</option>
               <option value="split">Parçalı cevap adayları</option>
               <option value="hidden">Yayından alınan kontrol</option>
@@ -2472,6 +2483,7 @@ canvas{width:100%!important;}
           <option value="missing_tags">Etiket eksik</option>
           <option value="wrong_tags">Etiket yanlış</option>
           <option value="missing_answer">Cevap/metin eksik</option>
+          <option value="content_recheck">Soru, cevap ve etiket kontrolü</option>
           <option value="other">Diğer</option>
         </select>
       </div>
@@ -2519,6 +2531,11 @@ canvas{width:100%!important;}
         <div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div>
         <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
       </div>
+      <div class="history-note-field">
+        <label for="submitApprovalNote">Kontrol notu (isteğe bağlı)</label>
+        <textarea class="history-note-input" id="submitApprovalNote" maxlength="1200" placeholder="Örn. Soru, cevap ve etiket uyumlu."></textarea>
+        <div class="history-tags-help">Bu not sadece admin ve süper admin onay ekranında görünür.</div>
+      </div>
       <div class="form-err" id="submitApprovalErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
     </div>
@@ -2557,7 +2574,7 @@ let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
 let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
 let archivePublicAnalyticsState={range:'7d',data:null,loading:false};
-let archivePublicContentState={audit:null,refresh:null,loading:false,refreshing:false,acting:false,queue:null,queueType:'partial',queueOffset:0,queueLimit:40,queueLoading:false};
+let archivePublicContentState={audit:null,refresh:null,suspiciousReturn:null,loading:false,refreshing:false,acting:false,queue:null,queueType:'partial',queueOffset:0,queueLimit:40,queueLoading:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','siteAnalytics','publicContent','publicQuestions','tagImport'];
 const LIVE_SITE_OPS_VIEWS=new Set(['siteAnalytics','publicContent','publicQuestions']);
@@ -2578,6 +2595,7 @@ const APPROVAL_RETURN_REASON_LABELS={
   missing_tags:'Etiket eksik',
   wrong_tags:'Etiket yanlış',
   missing_answer:'Cevap/metin eksik',
+  content_recheck:'Soru, cevap ve etiket kontrolü',
   other:'Diğer'
 };
 const FONT_SCALE={small:.94,medium:1,large:1.14};
@@ -3376,6 +3394,19 @@ function normalizeHistoryQuestionUi(value){
     .join('\n')
     .slice(0,8000);
 }
+function normalizeSubmissionNoteUi(value){
+  return String(value||'')
+    .replace(/\r\n?/g,'\n')
+    .split('\n')
+    .map(line=>line.replace(/[ \t]+/g,' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .slice(0,1200);
+}
+function approvalSubmissionNoteHtml(h){
+  const note=normalizeSubmissionNoteUi(h?.submissionNote||'');
+  return note?`<div class="history-submission-note"><strong>Gönderim notu:</strong> ${esc(note)}</div>`:'';
+}
 function renderSubmitTagsPreview(target='modal'){
   const box=el(target==='main'?'submitApprovalTagsPreviewMain':'submitApprovalTagsPreview');
   if(!box)return;
@@ -3393,6 +3424,7 @@ function resetSubmitApprovalModalState(){
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value='';
   if(el('submitApprovalTags'))el('submitApprovalTags').value='';
+  if(el('submitApprovalNote'))el('submitApprovalNote').value='';
   if(el('submitApprovalTagsPreview'))el('submitApprovalTagsPreview').innerHTML='';
   const btn=el('submitApprovalBtn');
   if(btn){btn.disabled=false;btn.textContent='Onaya Gönder';}
@@ -3425,14 +3457,18 @@ function renderApprovalSubmitPanel(d){
       :'Denetim tamamlandı. Soru ve etiketleri ekleyip hazır olduğunda Onaya Gönder’i kullanabilirsiniz. Bu iki alan zorunludur.';
   const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
   const tagsValue=historyTagsText(d.tags||[]);
+  const noteValue=normalizeSubmissionNoteUi(d.submissionNote||'');
   const questionField=sent
     ? `<div class="history-question-field"><label>Soru</label>${questionValue?`<div class="history-question-display">${esc(questionValue)}</div>`:`<div class="history-tags-help">Soru eklenmedi.</div>`}</div>`
     : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
   const tagsField=sent
     ? `<div class="history-tags-field"><label>Etiketler</label>${historyTagsChips(tagsValue)||'<div class="history-tags-help">Etiket eklenmedi.</div>'}</div>`
     : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
+  const noteField=sent
+    ? approvalSubmissionNoteHtml(d)
+    : `<div class="history-note-field" style="grid-column:1/-1"><label for="submitApprovalNoteMain">Kontrol notu (isteğe bağlı)</label><textarea class="history-note-input" id="submitApprovalNoteMain" maxlength="1200" placeholder="Örn. Soru, cevap ve etiket uyumlu.">${esc(noteValue)}</textarea><div class="history-tags-help">Bu not sadece admin ve süper admin onay ekranında görünür.</div></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
-    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div>${returned?approvalReturnInfoHtml(d):''}<div class="approval-submit-fields">${questionField}${tagsField}</div></div>
+    <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div>${returned?approvalReturnInfoHtml(d):''}<div class="approval-submit-fields">${questionField}${tagsField}${noteField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
   </div>`;
 }
@@ -3458,10 +3494,13 @@ function openSubmitApprovalModal(){
   `;
   const questionMain=el('submitApprovalQuestionMain');
   const tagsMain=el('submitApprovalTagsMain');
+  const noteMain=el('submitApprovalNoteMain');
   const questionText=questionMain?normalizeHistoryQuestionUi(questionMain.value):normalizeHistoryQuestionUi(d.questionText||'');
   const tagsText=tagsMain?tagsMain.value:historyTagsText(d.tags||[]);
+  const submissionNote=noteMain?normalizeSubmissionNoteUi(noteMain.value):normalizeSubmissionNoteUi(d.submissionNote||'');
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value=questionText;
   if(el('submitApprovalTags'))el('submitApprovalTags').value=tagsText;
+  if(el('submitApprovalNote'))el('submitApprovalNote').value=submissionNote;
   renderSubmitTagsPreview();
   if(el('submitApprovalErr'))el('submitApprovalErr').textContent='';
   el('submitApprovalModal')?.classList.add('open');
@@ -3593,6 +3632,7 @@ async function confirmSubmitApproval(){
   const sourceIds=Array.isArray(d.sourceIds)?d.sourceIds:[];
   const tags=parseHistoryTags(v('submitApprovalTags'));
   const questionText=normalizeHistoryQuestionUi(v('submitApprovalQuestion'));
+  const submissionNote=normalizeSubmissionNoteUi(v('submitApprovalNote'));
   if(!questionText){
     if(err)err.textContent='Onaya göndermeden önce soru alanını doldurun.';
     el('submitApprovalQuestion')?.focus();
@@ -3623,8 +3663,9 @@ async function confirmSubmitApproval(){
       summary:d.summary||'Metin denetlendi ve sonuç onay sürecine iletildi.',
       analysisMeta:d.analysisMeta||{},
       questionText,
-      tags
-    }:{questionText,tags};
+      tags,
+      submissionNote
+    }:{questionText,tags,submissionNote};
     const r=await api('POST',endpoint,body);
     if(r.error){if(err)err.textContent=r.error;return;}
     const newId=r.id||d.id;
@@ -3638,6 +3679,7 @@ async function confirmSubmitApproval(){
     d.status='bekliyor';
     d.tags=Array.isArray(r.tags)?r.tags:tags;
     d.questionText=typeof r.questionText==='string'?r.questionText:questionText;
+    d.submissionNote=typeof r.submissionNote==='string'?r.submissionNote:submissionNote;
     submitted=true;
     if(btn){btn.disabled=true;btn.textContent='Onaya Gönderildi';}
     if(isMerged)d.sourceIds=[];
@@ -3648,7 +3690,7 @@ async function confirmSubmitApproval(){
     if(linkedWorkUpdate?.item)d.archiveWorkLinkedTitle=linkedWorkUpdate.item.title||archiveWorkAuditContext?.title||'Çalışma kaydı';
     if(linkedWorkUpdate?.error)d.archiveWorkLinkError=linkedWorkUpdate.error;
     historyRows=historyRows.map(h=>{
-      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText};
+      if(h.id===oldId)return {...h,id:newId,status:'bekliyor',tags:d.tags,questionText:d.questionText,submissionNote:d.submissionNote};
       if(sourceIds.includes(h.id))return {...h,status:'submitted_part'};
       return h;
     }).filter(h=>h.status!=='submitted_part'&&h.status!=='chunk_draft');
@@ -4037,7 +4079,7 @@ function renderHistory(){
     if(historyFilter==='low' && (h.score||0)>=60)return false;
     if(historyFilter!=='all' && historyFilter!=='low' && status!==historyFilter)return false;
     if(!historySearch)return true;
-    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.returnReasonLabel,h.returnNote,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
+    const haystack=[h.filename,h.name,h.username,h.summary,h.questionText,h.submissionNote,h.returnReasonLabel,h.returnNote,h.score,h.totalErrors,status,...parseHistoryTags(h.tags||[])].join(' ').toLocaleLowerCase('tr-TR');
     return haystack.includes(historySearch);
   });
   const summary=el('histFilterSummary');
@@ -4133,15 +4175,16 @@ async function showDetail(id){
     ? `<div class="history-tags-field" style="margin:0 0 14px"><label for="detailHistoryTags">Etiketler</label><textarea class="history-tags-input" id="detailHistoryTags" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderDetailTagsPreview()">${esc(tagsValue)}</textarea><div class="history-tags-help">Gerekirse onaydan önce düzeltin. Onayla dediğinizde etiketler de kaydedilir.</div><div class="history-tags-preview" id="detailHistoryTagsPreview">${historyTagsChipItems(tagsValue)}</div></div>`
     : historyTagsChips(tagsValue);
   const reviewBlock=hasAdminRole(me?.role)?approvalReviewNoteHtml(item):'';
+  const submissionNoteBlock=hasAdminRole(me?.role)?approvalSubmissionNoteHtml(item):'';
   const returnBlock=(hasAdminRole(me?.role)||item.status===APPROVAL_RETURNED_STATUS)?approvalReturnInfoHtml(item):'';
   _textStore[id]=text;
   if(item.originalText&&text){
-    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}${returnBlock}<div class="compare-grid" style="max-height:none">
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${submissionNoteBlock}${reviewBlock}${returnBlock}<div class="compare-grid" style="max-height:none">
       <div class="compare-col"><div class="compare-title">Orijinal</div><div class="compare-text" style="max-height:52vh">${esc(item.originalText)}</div></div>
       <div class="compare-col"><div class="compare-title">Düzeltilmiş</div><div class="compare-text" style="max-height:52vh">${esc(text)}</div></div>
     </div>`;
   }else{
-    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${reviewBlock}${returnBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
+    el('detailBody').innerHTML=`${questionBlock}${tagsBlock}${submissionNoteBlock}${reviewBlock}${returnBlock}<div>${esc(text||'Bu kayıt için düzeltilmiş metin bulunmuyor.')}</div>`;
   }
   renderDetailTagsPreview();
   window._detailText=text;
@@ -4688,6 +4731,7 @@ function approvalCard(h){
     <div class="work-meta">${dt} · ${h.totalErrors||0} sorun${isReview?' · Teyit bekliyor':''}</div>
     ${questionHtml}
     ${historyTagsChips(h.tags||[])}
+    ${approvalSubmissionNoteHtml(h)}
     ${approvalReviewNoteHtml(h)}
     ${approvalReturnInfoHtml(h)}
     <div class="work-actions">
@@ -8403,13 +8447,18 @@ function publicContentSampleRows(items=[],options={}){
     else if(item.publicLength)meta.push(`${publicContentCount(item.publicLength)} kr`);
     if(Number.isFinite(Number(item.lengthPercent)))meta.push(`%${Number(item.lengthPercent).toLocaleString('tr-TR')}`);
     if(Number.isFinite(Number(item.confidence))&&Number(item.confidence)>0)meta.push(`güven ${Number(item.confidence).toLocaleString('tr-TR')}`);
+    if(Number.isFinite(Number(item.questionSimilarityPercent))&&Number(item.questionSimilarityPercent)>0)meta.push(`soru uyumu %${Number(item.questionSimilarityPercent).toLocaleString('tr-TR')}`);
+    if(Number.isFinite(Number(item.answerSimilarityPercent))&&Number(item.answerSimilarityPercent)>0)meta.push(`cevap uyumu %${Number(item.answerSimilarityPercent).toLocaleString('tr-TR')}`);
+    if(Number.isFinite(Number(item.answerStartSimilarityPercent))&&Number(item.answerStartSimilarityPercent)>0)meta.push(`başlangıç %${Number(item.answerStartSimilarityPercent).toLocaleString('tr-TR')}`);
     const detail=[item.severity,item.reason,item.question||item.publicStart||item.answerEnd||''].filter(Boolean).join('\n');
     const excelPreview=item.excelAnswerStart?`<div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px"><strong>Excel tam cevap adayı</strong><br>${esc(item.excelAnswerStart)}</div>`:'';
+    const historyPreview=item.historyStart&&item.historyStart!==item.publicStart?`<div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px"><strong>Admin onaylı cevap başlangıcı</strong><br>${esc(item.historyStart)}</div>`:'';
     return `
     <div class="ops-analytics-row">
       <strong title="${esc(item.question||item.title||item.slug||'')}">${esc(item.title||item.question||item.slug||'Kayıt')}</strong>
       <span>${esc(meta.filter(Boolean).join(' · '))}</span>
       <div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px;white-space:pre-wrap">${esc(detail)}</div>
+      ${historyPreview}
       ${excelPreview}
       ${publicContentActionButtons(item,actionMode)}
     </div>`;
@@ -8435,9 +8484,34 @@ function publicContentGroupRows(groups=[],options={}){
     </div>
   `).join('')}</div>`;
 }
+function publicContentSuspiciousReturnSummaryHtml(result=null){
+  if(!result)return '<div class="ops-analytics-empty">Şüpheli geri gönderim önizlemesi henüz çalıştırılmadı.</div>';
+  if(result.available===false)return `<div class="ops-analytics-empty">${esc(result.error||'Geri gönderim önizlemesi alınamadı.')}</div>`;
+  const typeRows=Object.entries(result.byType||{}).map(([type,count])=>`
+    <div class="ops-file-summary-item"><strong>${publicContentCount(count)}</strong><span>${esc(publicContentReviewTypeLabel(type))}</span></div>
+  `).join('');
+  const userRows=Object.entries(result.byUser||{}).slice(0,8).map(([name,count])=>`
+    <div class="ops-analytics-row"><strong>${esc(name)}</strong><span>${publicContentCount(count)} kayıt</span></div>
+  `).join('');
+  return `
+    <div class="ops-file-summary" style="margin-bottom:10px">
+      <div class="ops-file-summary-item"><strong>${publicContentCount(result.candidateCount)}</strong><span>Geri gönderilecek kayıt</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(result.notifiedUsers||Object.keys(result.byUser||{}).length)}</strong><span>Kullanıcı</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(result.hiddenRows||0)}</strong><span>Yayından alınan</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(result.returnedHistories||0)}</strong><span>Geri gönderilen</span></div>
+      ${typeRows}
+    </div>
+    ${userRows?`<div class="ops-analytics-list">${userRows}</div>`:''}
+    ${publicContentSampleRows(result.samples||[],{actions:result.dryRun?'published':'hidden'})}
+  `;
+}
 function publicContentReviewTypeLabel(type){
   return {
     partial:'Kısa / yarım adayları',
+    excelMissing:'Excel eşleşmesi yok',
+    excelQuestion:'Excel sorusu uyumsuz',
+    excelMismatch:'Excel cevabı uyumsuz',
+    excelReview:'Excel cevap kontrolü',
     excelShort:"Excel'e göre kısa",
     split:'Parçalı cevap adayları',
     hidden:'Yayından alınan kontrol',
@@ -8488,6 +8562,7 @@ function renderArchivePublicContentAudit(){
   const grid=el('archivePublicContentGrid');
   const data=archivePublicContentState.audit||{};
   const refresh=archivePublicContentState.refresh||null;
+  const suspiciousReturn=archivePublicContentState.suspiciousReturn||null;
   if(status){
     status.textContent=archivePublicContentState.acting?'İşlem uygulanıyor...':archivePublicContentState.loading?'Kontrol ediliyor...':archivePublicContentState.refreshing?'Format hazırlanıyor...':data.available===false?(data.error||'İçerik kontrol edilemedi.'):data.available?'Rapor hazır.':'Rapor bekleniyor.';
     status.className=`ops-status ${data.available?'ok':data.available===false?'err':''}`.trim();
@@ -8497,6 +8572,10 @@ function renderArchivePublicContentAudit(){
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.publicRecords)}</strong><span>Canlı kayıt</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.approvedHistoryRecords)}</strong><span>Onaylı kaynak</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.safeFormatRefreshCandidateCount)}</strong><span>Güvenli format</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(data.excelMissingMatchCandidateCount)}</strong><span>Excel eşleşmesi yok</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(data.excelQuestionMismatchCandidateCount)}</strong><span>Excel sorusu uyumsuz</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(data.excelAnswerMismatchCandidateCount)}</strong><span>Excel cevabı uyumsuz</span></div>
+      <div class="ops-file-summary-item"><strong>${publicContentCount(data.excelAnswerReviewCandidateCount)}</strong><span>Excel cevap kontrolü</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.excelShortAnswerCandidateCount)}</strong><span>Excel'e göre kısa</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.questionCopiedIntoAnswerCount)}</strong><span>Soru cevaba taşmış</span></div>
       <div class="ops-file-summary-item"><strong>${publicContentCount(data.contentReviewHiddenCount)}</strong><span>Yayından alınan kontrol</span></div>
@@ -8511,6 +8590,10 @@ function renderArchivePublicContentAudit(){
   }
   grid.innerHTML=`
     <div class="ops-analytics-card"><h4>Güvenli format tazeleme</h4><div class="ops-analytics-empty">Kelimesi aynı olan, yalnız satır/paragraf düzeni farklı duran kayıtlar.</div>${publicContentSampleRows(data.samples?.safeFormatRefreshCandidates||[])}</div>
+    <div class="ops-analytics-card"><h4>Excel eşleşmesi yok</h4><div class="ops-analytics-empty">${data.excelAuditReady?'Bu canlı kayıtlar için güvenilir Excel satırı bulunamadı. Duyuru öncesi manuel kontrol gerekir.':esc(data.excelAuditReason||'Excel karşılaştırması için aktarım havuzu bulunamadı.')}</div>${publicContentSampleRows(data.samples?.excelMissingMatchCandidates||[],{actions:'published'})}</div>
+    <div class="ops-analytics-card"><h4>Excel sorusu uyumsuz</h4><div class="ops-analytics-empty">Canlı soru ile bağlı Excel satırındaki soru aynı konu gibi görünmüyorsa burada listelenir.</div>${publicContentSampleRows(data.samples?.excelQuestionMismatchCandidates||[],{actions:'published'})}</div>
+    <div class="ops-analytics-card"><h4>Excel cevabı uyumsuz</h4><div class="ops-analytics-empty">Soru Excel ile uyumlu olsa bile cevap Excel cevabıyla uyuşmuyorsa burada listelenir. Örnek gönderdiğiniz türdeki ana sorun budur.</div>${publicContentSampleRows(data.samples?.excelAnswerMismatchCandidates||[],{actions:'published'})}</div>
+    <div class="ops-analytics-card"><h4>Excel cevap kontrolü</h4><div class="ops-analytics-empty">Cevap kısmen benziyor ama otomatik güvenli kabul edilemiyor. İnsan kontrolü gerekir.</div>${publicContentSampleRows(data.samples?.excelAnswerReviewCandidates||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Excel'e göre kısa cevaplar</h4><div class="ops-analytics-empty">${data.excelAuditReady?`Excel aktarım havuzuna göre canlı cevabı belirgin kısa görünen kayıtlar. Kaynak: ${esc(data.excelAuditBatch?.filename||'Excel aktarımı')}`:esc(data.excelAuditReason||'Excel karşılaştırması için aktarım havuzu bulunamadı.')}</div>${publicContentSampleRows(data.samples?.excelShortAnswerCandidates||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Public ile onaylı kaynak farklı</h4><div class="ops-analytics-empty">Bu kayıtlar otomatik değiştirilmeyecek; önce insan kontrolü gerekir.</div>${publicContentSampleRows(data.samples?.stalePublicContent||[])}</div>
     <div class="ops-analytics-card"><h4>Soru cevaba taşmış olabilir</h4><div class="ops-analytics-empty">Cevabın başı soru metniyle aynı görünüyorsa burada listelenir. Gerekirse canlı siteden ayırıp admin kontrolünde tutun.</div>${publicContentSampleRows(data.samples?.questionCopiedIntoAnswer||[],{actions:'published'})}</div>
@@ -8519,6 +8602,7 @@ function renderArchivePublicContentAudit(){
     <div class="ops-analytics-card"><h4>Birebir kopya gruplar</h4><div class="ops-analytics-empty">Soru ve cevap aynıysa ayrıca gizlenebilir; benzer cevaplar bu gruba girmez.</div>${publicContentGroupRows(data.samples?.exactDuplicateGroups||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Kısa veya yarım sinyali</h4>${publicContentSampleRows(data.samples?.partialAnswerSignals||[],{actions:'published'})}</div>
     <div class="ops-analytics-card"><h4>Önizleme sonucu</h4><div class="ops-analytics-empty">${refresh?`${publicContentCount(refresh.candidateCount)} kayıt güvenli format tazelemeye uygun görünüyor. ${refresh.updatedRows?`${publicContentCount(refresh.updatedRows)} kayıt güncellendi.`:'Henüz uygulanmadı.'}`:'Güvenli format önizlemesi henüz çalıştırılmadı.'}</div>${publicContentSampleRows(refresh?.samples||[])}</div>
+    <div class="ops-analytics-card"><h4>Ekibe geri gönderilecekler</h4><div class="ops-analytics-empty">Excel karşılaştırmasında güvenli kabul edilemeyen kayıtlar canlı siteden ayrılır ve kaydı denetleten kullanıcıya geri gönderilir.</div>${publicContentSuspiciousReturnSummaryHtml(suspiciousReturn)}</div>
   `;
 }
 function setArchivePublicContentQueueType(type){
@@ -8624,6 +8708,52 @@ async function hideArchivePublicCopiedQuestionAnswers(){
   await loadArchivePublicContentAudit();
   if(archivePublicContentState.queue)await loadArchivePublicContentQueue(archivePublicContentState.queueOffset||0);
   await showSystemAlert('Yayından alma tamamlandı',`${publicContentCount(data.hiddenRows||0)} kayıt canlı siteden ayrıldı. ${publicContentCount(data.candidateCount||0)} aday kontrol edildi.`,'success');
+}
+async function previewArchivePublicSuspiciousReturns(){
+  if(!canUseArchiveOps()||archivePublicContentState.acting)return null;
+  archivePublicContentState.acting=true;
+  renderArchivePublicContentAudit();
+  const data=await api('POST','/api/public-archive/content-audit/return-suspicious',{apply:false});
+  archivePublicContentState.acting=false;
+  archivePublicContentState.suspiciousReturn=data.error?{available:false,error:data.error}:data;
+  renderArchivePublicContentAudit();
+  if(data.error||data.available===false){
+    await showSystemAlert('Önizleme alınamadı',data.error||'Canlı içerik kontrol edilemedi.','danger');
+    return null;
+  }
+  return data;
+}
+async function returnArchivePublicSuspiciousToUsers(){
+  if(!canUseArchiveOps()||archivePublicContentState.acting)return;
+  const preview=await previewArchivePublicSuspiciousReturns();
+  if(!preview)return;
+  if(!Number(preview.candidateCount||0)){
+    await showSystemAlert('Geri gönderilecek kayıt yok','Excel karşılaştırmasına göre şu an toplu geri gönderilecek kayıt görünmüyor.','success');
+    return;
+  }
+  const ok=await openSystemConfirm({
+    title:'Şüpheli kayıtlar ekibe geri gönderilsin mi?',
+    badge:'Canlı Site',
+    message:`${publicContentCount(preview.candidateCount)} kayıt canlı siteden ayrılacak ve denetimi yapan kullanıcılara geri gönderilecek.`,
+    detail:'Kayıtlar silinmez. Kullanıcılar soru, cevap ve etiket uyumunu kontrol edip tekrar onaya gönderebilir. Excel cevabı otomatik olarak yayına yazılmaz.',
+    confirmText:'Geri Gönder',
+    cancelText:'Vazgeç',
+    tone:'danger'
+  });
+  if(!ok)return;
+  archivePublicContentState.acting=true;
+  renderArchivePublicContentAudit();
+  const data=await api('POST','/api/public-archive/content-audit/return-suspicious',{apply:true});
+  archivePublicContentState.acting=false;
+  archivePublicContentState.suspiciousReturn=data.error?{available:false,error:data.error}:data;
+  if(data.error||data.available===false){
+    renderArchivePublicContentAudit();
+    await showSystemAlert('Geri gönderim tamamlanamadı',data.error||'Canlı içerik kontrol edilemedi.','danger');
+    return;
+  }
+  await loadArchivePublicContentAudit();
+  if(archivePublicContentState.queue)await loadArchivePublicContentQueue(archivePublicContentState.queueOffset||0);
+  await showSystemAlert('Geri gönderim tamamlandı',`${publicContentCount(data.hiddenRows||0)} canlı kayıt yayından ayrıldı. ${publicContentCount(data.returnedHistories||0)} kayıt ekip üyelerine geri gönderildi. ${publicContentCount(data.alertsCreated||0)} bildirim oluşturuldu.`,'success');
 }
 async function setArchivePublicContentStatus(slug,status){
   if(!canUseArchiveOps()||archivePublicContentState.acting)return;

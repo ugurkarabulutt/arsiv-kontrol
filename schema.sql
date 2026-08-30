@@ -32,6 +32,7 @@ create table if not exists public.history (
   original_text  text,
   corrected_text text,
   question_text  text,
+  submission_note text,
   status         text default 'bekliyor',
   approved_by    text,
   approved_at    timestamptz,
@@ -50,6 +51,7 @@ create index if not exists history_tags_idx       on public.history using gin (t
 alter table public.history add column if not exists text_hash text;
 alter table public.history add column if not exists original_text text;
 alter table public.history add column if not exists question_text text;
+alter table public.history add column if not exists submission_note text;
 alter table public.history add column if not exists prompt_version text;
 alter table public.history add column if not exists rules_hash text;
 alter table public.history add column if not exists tags jsonb not null default '[]'::jsonb;

@@ -525,6 +525,7 @@ const mapHistory = h => ({
   filename: h.filename, score: h.score, totalErrors: h.total_errors,
   catCounts: h.cat_counts || {}, summary: h.summary, originalText: h.original_text, correctedText: h.corrected_text,
   questionText: h.question_text || '',
+  submissionNote: h.submission_note || '',
   status: h.status, approvedBy: h.approved_by, approvedAt: h.approved_at,
   tags: Array.isArray(h.tags) ? h.tags : [],
   promptVersion: h.prompt_version, rulesHash: h.rules_hash,
@@ -551,6 +552,7 @@ const APPROVAL_RETURN_REASONS = Object.freeze({
   missing_tags: 'Etiket eksik',
   wrong_tags: 'Etiket yanlış',
   missing_answer: 'Cevap/metin eksik',
+  content_recheck: 'Soru, cevap ve etiket kontrolü',
   other: 'Diğer'
 });
 
@@ -630,14 +632,16 @@ function applyApprovalSearch(builder, search = '') {
   const term = approvalSearchTerm(search);
   if (!term) return builder;
   const pattern = `%${term}%`;
-  return builder.or([
+  const fields = [
     `filename.ilike.${pattern}`,
     `question_text.ilike.${pattern}`,
     `corrected_text.ilike.${pattern}`,
     `summary.ilike.${pattern}`,
     `name.ilike.${pattern}`,
     `username.ilike.${pattern}`
-  ].join(','));
+  ];
+  if (HAS_HISTORY_SUBMISSION_NOTE) fields.push(`submission_note.ilike.${pattern}`);
+  return builder.or(fields.join(','));
 }
 
 async function loadApprovalGroup(filterQuery, search = '') {
@@ -1073,6 +1077,16 @@ function normalizeHistoryQuestion(value) {
     .slice(0, 8000);
 }
 
+function normalizeSubmissionNote(value) {
+  return String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => line.replace(/[ \t]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .slice(0, 1200);
+}
+
 function requireApprovalQuestionAndTags(body = {}) {
   if (!HAS_HISTORY_QUESTION_TEXT || !HAS_HISTORY_TAGS) {
     const err = new Error('Soru ve etiket alanları aktif değil. Lütfen gerekli SQL güncellemesini uygulayın.');
@@ -1091,7 +1105,7 @@ function requireApprovalQuestionAndTags(body = {}) {
     err.statusCode = 400;
     throw err;
   }
-  return { questionText, tags };
+  return { questionText, tags, submissionNote: normalizeSubmissionNote(body.submissionNote) };
 }
 
 function normalizeImportTags(value) {
@@ -4720,6 +4734,10 @@ async function seed() {
   HAS_HISTORY_QUESTION_TEXT = !historyQuestionTextErr;
   if (!HAS_HISTORY_QUESTION_TEXT) console.warn('⚠ history.question_text kolonu yok — soru alanı saklanmayacak. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
 
+  const { error: historySubmissionNoteErr } = await supabase.from('history').select('submission_note').limit(1);
+  HAS_HISTORY_SUBMISSION_NOTE = !historySubmissionNoteErr;
+  if (!HAS_HISTORY_SUBMISSION_NOTE) console.warn('⚠ history.submission_note kolonu yok — onaya gönderim notu saklanmayacak. schema.sql içindeki ALTER ifadesini Supabase SQL Editor\'de çalıştırın.');
+
   const { error: tagImportBatchErr } = await supabase.from('history_tag_import_batches').select('id').limit(1);
   const { error: tagImportMatchErr } = await supabase.from('history_tag_import_matches').select('id').limit(1);
   HAS_HISTORY_TAG_IMPORT_TABLES = !tagImportBatchErr && !tagImportMatchErr;
@@ -4980,6 +4998,21 @@ const PUBLIC_ARCHIVE_LINK_DELETE_CHUNK_SIZE = 20;
 const PUBLIC_ARCHIVE_PAGE_SIZE = 30;
 const PUBLIC_ARCHIVE_PUBLISHED_STATUS = 'published';
 const PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS = 'content_review_hidden';
+const PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_REASON = 'content_recheck';
+const PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPES = Object.freeze({
+  excelQuestion: 'Excel sorusu uyumsuz',
+  excelMismatch: 'Excel cevabı uyumsuz',
+  excelShort: "Excel'e göre kısa",
+  excelReview: 'Excel cevap kontrolü',
+  excelMissing: 'Excel eşleşmesi yok'
+});
+const PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK = Object.freeze({
+  excelQuestion: 1,
+  excelMismatch: 2,
+  excelShort: 3,
+  excelReview: 4,
+  excelMissing: 5
+});
 const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
@@ -5945,9 +5978,10 @@ async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
 
 async function loadApprovedHistoryForPublicArchive() {
   if (!HAS_HISTORY_PUBLIC_FIELDS) return [];
+  const submissionNoteColumn = HAS_HISTORY_SUBMISSION_NOTE ? ',submission_note' : '';
   return fetchAllPages(() => supabase
     .from('history')
-    .select('id,filename,question_text,tags,corrected_text,approved_at,created_at')
+    .select(`id,user_id,username,name,filename,question_text,tags${submissionNoteColumn},score,total_errors,corrected_text,approved_at,created_at`)
     .eq('status', 'onaylandi')
     .not('question_text', 'is', null)
     .not('tags', 'is', null)
@@ -6453,6 +6487,10 @@ function publicArchiveQuestionCopiedIntoAnswer(row = {}) {
 }
 
 function publicArchiveExcelAuditSeverity(type = '', ratio = 1, confidence = 0) {
+  if (type === 'excelMissing') return 'Excel eşleşmesi yok';
+  if (type === 'questionMismatch') return 'Soru uyumsuz';
+  if (type === 'answerMismatch') return 'Cevap uyumsuz';
+  if (type === 'answerReview') return 'Cevap kontrol';
   if (type === 'prefix') return 'Kesin kısa';
   if (type === 'substring') return 'Parça cevap';
   if (ratio < 0.35 && confidence >= 62) return 'Çok kısa';
@@ -6462,20 +6500,90 @@ function publicArchiveExcelAuditSeverity(type = '', ratio = 1, confidence = 0) {
 
 function publicArchiveExcelAuditReason(type = '', ratio = 1, confidence = 0) {
   const percent = Math.round(Number(ratio || 0) * 100);
+  if (type === 'excelMissing') return 'Bu canlı kayıt için bağlı Excel satırı bulunamadı; soru-cevap uyumu otomatik doğrulanamadı.';
+  if (type === 'questionMismatch') return 'Canlı soru, bağlı Excel satırındaki soru ile uyumlu görünmüyor.';
+  if (type === 'answerMismatch') return `Soru Excel ile uyumlu; fakat cevap akışı Excel cevabıyla uyuşmuyor (${percent}%).`;
+  if (type === 'answerReview') return `Cevap Excel cevabıyla kısmen benziyor; insan kontrolü gerekiyor (${percent}%).`;
   if (type === 'prefix') return `Canlı cevap Excel'deki tam cevabın başı gibi duruyor (${percent}%).`;
   if (type === 'substring') return `Canlı cevap Excel'deki tam cevabın içinden bir parça gibi duruyor (${percent}%).`;
   if (confidence < 62) return `Excel eşleşme güveni düşük; yine de cevap Excel'e göre kısa görünüyor (${percent}%).`;
   return `Canlı cevap Excel'deki tam cevaba göre belirgin kısa görünüyor (${percent}%).`;
 }
 
+function publicArchiveAuditWords(value = '') {
+  return publicArchiveComparable(value)
+    .replace(/[^a-z0-9çğıöşüâîû'\s-]+/giu, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 1);
+}
+
+function publicArchiveAuditShingles(value = '', size = 5, limitWords = 0) {
+  const sourceWords = limitWords
+    ? publicArchiveAuditWords(value).slice(0, limitWords)
+    : publicArchiveAuditWords(value);
+  const out = new Set();
+  for (let index = 0; index <= sourceWords.length - size; index += 1) {
+    out.add(sourceWords.slice(index, index + size).join(' '));
+  }
+  return out;
+}
+
+function publicArchiveAuditSimilarity(valueA = '', valueB = '', size = 5, limitWords = 0) {
+  const a = publicArchiveAuditShingles(valueA, size, limitWords);
+  const b = publicArchiveAuditShingles(valueB, size, limitWords);
+  if (!a.size || !b.size) return { containment: 0, jaccard: 0, hits: 0, a: a.size, b: b.size };
+  let hits = 0;
+  for (const item of a) if (b.has(item)) hits += 1;
+  return {
+    containment: hits / Math.min(a.size, b.size),
+    jaccard: hits / (a.size + b.size - hits),
+    hits,
+    a: a.size,
+    b: b.size
+  };
+}
+
+function publicArchiveExcelQuestionBucket(question = '', excelQuestion = '', confidence = 0) {
+  const questionComparable = publicArchiveComparable(question);
+  const excelComparable = publicArchiveComparable(excelQuestion);
+  if (!questionComparable || !excelComparable) return 'question_mismatch';
+  const score = publicArchiveAuditSimilarity(question, excelQuestion, 3);
+  if (questionComparable === excelComparable || score.containment >= 0.86) return 'question_ok';
+  if (score.containment >= 0.62 || Number(confidence || 0) >= 75) return 'question_review';
+  return 'question_mismatch';
+}
+
+function publicArchiveExcelAnswerBucket(answer = '', excelAnswer = '') {
+  const answerComparable = publicArchiveWhitespaceComparable(answer);
+  const excelComparable = publicArchiveWhitespaceComparable(excelAnswer);
+  if (!answerComparable || !excelComparable) return 'missing';
+  if (answerComparable === excelComparable) return 'exact';
+  const ratio = excelComparable.length ? answerComparable.length / excelComparable.length : 1;
+  const fullScore = publicArchiveAuditSimilarity(answer, excelAnswer, 5);
+  const startScore = publicArchiveAuditSimilarity(answer, excelAnswer, 4, 80);
+  const nearLength = Math.abs(answerComparable.length - excelComparable.length) <= Math.max(100, excelComparable.length * 0.06);
+  const prefixOrSubstring = excelComparable.startsWith(answerComparable) ||
+    answerComparable.startsWith(excelComparable) ||
+    excelComparable.includes(answerComparable) ||
+    answerComparable.includes(excelComparable);
+  if (nearLength && fullScore.containment >= 0.72) return 'near';
+  if (prefixOrSubstring || (ratio < 0.8 && fullScore.containment >= 0.45)) return 'short_or_piece';
+  if (fullScore.containment < 0.55 || startScore.containment < 0.25) return 'answer_mismatch';
+  return 'answer_review';
+}
+
 function publicArchiveExcelAuditSample(row = {}, historyRow = null, match = {}, excelItem = {}, type = 'short') {
   const publicAnswer = publicArchiveSubmittedText(row.answer_text || '', 120000);
   const historyAnswer = publicArchiveSubmittedText(historyRow?.corrected_text || '', 120000);
   const excelAnswer = publicArchiveSubmittedText(excelItem.answer || '', 120000);
+  const comparedAnswer = historyAnswer || publicAnswer;
   const publicLength = publicAnswer.length;
   const excelLength = excelAnswer.length;
-  const ratio = excelLength ? publicLength / excelLength : 0;
+  const ratio = excelLength ? comparedAnswer.length / excelLength : 0;
   const confidence = Number(match?.confidence || 0);
+  const answerScore = publicArchiveAuditSimilarity(comparedAnswer, excelAnswer, 5);
+  const answerStartScore = publicArchiveAuditSimilarity(comparedAnswer, excelAnswer, 4, 80);
+  const questionScore = publicArchiveAuditSimilarity(row.question || historyRow?.question_text || '', excelItem.question || match?.excel_question || '', 3);
   return {
     ...publicArchiveAuditSample(row, historyRow),
     excelRow: Number(excelItem.rowNumber || match?.excel_row || 0),
@@ -6487,9 +6595,14 @@ function publicArchiveExcelAuditSample(row = {}, historyRow = null, match = {}, 
     lengthRatio: Number(ratio.toFixed(3)),
     lengthPercent: Math.round(ratio * 100),
     confidence,
+    questionSimilarityPercent: Math.round(questionScore.containment * 100),
+    answerSimilarityPercent: Math.round(answerScore.containment * 100),
+    answerStartSimilarityPercent: Math.round(answerStartScore.containment * 100),
+    mismatchType: type,
     severity: publicArchiveExcelAuditSeverity(type, ratio, confidence),
     reason: publicArchiveExcelAuditReason(type, ratio, confidence),
     publicStart: publicArchiveText(publicAnswer, 360),
+    historyStart: publicArchiveText(historyAnswer, 360),
     excelAnswerStart: publicArchiveText(excelAnswer, 520)
   };
 }
@@ -6546,12 +6659,28 @@ async function buildPublicArchiveExcelAnswerAudit({ publicRows = [], historyRows
     return {
       excelAuditReady: false,
       excelAuditReason: context.reason,
+      excelMissingMatchCandidateCount: 0,
+      excelQuestionMismatchCandidateCount: 0,
+      excelAnswerMismatchCandidateCount: 0,
+      excelAnswerReviewCandidateCount: 0,
       excelShortAnswerCandidateCount: 0,
       excelMatchedPublicCount: 0,
       excelExactAnswerCount: 0,
       excelNearAnswerCount: 0,
-      samples: { excelShortAnswerCandidates: [] },
-      reviewQueue: includeReviewQueue ? { excelShortAnswerCandidates: [] } : undefined
+      samples: {
+        excelMissingMatchCandidates: [],
+        excelQuestionMismatchCandidates: [],
+        excelAnswerMismatchCandidates: [],
+        excelAnswerReviewCandidates: [],
+        excelShortAnswerCandidates: []
+      },
+      reviewQueue: includeReviewQueue ? {
+        excelMissingMatchCandidates: [],
+        excelQuestionMismatchCandidates: [],
+        excelAnswerMismatchCandidates: [],
+        excelAnswerReviewCandidates: [],
+        excelShortAnswerCandidates: []
+      } : undefined
     };
   }
 
@@ -6566,6 +6695,10 @@ async function buildPublicArchiveExcelAnswerAudit({ publicRows = [], historyRows
     }
   }
 
+  const excelMissingMatchCandidates = [];
+  const excelQuestionMismatchCandidates = [];
+  const excelAnswerMismatchCandidates = [];
+  const excelAnswerReviewCandidates = [];
   const excelShortAnswerCandidates = [];
   let excelMatchedPublicCount = 0;
   let excelExactAnswerCount = 0;
@@ -6575,39 +6708,78 @@ async function buildPublicArchiveExcelAnswerAudit({ publicRows = [], historyRows
     const historyRow = row.source_history_id ? historyById.get(row.source_history_id) : null;
     const match = historyRow ? matchByHistory.get(historyRow.id) : null;
     const excelItem = match ? excelByRow.get(Number(match.excel_row || 0)) : null;
-    if (!historyRow || !match || !excelItem?.answer) continue;
+    if (!historyRow || !match || !excelItem?.answer) {
+      excelMissingMatchCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match || {}, excelItem || {}, 'excelMissing'));
+      continue;
+    }
 
     const publicAnswer = publicArchiveSubmittedText(row.answer_text || '', 120000);
+    const historyAnswer = publicArchiveSubmittedText(historyRow.corrected_text || '', 120000);
+    const comparedAnswer = historyAnswer || publicAnswer;
     const excelAnswer = publicArchiveSubmittedText(excelItem.answer || '', 120000);
-    if (!publicAnswer || !excelAnswer) continue;
+    if (!comparedAnswer || !excelAnswer) {
+      excelMissingMatchCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, 'excelMissing'));
+      continue;
+    }
 
     excelMatchedPublicCount += 1;
-    const publicComparable = publicArchiveWhitespaceComparable(publicAnswer);
+    const questionBucket = publicArchiveExcelQuestionBucket(row.question || historyRow.question_text || '', excelItem.question || match.excel_question || '', match.confidence);
+    if (questionBucket !== 'question_ok') {
+      excelQuestionMismatchCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, 'questionMismatch'));
+      if (questionBucket === 'question_mismatch') continue;
+    }
+
+    const publicComparable = publicArchiveWhitespaceComparable(comparedAnswer);
     const excelComparable = publicArchiveWhitespaceComparable(excelAnswer);
     if (publicComparable === excelComparable) {
       excelExactAnswerCount += 1;
       continue;
     }
 
-    const ratio = excelComparable.length ? publicComparable.length / excelComparable.length : 1;
-    const near = Math.abs(publicComparable.length - excelComparable.length) <= Math.max(80, excelComparable.length * 0.05);
-    if (near) {
+    const answerBucket = publicArchiveExcelAnswerBucket(comparedAnswer, excelAnswer);
+    if (answerBucket === 'near') {
       excelNearAnswerCount += 1;
       continue;
     }
-
-    const isLongExcel = excelComparable.length >= 1000;
-    const isMeaningfullyShort = excelComparable.length > publicComparable.length * 1.25;
-    if (!isLongExcel || !isMeaningfullyShort) continue;
-
-    let type = 'short';
-    if (excelComparable.startsWith(publicComparable)) type = 'prefix';
-    else if (excelComparable.includes(publicComparable)) type = 'substring';
-    if (ratio >= 0.8 && type === 'short') continue;
-
-    excelShortAnswerCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, type));
+    if (answerBucket === 'exact') {
+      excelExactAnswerCount += 1;
+      continue;
+    }
+    if (answerBucket === 'short_or_piece') {
+      const ratio = excelComparable.length ? publicComparable.length / excelComparable.length : 1;
+      let type = 'short';
+      if (excelComparable.startsWith(publicComparable)) type = 'prefix';
+      else if (excelComparable.includes(publicComparable) || publicComparable.includes(excelComparable)) type = 'substring';
+      if (ratio < 0.8 || type !== 'short') {
+        excelShortAnswerCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, type));
+      } else {
+        excelAnswerReviewCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, 'answerReview'));
+      }
+      continue;
+    }
+    if (answerBucket === 'answer_mismatch') {
+      excelAnswerMismatchCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, 'answerMismatch'));
+      continue;
+    }
+    if (answerBucket === 'answer_review') {
+      excelAnswerReviewCandidates.push(publicArchiveExcelAuditSample(row, historyRow, match, excelItem, 'answerReview'));
+    }
   }
 
+  excelMissingMatchCandidates.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
+  excelQuestionMismatchCandidates.sort((a, b) => Number(a.questionSimilarityPercent || 0) - Number(b.questionSimilarityPercent || 0));
+  excelAnswerMismatchCandidates.sort((a, b) => {
+    const startDiff = Number(a.answerStartSimilarityPercent || 0) - Number(b.answerStartSimilarityPercent || 0);
+    if (startDiff) return startDiff;
+    const scoreDiff = Number(a.answerSimilarityPercent || 0) - Number(b.answerSimilarityPercent || 0);
+    if (scoreDiff) return scoreDiff;
+    return Number(a.lengthRatio || 0) - Number(b.lengthRatio || 0);
+  });
+  excelAnswerReviewCandidates.sort((a, b) => {
+    const scoreDiff = Number(a.answerSimilarityPercent || 0) - Number(b.answerSimilarityPercent || 0);
+    if (scoreDiff) return scoreDiff;
+    return Number(a.lengthRatio || 0) - Number(b.lengthRatio || 0);
+  });
   excelShortAnswerCandidates.sort((a, b) => {
     const severityOrder = { 'Kesin kısa': 0, 'Parça cevap': 1, 'Çok kısa': 2, 'Kontrol gerekli': 3 };
     const severityDiff = (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9);
@@ -6625,14 +6797,28 @@ async function buildPublicArchiveExcelAnswerAudit({ publicRows = [], historyRows
       appliedCount: context.batch.applied_count || 0,
       updatedAt: context.batch.updated_at || context.batch.created_at || ''
     },
+    excelMissingMatchCandidateCount: excelMissingMatchCandidates.length,
+    excelQuestionMismatchCandidateCount: excelQuestionMismatchCandidates.length,
+    excelAnswerMismatchCandidateCount: excelAnswerMismatchCandidates.length,
+    excelAnswerReviewCandidateCount: excelAnswerReviewCandidates.length,
     excelMatchedPublicCount,
     excelExactAnswerCount,
     excelNearAnswerCount,
     excelShortAnswerCandidateCount: excelShortAnswerCandidates.length,
     samples: {
+      excelMissingMatchCandidates: excelMissingMatchCandidates.slice(0, sampleLimit),
+      excelQuestionMismatchCandidates: excelQuestionMismatchCandidates.slice(0, sampleLimit),
+      excelAnswerMismatchCandidates: excelAnswerMismatchCandidates.slice(0, sampleLimit),
+      excelAnswerReviewCandidates: excelAnswerReviewCandidates.slice(0, sampleLimit),
       excelShortAnswerCandidates: excelShortAnswerCandidates.slice(0, sampleLimit)
     },
-    reviewQueue: includeReviewQueue ? { excelShortAnswerCandidates } : undefined
+    reviewQueue: includeReviewQueue ? {
+      excelMissingMatchCandidates,
+      excelQuestionMismatchCandidates,
+      excelAnswerMismatchCandidates,
+      excelAnswerReviewCandidates,
+      excelShortAnswerCandidates
+    } : undefined
   };
 }
 
@@ -6645,6 +6831,10 @@ function mergePublicArchiveExcelAudit(report = {}, excelReport = {}) {
     excelMatchedPublicCount: excelReport.excelMatchedPublicCount || 0,
     excelExactAnswerCount: excelReport.excelExactAnswerCount || 0,
     excelNearAnswerCount: excelReport.excelNearAnswerCount || 0,
+    excelMissingMatchCandidateCount: excelReport.excelMissingMatchCandidateCount || 0,
+    excelQuestionMismatchCandidateCount: excelReport.excelQuestionMismatchCandidateCount || 0,
+    excelAnswerMismatchCandidateCount: excelReport.excelAnswerMismatchCandidateCount || 0,
+    excelAnswerReviewCandidateCount: excelReport.excelAnswerReviewCandidateCount || 0,
     excelShortAnswerCandidateCount: excelReport.excelShortAnswerCandidateCount || 0,
     samples: {
       ...(report.samples || {}),
@@ -6855,7 +7045,7 @@ function buildPublicArchiveContentAudit({ publicRows = [], reviewRows = [], hist
 
 function publicArchiveContentReviewType(value = '') {
   const type = String(value || '').trim();
-  const allowed = new Set(['partial', 'excelShort', 'split', 'hidden', 'copied', 'stale', 'duplicates', 'format']);
+  const allowed = new Set(['partial', 'excelMissing', 'excelQuestion', 'excelMismatch', 'excelReview', 'excelShort', 'split', 'hidden', 'copied', 'stale', 'duplicates', 'format']);
   return allowed.has(type) ? type : 'partial';
 }
 
@@ -6864,6 +7054,10 @@ function publicArchiveContentReviewPage(report = {}, type = 'partial', offset = 
   const queue = report.reviewQueue || {};
   const keyByType = {
     partial: 'partialAnswerSignals',
+    excelMissing: 'excelMissingMatchCandidates',
+    excelQuestion: 'excelQuestionMismatchCandidates',
+    excelMismatch: 'excelAnswerMismatchCandidates',
+    excelReview: 'excelAnswerReviewCandidates',
     excelShort: 'excelShortAnswerCandidates',
     split: 'splitQuestionCandidates',
     hidden: 'contentReviewHidden',
@@ -6886,6 +7080,10 @@ function publicArchiveContentReviewPage(report = {}, type = 'partial', offset = 
     items: items.slice(cleanOffset, cleanOffset + cleanLimit),
     counts: {
       partial: report.partialAnswerSignalCount || 0,
+      excelMissing: report.excelMissingMatchCandidateCount || 0,
+      excelQuestion: report.excelQuestionMismatchCandidateCount || 0,
+      excelMismatch: report.excelAnswerMismatchCandidateCount || 0,
+      excelReview: report.excelAnswerReviewCandidateCount || 0,
       excelShort: report.excelShortAnswerCandidateCount || 0,
       split: report.splitQuestionCandidateCount || 0,
       hidden: report.contentReviewHiddenCount || 0,
@@ -7018,6 +7216,275 @@ async function setPublicArchiveContentItemStatus(slug = '', status = '') {
   }
   clearPublicArchiveCaches();
   return { success: true, item: data };
+}
+
+function publicArchiveSuspiciousReturnTypes(value = null) {
+  const raw = Array.isArray(value) ? value : String(value || '').split(',');
+  const allowed = new Set(Object.keys(PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPES));
+  const picked = [...new Set(raw.map(item => String(item || '').trim()).filter(type => allowed.has(type)))];
+  return picked.length ? picked : Object.keys(PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPES);
+}
+
+function publicArchiveSuspiciousReturnLabel(type = '') {
+  return PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPES[type] || 'Kontrol gerekli';
+}
+
+function publicArchiveSuspiciousReturnReviewSources(report = {}, types = []) {
+  const queue = report.reviewQueue || {};
+  const keyByType = {
+    excelQuestion: 'excelQuestionMismatchCandidates',
+    excelMismatch: 'excelAnswerMismatchCandidates',
+    excelShort: 'excelShortAnswerCandidates',
+    excelReview: 'excelAnswerReviewCandidates',
+    excelMissing: 'excelMissingMatchCandidates'
+  };
+  return types.map(type => ({
+    type,
+    items: Array.isArray(queue[keyByType[type]]) ? queue[keyByType[type]] : []
+  }));
+}
+
+function buildPublicArchiveSuspiciousReturnCandidates(report = {}, historyRows = [], types = []) {
+  const historyById = new Map((historyRows || []).map(row => [row.id, row]));
+  const byHistoryId = new Map();
+  const skipped = [];
+  for (const source of publicArchiveSuspiciousReturnReviewSources(report, types)) {
+    for (const item of source.items) {
+      const sourceHistoryId = String(item?.sourceHistoryId || item?.source_history_id || '').trim();
+      const slug = String(item?.slug || '').trim();
+      if (!sourceHistoryId) {
+        skipped.push({ type: source.type, slug, title: item?.title || item?.question || '', reason: 'history_id_missing' });
+        continue;
+      }
+      const historyRow = historyById.get(sourceHistoryId);
+      if (!historyRow?.user_id) {
+        skipped.push({ type: source.type, slug, sourceHistoryId, title: item?.title || item?.question || '', reason: 'history_user_missing' });
+        continue;
+      }
+      const existing = byHistoryId.get(sourceHistoryId) || {
+        sourceHistoryId,
+        historyRow,
+        slugs: [],
+        types: [],
+        type: source.type,
+        severity: item?.severity || publicArchiveSuspiciousReturnLabel(source.type),
+        reason: item?.reason || publicArchiveSuspiciousReturnLabel(source.type),
+        title: item?.title || item?.question || historyRow.question_text || historyRow.filename || 'Kayıt',
+        question: item?.question || historyRow.question_text || '',
+        filename: historyRow.filename || 'Metin Girişi',
+        userId: historyRow.user_id,
+        userName: historyRow.name || historyRow.username || '',
+        score: historyRow.score || null
+      };
+      if (slug && !existing.slugs.includes(slug)) existing.slugs.push(slug);
+      if (!existing.types.includes(source.type)) existing.types.push(source.type);
+      const nextRank = PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK[source.type] || 99;
+      const oldRank = PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK[existing.type] || 99;
+      if (nextRank < oldRank) {
+        existing.type = source.type;
+        existing.severity = item?.severity || publicArchiveSuspiciousReturnLabel(source.type);
+        existing.reason = item?.reason || publicArchiveSuspiciousReturnLabel(source.type);
+      }
+      byHistoryId.set(sourceHistoryId, existing);
+    }
+  }
+  const candidates = [...byHistoryId.values()]
+    .sort((a, b) => (PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK[a.type] || 99) - (PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK[b.type] || 99) ||
+      String(a.title || '').localeCompare(String(b.title || ''), 'tr'));
+  return { candidates, skipped };
+}
+
+function publicArchiveSuspiciousReturnUserNote(candidate = {}) {
+  return [
+    'Bu kayıt canlı arşiv kontrolünde geçici olarak yayından alındı.',
+    'Soru, cevap ve etiket uyumu güvenli şekilde yeniden kontrol edilmeli.',
+    'Lütfen kaynağınızdaki tam cevapla soru, cevap ve etiketleri karşılaştırıp tekrar onaya gönderiniz.'
+  ].join(' ');
+}
+
+function publicArchiveSuspiciousReturnSample(candidate = {}) {
+  return {
+    slug: candidate.slugs?.[0] || '',
+    sourceHistoryId: candidate.sourceHistoryId,
+    slugs: candidate.slugs,
+    type: candidate.type,
+    typeLabel: publicArchiveSuspiciousReturnLabel(candidate.type),
+    severity: candidate.severity,
+    reason: candidate.reason,
+    title: publicArchiveText(candidate.title || candidate.question || candidate.filename || 'Kayıt', 180),
+    filename: candidate.filename,
+    userId: candidate.userId,
+    userName: candidate.userName
+  };
+}
+
+async function upsertSubmittedCorrectedHashRows(rows = []) {
+  const payload = rows
+    .map(row => {
+      const key = submittedCorrectedHashKey(row.user_id, row.corrected_text || '');
+      if (!key) return null;
+      return {
+        key,
+        value: JSON.stringify({ userId: row.user_id, historyId: row.id, status: APPROVAL_RETURNED_STATUS, updatedAt: new Date().toISOString() })
+      };
+    })
+    .filter(Boolean);
+  for (let index = 0; index < payload.length; index += 500) {
+    const { error } = await supabase.from('settings').upsert(payload.slice(index, index + 500));
+    if (error) console.warn('Geri gönderilen metin kilitleri güncellenemedi:', error.message);
+  }
+}
+
+async function returnSuspiciousPublicArchiveRows({ apply = false, types = null, actor = 'Admin' } = {}) {
+  const cleanTypes = publicArchiveSuspiciousReturnTypes(types);
+  const rows = await loadPublicArchiveContentAuditRows();
+  if (!rows.available) return rows;
+  const baseReport = buildPublicArchiveContentAudit(rows, { includeReviewQueue: true, sampleLimit: 24 });
+  const excelReport = await buildPublicArchiveExcelAnswerAudit(rows, { includeReviewQueue: true, sampleLimit: 24 });
+  const report = mergePublicArchiveExcelAudit(baseReport, excelReport);
+  const { candidates, skipped } = buildPublicArchiveSuspiciousReturnCandidates(report, rows.historyRows, cleanTypes);
+  const byType = candidates.reduce((acc, item) => {
+    acc[item.type] = (acc[item.type] || 0) + 1;
+    return acc;
+  }, {});
+  const byUser = candidates.reduce((acc, item) => {
+    const key = item.userName || item.userId || 'Bilinmeyen';
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  if (!apply) {
+    return {
+      available: true,
+      dryRun: true,
+      types: cleanTypes,
+      candidateCount: candidates.length,
+      skippedCount: skipped.length,
+      byType,
+      byUser,
+      samples: candidates.slice(0, 24).map(publicArchiveSuspiciousReturnSample),
+      skipped: skipped.slice(0, 24)
+    };
+  }
+
+  const now = new Date().toISOString();
+  const historyIds = candidates.map(item => item.sourceHistoryId);
+  const hiddenRows = [];
+  for (let index = 0; index < historyIds.length; index += 80) {
+    const slice = historyIds.slice(index, index + 80);
+    const { data, error } = await supabase
+      .from('public_qa')
+      .update({ status: PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS, updated_at: now })
+      .in('source_history_id', slice)
+      .eq('status', PUBLIC_ARCHIVE_PUBLISHED_STATUS)
+      .select('slug,source_history_id,title,status');
+    if (error) throw new Error(error.message);
+    hiddenRows.push(...(data || []));
+  }
+
+  const returnedRows = [];
+  for (let index = 0; index < historyIds.length; index += 80) {
+    const slice = historyIds.slice(index, index + 80);
+    const { data, error } = await supabase
+      .from('history')
+      .update({ status: APPROVAL_RETURNED_STATUS, approved_by: null, approved_at: null })
+      .in('id', slice)
+      .eq('status', 'onaylandi')
+      .select('id,user_id,username,name,filename,score,corrected_text,status');
+    if (error) throw new Error(error.message);
+    returnedRows.push(...(data || []));
+  }
+
+  const candidateByHistoryId = new Map(candidates.map(item => [item.sourceHistoryId, item]));
+  const returnNotes = await loadApprovalReturnNotes();
+  for (const row of returnedRows) {
+    const candidate = candidateByHistoryId.get(row.id) || {};
+    returnNotes[row.id] = {
+      reason: PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_REASON,
+      reasonLabel: APPROVAL_RETURN_REASONS[PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_REASON],
+      note: publicArchiveSuspiciousReturnUserNote(candidate),
+      requestedBy: actor || 'Admin',
+      requestedAt: now
+    };
+  }
+  if (returnedRows.length) await saveJsonSetting(APPROVAL_RETURN_NOTES_KEY, returnNotes);
+  await upsertSubmittedCorrectedHashRows(returnedRows);
+
+  const alerts = returnedRows.map(row => {
+    const candidate = candidateByHistoryId.get(row.id) || {};
+    return {
+      type: 'approval_return',
+      message: [
+        'Denetim kaydınız düzenleme için geri gönderildi',
+        `Sebep: ${APPROVAL_RETURN_REASONS[PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_REASON]}`,
+        `Not: ${publicArchiveSuspiciousReturnUserNote(candidate)}`,
+        `Kayıt: ${row.filename || candidate.title || 'Metin Girişi'}`,
+        `Gönderen: ${actor || 'Admin'}`
+      ].join(' | '),
+      user_id: row.user_id,
+      history_id: row.id,
+      score: row.score,
+      read: false,
+      created_at: now
+    };
+  }).filter(row => row.user_id);
+  for (let index = 0; index < alerts.length; index += 500) {
+    const { error } = await supabase.from('alerts').insert(alerts.slice(index, index + 500));
+    if (error) throw new Error(error.message);
+  }
+
+  if (HAS_CONTENT_CORRECTION_LOG) {
+    const packageId = `public-suspicious-return-${now.slice(0, 10)}-${Date.now()}`;
+    const logs = [];
+    for (const row of hiddenRows) {
+      if (!row.source_history_id) continue;
+      logs.push({
+        package_id: packageId,
+        history_id: row.source_history_id,
+        field_name: `public_qa.status:${row.slug}`,
+        old_value: PUBLIC_ARCHIVE_PUBLISHED_STATUS,
+        new_value: PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS,
+        old_hash: textHash(PUBLIC_ARCHIVE_PUBLISHED_STATUS),
+        new_hash: textHash(PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS),
+        status: 'applied',
+        created_by: actor || 'Admin',
+        created_at: now
+      });
+    }
+    for (const row of returnedRows) {
+      logs.push({
+        package_id: packageId,
+        history_id: row.id,
+        field_name: 'history.status',
+        old_value: 'onaylandi',
+        new_value: APPROVAL_RETURNED_STATUS,
+        old_hash: textHash('onaylandi'),
+        new_hash: textHash(APPROVAL_RETURNED_STATUS),
+        status: 'applied',
+        created_by: actor || 'Admin',
+        created_at: now
+      });
+    }
+    if (logs.length) await insertCorrectionLogs(logs);
+  }
+
+  if (hiddenRows.length || returnedRows.length) clearPublicArchiveCaches();
+  return {
+    available: true,
+    success: true,
+    dryRun: false,
+    types: cleanTypes,
+    candidateCount: candidates.length,
+    skippedCount: skipped.length,
+    hiddenRows: hiddenRows.length,
+    returnedHistories: returnedRows.length,
+    alertsCreated: alerts.length,
+    notifiedUsers: new Set(alerts.map(row => row.user_id)).size,
+    byType,
+    byUser,
+    samples: candidates.slice(0, 24).map(publicArchiveSuspiciousReturnSample),
+    skipped: skipped.slice(0, 24)
+  };
 }
 
 async function loadExistingPublicArchiveRowsByHistoryId(historyIds = []) {
@@ -7562,6 +8029,18 @@ app.post('/api/public-archive/refresh-format', auth, admin, superAdmin, async (r
 app.post('/api/public-archive/content-audit/hide-copied-questions', auth, admin, superAdmin, async (req, res) => {
   try {
     res.json({ success: true, ...await hidePublicArchiveCopiedQuestionRows() });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
+  }
+});
+
+app.post('/api/public-archive/content-audit/return-suspicious', auth, admin, superAdmin, async (req, res) => {
+  try {
+    res.json(await returnSuspiciousPublicArchiveRows({
+      apply: req.body?.apply === true,
+      types: req.body?.types || null,
+      actor: req.session.name || req.session.username || 'Admin'
+    }));
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
   }
@@ -8530,7 +9009,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
       return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
     }
     if (historyStatusForApproval(history.status)) {
-      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '' });
+      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '', submissionNote: history.submission_note || '' });
     }
     if (history.status !== 'taslak' && history.status !== APPROVAL_RETURNED_STATUS) return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
     const approvalMeta = requireApprovalQuestionAndTags(req.body);
@@ -8545,6 +9024,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     const updateRow = { status: 'bekliyor', approved_by: null, approved_at: null };
     updateRow.tags = approvalMeta.tags;
     updateRow.question_text = approvalMeta.questionText;
+    if (HAS_HISTORY_SUBMISSION_NOTE) updateRow.submission_note = approvalMeta.submissionNote;
     const { data, error: updateError } = await supabase.from('history')
       .update(updateRow)
       .eq('id', history.id)
@@ -8556,7 +9036,7 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     await clearApprovalReturnNote(history.id);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
-    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '' });
+    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '', submissionNote: data.submission_note || updateRow.submission_note || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
     res.status(e.statusCode || 500).json({ error: e.message });
@@ -8647,6 +9127,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
     };
     mergedRow.tags = approvalMeta.tags;
     mergedRow.question_text = approvalMeta.questionText;
+    if (HAS_HISTORY_SUBMISSION_NOTE) mergedRow.submission_note = approvalMeta.submissionNote;
     if (HAS_ORIGINAL_TEXT) mergedRow.original_text = payload.originalText;
     if (HAS_TEXT_HASH) mergedRow.text_hash = payload.hash;
     if (HAS_ANALYSIS_META) {
@@ -8664,7 +9145,7 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
     if (hideError) console.warn('Birlesik onay sonrasi parca gizleme uyarisi:', hideError.message);
     await maybeCreateLowScoreAlert(req, data.id, payload.score, payload.filename);
-    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || mergedRow.tags || [], questionText: data.question_text || mergedRow.question_text || '' });
+    res.json({ success: true, id: data.id, status: data.status, tags: data.tags || mergedRow.tags || [], questionText: data.question_text || mergedRow.question_text || '', submissionNote: data.submission_note || mergedRow.submission_note || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);
     res.status(e.statusCode || 500).json({ error: e.message });
@@ -11060,6 +11541,7 @@ let HAS_ANALYSIS_META = false; // startup'ta tespit edilir (history.prompt_versi
 let HAS_ORIGINAL_TEXT = false; // startup'ta tespit edilir (history.original_text kolonu)
 let HAS_HISTORY_TAGS = false; // startup'ta tespit edilir (history.tags kolonu)
 let HAS_HISTORY_QUESTION_TEXT = false; // startup'ta tespit edilir (history.question_text kolonu)
+let HAS_HISTORY_SUBMISSION_NOTE = false; // startup'ta tespit edilir (history.submission_note kolonu)
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
 let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş içerik düzeltme kayıt defteri)

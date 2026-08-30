@@ -440,18 +440,23 @@ if (
 if (
   !schema.includes("tags jsonb not null default '[]'::jsonb") ||
   !schema.includes('question_text  text') ||
+  !schema.includes('submission_note text') ||
   !schema.includes('history_tags_idx') ||
   !server.includes('HAS_HISTORY_TAGS') ||
   !server.includes('HAS_HISTORY_QUESTION_TEXT') ||
+  !server.includes('HAS_HISTORY_SUBMISSION_NOTE') ||
   !server.includes('function normalizeHistoryTags') ||
   !server.includes('function normalizeHistoryQuestion') ||
+  !server.includes('function normalizeSubmissionNote') ||
   !server.includes('function requireApprovalQuestionAndTags') ||
   !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/tags'") ||
   !server.includes('const approvalMeta = requireApprovalQuestionAndTags(req.body)') ||
   !server.includes('updateRow.tags = approvalMeta.tags') ||
   !server.includes('updateRow.question_text = approvalMeta.questionText') ||
+  !server.includes('updateRow.submission_note = approvalMeta.submissionNote') ||
   !server.includes('mergedRow.tags = approvalMeta.tags') ||
   !server.includes('mergedRow.question_text = approvalMeta.questionText') ||
+  !server.includes('mergedRow.submission_note = approvalMeta.submissionNote') ||
   !server.includes('const importedQuestion = normalizeHistoryQuestion(match.excel_question)') ||
   !server.includes("if (importedQuestion && (!existingQuestion || options.replaceQuestion === true))") ||
   !server.includes('function fetchHistoryQuestionRowsByIds') ||
@@ -471,6 +476,9 @@ if (
   !html.includes('id="submitApprovalQuestionMain"') ||
   !html.includes('id="submitApprovalQuestion"') ||
   !html.includes('id="submitApprovalTags"') ||
+  !html.includes('id="submitApprovalNote"') ||
+  !html.includes('Kontrol notu (isteğe bağlı)') ||
+  !html.includes('approvalSubmissionNoteHtml') ||
   !html.includes('Soru (zorunlu)') ||
   !html.includes('Etiketler (zorunlu)') ||
   !html.includes('Onaya göndermeden önce soru alanını doldurun.') ||
@@ -1043,6 +1051,7 @@ for (const marker of [
   "app.post('/api/public-archive/sync-approved'",
   "app.post('/api/public-archive/refresh-format'",
   "app.post('/api/public-archive/content-audit/hide-copied-questions'",
+  "app.post('/api/public-archive/content-audit/return-suspicious'",
   "app.post('/api/public-archive/content-items/:slug/status'",
   'loadPublicArchiveDataset',
   'loadApprovedHistoryForPublicArchive',
@@ -1050,10 +1059,16 @@ for (const marker of [
   'analyzePublicArchiveContentHealth',
   'refreshPublicArchiveFormattingFromHistory',
   'hidePublicArchiveCopiedQuestionRows',
+  'returnSuspiciousPublicArchiveRows',
+  'buildPublicArchiveSuspiciousReturnCandidates',
   'setPublicArchiveContentItemStatus',
   'publicArchiveContentReviewPage',
   'publicArchiveContentReviewType',
   'includeReviewQueue',
+  'excelMissingMatchCandidateCount',
+  'excelQuestionMismatchCandidateCount',
+  'excelAnswerMismatchCandidateCount',
+  'excelAnswerReviewCandidateCount',
   'PUBLIC_ARCHIVE_CONTENT_REVIEW_STATUS',
   'contentReviewHiddenCount',
   'publicArchiveWhitespaceComparable',
@@ -1099,6 +1114,7 @@ for (const marker of [
   'create table if not exists public.public_qa',
   'create table if not exists public.public_qa_topics',
   'alter table public.history add column if not exists question_text text',
+  'alter table public.history add column if not exists submission_note text',
   "alter table public.history add column if not exists tags jsonb not null default '[]'::jsonb",
   'alter table public.public_users enable row level security',
   'alter table public.public_question_submissions enable row level security',
@@ -1125,7 +1141,15 @@ for (const marker of [
   'archivePublicContentQueuePanel',
   'archivePublicContentQueueType',
   'questionCopiedIntoAnswerCount',
+  'excelMissingMatchCandidateCount',
+  'excelQuestionMismatchCandidateCount',
+  'excelAnswerMismatchCandidateCount',
+  'excelAnswerReviewCandidateCount',
   'excelShortAnswerCandidateCount',
+  'Excel eşleşmesi yok',
+  'Excel sorusu uyumsuz',
+  'Excel cevabı uyumsuz',
+  'Excel cevap kontrolü',
   "Excel'e göre kısa",
   'loadArchivePublicContentAudit',
   'loadArchivePublicContentQueue',
@@ -1156,6 +1180,7 @@ for (const marker of [
   '/api/public-archive/sync-approved',
   '/api/public-archive/refresh-format',
   '/api/public-archive/content-audit/hide-copied-questions',
+  '/api/public-archive/content-audit/return-suspicious',
   '/api/public-archive/content-items/',
   '/api/public-archive/analytics'
 ]) {
@@ -1164,6 +1189,10 @@ for (const marker of [
 
 for (const marker of ['Soru Taşanları Yayından Al', 'hideArchivePublicCopiedQuestionAnswers', 'setArchivePublicContentStatus', 'Yayından alınan kontrol', 'Kontrol Listesini Aç', 'Sitede Aç']) {
   assert(html.includes(marker), `Admin panel public icerik kontrol aksiyonu marker eksik: ${marker}`);
+}
+
+for (const marker of ['Şüpheli Geri Gönderimi Önizle', 'Şüphelileri Ekibe Geri Gönder', 'previewArchivePublicSuspiciousReturns', 'returnArchivePublicSuspiciousToUsers']) {
+  assert(html.includes(marker), `Admin panel public supheli geri gonderim marker eksik: ${marker}`);
 }
 
 const publicRenderCases = [

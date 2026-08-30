@@ -1,5 +1,40 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-08-30 Codex Şüpheli Public Kayıtları Ekibe Geri Döndürme Akışı
+
+- Kullanıcı, Excel ile birebir çekme/otomatik tamamlama yerine daha güvenli bir yol istedi:
+  şüpheli public kayıtlar canlı yayından geçici olarak ayrılsın, fakat cevabı kim denetlettiyse
+  o ekip üyesine geri gönderilsin. Ekip üyesi kendi kaynağından soru, cevap ve etiket uyumunu
+  kontrol edip tekrar onaya gönderecek.
+- Kod değişikliği: denetim sonucu onaya gönderilirken isteğe bağlı `Kontrol notu` alanı eklendi.
+  Kullanıcı bu alana örneğin `Soru, cevap ve etiket uyumlu.` yazabilir. Not yalnız admin ve
+  süper admin onay ekranlarında, detay modalında ve geçmiş aramasında görünür.
+- DB hazırlığı: `history.submission_note` kolonu eklendi. Kolon canlı DB'de yoksa uygulama
+  kırılmaz; sunucu startup'ta kolonu algılar ve yoksa notu saklamadan çalışır. Kalıcı kullanım
+  için Supabase SQL Editor'de `alter table public.history add column if not exists
+  submission_note text;` uygulanmalıdır.
+- Kod değişikliği: `Canlı Site > İçerik Kontrolü` ekranına `Şüpheli Geri Gönderimi Önizle`
+  ve `Şüphelileri Ekibe Geri Gönder` aksiyonları eklendi. Önizleme önce sayı, kullanıcı
+  kırılımı ve örnekleri gösterir; uygulama ayrıca onay ister.
+- Yeni süper admin korumalı endpoint:
+  `POST /api/public-archive/content-audit/return-suspicious`. `apply:false` kuru çalışma,
+  `apply:true` gerçek uygulamadır.
+- Güvenlik davranışı: işlem yalnız Excel karşılaştırmasından gelen şüpheli grupları kullanır
+  (`Excel eşleşmesi yok`, `Excel sorusu uyumsuz`, `Excel cevabı uyumsuz`, `Excel cevap
+  kontrolü`, `Excel'e göre kısa`). `source_history_id` ve `history.user_id` bulunmayan kayıtlar
+  atlanır; böylece yanlış kullanıcıya geri gönderim yapılmaz.
+- Uygulamada public kayıt silinmez; `public_qa.status='content_review_hidden'` yapılır.
+  Bağlı onaylı denetim kaydı `history.status='geri_gonderildi'` olur, `approved_by/approved_at`
+  temizlenir, geri gönderme notu `approval_return_notes` içine yazılır, kullanıcıya
+  `approval_return` bildirimi gider ve içerik düzeltme kayıt defteri varsa işlem izi
+  `content_correction_log` içine düşer.
+- Bu akış Excel cevabını public cevaba otomatik yazmaz, AI ile cevabı yeniden üretmez ve
+  soru-cevap-etket içeriğine yeni metin eklemez. Amaç riskli kayıtları yayından çekip doğru
+  kişiye kontrollü şekilde iade etmektir.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `git diff --check`, `node scripts/check-frontend.js` ve `npm.cmd run check` başarılı;
+  tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
+
 ## 2026-08-29 Codex Public Excel Tam Cevap Karşılaştırması
 
 - Kullanıcı, ekibin onaya gönderdiği/adminin onayladığı cevapların canlı sitede bazen yarım
