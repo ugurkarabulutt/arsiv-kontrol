@@ -1,5 +1,29 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-01 Codex Admin Kendi Kaydını Geri Çekme ve Geri Döneni Düzenleme
+
+- Kullanıcı, admin rolündeki Elçin Hanım'ın kendi onaya gönderdiği kayıtları geri çekme ve
+  kendisine geri gönderilen kayıtları düzenleme akışında sorun yaşadığını bildirdi.
+- İncelemede backend tarafında `POST /api/history/:id/withdraw` ve `POST /api/history/:id/submit`
+  akışlarının mevcut olduğu, fakat frontend'in sahip aksiyonlarını `!isAdmin` şartına bağladığı
+  görüldü. Bu yüzden admin rolündeki ekip üyeleri kendi kayıtlarında normal kullanıcı aksiyonlarını
+  göremiyordu.
+- Ayrıca adminler için `/api/history` sorgusu tüm `taslak` kayıtları dışladığından, admin kendi
+  bekleyen kaydını geri çekince kayıt taslağa dönüp geçmiş listesinden kaybolabiliyordu.
+- Düzeltme: `Onaya Gönder`, `Eksikleri Tamamla`, `Denetime Al` ve `Geri Çek` aksiyonları artık
+  role göre değil `history.user_id === oturumdaki kullanıcı` sahipliğine göre görünür. Adminler
+  başkalarının taslaklarını görmez; kendi taslaklarını, bekleyenlerini ve geri dönenlerini görür.
+- `Denetime Al` aksiyonu geri dönen kaydın cevap metnini Metin Denetimi ekranına aktarır; kullanıcı
+  cevabı yeniden denetleyip soru, etiket ve kontrol notuyla tekrar onaya gönderebilir.
+- Veri değişikliği yapılmadı. Canlı read-only sayımda `geri_gonderildi` kayıtların rol kırılımı
+  `user:492`, `admin:300`, `super_admin:6`; Elçin Akay için `geri_gonderildi:300`,
+  `bekliyor:75`, `taslak:69` görüldü.
+- Değişen dosyalar: `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  tam test `106/106` geçti. Commit/deploy bilgisi canlıya alınınca bu bölüme eklenmelidir.
+
 ## 2026-09-01 Codex Dergah Geçen Soru Başlıklarını Arşivleme
 
 - Kullanıcı, sadece soru/title alanında `dergah` veya `dergâh` geçen canlı kayıtların yayından

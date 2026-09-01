@@ -3568,6 +3568,7 @@ function showSubmittedHistory(){
 async function openSubmitApprovalFromHistory(id){
   const row=historyRows.find(h=>h.id===id);
   if(!row||!['taslak',APPROVAL_RETURNED_STATUS].includes(row.status)){setStatus('Bu kayıt onaya gönderilecek durumda değil.','err');return;}
+  if(!isOwnHistoryRow(row)){setStatus('Bu işlem yalnız kaydı gönderen kullanıcı tarafından yapılabilir.','err');return;}
   if(isChunkHistoryRowUi(row)){setStatus('Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.','err');return;}
   setStatus('Taslak hazırlanıyor...','');
   const detail=await api('GET',`/api/history/${id}`);
@@ -3580,8 +3581,32 @@ async function openSubmitApprovalFromHistory(id){
   openSubmitApprovalModal();
 }
 
+async function recheckReturnedHistory(id){
+  const row=historyRows.find(h=>h.id===id);
+  if(!row||row.status!==APPROVAL_RETURNED_STATUS){setStatus('Denetime alınacak geri dönen kayıt bulunamadı.','err');return;}
+  if(!isOwnHistoryRow(row)){setStatus('Bu işlem yalnız kaydı gönderen kullanıcı tarafından yapılabilir.','err');return;}
+  setStatus('Geri dönen kayıt denetime hazırlanıyor...','');
+  const detail=await api('GET',`/api/history/${id}`);
+  if(detail.error){setStatus(detail.error,'err');return;}
+  const text=cleanInputText(detail.correctedText||detail.originalText||row.correctedText||'');
+  if(!text){setStatus('Denetime alınacak metin bulunamadı.','err');return;}
+  selectedFile=null;batchFiles=[];correctedText='';currentHistoryId=null;currentResult=null;currentOriginalText='';currentAiReport=null;pendingApprovalPayload=null;
+  clearArchiveWorkAuditContext(true);
+  showTab('analiz');
+  switchInner('text');
+  const input=el('inputText');
+  if(input){input.value=text;handleTextInput();}
+  const res=el('resultsArea');
+  if(res)res.innerHTML='<div class="submit-success-card"><div class="submit-success-title">Geri dönen kayıt denetime alındı</div><div class="submit-success-text">Cevap metni metin alanına aktarıldı. Gerekli düzeltmeyi yapıp Denetle &amp; Düzelt ile yeniden kontrol edin; ardından soru ve etiketlerle tekrar onaya gönderin.</div></div>';
+  persistWorkDraft();
+  setStatus('Metin denetime alındı. Gerekirse düzenleyip Denetle & Düzelt düğmesine basın.','ok');
+  window.setTimeout(()=>el('inputText')?.focus(),80);
+}
+
 async function withdrawApprovalById(id){
   if(!id){setStatus('Geri çekilecek kayıt bulunamadı.','err');return false;}
+  const row=historyRows.find(h=>h.id===id);
+  if(row&&!isOwnHistoryRow(row)){setStatus('Bu işlem yalnız kaydı gönderen kullanıcı tarafından yapılabilir.','err');return false;}
   const confirmed=await openSystemConfirm({
     title:'Onaydan geri çekilsin mi?',
     badge:'Taslak',
@@ -4074,6 +4099,12 @@ function isChunkHistoryRowUi(h){
   return h?.status==='chunk_draft'||/\s-\sParça\s+\d+\/\d+$/u.test(String(h?.filename||'').trim());
 }
 
+function isOwnHistoryRow(h){
+  const owner=String(h?.userId||'').trim();
+  const current=String(me?.id||'').trim();
+  return Boolean(owner&&current&&owner===current);
+}
+
 function renderHistory(){
   const container=el('histContent');
   const isAdmin=hasAdminRole(me?.role);
@@ -4097,12 +4128,14 @@ function renderHistory(){
     <thead><tr><th>Tarih</th>${isAdmin?'<th>Kullanıcı</th>':''}<th>Dosya</th><th>Skor</th><th>Sorun</th><th>Durum</th><th>Metin</th>${isAdmin?'<th>Onay</th>':''}</tr></thead>
     <tbody>${filtered.map(h=>{
       const status=h.status||'bekliyor';
+      const ownRow=isOwnHistoryRow(h);
       const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
       const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
       const statusUi=historyApprovalStatusUi(status);
-      const draftAction=!isAdmin&&status==='taslak'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Onaya Gönder</button>`:'';
-      const returnedAction=!isAdmin&&status===APPROVAL_RETURNED_STATUS&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Eksikleri Tamamla</button>`:'';
-      const withdrawAction=!isAdmin&&status==='bekliyor'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="withdrawApprovalFromHistory('${h.id}')">Geri Çek</button>`:'';
+      const draftAction=ownRow&&status==='taslak'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Onaya Gönder</button>`:'';
+      const returnedAction=ownRow&&status===APPROVAL_RETURNED_STATUS&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-submit-approval" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="openSubmitApprovalFromHistory('${h.id}')">Eksikleri Tamamla</button>`:'';
+      const recheckAction=ownRow&&status===APPROVAL_RETURNED_STATUS&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="recheckReturnedHistory('${h.id}')">Denetime Al</button>`:'';
+      const withdrawAction=ownRow&&status==='bekliyor'&&h.correctedText&&!isChunkHistoryRowUi(h)?`<button class="btn-sec" style="padding:4px 9px;font-size:9px;margin-left:4px" onclick="withdrawApprovalFromHistory('${h.id}')">Geri Çek</button>`:'';
       const returnInfo=status===APPROVAL_RETURNED_STATUS?approvalReturnInfoHtml(h,true):'';
       if(h.correctedText)_textStore[h.id]=h.correctedText;
       return `<tr>
@@ -4111,7 +4144,7 @@ function renderHistory(){
         <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename)}">${esc(h.filename)}</td>
         <td><span class="score-pill ${pc}">${sc}</span></td>
         <td class="mono" style="font-size:11px">${h.totalErrors||0}</td>
-        <td><span class="status-badge ${statusUi.cls}">${statusUi.label}</span>${draftAction}${returnedAction}${withdrawAction}${returnInfo}</td>
+        <td><span class="status-badge ${statusUi.cls}">${statusUi.label}</span>${draftAction}${returnedAction}${recheckAction}${withdrawAction}${returnInfo}</td>
         <td>${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:'—'}</td>
         ${isAdmin?`<td><div class="td-actions">
           ${!h.status||h.status==='bekliyor'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">✓</button><button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">✗</button>`:''}

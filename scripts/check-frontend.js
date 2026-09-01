@@ -362,6 +362,17 @@ if (
 ) {
   throw new Error('Onaya gonderim dogrulanmali ve kullanici bekleyen kaydi geri cekebilmelidir.');
 }
+if (
+  !server.includes('function historyOwnerId') ||
+  !server.includes('isHiddenHistoryForRole(h, req.session.role, req.session.userId)') ||
+  !html.includes('function isOwnHistoryRow') ||
+  !html.includes('recheckReturnedHistory') ||
+  !html.includes('Denetime Al') ||
+  html.includes("!isAdmin&&status===APPROVAL_RETURNED_STATUS") ||
+  html.includes("!isAdmin&&status==='bekliyor'")
+) {
+  throw new Error('Admin roldeki kullanici kendi bekleyen/geri donen/taslak kayitlarinda sahip aksiyonlarini gorebilmeli.');
+}
 const historyEndpoint = server.match(/app\.get\('\/api\/history'[\s\S]*?\n\}\);/);
 if (!historyEndpoint || !historyEndpoint[0].includes('fetchAllPages') || historyEndpoint[0].includes('.limit(200)')) {
   throw new Error('Denetim gecmisi 200 kayitta kesilmemeli; tum ilgili kayitlar sayfali cekilmeli.');

@@ -607,11 +607,17 @@ function isChunkHistoryRow(row = {}) {
   return row.status === CHUNK_DRAFT_STATUS || isChunkFilename(row.filename);
 }
 
-function isHiddenHistoryForRole(row = {}, role = ROLES.USER) {
+function historyOwnerId(row = {}) {
+  return row.userId || row.user_id || '';
+}
+
+function isHiddenHistoryForRole(row = {}, role = ROLES.USER, viewerUserId = '') {
   const status = row.status || 'bekliyor';
   if (isChunkHistoryRow(row)) return true;
   if (HIDDEN_HISTORY_STATUSES.includes(status)) return true;
-  return isAdminRole(role) && status === 'taslak';
+  const ownerId = historyOwnerId(row);
+  const isOwnAdminDraft = viewerUserId && ownerId && ownerId === viewerUserId;
+  return isAdminRole(role) && status === 'taslak' && !isOwnAdminDraft;
 }
 
 async function fetchAllPages(makeQuery, pageSize = 1000) {
@@ -8652,14 +8658,14 @@ app.get('/api/history', auth, async (req, res) => {
   try {
     const data = await fetchAllPages(() => {
       let q = supabase.from('history').select('*').order('created_at', { ascending: false });
-      if (isAdminRole(req.session.role)) q = q.or(`status.is.null,status.not.in.(taslak,${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
+      if (isAdminRole(req.session.role)) q = q.or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       return q;
     });
     const returnNotes = await loadApprovalReturnNotes();
     res.json((data || [])
       .map(mapHistory)
-      .filter(h => !isHiddenHistoryForRole(h, req.session.role))
+      .filter(h => !isHiddenHistoryForRole(h, req.session.role, req.session.userId))
       .map(h => attachApprovalReturnMeta(h, returnNotes)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -8748,10 +8754,7 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     } else {
       mapped = attachApprovalReturnMeta(mapped, returnNotes);
     }
-    if (data.user_id !== req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
-      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
-    }
-    if (data.user_id === req.session.userId && isHiddenHistoryForRole(mapped, req.session.role)) {
+    if (isHiddenHistoryForRole(mapped, req.session.role, req.session.userId)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
     res.json(mapped);

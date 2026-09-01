@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-01
+- **Admin rolündeki kullanıcıların kendi kayıt aksiyonları düzeltildi:** Elçin Hanım örneğiyle
+  admin rolündeki ekip üyelerinin kendi onaya gönderdiği kayıtları geri çekme ve kendilerine
+  geri gönderilen `geri_gonderildi` kayıtları düzenleyip tekrar onaya gönderme akışında eksik
+  aksiyon gördüğü tespit edildi. Frontend'de `Onaya Gönder`, `Eksikleri Tamamla` ve `Geri Çek`
+  butonları artık role göre değil, kaydın gerçek sahibi olup olmamasına göre görünür. Geri
+  dönen kayıtlara ek olarak `Denetime Al` aksiyonu eklendi; bu aksiyon ilgili cevap metnini
+  Metin Denetimi ekranına taşır, kullanıcı cevabı yeniden denetleyip soru/etiket/not ile tekrar
+  onaya gönderebilir. Backend'de adminlerin genel `taslak` kalabalığını görmesi engellenmeye
+  devam eder, fakat kendi `taslak` kayıtları kaybolmaz; `Geri Çek` sonucu taslağa dönen kayıt
+  aynı kullanıcı tarafından Denetim Geçmişi'nde görülebilir. Canlı read-only kontrolde
+  `geri_gonderildi` kırılımı `user:492`, `admin:300`, `super_admin:6`; Elçin Akay için
+  `geri_gonderildi:300`, `bekliyor:75`, `taslak:69` bulundu. Bu adım veri değiştirmedi,
+  public site/root akışına dokunmadı.
 - **Dergah geçen soru başlıkları arşivlendi:** Kullanıcı, yalnız soru/title alanında
   `dergah` veya `dergâh` geçen canlı public kayıtların yayından alınmasını; cevap metninde
   geçenlere ise dokunulmamasını istedi. Admin onay panosuna mevcut `Bekleyenler`,
