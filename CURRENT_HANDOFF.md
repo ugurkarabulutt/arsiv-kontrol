@@ -22,7 +22,16 @@
   `CURRENT_HANDOFF.md`.
 - Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
-  tam test `106/106` geçti. Commit/deploy bilgisi canlıya alınınca bu bölüme eklenmelidir.
+  tam test `106/106` geçti.
+- Commit `e26d5e5 fix: restore owner actions for admin submissions` remote branch'e push edildi
+  ve production'a deploy edildi. Deployment:
+  `dpl_GTxveQWw2euauYQ5xHNkxiNmVcZn`, production URL
+  `https://arsiv-kontrol-ilycbr45r-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke `/health`, `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  manifest, `sw.js` ve favicon için başarılı. `/admin` `noindex, nofollow`; canlı admin
+  HTML'de `isOwnHistoryRow`, `recheckReturnedHistory`, `Denetime Al` ve `Onaydan Geri Çek`
+  marker'ları mevcut.
 
 ## 2026-09-01 Codex Dergah Geçen Soru Başlıklarını Arşivleme
 

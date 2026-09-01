@@ -133,7 +133,17 @@ tespit edilir).
   aynı kullanıcı tarafından Denetim Geçmişi'nde görülebilir. Canlı read-only kontrolde
   `geri_gonderildi` kırılımı `user:492`, `admin:300`, `super_admin:6`; Elçin Akay için
   `geri_gonderildi:300`, `bekliyor:75`, `taslak:69` bulundu. Bu adım veri değiştirmedi,
-  public site/root akışına dokunmadı.
+  public site/root akışına dokunmadı. Yerel doğrulama `node --check server.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `106/106` geçti.
+  Runtime commit'i `e26d5e5 fix: restore owner actions for admin submissions`
+  GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-ilycbr45r-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_GTxveQWw2euauYQ5xHNkxiNmVcZn`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke `/health`, `/`, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`,
+  manifest, `sw.js` ve favicon başarılı; `/admin` header'ı `noindex, nofollow`,
+  canlı admin HTML'de `isOwnHistoryRow`, `recheckReturnedHistory`, `Denetime Al` ve
+  `Onaydan Geri Çek` marker'ları mevcut.
 - **Dergah geçen soru başlıkları arşivlendi:** Kullanıcı, yalnız soru/title alanında
   `dergah` veya `dergâh` geçen canlı public kayıtların yayından alınmasını; cevap metninde
   geçenlere ise dokunulmamasını istedi. Admin onay panosuna mevcut `Bekleyenler`,
