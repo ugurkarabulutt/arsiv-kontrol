@@ -542,6 +542,7 @@ const mapAlert   = a => ({
 
 const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor';
 const APPROVAL_RETURNED_STATUS = 'geri_gonderildi';
+const APPROVAL_ARCHIVED_STATUS = 'arsivlendi';
 const APPROVAL_REVIEW_NOTES_KEY = 'approval_review_notes';
 const APPROVAL_RETURN_NOTES_KEY = 'approval_return_notes';
 const APPROVAL_FAVORITES_KEY_PREFIX = 'approval_favorites:';
@@ -562,6 +563,7 @@ function historyStatusLabel(status) {
     : status === 'reddedildi' ? 'Reddedildi'
     : status === APPROVAL_REVIEW_STATUS ? 'Teyit Bekliyor'
     : status === APPROVAL_RETURNED_STATUS ? 'Geri Gönderildi'
+    : status === APPROVAL_ARCHIVED_STATUS ? 'Arşivlendi'
     : 'Bekliyor';
 }
 
@@ -570,7 +572,7 @@ function historyStatusForApproval(status) {
 }
 
 function historyStatusSubmitted(status) {
-  return historyStatusForApproval(status) || status === APPROVAL_REVIEW_STATUS || status === 'onaylandi' || status === 'reddedildi';
+  return historyStatusForApproval(status) || status === APPROVAL_REVIEW_STATUS || status === APPROVAL_ARCHIVED_STATUS || status === 'onaylandi' || status === 'reddedildi';
 }
 
 const CHUNK_DRAFT_STATUS = 'chunk_draft';
@@ -8668,13 +8670,15 @@ app.get('/api/history/approval-board', auth, admin, async (req, res) => {
       bekliyor: approvalSearchTerm(req.query.bekliyorSearch || ''),
       onaylandi: approvalSearchTerm(req.query.onaylandiSearch || ''),
       reddedildi: approvalSearchTerm(req.query.reddedildiSearch || ''),
-      teyit_bekliyor: approvalSearchTerm(req.query.teyit_bekliyorSearch || '')
+      teyit_bekliyor: approvalSearchTerm(req.query.teyit_bekliyorSearch || ''),
+      arsivlendi: approvalSearchTerm(req.query.arsivlendiSearch || '')
     };
-    const [pending, approved, rejected, review, favorites, reviewNotes, returnNotes] = await Promise.all([
+    const [pending, approved, rejected, review, archived, favorites, reviewNotes, returnNotes] = await Promise.all([
       loadApprovalGroup(q => q.or('status.is.null,status.eq.bekliyor'), searches.bekliyor),
       loadApprovalGroup(q => q.eq('status', 'onaylandi'), searches.onaylandi),
       loadApprovalGroup(q => q.eq('status', 'reddedildi'), searches.reddedildi),
       loadApprovalGroup(q => q.eq('status', APPROVAL_REVIEW_STATUS), searches.teyit_bekliyor),
+      loadApprovalGroup(q => q.eq('status', APPROVAL_ARCHIVED_STATUS), searches.arsivlendi),
       loadApprovalFavoriteSet(req.session.userId),
       loadApprovalReviewNotes(),
       loadApprovalReturnNotes()
@@ -8688,7 +8692,8 @@ app.get('/api/history/approval-board', auth, admin, async (req, res) => {
         bekliyor: withMeta(pending),
         onaylandi: withMeta(approved),
         reddedildi: withMeta(rejected),
-        teyit_bekliyor: withMeta(review)
+        teyit_bekliyor: withMeta(review),
+        arsivlendi: withMeta(archived)
       }
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -9287,7 +9292,7 @@ async function setApproval(req, res, status) {
     if (!current || isHiddenHistoryForRole(mapHistory(current), ROLES.ADMIN)) {
       return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     }
-    const updateRow = status === 'onaylandi' || status === 'reddedildi'
+    const updateRow = status === 'onaylandi' || status === 'reddedildi' || status === APPROVAL_ARCHIVED_STATUS
       ? { status, approved_by: actor, approved_at: now }
       : { status, approved_by: null, approved_at: null };
     if (HAS_HISTORY_TAGS && Object.prototype.hasOwnProperty.call(req.body || {}, 'tags')) {
@@ -9301,6 +9306,16 @@ async function setApproval(req, res, status) {
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
     if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    if (status === APPROVAL_ARCHIVED_STATUS) {
+      await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+      const { error: archivePublicError } = await supabase
+        .from('public_qa')
+        .update({ status: 'archived_hidden', updated_at: now })
+        .eq('source_history_id', current.id)
+        .eq('status', PUBLIC_ARCHIVE_PUBLISHED_STATUS);
+      if (archivePublicError) throw new Error(archivePublicError.message);
+      clearPublicArchiveCaches();
+    }
     if (status === APPROVAL_REVIEW_STATUS) {
       await saveApprovalReviewNote(current.id, reviewNote, actor);
       await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
@@ -9319,6 +9334,7 @@ app.post('/api/history/:id/approve', auth, admin, (req, res) => setApproval(req,
 app.post('/api/history/:id/reject',  auth, admin, (req, res) => setApproval(req, res, 'reddedildi'));
 app.post('/api/history/:id/review',  auth, admin, (req, res) => setApproval(req, res, APPROVAL_REVIEW_STATUS));
 app.post('/api/history/:id/pending', auth, admin, (req, res) => setApproval(req, res, 'bekliyor'));
+app.post('/api/history/:id/archive', auth, admin, (req, res) => setApproval(req, res, APPROVAL_ARCHIVED_STATUS));
 
 app.post('/api/history/:id/return', auth, admin, async (req, res) => {
   try {

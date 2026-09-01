@@ -677,6 +677,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .workflow-list{padding:8px;display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}
 .work-card{border:1px solid var(--border);background:var(--bg);padding:10px;position:relative;}
 .work-card.is-review{border-left:3px solid var(--gold);background:linear-gradient(135deg,var(--bg),rgba(var(--gold-rgb),.08));}
+.work-card.is-archived{border-left:3px solid var(--ink3);background:linear-gradient(135deg,var(--surface),var(--bg));}
 .work-card.is-favorite{border-top-color:rgba(var(--gold-rgb),.7);}
 .work-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
 .work-name{font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -1306,6 +1307,7 @@ canvas{width:100%!important;}
           <option value="geri_gonderildi">Geri Dönenler</option>
           <option value="onaylandi">Onaylanan</option>
           <option value="reddedildi">Reddedilen</option>
+          <option value="arsivlendi">Arşivlenenler</option>
           <option value="low">Düşük skor</option>
         </select>
         <button class="btn-sec" style="padding:8px 12px" onclick="clearHistoryFilters()" title="Sadece arama ve filtre seçimlerini temizler">Filtreleri Temizle</button>
@@ -2567,7 +2569,7 @@ canvas{width:100%!important;}
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
-let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,pendingReturnApprovalId=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,approvalSearchTimer=null,approvalGroupSearches={bekliyor:'',onaylandi:'',reddedildi:'',teyit_bekliyor:''},correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false,liveSiteMenuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
+let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,pendingReturnApprovalId=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,approvalArchiveOpen=false,approvalSearchTimer=null,approvalGroupSearches={bekliyor:'',onaylandi:'',reddedildi:'',teyit_bekliyor:'',arsivlendi:''},correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false,liveSiteMenuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
 let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loading:false,decisionLoading:false};
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
@@ -2588,7 +2590,8 @@ const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
-const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','onaylandi','reddedildi']);
+const APPROVAL_ARCHIVED_STATUS='arsivlendi';
+const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','arsivlendi','onaylandi','reddedildi']);
 const APPROVAL_RETURN_REASON_LABELS={
   missing_question:'Soru eksik',
   wrong_question:'Soru yanlış',
@@ -3335,6 +3338,7 @@ function approvalStatusText(d){
   if(status==='bekliyor')return 'Onaya gönderildi';
   if(status==='teyit_bekliyor')return 'Teyit bekliyor';
   if(status===APPROVAL_RETURNED_STATUS)return 'Tekrar Onaya Gönder';
+  if(status===APPROVAL_ARCHIVED_STATUS)return 'Arşivlendi';
   if(status==='onaylandi')return 'Onaylandı';
   if(status==='reddedildi')return 'Reddedildi';
   return 'Onaya Gönder';
@@ -3345,6 +3349,7 @@ function historyApprovalStatusUi(status){
   if(clean==='reddedildi')return {label:'Reddedildi',cls:'sb-no'};
   if(clean==='teyit_bekliyor')return {label:'Teyit bekliyor',cls:'sb-wait'};
   if(clean===APPROVAL_RETURNED_STATUS)return {label:'Geri gönderildi',cls:'sb-return'};
+  if(clean===APPROVAL_ARCHIVED_STATUS)return {label:'Arşivlendi',cls:'sb-draft'};
   if(clean==='taslak')return {label:'Taslak',cls:'sb-draft'};
   return {label:'Bekliyor',cls:'sb-wait'};
 }
@@ -4192,16 +4197,16 @@ async function showDetail(id){
   window._detailHistoryStatus=item.status||'';
   if(approveBtn&&hasAdminRole(me?.role)){
     approveBtn.style.display='';
-    if(item.status==='onaylandi'){
+    if(item.status==='onaylandi'||item.status===APPROVAL_ARCHIVED_STATUS){
       approveBtn.disabled=true;
-      approveBtn.textContent='Onaylandı';
+      approveBtn.textContent=item.status===APPROVAL_ARCHIVED_STATUS?'Arşivlendi':'Onaylandı';
     }else{
       approveBtn.disabled=false;
       approveBtn.textContent='Onayla';
     }
   }
   if(returnBtn&&hasAdminRole(me?.role)){
-    const canReturn=!['onaylandi','reddedildi',APPROVAL_RETURNED_STATUS].includes(item.status||'bekliyor');
+    const canReturn=!['onaylandi','reddedildi',APPROVAL_RETURNED_STATUS,APPROVAL_ARCHIVED_STATUS].includes(item.status||'bekliyor');
     returnBtn.style.display=canReturn?'':'none';
     returnBtn.disabled=!canReturn;
   }
@@ -4219,6 +4224,7 @@ function approvalActionMessage(action){
     reject:'✓ Kayıt reddedildi.',
     review:'✓ Kayıt teyit bekleyenlere alındı.',
     pending:'✓ Kayıt bekleyenlere alındı.',
+    archive:'✓ Kayıt arşivlenenlere alındı.',
     return:'✓ Kayıt kullanıcıya geri gönderildi.'
   }[action]||'✓ İşlem tamamlandı.';
 }
@@ -4352,7 +4358,7 @@ async function loadDash(){
   const riskRows=(stats.riskItems||[]).map(h=>{
     const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
     const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const st=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':h.status==='teyit_bekliyor'?'Teyit bekliyor':'Bekliyor';
+    const st=h.status==='onaylandi'?'Onaylandı':h.status==='reddedildi'?'Reddedildi':h.status==='teyit_bekliyor'?'Teyit bekliyor':h.status===APPROVAL_ARCHIVED_STATUS?'Arşivlendi':'Bekliyor';
     return `<tr>
       <td><strong>${esc(h.name||'—')}</strong><div class="mono" style="font-size:10px;color:var(--ink3)">${dt}</div></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.filename||'Metin Girişi')}">${esc(h.filename||'Metin Girişi')}</td>
@@ -4646,7 +4652,8 @@ async function loadOnay(){
     {key:'reddedildi',title:'Reddedilen',count:src.reddedildi?.count||0,items:src.reddedildi?.items||[]}
   ];
   const review={key:'teyit_bekliyor',title:'Teyit Bekleyenler',count:src.teyit_bekliyor?.count||0,items:src.teyit_bekliyor?.items||[]};
-  const hasAny=groups.some(g=>g.count)||review.count;
+  const archived={key:'arsivlendi',title:'Arşivlenenler',count:src.arsivlendi?.count||0,items:src.arsivlendi?.items||[]};
+  const hasAny=groups.some(g=>g.count)||review.count||archived.count;
   if(!hasAny){container.innerHTML='<div class="empty-state">Henüz denetim yok.</div>';return;}
   const reviewPanel=approvalReviewOpen?`<div class="approval-review-panel">
     <div class="approval-review-panel-head">
@@ -4662,13 +4669,32 @@ async function loadOnay(){
       ${review.items.length?review.items.map(approvalCard).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Teyit bekleyen kayıt yok.</div>`}
     </div>
   </div>`:'';
+  const archivePanel=approvalArchiveOpen?`<div class="approval-review-panel">
+    <div class="approval-review-panel-head">
+      <div>
+        <h3>Arşivlenenler</h3>
+        <p>Canlı siteden kaldırılan, fakat admin içinde saklanan kayıtlar burada tutulur.</p>
+      </div>
+      ${approvalSearchControl('arsivlendi','Arşivlenenler içinde ara')}
+      <button class="btn-sec" style="padding:5px 10px;font-size:10px" onclick="toggleApprovalArchivePanel()">Kapat</button>
+    </div>
+    <div class="workflow-list" style="max-height:360px">
+      ${archived.count>archived.items.length?`<div class="empty-state" style="padding:8px 12px;font-size:11px">Son ${archived.items.length} kayıt gösteriliyor.</div>`:''}
+      ${archived.items.length?archived.items.map(approvalCard).join(''):`<div class="empty-state" style="padding:18px;font-size:13px">Arşivlenen kayıt yok.</div>`}
+    </div>
+  </div>`:'';
   container.innerHTML=`<div class="approval-tools">
     <button class="approval-review-toggle" type="button" onclick="toggleApprovalReviewPanel()" title="Teyit bekleyen kayıtlar">
       <span class="approval-review-icon">?</span>
       <span>Teyit Bekleyenler</span>
       <span class="approval-review-count">${review.count}</span>
     </button>
-  </div>${reviewPanel}<div class="workflow-board">${groups.map(g=>`
+    <button class="approval-review-toggle" type="button" onclick="toggleApprovalArchivePanel()" title="Arşivlenen kayıtlar">
+      <span class="approval-review-icon">A</span>
+      <span>Arşivlenenler</span>
+      <span class="approval-review-count">${archived.count}</span>
+    </button>
+  </div>${reviewPanel}${archivePanel}<div class="workflow-board">${groups.map(g=>`
     <div class="workflow-col">
       <div class="workflow-head">
         <div class="workflow-head-main"><div class="workflow-title">${g.title}</div><div class="workflow-count">${g.count}</div></div>
@@ -4713,13 +4739,14 @@ function approvalCard(h){
   const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
   const status=h.status||'bekliyor';
   const isReview=status==='teyit_bekliyor';
-  const isFinal=status==='onaylandi'||status==='reddedildi';
+  const isArchived=status===APPROVAL_ARCHIVED_STATUS;
+  const isFinal=status==='onaylandi'||status==='reddedildi'||isArchived;
   const dt=new Date(h.createdAt).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const questionPreview=normalizeHistoryQuestionUi(h.questionText||'');
   const questionHtml=questionPreview?`<div class="history-question-inline"><strong>Soru:</strong> ${esc(questionPreview.slice(0,180))}${questionPreview.length>180?'…':''}</div>`:'';
   const favorite=Boolean(h.favorite);
   if(h.correctedText)_textStore[h.id]=h.correctedText;
-  return `<div class="work-card${isReview?' is-review':''}${favorite?' is-favorite':''}">
+  return `<div class="work-card${isReview?' is-review':''}${favorite?' is-favorite':''}${isArchived?' is-archived':''}">
     <div class="work-top">
       <div class="work-name">${esc(h.name||'—')}</div>
       <div style="display:flex;align-items:center;gap:6px">
@@ -4728,7 +4755,7 @@ function approvalCard(h){
       </div>
     </div>
     <div class="work-file" title="${esc(h.filename)}">${esc(h.filename||'Metin Girişi')}</div>
-    <div class="work-meta">${dt} · ${h.totalErrors||0} sorun${isReview?' · Teyit bekliyor':''}</div>
+    <div class="work-meta">${dt} · ${h.totalErrors||0} sorun${isReview?' · Teyit bekliyor':''}${isArchived?' · Arşivlendi':''}</div>
     ${questionHtml}
     ${historyTagsChips(h.tags||[])}
     ${approvalSubmissionNoteHtml(h)}
@@ -4736,11 +4763,12 @@ function approvalCard(h){
     ${approvalReturnInfoHtml(h)}
     <div class="work-actions">
       ${h.correctedText?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="showDetail('${h.id}')">Gör</button>`:''}
-      ${status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
-      ${status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
+      ${!isArchived&&status!=='onaylandi'?`<button class="btn-green" style="padding:3px 8px;font-size:10px" onclick="approveItem('${h.id}',this)">Onayla</button>`:''}
+      ${!isArchived&&status!=='reddedildi'?`<button class="btn-danger" style="padding:3px 8px;font-size:10px" onclick="rejectItem('${h.id}',this)">Reddet</button>`:''}
+      ${!isArchived?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="archiveItem('${h.id}',this)">Arşivle</button>`:''}
       ${!isFinal&&status!==APPROVAL_RETURNED_STATUS?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="openReturnApprovalModal('${h.id}',this)">Geri Gönder</button>`:''}
       ${!isReview&&!isFinal&&status!==APPROVAL_RETURNED_STATUS?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="reviewItem('${h.id}',this)">Teyide Al</button>`:''}
-      ${isReview?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="pendingItem('${h.id}',this)">Bekleyenlere Al</button>`:''}
+      ${isReview||isArchived?`<button class="btn-sec" style="padding:3px 8px;font-size:10px" onclick="pendingItem('${h.id}',this)">Bekleyenlere Al</button>`:''}
     </div>
   </div>`;
 }
@@ -4749,6 +4777,11 @@ function toggleApprovalReviewPanel(){
   approvalReviewOpen=!approvalReviewOpen;
   loadOnay();
 }
+function toggleApprovalArchivePanel(){
+  approvalArchiveOpen=!approvalArchiveOpen;
+  loadOnay();
+}
+async function archiveItem(id,btn){return setApprovalAction(id,'archive',btn);}
 
 async function loadApprovalFavorites(){
   const container=el('favoritesContent');
