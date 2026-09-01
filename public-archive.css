@@ -403,6 +403,7 @@ svg {
 .pa-auth-tabs button:focus-visible,
 .pa-bottom-link:focus-visible,
 .pa-search button:focus-visible,
+.pa-search-direct-card:focus-visible,
 .pa-letter-search button:focus-visible,
 .pa-chip:focus-visible,
 .pa-alpha-letter:focus-visible,
@@ -1906,6 +1907,53 @@ a.pa-chip:hover,
 
 .pa-page-intro {
   margin-bottom: 22px !important;
+}
+
+.pa-search-direct {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.pa-search-direct-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 14px;
+  color: var(--pa-text);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--pa-mint) 16%, var(--pa-surface)) 0%, var(--pa-surface) 100%);
+  border: 1px solid color-mix(in srgb, var(--pa-mint) 34%, var(--pa-border));
+  border-radius: var(--pa-radius-sm);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--pa-mint) 11%, transparent);
+}
+
+.pa-search-direct-card strong,
+.pa-search-direct-card small {
+  display: block;
+}
+
+.pa-search-direct-card strong {
+  font-family: var(--pa-font-serif);
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.pa-search-direct-card small {
+  margin-top: 4px;
+  color: var(--pa-text-3);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pa-search-direct-icon {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--pa-primary);
 }
 
 .pa-result-count {

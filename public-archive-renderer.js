@@ -1256,6 +1256,7 @@ function renderArchive(query = {}) {
 function renderSearch(query = '') {
   const cleanQuery = String(query || '').trim();
   const results = searchResults(cleanQuery);
+  const directCategories = searchDirectCategoryMatches();
   return renderShell({
     active: 'search',
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
@@ -1269,6 +1270,7 @@ function renderSearch(query = '') {
           <h1>Aradığınız cevaba en kısa yoldan ulaşın.</h1>
           <p class="pa-page-intro">Soru başlıkları, cevap metinleri ve kategoriler içinde sade bir arama yapabilirsiniz.</p>
           ${searchBox(cleanQuery)}
+          ${directCategories}
         </section>
         <section class="pa-section">
           ${sectionHeader(cleanQuery ? `"${cleanQuery}" araması` : 'Arşivdeki Sorular')}
@@ -1280,6 +1282,26 @@ function renderSearch(query = '') {
       </main>
     `
   });
+}
+
+function searchDirectCategoryMatches() {
+  const matches = Array.isArray(publicArchiveFixtures.search?.categoryMatches)
+    ? publicArchiveFixtures.search.categoryMatches.filter(item => item?.slug && item?.name).slice(0, 3)
+    : [];
+  if (!matches.length) return '';
+  return `
+    <div class="pa-search-direct" aria-label="Doğrudan kategori eşleşmeleri">
+      ${matches.map(item => `
+        <a class="pa-search-direct-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(item.slug)}">
+          <span>
+            <strong>${escapeHtml(item.name)}</strong>
+            <small>${archiveCountLabel(item.questionCount || 0)} ilgili soru</small>
+          </span>
+          ${iconSvg('arrow-right', 'pa-search-direct-icon')}
+        </a>
+      `).join('')}
+    </div>
+  `;
 }
 
 function renderTopicsIndex() {

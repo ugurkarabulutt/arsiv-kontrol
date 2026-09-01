@@ -1,5 +1,27 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-01 Codex Public Arama Alaka Düzeyi
+
+- Kullanıcı, canlı public arama ekranında özellikle `Takva` gibi kelimelerde ilgili sonuçların
+  yeterince gelmediğini bildirdi ve kod değişikliği için onay verdi.
+- Canlı read-only kontrolde `/arama?q=Takva` ekranı `54` kayıt gösterirken DB tarafında
+  normalize metin eşleşmesi `385`, kategori/etiket eşleşmesi `32` ve birleşik ilgili kayıt
+  `386` bulundu. Benzer şekilde `Nefs` ve `Hidayet` aramalarında da public ekran ilk `60`
+  raw metin eşleşmesine takıldığı için ilgili kayıtların önemli kısmı görünmüyordu.
+- Düzeltme: public arama sorgusu normalize ediliyor, `Takva/takvâ` gibi temel şapkalı harf
+  varyasyonları deneniyor, kategori/etiket eşleşmeleri ayrı çekiliyor, soru başlığı/soru metni,
+  özet/kısa açıklama ve cevap gövdesi ayrı ağırlıklarla puanlanıp sıralanıyor.
+- Arama sayfasına doğrudan kategori eşleşmesi kartları eklendi; kullanıcı `Takva` gibi bir
+  kategori adı yazdığında kategori sayfasına tek dokunuşla geçebiliyor. Sonuç limiti `120`
+  kayda çıkarıldı.
+- Veri değişikliği yapılmadı. Değişen dosyalar: `server.js`, `public-archive-renderer.js`,
+  `public-archive.css`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `106/106` geçti.
+- Sıradaki adım: commit, push, production deploy ve canlı `/arama?q=Takva`, `/arama?q=takvâ`,
+  `/arama?q=Nefs`, `/arama?q=Hidayet` smoke kontrolü.
+
 ## 2026-09-01 Codex Admin Kendi Kaydını Geri Çekme ve Geri Döneni Düzenleme
 
 - Kullanıcı, admin rolündeki Elçin Hanım'ın kendi onaya gönderdiği kayıtları geri çekme ve

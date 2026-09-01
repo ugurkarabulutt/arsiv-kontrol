@@ -5024,6 +5024,9 @@ const PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK = Object.freeze({
 const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
+const PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT = 120;
+const PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT = 90;
+const PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT = 10;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 const publicArchiveRouteCache = new Map();
 let publicArchiveContentReady = null;
@@ -5721,6 +5724,143 @@ function filterPublicArchiveByCategory(builder, slug = '') {
   return builder.or(`category_slug.eq.${safeSlug},topic_slugs.cs.${JSON.stringify([safeSlug])}`);
 }
 
+function publicArchiveSearchInput(value = '') {
+  return publicArchiveText(value, 80)
+    .replace(/[^\p{L}\p{N}\s'’`´-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function publicArchiveSearchTokens(value = '') {
+  return publicArchiveComparable(value)
+    .split(' ')
+    .map(item => item.trim())
+    .filter(item => item.length > 1);
+}
+
+function publicArchiveAccentVariants(value = '', max = PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT) {
+  const source = String(value || '').trim().toLocaleLowerCase('tr-TR');
+  if (!source) return [];
+  let variants = [''];
+  const replacementMap = {
+    a: ['a', 'â'],
+    i: ['i', 'î'],
+    u: ['u', 'û']
+  };
+  for (const char of source) {
+    const replacements = replacementMap[char] || [char];
+    const next = [];
+    for (const prefix of variants) {
+      for (const replacement of replacements) next.push(prefix + replacement);
+      if (next.length >= max) break;
+    }
+    variants = next.slice(0, max);
+  }
+  return variants;
+}
+
+function publicArchiveSearchTerms(value = '') {
+  const terms = new Set();
+  const clean = publicArchiveSearchInput(value);
+  const comparable = publicArchiveComparable(clean);
+  const slugWords = publicArchiveSlug(clean).replace(/-/g, ' ');
+  for (const item of [clean, comparable, slugWords]) {
+    const term = String(item || '').trim();
+    if (term.length > 1) terms.add(term);
+  }
+  for (const variant of publicArchiveAccentVariants(comparable)) {
+    if (variant.length > 1) terms.add(variant);
+  }
+  return [...terms].slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT);
+}
+
+function publicArchiveCategoryMatchesSearch(category = {}, query = '') {
+  const tokens = publicArchiveSearchTokens(query);
+  if (!tokens.length) return false;
+  const haystack = publicArchiveComparable([
+    category.name,
+    category.slug,
+    category.description
+  ].join(' '));
+  return tokens.every(token => haystack.includes(token));
+}
+
+function publicArchiveSearchSqlOr(fields = [], term = '') {
+  const pattern = `%${escapeSupabaseLikePattern(term)}%`;
+  return fields.map(field => `${field}.ilike.${pattern}`).join(',');
+}
+
+async function fetchPublicArchiveSearchRowsByText(fields = [], terms = [], limit = PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT) {
+  const rows = [];
+  const seen = new Set();
+  for (const term of terms.slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT)) {
+    const filter = publicArchiveSearchSqlOr(fields, term);
+    if (!filter) continue;
+    const { data, error } = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .eq('status', 'published')
+      .or(filter)
+      .order('published_at', { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    for (const row of data || []) {
+      if (!row?.slug || seen.has(row.slug)) continue;
+      seen.add(row.slug);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+async function fetchPublicArchiveSearchRowsByCategorySlugs(slugs = []) {
+  const rows = [];
+  const seen = new Set();
+  for (const slug of [...new Set(slugs.filter(Boolean))].slice(0, 10)) {
+    const { data, error } = await filterPublicArchiveByCategory(
+      supabase
+        .from('public_qa')
+        .select(PUBLIC_ARCHIVE_LIST_SELECT)
+        .eq('status', 'published'),
+      slug
+    )
+      .order('published_at', { ascending: false })
+      .limit(PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT);
+    if (error) throw new Error(error.message);
+    for (const row of data || []) {
+      if (!row?.slug || seen.has(row.slug)) continue;
+      seen.add(row.slug);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+function publicArchiveRankSearchRows(groups = {}) {
+  const scored = new Map();
+  function addRows(rows = [], source = '', score = 0) {
+    for (const row of rows || []) {
+      if (!row?.slug) continue;
+      const existing = scored.get(row.slug) || { row, score: 0, sources: new Set() };
+      if (!existing.sources.has(source)) {
+        existing.score += score;
+        existing.sources.add(source);
+      }
+      scored.set(row.slug, existing);
+    }
+  }
+  addRows(groups.categoryRows, 'category', 1000);
+  addRows(groups.titleRows, 'title', 700);
+  addRows(groups.summaryRows, 'summary', 360);
+  addRows(groups.bodyRows, 'body', 120);
+  return [...scored.values()]
+    .sort((a, b) => b.score - a.score
+      || String(b.row.published_at || b.row.created_at || '').localeCompare(String(a.row.published_at || a.row.created_at || ''))
+      || String(a.row.title || '').localeCompare(String(b.row.title || ''), 'tr'))
+    .slice(0, PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT)
+    .map(item => item.row);
+}
+
 let publicCategoryRedirectCache = { expiresAt: 0, redirects: {} };
 
 function cleanPublicCategorySlug(slug = '') {
@@ -5890,23 +6030,55 @@ async function loadPublicArchiveCategoryDataset(slug = '', query = {}) {
 }
 
 async function loadPublicArchiveSearchDataset(query = {}) {
-  const q = publicArchiveText(query.q || '', 80).replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
-  let builder = supabase
-    .from('public_qa')
-    .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(60);
-  if (q) {
-    const pattern = `%${q}%`;
-    builder = builder.or(`title.ilike.${pattern},question.ilike.${pattern},summary.ilike.${pattern},excerpt.ilike.${pattern},answer_text.ilike.${pattern}`);
+  const q = publicArchiveSearchInput(query.q || '');
+  if (!q) {
+    const { data, error, count } = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(60);
+    if (error) throw new Error(error.message);
+    return publicArchiveDatasetForRows({
+      rows: data || [],
+      stats: publicArchiveStats(count || 0),
+      search: { preFiltered: true, query: q, total: count || 0, categoryMatches: [] },
+      allowEmpty: true
+    });
   }
-  const { data, error, count } = await builder;
-  if (error) throw new Error(error.message);
+
+  const categoryIndexRows = await loadPublicArchiveCategoryIndexRows();
+  const matchedCategories = categoryIndexRows
+    .filter(category => publicArchiveCategoryMatchesSearch(category, q))
+    .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
+    .slice(0, 8);
+  const terms = publicArchiveSearchTerms(q);
+  const [
+    categoryRows,
+    titleRows,
+    summaryRows,
+    bodyRows
+  ] = await Promise.all([
+    fetchPublicArchiveSearchRowsByCategorySlugs(matchedCategories.map(category => category.slug)),
+    fetchPublicArchiveSearchRowsByText(['title', 'question'], terms, PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT),
+    fetchPublicArchiveSearchRowsByText(['summary', 'excerpt'], terms, PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT),
+    fetchPublicArchiveSearchRowsByText(['answer_text'], terms, PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT)
+  ]);
+  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows });
   return publicArchiveDatasetForRows({
-    rows: data || [],
-    stats: publicArchiveStats(count || 0),
-    search: { preFiltered: true, query: q, total: count || 0 },
+    rows,
+    categoryRows: categoryIndexRows,
+    stats: publicArchiveStats(rows.length),
+    search: {
+      preFiltered: true,
+      query: q,
+      total: rows.length,
+      categoryMatches: matchedCategories.slice(0, 4).map(category => ({
+        slug: category.slug,
+        name: category.name,
+        questionCount: Number(category.question_count || 0) || 0
+      }))
+    },
     allowEmpty: true
   });
 }

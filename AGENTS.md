@@ -121,6 +121,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-01
+- **Public arama alaka düzeyi iyileştirildi:** Canlı `/arama?q=Takva` kontrolünde arama
+  sayfasının yalnız raw metin eşleşmesiyle ilk `60` kaydı çektiği, kategori/etiket
+  eşleşmelerini öne almadığı ve `Takva/takvâ` gibi Türkçe yazım varyasyonlarını yeterince
+  yakalamadığı görüldü. Public arama artık sorguyu normalize eder, temel şapkalı harf
+  varyasyonlarını dener, kategori/etiket eşleşmelerini ayrı çeker, soru başlığı/soru metni,
+  özet/kısa açıklama ve cevap gövdesini ayrı ağırlıklarla puanlayıp sıralar. Sonuç limiti
+  `120` kayda çıkarıldı; kategori eşleşmeleri arama sayfasında doğrudan erişilebilir modern
+  kartlar olarak görünür. Bu adım veri değiştirmedi, admin onay akışına dokunmadı.
+  Değişen dosyalar: `server.js`, `public-archive-renderer.js`, `public-archive.css`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` ve `git diff --check` başarılı; tam test `106/106` geçti.
 - **Admin rolündeki kullanıcıların kendi kayıt aksiyonları düzeltildi:** Elçin Hanım örneğiyle
   admin rolündeki ekip üyelerinin kendi onaya gönderdiği kayıtları geri çekme ve kendilerine
   geri gönderilen `geri_gonderildi` kayıtları düzenleyip tekrar onaya gönderme akışında eksik

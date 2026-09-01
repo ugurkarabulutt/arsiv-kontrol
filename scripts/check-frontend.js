@@ -258,6 +258,9 @@ assert(server.includes('publicArchiveRouteCache') && server.includes('PUBLIC_ARC
 assert(!server.includes('loadArchiveData: async () =>'), 'Public preview router tum dataset yukleyen eski loadArchiveData imzasina donmemeli.');
 assert(!server.includes('loadPublicArchiveStatsMap(qaRows.map'), 'Public dataset ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(!server.includes('const usedSlugs = rows.map'), 'Public history fallback ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
+assert(server.includes('PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT') && server.includes('publicArchiveRankSearchRows'), 'Public arama sonuclari alaka skoruyla siralanmali.');
+assert(server.includes("fetchPublicArchiveSearchRowsByCategorySlugs") && server.includes("fetchPublicArchiveSearchRowsByText(['title', 'question']"), 'Public arama etiket/kategori ve soru basligini ayri agirlikta aramali.');
+assert(publicRendererSource.includes('searchDirectCategoryMatches') && publicCss.includes('.pa-search-direct-card'), 'Public arama dogrudan kategori eslesmesini gostermeli.');
 assert(!fs.existsSync(path.join(root, 'scripts', 'build-archive-demo-static.js')), 'Eski statik demo build scripti repoda kalmamali.');
 assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
 assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');
