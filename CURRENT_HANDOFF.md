@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-02 Codex iPhone Safari Arama Zoom Düzeltmesi
+
+- Kullanıcı, canlı arşiv ekranında `Ara` input'una dokununca sayfanın yakınlaştığını ekran
+  görüntüsüyle bildirdi.
+- İncelemede ana arama input'unun `16px` olduğu, fakat arşiv harf/kategori panelindeki
+  `pa-letter-search input` alanının `14px` ile override edildiği görüldü. iOS Safari bu
+  durumda input odaklanınca otomatik zoom yapabiliyor.
+- Düzeltme: `pa-letter-search input` yazı boyutu `16px` yapıldı, `line-height: 1.25`
+  eklendi ve `scripts/check-frontend.js` içine bu kuralı koruyan guard kondu.
+- Değişen dosyalar: `public-archive.css`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js` başarılı.
+- Sıradaki adım: `npm.cmd run check`, `git diff --check`, commit, push, production deploy
+  ve canlı arşiv input smoke kontrolü.
+
 ## 2026-09-01 Codex Public Arama Alaka Düzeyi
 
 - Kullanıcı, canlı public arama ekranında özellikle `Takva` gibi kelimelerde ilgili sonuçların

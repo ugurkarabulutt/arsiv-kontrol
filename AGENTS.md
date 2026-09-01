@@ -120,6 +120,15 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-02
+- **iPhone Safari arşiv içi arama zoom'u düzeltildi:** Arşiv sayfasındaki harf/kategori
+  panelinde yer alan `Bu harfte ara...` input'u `14px` olduğu için iOS Safari odaklanınca
+  sayfayı otomatik yakınlaştırabiliyordu. `pa-letter-search input` yazı boyutu `16px`
+  yapıldı ve frontend guard'a bu eşiği koruyan kontrol eklendi. Değişen dosyalar:
+  `public-archive.css`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check scripts/check-frontend.js` ve `node scripts/check-frontend.js` başarılı.
+
 ### 2026-09-01
 - **Public arama alaka düzeyi iyileştirildi:** Canlı `/arama?q=Takva` kontrolünde arama
   sayfasının yalnız raw metin eşleşmesiyle ilk `60` kaydı çektiği, kategori/etiket

@@ -261,6 +261,7 @@ assert(!server.includes('const usedSlugs = rows.map'), 'Public history fallback 
 assert(server.includes('PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT') && server.includes('publicArchiveRankSearchRows'), 'Public arama sonuclari alaka skoruyla siralanmali.');
 assert(server.includes("fetchPublicArchiveSearchRowsByCategorySlugs") && server.includes("fetchPublicArchiveSearchRowsByText(['title', 'question']"), 'Public arama etiket/kategori ve soru basligini ayri agirlikta aramali.');
 assert(publicRendererSource.includes('searchDirectCategoryMatches') && publicCss.includes('.pa-search-direct-card'), 'Public arama dogrudan kategori eslesmesini gostermeli.');
+assert(/\.pa-letter-search input\s*\{[\s\S]*font-size:\s*16px;/.test(publicCss), 'Arsiv ici kategori arama inputu iOS zoom tetiklememek icin 16px olmali.');
 assert(!fs.existsSync(path.join(root, 'scripts', 'build-archive-demo-static.js')), 'Eski statik demo build scripti repoda kalmamali.');
 assert(adminRouteIndex < errorHandlerIndex, '/admin fallback error handler dan once kayit edilmeli.');
 assert(adminRouteIndex < rootFallbackIndex, '/admin fallback broad root fallback dan once kayit edilmeli.');

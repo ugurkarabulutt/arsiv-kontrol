@@ -2149,7 +2149,8 @@ a.pa-chip:hover,
   border: 0;
   outline: 0;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.25;
 }
 
 .pa-letter-search button {
