@@ -9,12 +9,22 @@
   durumda input odaklanınca otomatik zoom yapabiliyor.
 - Düzeltme: `pa-letter-search input` yazı boyutu `16px` yapıldı, `line-height: 1.25`
   eklendi ve `scripts/check-frontend.js` içine bu kuralı koruyan guard kondu.
+- Aynı arama ekranında doğrudan kategori eşleşmesi kartlarındaki ok SVG'sinin devleştiği
+  görüldü. Sebep: public CSS asset sürümü değişmediği için bazı cihazlarda eski CSS cache
+  kalabiliyor ve yeni kart ikon sınıfı uygulanmadan SVG doğal boyutuyla görünebiliyor.
+- Düzeltme: `PUBLIC_ARCHIVE_ASSET_VERSION` `20260902-search-card-icons-v1` değerine
+  yükseltildi, `iconSvg()` çıktısına `width="1em" height="1em"` eklendi ve
+  `.pa-search-direct-card svg.pa-search-direct-icon` kuralı `18px` min/max ile
+  sert sınırlandı. Frontend guard yeni CSS sürümü ve ikon sınırını doğrular.
 - Değişen dosyalar: `public-archive.css`, `scripts/check-frontend.js`, `AGENTS.md`,
-  `CURRENT_HANDOFF.md`.
+  `CURRENT_HANDOFF.md`, `public-archive-renderer.js`, `test/public-archive-renderer.test.js`.
 - Yerel doğrulama: `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js` başarılı.
-- Sıradaki adım: `npm.cmd run check`, `git diff --check`, commit, push, production deploy
-  ve canlı arşiv input smoke kontrolü.
+- Ek render kontrolünde `/public-preview/arama` çıktısında yeni CSS sürümü, doğrudan kategori
+  kartı ve `width/height` taşıyan SVG ikon doğrulandı.
+- Yerel doğrulama: `npm.cmd run check` ve `git diff --check` başarılı; tam test `106/106`
+  geçti.
+- Sıradaki adım: commit, push, production deploy ve canlı arşiv/arama smoke kontrolü.
 
 ## 2026-09-01 Codex Public Arama Alaka Düzeyi
 

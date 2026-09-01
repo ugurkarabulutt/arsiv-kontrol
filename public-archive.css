@@ -1949,10 +1949,20 @@ a.pa-chip:hover,
   font-weight: 700;
 }
 
-.pa-search-direct-icon {
+.pa-search-direct-card > span {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pa-search-direct-card svg.pa-search-direct-icon {
   flex: 0 0 18px;
-  width: 18px;
-  height: 18px;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  align-self: center;
   color: var(--pa-primary);
 }
 

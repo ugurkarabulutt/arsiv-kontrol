@@ -128,6 +128,14 @@ tespit edilir).
   `public-archive.css`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
   Yerel doğrulama: `node --check public-archive-renderer.js`,
   `node --check scripts/check-frontend.js` ve `node scripts/check-frontend.js` başarılı.
+- **Arama kategori kartı ok simgesi devleşmesi düzeltildi:** Arama sayfasındaki doğrudan
+  kategori eşleşmesi kartlarında ok SVG'si bazı cihazlarda eski CSS cache nedeniyle doğal
+  SVG boyutuna düşüp devleşebiliyordu. Public asset sürümü `20260902-search-card-icons-v1`
+  yapıldı, tüm SVG ikon üretimine `width="1em" height="1em"` eklendi ve doğrudan kategori
+  kartı oku `18px` min/max ile sınırlandı. Frontend guard artık hem yeni asset sürümünü hem
+  de ikon boyut sınırını kontrol eder. İlgili renderer testi yeni asset sürümüne güncellendi.
+  Yerel doğrulama: `npm.cmd run check` ve `git diff --check` başarılı; tam test `106/106`
+  geçti.
 
 ### 2026-09-01
 - **Public arama alaka düzeyi iyileştirildi:** Canlı `/arama?q=Takva` kontrolünde arama
