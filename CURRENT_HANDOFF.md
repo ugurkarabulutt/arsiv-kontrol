@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-01 Codex Dergah Geçen Soru Başlıklarını Arşivleme
+
+- Kullanıcı, sadece soru/title alanında `dergah` veya `dergâh` geçen canlı kayıtların yayından
+  alınmasını istedi. Cevap metninde geçen ama sorusunda geçmeyen kayıtlara dokunulmaması
+  özellikle istendi ve doğrulamada bu ayrım korundu.
+- Kod değişikliği: admin onay panosuna `Arşivlenenler` kovası eklendi. `history.status` için
+  `arsivlendi` durumu tanımlandı; onay panosunda ayrı ikon/panelden açılır, kendi araması
+  vardır ve arşivlenen kayıtlar `Bekleyenlere Al` ile tekrar iş akışına döndürülebilir.
+- Backend değişikliği: `POST /api/history/:id/archive` endpoint'i eklendi. Bir kayıt
+  arşivlenince bağlı `public_qa` satırı silinmez; `published` ise `archived_hidden` yapılır
+  ve public cache temizlenir. Böylece kayıt canlı site/sitemap dışına çıkar ama admin içinde
+  saklanır.
+- Kod commit'i `b4cb9a6 feat: add archived approval bucket` remote branch'e push edildi ve
+  production'a deploy edildi. Deployment:
+  `dpl_GWK8meeUQ6KPXDtivhrj8MhVW9ad`, canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı veri uygulaması: dry-run `27` soru/title hedefi ve `39` cevap-only eşleşme gösterdi.
+  Uygulama sonrası `27` public kayıt `archived_hidden`, bağlı `27` history kaydı
+  `arsivlendi` oldu. Son doğrulama: yayında soru/title dergah eşleşmesi `0`, yayında cevap-only
+  eşleşme `39`, arşivlenen public soru/title kaydı `27`, arşivlenen bağlı history kaydı `27`.
+- Doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `git diff --check` başarılı;
+  tam test `106/106` geçti. Canlı smoke `/health`, `/`, `/admin` başarılı ve `/admin`
+  `noindex, nofollow`.
+- Sıradaki olası iş: admin onay panosundaki aramalar, açık feedbackler ve public içerik kalite
+  kontrolü devam edebilir. Dergah operasyonu için geçici script commit'e alınmadı ve silindi.
+
 ## 2026-08-30 Codex Şüpheli Public Kayıtları Ekibe Geri Döndürme Akışı
 
 - Kullanıcı, Excel ile birebir çekme/otomatik tamamlama yerine daha güvenli bir yol istedi:

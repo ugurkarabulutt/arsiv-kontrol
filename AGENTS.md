@@ -120,6 +120,33 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-01
+- **Dergah geçen soru başlıkları arşivlendi:** Kullanıcı, yalnız soru/title alanında
+  `dergah` veya `dergâh` geçen canlı public kayıtların yayından alınmasını; cevap metninde
+  geçenlere ise dokunulmamasını istedi. Admin onay panosuna mevcut `Bekleyenler`,
+  `Onaylananlar`, `Reddedilenler` ve `Teyit` akışlarından ayrı `Arşivlenenler` kovası
+  eklendi. Yeni `history.status='arsivlendi'` durumu admin panelinde görünür, onay panosunda
+  ayrı ikon/panel ile açılır ve kayıtlar gerektiğinde `Bekleyenlere Al` ile geri alınabilir.
+  Backend'e admin korumalı `POST /api/history/:id/archive` endpoint'i eklendi; arşivlenen
+  kayıtların bağlı public satırı silinmez, `public_qa.status='archived_hidden'` ile canlı
+  site ve sitemap akışından ayrılır. Bu akış cevap-only `dergah/dergâh` eşleşmelerine
+  dokunmaz.
+- **Canlı veri uygulaması:** Production Supabase üzerinde önce kuru çalışma yapıldı:
+  yayındaki `2.014` public kayıt içinde soru/title eşleşmesi `27`, cevap-only eşleşme `39`
+  bulundu ve tüm hedeflerin bağlı `history` kaydı vardı. Kullanıcı onayı sonrası `27` public
+  kayıt `archived_hidden`, bağlı `27` history kaydı `arsivlendi` yapıldı. Son doğrulamada
+  yayında kalan soru/title eşleşmesi `0`, yayında kalan cevap-only eşleşme `39`, arşivlenen
+  soru/title public kaydı `27` ve arşivlenen bağlı history kaydı `27` olarak doğrulandı.
+  Kod commit'i `b4cb9a6 feat: add archived approval bucket` GitHub'a push edildi ve
+  production'a alındı. Production deploy:
+  `https://arsiv-kontrol-r7wi4teg3-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_GWK8meeUQ6KPXDtivhrj8MhVW9ad`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, `/`, `/admin` başarılı; `/admin` header'ı `noindex, nofollow`,
+  canlı admin HTML'de `Arşivlenenler` ve arşiv endpoint marker'ı mevcut.
+- **Doğrulama:** `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
+
 ### 2026-08-30
 - **Şüpheli public kayıtları ekibe geri döndürme akışı eklendi:** Kullanıcı, Excel
   karşılaştırmasında şüpheli görünen kayıtların Excel'den otomatik tamamlanmasını istemedi;
