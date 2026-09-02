@@ -791,6 +791,26 @@ canvas{width:100%!important;}
 .feedback-summary-card,.msg-summary-card{padding:10px 12px;background:var(--white);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
 .feedback-summary-card:last-child,.msg-summary-card:last-child{border-right:none;}
 .feedback-filter-bar,.msg-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);}
+.action-log-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px;}
+.action-log-stat{border:1px solid var(--border);background:var(--white);padding:12px;min-width:0;}
+.action-log-stat strong{display:block;font-size:24px;line-height:1;color:var(--ink);margin-bottom:5px;}
+.action-log-stat span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;}
+.action-log-toolbar{display:grid;grid-template-columns:minmax(180px,1.2fr) repeat(4,minmax(120px,.7fr)) repeat(2,minmax(124px,.65fr)) auto;gap:8px;align-items:center;border:1px solid var(--border);background:var(--surface2);padding:10px;margin-bottom:12px;}
+.action-log-toolbar input,.action-log-toolbar select{width:100%;background:var(--white);border:1px solid var(--border);color:var(--ink);padding:10px 11px;font-size:13px;line-height:1.25;font-family:inherit;min-height:39px;}
+.action-log-toolbar input::placeholder{color:var(--ink3);}
+.action-log-list{display:grid;gap:9px;}
+.action-log-card{border:1px solid var(--border);background:var(--white);padding:13px 14px;box-shadow:0 8px 24px rgba(0,0,0,.03);}
+.action-log-card-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;margin-bottom:8px;}
+.action-log-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.action-log-kind{display:inline-flex;align-items:center;border:1px solid rgba(var(--ai-rgb),.38);background:var(--grn-bg);color:var(--green);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:5px 8px;white-space:nowrap;}
+.action-log-title strong{font-size:14px;line-height:1.35;color:var(--ink);overflow-wrap:anywhere;}
+.action-log-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
+.action-log-summary-text{font-size:13px;line-height:1.55;color:var(--ink2);white-space:pre-line;overflow-wrap:anywhere;}
+.action-log-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.action-log-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:10px;padding:5px 8px;max-width:100%;overflow-wrap:anywhere;}
+.action-log-status{display:inline-flex;align-items:center;gap:5px;color:var(--gold);}
+.action-log-note{border-left:3px solid var(--gold);background:var(--gold-bg);color:var(--ink2);padding:10px 12px;font-size:12px;line-height:1.55;margin-bottom:12px;}
+.action-log-pager{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);}
 .feedback-user{font-weight:800;color:var(--ink);margin-bottom:5px;}
 .feedback-user .mono{font-weight:500;}
 .feedback-root{display:inline-flex;align-items:center;gap:5px;margin:6px 0 4px;padding:4px 8px;border:1px solid var(--border);background:var(--surface2);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);}
@@ -900,7 +920,7 @@ canvas{width:100%!important;}
 .message-preview{margin-top:8px;white-space:pre-line;color:var(--ink2);line-height:1.55;}
 @media(max-width:900px){.ai-panel-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.contrib-grid{grid-template-columns:1fr}.alert-item{flex-wrap:wrap}}
-@media(max-width:760px){.report-summary-grid,.feedback-summary-grid,.msg-summary-grid,.correction-scan,.correction-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.message-log-card{grid-template-columns:1fr}.message-kind{width:max-content}.report-card summary{flex-direction:column}.report-date-wrap input{width:100%}.correction-layout{grid-template-columns:1fr}.correction-map,.correction-compact-map{grid-template-columns:1fr}.correction-map span,.correction-compact-map b{text-align:center}.correction-card-head{grid-template-columns:1fr}.correction-card-right{justify-content:flex-start}}
+@media(max-width:760px){.report-summary-grid,.feedback-summary-grid,.msg-summary-grid,.action-log-summary,.correction-scan,.correction-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.message-log-card,.action-log-card-head{grid-template-columns:1fr}.message-kind{width:max-content}.action-log-toolbar{grid-template-columns:1fr}.action-log-time{white-space:normal}.action-log-pager{display:grid;grid-template-columns:1fr;align-items:stretch}.action-log-pager button{width:100%}.report-card summary{flex-direction:column}.report-date-wrap input{width:100%}.correction-layout{grid-template-columns:1fr}.correction-map,.correction-compact-map{grid-template-columns:1fr}.correction-map span,.correction-compact-map b{text-align:center}.correction-card-head{grid-template-columns:1fr}.correction-card-right{justify-content:flex-start}}
 @media(max-width:640px){
   .modal-overlay{align-items:flex-end;padding:10px;}
   .feedback-modal{max-width:none;border-radius:26px 26px 18px 18px;max-height:88vh;}
@@ -1181,6 +1201,7 @@ canvas{width:100%!important;}
         </div>
       </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
+      <button class="btn-mobile super-admin-only" onclick="mNav('actionlog')" style="display:none">Sistem Kayıtları</button>
       <button class="btn-mobile super-admin-only" onclick="mNav('resolution')" style="display:none">Çözüm Takibi</button>
       <button class="btn-mobile" onclick="mNav('ayarlar')">Ayarlar</button>
       <button class="btn-mobile" onclick="doLogout()" style="color:#e08080;margin-top:8px">Çıkış Yap</button>
@@ -1235,6 +1256,7 @@ canvas{width:100%!important;}
     <button class="side-link admin-only" data-tab="corrections" onclick="showTab('corrections')" style="display:none"><span>Geçmiş Düzeltmeleri</span></button>
     <button class="side-link super-admin-only" data-tab="resolution" onclick="showTab('resolution')" style="display:none"><span>&Ccedil;&ouml;z&uuml;m Takibi</span></button>
     <button class="side-link super-admin-only" data-tab="msglog" onclick="showTab('msglog')" style="display:none"><span>Mesaj Kay&#305;tlar&#305;</span></button>
+    <button class="side-link super-admin-only" data-tab="actionlog" onclick="showTab('actionlog')" style="display:none"><span>Sistem Kayıtları</span></button>
     <button class="side-link admin-only" data-tab="alerts" onclick="showTab('alerts')" style="display:none"><span>Sistem Uyar&#305;lar&#305;</span><span class="badge" id="sideAlertBadge" style="display:none">0</span></button>
 
     <div class="side-section-label admin-only" style="display:none">Y&ouml;netim</div>
@@ -2379,6 +2401,13 @@ canvas{width:100%!important;}
       <div id="msgLogContent"><div class="empty-state">Yükleniyor...</div></div>
     </div>
 
+    <div class="tab-content super-admin-only" id="tabContent-actionlog" style="display:none">
+      <div class="page-title">Sistem Kayıtları</div>
+      <div class="page-sub">Süper admin görünümü: sistemde yapılan önemli işlemler kullanıcı, hedef kayıt ve zaman bilgisiyle izlenir.</div>
+      <div class="divider"></div>
+      <div id="actionLogContent"><div class="empty-state">Yükleniyor...</div></div>
+    </div>
+
     <div class="tab-content" id="tabContent-resolution">
       <div class="page-title">Çözüm Takibi</div>
       <div class="page-sub">Süper admin görünümü: kullanıcıların çözüm bildirimlerine verdiği yanıtlar</div>
@@ -2578,6 +2607,8 @@ let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loadi
 let archivePublicAnalyticsState={range:'7d',data:null,loading:false};
 let archivePublicContentState={audit:null,refresh:null,suspiciousReturn:null,loading:false,refreshing:false,acting:false,queue:null,queueType:'partial',queueOffset:0,queueLimit:40,queueLoading:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
+let actionLogSearchTimer=null;
+let actionLogState={q:'',action:'',targetType:'',source:'',actor:'',dateFrom:'',dateTo:'',offset:0,limit:80,loading:false};
 const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','siteAnalytics','publicContent','publicQuestions','tagImport'];
 const LIVE_SITE_OPS_VIEWS=new Set(['siteAnalytics','publicContent','publicQuestions']);
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
@@ -3014,6 +3045,7 @@ function showTab(name){
   if(name==='archiveOps')renderArchiveOpsView();
   if(name==='alerts'){alertFilter='low_score';loadAlerts();}
   if(name==='msglog')loadMessageLog();
+  if(name==='actionlog')loadAdminActionLog();
   if(name==='resolution')loadResolutionResponses();
   if(name==='bildirim')loadMyNotifications();
   if(name==='standartlar')loadStandards();
@@ -5581,6 +5613,159 @@ function renderMessageSeenSummary(r){
 function toggleSeenList(id){
   const box=el(id);
   if(box)box.style.display=box.style.display==='none'?'':'none';
+}
+
+function actionLogAttr(value){return esc(value).replace(/"/g,'&quot;');}
+
+function actionLogParams(){
+  const p=new URLSearchParams();
+  ['q','action','targetType','source','actor','dateFrom','dateTo'].forEach(key=>{
+    const value=String(actionLogState[key]||'').trim();
+    if(value)p.set(key,value);
+  });
+  p.set('limit',String(actionLogState.limit||80));
+  p.set('offset',String(actionLogState.offset||0));
+  return p.toString();
+}
+
+async function loadAdminActionLog(){
+  const container=el('actionLogContent');
+  if(!container)return;
+  actionLogState.loading=true;
+  container.innerHTML='<div class="empty-state">Sistem kayıtları yükleniyor...</div>';
+  const data=await api('GET',`/api/admin-action-log?${actionLogParams()}`);
+  actionLogState.loading=false;
+  if(data.error){container.innerHTML=`<div class="empty-state">${esc(data.error)}</div>`;return;}
+  renderAdminActionLog(data);
+}
+
+function renderAdminActionLog(data){
+  const container=el('actionLogContent');
+  const rows=Array.isArray(data.logs)?data.logs:[];
+  const total=Number(data.total||0);
+  const offset=Number(data.offset||0);
+  const limit=Number(data.limit||actionLogState.limit||80);
+  actionLogState.offset=offset;
+  actionLogState.limit=limit;
+  const pageStart=total?offset+1:0;
+  const pageEnd=Math.min(offset+rows.length,total);
+  const central=rows.filter(row=>row.source==='admin_action_log').length;
+  const legacy=rows.length-central;
+  const latest=rows[0]?.createdAt?formatActionLogDate(rows[0].createdAt):'—';
+  const summary=`<div class="action-log-summary">
+    <div class="action-log-stat"><strong>${total}</strong><span>eşleşen kayıt</span></div>
+    <div class="action-log-stat"><strong>${rows.length}</strong><span>bu sayfada</span></div>
+    <div class="action-log-stat"><strong>${central}</strong><span>merkezi log</span></div>
+    <div class="action-log-stat"><strong>${legacy}</strong><span>eski iz</span></div>
+  </div>`;
+  const notice=data.notice?`<div class="action-log-note">${esc(data.notice)}</div>`:'';
+  const toolbar=`<div class="action-log-toolbar">
+    <input type="search" value="${actionLogAttr(actionLogState.q)}" placeholder="Kullanıcı, işlem, kayıt veya not ara..." oninput="setActionLogFilter('q',this.value,true)">
+    <select onchange="setActionLogFilter('action',this.value)">${actionLogOptions(data.filters?.actions,'action','Tüm işlemler')}</select>
+    <select onchange="setActionLogFilter('targetType',this.value)">${actionLogOptions(data.filters?.targetTypes,'targetType','Tüm hedefler')}</select>
+    <select onchange="setActionLogFilter('source',this.value)">${actionLogOptions(data.filters?.sources,'source','Tüm kaynaklar')}</select>
+    <input type="search" value="${actionLogAttr(actionLogState.actor)}" placeholder="Kişi ara..." oninput="setActionLogFilter('actor',this.value,true)">
+    <input type="date" value="${actionLogAttr(actionLogState.dateFrom)}" onchange="setActionLogFilter('dateFrom',this.value)" aria-label="Başlangıç tarihi">
+    <input type="date" value="${actionLogAttr(actionLogState.dateTo)}" onchange="setActionLogFilter('dateTo',this.value)" aria-label="Bitiş tarihi">
+    <button class="btn-mini" onclick="resetActionLogFilters()">Sıfırla</button>
+  </div>`;
+  const cards=rows.length
+    ? `<div class="action-log-list">${rows.map(actionLogEntryHtml).join('')}</div>`
+    : '<div class="empty-state">Bu aramada sistem kaydı bulunamadı.</div>';
+  const pager=`<div class="action-log-pager">
+    <span>${pageStart}-${pageEnd} / ${total} gösteriliyor · Son kayıt: ${esc(latest)}</span>
+    <span style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-mini" ${offset<=0?'disabled':''} onclick="pageAdminActionLog(-1)">Önceki</button>
+      <button class="btn-mini" ${offset+limit>=total?'disabled':''} onclick="pageAdminActionLog(1)">Sonraki</button>
+    </span>
+  </div>`;
+  container.innerHTML=summary+notice+toolbar+cards+pager;
+}
+
+function actionLogOptions(options,key,emptyLabel){
+  const selected=String(actionLogState[key]||'');
+  return [`<option value="">${esc(emptyLabel)}</option>`]
+    .concat((options||[]).map(opt=>{
+      const value=String(opt.value||'');
+      return `<option value="${actionLogAttr(value)}" ${value===selected?'selected':''}>${esc(opt.label||value)}</option>`;
+    })).join('');
+}
+
+function setActionLogFilter(key,value,debounced=false){
+  actionLogState[key]=value||'';
+  actionLogState.offset=0;
+  if(debounced){
+    clearTimeout(actionLogSearchTimer);
+    actionLogSearchTimer=setTimeout(loadAdminActionLog,280);
+    return;
+  }
+  loadAdminActionLog();
+}
+
+function resetActionLogFilters(){
+  actionLogState={...actionLogState,q:'',action:'',targetType:'',source:'',actor:'',dateFrom:'',dateTo:'',offset:0};
+  loadAdminActionLog();
+}
+
+function pageAdminActionLog(direction){
+  const delta=Number(direction||0);
+  actionLogState.offset=Math.max(0,Number(actionLogState.offset||0)+delta*Number(actionLogState.limit||80));
+  loadAdminActionLog();
+}
+
+function actionLogEntryHtml(row){
+  const actor=row.actorName||row.actorUsername||'Sistem';
+  const target=row.targetLabel||row.targetId||'—';
+  const status=actionLogStatusText(row);
+  const metadata=actionLogMetadataHtml(row.metadata);
+  return `<article class="action-log-card">
+    <div class="action-log-card-head">
+      <div class="action-log-title">
+        <span class="action-log-kind">${esc(actionLogSourceLabel(row.source))}</span>
+        <strong>${esc(row.actionLabel||row.action||'İşlem')}</strong>
+      </div>
+      <div class="action-log-time">${esc(formatActionLogDate(row.createdAt))}</div>
+    </div>
+    ${row.summary?`<div class="action-log-summary-text">${esc(row.summary)}</div>`:''}
+    <div class="action-log-meta">
+      <span class="action-log-chip">Kişi: ${esc(actor)}</span>
+      ${row.actorRole?`<span class="action-log-chip">Rol: ${esc(row.actorRole)}</span>`:''}
+      ${row.targetType?`<span class="action-log-chip">Hedef: ${esc(row.targetType)}</span>`:''}
+      ${target&&target!=='—'?`<span class="action-log-chip">Kayıt: ${esc(target)}</span>`:''}
+      ${status?`<span class="action-log-chip action-log-status">${esc(status)}</span>`:''}
+    </div>
+    ${metadata}
+  </article>`;
+}
+
+function actionLogStatusText(row){
+  const before=row.targetStatusBefore||'';
+  const after=row.targetStatusAfter||'';
+  if(before&&after&&before!==after)return `${before} → ${after}`;
+  return after||before||'';
+}
+
+function actionLogSourceLabel(source){
+  if(source==='admin_action_log')return 'Sistem';
+  if(source==='content_correction_log')return 'Düzeltme';
+  if(source==='issue_resolution_log')return 'Çözüm';
+  if(source==='alerts')return 'Bildirim';
+  return source||'Kayıt';
+}
+
+function actionLogMetadataHtml(metadata){
+  if(!metadata||typeof metadata!=='object'||Array.isArray(metadata)||!Object.keys(metadata).length)return '';
+  const text=JSON.stringify(metadata,null,2);
+  return `<details class="action-log-chip" style="display:block;margin-top:10px;white-space:normal">
+    <summary style="cursor:pointer;font-weight:800">Ayrıntı</summary>
+    <pre style="margin:8px 0 0;white-space:pre-wrap;overflow:auto;max-height:180px;font-size:10px;line-height:1.45">${esc(text)}</pre>
+  </details>`;
+}
+
+function formatActionLogDate(value){
+  const date=new Date(value);
+  if(!Number.isFinite(date.getTime()))return '—';
+  return date.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 
 function resolutionStatusLabel(status){

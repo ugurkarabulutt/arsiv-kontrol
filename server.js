@@ -540,6 +540,238 @@ const mapAlert   = a => ({
   createdAt: a.created_at
 });
 
+const ADMIN_ACTION_LOG_MAX_FETCH = 900;
+const ADMIN_ACTION_LOG_MAX_LIMIT = 160;
+const ADMIN_ACTION_LABELS = Object.freeze({
+  'auth.login': 'Giriş yaptı',
+  'auth.logout': 'Çıkış yaptı',
+  'auth.password_change': 'Şifre değiştirdi',
+  'analysis.draft_created': 'Denetim kaydı oluşturdu',
+  'approval.submitted': 'Onaya gönderdi',
+  'approval.withdrawn': 'Onaydan geri çekti',
+  'approval.status_change': 'Onay durumunu değiştirdi',
+  'approval.return': 'Kullanıcıya geri gönderdi',
+  'approval.tags_update': 'Etiketleri güncelledi',
+  'approval.favorite_add': 'Favoriye ekledi',
+  'approval.favorite_remove': 'Favoriden çıkardı',
+  'feedback.created': 'Geri bildirim gönderdi',
+  'feedback.resolved': 'Geri bildirimi çözdü',
+  'feedback.bulk_resolved': 'Geri bildirimleri toplu çözdü',
+  'feedback.response': 'Çözüm bildirimine yanıt verdi',
+  'notification.sent': 'Bildirim gönderdi',
+  'rules.update': 'Kuralları güncelledi',
+  'rules.reset': 'Kuralları sıfırladı',
+  'standards.create': 'Standart ekledi',
+  'user.create': 'Kullanıcı oluşturdu',
+  'user.update': 'Kullanıcı güncelledi',
+  'user.delete': 'Kullanıcı sildi',
+  'public_question.answer': 'Public soru talebini cevapladı',
+  'public_question.submit': 'Public soru talebi gönderdi',
+  'public_user.login': 'Public kullanıcı giriş yaptı',
+  'public_user.register': 'Public kullanıcı hesap oluşturdu',
+  'public_user.logout': 'Public kullanıcı çıkış yaptı',
+  'public_archive.sync': 'Onaylı kayıtları canlı arşive aktardı',
+  'public_archive.format_refresh': 'Canlı arşiv formatını yeniledi',
+  'public_archive.content_status': 'Canlı içerik durumunu değiştirdi',
+  'public_archive.duplicates_hide': 'Mükerrer canlı kayıtları gizledi',
+  'public_archive.copied_questions_hide': 'Kopya soru kayıtlarını gizledi',
+  'public_archive.suspicious_return': 'Şüpheli kayıtları geri gönderdi',
+  'archive_ops.create': 'Arşiv kaydı oluşturdu',
+  'archive_ops.update': 'Arşiv kaydı güncelledi',
+  'archive_ops.delete': 'Arşiv kaydı sildi',
+  'ai_report.generate': 'AI operasyon raporu üretti',
+  'correction.create': 'Düzeltme kaydı oluşturdu',
+  'correction.preview': 'Düzeltme etki taraması yaptı',
+  'correction.apply': 'Düzeltme uyguladı',
+  'correction.revert': 'Düzeltmeyi geri aldı',
+  'tag_import.preview': 'Etiket aktarım listesi oluşturdu',
+  'tag_import.apply': 'Etiket aktarımı uyguladı',
+  'tag_import.select_candidate': 'Excel adayı seçti',
+  'tag_import.skip': 'Etiket aktarım kaydını atladı',
+  'tag_import.questions_backfill': 'Soru aktarımı çalıştırdı',
+  'tag_import.delete': 'Etiket aktarım listesini sildi'
+});
+
+function cleanAdminActionText(value = '', max = 500) {
+  return String(value || '').normalize('NFC').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function cleanAdminActionId(value = '', max = 120) {
+  return String(value || '').trim().slice(0, max) || null;
+}
+
+function safeAdminActionJson(value = {}) {
+  try {
+    const text = JSON.stringify(value && typeof value === 'object' ? value : {});
+    if (text.length > 6000) return { truncated: true, preview: text.slice(0, 6000) };
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return { unavailable: true };
+  }
+}
+
+function adminActionClientIp(req) {
+  const forwarded = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || req.ip || req.socket?.remoteAddress || '';
+}
+
+function adminActionActor(req) {
+  return {
+    actor_user_id: cleanAdminActionId(req.session?.userId || '', 60),
+    actor_username: cleanAdminActionText(req.session?.username || '', 120),
+    actor_name: cleanAdminActionText(req.session?.name || '', 160),
+    actor_role: cleanAdminActionText(req.session?.role || '', 40)
+  };
+}
+
+async function ensureAdminActionLogReady(force = false) {
+  if (HAS_ADMIN_ACTION_LOG) return true;
+  const now = Date.now();
+  if (!force && ADMIN_ACTION_LOG_LAST_PROBE && now - ADMIN_ACTION_LOG_LAST_PROBE < 30000) return false;
+  ADMIN_ACTION_LOG_LAST_PROBE = now;
+  const { error } = await supabase.from('admin_action_log').select('id').limit(1);
+  HAS_ADMIN_ACTION_LOG = !error;
+  return HAS_ADMIN_ACTION_LOG;
+}
+
+async function recordAdminAction(req, entry = {}) {
+  if (!(await ensureAdminActionLogReady())) return false;
+  try {
+    const action = cleanAdminActionText(entry.action || 'system.action', 120).replace(/\s+/g, '_') || 'system.action';
+    const customActor = entry.actor && typeof entry.actor === 'object' ? {
+      actor_user_id: cleanAdminActionId(entry.actor.userId || entry.actor.id || '', 60),
+      actor_username: cleanAdminActionText(entry.actor.username || entry.actor.email || '', 120),
+      actor_name: cleanAdminActionText(entry.actor.name || entry.actor.email || '', 160),
+      actor_role: cleanAdminActionText(entry.actor.role || '', 40)
+    } : null;
+    const row = {
+      ...(customActor || adminActionActor(req)),
+      action,
+      action_label: cleanAdminActionText(entry.actionLabel || ADMIN_ACTION_LABELS[action] || action, 180),
+      target_type: cleanAdminActionText(entry.targetType || '', 80) || null,
+      target_id: cleanAdminActionId(entry.targetId || '', 180),
+      target_label: cleanAdminActionText(entry.targetLabel || '', 360) || null,
+      target_status_before: cleanAdminActionText(entry.targetStatusBefore || '', 80) || null,
+      target_status_after: cleanAdminActionText(entry.targetStatusAfter || '', 80) || null,
+      summary: cleanAdminActionText(entry.summary || '', 900) || null,
+      metadata: safeAdminActionJson(entry.metadata || {}),
+      ip_address: cleanAdminActionText(adminActionClientIp(req), 120) || null,
+      user_agent: cleanAdminActionText(req.headers?.['user-agent'] || '', 700) || null
+    };
+    const { error } = await supabase.from('admin_action_log').insert(row);
+    if (error) {
+      console.warn('Sistem kaydı yazılamadı:', error.message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn('Sistem kaydı yazılamadı:', error.message);
+    return false;
+  }
+}
+
+function publicAdminActionLog(row = {}) {
+  return {
+    id: row.id,
+    source: row.source || 'admin_action_log',
+    actorUserId: row.actor_user_id || '',
+    actorUsername: row.actor_username || '',
+    actorName: row.actor_name || row.actor_username || '',
+    actorRole: row.actor_role || '',
+    action: row.action || '',
+    actionLabel: row.action_label || ADMIN_ACTION_LABELS[row.action] || row.action || 'İşlem',
+    targetType: row.target_type || '',
+    targetId: row.target_id || '',
+    targetLabel: row.target_label || '',
+    targetStatusBefore: row.target_status_before || '',
+    targetStatusAfter: row.target_status_after || '',
+    summary: row.summary || '',
+    metadata: row.metadata || {},
+    createdAt: row.created_at || row.createdAt || ''
+  };
+}
+
+function legacyCorrectionActionLog(row = {}) {
+  const action = row.status === 'reverted' ? 'correction.revert' : 'correction.apply';
+  return publicAdminActionLog({
+    id: `content_correction_log:${row.id}`,
+    source: 'content_correction_log',
+    actor_name: row.created_by || 'Sistem',
+    action,
+    action_label: ADMIN_ACTION_LABELS[action],
+    target_type: 'history',
+    target_id: row.history_id || '',
+    target_label: `${row.field_name || 'alan'} / ${row.package_id || 'düzeltme'}`,
+    target_status_after: row.status || '',
+    summary: `${row.field_name || 'İçerik'} alanında geçmiş düzeltme kaydı.`,
+    metadata: { packageId: row.package_id, fieldName: row.field_name, oldHash: row.old_hash, newHash: row.new_hash },
+    created_at: row.created_at
+  });
+}
+
+function legacyResolutionActionLog(row = {}) {
+  return publicAdminActionLog({
+    id: `issue_resolution_log:${row.id}`,
+    source: 'issue_resolution_log',
+    actor_name: row.created_by || 'Sistem',
+    action: 'feedback.resolved',
+    action_label: ADMIN_ACTION_LABELS['feedback.resolved'],
+    target_type: 'feedback',
+    target_id: row.resolution_group || row.id || '',
+    target_label: row.title || '',
+    target_status_after: row.status || '',
+    summary: row.summary || '',
+    metadata: { feedbackCount: row.feedback_count, userCount: row.user_count },
+    created_at: row.created_at
+  });
+}
+
+function legacyNoticeActionLog(row = {}, user = null) {
+  const action = row.type === 'announcement' ? 'notification.sent'
+    : row.type === 'approval_return' ? 'approval.return'
+    : row.type === 'feedback_resolution' ? 'feedback.resolved'
+    : 'notification.sent';
+  return publicAdminActionLog({
+    id: `alerts:${row.id}`,
+    source: 'alerts',
+    actor_name: SYSTEM_SENDER_NAME,
+    action,
+    action_label: ADMIN_ACTION_LABELS[action] || 'Bildirim',
+    target_type: row.history_id ? 'history' : 'user',
+    target_id: row.history_id || row.user_id || '',
+    target_label: user?.name || user?.username || '',
+    summary: row.message || '',
+    metadata: { type: row.type, recipientUserId: row.user_id, score: row.score, read: row.read },
+    created_at: row.created_at
+  });
+}
+
+function adminActionLogSearchBlob(row = {}) {
+  return [
+    row.actorName,
+    row.actorUsername,
+    row.actorRole,
+    row.action,
+    row.actionLabel,
+    row.targetType,
+    row.targetId,
+    row.targetLabel,
+    row.targetStatusBefore,
+    row.targetStatusAfter,
+    row.summary,
+    row.source,
+    JSON.stringify(row.metadata || {})
+  ].join(' ').toLocaleLowerCase('tr-TR');
+}
+
+function parseAdminActionDate(value, endOfDay = false) {
+  const clean = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) return null;
+  const date = new Date(`${clean}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}+03:00`);
+  return Number.isFinite(date.getTime()) ? date : null;
+}
+
 const APPROVAL_REVIEW_STATUS = 'teyit_bekliyor';
 const APPROVAL_RETURNED_STATUS = 'geri_gonderildi';
 const APPROVAL_ARCHIVED_STATUS = 'arsivlendi';
@@ -4764,6 +4996,8 @@ async function seed() {
   HAS_CONTENT_CORRECTION_LOG = !contentCorrectionLogErr;
   if (!HAS_CONTENT_CORRECTION_LOG) console.warn('⚠ content_correction_log tablosu yok — geçmiş içerik düzeltme uygulaması pasif.');
 
+  if (!(await ensureAdminActionLogReady(true))) console.warn('⚠ admin_action_log tablosu yok — merkezi sistem kayıtları pasif.');
+
   const { error: aiReportsErr } = await supabase.from('ai_reports').select('id').limit(1);
   HAS_AI_REPORTS = !aiReportsErr;
   if (!HAS_AI_REPORTS) console.warn('⚠ ai_reports tablosu yok — AI rapor kayıtları pasif.');
@@ -7833,10 +8067,33 @@ app.post('/api/auth/login', async (req, res) => {
     req.session.name = user.name;
     req.session.role = role;
     await recordUserActivity(user.id);
+    await recordAdminAction(req, {
+      action: 'auth.login',
+      targetType: 'user',
+      targetId: user.id,
+      targetLabel: user.name || user.username,
+      summary: `${user.name || user.username} sisteme giriş yaptı.`,
+      metadata: { role }
+    });
     res.json({ success: true, id: user.id, name: user.name, role, username: user.username });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
+app.post('/api/auth/logout', async (req, res) => {
+  try {
+    await startupReady;
+    await recordAdminAction(req, {
+      action: 'auth.logout',
+      targetType: 'user',
+      targetId: req.session?.userId || '',
+      targetLabel: req.session?.name || req.session?.username || '',
+      summary: `${req.session?.name || req.session?.username || 'Kullanıcı'} sistemden çıkış yaptı.`
+    });
+  } catch (error) {
+    console.warn('Çıkış kaydı yazılamadı:', error.message);
+  }
+  req.session = null;
+  res.json({ success: true });
+});
 app.get('/api/auth/me', async (req, res, next) => {
   if (!req.session?.userId) return res.json({ loggedIn: false });
   try {
@@ -7866,6 +8123,13 @@ app.post('/api/auth/change-password', auth, async (req, res) => {
     const { error } = await supabase.from('users')
       .update({ password: bcrypt.hashSync(newPassword, 10) }).eq('id', user.id);
     if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'auth.password_change',
+      targetType: 'user',
+      targetId: user.id,
+      targetLabel: user.name || user.username,
+      summary: `${user.name || user.username} şifresini değiştirdi.`
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -7901,10 +8165,19 @@ app.post('/api/users', auth, admin, superAdmin, async (req, res) => {
     if (!isAssignableRole(cleanRole)) return res.status(400).json({ error: 'Geçersiz kullanıcı rolü.' });
     const { data: existing } = await supabase.from('users').select('id').eq('username', cleanUsername).maybeSingle();
     if (existing) return res.status(400).json({ error: 'Kullanıcı adı alınmış.' });
-    const { error } = await supabase.from('users').insert({
+    const { data, error } = await supabase.from('users').insert({
       username: cleanUsername, name, password: bcrypt.hashSync(password, 10), role: cleanRole, active: true
-    });
+    }).select('id,username,name,role,active').single();
     if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'user.create',
+      targetType: 'user',
+      targetId: data.id,
+      targetLabel: data.name || data.username,
+      targetStatusAfter: data.active ? 'active' : 'passive',
+      summary: `${data.name || data.username} kullanıcısı oluşturuldu.`,
+      metadata: { username: data.username, role: data.role }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -7912,7 +8185,7 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
   try {
     const { name, password, role, active } = req.body;
     const { data: target, error: targetError } = await supabase.from('users')
-      .select('id,username,role').eq('id', req.params.id).maybeSingle();
+      .select('id,username,name,role,active').eq('id', req.params.id).maybeSingle();
     if (targetError) throw new Error(targetError.message);
     if (!target) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     const targetIsSuperAdmin = isReservedSuperAdminUsername(target.username) || target.role === ROLES.SUPER_ADMIN;
@@ -7938,6 +8211,20 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
     if (!data?.length) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     // Admin kendi adını değiştirdiyse oturumdaki ad da güncellensin (topbar için)
     if (req.params.id === req.session.userId && name !== undefined) req.session.name = name;
+    await recordAdminAction(req, {
+      action: 'user.update',
+      targetType: 'user',
+      targetId: target.id,
+      targetLabel: name || target.name || target.username,
+      targetStatusBefore: target.active ? 'active' : 'passive',
+      targetStatusAfter: active === undefined ? (target.active ? 'active' : 'passive') : (active ? 'active' : 'passive'),
+      summary: `${target.name || target.username} kullanıcısı güncellendi.`,
+      metadata: {
+        changedFields: Object.keys(patch).map(key => key === 'password' ? 'password_changed' : key),
+        oldRole: target.role,
+        newRole: role === undefined ? target.role : role
+      }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -7965,6 +8252,14 @@ app.post('/api/users/:id/notify', auth, admin, async (req, res) => {
       read: false
     });
     if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'notification.sent',
+      targetType: 'user',
+      targetId: target.id,
+      targetLabel: target.name || '',
+      summary: `${target.name || 'Kullanıcı'} için bildirim gönderildi: ${cleanTitle}`,
+      metadata: { title: cleanTitle, messagePreview: cleanMessage.slice(0, 220), recipientCount: 1 }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -7977,6 +8272,15 @@ app.delete('/api/users/:id', auth, admin, superAdmin, async (req, res) => {
     }
     const { error } = await supabase.from('users').delete().eq('id', req.params.id);
     if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'user.delete',
+      targetType: 'user',
+      targetId: req.params.id,
+      targetLabel: user.username || '',
+      targetStatusBefore: user.role || '',
+      summary: `${user.username || 'Kullanıcı'} silindi.`,
+      metadata: { role: user.role }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -7991,12 +8295,27 @@ app.put('/api/rules', auth, admin, async (req, res) => {
     const { rules } = req.body;
     if (!rules) return res.status(400).json({ error: 'Kural metni boş.' });
     await saveRules(rules);
+    await recordAdminAction(req, {
+      action: 'rules.update',
+      targetType: 'settings',
+      targetId: 'rules',
+      targetLabel: 'Kural metni',
+      summary: 'Denetim kuralları güncellendi.',
+      metadata: { length: String(rules || '').length }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/rules/reset', auth, admin, async (req, res) => {
   try {
     await saveRules(DEFAULT_RULES);
+    await recordAdminAction(req, {
+      action: 'rules.reset',
+      targetType: 'settings',
+      targetId: 'rules',
+      targetLabel: 'Kural metni',
+      summary: 'Denetim kuralları varsayılana döndürüldü.'
+    });
     res.json({ success: true, rules: DEFAULT_RULES });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -8079,6 +8398,14 @@ app.post('/api/standards', auth, admin, async (req, res) => {
     const slug = title.toLocaleLowerCase('tr-TR').replace(/[^a-z0-9çğıöşü]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'standart';
     const id = `${Date.now()}-${slug}`;
     await saveJsonSetting('standards_catalog', [{ id, title, category, content, createdAt: new Date().toISOString() }, ...catalog]);
+    await recordAdminAction(req, {
+      action: 'standards.create',
+      targetType: 'standard',
+      targetId: id,
+      targetLabel: title,
+      summary: `${title} standardı eklendi.`,
+      metadata: { category }
+    });
     res.json({ success: true, id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -8140,6 +8467,20 @@ app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, asy
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Soru talebi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'public_question.answer',
+      targetType: 'public_question_submission',
+      targetId: data.id,
+      targetLabel: data.question_text || data.question || 'Soru talebi',
+      targetStatusAfter: data.status || updates.status || requestedStatus,
+      summary: answerText ? 'Kullanıcıdan gelen public soru talebi cevaplandı.' : 'Public soru talebinin durumu güncellendi.',
+      metadata: {
+        requestedStatus,
+        answered: Boolean(answerText),
+        answerLength: answerText.length,
+        hasAdminNote: Boolean(adminNote)
+      }
+    });
     res.json({ success: true, submission: data });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
@@ -8191,6 +8532,15 @@ app.post('/api/public-archive/sync-approved', auth, admin, superAdmin, async (re
     await startupReady;
     const result = await syncApprovedHistoryToPublicArchive();
     const status = result.available === false ? 503 : 200;
+    await recordAdminAction(req, {
+      action: 'public_archive.sync',
+      targetType: 'public_archive',
+      targetId: 'sync-approved',
+      targetLabel: 'Onaylı kayıt aktarımı',
+      targetStatusAfter: result.available === false ? 'failed' : 'completed',
+      summary: `Onaylı kayıtlar canlı arşiv okuma tablolarına senkronlandı: ${Number(result.publishedRecords || 0)} kayıt.`,
+      metadata: result
+    });
     res.status(status).json({ success: result.available !== false, ...result });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, error: error.message });
@@ -8200,7 +8550,19 @@ app.post('/api/public-archive/sync-approved', auth, admin, superAdmin, async (re
 app.post('/api/public-archive/refresh-format', auth, admin, superAdmin, async (req, res) => {
   try {
     const apply = req.body?.apply === true;
-    res.json(await refreshPublicArchiveFormattingFromHistory({ apply }));
+    const result = await refreshPublicArchiveFormattingFromHistory({ apply });
+    await recordAdminAction(req, {
+      action: 'public_archive.format_refresh',
+      targetType: 'public_archive',
+      targetId: 'refresh-format',
+      targetLabel: 'Canlı arşiv okuma düzeni',
+      targetStatusAfter: apply ? 'applied' : 'preview',
+      summary: apply
+        ? `Canlı arşiv paragraf düzeni yenilendi: ${Number(result.updatedRows || 0)} kayıt.`
+        : `Canlı arşiv paragraf düzeni önizlendi: ${Number(result.candidateCount || 0)} aday.`,
+      metadata: result
+    });
+    res.json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
   }
@@ -8208,7 +8570,17 @@ app.post('/api/public-archive/refresh-format', auth, admin, superAdmin, async (r
 
 app.post('/api/public-archive/content-audit/hide-copied-questions', auth, admin, superAdmin, async (req, res) => {
   try {
-    res.json({ success: true, ...await hidePublicArchiveCopiedQuestionRows() });
+    const result = await hidePublicArchiveCopiedQuestionRows();
+    await recordAdminAction(req, {
+      action: 'public_archive.copied_questions_hide',
+      targetType: 'public_archive',
+      targetId: 'hide-copied-questions',
+      targetLabel: 'Soru cevaba kopyalanmış kayıtlar',
+      targetStatusAfter: 'hidden',
+      summary: `Soru cevaba kopyalanmış görünen kayıtlar yayından alındı: ${Number(result.updatedRows || 0)} kayıt.`,
+      metadata: result
+    });
+    res.json({ success: true, ...result });
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
   }
@@ -8216,11 +8588,24 @@ app.post('/api/public-archive/content-audit/hide-copied-questions', auth, admin,
 
 app.post('/api/public-archive/content-audit/return-suspicious', auth, admin, superAdmin, async (req, res) => {
   try {
-    res.json(await returnSuspiciousPublicArchiveRows({
+    const apply = req.body?.apply === true;
+    const result = await returnSuspiciousPublicArchiveRows({
       apply: req.body?.apply === true,
       types: req.body?.types || null,
       actor: req.session.name || req.session.username || 'Admin'
-    }));
+    });
+    await recordAdminAction(req, {
+      action: 'public_archive.suspicious_return',
+      targetType: 'public_archive',
+      targetId: 'return-suspicious',
+      targetLabel: 'Şüpheli canlı kayıtlar',
+      targetStatusAfter: apply ? 'returned' : 'preview',
+      summary: apply
+        ? `Şüpheli canlı kayıtlar denetleyen kullanıcılara geri gönderildi: ${Number(result.returnedHistoryCount || result.candidateCount || 0)} kayıt.`
+        : `Şüpheli canlı kayıtlar için geri gönderme önizlemesi yapıldı: ${Number(result.candidateCount || 0)} aday.`,
+      metadata: result
+    });
+    res.json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, success: false, error: error.message });
   }
@@ -8228,7 +8613,17 @@ app.post('/api/public-archive/content-audit/return-suspicious', auth, admin, sup
 
 app.post('/api/public-archive/content-items/:slug/status', auth, admin, superAdmin, async (req, res) => {
   try {
-    res.json(await setPublicArchiveContentItemStatus(req.params.slug, req.body?.status));
+    const result = await setPublicArchiveContentItemStatus(req.params.slug, req.body?.status);
+    await recordAdminAction(req, {
+      action: 'public_archive.content_status',
+      targetType: 'public_qa',
+      targetId: req.params.slug,
+      targetLabel: result.item?.title || result.item?.question || req.params.slug,
+      targetStatusAfter: result.item?.status || req.body?.status || '',
+      summary: `Canlı arşiv kaydının durumu güncellendi: ${req.params.slug}.`,
+      metadata: { requestedStatus: req.body?.status || '', success: result.success !== false }
+    });
+    res.json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, error: error.message });
   }
@@ -8261,6 +8656,19 @@ app.post('/api/public-archive/duplicates/hide', auth, admin, superAdmin, async (
   try {
     await startupReady;
     const result = await hidePublicArchiveDuplicateRows();
+    await recordAdminAction(req, {
+      action: 'public_archive.duplicates_hide',
+      targetType: 'public_archive',
+      targetId: 'duplicates-hide',
+      targetLabel: 'Mükerrer canlı kayıtlar',
+      targetStatusAfter: 'hidden',
+      summary: `Birebir mükerrer canlı kayıtlar gizlendi: ${Number(result.hiddenCount || result.updatedRows || 0)} kayıt.`,
+      metadata: {
+        duplicateGroupCount: result.duplicateGroupCount,
+        hiddenCount: result.hiddenCount,
+        duplicateGroups: (result.duplicateGroups || []).slice(0, 12)
+      }
+    });
     res.json({
       success: true,
       ...result,
@@ -8289,6 +8697,16 @@ app.post('/api/archive-ops/public-candidates/:kind/:id/decision', auth, admin, s
       req.session?.name || req.session?.username || 'Sistem'
     );
     if (!candidate) return res.status(404).json({ error: 'Aday kayıt bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Public arşiv aday kararını güncelledi',
+      targetType: `archive_candidate:${req.params.kind}`,
+      targetId: req.params.id,
+      targetLabel: candidate.title || candidate.name || 'Public arşiv adayı',
+      targetStatusAfter: candidate.status || req.body?.status || '',
+      summary: 'Public arşiv adayı için yayın kararı güncellendi.',
+      metadata: { kind: req.params.kind, status: req.body?.status || '', note: req.body?.note || '' }
+    });
     res.json({ success: true, candidate });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8312,6 +8730,16 @@ app.post('/api/archive-ops/release-packages', auth, admin, superAdmin, async (re
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await createArchiveReleasePackage(req.body || {}, actor);
+    await recordAdminAction(req, {
+      action: 'archive_ops.create',
+      actionLabel: 'Yayın paketi oluşturdu',
+      targetType: 'archive_release_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || 'Yayın paketi',
+      targetStatusAfter: pkg.status || '',
+      summary: `${pkg.title || 'Yayın paketi'} oluşturuldu.`,
+      metadata: { itemCount: Array.isArray(pkg.items) ? pkg.items.length : 0 }
+    });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8321,6 +8749,16 @@ app.put('/api/archive-ops/release-packages/:id', auth, admin, superAdmin, async 
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await updateArchiveReleasePackage(req.params.id, req.body || {}, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Yayın paketini güncelledi',
+      targetType: 'archive_release_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || 'Yayın paketi',
+      targetStatusAfter: pkg.status || '',
+      summary: `${pkg.title || 'Yayın paketi'} güncellendi.`,
+      metadata: { changedFields: Object.keys(req.body || {}), itemCount: Array.isArray(pkg.items) ? pkg.items.length : 0 }
+    });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8330,6 +8768,16 @@ app.post('/api/archive-ops/release-packages/:id/items/:itemId/review', auth, adm
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await updateArchiveReleasePackageItemReview(req.params.id, req.params.itemId, req.body || {}, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Yayın paketi kayıt kontrolünü güncelledi',
+      targetType: 'archive_release_package_item',
+      targetId: req.params.itemId,
+      targetLabel: pkg.title || 'Yayın paketi',
+      targetStatusAfter: req.body?.status || '',
+      summary: 'Yayın paketi içindeki kaydın son kontrol durumu güncellendi.',
+      metadata: { packageId: pkg.id, itemId: req.params.itemId, status: req.body?.status || '', note: req.body?.note || '' }
+    });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8339,6 +8787,16 @@ app.post('/api/archive-ops/release-packages/:id/lock', auth, admin, superAdmin, 
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await lockArchiveReleasePackage(req.params.id, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Yayın paketini kilitledi',
+      targetType: 'archive_release_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || 'Yayın paketi',
+      targetStatusAfter: pkg.status || 'kilitli',
+      summary: `${pkg.title || 'Yayın paketi'} son hazırlığa kilitlendi.`,
+      metadata: { locked: true, itemCount: Array.isArray(pkg.items) ? pkg.items.length : 0 }
+    });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8348,6 +8806,16 @@ app.post('/api/archive-ops/release-packages/:id/unlock', auth, admin, superAdmin
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await unlockArchiveReleasePackage(req.params.id, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Yayın paketi kilidini kaldırdı',
+      targetType: 'archive_release_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || 'Yayın paketi',
+      targetStatusAfter: pkg.status || '',
+      summary: `${pkg.title || 'Yayın paketi'} kilidi kaldırıldı.`,
+      metadata: { locked: false }
+    });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8357,6 +8825,16 @@ app.post('/api/archive-ops/release-packages/:id/publication', auth, admin, super
     const actor = req.session.name || req.session.username || 'Sistem';
     const pkg = await updateArchiveReleasePackagePublication(req.params.id, req.body || {}, actor);
     if (!pkg) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Yayın paketi yayın bilgisini güncelledi',
+      targetType: 'archive_release_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || 'Yayın paketi',
+      targetStatusAfter: pkg.publication?.status || pkg.status || '',
+      summary: `${pkg.title || 'Yayın paketi'} yayın bilgisi güncellendi.`,
+      metadata: { publication: pkg.publication || {}, request: req.body || {} }
+    });
     res.json({ success: true, package: pkg });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8365,6 +8843,16 @@ app.delete('/api/archive-ops/release-packages/:id', auth, admin, superAdmin, asy
   try {
     const deleted = await deleteArchiveReleasePackage(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Yayın paketi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.delete',
+      actionLabel: 'Yayın paketi sildi',
+      targetType: 'archive_release_package',
+      targetId: deleted.id || req.params.id,
+      targetLabel: deleted.title || 'Yayın paketi',
+      targetStatusBefore: deleted.status || '',
+      summary: `${deleted.title || 'Yayın paketi'} silindi.`,
+      metadata: { itemCount: Array.isArray(deleted.items) ? deleted.items.length : 0 }
+    });
     res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8405,6 +8893,16 @@ app.post('/api/archive-ops/sources', auth, admin, superAdmin, async (req, res) =
         conflicts: result.conflicts
       });
     }
+    await recordAdminAction(req, {
+      action: 'archive_ops.create',
+      actionLabel: 'Kaynak kaydı oluşturdu',
+      targetType: 'archive_source',
+      targetId: result.source?.id,
+      targetLabel: result.source?.title || result.source?.sourceTitle || 'Kaynak kaydı',
+      targetStatusAfter: result.source?.status || '',
+      summary: `${result.source?.title || result.source?.sourceTitle || 'Kaynak kaydı'} oluşturuldu.`,
+      metadata: { sourceType: result.source?.sourceType || result.source?.source_type || '', textLength: String(result.source?.text || '').length }
+    });
     res.json({ success: true, source: publicArchiveSource(result.source, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8429,6 +8927,16 @@ app.put('/api/archive-ops/sources/:id', auth, admin, superAdmin, async (req, res
         conflicts: result.conflicts
       });
     }
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Kaynak kaydı güncelledi',
+      targetType: 'archive_source',
+      targetId: result.source?.id || req.params.id,
+      targetLabel: result.source?.title || result.source?.sourceTitle || 'Kaynak kaydı',
+      targetStatusAfter: result.source?.status || '',
+      summary: `${result.source?.title || result.source?.sourceTitle || 'Kaynak kaydı'} güncellendi.`,
+      metadata: { changedFields: Object.keys(input), sourceType: result.source?.sourceType || result.source?.source_type || '' }
+    });
     res.json({ success: true, source: publicArchiveSource(result.source, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8462,6 +8970,16 @@ app.post('/api/archive-ops/work-items', auth, admin, superAdmin, async (req, res
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const item = await createArchiveWorkItem(req.body || {}, actor);
+    await recordAdminAction(req, {
+      action: 'archive_ops.create',
+      actionLabel: 'Çalışma kaydı oluşturdu',
+      targetType: 'archive_work_item',
+      targetId: item.id,
+      targetLabel: item.title || item.question || 'Çalışma kaydı',
+      targetStatusAfter: item.status || '',
+      summary: `${item.title || item.question || 'Çalışma kaydı'} oluşturuldu.`,
+      metadata: { priority: item.priority || '', assignee: item.assignee || '' }
+    });
     res.json({ success: true, item: publicArchiveWorkItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8479,6 +8997,16 @@ app.put('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (req, 
     const actor = req.session.name || req.session.username || 'Sistem';
     const item = await updateArchiveWorkItem(req.params.id, req.body || {}, actor);
     if (!item) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Çalışma kaydı güncelledi',
+      targetType: 'archive_work_item',
+      targetId: item.id,
+      targetLabel: item.title || item.question || 'Çalışma kaydı',
+      targetStatusAfter: item.status || '',
+      summary: `${item.title || item.question || 'Çalışma kaydı'} güncellendi.`,
+      metadata: { changedFields: Object.keys(req.body || {}), priority: item.priority || '' }
+    });
     res.json({ success: true, item: publicArchiveWorkItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8487,6 +9015,15 @@ app.delete('/api/archive-ops/work-items/:id', auth, admin, superAdmin, async (re
   try {
     const deleted = await deleteArchiveWorkItem(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Çalışma kaydı bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.delete',
+      actionLabel: 'Çalışma kaydı sildi',
+      targetType: 'archive_work_item',
+      targetId: deleted.id || req.params.id,
+      targetLabel: deleted.title || deleted.question || 'Çalışma kaydı',
+      targetStatusBefore: deleted.status || '',
+      summary: `${deleted.title || deleted.question || 'Çalışma kaydı'} silindi.`
+    });
     res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8520,6 +9057,16 @@ app.post('/api/archive-ops/publish-tasks', auth, admin, superAdmin, async (req, 
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const task = await createArchivePublishTask(req.body || {}, actor);
+    await recordAdminAction(req, {
+      action: 'archive_ops.create',
+      actionLabel: 'Yayın görevi oluşturdu',
+      targetType: 'archive_publish_task',
+      targetId: task.id,
+      targetLabel: task.title || 'Yayın görevi',
+      targetStatusAfter: task.status || '',
+      summary: `${task.title || 'Yayın görevi'} oluşturuldu.`,
+      metadata: { priority: task.priority || '', assignee: task.assignee || '', platform: task.platform || '' }
+    });
     res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8537,6 +9084,16 @@ app.put('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async (re
     const actor = req.session.name || req.session.username || 'Sistem';
     const task = await updateArchivePublishTask(req.params.id, req.body || {}, actor);
     if (!task) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'Yayın görevi güncelledi',
+      targetType: 'archive_publish_task',
+      targetId: task.id,
+      targetLabel: task.title || 'Yayın görevi',
+      targetStatusAfter: task.status || '',
+      summary: `${task.title || 'Yayın görevi'} güncellendi.`,
+      metadata: { changedFields: Object.keys(req.body || {}), priority: task.priority || '', platform: task.platform || '' }
+    });
     res.json({ success: true, task: publicArchivePublishTask(task, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8545,6 +9102,15 @@ app.delete('/api/archive-ops/publish-tasks/:id', auth, admin, superAdmin, async 
   try {
     const deleted = await deleteArchivePublishTask(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Yayın görevi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.delete',
+      actionLabel: 'Yayın görevi sildi',
+      targetType: 'archive_publish_task',
+      targetId: deleted.id || req.params.id,
+      targetLabel: deleted.title || 'Yayın görevi',
+      targetStatusBefore: deleted.status || '',
+      summary: `${deleted.title || 'Yayın görevi'} silindi.`
+    });
     res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8560,6 +9126,16 @@ app.post('/api/archive-ops/import-batches', auth, admin, superAdmin, async (req,
   try {
     const actor = req.session.name || req.session.username || 'Sistem';
     const batch = await createArchiveImportBatch(req.body || {}, actor);
+    await recordAdminAction(req, {
+      action: 'archive_ops.create',
+      actionLabel: 'İçe aktarım listesi oluşturdu',
+      targetType: 'archive_import_batch',
+      targetId: batch.id,
+      targetLabel: batch.title || batch.name || 'İçe aktarım listesi',
+      targetStatusAfter: batch.status || '',
+      summary: `${batch.title || batch.name || 'İçe aktarım listesi'} oluşturuldu.`,
+      metadata: { fileName: batch.fileName || batch.file_name || '' }
+    });
     res.json({ success: true, batch });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8580,6 +9156,16 @@ app.post('/api/archive-ops/import-batches/:id/items', auth, admin, superAdmin, a
     const actor = req.session.name || req.session.username || 'Sistem';
     const item = await createArchiveImportItem(req.params.id, req.body || {}, actor);
     if (!item) return res.status(404).json({ error: 'İçe aktarım listesi bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.create',
+      actionLabel: 'İçe aktarım dosyası ekledi',
+      targetType: 'archive_import_item',
+      targetId: item.id,
+      targetLabel: item.title || item.fileName || item.file_name || 'İçe aktarım dosyası',
+      targetStatusAfter: item.status || '',
+      summary: `${item.title || item.fileName || item.file_name || 'İçe aktarım dosyası'} içe aktarım listesine eklendi.`,
+      metadata: { batchId: req.params.id }
+    });
     res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8589,6 +9175,16 @@ app.put('/api/archive-ops/import-items/:id', auth, admin, superAdmin, async (req
     const actor = req.session.name || req.session.username || 'Sistem';
     const item = await updateArchiveImportItem(req.params.id, req.body || {}, actor);
     if (!item) return res.status(404).json({ error: 'İçe aktarım dosyası bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.update',
+      actionLabel: 'İçe aktarım dosyasını güncelledi',
+      targetType: 'archive_import_item',
+      targetId: item.id,
+      targetLabel: item.title || item.fileName || item.file_name || 'İçe aktarım dosyası',
+      targetStatusAfter: item.status || '',
+      summary: `${item.title || item.fileName || item.file_name || 'İçe aktarım dosyası'} güncellendi.`,
+      metadata: { changedFields: Object.keys(req.body || {}) }
+    });
     res.json({ success: true, item: publicArchiveImportItem(item, { full: true }) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8598,6 +9194,15 @@ app.delete('/api/archive-ops/import-items/:id', auth, admin, superAdmin, async (
     const actor = req.session.name || req.session.username || 'Sistem';
     const deleted = await deleteArchiveImportItem(req.params.id, actor);
     if (!deleted) return res.status(404).json({ error: 'İçe aktarım dosyası bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'archive_ops.delete',
+      actionLabel: 'İçe aktarım dosyasını sildi',
+      targetType: 'archive_import_item',
+      targetId: deleted.id || req.params.id,
+      targetLabel: deleted.title || deleted.fileName || deleted.file_name || 'İçe aktarım dosyası',
+      targetStatusBefore: deleted.status || '',
+      summary: `${deleted.title || deleted.fileName || deleted.file_name || 'İçe aktarım dosyası'} silindi.`
+    });
     res.json({ success: true, deleted });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8625,6 +9230,21 @@ app.post('/api/correction-packages', auth, admin, async (req, res) => {
     pkg.createdBy = req.session.name || req.session.username;
     packages.unshift(pkg);
     await saveCorrectionPackages(packages);
+    await recordAdminAction(req, {
+      action: 'correction.create',
+      targetType: 'correction_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || `${pkg.from} -> ${pkg.to}`,
+      targetStatusAfter: pkg.status || 'draft',
+      summary: `${pkg.title || 'Düzeltme kaydı'} oluşturuldu.`,
+      metadata: {
+        from: pkg.from,
+        to: pkg.to,
+        feedbackCount: Array.isArray(pkg.feedbackIds) ? pkg.feedbackIds.length : 0,
+        reportedHistoryCount: Array.isArray(pkg.reportedHistoryIds) ? pkg.reportedHistoryIds.length : 0,
+        historyScope: pkg.historyScope
+      }
+    });
     res.json({ success: true, package: publicCorrectionPackage(pkg) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8639,6 +9259,21 @@ app.post('/api/correction-packages/:id/preview', auth, admin, async (req, res) =
       ? pkg.status
       : 'ready';
     const updated = await updateCorrectionPackage(pkg.id, { lastScan: scan, status: nextStatus });
+    await recordAdminAction(req, {
+      action: 'correction.preview',
+      targetType: 'correction_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || `${pkg.from} -> ${pkg.to}`,
+      targetStatusBefore: pkg.status || '',
+      targetStatusAfter: updated.status || nextStatus,
+      summary: `${pkg.title || 'Düzeltme kaydı'} için etki taraması yapıldı: ${Number(scan.changeCount || 0)} değişim.`,
+      metadata: {
+        changeCount: scan.changeCount,
+        recordCount: scan.recordCount,
+        skippedCount: scan.skippedCount,
+        requiresReview: Boolean(pkg.requiresReview)
+      }
+    });
     res.json({ success: true, logReady: HAS_CONTENT_CORRECTION_LOG, package: publicCorrectionPackage(updated, scan), scan });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8654,6 +9289,15 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
     const pkg = packages.find(item => item.id === req.params.id);
     if (!pkg) return res.status(404).json({ error: 'Düzeltme paketi bulunamadı.' });
     if (pkg.status === 'applied') {
+      await recordAdminAction(req, {
+        action: 'correction.apply',
+        targetType: 'correction_package',
+        targetId: pkg.id,
+        targetLabel: pkg.title || `${pkg.from} -> ${pkg.to}`,
+        targetStatusAfter: pkg.status,
+        summary: `${pkg.title || 'Düzeltme kaydı'} zaten uygulanmış olarak kontrol edildi.`,
+        metadata: { alreadyApplied: true }
+      });
       return res.json({
         success: true,
         package: publicCorrectionPackage(pkg, pkg.lastScan || null),
@@ -8686,6 +9330,16 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
     if (!scanWithValues.changes.length || !changesToApply.length) {
       const scan = sanitizeCorrectionScan(scanWithValues);
       const updated = await updateCorrectionPackage(pkg.id, { lastScan: scan, status: 'ready' });
+      await recordAdminAction(req, {
+        action: 'correction.apply',
+        targetType: 'correction_package',
+        targetId: pkg.id,
+        targetLabel: pkg.title || `${pkg.from} -> ${pkg.to}`,
+        targetStatusBefore: pkg.status || '',
+        targetStatusAfter: updated.status || 'ready',
+        summary: `${pkg.title || 'Düzeltme kaydı'} uygulandı; değişecek kayıt bulunmadı.`,
+        metadata: { appliedRecords: 0, changes: 0 }
+      });
       return res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: 0 });
     }
 
@@ -8783,6 +9437,22 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
       });
     }
 
+    await recordAdminAction(req, {
+      action: 'correction.apply',
+      targetType: 'correction_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || `${pkg.from} -> ${pkg.to}`,
+      targetStatusBefore: pkg.status || '',
+      targetStatusAfter: updated.status || '',
+      summary: `${pkg.title || 'Düzeltme kaydı'} uygulandı: ${appliedRecords} kayıt, ${appliedChanges} değişim.`,
+      metadata: {
+        appliedRecords,
+        appliedChanges,
+        partial: !fullyApplied,
+        selectedChangeCount: selectedChangeIds.length,
+        feedbackCount: Array.isArray(pkg.feedbackIds) ? pkg.feedbackIds.length : 0
+      }
+    });
     res.json({ success: true, package: publicCorrectionPackage(updated, scan), scan, applied: appliedRecords, changes: appliedChanges, partial: !fullyApplied });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -8821,6 +9491,16 @@ app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (
       status: 'reverted',
       revertedAt: new Date().toISOString(),
       revertedBy: req.session.name || req.session.username
+    });
+    await recordAdminAction(req, {
+      action: 'correction.revert',
+      targetType: 'correction_package',
+      targetId: pkg.id,
+      targetLabel: pkg.title || `${pkg.from} -> ${pkg.to}`,
+      targetStatusBefore: pkg.status || '',
+      targetStatusAfter: updated.status || 'reverted',
+      summary: `${pkg.title || 'Düzeltme kaydı'} geri alındı: ${updatesByHistory.size} kayıt eski haline döndü.`,
+      metadata: { revertedRecords: updatesByHistory.size, logCount: logs.length }
     });
     res.json({ success: true, package: publicCorrectionPackage(updated), reverted: updatesByHistory.size });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
@@ -8945,6 +9625,15 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/favorite', auth, admin, async (req,
     }
     const favorite = req.body?.favorite !== false;
     const rows = await setApprovalFavorite(req.session.userId, current.id, favorite, req.session.name || req.session.username || 'Admin');
+    await recordAdminAction(req, {
+      action: favorite ? 'approval.favorite_add' : 'approval.favorite_remove',
+      targetType: 'history',
+      targetId: current.id,
+      targetLabel: current.question_text || current.filename || 'Denetim kaydı',
+      targetStatusAfter: current.status || '',
+      summary: `${current.filename || 'Denetim kaydı'} ${favorite ? 'favorilere eklendi' : 'favorilerden çıkarıldı'}.`,
+      metadata: { favorite, favoriteCount: rows.length }
+    });
     res.json({ success: true, id: current.id, favorite, count: rows.length });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -9003,8 +9692,24 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/feedback', auth, async (req, res) =
       read: false
     };
     if (HAS_ALERT_FEEDBACK_META) feedbackRow.feedback_status = 'open';
-    const { error } = await supabase.from('alerts').insert(feedbackRow);
+    const { data: insertedFeedback, error } = await supabase.from('alerts').insert(feedbackRow).select('id').maybeSingle();
     if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'feedback.created',
+      targetType: 'feedback',
+      targetId: insertedFeedback?.id || '',
+      targetLabel: history.filename || 'Metin Girişi',
+      targetStatusAfter: 'open',
+      summary: `${req.session.name || req.session.username} geri bildirim gönderdi: ${reasonLabel}`,
+      metadata: {
+        historyId: history.id,
+        reason,
+        reasonLabel,
+        category: cleanCategory,
+        hasFinding: Boolean(cleanOriginal || cleanFixed),
+        hasNote: Boolean(cleanNote)
+      }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -9216,6 +9921,16 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     await clearApprovalReturnNote(history.id);
     await markSubmittedCorrectedHash(req.session.userId, reservationText, data.id, data.status);
     await maybeCreateLowScoreAlert(req, history.id, history.score, history.filename);
+    await recordAdminAction(req, {
+      action: 'approval.submitted',
+      targetType: 'history',
+      targetId: data.id,
+      targetLabel: data.question_text || data.filename || 'Denetim kaydı',
+      targetStatusBefore: history.status || 'taslak',
+      targetStatusAfter: data.status,
+      summary: `${data.filename || 'Denetim kaydı'} onaya gönderildi.`,
+      metadata: { score: data.score, tags: data.tags || [], questionText: data.question_text || '' }
+    });
     res.json({ success: true, id: data.id, status: data.status, tags: data.tags || updateRow.tags || [], questionText: data.question_text || updateRow.question_text || '', submissionNote: data.submission_note || updateRow.submission_note || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText, req.params.id);
@@ -9247,6 +9962,15 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/withdraw', auth, async (req, res) =
       .single();
     if (updateError) throw new Error(updateError.message);
     await releaseSubmittedCorrectedHash(req.session.userId, history.corrected_text || '', history.id);
+    await recordAdminAction(req, {
+      action: 'approval.withdrawn',
+      targetType: 'history',
+      targetId: data.id,
+      targetLabel: 'Denetim kaydı',
+      targetStatusBefore: history.status || 'bekliyor',
+      targetStatusAfter: data.status,
+      summary: 'Onaya gönderilmiş denetim kaydı geri çekildi.'
+    });
     res.json({ success: true, id: data.id, status: data.status });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -9325,6 +10049,15 @@ app.post('/api/history/submit-merged', auth, async (req, res) => {
       .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
     if (hideError) console.warn('Birlesik onay sonrasi parca gizleme uyarisi:', hideError.message);
     await maybeCreateLowScoreAlert(req, data.id, payload.score, payload.filename);
+    await recordAdminAction(req, {
+      action: 'approval.submitted',
+      targetType: 'history',
+      targetId: data.id,
+      targetLabel: data.question_text || data.filename || 'Birleştirilmiş denetim kaydı',
+      targetStatusAfter: data.status,
+      summary: `${data.filename || 'Birleştirilmiş denetim kaydı'} onaya gönderildi.`,
+      metadata: { sourceIds, score: data.score, tags: data.tags || [], questionText: data.question_text || '' }
+    });
     res.json({ success: true, id: data.id, status: data.status, tags: data.tags || mergedRow.tags || [], questionText: data.question_text || mergedRow.question_text || '', submissionNote: data.submission_note || mergedRow.submission_note || '' });
   } catch (e) {
     if (correctedReservation?.reserved) await releaseSubmittedCorrectedHash(req.session.userId, reservationText);
@@ -9502,6 +10235,27 @@ async function setApproval(req, res, status) {
       loadApprovalReviewNotes(),
       loadApprovalReturnNotes()
     ]);
+    await recordAdminAction(req, {
+      action: 'approval.status_change',
+      actionLabel: status === 'onaylandi' ? 'Kaydı onayladı'
+        : status === 'reddedildi' ? 'Kaydı reddetti'
+        : status === APPROVAL_REVIEW_STATUS ? 'Teyide aldı'
+        : status === APPROVAL_ARCHIVED_STATUS ? 'Kaydı arşivledi'
+        : status === 'bekliyor' ? 'Bekleyenlere aldı'
+        : 'Onay durumunu değiştirdi',
+      targetType: 'history',
+      targetId: current.id,
+      targetLabel: data[0].question_text || current.question_text || current.filename || 'Denetim kaydı',
+      targetStatusBefore: current.status || 'bekliyor',
+      targetStatusAfter: data[0].status || status,
+      summary: `${current.filename || 'Denetim kaydı'} durumu ${historyStatusLabel(current.status)} -> ${historyStatusLabel(data[0].status || status)} olarak değiştirildi.`,
+      metadata: {
+        score: current.score,
+        reviewNote,
+        tagsChanged: Object.prototype.hasOwnProperty.call(req.body || {}, 'tags'),
+        questionChanged: Object.prototype.hasOwnProperty.call(req.body || {}, 'questionText')
+      }
+    });
     res.json({ success: true, history: attachApprovalMeta(mapHistory(data[0]), favorites, reviewNotes, returnNotes) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 }
@@ -9562,6 +10316,16 @@ app.post('/api/history/:id/return', auth, admin, async (req, res) => {
       loadApprovalReviewNotes(),
       loadApprovalReturnNotes()
     ]);
+    await recordAdminAction(req, {
+      action: 'approval.return',
+      targetType: 'history',
+      targetId: current.id,
+      targetLabel: current.question_text || current.filename || 'Denetim kaydı',
+      targetStatusBefore: current.status || 'bekliyor',
+      targetStatusAfter: data.status || APPROVAL_RETURNED_STATUS,
+      summary: `${current.filename || 'Denetim kaydı'} düzenleme için kullanıcıya geri gönderildi.`,
+      metadata: { reason: returnNote.reason, reasonLabel: returnNote.reasonLabel, note }
+    });
     res.json({ success: true, history: attachApprovalMeta(mapHistory(data), favorites, reviewNotes, returnNotes) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -9577,6 +10341,14 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/tags', auth, admin, async (req, res
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    await recordAdminAction(req, {
+      action: 'approval.tags_update',
+      targetType: 'history',
+      targetId: data.id,
+      targetLabel: 'Denetim etiketi',
+      summary: 'Denetim kaydının etiketleri güncellendi.',
+      metadata: { tags: data.tags || [] }
+    });
     res.json({ success: true, id: data.id, tags: data.tags || [] });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -10223,6 +10995,21 @@ app.post('/api/history-tags/import/preview', auth, admin, superAdmin, tagImportU
       req.file.originalname || 'Etiket dosyası',
       req.session.name || req.session.username || ''
     );
+    await recordAdminAction(req, {
+      action: 'tag_import.preview',
+      targetType: 'history_tag_import_batch',
+      targetId: payload.batch?.id,
+      targetLabel: payload.batch?.filename || req.file.originalname || 'Etiket dosyası',
+      targetStatusAfter: payload.batch?.status || 'preview',
+      summary: `Etiket aktarım listesi oluşturuldu: ${Number(payload.matches?.length || 0)} eşleşme.`,
+      metadata: {
+        filename: payload.batch?.filename || req.file.originalname || '',
+        readyCount: payload.batch?.readyCount,
+        reviewCount: payload.batch?.reviewCount,
+        unmatchedCount: payload.batch?.unmatchedCount,
+        matchCount: Number(payload.matches?.length || 0)
+      }
+    });
     res.json(payload);
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -10292,6 +11079,23 @@ app.post('/api/history-tags/import/upload/complete', auth, admin, superAdmin, as
       req.session.name || req.session.username || ''
     );
     await cleanupTagImportUpload(uploadId, totalChunks);
+    await recordAdminAction(req, {
+      action: 'tag_import.preview',
+      targetType: 'history_tag_import_batch',
+      targetId: payload.batch?.id,
+      targetLabel: payload.batch?.filename || meta.fileName || 'Etiket dosyası',
+      targetStatusAfter: payload.batch?.status || 'preview',
+      summary: `Parçalı yükleme ile etiket aktarım listesi oluşturuldu: ${Number(payload.matches?.length || 0)} eşleşme.`,
+      metadata: {
+        filename: payload.batch?.filename || meta.fileName || '',
+        fileSize: meta.fileSize,
+        totalChunks,
+        readyCount: payload.batch?.readyCount,
+        reviewCount: payload.batch?.reviewCount,
+        unmatchedCount: payload.batch?.unmatchedCount,
+        matchCount: Number(payload.matches?.length || 0)
+      }
+    });
     res.json(payload);
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -10370,6 +11174,20 @@ app.delete('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})', auth, admin
     const cacheKeys = await historyTagImportExcelCacheKeys(req.params.id);
     await deleteSettingsByKeys([historyTagImportQuestionBackfillJobKey(req.params.id), ...cacheKeys]);
 
+    await recordAdminAction(req, {
+      action: 'tag_import.delete',
+      targetType: 'history_tag_import_batch',
+      targetId: batch.id || req.params.id,
+      targetLabel: batch.filename || 'Etiket aktarım listesi',
+      targetStatusBefore: batch.status || '',
+      summary: `${batch.filename || 'Etiket aktarım listesi'} silindi.`,
+      metadata: {
+        readyCount: batch.ready_count,
+        reviewCount: batch.review_count,
+        unmatchedCount: batch.unmatched_count,
+        appliedCount: batch.applied_count
+      }
+    });
     res.json({ success: true, batch: publicHistoryTagImportBatch(batch) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -10445,6 +11263,23 @@ app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/select-candidat
     }
     const refreshedBatch = await refreshHistoryTagImportBatchCounts(match.batch_id);
     const [rowWithHistory] = await attachHistoryToTagImportMatches([finalMatch]);
+    await recordAdminAction(req, {
+      action: 'tag_import.select_candidate',
+      targetType: 'history_tag_import_match',
+      targetId: updated.id,
+      targetLabel: matchWithHistory.history?.questionText || matchWithHistory.history?.filename || 'Etiket aktarım kaydı',
+      targetStatusBefore: match.match_status || '',
+      targetStatusAfter: finalMatch.match_status || selectedStatus,
+      summary: `Excel satırı seçildi${applyNow ? ' ve uygulandı' : ''}: ${rowNumber}.`,
+      metadata: {
+        batchId: match.batch_id,
+        historyId: match.history_id,
+        excelRow: rowNumber,
+        confidence: score.confidence,
+        applied: applyNow,
+        tags: selectedItem.tags || []
+      }
+    });
     res.json({ success: true, applied: applyNow, batch: refreshedBatch, match: publicHistoryTagImportMatch(rowWithHistory) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -10459,6 +11294,15 @@ app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/apply', auth, a
       .maybeSingle();
     if (error) throw new Error(error.message);
     const [rowWithHistory] = await attachHistoryToTagImportMatches([match || updated]);
+    await recordAdminAction(req, {
+      action: 'tag_import.apply',
+      targetType: 'history_tag_import_match',
+      targetId: updated.id || req.params.id,
+      targetLabel: rowWithHistory?.history?.questionText || rowWithHistory?.history?.filename || 'Etiket aktarım kaydı',
+      targetStatusAfter: (match || updated)?.match_status || 'applied',
+      summary: 'Tek etiket aktarım kaydı uygulandı.',
+      metadata: { batchId: (match || updated)?.batch_id, historyId: (match || updated)?.history_id, tags: (match || updated)?.tags || [] }
+    });
     res.json({ success: true, match: publicHistoryTagImportMatch(rowWithHistory) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -10480,6 +11324,16 @@ app.post('/api/history-tags/import-matches/:id([0-9a-fA-F-]{36})/skip', auth, ad
     if (error) throw new Error(error.message);
     await refreshHistoryTagImportBatchCounts(current.batch_id);
     const [rowWithHistory] = await attachHistoryToTagImportMatches([data]);
+    await recordAdminAction(req, {
+      action: 'tag_import.skip',
+      targetType: 'history_tag_import_match',
+      targetId: data?.id || req.params.id,
+      targetLabel: rowWithHistory?.history?.questionText || rowWithHistory?.history?.filename || 'Etiket aktarım kaydı',
+      targetStatusBefore: current.match_status || '',
+      targetStatusAfter: 'skipped',
+      summary: 'Etiket aktarım kaydı atlandı.',
+      metadata: { batchId: current.batch_id, historyId: data?.history_id }
+    });
     res.json({ success: true, match: publicHistoryTagImportMatch(rowWithHistory) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -10494,6 +11348,21 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-ready', a
       limit: req.body?.limit,
       actorName: req.session.name || req.session.username || ''
     });
+    await recordAdminAction(req, {
+      action: 'tag_import.apply',
+      actionLabel: 'Güvenli etiket eşleşmelerini uyguladı',
+      targetType: 'history_tag_import_batch',
+      targetId: req.params.id,
+      targetLabel: result.batch?.filename || 'Etiket aktarım listesi',
+      targetStatusAfter: result.batch?.status || '',
+      summary: `Güvenli etiket eşleşmeleri uygulandı: ${Number(result.applied || 0)} kayıt.`,
+      metadata: {
+        applied: result.applied,
+        remaining: result.remaining,
+        readyCount: result.batch?.readyCount,
+        reviewCount: result.batch?.reviewCount
+      }
+    });
     res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -10507,6 +11376,21 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/apply-review', 
       limit: req.body?.limit,
       actorName: req.session.name || req.session.username || ''
     });
+    await recordAdminAction(req, {
+      action: 'tag_import.apply',
+      actionLabel: 'Kontrollü etiket eşleşmelerini uyguladı',
+      targetType: 'history_tag_import_batch',
+      targetId: req.params.id,
+      targetLabel: result.batch?.filename || 'Etiket aktarım listesi',
+      targetStatusAfter: result.batch?.status || '',
+      summary: `Kontrollü etiket eşleşmeleri uygulandı: ${Number(result.applied || 0)} kayıt.`,
+      metadata: {
+        applied: result.applied,
+        remaining: result.remaining,
+        readyCount: result.batch?.readyCount,
+        reviewCount: result.batch?.reviewCount
+      }
+    });
     res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -10518,6 +11402,15 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questi
       req.params.id,
       req.session.name || req.session.username || ''
     );
+    await recordAdminAction(req, {
+      action: 'tag_import.questions_backfill',
+      targetType: 'history_tag_import_batch',
+      targetId: req.params.id,
+      targetLabel: job.batch?.filename || 'Etiket aktarım listesi',
+      targetStatusAfter: job.status || '',
+      summary: 'Excel soru aktarımı arka plan işi başlatıldı.',
+      metadata: { jobId: job.id || '', processed: job.processed || 0, updated: job.updated || 0 }
+    });
     res.json({ success: true, job });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -10536,6 +11429,21 @@ app.post('/api/history-tags/import-batches/:id([0-9a-fA-F-]{36})/backfill-questi
     const result = await backfillHistoryTagImportQuestionsChunk({
       batchId: req.params.id,
       limit: req.body?.limit
+    });
+    await recordAdminAction(req, {
+      action: 'tag_import.questions_backfill',
+      targetType: 'history_tag_import_batch',
+      targetId: req.params.id,
+      targetLabel: result.batch?.filename || 'Etiket aktarım listesi',
+      targetStatusAfter: result.batch?.status || '',
+      summary: `Excel soru aktarımı çalıştırıldı: ${Number(result.updated || 0)} kayıt güncellendi.`,
+      metadata: {
+        updated: result.updated,
+        processed: result.processed,
+        remaining: result.remaining,
+        missing: result.missing,
+        skippedExisting: result.skippedExisting
+      }
     });
     res.json(result);
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
@@ -10641,6 +11549,95 @@ app.get('/api/notification-log', auth, admin, superAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get('/api/admin-action-log', auth, admin, superAdmin, async (req, res) => {
+  try {
+    await startupReady;
+    const actionLogReady = await ensureAdminActionLogReady();
+    const q = String(req.query.q || '').trim().toLocaleLowerCase('tr-TR').slice(0, 160);
+    const action = String(req.query.action || '').trim();
+    const targetType = String(req.query.targetType || '').trim();
+    const source = String(req.query.source || '').trim();
+    const actor = String(req.query.actor || '').trim().toLocaleLowerCase('tr-TR').slice(0, 120);
+    const dateFrom = parseAdminActionDate(req.query.dateFrom || '', false);
+    const dateTo = parseAdminActionDate(req.query.dateTo || '', true);
+    const limit = Math.max(20, Math.min(ADMIN_ACTION_LOG_MAX_LIMIT, Number(req.query.limit || 80) || 80));
+    const offset = Math.max(0, Math.min(5000, Number(req.query.offset || 0) || 0));
+
+    const [actionResult, correctionResult, resolutionResult, noticeResult] = await Promise.all([
+      actionLogReady
+        ? supabase.from('admin_action_log').select('*').order('created_at', { ascending: false }).limit(ADMIN_ACTION_LOG_MAX_FETCH)
+        : Promise.resolve({ data: [], error: null }),
+      HAS_CONTENT_CORRECTION_LOG
+        ? supabase.from('content_correction_log').select('*').order('created_at', { ascending: false }).limit(300)
+        : Promise.resolve({ data: [], error: null }),
+      HAS_ISSUE_RESOLUTION_LOG
+        ? supabase.from('issue_resolution_log').select('*').order('created_at', { ascending: false }).limit(300)
+        : Promise.resolve({ data: [], error: null }),
+      supabase.from('alerts').select('*').in('type', USER_NOTICE_TYPES).order('created_at', { ascending: false }).limit(300)
+    ]);
+
+    for (const result of [actionResult, correctionResult, resolutionResult, noticeResult]) {
+      if (result.error) throw new Error(result.error.message);
+    }
+
+    const noticeRows = noticeResult.data || [];
+    const noticeUserIds = [...new Set(noticeRows.map(row => row.user_id).filter(Boolean))];
+    const usersById = new Map();
+    if (noticeUserIds.length) {
+      const { data: users, error: userError } = await supabase.from('users')
+        .select('id,name,username')
+        .in('id', noticeUserIds);
+      if (userError) throw new Error(userError.message);
+      (users || []).forEach(user => usersById.set(user.id, user));
+    }
+
+    let logs = [
+      ...(actionResult.data || []).map(publicAdminActionLog),
+      ...(correctionResult.data || []).map(legacyCorrectionActionLog),
+      ...(resolutionResult.data || []).map(legacyResolutionActionLog),
+      ...noticeRows.map(row => legacyNoticeActionLog(row, usersById.get(row.user_id)))
+    ].filter(row => row.createdAt);
+
+    const allLogsForFilters = [...logs];
+    logs = logs.filter(row => {
+      const created = new Date(row.createdAt);
+      if (!Number.isFinite(created.getTime())) return false;
+      if (dateFrom && created < dateFrom) return false;
+      if (dateTo && created > dateTo) return false;
+      if (action && row.action !== action) return false;
+      if (targetType && row.targetType !== targetType) return false;
+      if (source && row.source !== source) return false;
+      if (actor && ![row.actorName, row.actorUsername, row.actorRole].join(' ').toLocaleLowerCase('tr-TR').includes(actor)) return false;
+      if (q && !adminActionLogSearchBlob(row).includes(q)) return false;
+      return true;
+    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const filters = {
+      actions: [...new Map(allLogsForFilters.filter(row => row.action).map(row => [row.action, row.actionLabel || row.action])).entries()]
+        .map(([value, label]) => ({ value, label }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'tr')),
+      targetTypes: [...new Set(allLogsForFilters.map(row => row.targetType).filter(Boolean))].sort().map(value => ({ value, label: value })),
+      sources: [...new Set(allLogsForFilters.map(row => row.source).filter(Boolean))].sort().map(value => ({ value, label: value }))
+    };
+
+    res.json({
+      ready: actionLogReady,
+      legacyReady: {
+        contentCorrections: HAS_CONTENT_CORRECTION_LOG,
+        issueResolutions: HAS_ISSUE_RESOLUTION_LOG
+      },
+      total: logs.length,
+      offset,
+      limit,
+      logs: logs.slice(offset, offset + limit),
+      filters,
+      notice: actionLogReady
+        ? ''
+        : 'Merkezi sistem kayıtları tablosu henüz hazır değil; ekranda yalnız eski kayıt defterlerinden okunabilen izler gösteriliyor.'
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/resolution-responses', auth, admin, superAdmin, async (req, res) => {
   try {
     const responseMap = await loadJsonSetting(RESOLUTION_RESPONSE_KEY, {});
@@ -10740,6 +11737,16 @@ app.post('/api/alerts/:id/respond', auth, admin, async (req, res) => {
       }, { onConflict: 'resolution_group' });
     }
 
+    await recordAdminAction(req, {
+      action: 'feedback.resolved',
+      targetType: 'feedback',
+      targetId: alert.id,
+      targetLabel: feedbackSummary(alert),
+      targetStatusBefore: alert.feedback_status || 'open',
+      targetStatusAfter: 'resolved',
+      summary: `Geri bildirim çözüldü: ${cleanNote}`,
+      metadata: { historyId: alert.history_id, userId: alert.user_id, note: cleanNote }
+    });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -10834,6 +11841,20 @@ app.post('/api/alerts/resolve-bulk', auth, admin, async (req, res) => {
       if (logError) throw new Error(logError.message);
     }
 
+    await recordAdminAction(req, {
+      action: 'feedback.bulk_resolved',
+      targetType: 'feedback',
+      targetId: groupId,
+      targetLabel: cleanNote.slice(0, 160),
+      targetStatusAfter: 'resolved',
+      summary: `${feedbacks.length} geri bildirim ${byUser.size} kullanıcı için çözüldü.`,
+      metadata: {
+        feedbackCount: feedbacks.length,
+        userCount: byUser.size,
+        historyIds: [...new Set(feedbacks.map(f => f.history_id).filter(Boolean))].slice(0, 50),
+        note: cleanNote
+      }
+    });
     res.json({
       success: true,
       feedbackCount: feedbacks.length,
@@ -10909,6 +11930,15 @@ app.post('/api/my-notifications/:id/resolution-response', auth, async (req, res)
       });
     }
 
+    await recordAdminAction(req, {
+      action: 'feedback.response',
+      targetType: 'feedback_resolution',
+      targetId: notice.id,
+      targetLabel: status === 'confirmed' ? 'Çözüm onaylandı' : 'Sorun devam ediyor',
+      targetStatusAfter: status,
+      summary: `${req.session.name || req.session.username} çözüm bildirimine "${status === 'confirmed' ? 'çözüldü' : 'sorun devam ediyor'}" yanıtı verdi.`,
+      metadata: { noticeId: notice.id, historyId: notice.history_id, note }
+    });
     res.json({ success: true, response: normalizeResolutionResponse(responseMap[notice.id], notice, null) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -11354,6 +12384,15 @@ app.post('/api/ai/reports/generate', auth, admin, async (req, res) => {
   try {
     const period = ['daily', 'weekly', 'monthly', 'yearly'].includes(req.body?.period) ? req.body.period : 'daily';
     const report = await createAiReport(period, req.session.name || req.session.username);
+    await recordAdminAction(req, {
+      action: 'ai_report.generate',
+      targetType: 'ai_report',
+      targetId: report.id,
+      targetLabel: report.title || `${period} rapor`,
+      targetStatusAfter: period,
+      summary: `${period} dönemli AI operasyon raporu üretildi.`,
+      metadata: { period, reportId: report.id }
+    });
     res.json({ success: true, report: mapAiReport(report) });
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
@@ -11736,6 +12775,8 @@ let HAS_HISTORY_SUBMISSION_NOTE = false; // startup'ta tespit edilir (history.su
 let HAS_ALERT_FEEDBACK_META = false; // startup'ta tespit edilir (alerts feedback çözüm kolonları)
 let HAS_ISSUE_RESOLUTION_LOG = false; // startup'ta tespit edilir (çözüm kayıt defteri)
 let HAS_CONTENT_CORRECTION_LOG = false; // startup'ta tespit edilir (geçmiş içerik düzeltme kayıt defteri)
+let HAS_ADMIN_ACTION_LOG = false; // startup'ta tespit edilir (merkezi sistem kayıtları)
+let ADMIN_ACTION_LOG_LAST_PROBE = 0;
 let HAS_AI_REPORTS = false; // startup'ta tespit edilir (AI rapor kayıtları)
 let HAS_USER_LAST_SEEN = false; // startup'ta tespit edilir (users.last_seen_at kolonu)
 let HAS_ARCHIVE_SOURCE_TABLES = false; // startup'ta tespit edilir (kaynak kayıt tabloları)
@@ -11801,6 +12842,20 @@ async function saveHistory(req, result, filename, hash, sourceText = '', status 
   const entryId = data.id;
 
   if (historyStatusForApproval(status)) await maybeCreateLowScoreAlert(req, entryId, result.score, filename);
+  await recordAdminAction(req, {
+    action: 'analysis.draft_created',
+    targetType: 'history',
+    targetId: entryId,
+    targetLabel: filename || 'Metin Girişi',
+    targetStatusAfter: status,
+    summary: `${filename || 'Metin Girişi'} için denetim kaydı oluşturuldu.`,
+    metadata: {
+      score: result.score,
+      totalErrors: result.totalErrors,
+      status,
+      textLength: String(sourceText || result.correctedText || '').length
+    }
+  });
 
   return entryId;
 }
@@ -11984,6 +13039,7 @@ async function publicArchiveGoogleCallbackHandler(req, res, next) {
       updated_at: now
     };
     if (HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) row.auth_provider = existing?.password_hash ? 'email_google' : 'google';
+    const created = !existing;
     const query = existing
       ? supabase.from('public_users').update(row).eq('id', existing.id).select('*').single()
       : supabase.from('public_users').insert(row).select('*').single();
@@ -11991,6 +13047,16 @@ async function publicArchiveGoogleCallbackHandler(req, res, next) {
     if (upsertError) throw new Error(upsertError.message);
 
     setPublicSession(req, user);
+    await recordAdminAction(req, {
+      action: created ? 'public_user.register' : 'public_user.login',
+      actor: { id: user.id, name: user.name, email: user.email, role: 'public_user' },
+      targetType: 'public_user',
+      targetId: user.id,
+      targetLabel: user.name || user.email || 'Public kullanıcı',
+      targetStatusAfter: 'active',
+      summary: `${user.name || user.email || 'Public kullanıcı'} Google ile ${created ? 'hesap oluşturdu' : 'giriş yaptı'}.`,
+      metadata: { provider: 'google', email: user.email || '', basePath }
+    });
     res.redirect(safePublicReturnTo(req.session.publicAuthReturnTo, basePath) || accountPath);
   } catch (error) {
     next(error);
@@ -12048,6 +13114,16 @@ async function publicArchiveEmailRegisterHandler(req, res) {
       user = data;
     }
     setPublicSession(req, user);
+    await recordAdminAction(req, {
+      action: 'public_user.register',
+      actor: { id: user.id, name: user.name, email: user.email, role: 'public_user' },
+      targetType: 'public_user',
+      targetId: user.id,
+      targetLabel: user.name || user.email || 'Public kullanıcı',
+      targetStatusAfter: 'active',
+      summary: `${user.name || user.email || 'Public kullanıcı'} e-posta ile hesap oluşturdu.`,
+      metadata: { provider: 'email', email: user.email || '' }
+    });
     res.json({ success: true, user: publicSessionUser(req) });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message || 'Hesap oluşturulamadı.' });
@@ -12075,13 +13151,35 @@ async function publicArchiveEmailLoginHandler(req, res) {
       .single();
     if (error) throw new Error(error.message);
     setPublicSession(req, data);
+    await recordAdminAction(req, {
+      action: 'public_user.login',
+      actor: { id: data.id, name: data.name, email: data.email, role: 'public_user' },
+      targetType: 'public_user',
+      targetId: data.id,
+      targetLabel: data.name || data.email || 'Public kullanıcı',
+      targetStatusAfter: 'active',
+      summary: `${data.name || data.email || 'Public kullanıcı'} e-posta ile giriş yaptı.`,
+      metadata: { provider: 'email', email: data.email || '' }
+    });
     res.json({ success: true, user: publicSessionUser(req) });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message || 'Giriş yapılamadı.' });
   }
 }
 
-function publicArchiveLogoutHandler(req, res) {
+async function publicArchiveLogoutHandler(req, res) {
+  const user = publicSessionUser(req);
+  if (user) {
+    await recordAdminAction(req, {
+      action: 'public_user.logout',
+      actor: { id: user.id, name: user.name, email: user.email, role: 'public_user' },
+      targetType: 'public_user',
+      targetId: user.id,
+      targetLabel: user.name || user.email || 'Public kullanıcı',
+      summary: `${user.name || user.email || 'Public kullanıcı'} canlı siteden çıkış yaptı.`,
+      metadata: { email: user.email || '' }
+    });
+  }
   clearPublicSession(req);
   res.json({ success: true });
 }
@@ -12142,6 +13240,21 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
       user_agent: String(req.headers['user-agent'] || '').slice(0, 500)
     }).select('id,created_at,status').single();
     if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'public_question.submit',
+      actor: { id: user.id, name: user.name, email: user.email, role: 'public_user' },
+      targetType: 'public_question_submission',
+      targetId: data.id,
+      targetLabel: question,
+      targetStatusAfter: data.status || 'new',
+      summary: `${user.name || user.email || 'Public kullanıcı'} canlı siteden soru gönderdi.`,
+      metadata: {
+        category,
+        topic,
+        source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
+        questionLength: question.length
+      }
+    });
     res.json({ success: true, submission: data });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });

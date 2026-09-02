@@ -647,6 +647,27 @@ if (
   throw new Error('Gecmis duzeltme ekrani adminin anlayacagi isim ve mobil checkbox duzeniyle kalmali.');
 }
 if (
+  !schema.includes('create table if not exists public.admin_action_log') ||
+  !schema.includes('admin_action_log_actor_idx') ||
+  !schema.includes('alter table public.admin_action_log enable row level security') ||
+  !server.includes('const ADMIN_ACTION_LABELS') ||
+  !server.includes('async function recordAdminAction') ||
+  !server.includes("app.get('/api/admin-action-log'") ||
+  !server.includes('HAS_ADMIN_ACTION_LOG') ||
+  !server.includes("action: 'approval.status_change'") ||
+  !server.includes("action: 'public_archive.sync'") ||
+  !server.includes("action: 'feedback.resolved'") ||
+  !server.includes("action: 'tag_import.apply'") ||
+  !html.includes('tabContent-actionlog') ||
+  !html.includes('Sistem Kayıtları') ||
+  !html.includes('loadAdminActionLog') ||
+  !html.includes('action-log-toolbar') ||
+  !html.includes('actionLogState') ||
+  !html.includes("mNav('actionlog')")
+) {
+  throw new Error('Super admin merkezi sistem kayitlari semasi, API log baglantilari ve arayuzu korunmali.');
+}
+if (
   !server.includes('selectedChangeIds') ||
   !server.includes('correctionChangeId') ||
   !server.includes('appliedTargets') ||

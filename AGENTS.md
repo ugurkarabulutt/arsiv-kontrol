@@ -121,6 +121,25 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-02
+- **Süper admin Sistem Kayıtları merkezi log ekranı eklendi:** Admin paneline yalnız süper
+  adminin görebileceği `Sistem Kayıtları` ekranı eklendi. Bu ekran merkezi
+  `admin_action_log` tablosundan ve geriye dönük iz için `content_correction_log`,
+  `issue_resolution_log` ve kullanıcı bildirimlerinden gelen eski kayıtları tek yerde
+  birleştirir. Süper admin işlem türü, hedef türü, kaynak, kişi, tarih ve serbest arama ile
+  kayıtları süzebilir; her satırda kişi, rol, hedef kayıt, durum geçişi, özet ve teknik detay
+  okunur. Backend'de `recordAdminAction` helper'ı ve süper admin korumalı
+  `GET /api/admin-action-log` endpoint'i eklendi. Log yazma hatası ana işlemi engellemez;
+  böylece onay, red, geri gönderme, bildirim, feedback çözümü, public senkron, arşivleme,
+  etiket aktarımı, geçmiş düzeltme, kullanıcı işlemleri, public kullanıcı girişi ve soru
+  gönderimi gibi kritik aksiyonlar izlenir ama operasyon akışı kilitlenmez. `schema.sql`
+  içine RLS açık `admin_action_log` tablo bloğu eklendi; kalıcı merkezi log için bu SQL
+  Supabase SQL Editor'de uygulanmalıdır. Tablo yoksa API eski izleri göstermeye devam eder;
+  tablo sonradan eklendiğinde sistem kısa aralıklarla yeniden algılayıp merkezi logu açar.
+  Değişen dosyalar: `server.js`, `index.html`,
+  `schema.sql`, `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel
+  doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
 - **iPhone Safari arşiv içi arama zoom'u düzeltildi:** Arşiv sayfasındaki harf/kategori
   panelinde yer alan `Bu harfte ara...` input'u `14px` olduğu için iOS Safari odaklanınca
   sayfayı otomatik yakınlaştırabiliyordu. `pa-letter-search input` yazı boyutu `16px`

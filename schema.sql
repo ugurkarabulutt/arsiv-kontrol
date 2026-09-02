@@ -155,6 +155,32 @@ create table if not exists public.content_correction_log (
 create index if not exists content_correction_log_package_idx on public.content_correction_log (package_id, created_at desc);
 create index if not exists content_correction_log_history_idx on public.content_correction_log (history_id);
 
+-- admin_action_log
+create table if not exists public.admin_action_log (
+  id uuid primary key default gen_random_uuid(),
+  actor_user_id uuid,
+  actor_username text,
+  actor_name text,
+  actor_role text,
+  action text not null,
+  action_label text,
+  target_type text,
+  target_id text,
+  target_label text,
+  target_status_before text,
+  target_status_after text,
+  summary text,
+  metadata jsonb not null default '{}'::jsonb,
+  ip_address text,
+  user_agent text,
+  created_at timestamptz not null default now()
+);
+create index if not exists admin_action_log_created_at_idx on public.admin_action_log (created_at desc);
+create index if not exists admin_action_log_actor_idx on public.admin_action_log (actor_user_id, created_at desc);
+create index if not exists admin_action_log_action_idx on public.admin_action_log (action, created_at desc);
+create index if not exists admin_action_log_target_idx on public.admin_action_log (target_type, target_id);
+alter table public.admin_action_log enable row level security;
+
 -- ai_reports
 create table if not exists public.ai_reports (
   id uuid primary key default gen_random_uuid(),

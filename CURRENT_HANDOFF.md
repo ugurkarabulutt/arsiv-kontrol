@@ -1,5 +1,36 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-02 Codex Süper Admin Sistem Kayıtları
+
+- Kullanıcı, süper adminin görebileceği merkezi bir `Logs / Sistem Kayıtları` alanı istedi:
+  kim ne yaptıysa temiz, düzenli, okunur, izlenir, aranır ve takip edilir olmalı.
+- Kod değişikliği: `schema.sql` içine RLS açık `admin_action_log` tablo bloğu eklendi.
+  `actor_user_id` foreign key değildir; hem admin panel kullanıcıları hem public site
+  kullanıcıları aynı log yapısına güvenle yazılabilir.
+- Backend değişikliği: `recordAdminAction` helper'ı ve süper admin korumalı
+  `GET /api/admin-action-log` endpoint'i eklendi. Endpoint merkezi logları; geçmiş düzeltme,
+  feedback çözüm ve kullanıcı bildirimlerinden gelen eski izlerle birlikte tek listede gösterir.
+- Loglanan ana aksiyon grupları: giriş/çıkış, şifre değişimi, kullanıcı oluşturma/güncelleme/
+  silme, kural/standart değişimi, denetim taslağı, onaya gönderme, geri çekme, onay/red/teyit/
+  arşiv/bekleyene alma, geri gönderme, soru-etiket düzenleme, favori, feedback oluşturma/
+  çözme/toplu çözme, kullanıcı cevap bildirimi, public soru gönderimi ve yanıtı, public arşiv
+  senkron/format/içerik durumu/mükerrer gizleme, etiket aktarımı, geçmiş düzeltme paketleri
+  ve Arşiv Operasyon Merkezi kayıt işlemleri.
+- Log yazma hatası ana işlemi engellemez; `admin_action_log` tablosu yoksa sistem eski izleri
+  okumaya devam eder. Tablo sonradan eklenirse sistem kısa aralıklarla tekrar algılayıp
+  merkezi log yazımını açar.
+- Admin UI değişikliği: yalnız süper admin menüsünde görünen `Sistem Kayıtları` ekranı eklendi.
+  Ekranda özet sayaçları, serbest arama, işlem türü, hedef türü, kaynak, kişi, tarih filtresi,
+  sayfalama, durum geçişi ve detay JSON açılır alanı var.
+- Değişen dosyalar: `server.js`, `index.html`, `schema.sql`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
+- Sıradaki adım: kullanıcı Supabase SQL Editor'de `admin_action_log` bloğunu uygularsa commit,
+  push, production deploy ve canlı `/admin` üzerinde süper admin `Sistem Kayıtları` smoke
+  kontrolü yapılabilir.
+
 ## 2026-09-02 Codex iPhone Safari Arama Zoom Düzeltmesi
 
 - Kullanıcı, canlı arşiv ekranında `Ara` input'una dokununca sayfanın yakınlaştığını ekran
