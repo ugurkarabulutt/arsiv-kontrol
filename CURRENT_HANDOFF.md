@@ -24,7 +24,19 @@
   kategori üretmez; `scripts/check-frontend.js` bu kuralı guard eder.
 - Değişen dosyalar: `server.js`, `scripts/check-frontend.js`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`.
-- Sıradaki adım: test, commit, push, production deploy ve canlı `/arsiv?harf=%23` smoke kontrolü.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  tam test `106/106` geçti.
+- Commit/deploy: `d424130 fix: ignore numeric public archive tags` remote branch'e push edildi
+  ve production'a alındı. Deployment `dpl_Hv8fNbXSUkxbgFmgHJFSRYqtVwBV`, production URL
+  `https://arsiv-kontrol-33dpr63pn-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health`, `/arsiv?harf=%23` ve ilgili soru detayı başarılı. `#` paneli,
+  `2`/`11` numeric kategori kartları ve ilgili soru detayındaki numeric chip'ler görünmüyor;
+  `Müddessir` bilgisi korunuyor.
+- Sıradaki adım: kullanıcı canlı arşiv ekranını telefon/masaüstünde yenileyip `#` grubunun
+  görünmediğini ve ilgili sorunun `Örtü Altında Zikir` / `Müddessir Suresi` altında kaldığını
+  gözle kontrol edebilir.
 
 ## 2026-09-02 Codex Süper Admin Sistem Kayıtları
 

@@ -137,7 +137,16 @@ tespit edilir).
   kayıt `0`. İşlem `admin_action_log` içine `public_archive.category_cleanup` olarak yazıldı.
   Kod tarafında `normalizePublicArchiveTags` artık tek başına sayı olan etiketlerden public
   kategori üretmez; frontend guard bu kuralı korur. Değişen dosyalar: `server.js`,
-  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
+  tam test `106/106` geçti. Runtime commit `d424130` GitHub'a push edildi ve production'a
+  alındı. Production deploy:
+  `https://arsiv-kontrol-33dpr63pn-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_Hv8fNbXSUkxbgFmgHJFSRYqtVwBV`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, `/arsiv?harf=%23` ve ilgili soru detayı başarılı; `#` paneli,
+  `2` ve `11` numeric kategori kartları ve soru detayındaki numeric chip'ler görünmüyor,
+  `Müddessir` bilgisi korunuyor.
 - **Süper admin Sistem Kayıtları merkezi log ekranı eklendi:** Admin paneline yalnız süper
   adminin görebileceği `Sistem Kayıtları` ekranı eklendi. Bu ekran merkezi
   `admin_action_log` tablosundan ve geriye dönük iz için `content_correction_log`,
