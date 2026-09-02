@@ -28,9 +28,15 @@
   `node scripts/check-frontend.js`, `npm.cmd run check`, `npm.cmd audit --omit=dev` ve
   `git diff --check` başarılı. Tam test `106/106` geçti; `npm audit` `0 vulnerabilities`
   döndü. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
-- Sıradaki adım: commit, push, production deploy ve canlı `/health`, `/`, `/admin`,
-  `/api/auth/me`, `/api/admin-action-log`, malformed JSON, public soru gönderimi ve güvenlik
-  header smoke kontrolleri.
+- Runtime commit `553de97 chore: harden public and admin security` remote branch'e push edildi
+  ve production'a alındı. Deployment `dpl_CHSkvfaL7afypck15Eh2JDQXSBbP`, production URL
+  `https://arsiv-kontrol-lurcdocjv-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health`, root `/`, `/admin`, `/api/auth/me` başarılı; `/admin` `noindex,
+  nofollow` ve `no-store`. Root, admin ve API cevaplarında CSP, nosniff, frame deny, referrer
+  policy ve permissions policy doğrulandı. `/api/admin-action-log` oturumsuz `401` döndü ve
+  ham `curl` cevabında güvenlik başlıkları mevcuttu. Malformed JSON public soru gönderimi
+  `400`, oturumsuz normal public soru gönderimi `401` döndü.
 
 ## 2026-09-02 Codex Admin Gör Ekranı Birleşik Düzenleme Akışı
 

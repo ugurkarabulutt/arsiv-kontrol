@@ -139,7 +139,13 @@ tespit edilir).
   `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
   `npm.cmd run check`, `npm.cmd audit --omit=dev` ve `git diff --check` başarılı; tam test
-  `106/106` geçti ve `npm audit` `0 vulnerabilities` döndü.
+  `106/106` geçti ve `npm audit` `0 vulnerabilities` döndü. Runtime commit `553de97`
+  remote branch'e push edildi ve production'a alındı. Deployment
+  `dpl_CHSkvfaL7afypck15Eh2JDQXSBbP`, canlı alias `https://arsiv.ibrahimlive.ai`. Canlı
+  smoke: `/health`, root `/`, `/admin`, `/api/auth/me` başarılı; `/admin` `noindex,nofollow`
+  ve `no-store`. Root, admin ve API cevaplarında güvenlik başlıkları doğrulandı.
+  `/api/admin-action-log` oturumsuz `401`, malformed JSON public soru gönderimi `400`,
+  oturumsuz normal public soru gönderimi `401` döndü.
 
 ### 2026-09-02
 - **Admin `Gör` ekranı birleşik düzenleme akışına çevrildi:** Ekip liderinin talebiyle
