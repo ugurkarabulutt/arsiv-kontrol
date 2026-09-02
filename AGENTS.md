@@ -138,7 +138,15 @@ tespit edilir).
   `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
   `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
   `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
-  `npm.cmd run check` başarılı; tam test `106/106` geçti.
+  `npm.cmd run check` başarılı; tam test `106/106` geçti. `git diff --check` başarılı,
+  yalnız mevcut CRLF uyarıları görüldü. Runtime commit `c6262f3` remote branch'e push edildi
+  ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-2n1dheg38-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_E6q2cJSY6YZu4tpYaZ6gwthXPa8v`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, root `/`, `/admin` başarılı; `/admin` `noindex, nofollow`;
+  canlı admin HTML'de `/api/history/${id}/content`, `detailHistoryCorrectedText` ve
+  `saveDetailHistoryChanges` marker'ları mevcut. Yeni içerik düzenleme endpoint'i oturumsuz
+  erişimde `401` döndü.
 - **Public arşivde `#` numeric kategori grubu temizlendi:** Kullanıcı, arşiv alfabetik
   dizininde `#` altında `2,3,4...` gibi gerçek kategori olmayan parçaların göründüğünü ve
   aynı sorunun ayet/numara parçalarıyla bölünmüş gibi durduğunu bildirdi. Canlı Supabase

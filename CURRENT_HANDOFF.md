@@ -24,8 +24,15 @@
   `AGENTS.md`, `CURRENT_HANDOFF.md`.
 - Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; tam test `106/106` geçti.
-- Sıradaki adım: `git diff --check`, commit/push, production deploy ve canlı `/admin`
-  marker/smoke kontrolü.
+- `git diff --check` başarılı; yalnız mevcut CRLF uyarıları görüldü.
+- Runtime commit `c6262f3 feat: unify admin history detail editing` remote branch'e push edildi
+  ve production'a alındı. Deployment `dpl_E6q2cJSY6YZu4tpYaZ6gwthXPa8v`, production URL
+  `https://arsiv-kontrol-2n1dheg38-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health`, root `/`, `/admin` başarılı; `/admin` `noindex, nofollow`;
+  canlı admin HTML'de `/api/history/${id}/content`, `detailHistoryCorrectedText` ve
+  `saveDetailHistoryChanges` marker'ları mevcut. Yeni içerik düzenleme endpoint'i oturumsuz
+  erişimde `401` döndü.
 
 ## 2026-09-02 Codex Public `#` Numeric Kategori Temizliği
 
