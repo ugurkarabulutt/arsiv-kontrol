@@ -6,7 +6,7 @@ const multer   = require('multer');
 const path     = require('path');
 const crypto   = require('crypto');
 const mammoth  = require('mammoth');
-const XLSX     = require('xlsx');
+const readXlsxFile = require('read-excel-file/node');
 const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
 const {
@@ -19,6 +19,7 @@ const {
 } = require('./authorization');
 
 const app    = express();
+app.disable('x-powered-by');
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // Vercel Function istek gövdesi sınırının altında tut.
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE } });
 const tagImportUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } });
@@ -59,6 +60,19 @@ const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
+const SECURITY_CSP = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "img-src 'self' data: https:",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline'",
+  "connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com",
+  "form-action 'self' https://accounts.google.com",
+  'upgrade-insecure-requests'
+].join('; ');
 
 if (process.env.VERCEL && !process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET Vercel ortamında zorunludur.');
@@ -142,6 +156,14 @@ async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
 }
 
 // ── Middleware ─────────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', SECURITY_CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)');
+  next();
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.set('trust proxy', 1);
@@ -1440,23 +1462,104 @@ function makeHistoryTagImportExcelItem(row = {}) {
   };
 }
 
-function parseHistoryTagImportWorkbook(buffer, fileName = '') {
-  let workbook;
-  try {
-    workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false, raw: false });
-  } catch (error) {
-    const err = new Error('Excel dosyasi okunamadi. Lutfen .xlsx, .csv veya .tsv dosyasi yukleyin.');
+function tagImportFileExtension(fileName = '') {
+  const ext = path.extname(String(fileName || '')).toLowerCase();
+  return ext === '.csv' || ext === '.tsv' || ext === '.xlsx' ? ext : '';
+}
+
+function spreadsheetCellText(value) {
+  if (value == null) return '';
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === 'object') {
+    if (Array.isArray(value.richText)) return value.richText.map(item => item.text || '').join('');
+    if (Object.prototype.hasOwnProperty.call(value, 'result')) return spreadsheetCellText(value.result);
+    if (Object.prototype.hasOwnProperty.call(value, 'text')) return spreadsheetCellText(value.text);
+    if (Object.prototype.hasOwnProperty.call(value, 'hyperlink')) return spreadsheetCellText(value.text || value.hyperlink);
+    return '';
+  }
+  return String(value);
+}
+
+function splitDelimitedLine(line = '', delimiter = ',') {
+  const cells = [];
+  let current = '';
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const next = line[i + 1];
+    if (char === '"') {
+      if (quoted && next === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (char === delimiter && !quoted) {
+      cells.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  cells.push(current);
+  return cells;
+}
+
+function parseDelimitedRows(buffer, delimiter = ',') {
+  const text = buffer.toString('utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  const lines = text.split('\n').filter(line => line.trim());
+  const headers = splitDelimitedLine(lines.shift() || '', delimiter).map(item => item.trim());
+  return lines.map(line => {
+    const cells = splitDelimitedLine(line, delimiter);
+    const row = {};
+    headers.forEach((header, index) => { row[header || `Kolon ${index + 1}`] = cells[index] || ''; });
+    return row;
+  });
+}
+
+async function parseHistoryTagImportWorkbook(buffer, fileName = '') {
+  const ext = tagImportFileExtension(fileName);
+  if (!ext) {
+    const err = new Error('Dosya türü desteklenmiyor. Lütfen .xlsx, .csv veya .tsv dosyası yükleyin.');
     err.statusCode = 400;
     throw err;
   }
-  const sheetName = workbook.SheetNames?.[0];
-  if (!sheetName) {
+
+  let rows = [];
+  try {
+    if (ext === '.csv' || ext === '.tsv') {
+      rows = parseDelimitedRows(buffer, ext === '.tsv' ? '\t' : ',');
+    } else {
+      const sheetRows = await readXlsxFile(buffer);
+      if (!Array.isArray(sheetRows) || !sheetRows.length) {
+        const err = new Error('Dosyada okunabilir sayfa bulunamadı.');
+        err.statusCode = 400;
+        throw err;
+      }
+      const headers = (sheetRows[0] || []).map((cell, index) => spreadsheetCellText(cell).trim() || `Kolon ${index + 1}`);
+      rows = sheetRows.slice(1).filter(row => Array.isArray(row) && row.some(cell => spreadsheetCellText(cell).trim())).map(row => {
+        const item = {};
+        headers.forEach((header, index) => {
+          if (!header) return;
+          item[header] = spreadsheetCellText(row[index]);
+        });
+        return item;
+      });
+    }
+  } catch (error) {
+    if (error.statusCode) throw error;
+    const err = new Error('Dosya okunamadı. Lütfen .xlsx, .csv veya .tsv dosyası yükleyin.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (!rows.length) {
     const err = new Error('Dosyada okunabilir sayfa bulunamadi.');
     err.statusCode = 400;
     throw err;
   }
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
   let lastStandaloneQuestion = null;
   const items = rows.map((row, index) => {
     const question = String(tagImportCellValue(row, ['soru']) || '').trim();
@@ -5148,6 +5251,81 @@ function requestOrigin(req) {
   return `${String(proto).split(',')[0]}://${String(host).split(',')[0]}`;
 }
 
+function requestHost(req) {
+  return String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim().toLowerCase();
+}
+
+function sameOriginMutationGuard(req, res, next) {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+  const origin = String(req.headers.origin || '').trim();
+  const fetchSite = String(req.headers['sec-fetch-site'] || '').trim().toLowerCase();
+  if (fetchSite === 'cross-site') return res.status(403).json({ error: 'Bu işlem yalnız aynı site içinden yapılabilir.' });
+  if (!origin) return next();
+  try {
+    const originUrl = new URL(origin);
+    const host = requestHost(req);
+    if (originUrl.host.toLowerCase() !== host) {
+      return res.status(403).json({ error: 'Bu işlem yalnız aynı site içinden yapılabilir.' });
+    }
+  } catch {
+    return res.status(403).json({ error: 'Geçersiz istek kaynağı.' });
+  }
+  next();
+}
+
+const rateLimitBuckets = new Map();
+function rateLimitClientIp(req) {
+  const forwarded = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
+function rateLimitKey(req, scope) {
+  const sessionPart = req.session?.userId || req.session?.publicUserId || '';
+  return `${scope}:${sessionPart || rateLimitClientIp(req)}`;
+}
+
+function pruneRateLimitBuckets(now = Date.now()) {
+  if (rateLimitBuckets.size < 2000) return;
+  for (const [key, bucket] of rateLimitBuckets.entries()) {
+    if (!bucket || bucket.resetAt <= now) rateLimitBuckets.delete(key);
+  }
+}
+
+function makeRateLimiter({ scope, windowMs, max, message = 'Çok sık istek gönderildi. Lütfen biraz sonra tekrar deneyin.' }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    pruneRateLimitBuckets(now);
+    const key = rateLimitKey(req, scope);
+    const current = rateLimitBuckets.get(key);
+    const bucket = current && current.resetAt > now
+      ? current
+      : { count: 0, resetAt: now + windowMs };
+    bucket.count += 1;
+    rateLimitBuckets.set(key, bucket);
+    res.setHeader('RateLimit-Limit', String(max));
+    res.setHeader('RateLimit-Remaining', String(Math.max(0, max - bucket.count)));
+    res.setHeader('RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
+    if (bucket.count > max) {
+      res.setHeader('Retry-After', String(Math.max(1, Math.ceil((bucket.resetAt - now) / 1000))));
+      return res.status(429).json({ error: message });
+    }
+    next();
+  };
+}
+
+app.use(sameOriginMutationGuard);
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  next();
+});
+
+const adminLoginRateLimiter = makeRateLimiter({ scope: 'admin-login', windowMs: 15 * 60 * 1000, max: 12 });
+const publicAuthRateLimiter = makeRateLimiter({ scope: 'public-auth', windowMs: 15 * 60 * 1000, max: 20 });
+const publicQuestionSubmitRateLimiter = makeRateLimiter({ scope: 'public-question-submit', windowMs: 15 * 60 * 1000, max: 8 });
+const publicAnalyticsRateLimiter = makeRateLimiter({ scope: 'public-analytics', windowMs: 60 * 1000, max: 120 });
+const publicReadRateLimiter = makeRateLimiter({ scope: 'public-read', windowMs: 60 * 1000, max: 180 });
+const analysisRateLimiter = makeRateLimiter({ scope: 'analysis', windowMs: 60 * 60 * 1000, max: 80 });
+
 function normalizePublicArchiveRouteBase(value = '/public-preview') {
   const raw = String(value ?? '/public-preview').trim();
   if (!raw || raw === '/') return '';
@@ -8063,7 +8241,7 @@ function requirePublicUser(req, res) {
 }
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', adminLoginRateLimiter, async (req, res) => {
   try {
     await startupReady;
     const { username, password } = req.body;
@@ -10702,7 +10880,7 @@ async function cleanupTagImportUpload(uploadId, totalChunks = 0) {
 }
 
 async function createHistoryTagImportPreviewFromBuffer(buffer, fileName, actorName) {
-  const parsed = parseHistoryTagImportWorkbook(buffer, fileName || 'Etiket dosyası');
+  const parsed = await parseHistoryTagImportWorkbook(buffer, fileName || 'Etiket dosyası');
   if (!parsed.usableRows) {
     const err = new Error('Dosyada etiketli soru-cevap satırı bulunamadı. Soru, Etiket/Sınıf ve Cevap sütunlarını kontrol edin.');
     err.statusCode = 400;
@@ -12965,7 +13143,7 @@ async function saveHistory(req, result, filename, hash, sourceText = '', status 
   return entryId;
 }
 
-app.post('/api/analyze', auth, async (req, res) => {
+app.post('/api/analyze', auth, analysisRateLimiter, async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   try {
     await startupReady;
@@ -12981,7 +13159,7 @@ app.post('/api/analyze', auth, async (req, res) => {
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
-app.post('/api/extract-file-text', auth, upload.single('file'), async (req, res) => {
+app.post('/api/extract-file-text', auth, analysisRateLimiter, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
     await startupReady;
@@ -12990,7 +13168,7 @@ app.post('/api/extract-file-text', auth, upload.single('file'), async (req, res)
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
-app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
+app.post('/api/analyze-file', auth, analysisRateLimiter, upload.single('file'), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.file) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   try {
@@ -13004,7 +13182,7 @@ app.post('/api/analyze-file', auth, upload.single('file'), async (req, res) => {
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
-app.post('/api/analyze-batch', auth, upload.array('files', 20), async (req, res) => {
+app.post('/api/analyze-batch', auth, analysisRateLimiter, upload.array('files', 20), async (req, res) => {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'API anahtarı tanımlı değil.' });
   if (!req.files?.length) return res.status(400).json({ error: 'Dosya bulunamadı.' });
   const results = [];
@@ -13593,13 +13771,13 @@ async function publicArchiveLlmsHandler(req, res) {
 app.get('/public-preview/api/session', publicArchiveSessionHandler);
 app.get('/public-preview/auth/google', publicArchiveGoogleStartHandler);
 app.get('/public-preview/auth/google/callback', publicArchiveGoogleCallbackHandler);
-app.post('/public-preview/api/auth/email/register', publicArchiveEmailRegisterHandler);
-app.post('/public-preview/api/auth/email/login', publicArchiveEmailLoginHandler);
+app.post('/public-preview/api/auth/email/register', publicAuthRateLimiter, publicArchiveEmailRegisterHandler);
+app.post('/public-preview/api/auth/email/login', publicAuthRateLimiter, publicArchiveEmailLoginHandler);
 app.post('/public-preview/auth/logout', publicArchiveLogoutHandler);
-app.post('/public-preview/api/public-analytics/visit', publicArchiveVisitHandler);
+app.post('/public-preview/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler);
 app.get('/public-preview/api/question-stats', publicArchiveQuestionStatsHandler);
-app.post('/public-preview/api/questions/:slug/read', publicArchiveQuestionReadHandler);
-app.post('/public-preview/api/question-submissions', publicArchiveQuestionSubmissionHandler);
+app.post('/public-preview/api/questions/:slug/read', publicReadRateLimiter, publicArchiveQuestionReadHandler);
+app.post('/public-preview/api/question-submissions', publicQuestionSubmitRateLimiter, publicArchiveQuestionSubmissionHandler);
 app.get('/public-preview/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);
 app.post('/public-preview/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler);
 app.get('/robots.txt', publicArchiveRobotsHandler);
@@ -13610,13 +13788,13 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/api/session', publicArchiveSessionHandler);
   app.get('/auth/google', publicArchiveGoogleStartHandler);
   app.get('/auth/google/callback', publicArchiveGoogleCallbackHandler);
-  app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler);
-  app.post('/api/auth/email/login', publicArchiveEmailLoginHandler);
+  app.post('/api/auth/email/register', publicAuthRateLimiter, publicArchiveEmailRegisterHandler);
+  app.post('/api/auth/email/login', publicAuthRateLimiter, publicArchiveEmailLoginHandler);
   app.post('/auth/logout', publicArchiveLogoutHandler);
-  app.post('/api/public-analytics/visit', publicArchiveVisitHandler);
+  app.post('/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler);
   app.get('/api/question-stats', publicArchiveQuestionStatsHandler);
-  app.post('/api/questions/:slug/read', publicArchiveQuestionReadHandler);
-  app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler);
+  app.post('/api/questions/:slug/read', publicReadRateLimiter, publicArchiveQuestionReadHandler);
+  app.post('/api/question-submissions', publicQuestionSubmitRateLimiter, publicArchiveQuestionSubmissionHandler);
   app.get('/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);
   app.post('/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler);
 }
@@ -13646,6 +13824,9 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
 }
 
 app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && Object.prototype.hasOwnProperty.call(err, 'body')) {
+    return res.status(400).json({ error: 'Geçersiz JSON gövdesi.' });
+  }
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ error: 'Dosya en fazla 4 MB olabilir.' });
   }

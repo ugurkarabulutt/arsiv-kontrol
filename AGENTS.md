@@ -120,6 +120,27 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-03
+- **Güvenlik sertleştirme paketi eklendi:** Public ön yüz ve admin panelde ciddi ziyaretçi
+  trafiği öncesi güvenlik başlıkları ve API korumaları güçlendirildi. Backend artık genel
+  `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy` ve `Permissions-Policy` başlıklarını döner; Express `X-Powered-By`
+  başlığı kapatıldı. Vercel route katmanına da aynı güvenlik başlıkları eklendi; `/admin`,
+  `/admin/*`, `/api/*` ve `/public-preview/*` statik/edge yönlendirmelerinde de başlıklar
+  korunur. Tüm `/api` cevapları `no-store` cache başlığı alır. Cross-site
+  `POST/PUT/PATCH/DELETE` istekleri `Origin` ve `Sec-Fetch-Site` kontrolünden geçirilir.
+  Admin giriş, public e-posta auth, public soru gönderimi, public analytics, public soru okuma
+  ve AI analiz endpoint'leri ayrı rate limitlerle sınırlandı. Geçersiz JSON gövdeleri artık
+  genel `500` yerine kontrollü `400` döner. Fixesiz yüksek riskli `xlsx` paketi kaldırıldı;
+  etiket/soru Excel aktarımı `.xlsx/.csv/.tsv` için `read-excel-file` ve dar kapsamlı CSV/TSV
+  parser ile çalışır, `.xls` desteği güvenlik nedeniyle kaldırıldı. `body-parser` ve `qs`
+  `overrides` ile güvenli sürümlere sabitlendi. Değişen dosyalar: `server.js`, `index.html`,
+  `package.json`, `package-lock.json`, `scripts/check-frontend.js`, `vercel.json`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check`, `npm.cmd audit --omit=dev` ve `git diff --check` başarılı; tam test
+  `106/106` geçti ve `npm audit` `0 vulnerabilities` döndü.
+
 ### 2026-09-02
 - **Admin `Gör` ekranı birleşik düzenleme akışına çevrildi:** Ekip liderinin talebiyle
   `Gör` ve `Eksikleri Tamamla` yolları aynı detay ekranında birleşti. Detay modalı artık

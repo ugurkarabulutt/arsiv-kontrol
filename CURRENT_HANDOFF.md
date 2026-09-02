@@ -1,5 +1,37 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-03 Codex Güvenlik Sertleştirme Paketi
+
+- Kullanıcı, public ön yüz ve admin panel için ciddi ziyaretçi trafiği başlamadan önce en ufak
+  sızıntı/açık istemediğini belirtti; güvenlik sertleştirme işi başlatıldı.
+- Backend genel güvenlik başlıkları eklendi: `Content-Security-Policy`,
+  `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy` ve
+  `Permissions-Policy`. Express `X-Powered-By` başlığı kapatıldı.
+- Vercel route katmanına da aynı güvenlik başlıkları eklendi; `/admin`, `/admin/*`,
+  `/api/*` ve `/public-preview/*` statik/edge yönlendirmelerinde de başlıklar korunur.
+- Tüm `/api` cevapları için `no-store` cache başlığı eklendi; admin/public API cevaplarının
+  tarayıcı veya ara önbellekte kalması engellendi.
+- Cross-site mutasyon koruması eklendi. `POST/PUT/PATCH/DELETE` isteklerinde `Origin` veya
+  `Sec-Fetch-Site` şüpheli ise istek reddedilir; aynı origin ve server-to-server istekler
+  korunur.
+- Rate limit katmanı eklendi: admin giriş, public e-posta auth, public soru gönderimi,
+  public analytics, public soru okuma ve AI analiz endpoint'leri ayrı limitlerle sınırlandı.
+- Malformed JSON gövdeleri artık genel `500` yerine kontrollü `400 Geçersiz JSON gövdesi.`
+  döner.
+- Yüksek riskli ve fixesiz `xlsx` paketi kaldırıldı. Excel aktarımı `.xlsx/.csv/.tsv` için
+  `read-excel-file` ve dar kapsamlı CSV/TSV parser ile çalışır; `.xls` desteği güvenlik
+  nedeniyle kaldırıldı.
+- `body-parser` ve `qs` paketleri `overrides` ile güvenli sürümlere sabitlendi.
+- Değişen dosyalar: `server.js`, `index.html`, `package.json`, `package-lock.json`,
+  `scripts/check-frontend.js`, `vercel.json`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check`, `npm.cmd audit --omit=dev` ve
+  `git diff --check` başarılı. Tam test `106/106` geçti; `npm audit` `0 vulnerabilities`
+  döndü. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
+- Sıradaki adım: commit, push, production deploy ve canlı `/health`, `/`, `/admin`,
+  `/api/auth/me`, `/api/admin-action-log`, malformed JSON, public soru gönderimi ve güvenlik
+  header smoke kontrolleri.
+
 ## 2026-09-02 Codex Admin Gör Ekranı Birleşik Düzenleme Akışı
 
 - Ekip lideri, `Gör` ve `Eksikleri Tamamla` akışlarında soru, etiket ve cevap/düzeltilmiş

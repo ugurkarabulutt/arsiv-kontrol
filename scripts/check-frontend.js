@@ -238,9 +238,9 @@ assert(server.includes('const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED'), 'Public ro
 assert(server.includes('GOOGLE_ROOT_REDIRECT_URI'), 'Root Google callback icin GOOGLE_ROOT_REDIRECT_URI destegi bulunmali.');
 assert(server.includes("app.get('/api/session', publicArchiveSessionHandler)"), 'Root public session endpoint bayrakli olarak tanimli olmali.');
 assert(server.includes("app.get('/auth/google', publicArchiveGoogleStartHandler)"), 'Root public Google login endpoint bayrakli olarak tanimli olmali.');
-assert(server.includes("app.post('/api/auth/email/register', publicArchiveEmailRegisterHandler)"), 'Root public e-posta kayit endpointi bayrakli olarak tanimli olmali.');
-assert(server.includes("app.post('/api/public-analytics/visit', publicArchiveVisitHandler)"), 'Root public analitik endpointi bayrakli olarak tanimli olmali.');
-assert(server.includes("app.post('/api/question-submissions', publicArchiveQuestionSubmissionHandler)"), 'Root public soru gonderim endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/auth/email/register', publicAuthRateLimiter, publicArchiveEmailRegisterHandler)"), 'Root public e-posta kayit endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler)"), 'Root public analitik endpointi bayrakli olarak tanimli olmali.');
+assert(server.includes("app.post('/api/question-submissions', publicQuestionSubmitRateLimiter, publicArchiveQuestionSubmissionHandler)"), 'Root public soru gonderim endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("app.get('/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler)"), 'Root public kullanici soru takip endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("app.post('/api/my-question-submissions/:id/seen', publicArchiveQuestionSeenHandler)"), 'Root public soru okundu endpointi bayrakli olarak tanimli olmali.');
 assert(server.includes("source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root'"), 'Soru gonderimi preview/root kaynagini ayirmali.');
@@ -272,6 +272,14 @@ const finalServerRouteIndex = routes.findIndex(route => route.src === '/(.*)' &&
 assert(apiVercelIndex !== -1 && finalServerRouteIndex !== -1 && apiVercelIndex < finalServerRouteIndex, 'Vercel /api route final server catch-all dan once kalmali.');
 const routeIndex = src => routes.findIndex(route => route.src === src);
 const routeBySrc = src => routes.find(route => route.src === src);
+const assertSecurityHeaders = (headers, label) => {
+  assert(String(headers?.['Content-Security-Policy'] || '').includes("frame-ancestors 'none'"), `${label} CSP frame-ancestors korumasi almali.`);
+  assert(headers?.['X-Content-Type-Options'] === 'nosniff', `${label} nosniff header almali.`);
+  assert(headers?.['X-Frame-Options'] === 'DENY', `${label} frame deny header almali.`);
+  assert(headers?.['Referrer-Policy'] === 'strict-origin-when-cross-origin', `${label} referrer policy header almali.`);
+  assert(String(headers?.['Permissions-Policy'] || '').includes('geolocation=()'), `${label} permissions policy header almali.`);
+};
+assertSecurityHeaders(routeBySrc('/api/(.*)')?.headers || {}, 'Vercel /api route');
 const explicitRootRoutes = routes.filter(route => route.src === '/' || route.src === '/$');
 assert(explicitRootRoutes.length === 0, 'Root / icin explicit Vercel route eklenmemeli; legacy root final catch-all ile kalmali.');
 
@@ -314,6 +322,7 @@ for (const [i, route] of previewVercelRoutes.entries()) {
   assert(route.dest === '/server.js', 'Vercel public preview route server.js uzerinden gate e gitmeli.');
   assert(previewVercelIndexes[i] < adminVercelIndex && previewVercelIndexes[i] < finalServerRouteIndex, 'Vercel public preview route final catch-all ve admin route larindan once kalmali.');
   assert(route.headers?.['X-Robots-Tag'] === 'noindex, nofollow', 'Vercel public preview route noindex,nofollow header almali.');
+  assertSecurityHeaders(route.headers || {}, 'Vercel public preview route');
   const cacheControl = String(route.headers?.['Cache-Control'] || '');
   for (const token of ['no-store', 'no-cache', 'must-revalidate', 'proxy-revalidate']) {
     assert(cacheControl.includes(token), `Vercel public preview route Cache-Control ${token} icermeli.`);
@@ -333,6 +342,7 @@ for (const [label, route] of [
 ]) {
   const headers = route.headers || {};
   assert(headers['X-Robots-Tag'] === 'noindex, nofollow', `${label} Vercel route X-Robots-Tag noindex header almali.`);
+  assertSecurityHeaders(headers, `${label} Vercel route`);
   const cacheControl = String(headers['Cache-Control'] || '');
   for (const token of ['no-store', 'no-cache', 'must-revalidate', 'proxy-revalidate']) {
     assert(cacheControl.includes(token), `${label} Vercel route Cache-Control ${token} icermeli.`);

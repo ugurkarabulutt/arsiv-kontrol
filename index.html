@@ -2236,7 +2236,7 @@ canvas{width:100%!important;}
             <strong>Bu ekran toplu ve kontrollü etiket taşıma alanıdır.</strong>
             <span>Excel yüklenince sistem denetim kayıtlarıyla eşleşme önerir. Süper admin, etiketleri tek tek ya da yalnız yüksek güvenli eşleşmeleri toplu uygulayabilir.</span>
           </div>
-          <input type="file" id="historyTagImportFile" hidden accept=".xlsx,.xls,.csv,.tsv" onchange="uploadHistoryTagImportFile(this.files&&this.files[0]);this.value='';">
+          <input type="file" id="historyTagImportFile" hidden accept=".xlsx,.csv,.tsv" onchange="uploadHistoryTagImportFile(this.files&&this.files[0]);this.value='';">
           <div class="ops-filter-row tag-import-actions">
             <button class="btn-primary" onclick="triggerHistoryTagImportPicker()">Excel Seç ve Eşleştir</button>
             <button class="btn-sec" id="historyTagImportApplyReadyBtn" onclick="applyReadyHistoryTagImportMatches()">Güvenli Eşleşmeleri Uygula</button>
