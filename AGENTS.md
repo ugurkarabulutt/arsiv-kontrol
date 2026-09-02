@@ -121,6 +121,23 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-02
+- **Public arşivde `#` numeric kategori grubu temizlendi:** Kullanıcı, arşiv alfabetik
+  dizininde `#` altında `2,3,4...` gibi gerçek kategori olmayan parçaların göründüğünü ve
+  aynı sorunun ayet/numara parçalarıyla bölünmüş gibi durduğunu bildirdi. Canlı Supabase
+  kuru çalışmasında `2,3,4,5,6,7,8,9,10,11,63` numeric kategori/topic bulundu. Yayında
+  etkilenen tek kayıt
+  `muhterem-hocam-vird-ortusu-altinda-neden-zikir-yapmaliyiz-bunun-onemi-nedir-aciklar-misiniz`
+  idi; ana kategorisi `Örtü Altında Zikir` olarak korundu, numeric topic'leri kaldırıldı ve
+  public topic listesi `ortu-altinda-zikir`, `muddessir-suresi` olarak bırakıldı. Kaynak
+  `history.tags` tarafında aynı kayıttan `2`-`11` kaldırıldı ve `Müddessir 1` etiketi
+  `Müddessir Suresi` olarak toplandı. Daha önce yayından alınmış
+  `muhterem-hocam-bes-vakit-namaz-kilan-bir-genc-evliya-degil-midir` kaydındaki `63` etiketi
+  de temizlendi ve `Yûnus 62` etiketi `Yûnus Suresi` olarak toplandı. Uygulama sonrası
+  doğrulama: kalan numeric kategori `0`, numeric topic `0`, numeric etiket taşıyan public
+  kayıt `0`. İşlem `admin_action_log` içine `public_archive.category_cleanup` olarak yazıldı.
+  Kod tarafında `normalizePublicArchiveTags` artık tek başına sayı olan etiketlerden public
+  kategori üretmez; frontend guard bu kuralı korur. Değişen dosyalar: `server.js`,
+  `scripts/check-frontend.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
 - **Süper admin Sistem Kayıtları merkezi log ekranı eklendi:** Admin paneline yalnız süper
   adminin görebileceği `Sistem Kayıtları` ekranı eklendi. Bu ekran merkezi
   `admin_action_log` tablosundan ve geriye dönük iz için `content_correction_log`,

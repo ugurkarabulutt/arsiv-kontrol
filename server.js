@@ -576,6 +576,7 @@ const ADMIN_ACTION_LABELS = Object.freeze({
   'public_archive.duplicates_hide': 'Mükerrer canlı kayıtları gizledi',
   'public_archive.copied_questions_hide': 'Kopya soru kayıtlarını gizledi',
   'public_archive.suspicious_return': 'Şüpheli kayıtları geri gönderdi',
+  'public_archive.category_cleanup': 'Hatalı public kategorileri temizledi',
   'archive_ops.create': 'Arşiv kaydı oluşturdu',
   'archive_ops.update': 'Arşiv kaydı güncelledi',
   'archive_ops.delete': 'Arşiv kaydı sildi',
@@ -5515,6 +5516,7 @@ function normalizePublicArchiveTags(value) {
   return normalizeArchiveTags(value)
     .map(item => String(item || '').trim())
     .filter(Boolean)
+    .filter(item => !/^\d+$/.test(item))
     .filter((item, index, arr) => arr.findIndex(other => publicArchiveComparable(other) === publicArchiveComparable(item)) === index)
     .slice(0, 12);
 }

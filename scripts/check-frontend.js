@@ -656,6 +656,7 @@ if (
   !server.includes('HAS_ADMIN_ACTION_LOG') ||
   !server.includes("action: 'approval.status_change'") ||
   !server.includes("action: 'public_archive.sync'") ||
+  !server.includes("'public_archive.category_cleanup': 'Hatalı public kategorileri temizledi'") ||
   !server.includes("action: 'feedback.resolved'") ||
   !server.includes("action: 'tag_import.apply'") ||
   !html.includes('tabContent-actionlog') ||
@@ -666,6 +667,11 @@ if (
   !html.includes("mNav('actionlog')")
 ) {
   throw new Error('Super admin merkezi sistem kayitlari semasi, API log baglantilari ve arayuzu korunmali.');
+}
+if (
+  !server.includes(".filter(item => !/^\\d+$/.test(item))")
+) {
+  throw new Error('Public arsiv senkronu tek basina sayi olan etiketlerden kategori uretmemeli.');
 }
 if (
   !server.includes('selectedChangeIds') ||

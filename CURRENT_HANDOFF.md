@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-02 Codex Public `#` Numeric Kategori Temizliği
+
+- Kullanıcı, public arşiv alfabetik dizininde `#` altında `2,3,4...` gibi gerçek kategori
+  olmayan parçaların göründüğünü bildirdi ve bu numeric etiketlerin kaldırılıp `#` kategorisinin
+  kapatılmasını istedi.
+- Canlı Supabase kuru çalışmasında `2,3,4,5,6,7,8,9,10,11,63` numeric kategori/topic bulundu.
+  Etkilenen public kayıt sayısı `2`: `1` yayında, `1` daha önce `content_review_hidden`.
+- Yayındaki etkilenen kayıt:
+  `https://arsiv.ibrahimlive.ai/soru/muhterem-hocam-vird-ortusu-altinda-neden-zikir-yapmaliyiz-bunun-onemi-nedir-aciklar-misiniz`.
+  Ana kategori `Örtü Altında Zikir` olarak korundu; `2`-`11` topic'leri kaldırıldı; kalan
+  public topic'ler `ortu-altinda-zikir`, `muddessir-suresi`.
+- Kaynak `history.tags` tarafında aynı kayıttan `2`-`11` kaldırıldı ve `Müddessir 1`,
+  `Müddessir Suresi` olarak toplandı.
+- Daha önce yayından alınmış
+  `https://arsiv.ibrahimlive.ai/soru/muhterem-hocam-bes-vakit-namaz-kilan-bir-genc-evliya-degil-midir`
+  kaydında `63` topic'i kaldırıldı; kaynak `history.tags` tarafında `Yûnus 62`,
+  `Yûnus Suresi` olarak toplandı.
+- Uygulama sonrası canlı doğrulama: kalan numeric kategori `0`, numeric topic `0`, numeric etiket
+  taşıyan public kayıt `0`.
+- İşlem `admin_action_log` içine `public_archive.category_cleanup` olarak yazıldı.
+- Kod koruması: `normalizePublicArchiveTags` artık tek başına sayı olan etiketlerden public
+  kategori üretmez; `scripts/check-frontend.js` bu kuralı guard eder.
+- Değişen dosyalar: `server.js`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`.
+- Sıradaki adım: test, commit, push, production deploy ve canlı `/arsiv?harf=%23` smoke kontrolü.
+
 ## 2026-09-02 Codex Süper Admin Sistem Kayıtları
 
 - Kullanıcı, süper adminin görebileceği merkezi bir `Logs / Sistem Kayıtları` alanı istedi:
