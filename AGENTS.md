@@ -140,6 +140,14 @@ tespit edilir).
   doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
   tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
+  Runtime commit `1654c15` GitHub'a push edildi ve production'a alındı. Production deploy:
+  `https://arsiv-kontrol-ek5p973zp-ugurkarabulutts-projects.vercel.app`, deployment
+  `dpl_BJVcm7mdQY7YDyGBHaWRSgJ8QFgo`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı smoke: `/health`, root `/`, `/admin` başarılı; `/admin` header'ı
+  `noindex, nofollow`; canlı HTML'de `Sistem Kayıtları` ve `loadAdminActionLog` marker'ları
+  mevcut; oturumsuz `/api/admin-action-log` `401` döndü. Kullanıcı `admin_action_log`
+  SQL bloğunu Supabase SQL Editor'de başarıyla uyguladıktan sonra Supabase SDK ile tablo
+  erişimi doğrulandı: `ok:true`, `count:4`, `sampleCount:1`.
 - **iPhone Safari arşiv içi arama zoom'u düzeltildi:** Arşiv sayfasındaki harf/kategori
   panelinde yer alan `Bu harfte ara...` input'u `14px` olduğu için iOS Safari odaklanınca
   sayfayı otomatik yakınlaştırabiliyordu. `pa-letter-search input` yazı boyutu `16px`

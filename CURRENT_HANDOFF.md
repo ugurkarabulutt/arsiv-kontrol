@@ -27,9 +27,17 @@
 - Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
   `node scripts/check-frontend.js`, `npm.cmd run check` ve `git diff --check` başarılı;
   tam test `106/106` geçti. `git diff --check` yalnız mevcut CRLF uyarılarını verdi.
-- Sıradaki adım: kullanıcı Supabase SQL Editor'de `admin_action_log` bloğunu uygularsa commit,
-  push, production deploy ve canlı `/admin` üzerinde süper admin `Sistem Kayıtları` smoke
-  kontrolü yapılabilir.
+- Commit/deploy: runtime commit `1654c15 feat: add admin action log` remote branch'e push edildi
+  ve production'a alındı. Deployment `dpl_BJVcm7mdQY7YDyGBHaWRSgJ8QFgo`, production URL
+  `https://arsiv-kontrol-ek5p973zp-ugurkarabulutts-projects.vercel.app`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health`, root `/`, `/admin` başarılı; `/admin` `noindex, nofollow`;
+  canlı admin HTML'de `Sistem Kayıtları` ve `loadAdminActionLog` marker'ları mevcut;
+  oturumsuz `/api/admin-action-log` `401` döndü.
+- Kullanıcı Supabase SQL Editor'de `admin_action_log` bloğunu başarıyla uyguladı. Supabase SDK
+  kontrolünde `admin_action_log` okunabildi: `ok:true`, `count:4`, `sampleCount:1`.
+- Sıradaki adım: süper admin olarak `/admin` içinde `Sistem Kayıtları` ekranı açılıp son işlem
+  kayıtları UI üzerinden gözle kontrol edilmeli; gerekirse log kapsamına ek işlemler ilave edilir.
 
 ## 2026-09-02 Codex iPhone Safari Arama Zoom Düzeltmesi
 
