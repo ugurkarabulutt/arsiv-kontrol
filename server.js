@@ -551,6 +551,7 @@ const ADMIN_ACTION_LABELS = Object.freeze({
   'approval.withdrawn': 'Onaydan geri çekti',
   'approval.status_change': 'Onay durumunu değiştirdi',
   'approval.return': 'Kullanıcıya geri gönderdi',
+  'approval.content_update': 'Denetim kaydını düzenledi',
   'approval.tags_update': 'Etiketleri güncelledi',
   'approval.favorite_add': 'Favoriye ekledi',
   'approval.favorite_remove': 'Favoriden çıkardı',
@@ -1316,6 +1317,17 @@ function normalizeHistoryQuestion(value) {
     .filter(Boolean)
     .join('\n')
     .slice(0, 8000);
+}
+
+function normalizeHistoryCorrectedText(value) {
+  return String(value || '')
+    .normalize('NFC')
+    .replace(/\r\n?/g, '\n')
+    .replace(/\u0000/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .trim()
+    .slice(0, 300000);
 }
 
 function normalizeSubmissionNote(value) {
@@ -9613,6 +9625,97 @@ app.get('/api/history/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     }
     res.json(mapped);
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/history/:id([0-9a-fA-F-]{36})/content', auth, async (req, res) => {
+  try {
+    if (!HAS_HISTORY_QUESTION_TEXT || !HAS_HISTORY_TAGS) {
+      return res.status(400).json({ error: 'Soru ve etiket alanları aktif değil. Lütfen gerekli SQL güncellemesini uygulayın.' });
+    }
+    const { data: current, error: currentError } = await supabase.from('history')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+    if (currentError) throw new Error(currentError.message);
+    if (!current || isHiddenHistoryForRole(mapHistory(current), req.session.role, req.session.userId)) {
+      return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+    }
+    if (isChunkHistoryRow(current)) {
+      return res.status(400).json({ error: 'Parça kayıtları bu ekrandan düzenlenemez.' });
+    }
+
+    const status = current.status || 'bekliyor';
+    const editableStatus = status === 'taslak' || status === APPROVAL_RETURNED_STATUS || status === 'bekliyor' || status === APPROVAL_REVIEW_STATUS;
+    const ownsRecord = current.user_id && current.user_id === req.session.userId;
+    const canOwnerEdit = ownsRecord && (status === 'taslak' || status === APPROVAL_RETURNED_STATUS);
+    const canAdminEdit = isAdminRole(req.session.role) && editableStatus;
+    if (!canOwnerEdit && !canAdminEdit) {
+      return res.status(403).json({ error: 'Bu kayıt bu ekrandan düzenlenemez.' });
+    }
+
+    const questionText = normalizeHistoryQuestion(req.body?.questionText);
+    const tags = normalizeHistoryTags(req.body?.tags);
+    const correctedText = normalizeHistoryCorrectedText(req.body?.correctedText);
+    if (!questionText) return res.status(400).json({ error: 'Soru alanını doldurun.' });
+    if (!tags.length) return res.status(400).json({ error: 'En az bir etiket ekleyin.' });
+    if (!correctedText) return res.status(400).json({ error: 'Düzeltilmiş metin boş olamaz.' });
+
+    const oldCorrectedText = current.corrected_text || '';
+    const correctedTextChanged = oldCorrectedText !== correctedText;
+    const correctedHashChanged = normalizeText(oldCorrectedText) !== normalizeText(correctedText);
+    if (correctedHashChanged) {
+      const existing = await readSubmittedCorrectedHash(current.user_id, correctedText);
+      if (existing && stalePendingCorrectedHash(existing.value)) {
+        const { error } = await supabase.from('settings').delete().eq('key', existing.key);
+        if (error) console.warn('Eski duzeltilmis metin kilidi temizlenemedi:', error.message);
+      } else if (existing?.value?.historyId && existing.value.historyId !== current.id && existing.value.status !== 'reddedildi') {
+        return res.status(400).json({ error: 'Bu düzeltilmiş metnin onaya gönderilmiş veya onaylanmış bir kaydı zaten var.' });
+      }
+    }
+
+    const { data, error } = await supabase.from('history')
+      .update({ question_text: questionText, tags, corrected_text: correctedText })
+      .eq('id', current.id)
+      .select('*')
+      .single();
+    if (error) throw new Error(error.message);
+
+    if (correctedHashChanged) await releaseSubmittedCorrectedHash(current.user_id, oldCorrectedText, current.id);
+    if (historyStatusSubmitted(data.status) || data.status === APPROVAL_RETURNED_STATUS) {
+      await markSubmittedCorrectedHash(data.user_id, data.corrected_text || '', data.id, data.status || 'bekliyor');
+    }
+
+    const returnNotes = await loadApprovalReturnNotes();
+    let mapped = mapHistory(data);
+    if (isAdminRole(req.session.role)) {
+      const [favorites, reviewNotes] = await Promise.all([
+        loadApprovalFavoriteSet(req.session.userId),
+        loadApprovalReviewNotes()
+      ]);
+      mapped = attachApprovalMeta(mapped, favorites, reviewNotes, returnNotes);
+    } else {
+      mapped = attachApprovalReturnMeta(mapped, returnNotes);
+    }
+
+    await recordAdminAction(req, {
+      action: 'approval.content_update',
+      targetType: 'history',
+      targetId: data.id,
+      targetLabel: data.question_text || data.filename || 'Denetim kaydı',
+      targetStatusBefore: current.status || 'bekliyor',
+      targetStatusAfter: data.status || 'bekliyor',
+      summary: `${data.filename || 'Denetim kaydı'} soru, etiket ve düzeltilmiş metin alanlarıyla güncellendi.`,
+      metadata: {
+        questionChanged: normalizeText(current.question_text || '') !== normalizeText(questionText),
+        tagsChanged: JSON.stringify(normalizeHistoryTags(current.tags || [])) !== JSON.stringify(tags),
+        correctedTextChanged,
+        tagCount: tags.length,
+        correctedTextLength: correctedText.length
+      }
+    });
+
+    res.json({ success: true, history: mapped });
+  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
 app.post('/api/history/:id([0-9a-fA-F-]{36})/favorite', auth, admin, async (req, res) => {

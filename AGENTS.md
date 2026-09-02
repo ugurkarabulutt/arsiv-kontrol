@@ -121,6 +121,24 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-02
+- **Admin `Gör` ekranı birleşik düzenleme akışına çevrildi:** Ekip liderinin talebiyle
+  `Gör` ve `Eksikleri Tamamla` yolları aynı detay ekranında birleşti. Detay modalı artık
+  yetkiye göre tek ekranda `Soru`, `Etiketler` ve `Cevap (düzeltilmiş metin)` alanlarını
+  gösterir. Kayıt sahibi `taslak` ve `geri_gonderildi` durumundaki kendi kaydını düzenleyip
+  `Kaydet ve Onaya Gönder` ile yeniden gönderebilir; admin/süper admin `bekliyor`,
+  `teyit_bekliyor`, `taslak` ve `geri_gonderildi` kayıtlarında onay öncesi aynı alanları
+  düzenleyebilir. Onaylı, reddedilmiş, arşivlenmiş ve parça kayıtlar bu yeni içerik endpoint'i
+  üzerinden değiştirilmez. Backend'e `POST /api/history/:id/content` endpoint'i eklendi;
+  soru, etiket ve düzeltilmiş metni birlikte kaydeder, cevap metnindeki paragraf/satır düzenini
+  korur ve cevap değişirse düzeltilmiş metin tekrar kilidini günceller. Admin `Onayla`
+  aksiyonu önce modal içeriğini kaydedip sonra onay verir. Geri gönderilen kayıtların
+  `Eksikleri Tamamla` butonu artık ayrı onaya gönderme penceresine değil aynı birleşik
+  düzenleme ekranına açılır. İşlem `admin_action_log` içine `approval.content_update` olarak
+  düşer; tam içerik loglanmaz, yalnız değişen alan/uzunluk özeti tutulur. Değişen dosyalar:
+  `server.js`, `index.html`, `scripts/check-frontend.js`, `AGENTS.md`,
+  `CURRENT_HANDOFF.md`. Yerel doğrulama: `node --check server.js`,
+  `node --check scripts/check-frontend.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` başarılı; tam test `106/106` geçti.
 - **Public arşivde `#` numeric kategori grubu temizlendi:** Kullanıcı, arşiv alfabetik
   dizininde `#` altında `2,3,4...` gibi gerçek kategori olmayan parçaların göründüğünü ve
   aynı sorunun ayet/numara parçalarıyla bölünmüş gibi durduğunu bildirdi. Canlı Supabase

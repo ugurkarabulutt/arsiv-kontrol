@@ -515,7 +515,12 @@ if (
   !html.includes('renderSubmitTagsPreview') ||
   !html.includes('id="detailHistoryQuestion"') ||
   !html.includes('id="detailHistoryTags"') ||
-  !html.includes("setApprovalAction(id,'approve',btn,{questionText:normalizeHistoryQuestionUi(v('detailHistoryQuestion')),tags:parseHistoryTags(v('detailHistoryTags'))})") ||
+  !html.includes('id="detailHistoryCorrectedText"') ||
+  !html.includes('saveDetailHistoryChanges') ||
+  !html.includes("api('POST',`/api/history/${id}/content`,payload)") ||
+  !html.includes("api('POST',`/api/history/${id}/submit`,{questionText:payload.questionText,tags:payload.tags,submissionNote:normalizeSubmissionNoteUi(window._detailHistoryItem?.submissionNote||'')})") ||
+  !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/content'") ||
+  !server.includes('normalizeHistoryCorrectedText') ||
   !html.includes('h.questionText') ||
   !html.includes('historyTagsChips(h.tags||[])')
 ) {

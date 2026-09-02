@@ -1,5 +1,32 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-02 Codex Admin Gör Ekranı Birleşik Düzenleme Akışı
+
+- Ekip lideri, `Gör` ve `Eksikleri Tamamla` akışlarında soru, etiket ve cevap/düzeltilmiş
+  metnin tek ekranda görülüp düzenlenebilmesini istedi.
+- Backend'e yetki kontrollü `POST /api/history/:id/content` endpoint'i eklendi. Bu endpoint
+  yalnız düzenlenebilir durumdaki kayıtları kabul eder: kayıt sahibi için `taslak` ve
+  `geri_gonderildi`; admin/süper admin için `bekliyor`, `teyit_bekliyor`, `taslak` ve
+  `geri_gonderildi`. `onaylandi`, `reddedildi`, `arsivlendi` ve parça kayıtlar bu yoldan
+  düzenlenmez.
+- Yeni endpoint `question_text`, `tags` ve `corrected_text` alanlarını birlikte kaydeder.
+  Düzeltilmiş metinde paragraf/satır düzeni korunur; sadece satır sonu/boş kenar temizliği
+  yapılır. Cevap metni değişirse düzeltilmiş metin tekrar kilidi güncellenir.
+- Admin detay modalı artık tek ekranda `Soru`, `Etiketler` ve `Cevap (düzeltilmiş metin)`
+  alanlarını gösterir. Yetkili kullanıcı `Kaydet`, kayıt sahibi ise `Kaydet ve Onaya Gönder`
+  kullanabilir. Admin `Onayla` dediğinde önce bu ekrandaki içerik kaydedilir, sonra onay
+  işlemi yapılır.
+- Geri gönderilen kayıtlardaki `Eksikleri Tamamla` butonu artık ayrı onaya gönderme
+  penceresine değil aynı `Gör` detay/düzenleme ekranına açılır.
+- İşlem `admin_action_log` içinde `approval.content_update` olarak kaydedilir; logda tam içerik
+  saklanmaz, değişen alan ve uzunluk özeti tutulur.
+- Değişen dosyalar: `server.js`, `index.html`, `scripts/check-frontend.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; tam test `106/106` geçti.
+- Sıradaki adım: `git diff --check`, commit/push, production deploy ve canlı `/admin`
+  marker/smoke kontrolü.
+
 ## 2026-09-02 Codex Public `#` Numeric Kategori Temizliği
 
 - Kullanıcı, public arşiv alfabetik dizininde `#` altında `2,3,4...` gibi gerçek kategori
