@@ -16,7 +16,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260902-search-card-icons-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260902-question-detail-fresh-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'allaha-ulasmayi-dilemek',
@@ -2544,20 +2544,27 @@ function renderShell({ title, description, active, content, status = 200, questi
       function bindFastPublicNavigation() {
         var root = document.documentElement;
         var ttl = 2 * 60 * 1000;
-        var cachePrefix = 'dsca-page-cache:v5:';
+        var cachePrefix = 'dsca-page-cache:v6:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
         }
-        function isSafeRoute(url) {
-          if (!url || url.origin !== window.location.origin) return false;
+        function relativePath(url) {
           var path = cleanPath(url.pathname);
           var base = '${PREVIEW_BASE}' || '';
-          if (base && !path.startsWith(base)) return false;
-          var relative = base ? cleanPath(path.slice(base.length) || '/') : path;
+          return base ? cleanPath(path.slice(base.length) || '/') : path;
+        }
+        function isSafeRoute(url) {
+          if (!url || url.origin !== window.location.origin) return false;
+          var base = '${PREVIEW_BASE}' || '';
+          if (base && !cleanPath(url.pathname).startsWith(base)) return false;
+          var relative = relativePath(url);
           if (relative.startsWith('/api') || relative.startsWith('/auth') || relative.startsWith('/assets')) return false;
           if (/\\.(png|jpe?g|webp|svg|ico|css|js|json|xml|txt)$/i.test(relative)) return false;
           return true;
+        }
+        function isCacheableRoute(url) {
+          return !relativePath(url).startsWith('/soru/');
         }
         function isFastLink(anchor) {
           if (!anchor || anchor.target || anchor.hasAttribute('download')) return false;
@@ -2575,6 +2582,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           return cachePrefix + url.pathname + url.search;
         }
         function readCached(url) {
+          if (!isCacheableRoute(url)) return '';
           try {
             var raw = window.sessionStorage.getItem(cacheKey(url));
             if (!raw) return '';
@@ -2589,6 +2597,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
         }
         function writeCached(url, html) {
+          if (!isCacheableRoute(url)) return;
           if (!html || !/<html[\\s>]/i.test(html)) return;
           try {
             window.sessionStorage.setItem(cacheKey(url), JSON.stringify({ time: Date.now(), html: html }));
@@ -2844,6 +2853,9 @@ function createPublicArchivePreviewRouter(options = {}) {
   async function sendRoute(req, res, next, routePath, query = {}) {
     try {
       const archiveData = await loadArchiveData(req, dataRouteFor(routePath), query);
+      if (!noindex && String(routePath || '').replace(/^\/+/, '').startsWith('soru/')) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      }
       sendRendered(res, renderPublicArchivePreviewRoute(routeFor(routePath), query, {
         ...(archiveData || {}),
         basePath,
