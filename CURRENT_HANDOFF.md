@@ -29,6 +29,11 @@
   `Cevabı oku` CTA stili kullanıldı. Ana sayfa `Öne Çıkan Sorular` seçimi, en güçlü üç kayda
   sabitlenmemesi için önce iyi aday havuzu seçip sonra saatlik hash ile farklı üçlü döndürecek
   şekilde güçlendirildi. Bu davranış için test eklendi; tam test `108/108` geçti.
+- Kullanıcı canlı ekranda detay yan paneli linklerinin hâlâ küçük, numaralı ve karmaşık
+  göründüğünü bildirdi. `İlgili Sorular` ve `En Çok Okunanlar` kartlarından `01/02` sıra
+  numaraları tamamen kaldırıldı; soru başlığı, okunma sayısı ve sağda parlayan `Cevabı oku`
+  butonu olan sade kart yapısı kuruldu. Public CSS cache takılmasını engellemek için
+  `PUBLIC_ARCHIVE_ASSET_VERSION` `20260903-detail-side-cards-v1` değerine yükseltildi.
 
 ## 2026-09-03 Codex Güvenlik Sertleştirme Paketi
 

@@ -2508,14 +2508,14 @@ a.pa-chip:hover,
 
 .pa-side-list a {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 14px;
   min-width: 0;
-  min-height: 92px;
-  padding: 12px;
+  min-height: 0;
+  padding: 16px;
   color: var(--pa-text);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.35;
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--pa-mint) 18%, transparent), transparent 58%),
@@ -2532,61 +2532,54 @@ a.pa-chip:hover,
   min-width: 0;
 }
 
-.pa-side-question-index,
-.pa-side-question-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
-
-.pa-side-question-index {
-  width: 34px;
-  height: 34px;
-  color: var(--pa-green);
-  font-family: var(--pa-font-serif);
-  font-size: 14px;
-  font-weight: 900;
-  background: color-mix(in srgb, var(--pa-mint) 72%, var(--pa-surface));
-  border: 1px solid color-mix(in srgb, var(--pa-green) 22%, transparent);
-  border-radius: 12px;
-}
-
-.pa-side-question-body {
-  display: grid;
-  gap: 10px;
-}
-
-.pa-side-question-body strong {
+.pa-side-question-title {
   display: -webkit-box;
+  min-width: 0;
   color: var(--pa-text);
-  font-size: 14px;
-  font-weight: 850;
-  line-height: 1.38;
+  font-family: var(--pa-font-serif);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: 0;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.pa-side-question-body > span {
+.pa-side-question-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.pa-side-question-meta {
   display: inline-flex;
+  min-width: 0;
   color: var(--pa-text-3);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .pa-side-question-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   position: relative;
-  justify-self: start;
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 38px;
+  padding: 0 15px;
   overflow: hidden;
   color: #FFFFFF;
   background: linear-gradient(135deg, var(--pa-primary) 0%, var(--pa-primary-hover) 100%);
   border: 1px solid color-mix(in srgb, var(--pa-primary) 62%, transparent);
   border-radius: 999px;
-  box-shadow: 0 12px 24px rgb(20 90 58 / 0.18);
-  font-size: 12px;
+  box-shadow: 0 15px 28px rgb(20 90 58 / 0.2);
+  font-size: 13px;
   font-weight: 850;
   line-height: 1.2;
   white-space: nowrap;

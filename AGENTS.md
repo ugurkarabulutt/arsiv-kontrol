@@ -141,6 +141,11 @@ tespit edilir).
   `Cevabı oku` CTA stili kullanıldı. Ana sayfa soru seçimi de en çok okunan birkaç soruya
   sabitlenmemesi için iyi aday havuzu içinden saatlik seçim yapacak hale getirildi; rotasyon
   davranışı testle kilitlendi.
+  Canlı cihaz geri bildiriminde detay yan paneli linklerinin hâlâ küçük, numaralı ve karmaşık
+  göründüğü tespit edildi. `İlgili Sorular` ve `En Çok Okunanlar` kartlarından sıra numaraları
+  kaldırıldı; okunma sayısı ve sağda parlayan `Cevabı oku` butonu bulunan sade kart yapısı
+  kullanıldı. CSS cache'i kırmak için `PUBLIC_ARCHIVE_ASSET_VERSION`
+  `20260903-detail-side-cards-v1` değerine yükseltildi.
 
 - **Güvenlik sertleştirme paketi eklendi:** Public ön yüz ve admin panelde ciddi ziyaretçi
   trafiği öncesi güvenlik başlıkları ve API korumaları güçlendirildi. Backend artık genel
