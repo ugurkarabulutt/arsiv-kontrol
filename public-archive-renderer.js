@@ -302,7 +302,7 @@ function sideQuestionLink(item, index = 0) {
         <strong>${escapeHtml(item.title)}</strong>
         <span>${readCountLabel(item.readCount || 0)}</span>
       </span>
-      <span class="pa-side-question-arrow">${iconSvg('arrow-right')}</span>
+      <span class="pa-side-question-cta">Cevabı oku ${iconSvg('arrow-right', 'pa-cta-icon')}</span>
     </a>
   `;
 }
@@ -905,20 +905,30 @@ function rotateByHour(entries = [], hour = homeRotationHour()) {
   return [...entries.slice(offset), ...entries.slice(0, offset)];
 }
 
+function hourlyQuestionPick(entries = [], count = 3, hour = homeRotationHour(), slot = 'featured') {
+  if (!entries.length) return [];
+  return entries
+    .map(entry => ({ entry, score: hashString(`${slot}:${hour}:${entry.slug || ''}:${entry.title || ''}`) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, count)
+    .map(item => item.entry);
+}
+
 function homeQuestionSets(entries = []) {
   const unique = uniqueHomeQuestions(entries);
   const hour = homeRotationHour();
-  const featured = unique
+  const featuredPool = unique
     .map(entry => ({ entry, score: weightedHomeScore(entry, hour, 'featured') }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
+    .slice(0, 18)
     .map(item => item.entry);
+  const featured = hourlyQuestionPick(featuredPool, 3, hour, 'featured');
   const used = new Set(featured.map(homeQuestionIdentity));
   const latestPool = unique
     .filter(entry => !used.has(homeQuestionIdentity(entry)))
     .sort((a, b) => entryPublishedTime(b) - entryPublishedTime(a))
-    .slice(0, 18);
-  const latest = rotateByHour(latestPool, hour).slice(0, 3);
+    .slice(0, 24);
+  const latest = hourlyQuestionPick(rotateByHour(latestPool, hour), 3, hour, 'latest');
   const latestUsed = new Set([...used, ...latest.map(homeQuestionIdentity)]);
   if (latest.length < 3) {
     const fallback = unique

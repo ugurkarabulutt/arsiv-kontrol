@@ -24,6 +24,11 @@
   sunulmasını istedi. Detay yan panelindeki linkler sıra numarası, soru başlığı, okunma sayısı
   ve sağ ok içeren tıklanabilir küçük kartlara çevrildi. Ana sayfa soru seçiminin mevcutta
   saatlik rotasyonla çalıştığı kullanıcıya bildirildi.
+- Kullanıcı canlıda ana sayfada hep aynı soruları gördüğünü ve yan paneldeki ok stilini
+  beğenmediğini bildirdi. Yan panel kartlarındaki büyük ok yerine ana sayfadaki parlayan
+  `Cevabı oku` CTA stili kullanıldı. Ana sayfa `Öne Çıkan Sorular` seçimi, en güçlü üç kayda
+  sabitlenmemesi için önce iyi aday havuzu seçip sonra saatlik hash ile farklı üçlü döndürecek
+  şekilde güçlendirildi. Bu davranış için test eklendi; tam test `108/108` geçti.
 
 ## 2026-09-03 Codex Güvenlik Sertleştirme Paketi
 

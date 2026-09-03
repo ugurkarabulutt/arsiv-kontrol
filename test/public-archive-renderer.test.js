@@ -778,6 +778,37 @@ test('home page question selection only deduplicates exact question-answer copie
   assert.match(home, /Çok okunan soru vitrinde yer bulur mu\?/);
 });
 
+test('home page featured questions rotate across hours from a wider pool', () => {
+  const archiveData = {
+    brand: {},
+    categories: [{ slug: 'genel', name: 'Genel', description: 'Genel sorular.', topicSlugs: ['genel'] }],
+    topics: [],
+    qa: Array.from({ length: 24 }, (_, index) => ({
+      slug: `saatlik-soru-${index + 1}`,
+      title: `Saatlik soru ${index + 1}`,
+      question: `Saatlik soru ${index + 1}`,
+      answer: [`Saatlik cevap ${index + 1}`],
+      categorySlug: 'genel',
+      topicSlugs: ['genel'],
+      publishedAt: `2026-08-${String(10 + index).padStart(2, '0')}T09:00:00.000Z`,
+      readCount: 10 + index,
+      isFeatured: true
+    }))
+  };
+  const originalNow = Date.now;
+  try {
+    Date.now = () => Date.UTC(2026, 7, 20, 9, 0, 0);
+    const first = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
+    Date.now = () => Date.UTC(2026, 7, 20, 10, 0, 0);
+    const second = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
+    const firstFeatured = first.slice(first.indexOf('Öne Çıkan Sorular'), first.indexOf('Aktif arşiv'));
+    const secondFeatured = second.slice(second.indexOf('Öne Çıkan Sorular'), second.indexOf('Aktif arşiv'));
+    assert.notEqual(firstFeatured, secondFeatured);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test('mobile search copy stays compact but accessible', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
   assert.match(home, /placeholder="Soru veya kategori arayın\.\.\."/);

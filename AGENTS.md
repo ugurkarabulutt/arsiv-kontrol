@@ -137,6 +137,10 @@ tespit edilir).
   Aynı turda detay yan paneli UX'i güçlendirildi: `İlgili Sorular` ve `En Çok Okunanlar`
   linkleri sıra numarası, başlık, okunma sayısı ve ok ikonu bulunan küçük tıklanabilir kartlara
   çevrildi.
+  Sonraki görsel turda bu kartlardaki büyük ok ikonu kaldırılıp ana sayfadaki parlayan
+  `Cevabı oku` CTA stili kullanıldı. Ana sayfa soru seçimi de en çok okunan birkaç soruya
+  sabitlenmemesi için iyi aday havuzu içinden saatlik seçim yapacak hale getirildi; rotasyon
+  davranışı testle kilitlendi.
 
 - **Güvenlik sertleştirme paketi eklendi:** Public ön yüz ve admin panelde ciddi ziyaretçi
   trafiği öncesi güvenlik başlıkları ve API korumaları güçlendirildi. Backend artık genel
