@@ -632,6 +632,67 @@ test('public account page offers Google and email authentication', () => {
   assert.match(account, /Google hesabınızla hızlıca devam edebilir/);
 });
 
+test('question detail hides same-question related links and shows popular links separately', () => {
+  const archiveData = {
+    brand: {},
+    categories: [{ slug: 'mursid', name: 'Mürşid', description: 'Mürşid soruları.', topicSlugs: ['mursid'] }],
+    topics: [],
+    qa: [
+      {
+        slug: 'ana-soru',
+        title: 'Mürşide neden ihtiyaç vardır?',
+        question: 'Mürşide neden ihtiyaç vardır?',
+        answer: ['Ana cevap.'],
+        categorySlug: 'mursid',
+        topicSlugs: ['mursid'],
+        relatedSlugs: ['ana-soru-kopya', 'farkli-soru'],
+        publishedAt: '2026-08-20T09:00:00.000Z',
+        readCount: 20
+      },
+      {
+        slug: 'ana-soru-kopya',
+        title: 'Mürşide neden ihtiyaç vardır?',
+        question: 'Mürşide neden ihtiyaç vardır?',
+        answer: ['Aynı sorunun farklı cevabı.'],
+        categorySlug: 'mursid',
+        topicSlugs: ['mursid'],
+        publishedAt: '2026-08-19T09:00:00.000Z',
+        readCount: 30
+      },
+      {
+        slug: 'farkli-soru',
+        title: 'Doğru mürşid nasıl tanınır?',
+        question: 'Doğru mürşid nasıl tanınır?',
+        answer: ['Farklı ilgili cevap.'],
+        categorySlug: 'mursid',
+        topicSlugs: ['mursid'],
+        publishedAt: '2026-08-18T09:00:00.000Z',
+        readCount: 12
+      },
+      {
+        slug: 'populer-soru',
+        title: 'En çok okunan soru',
+        question: 'En çok okunan soru',
+        answer: ['Popüler cevap.'],
+        categorySlug: 'mursid',
+        topicSlugs: ['mursid'],
+        publishedAt: '2026-08-17T09:00:00.000Z',
+        readCount: 99,
+        isDetailPopular: true
+      }
+    ]
+  };
+
+  const html = renderPublicArchivePreviewRoute('/public-preview/soru/ana-soru', {}, archiveData).html;
+  const relatedSection = html.slice(html.indexOf('İlgili Sorular'), html.indexOf('En Çok Okunanlar'));
+  const popularSection = html.slice(html.indexOf('En Çok Okunanlar'), html.indexOf('Kategoriler'));
+  assert.match(relatedSection, /Doğru mürşid nasıl tanınır\?/);
+  assert.doesNotMatch(relatedSection, /ana-soru-kopya/);
+  assert.match(html, /En Çok Okunanlar/);
+  assert.match(popularSection, /En çok okunan soru/);
+  assert.match(popularSection, /99 okunma/);
+});
+
 test('question cards are whole-card navigable without helpful voting', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
   assert.match(home, /data-card-href="\/public-preview\/soru\/ornek-soru"/);

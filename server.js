@@ -5662,6 +5662,10 @@ function publicArchiveQuestionIdentity(record = {}) {
   return normalizedQuestion || normalizedAnswer || '';
 }
 
+function publicArchiveQuestionOnlyIdentity(record = {}) {
+  return publicArchiveComparable(record.question || record.question_text || record.title || record.filename || '');
+}
+
 function publicArchiveCandidateTime(record = {}) {
   const date = new Date(record.published_at || record.publishedAt || record.approved_at || record.updated_at || record.updatedAt || record.created_at || record.createdAt || 0);
   const time = date.getTime();
@@ -5965,6 +5969,7 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
       readTime: Number(row.read_time || 1),
       readCount: statsMap.get(row.slug) || Number(row.read_count || 0) || 0,
       isFeatured: row.is_featured === true,
+      isDetailPopular: row.detail_popular === true,
       relatedSlugs: Array.isArray(row.related_slugs) ? row.related_slugs : []
     };
   });
@@ -6367,13 +6372,71 @@ async function publicArchiveDatasetForRows({ rows = [], categoryRows = [], stats
   const neededCategoryRows = categoryRows.length
     ? categoryRows
     : await loadPublicArchiveCategoryRowsBySlug(publicArchiveTagSlugsFromRows(rows));
+  const statsMap = await loadPublicArchiveStatsMap(rows.map(row => row.slug).filter(Boolean));
   const dataset = publicArchiveDatasetFromPublicRows({
     qaRows: rows,
     categoryRows: neededCategoryRows,
     topicRows: [],
+    statsMap,
     allowEmpty
   });
   return { ...dataset, stats, pagination, search };
+}
+
+async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestionKeys = [], limit = 6 } = {}) {
+  const cleanLimit = Math.max(1, Math.min(Number(limit) || 6, 12));
+  const excludedSlugs = new Set(excludeSlugs.filter(Boolean));
+  const excludedQuestions = new Set(excludeQuestionKeys.filter(Boolean));
+  const selected = [];
+  const seenQuestions = new Set(excludedQuestions);
+
+  if (HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
+    const { data: statRows, error: statError } = await supabase
+      .from('public_question_stats')
+      .select('slug,read_count')
+      .order('read_count', { ascending: false })
+      .limit(cleanLimit * 5);
+    if (statError) throw new Error(statError.message);
+    const statMap = new Map((statRows || []).map(item => [item.slug, Number(item.read_count || 0)]));
+    const statSlugs = (statRows || [])
+      .map(item => item.slug)
+      .filter(slug => slug && !excludedSlugs.has(slug));
+    if (statSlugs.length) {
+      const { data: qaRows, error: qaError } = await supabase
+        .from('public_qa')
+        .select(PUBLIC_ARCHIVE_LIST_SELECT)
+        .eq('status', 'published')
+        .in('slug', statSlugs);
+      if (qaError) throw new Error(qaError.message);
+      for (const row of (qaRows || []).sort((a, b) => (statMap.get(b.slug) || 0) - (statMap.get(a.slug) || 0))) {
+        const questionKey = publicArchiveQuestionOnlyIdentity(row);
+        if (questionKey && seenQuestions.has(questionKey)) continue;
+        seenQuestions.add(questionKey);
+        selected.push({ ...row, read_count: statMap.get(row.slug) || 0, detail_popular: true });
+        if (selected.length >= cleanLimit) return selected;
+      }
+    }
+  }
+
+  if (selected.length < cleanLimit) {
+    const { data, error } = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(cleanLimit * 4);
+    if (error) throw new Error(error.message);
+    for (const row of data || []) {
+      if (!row?.slug || excludedSlugs.has(row.slug) || selected.some(item => item.slug === row.slug)) continue;
+      const questionKey = publicArchiveQuestionOnlyIdentity(row);
+      if (questionKey && seenQuestions.has(questionKey)) continue;
+      seenQuestions.add(questionKey);
+      selected.push({ ...row, detail_popular: true });
+      if (selected.length >= cleanLimit) break;
+    }
+  }
+
+  return selected;
 }
 
 async function loadPublicArchiveHomeDataset() {
@@ -6535,7 +6598,8 @@ async function loadPublicArchiveQuestionDataset(slug = '') {
   if (error) throw new Error(error.message);
   if (!row) return publicArchiveDatasetForRows({ rows: [], allowEmpty: true });
   let relatedRows = [];
-  const relatedSlugs = Array.isArray(row.related_slugs) ? row.related_slugs.filter(Boolean).slice(0, 3) : [];
+  const currentQuestionKey = publicArchiveQuestionOnlyIdentity(row);
+  const relatedSlugs = Array.isArray(row.related_slugs) ? row.related_slugs.filter(Boolean).slice(0, 12) : [];
   if (relatedSlugs.length) {
     const relatedResult = await supabase
       .from('public_qa')
@@ -6545,7 +6609,22 @@ async function loadPublicArchiveQuestionDataset(slug = '') {
     if (relatedResult.error) throw new Error(relatedResult.error.message);
     relatedRows = relatedResult.data || [];
   }
-  const rows = [row, ...relatedRows.filter(item => item.slug !== row.slug)];
+  const seenRelatedQuestions = new Set([currentQuestionKey].filter(Boolean));
+  relatedRows = relatedRows
+    .filter(item => item.slug !== row.slug)
+    .filter(item => {
+      const questionKey = publicArchiveQuestionOnlyIdentity(item);
+      if (questionKey && seenRelatedQuestions.has(questionKey)) return false;
+      if (questionKey) seenRelatedQuestions.add(questionKey);
+      return true;
+    })
+    .slice(0, 6);
+  const popularRows = await loadPublicArchivePopularRows({
+    excludeSlugs: [row.slug, ...relatedRows.map(item => item.slug)],
+    excludeQuestionKeys: [...seenRelatedQuestions],
+    limit: 5
+  });
+  const rows = [row, ...relatedRows, ...popularRows];
   return publicArchiveDatasetForRows({
     rows,
     stats: publicArchiveStats(1),

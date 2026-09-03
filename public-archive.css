@@ -2516,6 +2516,14 @@ a.pa-chip:hover,
   word-break: normal;
 }
 
+.pa-side-list a span {
+  display: block;
+  margin-top: 5px;
+  color: var(--pa-text-3);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .pa-side-list a:hover {
   color: var(--pa-text);
 }

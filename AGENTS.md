@@ -121,6 +121,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-03
+- **Public detay iç bağlantıları güçlendirildi:** Canlı veride yapılan salt-okuma kontrolde
+  `İlgili Sorular` alanının kendi kaydını basmadığı, fakat aynı soru metnine sahip farklı
+  slugları gösterebildiği görüldü. Detay sayfasında aynı soru metnine sahip kayıtlar artık
+  `İlgili Sorular` ve yeni eklenen `En Çok Okunanlar` bloklarından dışlanır. İlgili soru
+  sayısı en fazla 6 kayda çıkarıldı; linklerde okunma sayısı gösterilir. `En Çok Okunanlar`
+  varsa `public_question_stats` tablosundaki gerçek okunma sayısına göre beslenir, yoksa son
+  yayınlananlardan güvenli yedek kullanır. Bu değişiklik veri silmez, yayın kayıtlarını
+  değiştirmez ve yalnız public detay sayfası öneri alanlarını düzenler. Değişen dosyalar:
+  `server.js`, `public-archive-renderer.js`, `public-archive.css`,
+  `test/public-archive-renderer.test.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`. Yerel doğrulama:
+  `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı; tam test `107/107` geçti.
+
 - **Güvenlik sertleştirme paketi eklendi:** Public ön yüz ve admin panelde ciddi ziyaretçi
   trafiği öncesi güvenlik başlıkları ve API korumaları güçlendirildi. Backend artık genel
   `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,

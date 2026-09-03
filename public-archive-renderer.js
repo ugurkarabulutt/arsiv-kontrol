@@ -192,6 +192,23 @@ function bySlug(items, slug) {
   return items.find(item => item.slug === slug) || null;
 }
 
+function publicArchiveComparable(value = '') {
+  return String(value || '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/[’‘`´]/g, "'")
+    .replace(/[“”]/g, '"')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function questionTextIdentity(entry = {}) {
+  return publicArchiveComparable(entry.question || entry.title || '');
+}
+
 function asPublicCategory(item) {
   if (!item) return null;
   return {
@@ -263,9 +280,18 @@ function publicCategorySeoIndexable(category, explicitCount = null) {
 }
 
 function relatedEntries(entry) {
+  const currentQuestion = questionTextIdentity(entry);
+  const seenQuestions = new Set([currentQuestion].filter(Boolean));
   return (entry.relatedSlugs || [])
     .map(slug => bySlug(publicArchiveFixtures.qa, slug))
-    .filter(Boolean);
+    .filter(item => {
+      if (!item || item.slug === entry.slug) return false;
+      const identity = questionTextIdentity(item);
+      if (identity && seenQuestions.has(identity)) return false;
+      if (identity) seenQuestions.add(identity);
+      return true;
+    })
+    .slice(0, 6);
 }
 
 function relatedTopics(topic) {
@@ -1356,6 +1382,20 @@ function renderQuestion(slug) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
   const related = relatedEntries(entry);
+  const blockedPopular = new Set([entry.slug, ...related.map(item => item.slug)]);
+  const currentQuestion = questionTextIdentity(entry);
+  const seenPopularQuestions = new Set([currentQuestion, ...related.map(questionTextIdentity)].filter(Boolean));
+  const popular = publicArchiveFixtures.qa
+    .filter(item => item?.isDetailPopular)
+    .filter(item => {
+      if (!item || blockedPopular.has(item.slug)) return false;
+      const identity = questionTextIdentity(item);
+      if (identity && seenPopularQuestions.has(identity)) return false;
+      if (identity) seenPopularQuestions.add(identity);
+      return true;
+    })
+    .sort((a, b) => normalizedReadCount(b) - normalizedReadCount(a) || String(a.title || '').localeCompare(String(b.title || ''), 'tr'))
+    .slice(0, 5);
   return renderShell({
     active: 'archive',
     title: entry.title,
@@ -1391,7 +1431,13 @@ function renderQuestion(slug) {
             ${related.length ? `
               <section>
                 <h2>İlgili Sorular</h2>
-                <div class="pa-side-list">${related.map(item => `<a href="${PREVIEW_BASE}/soru/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a>`).join('')}</div>
+                <div class="pa-side-list">${related.map(item => `<a href="${PREVIEW_BASE}/soru/${escapeHtml(item.slug)}">${escapeHtml(item.title)}<span>${readCountLabel(item.readCount || 0)}</span></a>`).join('')}</div>
+              </section>
+            ` : ''}
+            ${popular.length ? `
+              <section>
+                <h2>En Çok Okunanlar</h2>
+                <div class="pa-side-list">${popular.map(item => `<a href="${PREVIEW_BASE}/soru/${escapeHtml(item.slug)}">${escapeHtml(item.title)}<span>${readCountLabel(item.readCount || 0)}</span></a>`).join('')}</div>
               </section>
             ` : ''}
             <section>

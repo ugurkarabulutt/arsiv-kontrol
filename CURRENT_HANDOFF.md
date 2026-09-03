@@ -1,5 +1,26 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-03 Codex Public Detay İç Bağlantı Düzeltmesi
+
+- Kullanıcı, soru detayındaki `İlgili Sorular` alanında aynı sorunun tekrar göründüğünü
+  bildirdi. Canlı veride yapılan salt-okuma kontrolde kendi kendine referans `0` çıktı;
+  sorun aynı soru metninin farklı sluglarla yayında kalmasından kaynaklanıyordu.
+- Detay sayfasındaki `İlgili Sorular` artık aynı soru metnine sahip kayıtları göstermez.
+  Bu filtre hem server tarafında ilgili kayıtları hazırlarken hem renderer tarafında emniyet
+  katmanı olarak uygulanır.
+- Detay sayfasında iç bağlantıyı güçlendirmek için `En Çok Okunanlar` bölümü eklendi.
+  Okunma sayacı tablosu varsa gerçek en çok okunan kayıtlar alınır; yoksa son yayınlananlardan
+  güvenli yedek kullanılır. Mevcut soru, ilgili sorular ve aynı soru metnine sahip kayıtlar
+  bu bloktan da dışlanır.
+- `İlgili Sorular` sayısı en fazla 6 kayda çıkarıldı; her linkin altında okunma sayısı
+  gösterilir.
+- Değişen dosyalar: `server.js`, `public-archive-renderer.js`, `public-archive.css`,
+  `test/public-archive-renderer.test.js`, `CURRENT_HANDOFF.md`.
+- Yerel doğrulama: `node --check server.js`, `node --check public-archive-renderer.js`,
+  `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
+  `git diff --check` başarılı. Tam test `107/107` geçti; `git diff --check` yalnız mevcut
+  CRLF uyarılarını verdi.
+
 ## 2026-09-03 Codex Güvenlik Sertleştirme Paketi
 
 - Kullanıcı, public ön yüz ve admin panel için ciddi ziyaretçi trafiği başlamadan önce en ufak
