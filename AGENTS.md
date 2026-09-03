@@ -134,6 +134,9 @@ tespit edilir).
   `node --check server.js`, `node --check public-archive-renderer.js`,
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
   `git diff --check` başarılı; tam test `107/107` geçti.
+  Aynı turda detay yan paneli UX'i güçlendirildi: `İlgili Sorular` ve `En Çok Okunanlar`
+  linkleri sıra numarası, başlık, okunma sayısı ve ok ikonu bulunan küçük tıklanabilir kartlara
+  çevrildi.
 
 - **Güvenlik sertleştirme paketi eklendi:** Public ön yüz ve admin panelde ciddi ziyaretçi
   trafiği öncesi güvenlik başlıkları ve API korumaları güçlendirildi. Backend artık genel

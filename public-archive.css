@@ -2503,29 +2503,99 @@ a.pa-chip:hover,
 
 .pa-side-list {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .pa-side-list a {
-  display: block;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
-  color: var(--pa-text-2);
-  font-size: 14px;
-  line-height: 1.45;
+  min-height: 76px;
+  padding: 12px;
+  color: var(--pa-text);
+  font-size: 13px;
+  line-height: 1.35;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--pa-mint) 18%, transparent), transparent 58%),
+    color-mix(in srgb, var(--pa-bg) 58%, var(--pa-surface));
+  border: 1px solid color-mix(in srgb, var(--pa-border) 82%, transparent);
+  border-radius: 16px;
   overflow-wrap: anywhere;
   word-break: normal;
+  box-shadow: 0 14px 28px rgba(9, 38, 28, 0.08);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .pa-side-list a span {
-  display: block;
-  margin-top: 5px;
+  min-width: 0;
+}
+
+.pa-side-question-index,
+.pa-side-question-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.pa-side-question-index {
+  width: 34px;
+  height: 34px;
+  color: var(--pa-green);
+  font-family: var(--pa-font-serif);
+  font-size: 14px;
+  font-weight: 900;
+  background: color-mix(in srgb, var(--pa-mint) 72%, var(--pa-surface));
+  border: 1px solid color-mix(in srgb, var(--pa-green) 22%, transparent);
+  border-radius: 12px;
+}
+
+.pa-side-question-body {
+  display: grid;
+  gap: 7px;
+}
+
+.pa-side-question-body strong {
+  display: -webkit-box;
+  color: var(--pa-text);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.38;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pa-side-question-body > span {
+  display: inline-flex;
   color: var(--pa-text-3);
   font-size: 12px;
   font-weight: 800;
 }
 
+.pa-side-question-arrow {
+  width: 30px;
+  height: 30px;
+  color: var(--pa-green);
+  background: color-mix(in srgb, var(--pa-surface) 74%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 80%, transparent);
+  border-radius: 999px;
+}
+
+.pa-side-question-arrow svg {
+  width: 15px;
+  height: 15px;
+}
+
 .pa-side-list a:hover {
   color: var(--pa-text);
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--pa-green) 42%, var(--pa-border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--pa-mint) 28%, transparent), transparent 60%),
+    color-mix(in srgb, var(--pa-bg) 46%, var(--pa-surface));
 }
 
 .pa-form-layout {

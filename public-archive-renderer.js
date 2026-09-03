@@ -294,6 +294,19 @@ function relatedEntries(entry) {
     .slice(0, 6);
 }
 
+function sideQuestionLink(item, index = 0) {
+  return `
+    <a class="pa-side-question-link" href="${PREVIEW_BASE}/soru/${escapeHtml(item.slug)}">
+      <span class="pa-side-question-index">${String(index + 1).padStart(2, '0')}</span>
+      <span class="pa-side-question-body">
+        <strong>${escapeHtml(item.title)}</strong>
+        <span>${readCountLabel(item.readCount || 0)}</span>
+      </span>
+      <span class="pa-side-question-arrow">${iconSvg('arrow-right')}</span>
+    </a>
+  `;
+}
+
 function relatedTopics(topic) {
   return (topic.relatedTopicSlugs || [])
     .map(slug => bySlug(publicArchiveFixtures.topics, slug))
@@ -1431,13 +1444,13 @@ function renderQuestion(slug) {
             ${related.length ? `
               <section>
                 <h2>İlgili Sorular</h2>
-                <div class="pa-side-list">${related.map(item => `<a href="${PREVIEW_BASE}/soru/${escapeHtml(item.slug)}">${escapeHtml(item.title)}<span>${readCountLabel(item.readCount || 0)}</span></a>`).join('')}</div>
+                <div class="pa-side-list">${related.map(sideQuestionLink).join('')}</div>
               </section>
             ` : ''}
             ${popular.length ? `
               <section>
                 <h2>En Çok Okunanlar</h2>
-                <div class="pa-side-list">${popular.map(item => `<a href="${PREVIEW_BASE}/soru/${escapeHtml(item.slug)}">${escapeHtml(item.title)}<span>${readCountLabel(item.readCount || 0)}</span></a>`).join('')}</div>
+                <div class="pa-side-list">${popular.map(sideQuestionLink).join('')}</div>
               </section>
             ` : ''}
             <section>

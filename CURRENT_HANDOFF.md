@@ -20,6 +20,10 @@
   `node --test test/public-archive-renderer.test.js`, `npm.cmd run check` ve
   `git diff --check` başarılı. Tam test `107/107` geçti; `git diff --check` yalnız mevcut
   CRLF uyarılarını verdi.
+- Kullanıcı ikinci turda `İlgili Sorular` ve `En Çok Okunanlar` bloklarının daha iyi UX ile
+  sunulmasını istedi. Detay yan panelindeki linkler sıra numarası, soru başlığı, okunma sayısı
+  ve sağ ok içeren tıklanabilir küçük kartlara çevrildi. Ana sayfa soru seçiminin mevcutta
+  saatlik rotasyonla çalıştığı kullanıcıya bildirildi.
 
 ## 2026-09-03 Codex Güvenlik Sertleştirme Paketi
 
