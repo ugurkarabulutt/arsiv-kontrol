@@ -34,6 +34,10 @@
   numaraları tamamen kaldırıldı; soru başlığı, okunma sayısı ve sağda parlayan `Cevabı oku`
   butonu olan sade kart yapısı kuruldu. Public CSS cache takılmasını engellemek için
   `PUBLIC_ARCHIVE_ASSET_VERSION` `20260903-detail-side-cards-v1` değerine yükseltildi.
+- Kullanıcı sonraki canlı kontrolde aynı kartlarda uzun soru başlıklarının `...` ile kesildiğini
+  bildirdi. Detay yan kart başlıklarındaki üç satır sınırı kaldırıldı; soru tam görünecek.
+  Asset sürümü `20260903-detail-side-full-title-v1` değerine yükseltildi ve frontend guard
+  başlığın yeniden `line-clamp` ile kesilmesini engelleyecek şekilde güncellendi.
 
 ## 2026-09-03 Codex Güvenlik Sertleştirme Paketi
 

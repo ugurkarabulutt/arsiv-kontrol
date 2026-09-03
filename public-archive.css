@@ -2533,7 +2533,7 @@ a.pa-chip:hover,
 }
 
 .pa-side-question-title {
-  display: -webkit-box;
+  display: block;
   min-width: 0;
   color: var(--pa-text);
   font-family: var(--pa-font-serif);
@@ -2541,9 +2541,8 @@ a.pa-chip:hover,
   font-weight: 900;
   line-height: 1.18;
   letter-spacing: 0;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .pa-side-question-bottom {

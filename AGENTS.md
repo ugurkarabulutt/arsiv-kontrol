@@ -146,6 +146,10 @@ tespit edilir).
   kaldırıldı; okunma sayısı ve sağda parlayan `Cevabı oku` butonu bulunan sade kart yapısı
   kullanıldı. CSS cache'i kırmak için `PUBLIC_ARCHIVE_ASSET_VERSION`
   `20260903-detail-side-cards-v1` değerine yükseltildi.
+  Bir sonraki canlı kontrolde uzun soru başlıklarının `...` ile kesildiği görüldü. Detay yan
+  kart başlıklarındaki üç satır sınırı kaldırıldı; sorular tam görünür. Asset sürümü
+  `20260903-detail-side-full-title-v1` olarak güncellendi ve frontend guard bu davranışı
+  koruyacak şekilde genişletildi.
 
 - **Güvenlik sertleştirme paketi eklendi:** Public ön yüz ve admin panelde ciddi ziyaretçi
   trafiği öncesi güvenlik başlıkları ve API korumaları güçlendirildi. Backend artık genel
