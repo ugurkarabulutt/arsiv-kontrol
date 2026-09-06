@@ -21,6 +21,9 @@ before(async () => {
   await db.exec('grant usage on schema public to service_role; grant all on all tables in schema public to service_role;');
   await db.exec(migration);
   await db.exec(migration);
+  const queueMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260906214233_review_submission_queue.sql'),'utf8');
+  await db.exec(queueMigration);
+  await db.exec(queueMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -163,6 +166,7 @@ test('public callers cannot read private tables or invoke privileged RPCs', asyn
   for (const role of ['anon','authenticated']) {
     await db.exec(`set role ${role}`);
     await assert.rejects(db.query('select * from history_revisions'),/permission denied/);
+    await assert.rejects(db.query('select * from review_history_queue'),/permission denied/);
     await assert.rejects(db.query('select review_duplicate_candidates($1)',[h.id]),/permission denied/);
     await assert.rejects(db.query('select review_history_change($1,$2,0,\'management\',\'approve\')',[h.id,ids.admin]),/permission denied/);
     await db.exec('reset role');
@@ -178,4 +182,62 @@ test('payload rejects forged types and limits privileges to explicit fields', ()
   assert.throws(()=>cleanPayload({correctedText:{text:'X'}}),/INVALID_CONTENT/);
   assert.throws(()=>cleanPayload({tags:['Etiket',42]}),/INVALID_TAGS/);
   assert.deepEqual(cleanPayload({user_id:ids.other,role:'super_admin',questionText:'Soru?\r\n',tags:['İman','İman']}),{questionText:'Soru?\n',tags:['İman']});
+});
+
+test('approval queue derives last submission, not creation, save, moderation or reanalysis time', async () => {
+  let h=await seed();
+  const unsent=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
+  assert.equal(unsent.submitted_at,null);
+  assert.equal(unsent.approval_sort_at.getTime(),h.created_at.getTime());
+  h=await change(h,'user','member','submit');
+  const first=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
+  assert.equal(first.submitted_by,ids.user);
+  assert.equal(first.submitted_at.getTime(),Date.parse(h.updated_at));
+  h=await change(h,'admin','management','save',{submissionNote:'Yönetici kontrolü'});
+  let row=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
+  assert.equal(row.submitted_at.getTime(),first.submitted_at.getTime());
+  h=await change(h,'admin','management','return',{note:'Kaynak kontrolü'});
+  h=await change(h,'user','member','reanalyze',{correctedText:h.corrected_text,analysisInput:'Test'});
+  row=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
+  assert.equal(row.submitted_at.getTime(),first.submitted_at.getTime());
+  h=await change(h,'user','member','submit');
+  row=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
+  assert.equal(row.submitted_at.getTime(),Date.parse(h.updated_at));
+  assert.ok(row.submitted_at.getTime()>first.submitted_at.getTime());
+  const before=await db.query('select * from history order by id');
+  const revisions=await db.query('select count(*)::int as n from history_revisions');
+  await db.exec('set role service_role');
+  assert.equal((await db.query('select * from review_history_queue')).rows.length,1);
+  assert.equal((await db.query("select has_table_privilege('service_role','public.review_history_queue','UPDATE') as allowed")).rows[0].allowed,false);
+  await assert.rejects(db.query("update review_history_queue set question_text='Changed' where id=$1",[h.id]),/permission denied|cannot update view/);
+  await db.exec('reset role');
+  assert.deepEqual((await db.query('select * from history order by id')).rows,before.rows);
+  assert.deepEqual((await db.query('select count(*)::int as n from history_revisions')).rows,revisions.rows);
+});
+
+test('legacy submission logs and new revisions merge without duplicate rows or unrelated events', async () => {
+  const h=await seed('user','bekliyor');
+  const log=async(action,time,actor=ids.user,target='history')=>db.query(`insert into admin_action_log
+    (action,target_type,target_id,created_at,actor_user_id) values($1,$2,$3,$4,$5)`,[action,target,h.id,time,actor]);
+  await log('approval.submitted','2026-08-20T10:00:00Z');
+  await log('approval.submitted','2026-08-20T11:00:00Z');
+  await log('approval.content_updated','2026-08-21T10:00:00Z');
+  await log('approval.submitted','2026-08-22T10:00:00Z',ids.other,'other_target');
+  let row=(await db.query('select * from review_history_queue')).rows[0];
+  assert.equal(row.submitted_at.toISOString(),'2026-08-20T11:00:00.000Z');
+  assert.equal(row.submitted_by,ids.user);
+  // The reviewer assigned to a returned item can be different from its immutable owner.
+  await db.query(`insert into history_revisions(history_id,version,actor_id,action,before_data,after_data,created_at)
+    values($1,1,$2,'submit','{}','{}','2026-08-23T10:00:00Z')`,[h.id,ids.other]);
+  await log('review.submit','2026-08-23T10:00:00Z',ids.other);
+  let rows=(await db.query('select * from review_history_queue')).rows;
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].submitted_at.toISOString(),'2026-08-23T10:00:00.000Z');
+  assert.equal(rows[0].submitted_by,ids.other);
+  assert.equal(rows[0].user_id,ids.user);
+  // An old open client may log a later submission through the legacy action.
+  await log('approval.submitted','2026-08-24T10:00:00Z');
+  row=(await db.query('select * from review_history_queue')).rows[0];
+  assert.equal(row.submitted_at.toISOString(),'2026-08-24T10:00:00.000Z');
+  assert.equal(row.submitted_by,ids.user);
 });

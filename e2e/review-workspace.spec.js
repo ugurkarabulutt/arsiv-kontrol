@@ -163,3 +163,29 @@ test('unavailable tab falls back to workspace home, legacy startup remains uncha
   await expect(page.locator('#tabContent-analiz')).toBeVisible();
   await expect(page.locator('[data-review-selector]:visible')).toHaveCount(0);
 });
+
+test('latest submission appears first with its submission date on desktop and mobile',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await login(page,'admin');await openList(page);
+  await page.locator('#rwStatus').selectOption('geri_gonderildi');
+  await page.locator('.rw-open').last().click();
+  const question=await page.locator('#rwQuestion').inputValue();
+  await page.getByRole('button',{name:'Onaya Gönder',exact:true}).click();
+  await expect(page.locator('.rw-record-meta')).toContainText('Onay bekleyenler');
+  await page.getByRole('button',{name:'Kapat',exact:true}).click();
+  await page.locator('#rwStatus').selectOption('bekliyor');
+  const first=page.locator('#rwRows .rw-row').first();
+  await expect(first.locator('.rw-question')).toHaveText(question);
+  await expect(first.locator('.rw-meta')).toContainText('Onaya gönderim:');
+  await selectSpace(page,'management');await openList(page,'management');
+  await expect(first.locator('.rw-question')).toHaveText(question);
+  await expect(first.locator('.rw-meta')).toContainText('Onaya gönderim:');
+  const rows=page.locator('#rwRows .rw-row');
+  expect(await rows.filter({hasText:'İlk kayıt:'}).count()).toBeGreaterThan(0);
+  await page.screenshot({path:'.tmp-review-test-results/submission-order-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await expect(first.locator('.rw-question')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'.tmp-review-test-results/submission-order-mobile.png'});
+  expect(errors).toEqual([]);
+});

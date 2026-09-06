@@ -41,3 +41,49 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   assert.ok(source.indexOf("app.use('/api/history', auth, review.legacy)")<source.indexOf("app.post('/api/history/:id/approve'"));
   assert.match(source,/ADMIN_REVIEW_WORKSPACES_ENABLED = process.env.ADMIN_REVIEW_WORKSPACES_ENABLED === '1'/);
 });
+
+test('resubmitted old records lead the entire pending queue before pagination for both admin roles',async()=>{
+  const owner=fixture.users[0];
+  const inserted=[];
+  try {
+    for(let i=0;i<32;i++) {
+      const h=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,tags,created_at)
+        values($1,$2,'geri_gonderildi',$3,$4,'["İştiyak"]','2026-01-01T00:00:00Z') returning *`,
+        [owner.id,'Sıra Testi Ekip',`Sıra testi ${i}?`,`Cevap ${i}.\n\nİkinci paragraf.`])).rows[0];
+      inserted.push(h.id);
+      const submitted=await request(`/api/review/${h.id}/action`,'user','member',{version:0,action:'submit'});
+      assert.equal(submitted.status,200);
+    }
+    const newest=inserted.at(-1);
+    for(const role of ['admin','super_admin','user']) {
+      const space=role==='user'?'member':'management';
+      const first=await request('/api/review/records?status=bekliyor&q=Sıra%20Testi',role,space);
+      assert.equal(first.status,200);assert.equal(first.data.count,32);
+      assert.deepEqual(first.data.items.map(h=>h.id),inserted.slice().reverse().slice(0,25));
+      const second=await request('/api/review/records?status=bekliyor&q=Sıra%20Testi&page=2',role,space);
+      assert.deepEqual(second.data.items.map(h=>h.id),inserted.slice().reverse().slice(25));
+      assert.equal(first.data.items[0].submittedBy,owner.id);
+      assert.equal(first.data.items[0].submittedByName,owner.name);
+      assert.ok(Date.parse(first.data.items[0].submittedAt)>Date.parse(first.data.items[0].createdAt));
+    }
+    let all=await request('/api/review/records','admin','management');
+    assert.equal(all.data.items[0].id,newest);
+    const before=await request(`/api/review/${inserted[0]}`,'admin','management');
+    const saved=await request(`/api/review/${inserted[0]}/action`,'admin','management',{version:before.data.version,action:'save',submissionNote:'Sonradan düzenleme'});
+    assert.equal(saved.status,200);
+    all=await request('/api/review/records','admin','management');
+    assert.equal(all.data.items[0].id,newest);
+    assert.equal(all.data.items[0].correctedText,undefined); // List response must not expose full answers.
+    const own=await request('/api/review/records?status=bekliyor&q=Sıra%20Testi','admin','member');
+    assert.equal(own.data.count,0);
+    const withdrawn=await request(`/api/review/${inserted[0]}/action`,'user','member',{version:saved.data.history.version,action:'withdraw'});
+    assert.equal(withdrawn.status,200);
+    const resubmitted=await request(`/api/review/${inserted[0]}/action`,'user','member',{version:withdrawn.data.history.version,action:'submit'});
+    assert.equal(resubmitted.status,200);
+    all=await request('/api/review/records','admin','management');
+    assert.equal(all.data.items[0].id,inserted[0]);
+  } finally {
+    await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[inserted]);
+    await fixture.db.query('delete from history where id=any($1::uuid[])',[inserted]);
+  }
+});

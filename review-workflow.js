@@ -26,6 +26,7 @@ const ERRORS = {
 };
 const LIST_COLUMNS = 'id,user_id,assignee_id,username,name,filename,score,total_errors,status,created_at,updated_at,version,question_text,tags,submission_note,disputed:workflow_meta->disputed,return_note:workflow_meta->>returnNote';
 const PREVIEW_COLUMNS = 'id,user_id,username,name,filename,score,total_errors,status,created_at,question_text,tags,submission_note';
+const QUEUE_COLUMNS = LIST_COLUMNS + ',submitted_at,submitted_by';
 
 function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, loadApprovalFavoriteSet = async () => new Set(), readOnly = false }) {
   const router = express.Router();
@@ -33,7 +34,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
   const spaceFor = req => workspaceFor(userFor(req), req.get('X-Review-Workspace') || req.query.workspace);
   function fail(res, error) {
     const code = Object.keys(ERRORS).find(key => String(error.message || error).includes(key));
-    const missingMigration = /version|review_history_change|workflow_meta|history_revisions/.test(error.message || '') && ['42703', 'PGRST202', '42P01'].includes(error.code);
+    const missingMigration = /version|review_history_change|workflow_meta|history_revisions|review_history_queue/.test(error.message || '') && ['42703', 'PGRST202', 'PGRST205', '42P01'].includes(error.code);
     const [status, message] = ERRORS[code] || (missingMigration
       ? [503, 'İnceleme altyapısı henüz hazır değil. Lütfen yöneticinize bildirin.']
       : [500, 'İşlem tamamlanamadı. Değişikliklerinizi koruyup tekrar deneyin.']);
@@ -56,7 +57,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const publication = new Map((published || []).map(row => [row.source_history_id, row]));
     const notes = await loadApprovalReturnNotes();
     const favorites = spaceFor(req) === 'management' ? await loadApprovalFavoriteSet(req.session.userId) : new Set();
-    const assigneeIds = [...new Set(rows.map(row => row.assignee_id).filter(Boolean))];
+    const assigneeIds = [...new Set(rows.flatMap(row => [row.assignee_id, row.submitted_by]).filter(Boolean))];
     const assignees = assigneeIds.length ? await supabase.from('users').select('id,name').in('id', assigneeIds) : { data: [] };
     if (assignees.error) throw assignees.error;
     const names = new Map((assignees.data || []).map(user => [user.id, user.name]));
@@ -64,6 +65,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
       const result = attachApprovalReturnMeta(mapHistory(row), notes);
       const meta = row.workflow_meta || { disputed: row.disputed === true, returnNote: row.return_note };
       return { ...result, version: row.version ?? 0, updatedAt: row.updated_at, assigneeId: row.assignee_id, assigneeName: names.get(row.assignee_id) || '',
+        submittedAt: row.submitted_at || null, submittedBy: row.submitted_by || null, submittedByName: names.get(row.submitted_by) || '',
         favorite: favorites.has(row.id), workflow: meta, returnNote: row.status === 'geri_gonderildi' ? (meta.returnNote ?? result.returnNote) : '',
         allowedActions: recordActions(userFor(req), row, spaceFor(req)), publication: publication.get(row.id) || null };
     });
@@ -87,7 +89,9 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const pageSize = 25;
     const term = String(req.query.q || '').trim().replace(/[%,()\\]/g, ' ').replace(/\s+/g, ' ').slice(0, 120);
     if (status !== 'all' && status !== 'disputed' && !STATUSES.includes(status)) throw new Error('INVALID_STATUS');
-    let query = supabase.from('history').select(readOnly ? PREVIEW_COLUMNS : LIST_COLUMNS, { count: 'exact' })
+    const submissionOrder = status === 'bekliyor' && !readOnly;
+    let query = supabase.from(submissionOrder ? 'review_history_queue' : 'history')
+      .select(readOnly ? PREVIEW_COLUMNS : submissionOrder ? QUEUE_COLUMNS : LIST_COLUMNS, { count: 'exact' })
       .not('status', 'in', '(chunk_draft,submitted_part)');
     if (space === 'member') query = (readOnly ? query.eq('user_id',req.session.userId) : query.or(`user_id.eq.${req.session.userId},assignee_id.eq.${req.session.userId}`)).neq('status', 'copte');
     else query = query.neq('status', 'taslak');
@@ -96,6 +100,8 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     else if (status !== 'all') query = query.eq('status', status);
     else query = query.neq('status', 'copte');
     if (term) query = query.or(['question_text', 'corrected_text', 'name', 'filename', 'submission_note'].map(field => `${field}.ilike.%${term}%`).join(','));
+    // Sort the whole filtered queue in PostgreSQL, before selecting a page.
+    if (submissionOrder) query = query.order('approval_sort_at', { ascending: false, nullsFirst: false });
     const { data, error, count } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).range((page - 1) * pageSize, page * pageSize - 1);
     if (error) throw error;
     res.json({ items: await present(req, data || []), count, page, pageSize, workspace: space });

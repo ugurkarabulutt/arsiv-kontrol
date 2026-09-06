@@ -16,6 +16,9 @@ const ReviewWorkspace = (() => {
   const homeTab = () => management() ? 'dash' : 'analiz';
   const state = () => states[space];
   const date = value => value ? new Date(value).toLocaleString('tr-TR') : '—';
+  const listDate = row => row.status === 'bekliyor'
+    ? row.submittedAt ? `Onaya gönderim: ${date(row.submittedAt)}` : `İlk kayıt: ${date(row.createdAt)}`
+    : date(row.createdAt);
   const can = action => (item?.allowedActions || []).includes(action);
   const values = () => ({ questionText: node('rwQuestion')?.value ?? item?.questionText ?? '',
     correctedText: node('rwAnswer')?.value ?? item?.correctedText ?? '',
@@ -121,7 +124,7 @@ const ReviewWorkspace = (() => {
     node('rwListMessage').textContent = '';
     node('rwCount').textContent = `${result.count} kayıt`;
     const totalPages = Math.max(1,Math.ceil(result.count/result.pageSize));
-    node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem"><div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span><span>${date(row.createdAt)}</span><span>${safe(labels[row.status] || row.status)}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
+    node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem"><div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span>${row.submittedBy && row.submittedBy !== row.userId ? `<span>Gönderen: ${safe(row.submittedByName || 'Kayıtlı ekip üyesi')}</span>` : ''}<span>${safe(listDate(row))}</span><span>${safe(labels[row.status] || row.status)}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
     node('rwPages').innerHTML = `<button class="btn-sec" ${s.page<=1?'disabled':''} onclick="ReviewWorkspace.page(-1)">Önceki</button><span>${s.page} / ${totalPages}</span><button class="btn-sec" ${s.page>=totalPages?'disabled':''} onclick="ReviewWorkspace.page(1)">Sonraki</button>`;
   }
   function filter(status) { state().status=status; state().page=1; load(); }
