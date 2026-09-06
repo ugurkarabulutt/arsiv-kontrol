@@ -137,6 +137,10 @@ tespit edilir).
   erişilebilir. `ADMIN_PREVIEW_CONTENT_READ_ONLY=1` önizlemesi API yazmalarını reddeder;
   public root/indexing kapalı bu önizleme üretime promote edilmemeli.
   Ayrıntı: `docs/admin-review-workspaces-rollout.md`, güncel durum `CURRENT_HANDOFF.md`.
+- Runtime `bd499e8` ayrı production build ile doğrulandı ve canlıya alındı:
+  deployment `dpl_Eko5dMhRAkVuYUEViHJMdtAGTRFu`, `https://arsiv.ibrahimlive.ai`.
+  130 yerel test, 6 tarayıcı testi ve canlıda 13 HTTP/asset/SEO kontrolü geçti.
+  Gerçek kullanıcıyla canlı yazma/AI/PDF denemesi yapılmadı. Public kayıtlar değiştirilmedi.
 
 ### 2026-09-03
 - **Public detay iç bağlantıları güçlendirildi:** Canlı veride yapılan salt-okuma kontrolde

@@ -11,3 +11,4 @@ _*.js
 
 .vercel
 .tmp-review-*
+supabase/.temp/

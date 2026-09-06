@@ -8,7 +8,10 @@
 Kullanıcı ayrıca canlı Supabase güncellemesini ve production yayını açıkça onayladı.
 Migration aynı yetkili araçla başarıyla uygulandı; Supabase kayıt sürümü
 `20260906153905`, adı `admin_review_workspaces`. Yerel SQL dosyası aşağıdaki ilk
-oluşturulma zamanını taşır. Production yayın doğrulaması devam ediyor.
+oluşturulma zamanını taşır. Runtime commit `bd499e8`, production deployment
+`dpl_Eko5dMhRAkVuYUEViHJMdtAGTRFu` canlı `https://arsiv.ibrahimlive.ai` adresindedir.
+Production ayarlarıyla ayrı build önce --skip-domain olarak kontrol edildi, ardından
+promote edildi. Salt okunur preview production'a taşınmadı. GitHub push yapılmadı.
 
 Migration öncesi/sonrası 5.176 history kaydının soru, cevap, etiket, kaynak, sahip ve
 durum özeti `1c5430e10f3a79416bb7c9fcc4644a80`; 3.147 public_qa satırının tam içerik
@@ -16,6 +19,10 @@ durum özeti `1c5430e10f3a79416bb7c9fcc4644a80`; 3.147 public_qa satırının ta
 394; yeni sürüm, atama ve yönlendirme sayısı sıfır. İçerik güncellemesi yapılmadı.
 Yeni iki tablo RLS korumalı; yeni beş fonksiyon SECURITY INVOKER ve yalnız service_role
 erişimlidir. Anon/authenticated doğrudan okuma/çağrı yetkileri yoktur.
+
+Alan adı geçişi sonrasında public veri özeti ve 1.987 yayın/394 geri dönüş korundu.
+Geçiş öncesi eski sürümde bir ekip üyesinin normal taslak düzenleme/gönderimi iki sürüm
+kaydı oluşturdu. Bu fark eski admin_action_log ile doğrulandı; ajan içerik değiştirmedi.
 
 Advisor yeni nesnelerde güvenlik uyarısı üretmedi. Önceden mevcut
 `increment_public_question_read` fonksiyonunun anon/authenticated SECURITY DEFINER
@@ -73,6 +80,15 @@ bu bütün API yazmalarını (giriş/çıkış hariç) durdurur. Public API yazm
 DDL'yi veya sürüm kayıtlarını silmeyin; düzeltme ileri yönlü migration ile yapılır.
 
 ## Doğrulama
+
+- 130/130 yerel otomatik test; temiz sunucuda 6/6 masaüstü/mobil tarayıcı testi geçti.
+- Hem yeni production deployment hem canlı alan adında 13 smoke kontrolü geçti.
+  Admin HTML/JS/CSS dosyaları yerel kaynaklarla SHA-256 birebir. Yetkisiz review API
+  okuma/yazma 401; public root ve temel sayfalar, robots ve sitemap 200; index/follow
+  ve canonical korundu. Yeni deployment error log taramasında kayıt yok (son 20dk).
+- Gerçek kullanıcı oturumu bağlı değildi. Canlıda gerçek içerik üzerinde onay/silme/
+  düzenleme, AI denetimi veya PDF denemesi yapılmadı. Ekip liderinin paneli yenileyip ilk
+  olağan çalışmayı doğrulaması gerekir; yerel rol testleri bununla karıştırılmamalı.
 
 - `npm.cmd run check`: mevcut kontroller, Node testleri, tüm inline/external JS syntax'ı.
 - `node --test test/review-workflow-db.test.js test/review-workflow-http.test.js`:

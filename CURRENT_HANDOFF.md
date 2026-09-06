@@ -3,7 +3,8 @@
 ## 2026-09-06 Codex Admin Çalışma Alanları
 
 - İzole dal `codex/admin-workspaces-v2`; worktree `.tmp-admin-workspaces-v2`, başlangıç
-  `750e7de`. Ana dirty worktree ve `.tmp-public-excel-content-audit` değiştirilmedi.
+  `750e7de`. Ana dirty worktree kodu ve `.tmp-public-excel-content-audit` değiştirilmedi.
+  Ana CURRENT_HANDOFF başına yalnız yeni canlı kaynak için yönlendirme notu eklendi.
 - Ekip Üyesi/Yönetim ayrımı, aynı kayıt üzerinde Q/etiket/cevap/not düzenlemesi,
   sürüm kontrolü, sahiplik itirazı/atama, geri alınabilir çöp ve exact-Q+A yönlendirme hazır.
 - Kullanıcı ayrıca canlı DB ve production yayını onayladı. Migration aynı yetkili araçla
@@ -29,9 +30,23 @@
   `npm.cmd run check` yeniden 130/130, temiz tarayıcı sunucusunda Playwright 6/6 geçti.
 - Production ortamına `ADMIN_REVIEW_WORKSPACES_ENABLED=1` ve
   `ADMIN_PREVIEW_CONTENT_READ_ONLY=0` eklendi. Public/SEO/OAuth değişkenleri değiştirilmedi.
-  Yeni production build ve alan adı geçişi henüz tamamlanmadı.
-- Commit/push yapılmadı. Scope dosyaları yeni worktree'de; preview doğrulama sonuçları
-  ve tarayıcı ekranları ignore edilen `.tmp-review-*` altındadır.
+  Runtime commit `bd499e8`; deployment `dpl_Eko5dMhRAkVuYUEViHJMdtAGTRFu`,
+  `https://arsiv-kontrol-91spoe7ng-ugurkarabulutts-projects.vercel.app`.
+  Önce production --skip-domain build doğrulandı, ardından aynı production sürümü
+  `https://arsiv.ibrahimlive.ai` adresine başarıyla promote edildi. Eski preview kullanılmadı.
+- Canlı alan adında 13 smoke kontrolü geçti: admin/JS/CSS SHA-256 birebir; no-store/noindex;
+  oturumsuz review GET ve POST 401; health, public root, arşiv, arama, hesap, soru gönderimi,
+  robots ve sitemap 200. Public root canonical ve index/follow doğru. Sürümün son 20dk
+  error log taramasında kayıt yok. Sonuçlar `.tmp-review-production-smoke/results.json`.
+- Yayında 1.987 ve geri dönen 394 korundu. Public veri özeti değişmedi. Migration ile
+  promotion arasındaki eski sürümde ekip üyesinin bir taslağı düzenleyip onaya göndermesi
+  iki external_update sürümü üretti; eski admin_action_log ile kullanıcı/işlem doğrulandı.
+  History özetinin değişmesi bu normal kullanıcı işleminden kaynaklıdır; içerik taraması,
+  toplu güncelleme, atama veya gerçek kayıt üzerinde test yapılmadı.
+- Bağlı gerçek tarayıcı oturumu yoktu; canlıda giriş sonrası üç rol ve gerçek denetim/PDF
+  akışı denenmedi. Rol ve mutasyon doğrulamaları yerel sentetik PostgreSQL testleridir.
+  Ekip lideri paneli yenileyip ilk olağan çalışmasını doğrulamalı.
+- Runtime commit edildi, GitHub push yapılmadı. Ana eski kirli worktree'den deploy etmeyin.
 
 
 ## 2026-09-03 Codex Public Detay İç Bağlantı Düzeltmesi
