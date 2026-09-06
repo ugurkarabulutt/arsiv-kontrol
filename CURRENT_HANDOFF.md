@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-06 Çalışma Alanı Açılış Düzeltmesi
+
+- Girişte ve çalışma alanı değişiminde listelerin zorunlu açılmasının nedeni
+  `ReviewWorkspace.start/switchSpace` ve `showTab` içindeki sabit `onay/gecmis`
+  yönlendirmeleriydi. Başlangıç artık tek `homeTab` kuralına bağlı:
+  Ekip Üyesi `analiz` (Metin Denetimi), Yönetim `dash` (mevcut Dashboard).
+- Girişte iki ayrı sekme açma kaldırıldı. Son seçilen çalışma alanı kullanıcıya özel
+  korunur; yenilemede o alanın ana ekranı açılır. Listeler menüden açılır, arama/durum/
+  sayfa bilgileri çalışma alanları arasında korunur. Mobil geçişte menü kapanır.
+- Runtime kapsamı yalnız `index.html` ve `review-workspace.js`. Yeni ekran,
+  backend/DB/yetki/atama veya public içerik değişikliği yok.
+- `npm.cmd run check`: 130/130; Playwright: 11/11 (temiz tekrar 22.1 sn).
+  İlk sandbox koşusu tüm testleri geçti fakat Windows test sunucusu kapanışını bekledi;
+  yalnız kimliği doğrulanmış örnek-veri süreci kapatıldı, izinli koşu temiz sonlandı.
+  Üç rol, yenileme, hatırlanan alan, mobil geçiş, menüden liste açılışı, filtre koruma,
+  eski bayrak-kapalı açılış ve mevcut düzenleme/geri çekme kontrolleri geçti.
+- Mobil açılış ekran görüntüleri gözle kontrol edildi: `.tmp-review-test-results/`
+  `home-member-mobile.png`, `home-management-mobile.png`; taşma yok.
+- Yerelde doğrulandı; bu düzeltmenin production sonucu aşağıya eklenecek.
+
 ## 2026-09-06 Codex Admin Çalışma Alanları
 
 - İzole dal `codex/admin-workspaces-v2`; worktree `.tmp-admin-workspaces-v2`, başlangıç

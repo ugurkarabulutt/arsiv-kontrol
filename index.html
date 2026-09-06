@@ -2900,12 +2900,12 @@ function enterApp(user){
   el('pAvatar').textContent=user.name.charAt(0).toUpperCase();
   el('pName').textContent=user.name;
   el('pRole').textContent=roleLabel(user.role);
-  showTab('analiz');
+  if(me.reviewWorkspacesEnabled)ReviewWorkspace.start();
+  else showTab('analiz');
   restoreWorkDraft();
   if(hasAdminRole(user.role))refreshBadges();
   refreshNoticeBadge();
   refreshStandardsBadge();
-  if(me.reviewWorkspacesEnabled)ReviewWorkspace.start();
 }
 function hasAdminRole(role){return role==='admin'||role==='super_admin';}
 function hasSuperAdminRole(role){return role==='super_admin';}
@@ -3040,7 +3040,7 @@ function mLiveSite(view='siteAnalytics'){
 }
 
 function showTab(name){
-  if(me?.reviewWorkspacesEnabled&&!ReviewWorkspace.allowedTab(name))name=ReviewWorkspace.workspace()==='management'?'onay':'gecmis';
+  if(me?.reviewWorkspacesEnabled&&!ReviewWorkspace.allowedTab(name))name=ReviewWorkspace.homeTab();
   refreshRouteScopedVisibility();
   if(name==='archiveOps'&&!canUseArchiveOps())name='analiz';
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));

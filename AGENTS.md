@@ -121,6 +121,11 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-06
+- Çalışma alanlarının başlangıç sayfaları tek `ReviewWorkspace.homeTab` kuralına bağlıdır:
+  Ekip Üyesi için Metin Denetimi, Yönetim için mevcut Dashboard. Girişte, yenilemede
+  ve alan geçişinde İş Panosu/Denetim Geçmişi otomatik açılmaz. Liste filtreleri
+  korunur ve listeler menüden açılır. Üç rol ve mobil/masaüstü için 11 tarayıcı testi,
+  130 uygulama testi geçti; backend, veritabanı ve public içerik değiştirilmedi.
 - Admin/ekip çalışma alanı pilotu `codex/admin-workspaces-v2` dalında eklendi.
   `ADMIN_REVIEW_WORKSPACES_ENABLED` kapalıyken eski akış korunur. Açıldığında
   `review-workflow.js` aynı kaydın sürüm kontrollü RPC akışını ve rol/işlem ayrımını sağlar.

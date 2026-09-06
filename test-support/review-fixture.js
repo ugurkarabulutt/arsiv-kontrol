@@ -55,7 +55,8 @@ async function createFixture() {
     clearPublicArchiveCaches:()=>{},analyzeText:async text=>({correctedText:text,score:100,totalErrors:0,categories:{},summary:'Yerel test, AI çağrısı yapılmadı.'}),analysisRateLimiter:(_req,_res,next)=>next()});
   app.use('/api/review',review.router);app.use('/api/history',review.legacy);
   app.get('/api/history/approval-board',(_req,res)=>res.json({groups:{}}));
-  app.get('/api/stats',(_req,res)=>res.json({totals:{unreadAlerts:0,pendingApproval:17,feedbackOpen:0}}));
+  app.get('/api/stats',(_req,res)=>res.json({totals:{allTime:65,last30:65,activeUsers:3,avgScore:90,unreadAlerts:0,pendingApproval:17,feedbackOpen:0},
+    daily:[{label:'05.09',count:30},{label:'06.09',count:35}]}));
   app.get('/api/my-notifications',(_req,res)=>res.json([]));
   app.get('/api/*',(_req,res)=>res.json({items:[],notifications:[],unread:0,total:0,count:0}));
   app.get('/health',(_req,res)=>res.json({ok:true,synthetic:true}));

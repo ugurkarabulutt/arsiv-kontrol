@@ -13,6 +13,7 @@ const ReviewWorkspace = (() => {
   const node = id => document.getElementById(id);
   const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const management = () => space === 'management' && hasAdminRole(me?.role);
+  const homeTab = () => management() ? 'dash' : 'analiz';
   const state = () => states[space];
   const date = value => value ? new Date(value).toLocaleString('tr-TR') : '—';
   const can = action => (item?.allowedActions || []).includes(action);
@@ -51,6 +52,13 @@ const ReviewWorkspace = (() => {
       if (match) button.hidden = !allowedTab(match[1]);
     });
   }
+  function showHome() {
+    showTab(homeTab());
+    if(me.reviewReadOnly){
+      const title=node('tabContent-'+homeTab())?.querySelector('.page-sub');
+      if(title)title.textContent='Önizleme: kayıt değişiklikleri kapalı.';
+    }
+  }
   function start() {
     close(true);
     space = 'member';
@@ -58,11 +66,7 @@ const ReviewWorkspace = (() => {
       try { space = localStorage.getItem(`review-workspace:${me.id}`) === 'management' ? 'management' : 'member'; } catch {}
     }
     refreshNav();
-    showTab(management() ? 'onay' : 'gecmis');
-    if(me.reviewReadOnly){
-      const title=node('tabContent-'+(management()?'onay':'gecmis'))?.querySelector('.page-sub');
-      if(title)title.textContent='Önizleme: kayıt değişiklikleri kapalı.';
-    }
+    showHome();
   }
   async function switchSpace(next) {
     if (busy || isAnalyzing) { message('Devam eden işlemin tamamlanmasını bekleyin.', true); refreshNav(); return; }
@@ -75,7 +79,7 @@ const ReviewWorkspace = (() => {
     clearTimeout(searchTimer);
     requestNumber++;
     refreshNav();
-    showTab(management() ? 'onay' : 'gecmis');
+    showHome();
     closeMobileMenu();
   }
   async function prepareLogout(){
@@ -271,6 +275,6 @@ const ReviewWorkspace = (() => {
     document.querySelectorAll('[data-review-selector]').forEach(select=>select.hidden=true);
     refreshNav();
   });
-  return {start,switchSpace,refreshNav,allowedTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,
+  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,
     workspace:()=>space, isDetailOpen:()=>!!item, dirty};
 })();
