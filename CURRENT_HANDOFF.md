@@ -18,7 +18,17 @@
   eski bayrak-kapalı açılış ve mevcut düzenleme/geri çekme kontrolleri geçti.
 - Mobil açılış ekran görüntüleri gözle kontrol edildi: `.tmp-review-test-results/`
   `home-member-mobile.png`, `home-management-mobile.png`; taşma yok.
-- Yerelde doğrulandı; bu düzeltmenin production sonucu aşağıya eklenecek.
+- Runtime commit `ebc4aab`. Production build `dpl_JAAhqAmHfh4UCi4TvAeSUpkFp789`,
+  `https://arsiv-kontrol-rkeumngmj-ugurkarabulutts-projects.vercel.app` önce ayrı
+  production URL'de doğrulandı, ardından `https://arsiv.ibrahimlive.ai` adresine promote edildi.
+- Canlı alan adında 13 kontrol geçti: HTML/JS/CSS SHA-256 birebir, admin no-store/noindex,
+  oturumsuz review okuma/yazma 401, public root ve canonical/index/follow korundu;
+  health/arşiv/arama/hesap/soru gönderimi/robots/sitemap erişimleri doğru.
+  Son 15 dk deployment error-log taraması boş. Sonuç `.tmp-review-production-smoke/results.json`.
+- Gerçek hesapla canlı giriş/düzenleme testi yapılmadı; tarayıcı senaryoları yerel
+  örnek verilerle doğrulandı. DB, ortam değişkenleri ve kullanıcı kayıtlarına müdahale yok.
+  Runtime commit edildi ve deploy edildi; GitHub push yapılmadı. Ana dirty worktree'de
+  yalnız canlı kaynak notu güncellendi, diğer değişiklikler korunuyor.
 
 ## 2026-09-06 Codex Admin Çalışma Alanları
 
