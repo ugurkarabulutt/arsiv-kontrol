@@ -1327,7 +1327,7 @@ canvas{width:100%!important;}
         <button class="btn-sec admin-only" id="csvBtn" style="display:none" onclick="downloadCSV()">⬇ CSV İndir</button>
       </div>
       <div class="divider"></div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="history-toolbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <input id="histSearch" type="search" placeholder="Dosya veya kullanıcı ara..." oninput="setHistoryFilter()" style="min-width:220px;flex:1;max-width:340px">
         <select id="histStatusFilter" onchange="setHistoryFilter()" style="max-width:180px">
           <option value="all">Tüm kayıtlar</option>
@@ -2604,6 +2604,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
+<link rel="stylesheet" href="/review-workspace.css?v=1">
+<script src="/review-workspace.js?v=1"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -2903,6 +2905,7 @@ function enterApp(user){
   if(hasAdminRole(user.role))refreshBadges();
   refreshNoticeBadge();
   refreshStandardsBadge();
+  if(me.reviewWorkspacesEnabled)ReviewWorkspace.start();
 }
 function hasAdminRole(role){return role==='admin'||role==='super_admin';}
 function hasSuperAdminRole(role){return role==='super_admin';}
@@ -2925,11 +2928,12 @@ function refreshRouteScopedVisibility(user=me){
   document.querySelectorAll('.admin-route-only').forEach(e=>e.style.display=allowArchiveOps?'':'none');
   return allowArchiveOps;
 }
-function canUseArchiveOps(user=me){return Boolean(user&&hasSuperAdminRole(user.role)&&isAdminRoute());}
+function canUseArchiveOps(user=me){return Boolean(user&&hasSuperAdminRole(user.role)&&isAdminRoute()&&(!user.reviewWorkspacesEnabled||ReviewWorkspace.workspace()==='management'));}
 function roleLabel(role){return role==='super_admin'?'Süper Yönetici':role==='admin'?'Yönetici':'Ekip Üyesi';}
 function rolePill(role){return role==='super_admin'?'rp-super':role==='admin'?'rp-admin':'rp-user';}
 function roleShortLabel(role){return role==='super_admin'?'Süper Admin':role==='admin'?'Admin':'Üye';}
 async function doLogout(){
+  if(me?.reviewWorkspacesEnabled&&!await ReviewWorkspace.prepareLogout())return;
   await api('POST','/api/auth/logout');
   clearAnalyze();
   clearWorkDraft();
@@ -3036,6 +3040,7 @@ function mLiveSite(view='siteAnalytics'){
 }
 
 function showTab(name){
+  if(me?.reviewWorkspacesEnabled&&!ReviewWorkspace.allowedTab(name))name=ReviewWorkspace.workspace()==='management'?'onay':'gecmis';
   refreshRouteScopedVisibility();
   if(name==='archiveOps'&&!canUseArchiveOps())name='analiz';
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
@@ -3634,6 +3639,7 @@ async function openSubmitApprovalFromHistory(id){
 }
 
 async function recheckReturnedHistory(id){
+  if(me?.reviewWorkspacesEnabled)return ReviewWorkspace.open(id);
   const row=historyRows.find(h=>h.id===id);
   if(!row||row.status!==APPROVAL_RETURNED_STATUS){setStatus('Denetime alınacak geri dönen kayıt bulunamadı.','err');return;}
   if(!isOwnHistoryRow(row)){setStatus('Bu işlem yalnız kaydı gönderen kullanıcı tarafından yapılabilir.','err');return;}
@@ -4127,6 +4133,7 @@ function explainIssueBeforeFeedback(issue, reason){
 }
 
 async function loadHistory(){
+  if(me?.reviewWorkspacesEnabled)return ReviewWorkspace.load();
   const hist=await api('GET','/api/history');
   const isAdmin=hasAdminRole(me?.role);
   if(isAdmin)el('csvBtn').style.display='';
@@ -4271,6 +4278,7 @@ function drawScoreChart(data){
 }
 
 async function showDetail(id){
+  if(me?.reviewWorkspacesEnabled)return ReviewWorkspace.open(id);
   el('detailBody').textContent='Yükleniyor...';
   el('detailModal').classList.add('open');
   const approveBtn=el('approveDetailBtn');
@@ -4857,6 +4865,7 @@ async function askAiAssistant(){
 }
 
 async function loadOnay(){
+  if(me?.reviewWorkspacesEnabled)return ReviewWorkspace.load();
   const params=new URLSearchParams();
   Object.entries(approvalGroupSearches||{}).forEach(([key,value])=>{if(String(value||'').trim())params.set(`${key}Search`,String(value||'').trim());});
   const board=await api('GET',`/api/history/approval-board${params.toString()?`?${params}`:''}`);
@@ -4953,6 +4962,7 @@ function approvalReviewNoteHtml(h){
 }
 
 function approvalCard(h){
+  if(me?.reviewWorkspacesEnabled)return ReviewWorkspace.card(h);
   const sc=h.score||0,pc=sc>=80?'sp-high':sc>=60?'sp-mid':'sp-low';
   const status=h.status||'bekliyor';
   const isReview=status==='teyit_bekliyor';
@@ -11196,6 +11206,14 @@ async function sendArchiveImportToSourceForm(id){
 
 async function api(method,url,body){
   const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store'};
+  if(me?.reviewWorkspacesEnabled){
+    opts.headers['X-Review-Workspace']=ReviewWorkspace.workspace();
+    const mutation=url.match(/^\/api\/history\/([0-9a-f-]{36})\/(?:content|submit|withdraw|approve|reject|review|pending|return|archive|tags)$/i);
+    if(method==='POST'&&mutation&&!Number.isInteger(body?.version)){
+      const cached=currentResult?.id===mutation[1]?currentResult:historyRows.find(row=>row.id===mutation[1]);
+      body={...body,version:cached?.version??0};
+    }
+  }
   if(body)opts.body=JSON.stringify(body);
   try{
     const r=await fetch(url,opts);
@@ -11206,6 +11224,7 @@ async function api(method,url,body){
       catch{data={error:'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.'};}
     }
     if(!r.ok)return {...data,error:data.error||'İşlem tamamlanamadı. Lütfen tekrar deneyin.'};
+    if(me?.reviewWorkspacesEnabled&&Number.isInteger(data.version)&&currentResult?.id===data.id)currentResult.version=data.version;
     return data;
   }catch(e){
     return {error:'Bağlantı tamamlanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.'};
@@ -11214,7 +11233,7 @@ async function api(method,url,body){
 const el=id=>document.getElementById(id);
 const v=id=>el(id).value.trim();
 function openModal(id){el(id).classList.add('open');}
-function closeModal(id){el(id).classList.remove('open');}
+function closeModal(id){if(id==='detailModal'&&me?.reviewWorkspacesEnabled)return ReviewWorkspace.close();el(id).classList.remove('open');}
 function openSystemConfirm(options={}){
   const opts={
     title:'İşlem onayı',
@@ -11288,7 +11307,7 @@ function attrJson(value){
     .replace(/"/g,'&quot;');
 }
 
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&me)analyze();});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&me&&el('tabContent-analiz')?.classList.contains('active')&&!document.querySelector('.modal-overlay.open'))analyze();});
 document.addEventListener('click',e=>{
   const mm=el('mobileMenu');const hb=el('hamburger');
   if(mm&&mm.classList.contains('open')&&!mm.contains(e.target)&&!hb.contains(e.target))closeMobileMenu();

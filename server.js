@@ -43,6 +43,12 @@ const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
 const ADMIN_PARALLEL_ROUTE_ENABLED = process.env.ADMIN_PARALLEL_ROUTE_ENABLED !== '0';
 const PUBLIC_ARCHIVE_PREVIEW_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_PREVIEW_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_ROOT_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_ENABLED || '').toLowerCase());
+const ADMIN_REVIEW_WORKSPACES_ENABLED = process.env.ADMIN_REVIEW_WORKSPACES_ENABLED === '1';
+const ADMIN_PREVIEW_CONTENT_READ_ONLY = process.env.ADMIN_PREVIEW_CONTENT_READ_ONLY === '1';
+if (ADMIN_PREVIEW_CONTENT_READ_ONLY) app.use('/api', (req, res, next) => {
+  if (['GET','HEAD','OPTIONS'].includes(req.method) || ['/auth/login','/auth/logout'].includes(req.path)) return next();
+  return res.status(403).json({ error: 'Bu önizlemede kayıt değişiklikleri kapalı. Canlı kayıtlar korunuyor.' });
+});
 const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
@@ -8346,7 +8352,7 @@ app.post('/api/auth/login', adminLoginRateLimiter, async (req, res) => {
       summary: `${user.name || user.username} sisteme giriş yaptı.`,
       metadata: { role }
     });
-    res.json({ success: true, id: user.id, name: user.name, role, username: user.username });
+    res.json({ success: true, id: user.id, name: user.name, role, username: user.username, reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED, reviewReadOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/auth/logout', async (req, res) => {
@@ -8372,7 +8378,7 @@ app.get('/api/auth/me', async (req, res, next) => {
     const currentUser = await syncSessionUserFromDb(req);
     if (!currentUser) return res.json({ loggedIn: false });
     await recordUserActivity(currentUser.id);
-    res.json({ loggedIn: true, id: currentUser.id, name: currentUser.name, role: currentUser.role, username: currentUser.username });
+    res.json({ loggedIn: true, id: currentUser.id, name: currentUser.name, role: currentUser.role, username: currentUser.username, reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED, reviewReadOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
   } catch (error) {
     next(error);
   }
@@ -8540,6 +8546,11 @@ app.delete('/api/users/:id', auth, admin, superAdmin, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     if (req.params.id === req.session.userId || isReservedSuperAdminUsername(user.username) || user.role === ROLES.SUPER_ADMIN) {
       return res.status(400).json({ error: 'Süper admin silinemez.' });
+    }
+    if (ADMIN_REVIEW_WORKSPACES_ENABLED) {
+      const linked = await supabase.from('history').select('id').or(`user_id.eq.${req.params.id},assignee_id.eq.${req.params.id}`).limit(1);
+      if (linked.error) throw linked.error;
+      if (linked.data?.length) return res.status(409).json({ error: 'Denetim geçmişi veya görevi olan kullanıcı silinemez. Kullanıcıyı pasife alabilirsiniz; kaynak izi korunur.' });
     }
     const { error } = await supabase.from('users').delete().eq('id', req.params.id);
     if (error) throw new Error(error.message);
@@ -9777,11 +9788,21 @@ app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (
   } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
 });
 
+// Enable only after the additive review migration has been verified.
+if (ADMIN_REVIEW_WORKSPACES_ENABLED) {
+  const { createReviewWorkflow } = require('./review-workflow');
+  const review = createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes,
+    attachApprovalReturnMeta, loadApprovalFavoriteSet, clearPublicArchiveCaches, analyzeText: openaiText, analysisRateLimiter, readOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
+  app.use('/api/review', auth, review.router);
+  app.use('/api/history', auth, review.legacy);
+}
+
 app.get('/api/history', auth, async (req, res) => {
   try {
     const data = await fetchAllPages(() => {
       let q = supabase.from('history').select('*').order('created_at', { ascending: false });
-      if (isAdminRole(req.session.role)) q = q.or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
+      if (ADMIN_REVIEW_WORKSPACES_ENABLED) q = q.or(`user_id.eq.${req.session.userId},assignee_id.eq.${req.session.userId}`).not('status', 'in', `(copte,${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
+      else if (isAdminRole(req.session.role)) q = q.or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       else q = q.eq('user_id', req.session.userId).or(`status.is.null,status.not.in.(${CHUNK_DRAFT_STATUS},${SUBMITTED_PART_STATUS})`);
       return q;
     });
@@ -13880,7 +13901,31 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
 
 const { createPublicArchivePreviewRouter } = require('./public-archive-renderer');
 
+for (const asset of ['review-workspace.js','review-workspace.css']) {
+  app.get('/' + asset, (_req, res) => {
+    res.set('Cache-Control','private, no-store');
+    res.sendFile(path.join(__dirname, asset));
+  });
+}
+
+function reviewedDuplicateRedirect(basePath) {
+  return async (req, res, next) => {
+    if (!ADMIN_REVIEW_WORKSPACES_ENABLED) return next();
+    try {
+      const { data, error } = await supabase.from('public_question_redirects').select('to_slug').eq('from_slug', req.params.slug).maybeSingle();
+      if (error) throw error;
+      if (!data) return next();
+      const { data: target, error: targetError } = await supabase.from('public_qa').select('slug').eq('slug', data.to_slug).eq('status', 'published').maybeSingle();
+      if (targetError) throw targetError;
+      if (!target) return next();
+      res.set('Cache-Control', 'public, max-age=0, must-revalidate');
+      return res.redirect(301, `${basePath}/soru/${encodeURIComponent(target.slug)}`);
+    } catch (error) { console.error('Review redirect:', error.message); return next(); }
+  };
+}
+
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
+  app.get('/public-preview/soru/:slug', reviewedDuplicateRedirect('/public-preview'));
   app.get('/public-preview/arsiv', publicArchiveQueryCategoryRedirectMiddleware('/public-preview'));
   app.get('/public-preview/kategori/:slug', publicArchiveCategoryRedirectMiddleware('/public-preview'));
   app.get('/public-preview/konu/:slug', publicArchiveCategoryRedirectMiddleware('/public-preview'));
@@ -13892,6 +13937,7 @@ if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
 
 if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/arsiv', publicArchiveQueryCategoryRedirectMiddleware(''));
+  app.get('/soru/:slug', reviewedDuplicateRedirect(''));
   app.get('/kategori/:slug', publicArchiveCategoryRedirectMiddleware(''));
   app.get('/konu/:slug', publicArchiveCategoryRedirectMiddleware(''));
   app.use('/', createPublicArchivePreviewRouter({

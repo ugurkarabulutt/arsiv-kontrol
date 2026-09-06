@@ -1,0 +1,9 @@
+.tmp-*
+test/
+test-support/
+e2e/
+supabase/
+playwright.review.config.js
+AGENTS.md
+CURRENT_HANDOFF.md
+docs/

@@ -1,5 +1,39 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-06 Codex Admin Çalışma Alanları
+
+- İzole dal `codex/admin-workspaces-v2`; worktree `.tmp-admin-workspaces-v2`, başlangıç
+  `750e7de`. Ana dirty worktree ve `.tmp-public-excel-content-audit` değiştirilmedi.
+- Ekip Üyesi/Yönetim ayrımı, aynı kayıt üzerinde Q/etiket/cevap/not düzenlemesi,
+  sürüm kontrolü, sahiplik itirazı/atama, geri alınabilir çöp ve exact-Q+A yönlendirme hazır.
+- Kullanıcı ayrıca canlı DB ve production yayını onayladı. Migration aynı yetkili araçla
+  uygulandı: Supabase sürüm `20260906153905`, `admin_review_workspaces`.
+- Salt okunur Vercel preview hazır. Preview'ın production'a promote edilmesi
+  yasak: root/indexing kapalı, API yazmaları kilitli. Production ayrı build gerektirir.
+- Okuma kontrolü: history 5.176, yayında 1.987, geri dönen 394. Hiçbir kayıt topluca
+  silinmedi, düzeltilmedi, yeniden atanmadı veya yayımlanmadı; bildirim gönderilmedi.
+- Rollout ve test talimatı: `docs/admin-review-workspaces-rollout.md`.
+- Son test sonuçları: `npm.cmd run check` 130/130, Playwright 6/6. Masaüstü/mobile,
+  üç rol, aynı kayıt düzenleme/gönderme/geri çekme, çöp ve readonly doğrulandı.
+- Preview: `https://arsiv-kontrol-qfl4bm73c-ugurkarabulutts-projects.vercel.app/admin`,
+  deployment `dpl_8yVQM4LRmFmwLH9iajk3CZNBqTUW`, target preview. `/admin`, JS ve CSS
+  yerel dosyalarla SHA-256 birebir; no-store/noindex ve `/health` 200 doğrulandı.
+  Oturumsuz kayıt listesi 401, sahte ve kayıtsız yazma probe'u readonly 403 döndü.
+  Gerçek kullanıcıyla giriş sonrası preview kontrolü kullanıcıya bırakıldı;
+  rol/mutasyon testleri gerçek PostgreSQL motoru ile yerel örnek verilerde yapıldı.
+- Migration sonrası DB yine 5.176 / 1.987 / 394; içerik özetleri değişmedi.
+  Yeni tablo ve RPC yetkileri doğrulandı; sürüm, atama, yönlendirme sayısı sıfır.
+  Ayrıntılı özetler rollout dokümanında. Yeni nesnelerde advisor güvenlik uyarısı yok;
+  önceden mevcut okunma sayacı fonksiyonuna ait iki yetki uyarısı ayrıca incelenmeli.
+- Önceki örnek-verili demo PID 12868 doğrulanıp temiz test için durduruldu.
+  `npm.cmd run check` yeniden 130/130, temiz tarayıcı sunucusunda Playwright 6/6 geçti.
+- Production ortamına `ADMIN_REVIEW_WORKSPACES_ENABLED=1` ve
+  `ADMIN_PREVIEW_CONTENT_READ_ONLY=0` eklendi. Public/SEO/OAuth değişkenleri değiştirilmedi.
+  Yeni production build ve alan adı geçişi henüz tamamlanmadı.
+- Commit/push yapılmadı. Scope dosyaları yeni worktree'de; preview doğrulama sonuçları
+  ve tarayıcı ekranları ignore edilen `.tmp-review-*` altındadır.
+
+
 ## 2026-09-03 Codex Public Detay İç Bağlantı Düzeltmesi
 
 - Kullanıcı, soru detayındaki `İlgili Sorular` alanında aynı sorunun tekrar göründüğünü

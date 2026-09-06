@@ -21,11 +21,27 @@
       "use": "@vercel/static"
     },
     {
+      "src": "review-workspace.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "review-workspace.css",
+      "use": "@vercel/static"
+    },
+    {
       "src": "icons/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/review-workspace\\.(js|css)",
+      "headers": {
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "dest": "/review-workspace.$1"
+    },
     {
       "src": "/health",
       "dest": "/server.js"

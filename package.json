@@ -28,5 +28,9 @@
   "overrides": {
     "body-parser": "^2.3.0",
     "qs": "^6.16.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.63.0"
   }
 }

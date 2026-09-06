@@ -120,6 +120,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-06
+- Admin/ekip çalışma alanı pilotu `codex/admin-workspaces-v2` dalında eklendi.
+  `ADMIN_REVIEW_WORKSPACES_ENABLED` kapalıyken eski akış korunur. Açıldığında
+  `review-workflow.js` aynı kaydın sürüm kontrollü RPC akışını ve rol/işlem ayrımını sağlar.
+  `review-workspace.js/css` ortak düzenleme ekranını ve iki çalışma alanını sunar.
+- `history.user_id` ilk denetleyeni temsil eder; düzeltme ataması ayrı `assignee_id`
+  alanıdır. Sahiplik itirazı gerekçeli insan kararı olmadan otomatik atama yapmaz.
+  `copte` geri alınabilir durumdur; kalıcı history silme yapılmaz. Soru VE cevap birebir
+  eşleşmeden mükerrer hedefiyle yönlendirme kurulmaz. Paragraf/kelime içeriği otomatik
+  yeniden yazılmaz. Kaynak ve önceki sürümler korunur.
+- Migration `20260906142527_admin_review_workspaces.sql` yerel PostgreSQL ile test edildi.
+  İlk istek ayrıca canlı DB onayı gerektiği için durduruldu; kullanıcı bu onayı verdikten
+  sonra aynı araçla uygulandı (Supabase sürümü `20260906153905`). Önce/sonra içerik,
+  sahiplik ve durum özetleri birebir aynı. Yeni tablolar ve fonksiyonlar yalnız sunucudan
+  erişilebilir. `ADMIN_PREVIEW_CONTENT_READ_ONLY=1` önizlemesi API yazmalarını reddeder;
+  public root/indexing kapalı bu önizleme üretime promote edilmemeli.
+  Ayrıntı: `docs/admin-review-workspaces-rollout.md`, güncel durum `CURRENT_HANDOFF.md`.
+
 ### 2026-09-03
 - **Public detay iç bağlantıları güçlendirildi:** Canlı veride yapılan salt-okuma kontrolde
   `İlgili Sorular` alanının kendi kaydını basmadığı, fakat aynı soru metnine sahip farklı
