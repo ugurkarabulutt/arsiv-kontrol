@@ -120,6 +120,70 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-07 Tüm İnceleme Kuyruklarında Son İşlem Sırası (Canlı)
+
+- `review_history_queue` yalnız bekleyenleri değil bütün yönetim/ekip listelerini besler.
+  Bekleyenlerde gerçek son onaya gönderim zamanı; diğer durumlarda son iş akışı zamanı
+  kullanılır. Sıralama veritabanında, arama ve durum filtresinden sonra fakat sayfalamadan
+  önce yapılır. UI diğer durumlarda eski oluşturulma tarihi yerine `Son işlem:` gösterir.
+- Bihter Oksak kaydı `de84a98b-9f68-46f3-a7f9-c210c304eba6` canlıda gerçekten
+  `teyit_bekliyor` durumundadır. `Bihter` araması 1 doğru sonuç verir; eski oluşturulma
+  sırasındaki 28. konum yeni işlem sırasıyla 1. konuma taşındı.
+- Migration `supabase/migrations/20260907030328_review_status_queue_order.sql`, canlı
+  Supabase sürümü `20260907031136`. Görünüm `security_invoker`, yalnız `service_role`
+  SELECT yetkili; iki kısmi geçiş indeksi eklendi. İçerik, statü, sahiplik ve public
+  yayın kayıtlarına DML uygulanmadı.
+- Test: `npm.cmd run check` 134/134, Playwright 13/13. Runtime commit `549e1db`.
+  Production `dpl_DUaTCQ2GZVXo7vBKwPoz3nQLmiWc`,
+  `https://arsiv-kontrol-1rjlckhy4-ugurkarabulutts-projects.vercel.app`; ayrı URL'deki
+  13 smoke kontrolünden sonra `https://arsiv.ibrahimlive.ai` alan adına geçirildi ve
+  aynı 13 kontrol tekrar geçti. Son 15 dakika error logu boş; GitHub push yapılmadı.
+
+### 2026-09-07 Onaya Gönderim Sırası (Canlı)
+
+- Bekleyenler listesinin sırası ilk denetim tarihine değil son gerçek onaya gönderime
+  bağlandı. `history_revisions.submit` ile eski `admin_action_log.approval.submitted`
+  ve yeni `review.submit` olaylarını birleştiren `review_history_queue` görünümü kullanılır.
+- Görünüm `security_invoker=true`, yalnız sunucu `service_role` için SELECT yetkilidir;
+  içerik/sahiplik/tarih güncellemesi veya geçmişe yapay gönderim kaydı eklemez.
+  Migration: `supabase/migrations/20260906214233_review_submission_queue.sql`.
+- Tüm bekleyen sonuçları DB'de sıralanır, ardından 25 kayıtlık sayfa seçilir.
+  Sıradan kaydetme/moderasyon tarihleri gönderim sayılmaz. Gönderim kanıtı yoksa
+  ilk kayıt tarihi kullanılır ve UI bunu açıkça `İlk kayıt` olarak gösterir.
+- Admin, süper admin ve ekip üyesinin kendi bekleyenleri aynı tarih kuralını kullanır;
+  diğer listelerin sırası, yetkiler ve salt okunur preview davranışı korunur.
+- `npm.cmd run check`: 133/133; Playwright: 12/12. SQL, API, mobil/masaüstü ve
+  rol testleri örnek verilerle geçti. Kullanıcının `Tamam yap` onayıyla canlı migration
+  `20260906220841` uygulandı; yalnız bu görünüm ve iki indeks eklendi.
+- Runtime commit `1245ad7`; production `dpl_DCEGG8Fnsdzh3mS6rdwDERVzW6jm`,
+  `https://arsiv-kontrol-2hh8thjma-ugurkarabulutts-projects.vercel.app`.
+  Ayrı production URL'de 13 kontrol ardından `https://arsiv.ibrahimlive.ai` adresine
+  promote edildi; canlıda da 13 kontrol geçti. JS/HTML/CSS SHA-256 birebir, public
+  root/canonical/index/follow ve admin no-store/noindex/401 koruması doğrulandı.
+- Gerçek Supabase Data API sorgusu 1.071 bekleyen, 25 satırlık ilk sayfa ve Bihter'in
+  `de84a98b-9f68-46f3-a7f9-c210c304eba6` kaydını ilk sırada doğruladı.
+  Migration anında history/public_qa tam satır özetleri ve log/bildirim sayıları aynıydı.
+  Sonraki tek history farkı Bihter'in 01:17:05 TSİ `review.save` işlemiydi; revision
+  öncesi veriyle yeniden hesaplanan tüm history özeti başlangıçla birebir eşleşti.
+  Public içerik ve 1.987 yayın korundu; onay/atama/içerik/teyit/çöp işlemi yapılmadı.
+- Gerçek kullanıcı oturumu bulunmadığından canlı oturum içi tarayıcı testi yapılmadı;
+  giriş ekranı ve konsolu kontrol edildi. Deployment error logu boş. GitHub push yok.
+  Kanıtlar `.tmp-review-submission-release/` altında; aktif devir notu güncel.
+
+### 2026-09-06 Onaylı Yayın Öncesi Ayırma
+- Kullanıcının numaralı 50 soruya ilişkin açık onayıyla 50 kayıt `arsivlendi`,
+  diğer 167 soru işaretsiz ve 4 hatalı/eksik kayıt `teyit_bekliyor`, soru VE cevabı
+  yayındaki asıl kayıtla eşleşen 7 mükerrer `copte` yapıldı. Kalıcı silme, onaylama,
+  yeni yayınlama veya sahiplik/atama değişikliği yapılmadı. 1.071 kayıt beklemede.
+- İşlem `publication-intent-20260906-approved-228`: mevcut sürüm kontrollü review
+  RPC'si, snapshot içerik özeti kontrolü ve tek transaction kullanıldı. 171 teyit
+  gerekçesi `workflow_meta.decisionNote` yanında mevcut Kontrol notu alanına da
+  açıkça yönetim notu olarak eklendi; önceki kullanıcı notları korunuyor.
+- 399 sürüm ve 399 işlem loguyla izlenebilir. 228 hedefte soru/cevap/etiket/sahiplik
+  korunumu, kapsam dışı history ve yayımlanmış public içeriklerin değişmediği
+  doğrulandı. Public yayın sayısı 1.987. Ayrıntı CURRENT_HANDOFF ve ana worktree'deki
+  `.tmp-publication-intent-audit-20260906/post-apply-verification.json` içinde.
+
 ### 2026-09-06
 - Çalışma alanlarının başlangıç sayfaları tek `ReviewWorkspace.homeTab` kuralına bağlıdır:
   Ekip Üyesi için Metin Denetimi, Yönetim için mevcut Dashboard. Girişte, yenilemede

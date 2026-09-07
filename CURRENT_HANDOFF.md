@@ -1,5 +1,119 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-07 Tüm Kuyruklarda Son İşlem Sırası
+
+- Kullanıcının bildirdiği Bihter kaydı canlıda doğrulandı:
+  `de84a98b-9f68-46f3-a7f9-c210c304eba6`, sahibi `Bihter Oksak 💗`, durumu
+  `teyit_bekliyor`. Son durum geçişi 7 Eylül 2026 01:42:44 TSİ. Canlı teyit
+  kuyruğunda `Bihter` araması tam olarak 1 sonuç döndürüyor ve bu kaydı buluyor;
+  arama sonucu eksik değildi. Sorun eski `created_at` sıralamasıydı: kayıt 28.
+  sırada görünürken son işlem sırasıyla 1. sıraya geliyor.
+- `review_history_queue` görünümü tüm yönetim listelerine genişletildi. Bekleyenlerde
+  gerçek son onaya gönderim zamanı kullanılmaya devam eder; teyit, onay, red, geri
+  dönen, arşiv, çöp ve taslak listelerinde son iş akışı zamanı (`queue_sort_at`)
+  kullanılır. Listede eski ilk kayıt tarihi yerine `Son işlem:` etiketi gösterilir.
+  Arama bütün filtrelenmiş kuyruk üzerinde sunucuda yapılır, sonra sıralama ve
+  sayfalama uygulanır.
+- Migration `review_status_queue_order` canlı Supabase'e uygulandı; uzak sürüm
+  `20260907031136`. Görünüm `security_invoker`; `anon` ve `authenticated` SELECT
+  yetkisi yok, yalnız `service_role` okuyabilir. İki kısmi destek indeksi mevcut.
+  Migration yalnız görünüm ve indeks DDL'idir; içerik, statü, sahiplik veya public
+  yayın satırı değiştirmedi. Uygulama anındaki teyit toplamı 178 idi.
+- Runtime commit `549e1db`. Production deployment
+  `dpl_DUaTCQ2GZVXo7vBKwPoz3nQLmiWc`,
+  `https://arsiv-kontrol-1rjlckhy4-ugurkarabulutts-projects.vercel.app`; doğrulama
+  sonrası `https://arsiv.ibrahimlive.ai` alan adına bağlandı. GitHub push yapılmadı.
+- Doğrulama: `npm.cmd run check` 134/134, Playwright 13/13. Ayrı production URL ve
+  canlı alan adında 13'er smoke kontrolü geçti: health, admin no-store/noindex,
+  yetkisiz review API 401, HTML/JS/CSS yerelle birebir, public canonical/index/follow,
+  arşiv/arama/hesap/soru gönderimi/robots/sitemap. Son 15 dakika error logu boş.
+  Mobil teyit listesi ekran görüntüsü
+  `.tmp-review-test-results/confirmation-order-mobile.png` dosyasında kontrol edildi.
+- Supabase advisor bu migration kaynaklı yeni güvenlik/performance hatası göstermedi.
+  Mevcut INFO ve public okunma sayacı RPC uyarıları bu çalışmanın kapsamı dışında
+  bırakıldı. Vercel logundaki mevcut `history.prompt_version/rules_hash` kolon uyarısı
+  sıralama ve aramayı etkilemiyor.
+
+## 2026-09-07 Bekleyenlerin Gönderim Sırası
+
+- Güncel kullanıcı önceliği Bihter Hanım'ın son onaya gönderimini bulmak ve bekleyenleri
+  gerçek son gönderim zamanına göre sıralamak. Excel soru/etiket referansıdır; denetlenmiş
+  cevap yerine ham Excel cevabı yazılmayacak. Toplu yayın/çöp/teyit/atama yapılmayacak.
+- Canlı salt okuma: `de84a98b-9f68-46f3-a7f9-c210c304eba6` Bihter Oksak kaydı,
+  ilk kayıt 14 Ağustos, son submit 6 Eylül 23:31:43 TSİ. Eski created_at sıralamasında
+  666. sıra / 27. sayfa. Soru `Muhterem Hocam, unuttuğumuz bazı şeyler...`.
+- Yerel çözüm `review-workflow.js`, `review-workspace.js` ve eklemeli SQL görünümüdür:
+  `supabase/migrations/20260906214233_review_submission_queue.sql`.
+  Son submit eski admin_action_log ve yeni history_revisions kayıtlarından hesaplanır.
+  Gönderim saati/gerçek gönderen listede gösterilir; sahibi değiştirilmez.
+  Bekleyenler DB'de sıralanıp sayfalanır; diğer filtreler eski sıralamasında kalır.
+  Yönetici kaydetme, geri gönderme ve denetim işlemleri submit sayılmaz.
+- Gerçek tarih kanıtı olmayanlar için tarih uydurulmaz. Yeni sıralama SELECT ile canlı
+  veride denendi: Bihter ilk sırada, 1.071 bekleyen / 1.987 yayın korunuyor.
+  Bekleyen 578 kayıtta gönderim logu var; 493 eski kayıtta `İlk kayıt` yedeği kullanılır.
+  Görünüm oluşturulmadan aynı SQL'in EXPLAIN ANALYZE süresi 14,8 ms (25 sonuç).
+- Test: `npm.cmd run check` 133/133; `node node_modules/@playwright/test/cli.js test
+  --config=playwright.review.config.js` 12/12. Örnek verili sunucu kapandı, 4317 boş.
+  Ekran görüntüleri `.tmp-review-test-results/submission-order-{mobile,desktop}.png`
+  gözle incelendi; taşma yok. Yeni testler eski kaydı yeniden gönderme, 32 kayıtla
+  sayfalama, yönetici düzenlemesinin sırayı bozmaması ve anonim erişim engelini kapsar.
+- Kullanıcının `Tamam yap` onayıyla migration canlıya uygulandı: Supabase uzak sürüm
+  `20260906220841`, adı `review_submission_queue`. Tekrar uygulamayın. Görünüm
+  security_invoker; anon/authenticated hiçbir erişime, service_role yalnız SELECT'e
+  sahip. İki indeks geçerli, yeni güvenlik advisor bulgusu yok.
+- Runtime commit `1245ad7`, production `dpl_DCEGG8Fnsdzh3mS6rdwDERVzW6jm`,
+  `https://arsiv-kontrol-2hh8thjma-ugurkarabulutts-projects.vercel.app`.
+  Yeni production build önce `--skip-domain` ile ayrı adreste doğrulandı, sonra
+  `https://arsiv.ibrahimlive.ai` adresine promote edildi. Eski readonly preview
+  kullanılmadı; ortam değişkenleri değiştirilmedi. GitHub push yapılmadı.
+- Ayrı production URL ve canlı alias üzerinde 13'er GET kontrolü geçti:
+  HTML/JS/CSS SHA-256 yerelle birebir; health, admin no-store/noindex, anonim kayıt
+  listesi 401, public root/canonical/index/follow, arşiv/arama/hesap/soru gönderimi/
+  robots/sitemap. Son 15 dk deployment error logu boş. Canlı Supabase Data API'de
+  backend ile aynı alan/filtre/sıra/range sorgusu 206, toplam 1.071, ilk sayfa 25,
+  ilk kayıt Bihter olarak doğrulandı. Sonuçlar `.tmp-review-submission-release/`.
+- Canlı tarayıcıda oturum yoktu; giriş ekranı ve hatasız konsol doğrulandı. Gerçek
+  hesapla oturum içi liste/yazma/AI/PDF denemesi yapılmadı. Rol ve sıralama tarayıcı
+  testleri yerel örnek verilerle yapıldı; gerçek veri okuması ayrıca doğrulandı.
+- Migration öncesi/sonrası 5.179 history ve tüm satırların özeti, public_qa özeti,
+  409 revision, 1.886 log, 2.440 bildirim aynı kaldı. Yayın sonrası revision/log
+  birer arttı: Bihter'in 01:17:05 TSİ kendi `a6d024b0-0df7-450b-a921-da5c839663ae`
+  kaydına `review.save` işlemi. Bu revision'ın before_data değeriyle yeniden
+  hesaplanan history özeti başlangıçla birebir aynı; başka veri değişikliği yok.
+  1.071 bekleyen / 1.987 yayın, tüm public içerik ve bildirimler korunuyor.
+  Onaylama/yayınlama/arşivleme/çöp/teyit/atama veya içerik düzeltmesi yapılmadı.
+- Kalan içerik incelemesi için önceki son kontrol raporu ana worktree'de
+  `.tmp-publication-final-review-20260907/son-kontrol-raporu.md`. Yeni kullanıcıya göre
+  çok uzun cevaplar makale adayı teyide ayrılacak, ancak uzunluk eşiği ve nihai ID listesi
+  henüz kararlaştırılmadı. Birebirlik soru VE tam denetlenmiş cevapla doğrulanacak.
+
+## 2026-09-06 Kullanıcı Onaylı Yayın Öncesi Ayırma
+
+- Kullanıcının son kararı: rapordaki 50 kayıt arşivlensin; soru işareti olmayan
+  diğer 167 ve soru alanı hatalı/cevabı eksik 4 kayıt gerekçeli teyide alınsın;
+  yalnız soru VE cevabı canlıdaki asıl kayıtla eşleşen 7 kopya geri alınabilir çöpe
+  taşınsın. Kalanlar henüz onaylanmasın. Sahiplik/atama işlemi yapılmasın.
+- Canlı Supabase işlem kimliği `publication-intent-20260906-approved-228`.
+  6 Eylül 23:47 TSİ tek transaction ile uygulandı; bağımsız 23:49 TSİ okuması
+  228/228 doğru durum, 0 içerik/sahiplik farkı, 0 yayında hedef kayıt doğruladı.
+- Son toplamlar: bekleyen 1.071, teyit 177, arşiv 77, çöp 7. Bekleyenlerin
+  1.070'i önceki rapordan, 1'i rapordan sonra gelen yeni kayıt. Onaylı history
+  2.124 ve yayındaki public_qa 1.987 değişmedi. Yeni onay/yayın yapılmadı.
+- Mevcut `review_history_change` kullanıldı. Yönetim karar notu yeni UI'da ayrı
+  gösterilmediği için 171 teyit kaydında gerekçe ayrıca mevcut `submission_note`
+  sonuna `Yönetim teyit notu:` etiketiyle eklendi; önceki ekip notları korunuyor.
+  Not ekleme de sürüm ve log üretti: toplam 399 history_revisions ve 399 işlem
+  logu. Log notları kullanıcı onayıyla Codex tarafından uygulandığını belirtir.
+- 7 çöp kaydına bağlı, zaten gizli 3 public satır `trash_hidden` oldu. Canlıdaki
+  asıl kopyalar, public içerikleri ve yönlendirmeler değişmedi. Kalıcı silme yok.
+- Tekrar çalıştırmayın. Aynı batch için yeniden uygulama koruması mevcut.
+  Kanıtlar ana worktree'de `.tmp-publication-intent-audit-20260906/` altında:
+  `approved-operations.json`, `apply-approved.sql`, `apply-result.json`,
+  `post-apply-verification.json`. Önceki rapor ve snapshot korundu.
+- Runtime kodu, şema, ortam değişkeni, commit/push/deploy değiştirilmedi.
+  Sonraki adım: bekleyen 1.071 kaydın son kontrolü; ayrıca kullanıcı onayı
+  gelmeden hiçbirini yayımlamayın. Eski 123/271 sahiplik ayırması uygulanmadı.
+
 ## 2026-09-06 Çalışma Alanı Açılış Düzeltmesi
 
 - Girişte ve çalışma alanı değişiminde listelerin zorunlu açılmasının nedeni
