@@ -24,6 +24,9 @@ before(async () => {
   const queueMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260906214233_review_submission_queue.sql'),'utf8');
   await db.exec(queueMigration);
   await db.exec(queueMigration);
+  const statusQueueMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260907030328_review_status_queue_order.sql'),'utf8');
+  await db.exec(statusQueueMigration);
+  await db.exec(statusQueueMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -193,17 +196,21 @@ test('approval queue derives last submission, not creation, save, moderation or 
   const first=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
   assert.equal(first.submitted_by,ids.user);
   assert.equal(first.submitted_at.getTime(),Date.parse(h.updated_at));
+  assert.equal(first.queue_sort_at.getTime(),first.submitted_at.getTime());
   h=await change(h,'admin','management','save',{submissionNote:'Yönetici kontrolü'});
   let row=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
   assert.equal(row.submitted_at.getTime(),first.submitted_at.getTime());
+  assert.equal(row.queue_sort_at.getTime(),first.submitted_at.getTime());
   h=await change(h,'admin','management','return',{note:'Kaynak kontrolü'});
   h=await change(h,'user','member','reanalyze',{correctedText:h.corrected_text,analysisInput:'Test'});
   row=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
   assert.equal(row.submitted_at.getTime(),first.submitted_at.getTime());
+  assert.equal(row.queue_sort_at.getTime(),Date.parse(h.updated_at));
   h=await change(h,'user','member','submit');
   row=(await db.query('select * from review_history_queue where id=$1',[h.id])).rows[0];
   assert.equal(row.submitted_at.getTime(),Date.parse(h.updated_at));
   assert.ok(row.submitted_at.getTime()>first.submitted_at.getTime());
+  assert.equal(row.queue_sort_at.getTime(),row.submitted_at.getTime());
   const before=await db.query('select * from history order by id');
   const revisions=await db.query('select count(*)::int as n from history_revisions');
   await db.exec('set role service_role');

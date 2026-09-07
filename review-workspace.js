@@ -18,7 +18,7 @@ const ReviewWorkspace = (() => {
   const date = value => value ? new Date(value).toLocaleString('tr-TR') : '—';
   const listDate = row => row.status === 'bekliyor'
     ? row.submittedAt ? `Onaya gönderim: ${date(row.submittedAt)}` : `İlk kayıt: ${date(row.createdAt)}`
-    : date(row.createdAt);
+    : `Son işlem: ${date(row.queueAt || row.updatedAt || row.createdAt)}`;
   const can = action => (item?.allowedActions || []).includes(action);
   const values = () => ({ questionText: node('rwQuestion')?.value ?? item?.questionText ?? '',
     correctedText: node('rwAnswer')?.value ?? item?.correctedText ?? '',

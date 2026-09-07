@@ -17,6 +17,7 @@ async function createFixture() {
     await db.exec(schema.match(new RegExp(`create table if not exists public\\.${name} \\([\\s\\S]*?\\n\\);`))[0]);
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260906142527_admin_review_workspaces.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260906214233_review_submission_queue.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260907030328_review_status_queue_order.sql'),'utf8'));
   for(const user of users)await db.query('insert into users(id,role,username,name,password) values($1,$2,$3,$4,$5)',[user.id,user.role,user.username,user.name,'test-only']);
   const rows=[];
   for(let i=0;i<65;i++){

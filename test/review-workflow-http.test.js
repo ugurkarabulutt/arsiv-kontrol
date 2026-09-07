@@ -87,3 +87,22 @@ test('resubmitted old records lead the entire pending queue before pagination fo
     await fixture.db.query('delete from history where id=any($1::uuid[])',[inserted]);
   }
 });
+test('every non-pending list uses latest workflow activity and search remains server-wide',async()=>{
+  const owner=fixture.users[0],inserted=[];
+  try {
+    const older=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,tags,created_at,updated_at)
+      values($1,'Bihter Sıra Testi','teyit_bekliyor','Eski kayıt, yeni işlem?','Cevap.','["Takva"]','2026-01-01T00:00:00Z','2026-09-07T01:42:00Z') returning *`,[owner.id])).rows[0];
+    const newer=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,tags,created_at,updated_at)
+      values($1,'Başka Kişi','teyit_bekliyor','Yeni kayıt, eski işlem?','Cevap.','["Takva"]','2026-08-31T00:00:00Z','2026-09-06T23:47:00Z') returning *`,[owner.id])).rows[0];
+    inserted.push(older.id,newer.id);
+    const list=await request('/api/review/records?status=teyit_bekliyor&q=işlem','admin','management');
+    assert.equal(list.status,200);assert.equal(list.data.count,2);
+    assert.deepEqual(list.data.items.map(row=>row.id),[older.id,newer.id]);
+    assert.equal(list.data.items[0].queueAt,'2026-09-07T01:42:00.000Z');
+    const search=await request('/api/review/records?status=teyit_bekliyor&q=Bihter','admin','management');
+    assert.equal(search.status,200);assert.equal(search.data.count,1);assert.equal(search.data.items[0].id,older.id);
+  } finally {
+    await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[inserted]);
+    await fixture.db.query('delete from history where id=any($1::uuid[])',[inserted]);
+  }
+});

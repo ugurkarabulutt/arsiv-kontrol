@@ -189,3 +189,24 @@ test('latest submission appears first with its submission date on desktop and mo
   await page.screenshot({path:'.tmp-review-test-results/submission-order-mobile.png'});
   expect(errors).toEqual([]);
 });
+
+test('confirmation list shows the latest workflow date instead of the old creation date',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.route('**/api/review/records?*',async route=>{
+    const url=new URL(route.request().url());
+    if(url.searchParams.get('status')!=='teyit_bekliyor')return route.continue();
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[{
+      id:'de84a98b-9f68-46f3-a7f9-c210c304eba6',userId:'10000000-0000-4000-8000-000000000001',name:'Bihter Oksak',
+      status:'teyit_bekliyor',questionText:'Unutmak nefsin bir afeti midir?',tags:['Nefs'],createdAt:'2026-08-14T18:58:35.302Z',
+      updatedAt:'2026-09-06T22:42:44.634Z',queueAt:'2026-09-06T22:42:44.634Z',allowedActions:['save','approve'],workflow:{},publication:null
+    }],count:1,page:1,pageSize:25,workspace:'management'})});
+  });
+  await login(page,'admin');await selectSpace(page,'management');await openList(page,'management');
+  await page.locator('#rwStatus').selectOption('teyit_bekliyor');
+  const first=page.locator('#rwRows .rw-row').first();
+  await expect(first.locator('.rw-question')).toHaveText('Unutmak nefsin bir afeti midir?');
+  await expect(first.locator('.rw-meta')).toContainText('Son işlem: 07.09.2026 01:42:44');
+  await expect(page.locator('#rwCount')).toHaveText('1 kayıt');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'.tmp-review-test-results/confirmation-order-mobile.png'});
+});
