@@ -1,5 +1,100 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-07 Public Paylaşım ve Cevap Kopyalama Canlıda
+
+- Soru detayındaki eski metin düğmeleri modern, ikonlu iki işlem olarak
+  yenilendi. `Paylaş` yerel paylaşım API'sine sayfa başlığı, soru metni ve URL
+  verir; destek olmayan tarayıcıda URL'yi panoya kopyalar. `Cevabı Kopyala`
+  yalnız `Cevap` bölümündeki paragrafları, aralarındaki boş satırları koruyarak
+  kopyalar. Başarılı işlemlerde onay ikonu ve kısa durum metni görünür.
+- Mobil düğmeler 50 px dokunma alanını korur; metin taşması engellendi. Açık ve
+  koyu temada paylaşım birincil yeşil, cevap kopyalama sakin ikincil işlem olarak
+  ayrıldı. Yeni ikonlar: `share-2.svg`, `copy.svg`, `check.svg`.
+- Asset sürümü `20260907-detail-actions-v1`; eski immutable CSS önbelleği yeni
+  sürümü engellemez. Üretilen ana inline betiğin sözdizimi de regresyon testine
+  alındı.
+- Doğrulama: `npm.cmd run check` 135/135, `git diff --check` temiz. İzole
+  Playwright QA mobil açık/koyu tema, masaüstü, gerçek clipboard, native share
+  ve share fallback akışlarında geçti. Canlı gerçek soru sayfasında 4.411
+  karakterlik cevap panoya eksiksiz kopyalandı; JavaScript hatası 0.
+- Production deployment:
+  `https://arsiv-kontrol-9qxx9oz9n-ugurkarabulutts-projects.vercel.app`;
+  `https://arsiv.ibrahimlive.ai` alan adına alias edildi. Canlı `/health` `ok`,
+  root 200 ve yeni asset sürümü doğrulandı. DB/schema/içerik değişmedi; GitHub
+  push yapılmadı.
+
+## 2026-09-07 Onaylı 463 Kaydın Canlı Yayını Tamamlandı
+
+- Kullanıcı önceki 465 referans destekli adayı onayladı. Canlı ön kontrolde 2
+  adayın sürümü 0'dan 3'e değişmişti; ekip düzenlemeleri korundu ve beklemede kaldı.
+- Diğer 463 aday mevcut `review_history_change` onayı + seçili public upsert'i
+  aynı atomik transaction içinde uygulanarak yayımlandı. Önce gerçek kayıtlarla
+  tam ROLLBACK denemesi başarılı oldu; sonra COMMIT uygulandı.
+- 19:22-19:30 TSİ doğrulaması: 2.450 yayında, 612 bekleyen. 133 gizli public satır
+  güncellendi, 330 yeni satır eklendi. Soru/cevap/source/etiket/not/sahip/atama
+  değişmedi. 463 ham cevap ve soru birebir; boş satır paragrafı ve satır sırası
+  korundu. Yeni mükerrer 0. Diğer 4.718 history ve 3.014 public satır değişmedi.
+- 463/463 canlı HTML tam soru ve paragraf eşitliği, HTTP 200, canonical ve index
+  kontrolünden geçti. Sitemap yeni 463 dahil 2.450 soru içeriyor. Mobil/masaüstü
+  ekran görüntüleri incelendi. `npm.cmd run check` 134/134; özel PGlite yayın
+  denemesinde eski sürüm, geç hata atomik rollback, Unicode, uzun etiket ve tekrar
+  çalıştırma koruması geçti.
+- Ana repo `.tmp-publication-release-20260907/SONUC.md` ve aynı klasörde plan,
+  before/after yedekler, SQL, doğrulama JSON'ları ve ekran görüntüleri bulunuyor.
+  Özel veridir; Git/public'e yüklemeyin. Batch `publication-reference-20260907-approved-463`.
+- Runtime/schema/deploy/commit/push değişmedi. HEAD `028e642`; son runtime
+  `549e1db` deployment'ı devam ediyor. Bu turn yalnız veri yayını, özel işlem
+  araçları ve devir notlarıdır; mevcut dirty değişiklikler korunmuştur.
+- KALAN: normal panel `approve` yolu hâlâ public güncellemesini yapmıyor. Bu
+  toplu transaction doğru yayını yaptı, genel API düzeltilmiş sayılmaz. Sonraki
+  kod işi seçili UUID/sürüm ile atomik yayın bağlamak; eski all-approved sync'i
+  ÇALIŞTIRMAYIN. Önceki tarama manifestindeki diğer gruplar onaylanmadı.
+
+## 2026-09-07 Bekleyen Yayın Taraması: Salt Okunur
+
+- Kullanıcının son talebi `Taramaya başla`. Statü, soru, cevap, etiket, sahiplik,
+  bildirim, schema, uygulama kodu ve deploy değiştirilmedi. Yeni onay bekleniyor.
+- Ana repo altındaki `.tmp-publication-scan-20260907/TARAMA-RAPORU.md` ayrıntılı
+  rapordur; `inceleme-karar-taslagi.json` tüm UUID/sürüm/hash ve önerileri içerir.
+  Dosyalar özel ekip metinleri içerir; public/Git'e yüklemeyin.
+- 7 Eylül 12:50 TSİ snapshot: 1.072 bekleyen, 1.987 yayında. 13:26 TSİ yeniden
+  GET okuması: yeni/değişen/çıkan kayıt 0. İlk girdi (`original_text`) eksik 67.
+- Gerçek `Arşiv Data.xlsx`, `Tümü 31.07.2026` sayfası okundu; 3.860 satır.
+  SHA-256 `ece9c73e4929c172adab702ec0d13451fb8fd15d43745ab60ce00eea05900a55`.
+  Eski DB Excel cache'inde 47 cevap 18.000 karakterde kesilmişti; asıl tam dosya
+  kullanıldı ve kaynak dosya değişmedi. Excel metnini history üzerine geri basmayın.
+- Birbirini dışlayan triage: 63 içerik/kaynak teyidi önerisi; ayrıca 13 yalnız makale
+  adayı; 27 yalnız sınırlı editoryal kontrol; 465 referans destekli onay adayı;
+  504 mevcut Excel ile kaynak bağı yeterince doğrulanamayan kayıt. Son grup yanlış
+  soru/sahiplik kararı değildir, ekibe geri gönderilmedi. Hepsi bekliyor.
+- 14 toplam 2.000+ kelimelik makale adayı var (1 tanesi 63 içinde). 2.000 eşiği
+  öneridir, onaylı kural değildir. 1.500-1.999 arası 19 kayıt ayrıca listelendi.
+  16 sıra/sual öneki, 15 bilinen imlâ adayı, 1 etiket, 1 Kur'ân yazımı, 1 cevap
+  başında soru tekrarı toplam 34 kayıtta; diğer listelerle kesişir.
+- Eksik soru/cevap/etiket veya soru işareti olmayan 0; soru+tam cevap birebir
+  mükerrer 0. Benzer soru, kısmi cevap ve imlâ farkı mükerrer sayılmadı. 126 geniş
+  iç topluluk niyeti adayı soru okumasından yeni kesin arşiv adayı çıkarılmadı.
+- Önemli örnek: tarama No 791 / `d0c9eab0-9bdc-4331-8384-a02d7083334e` Excel
+  Nisâ 64 yerine İsrâ 64 meal bloğu içeriyor; original_text de aynı farklı bloğa
+  sahip. No 936'da 26/27 sayısı 27 olmuş; No 432'de boş hadis kaynağı sonradan
+  dolmuş, atıf doğrulanmadı. Kaynağa bakmadan AI ile tamamlama/düzeltme yapılmaz.
+- Yayın engeli: canlı `review_history_change` approve history'yi değiştiriyor,
+  public_qa'ya onay metnini aktarmıyor; sadece kaldırıcı kararlar public'i gizliyor.
+  İki history trigger'ı revizyon/zaman tutuyor, yayın tetiklemiyor. Tam canlı
+  fonksiyon/tetikleyici kanıtı `publication-rpc-full-evidence.json` içinde.
+- Eski `syncApprovedHistoryToPublicArchive` tüm onaylıları işler, eski public
+  metni/gizli statüyü koruyabilir. 596 bekleyenin public satırı yok, 476 gizli
+  satırı var; 198'inde eski public soru/cevabı güncel history'den farklı.
+  Eski helper yerel simülasyonu: 852 paragraf dizisi farkı (822 blok yapısı),
+  boşluk dışı karakter farkı 0; 15 etiket kesilme/normalizasyon farkı.
+  Bunlar bekleyenlerin eski yoldan aktarılması riski; 822 canlı bozuk kayıt iddiası değil.
+- Sonraki adım açık onayla karar listesi + makale eşiği; ayrı onayla seçili
+  UUID/sürüm üzerinden güncel içeriği ve paragraf sırasını koruyan yayın akışını
+  düzeltmek. Eski tüm-onaylı sync'i veya eski raporla toplu yazma çalıştırmayın.
+- Doğrulama: aktif worktree `npm.cmd run check` 134/134; rapor/script parse,
+  1.072 tekil UUID, grup toplamları, Türkçe UTF-8, Excel hash ve tarama sonu
+  değişmeyen sürümler doğrulandı. Runtime commit/deploy/push yapılmadı.
+
 ## 2026-09-07 Tüm Kuyruklarda Son İşlem Sırası
 
 - Kullanıcının bildirdiği Bihter kaydı canlıda doğrulandı:

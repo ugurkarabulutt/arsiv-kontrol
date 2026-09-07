@@ -1024,7 +1024,10 @@ for (const asset of [
   'icons/topics.svg',
   'icons/edit.svg',
   'icons/eye.svg',
-  'icons/ask-question.svg'
+  'icons/ask-question.svg',
+  'icons/share-2.svg',
+  'icons/copy.svg',
+  'icons/check.svg'
 ]) {
   assert(fs.existsSync(path.join(publicAssetRoot, asset)), `Public preview handoff asset missing: ${asset}`);
 }
@@ -1269,7 +1272,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260903-detail-side-full-title-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260907-detail-actions-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1279,7 +1282,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260903-detail-side-full-title-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260907-detail-actions-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1302,7 +1305,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260903-detail-side-full-title-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260907-detail-actions-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
@@ -1562,9 +1565,14 @@ assert(accountPreview.includes('data-user-questions') && accountPreview.includes
 assert(accountPreview.includes('/public-preview/api/my-question-submissions'), 'Public hesap sayfasi kullanicinin soru cevap durum API sine baglanmali.');
 assertOnlyPublicPreviewApi('/public-preview/hesabim', accountPreview);
 const detailPreview = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
-for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Bağlantıyı kopyala']) {
+for (const marker of ['Soru', 'Cevap', 'Cevap bilgileri', 'İlgili Sorular', 'Paylaş', 'Cevabı Kopyala']) {
   assert(detailPreview.includes(marker), `Public detail bolumu eksik: ${marker}`);
 }
+for (const marker of ['data-share', 'data-copy-answer', "iconSvg('share-2')", "iconSvg('copy')", "iconSvg('check')"]) {
+  assert(detailPreview.includes(marker) || publicRendererSource.includes(marker), `Public detail araci eksik: ${marker}`);
+}
+assert(!detailPreview.includes('Bağlantıyı kopyala') && !publicRendererSource.includes('data-copy-link'), 'Public detail eski baglanti kopyalama aksiyonunu gostermemeli.');
+assert(publicRendererSource.includes("join('\\\\n\\\\n')"), 'Cevap kopyalama paragraf aralarini korumali.');
 for (const marker of ['application/ld+json', '"@type":"Article"', '"mainEntityOfPage"', '"articleBody"', '"@type":"BreadcrumbList"', '"@type":"SearchAction"']) {
   assert(detailPreview.includes(marker), `Public detail SEO/LLM yapisal veri eksik: ${marker}`);
 }

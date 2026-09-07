@@ -2471,17 +2471,119 @@ a.pa-chip:hover,
 }
 
 .pa-tool-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+  gap: 12px;
+  max-width: 470px;
+  margin-top: 30px;
 }
 
-.pa-tool-row .pa-icon-button {
-  width: auto;
-  padding: 0 14px;
-  color: var(--pa-text-2);
+.pa-detail-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0 18px;
+  overflow: hidden;
+  color: var(--pa-text);
+  background: color-mix(in srgb, var(--pa-surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 88%, transparent);
+  border-radius: 15px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 12px 26px rgb(11 45 33 / 0.08);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  cursor: pointer;
+  font: inherit;
   font-size: 14px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+.pa-detail-action-share {
+  color: #FFFFFF;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 0.12), transparent 58%),
+    linear-gradient(135deg, var(--pa-primary) 0%, var(--pa-primary-hover) 100%);
+  border-color: color-mix(in srgb, var(--pa-primary) 76%, var(--pa-border));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 15px 30px rgb(20 90 58 / 0.2);
+}
+
+.pa-detail-action-copy {
+  color: var(--pa-text-2);
+}
+
+.pa-detail-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+}
+
+.pa-detail-action-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pa-tool-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pa-detail-action:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--pa-primary) 54%, var(--pa-border));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 16px 32px rgb(11 45 33 / 0.14);
+}
+
+.pa-detail-action:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.pa-detail-action:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--pa-mint) 70%, transparent);
+  outline-offset: 3px;
+}
+
+.pa-detail-action.is-complete {
+  color: var(--pa-green);
+  background: color-mix(in srgb, var(--pa-mint) 52%, var(--pa-surface));
+  border-color: color-mix(in srgb, var(--pa-green) 48%, var(--pa-border));
+}
+
+:root[data-theme="dark"] .pa-detail-action-copy {
+  background: color-mix(in srgb, var(--pa-surface) 68%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 14px 30px rgb(0 0 0 / 0.18);
+}
+
+:root[data-theme="dark"] .pa-detail-action-share {
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 0.1), transparent 58%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--pa-primary) 46%, #000000) 0%,
+      color-mix(in srgb, var(--pa-primary-hover) 38%, #000000) 100%
+    );
+}
+
+:root[data-pa-scrolled="true"] .pa-tool-row .pa-detail-action {
+  min-height: 50px;
 }
 
 .pa-answer-aside {
@@ -3446,6 +3548,17 @@ a.pa-chip:hover,
 }
 
 @media (max-width: 430px) {
+  .pa-tool-row {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr);
+    gap: 9px;
+  }
+
+  .pa-detail-action {
+    gap: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
   .pa-header {
     padding-right: 18px;
     padding-left: 18px;

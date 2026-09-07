@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260903-detail-side-full-title-v1"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260907-detail-actions-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -95,8 +95,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260903-detail-side-full-title-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260903-detail-side-full-title-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260907-detail-actions-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260907-detail-actions-v1"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"SearchAction"/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
@@ -818,6 +818,23 @@ test('mobile search copy stays compact but accessible', () => {
   assert.match(home, /placeholder="Soru veya kategori arayın\.\.\."/);
   assert.match(home, /aria-label="Sorunuzu veya kategorinizi yazın"/);
   assert.doesNotMatch(home, /placeholder="Sorunuzu veya kategorinizi yazın/);
+});
+
+test('detail tools share the page and copy only the formatted answer', () => {
+  const detail = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru').html;
+  assert.match(detail, /data-share/);
+  assert.match(detail, /data-copy-answer/);
+  assert.match(detail, /Cevabı Kopyala/);
+  assert.match(detail, /pa-detail-action-icon/);
+  assert.match(detail, /data-tool-status aria-live="polite"/);
+  assert.doesNotMatch(detail, /Bağlantıyı kopyala|data-copy-link/);
+  assert.match(detail, /answerTextForCopy/);
+  assert.match(detail, /navigator\.share\(shareData\)/);
+  const actionScriptMarker = detail.indexOf('function answerTextForCopy');
+  const actionScriptStart = detail.lastIndexOf('<script>', actionScriptMarker);
+  const actionScriptEnd = detail.indexOf('</script>', actionScriptMarker);
+  assert.ok(actionScriptMarker > 0 && actionScriptStart > 0 && actionScriptEnd > actionScriptStart);
+  assert.doesNotThrow(() => new Function(detail.slice(actionScriptStart + '<script>'.length, actionScriptEnd)));
 });
 
 test('public preview exposes separate index and info pages', () => {

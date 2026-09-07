@@ -16,7 +16,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260903-detail-side-full-title-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260907-detail-actions-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'allaha-ulasmayi-dilemek',
@@ -1445,8 +1445,15 @@ function renderQuestion(slug) {
             ${detailInfoPanel(entry)}
             ${sourceReferencesPanel(entry)}
             <div class="pa-tool-row" aria-label="Sayfa araçları">
-              <button type="button" class="pa-icon-button" data-share>Paylaş</button>
-              <button type="button" class="pa-icon-button" data-copy-link>Bağlantıyı kopyala</button>
+              <button type="button" class="pa-detail-action pa-detail-action-share" data-share aria-label="Bu soru ve cevabın bağlantısını paylaş">
+                <span class="pa-detail-action-icon" data-action-icon>${iconSvg('share-2')}</span>
+                <span class="pa-tool-label" data-action-label>Paylaş</span>
+              </button>
+              <button type="button" class="pa-detail-action pa-detail-action-copy" data-copy-answer aria-label="Cevap metnini kopyala">
+                <span class="pa-detail-action-icon" data-action-icon>${iconSvg('copy')}</span>
+                <span class="pa-tool-label" data-action-label>Cevabı Kopyala</span>
+              </button>
+              <span class="pa-sr-only" data-tool-status aria-live="polite"></span>
             </div>
           </div>
           <aside class="pa-answer-aside">
@@ -1926,19 +1933,70 @@ function renderShell({ title, description, active, content, status = 200, questi
           });
         });
       }
+      async function copyPublicText(value) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(value);
+          return;
+        }
+        var textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.style.pointerEvents = 'none';
+        document.body.appendChild(textarea);
+        textarea.select();
+        var copied = document.execCommand('copy');
+        textarea.remove();
+        if (!copied) throw new Error('COPY_UNAVAILABLE');
+      }
+      function setDetailActionState(button, label, icon, message) {
+        var labelNode = button.querySelector('[data-action-label]');
+        var iconNode = button.querySelector('[data-action-icon]');
+        if (labelNode) labelNode.textContent = label;
+        if (iconNode) iconNode.innerHTML = icon;
+        button.classList.add('is-complete');
+        var status = document.querySelector('[data-tool-status]');
+        if (status) status.textContent = message || label;
+      }
+      function resetDetailActionState(button, label, icon, ariaLabel) {
+        var labelNode = button.querySelector('[data-action-label]');
+        var iconNode = button.querySelector('[data-action-icon]');
+        if (labelNode) labelNode.textContent = label;
+        if (iconNode) iconNode.innerHTML = icon;
+        button.classList.remove('is-complete');
+        button.removeAttribute('aria-busy');
+        if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
+      }
+      function answerTextForCopy() {
+        var sections = Array.from(document.querySelectorAll('.pa-answer-primary .pa-reading-block'));
+        var answer = sections.find(function(section){
+          var heading = section.querySelector('h2');
+          return heading && heading.textContent.trim() === 'Cevap';
+        });
+        if (!answer) return '';
+        return Array.from(answer.querySelectorAll('p')).map(function(paragraph){
+          return paragraph.textContent.trim();
+        }).filter(Boolean).join('\\n\\n');
+      }
       function bindCopyControls() {
-        document.querySelectorAll('[data-copy-link]').forEach(function(button){
+        document.querySelectorAll('[data-copy-answer]').forEach(function(button){
           if (button.dataset.copyBound === 'true') return;
           button.dataset.copyBound = 'true';
           button.addEventListener('click', async function(){
+            var defaultIcon = ${JSON.stringify(iconSvg('copy'))};
+            var doneIcon = ${JSON.stringify(iconSvg('check'))};
+            var answer = answerTextForCopy();
+            button.setAttribute('aria-busy', 'true');
             try {
-              await navigator.clipboard.writeText(window.location.href);
-              button.textContent = 'Bağlantı kopyalandı';
-              setTimeout(function(){ button.textContent = 'Bağlantıyı kopyala'; }, 1800);
+              if (!answer) throw new Error('ANSWER_NOT_FOUND');
+              await copyPublicText(answer);
+              setDetailActionState(button, 'Cevap kopyalandı', doneIcon, 'Cevap metni panoya kopyalandı.');
             } catch (error) {
-              button.textContent = 'Bağlantı hazır';
-              setTimeout(function(){ button.textContent = 'Bağlantıyı kopyala'; }, 1800);
+              setDetailActionState(button, 'Kopyalanamadı', defaultIcon, 'Cevap kopyalanamadı.');
             }
+            button.removeAttribute('aria-busy');
+            setTimeout(function(){ resetDetailActionState(button, 'Cevabı Kopyala', defaultIcon, 'Cevap metnini kopyala'); }, 1800);
           });
         });
       }
@@ -1947,11 +2005,30 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (button.dataset.shareBound === 'true') return;
           button.dataset.shareBound = 'true';
           button.addEventListener('click', async function(){
+            var defaultIcon = ${JSON.stringify(iconSvg('share-2'))};
+            var doneIcon = ${JSON.stringify(iconSvg('check'))};
+            var question = document.querySelector('.pa-answer-primary .pa-reading-block p');
+            var shareData = { title: document.title, text: question ? question.textContent.trim() : document.title, url: window.location.href };
             if (navigator.share) {
-              try { await navigator.share({ title: document.title, url: window.location.href }); } catch (error) {}
+              try {
+                await navigator.share(shareData);
+                setDetailActionState(button, 'Paylaşıldı', doneIcon, 'Paylaşım tamamlandı.');
+                setTimeout(function(){ resetDetailActionState(button, 'Paylaş', defaultIcon, 'Bu soru ve cevabın bağlantısını paylaş'); }, 1800);
+              } catch (error) {
+                if (!error || error.name !== 'AbortError') {
+                  try {
+                    await copyPublicText(window.location.href);
+                    setDetailActionState(button, 'Bağlantı kopyalandı', doneIcon, 'Paylaşım bağlantısı panoya kopyalandı.');
+                    setTimeout(function(){ resetDetailActionState(button, 'Paylaş', defaultIcon, 'Bu soru ve cevabın bağlantısını paylaş'); }, 1800);
+                  } catch (copyError) {}
+                }
+              }
             } else {
-              var copyButton = document.querySelector('[data-copy-link]');
-              if (copyButton) copyButton.click();
+              try {
+                await copyPublicText(window.location.href);
+                setDetailActionState(button, 'Bağlantı kopyalandı', doneIcon, 'Paylaşım bağlantısı panoya kopyalandı.');
+                setTimeout(function(){ resetDetailActionState(button, 'Paylaş', defaultIcon, 'Bu soru ve cevabın bağlantısını paylaş'); }, 1800);
+              } catch (error) {}
             }
           });
         });
@@ -2636,7 +2713,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         }
         function isFastLink(anchor) {
           if (!anchor || anchor.target || anchor.hasAttribute('download')) return false;
-          if (anchor.closest('[data-no-fast-nav], [data-share], [data-copy-link]')) return false;
+          if (anchor.closest('[data-no-fast-nav], [data-share], [data-copy-answer]')) return false;
           try {
             var url = new URL(anchor.href, window.location.href);
             if (!isSafeRoute(url)) return false;

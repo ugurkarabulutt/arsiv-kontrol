@@ -5,6 +5,23 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-07 public soru araçları:** Soru detayında paylaşım, tarayıcının
+  yerel paylaşım penceresine soru başlığı/metni ve URL verir; paylaşım API'si
+  yoksa URL'yi panoya kopyalar. Ayrı `Cevabı Kopyala` işlemi yalnız yayınlanan
+  cevap paragraflarını ve paragraf aralarını kopyalar; soru, metadata ve linki
+  cevaba karıştırmaz. Butonlar erişilebilir canlı durum bildirimi, modern
+  Lucide tarzı ikonlar ve açık/koyu tema stilleri kullanır.
+
+- **2026-09-07 kontrollü yayın:** Kullanıcı onaylı adaylarda yalnız değişmeyen
+  UUID/sürüm/ham içerik eşleşmesiyle çalışılır; onay ve selected public yayını
+  aynı transaction içinde doğrulanır. `corrected_text` birebir korunur;
+  paragraflar yalnız kaynak boş satırlarından ayrılır, tek satır sonları ve
+  etiket uzunlukları kaybolmaz. Mevcut kategori yönlendirmeleri ve soru URL'leri
+  korunur. 465 adaydan 463'ü bu yöntemle yayımlandı; sonradan değişen 2 kayıt
+  beklemede kaldı. Kanıt ana repo `.tmp-publication-release-20260907/SONUC.md`.
+  Bu tekil veri işlemi normal `review_history_change(approve)` API'sine public
+  senkron eklenmiş olduğu anlamına gelmez; eski tüm-onaylı sync'i çalıştırmayın.
+
 - Projede **OpenAI Codex ve Claude Code birlikte çalışır**; ikisi de önce bu dosyayı ve
   `CURRENT_HANDOFF.md` dosyasını okumalıdır.
 - `AGENTS.md` mimari kararlar ve kalıcı hafıza için tek yetkili kaynaktır.
