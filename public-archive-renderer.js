@@ -20,6 +20,16 @@ const PUBLIC_ARCHIVE_ASSET_VERSION = '20260908-live-search-v6';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
 const PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX = 168;
+const PUBLIC_ARCHIVE_CORE_TOPIC_NAMES = [
+  'Hidayet',
+  'Mürşid',
+  'Zikir',
+  'Takva',
+  'Nefs tezkiyesi',
+  'Allah’a ulaşmayı dilemek',
+  'Teslimiyet',
+  'Kur’ân ayetleri'
+];
 const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'allaha-ulasmayi-dilemek',
   'mursid',
@@ -217,7 +227,7 @@ function asPublicCategory(item) {
     id: item.id || `category-${item.slug}`,
     slug: item.slug,
     name: item.name,
-    description: `${item.name} kategorisindeki soru ve cevaplar.`,
+    description: item.description || `${item.name} hakkında dini soru ve cevaplar; ilgili ayet delilleri, kavram bağlantıları ve kaynak bağlamıyla birlikte okunur.`,
     topicSlugs: Array.isArray(item.topicSlugs) && item.topicSlugs.length ? item.topicSlugs : [item.slug],
     featured: item.featured !== false,
     questionCount: Number(item.questionCount ?? item.question_count ?? 0) || 0
@@ -322,7 +332,9 @@ function href(route) {
 function pageTitle(title) {
   const brand = publicArchiveFixtures.brand.name;
   const cleanTitle = compactSeoText(title, PUBLIC_ARCHIVE_SEO_TITLE_MAX);
-  return cleanTitle && cleanTitle !== 'Ana Sayfa' ? `${cleanTitle} | ${brand}` : brand;
+  if (!cleanTitle || cleanTitle === 'Ana Sayfa' || cleanTitle === brand) return brand;
+  const branded = `${cleanTitle} | ${brand}`;
+  return branded.length <= PUBLIC_ARCHIVE_SEO_TITLE_MAX ? branded : cleanTitle;
 }
 
 function compactSeoText(value, maxLength = PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX) {
@@ -359,6 +371,7 @@ function publicArchivePublisher() {
     '@id': `${publicArchiveCanonicalUrl('/')}#organization`,
     name: publicArchiveFixtures.brand.name,
     url: publicArchiveCanonicalUrl('/'),
+    knowsAbout: PUBLIC_ARCHIVE_CORE_TOPIC_NAMES.map(name => ({ '@type': 'Thing', name })),
     logo: {
       '@type': 'ImageObject',
       url: publicArchiveAssetUrl('app-icon-512.png'),
@@ -787,6 +800,38 @@ function sourceReferencesPanel(entry) {
   `;
 }
 
+function categoryEvidenceReferences(entries = [], limit = 12) {
+  const counts = new Map();
+  for (const entry of entries || []) {
+    for (const reference of extractQuranReferences(entry)) {
+      const key = reference.label;
+      const current = counts.get(key) || { ...reference, count: 0 };
+      current.count += 1;
+      counts.set(key, current);
+    }
+  }
+  return [...counts.values()]
+    .sort((a, b) => Number(b.count || 0) - Number(a.count || 0) || String(a.label).localeCompare(String(b.label), 'tr'))
+    .slice(0, limit);
+}
+
+function categoryEvidencePanel(category, entries = []) {
+  const references = categoryEvidenceReferences(entries, 12);
+  if (!references.length) return '';
+  return `
+    <aside class="pa-source-box pa-category-evidence" aria-label="${escapeHtml(category?.name || 'Kategori')} delil atıfları">
+      <h2>Bu sayfadaki delil atıfları</h2>
+      <p>Bu sayfada listelenen cevaplarda açıkça adı geçen ayet atıfları:</p>
+      <div class="pa-source-references">
+        ${references.map(reference => {
+          const href = `${PREVIEW_BASE}/arama?q=${encodeURIComponent(reference.label)}`;
+          return `<a class="pa-source-reference" href="${escapeHtml(href)}">${escapeHtml(reference.label)}</a>`;
+        }).join('')}
+      </div>
+    </aside>
+  `;
+}
+
 function plainText(value) {
   if (Array.isArray(value)) return value.map(plainText).filter(Boolean).join('\n\n');
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -895,10 +940,11 @@ function publicArchiveReferenceStructuredData(label) {
   };
 }
 
-function collectionPageStructuredData({ canonicalPath, title, description, entries = [], category = null, total = 0, breadcrumbItems = [] } = {}) {
+function collectionPageStructuredData({ canonicalPath, title, description, entries = [], category = null, total = 0, breadcrumbItems = [], references = [] } = {}) {
   const canonicalUrl = publicArchiveCanonicalUrl(canonicalPath || '/');
   const cleanTitle = compactSeoText(title, PUBLIC_ARCHIVE_SEO_TITLE_MAX);
   const cleanDescription = compactSeoText(description || publicArchiveFixtures.brand.sentence);
+  const referenceMentions = seoList(references, 12).map(publicArchiveReferenceStructuredData);
   const itemListElement = (entries || [])
     .filter(entry => entry?.slug)
     .slice(0, 20)
@@ -919,6 +965,10 @@ function collectionPageStructuredData({ canonicalPath, title, description, entri
       isPartOf: { '@id': `${publicArchiveCanonicalUrl('/')}#website` },
       publisher: { '@id': `${publicArchiveCanonicalUrl('/')}#organization` },
       about: category?.name ? { '@type': 'Thing', name: category.name } : undefined,
+      mentions: [
+        ...(category?.name ? [{ '@type': 'Thing', name: category.name }] : []),
+        ...referenceMentions
+      ],
       mainEntity: {
         '@type': 'ItemList',
         '@id': `${canonicalUrl}#itemlist`,
@@ -947,16 +997,107 @@ function collectionPageStructuredData({ canonicalPath, title, description, entri
   };
 }
 
+function categoryIndexStructuredData({ categories = [], title = 'Dini Soru Kategorileri', description = '' } = {}) {
+  const canonicalUrl = publicArchiveCanonicalUrl('/kategoriler');
+  const cleanTitle = compactSeoText(title, PUBLIC_ARCHIVE_SEO_TITLE_MAX);
+  const cleanDescription = compactSeoText(description || publicArchiveFixtures.brand.sentence);
+  const itemListElement = (categories || [])
+    .filter(category => category?.slug && category?.name)
+    .slice(0, 60)
+    .map((category, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: publicArchiveCanonicalUrl(`/kategori/${category.slug}`),
+      name: category.name,
+      description: categorySeoDescription(category, categoryQuestionCount(category))
+    }));
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${canonicalUrl}#webpage`,
+        url: canonicalUrl,
+        name: cleanTitle,
+        description: cleanDescription,
+        inLanguage: 'tr',
+        isPartOf: { '@id': `${publicArchiveCanonicalUrl('/')}#website` },
+        publisher: { '@id': `${publicArchiveCanonicalUrl('/')}#organization` },
+        mainEntity: {
+          '@type': 'ItemList',
+          '@id': `${canonicalUrl}#itemlist`,
+          name: cleanTitle,
+          numberOfItems: categories.length,
+          itemListElement
+        }
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: publicArchiveCanonicalUrl('/') },
+          { '@type': 'ListItem', position: 2, name: 'Kategoriler', item: canonicalUrl }
+        ]
+      }
+    ]
+  };
+}
+
 function questionSeoTitle(entry = {}) {
   const source = entry.question || entry.title || '';
   return compactSeoText(String(source || '').replace(/^\s*\d+\.\s*Soru:\s*/iu, ''), PUBLIC_ARCHIVE_SEO_TITLE_MAX);
 }
 
+function seoList(items = [], limit = 3) {
+  return [...new Set((items || []).map(plainText).filter(Boolean))].slice(0, limit);
+}
+
+function quranReferenceLabels(entry = {}, limit = 3) {
+  return extractQuranReferences(entry).map(reference => reference.label).slice(0, limit);
+}
+
 function questionSeoDescription(entry = {}) {
   const question = plainText(entry.question || entry.title);
   const answer = plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body);
-  const source = answer ? `${question} Cevap: ${answer}` : question;
+  const categories = seoList(categoriesFor(entry).map(category => category.name), 3);
+  const references = quranReferenceLabels(entry, 3);
+  const context = [
+    categories.length ? `${categories.join(', ')} başlığında dini soru-cevap.` : '',
+    references.length ? `Ayet atıfları: ${references.join(', ')}.` : ''
+  ].filter(Boolean).join(' ');
+  const answerLead = answer ? `Cevap: ${answer}` : '';
+  const source = [context, question, answerLead].filter(Boolean).join(' ');
   return compactSeoText(source, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
+}
+
+function categorySeoTitle(category = {}) {
+  const name = plainText(category.name || 'Kategori');
+  return `${name} Soruları ve Cevapları`;
+}
+
+function categorySeoDescription(category = {}, questionCount = 0, entries = []) {
+  const name = plainText(category.name || 'Bu kategori');
+  const count = Number(questionCount);
+  const countText = Number.isFinite(count) && count > 0
+    ? `${archiveCountLabel(count)} dini soru-cevap`
+    : 'dini soru ve cevaplar';
+  const references = categoryEvidenceReferences(entries, 3).map(reference => reference.label);
+  const referenceText = references.length ? ` Öne çıkan ayet atıfları: ${references.join(', ')}.` : '';
+  return compactSeoText(`${name} hakkında ${countText}; cevapları, ilgili kavramları ve kaynak bağlamını birlikte okuyun.${referenceText}`, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
+}
+
+function archiveSeoDescription(questionCount = 0) {
+  const count = Number(questionCount);
+  const countText = Number.isFinite(count) && count > 0 ? `${archiveCountLabel(count)} yayınlanmış soru-cevap` : 'yayınlanmış dini soru-cevaplar';
+  return `${countText}; hidayet, mürşid, zikir, takva, nefs ve teslimiyet gibi konularda kategorili ve kaynak bağlamlı arşiv.`;
+}
+
+function categoriesIndexSeoDescription(categoryCount = 0, questionCount = 0) {
+  const categories = Number(categoryCount);
+  const questions = Number(questionCount);
+  const categoryText = Number.isFinite(categories) && categories > 0 ? `${archiveCountLabel(categories)} kategori` : 'ana kategoriler';
+  const questionText = Number.isFinite(questions) && questions > 0 ? `${archiveCountLabel(questions)} soru-cevap` : 'yayınlanmış soru-cevaplar';
+  return `${categoryText} altında ${questionText}: dini soruları hidayet, zikir, takva, nefs ve ilgili başlıklarla inceleyin.`;
 }
 
 function questionPageStructuredData(entry, category) {
@@ -1261,7 +1402,7 @@ function renderHome() {
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
-    description: 'Dini Sorular ve Cevaplar Arşivi içinde soru, cevap ve kategorileri birlikte okuyun.',
+    description: 'Dini sorulara Dr. Abdulcabbar Boran’ın cevaplarını; Kur’ân ayetleri, kaynak bağlamı ve ilgili kategorilerle birlikte okuyun.',
     canonicalPath: '/',
     searchSeedEntries: homeSearchSeedEntries,
     searchSeedCategories: publicCategories(),
@@ -1513,6 +1654,7 @@ function renderArchive(query = {}) {
     ? entries.filter(entry => categorySlugsFor(entry).includes(categoryIndex.selectedCategory.slug))
     : entries;
   const pageState = archivePaginationState(visibleEntries, query.sayfa, serverPagination);
+  const archiveDescription = archiveSeoDescription(answeredCount);
   const paginationParams = {
     harf: (query.harf || categoryIndex.selectedCategory || categoryIndex.categorySearch) ? categoryIndex.activeLetter : '',
     kategori: categoryIndex.selectedCategory?.slug || '',
@@ -1521,13 +1663,13 @@ function renderArchive(query = {}) {
   const listTitle = categoryIndex.selectedCategory ? `${categoryIndex.selectedCategory.name} soruları` : 'Tüm Sorular';
   return renderShell({
     active: 'archive',
-    title: 'Arşiv',
-    description: 'Merak ettiğiniz konunun cevaplarına ulaşın.',
+    title: 'Dini Soru Cevap Arşivi',
+    description: archiveDescription,
     canonicalPath: '/arsiv',
     structuredData: collectionPageStructuredData({
       canonicalPath: '/arsiv',
       title: 'Dini Sorular ve Cevaplar Arşivi',
-      description: 'Dini soru-cevap arşivindeki yayınlanmış soruları kategori ve konu başlıklarına göre inceleyin.',
+      description: archiveDescription,
       entries: pageState.pageEntries,
       total: pageState.total,
       breadcrumbItems: [
@@ -1566,7 +1708,7 @@ function renderSearch(query = '') {
   return renderShell({
     active: 'search',
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
-    description: 'Arşivde soru ve kategori arayın.',
+    description: 'Dini soru-cevap arşivinde soru, cevap metni ve kategori başlıkları içinde arama yapın.',
     canonicalPath: '/arama',
     pageNoindex: true,
     searchSeedEntries: results,
@@ -1621,18 +1763,23 @@ function renderTopicsIndex() {
 function renderCategoriesIndex() {
   const categories = sortedCategories();
   const questionCount = archiveStatCount('questionCount', publicArchiveFixtures.qa.length);
+  const categoriesDescription = categoriesIndexSeoDescription(categories.length, questionCount);
   return renderShell({
     active: 'categories',
-    title: 'Kategoriler',
-    description: 'Arşivdeki soru-cevap kategorileri.',
+    title: 'Dini Soru Kategorileri',
+    description: categoriesDescription,
     canonicalPath: '/kategoriler',
-    pageNoindex: true,
+    structuredData: categoryIndexStructuredData({
+      categories,
+      title: 'Dini Soru Kategorileri',
+      description: categoriesDescription
+    }),
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-collection-hero">
           <p class="pa-kicker">Kategoriler</p>
           <h1>Soruları ana başlıklarına göre inceleyin.</h1>
-          <p>Kategoriler, arşivdeki soru ve cevapları daha düzenli taramak için ana kapılar olarak kullanılır.</p>
+          <p>${escapeHtml(categoriesDescription)}</p>
           <div class="pa-collection-meta">
             <span>${categories.length} kategori</span>
             <span>${archiveCountLabel(questionCount)} soru</span>
@@ -1764,19 +1911,23 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
   const entries = serverPagination?.prePaginated ? publicArchiveFixtures.qa : entriesForCategory(category.slug);
   const pageState = archivePaginationState(entries, query.sayfa, serverPagination);
   const pageNoindex = !publicCategorySeoIndexable(category, pageState.total);
+  const categoryTitle = categorySeoTitle(category);
+  const categoryDescription = categorySeoDescription(category, pageState.total, pageState.pageEntries);
+  const evidenceReferences = categoryEvidenceReferences(pageState.pageEntries, 12).map(reference => reference.label);
   return renderShell({
     active: 'categories',
-    title: category.name,
-    description: category.description,
+    title: categoryTitle,
+    description: categoryDescription,
     canonicalPath: `/kategori/${category.slug}`,
     pageNoindex,
     structuredData: pageNoindex ? [] : collectionPageStructuredData({
       canonicalPath: `/kategori/${category.slug}`,
-      title: `${category.name} Soruları`,
-      description: category.description,
+      title: categoryTitle,
+      description: categoryDescription,
       entries: pageState.pageEntries,
       category,
       total: pageState.total,
+      references: evidenceReferences,
       breadcrumbItems: [
         { name: 'Ana Sayfa', url: publicArchiveCanonicalUrl('/') },
         { name: 'Kategoriler', url: publicArchiveCanonicalUrl('/kategoriler') },
@@ -1791,11 +1942,12 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
         <section class="pa-collection-hero">
           <p class="pa-kicker">Kategori</p>
           <h1>${escapeHtml(category.name)}</h1>
-          <p>${escapeHtml(category.description)}</p>
+          <p>${escapeHtml(categoryDescription)}</p>
           <div class="pa-collection-meta">
             <span>${archiveCountLabel(pageState.total)} ilgili soru</span>
           </div>
         </section>
+        ${categoryEvidencePanel(category, pageState.pageEntries)}
         <section class="pa-section" id="sorular">
           ${sectionHeader('Bu Kategorideki Sorular')}
           <div class="pa-list">${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>

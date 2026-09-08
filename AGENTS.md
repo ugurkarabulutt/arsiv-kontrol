@@ -5,6 +5,18 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-08 public SEO hub/delil genişletmesi:** Public arşiv SEO katmanı
+  soru, kategori ve arşiv sayfalarında görünür içeriği değiştirmeden
+  zenginleştirildi. Soru detay meta açıklamaları artık kategori bağlamı ve
+  cevapta açıkça geçen ayet atıflarını kullanır. `/kategoriler` indexlenebilir
+  kategori hub sayfası olarak canonical, `CollectionPage`, `ItemList` ve
+  breadcrumb schema üretir; sitemap ve `llms.txt` içine eklenmiştir. Güçlü
+  kategori sayfalarında sayfadaki cevaplardan çıkarılan ayet atıfları ayrı
+  "delil atıfları" kutusunda listelenir ve her atıf arama sonucuna iç link
+  verir. Public category dataset'i yalnız yayınlanmış kayıtların cevap alanını
+  kategori sayfası delil çıkarımı için okur; admin/history/private veri açmaz.
+  DB/schema/içerik/yayın kayıtları değiştirilmedi.
+
 - **2026-09-08 public SEO/schema katmanı:** Public arşiv root ve soru sayfaları
   indekslenebilir olduğunda `robots` ve `googlebot` meta `index,follow` üretir;
   noindex sayfalarda canonical üretilmez. Her public sayfada canlı sitemap ve

@@ -5453,6 +5453,7 @@ const PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK = Object.freeze({
   excelMissing: 5
 });
 const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
+const PUBLIC_ARCHIVE_CATEGORY_SELECT = `${PUBLIC_ARCHIVE_LIST_SELECT},answer_text,answer_paragraphs`;
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT = 'slug,title,question,summary,excerpt,answer_text,category_slug,topic_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
@@ -5729,11 +5730,13 @@ function normalizePublicArchiveTags(value) {
 }
 
 function publicArchiveCategoryDescription(name = '') {
-  return `${name} kategorisindeki soru ve cevaplar.`;
+  const cleanName = String(name || 'Bu kategori').trim() || 'Bu kategori';
+  return `${cleanName} hakkında dini soru ve cevaplar; ilgili ayet delilleri, kavram bağlantıları ve kaynak bağlamıyla birlikte okunur.`;
 }
 
 function publicArchiveTopicDescription(name = '') {
-  return `${name} etiketiyle ilişkili soru ve cevaplar.`;
+  const cleanName = String(name || 'Bu konu').trim() || 'Bu konu';
+  return `${cleanName} etiketiyle ilişkili dini soru ve cevaplar; ayet atıfları ve bağlı kategorilerle birlikte okunur.`;
 }
 
 function publicArchiveRowsFromStats(rows = []) {
@@ -6646,7 +6649,7 @@ async function loadPublicArchiveCategoryDataset(slug = '', query = {}) {
   const pageResult = await publicArchiveListPage(() => filterPublicArchiveByCategory(
     supabase
       .from('public_qa')
-      .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+      .select(PUBLIC_ARCHIVE_CATEGORY_SELECT, { count: 'exact' })
       .eq('status', 'published'),
     cleanSlug
   ).order('published_at', { ascending: false }), publicArchivePageNumber(query.sayfa));
@@ -14063,6 +14066,7 @@ async function publicArchiveSitemapEntries() {
   const entries = [
     publicArchiveSitemapEntry('/', today, '1.0', 'hourly'),
     publicArchiveSitemapEntry('/arsiv', today, '0.9', 'daily'),
+    publicArchiveSitemapEntry('/kategoriler', today, '0.8', 'weekly'),
     publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/nasil-kullanilir', today, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/iletisim', today, '0.3', 'monthly')
@@ -14179,6 +14183,7 @@ async function publicArchiveLlmsHandler(req, res) {
       'Önemli sayfalar:',
       `- Ana sayfa: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`,
       `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
+      `- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`,
       `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
       '',
       'Yapısal veri:',

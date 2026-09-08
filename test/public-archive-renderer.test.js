@@ -139,11 +139,17 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.doesNotMatch(detail.html, /"@type":"QAPage"/);
   assert.doesNotMatch(detail.html, /\/public-preview\//);
 
-  for (const route of ['/arama', '/soru-sor', '/hesabim', '/kategoriler', '/gizlilik', '/kullanim-kosullari']) {
+  for (const route of ['/arama', '/soru-sor', '/hesabim', '/gizlilik', '/kullanim-kosullari']) {
     const rendered = renderPublicArchivePreviewRoute(route, {}, rootData).html;
     assert.match(rendered, /<meta name="robots" content="noindex,follow">/);
     assert.doesNotMatch(rendered, /rel="canonical"/);
   }
+
+  const categoriesIndex = renderPublicArchivePreviewRoute('/kategoriler', {}, rootData).html;
+  assert.match(categoriesIndex, /<meta name="robots" content="index,follow">/);
+  assert.match(categoriesIndex, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/kategoriler">/);
+  assert.match(categoriesIndex, /Dini Soru Kategorileri/);
+  assert.match(categoriesIndex, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/kategoriler#itemlist"/);
 
   const archive = renderPublicArchivePreviewRoute('/arsiv', {}, rootData).html;
   assert.match(archive, /"@type":"CollectionPage"/);
@@ -330,6 +336,38 @@ test('archive and account routes are explicit public preview pages', () => {
   assert.match(ask, /data-user-questions-list/);
   assert.match(ask, /\/public-preview\/api\/my-question-submissions/);
   assertOnlyPublicPreviewApi(ask);
+});
+
+test('question and category pages expose evidence-aware SEO text', () => {
+  const seoData = {
+    ...publicArchiveFixtures,
+    categories: [{ slug: 'hidayet', name: 'Hidayet', description: 'Hidayet soruları.', questionCount: 12 }],
+    topics: [],
+    qa: [{
+      slug: 'hidayet-nedir',
+      title: 'Hidayet nedir?',
+      question: 'Hidayet nedir?',
+      answer: ['Allahû Tealâ Bakara-2 ve Mâide-35 âyetlerinde hidayet yolunu açıklıyor.'],
+      categorySlug: 'hidayet',
+      categorySlugs: ['hidayet'],
+      topicSlugs: ['hidayet'],
+      publishedAt: '2026-09-08T00:00:00.000Z',
+      updatedAt: '2026-09-08T00:00:00.000Z',
+      readTime: 1,
+      readCount: 5,
+      relatedSlugs: []
+    }]
+  };
+  const detail = renderPublicArchivePreviewRoute('/soru/hidayet-nedir', {}, { ...seoData, basePath: '', noindex: false }).html;
+  assert.match(detail, /<meta name="description" content="Hidayet başlığında dini soru-cevap\. Ayet atıfları: Bakara-2, Mâide-35\./);
+  assert.match(detail, /"citation":\[\{"@type":"CreativeWork","name":"Bakara-2"/);
+
+  const category = renderPublicArchivePreviewRoute('/kategori/hidayet', {}, { ...seoData, basePath: '', noindex: false }).html;
+  assert.match(category, /Hidayet Soruları ve Cevapları/);
+  assert.match(category, /Bu sayfadaki delil atıfları/);
+  assert.match(category, /Bakara-2/);
+  assert.match(category, /Mâide-35/);
+  assert.match(category, /"mentions":\[\{"@type":"Thing","name":"Hidayet"\},\{"@type":"CreativeWork","name":"Bakara-2"/);
 });
 
 test('archive lists are paginated for large public data', () => {

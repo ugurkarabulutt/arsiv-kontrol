@@ -1287,11 +1287,15 @@ assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">')
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
 assert(!rootLaunchPreview.includes('/public-preview/'), 'Root public mode public-preview path sizintisi icermemeli.');
-for (const route of ['/arama', '/soru-sor', '/hesabim', '/kategoriler', '/gizlilik', '/kullanim-kosullari']) {
+for (const route of ['/arama', '/soru-sor', '/hesabim', '/gizlilik', '/kullanim-kosullari']) {
   const rendered = renderPublicArchivePreviewRoute(route, {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
   assert(rendered.includes('<meta name="robots" content="noindex,follow">'), `${route} SEO disi yardimci sayfa noindex,follow olmali.`);
   assert(!rendered.includes('rel="canonical"'), `${route} noindex oldugu icin canonical uretmemeli.`);
 }
+const categoriesLaunchPreview = renderPublicArchivePreviewRoute('/kategoriler', {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
+assert(categoriesLaunchPreview.includes('<meta name="robots" content="index,follow">'), '/kategoriler kategori hub olarak indexlenebilir olmali.');
+assert(categoriesLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/kategoriler">'), '/kategoriler canonical uretmeli.');
+assert(categoriesLaunchPreview.includes('"@id":"https://arsiv.ibrahimlive.ai/kategoriler#itemlist"'), '/kategoriler ItemList yapisal verisi uretmeli.');
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [
@@ -1491,7 +1495,10 @@ assert(/for \(const row of qaRows \|\| \[\]\)\s*{\s*const slugs = Array\.isArray
 for (const marker of ['PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5', 'PUBLIC_CATEGORY_SEO_SLUGS', 'publicCategorySeoIndexable', 'noindex,follow', 'pageNoindex']) {
   assert(publicRendererSource.includes(marker), `Public kategori SEO index kural marker eksik: ${marker}`);
 }
-for (const marker of ['publicArchiveCategorySeoIndexable', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'"]) {
+for (const marker of ['categorySeoDescription', 'categoryEvidencePanel', 'categoryIndexStructuredData', 'PUBLIC_ARCHIVE_CORE_TOPIC_NAMES']) {
+  assert(publicRendererSource.includes(marker), `Public kategori/SEO zenginlestirme marker eksik: ${marker}`);
+}
+for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'publicArchiveCategorySeoIndexable', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", '`- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`']) {
   assert(server.includes(marker), `Public sitemap kategori SEO kural marker eksik: ${marker}`);
 }
 for (const forbidden of ["publicArchiveSitemapEntry('/arama'", "publicArchiveSitemapEntry('/soru-sor'", "publicArchiveSitemapEntry('/gizlilik'", "publicArchiveSitemapEntry('/kullanim-kosullari'"]) {

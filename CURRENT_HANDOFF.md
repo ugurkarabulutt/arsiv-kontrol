@@ -1,5 +1,24 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-08 Public SEO Hub ve Delil Genişletmesi
+
+- Kullanıcının Google/Search/AI görünürlüğünü artırma talebiyle mevcut public
+  SEO/schema katmanının üstüne kategori hub ve delil bağlamı eklendi. Görünür
+  soru/cevap metinleri, DB kayıtları ve yayın durumları değiştirilmedi.
+- Soru detay meta description metinleri artık soru-cevap özeti yanında kategori
+  başlıklarını ve cevapta açıkça geçen ayet atıflarını taşır. Uzun soru
+  başlıklarında marka eki kontrollü uygulanır; title gereksiz uzatılmaz.
+- `/kategoriler` artık noindex yardımcı sayfa değil, canonical ve indexlenebilir
+  kategori hub sayfasıdır. `CollectionPage`, `ItemList` ve breadcrumb schema
+  üretir; sitemap ve `llms.txt` önemli sayfalarına eklenmiştir.
+- Güçlü kategori sayfaları, sayfadaki yayınlanmış cevaplardan çıkarılan ayet
+  atıflarını "Bu sayfadaki delil atıfları" kutusunda gösterir. Her atıf arama
+  URL'sine bağlanır; böylece kategori, soru ve delil arasında iç link köprüsü
+  kurulur.
+- Değişen dosyalar: `server.js`, `public-archive-renderer.js`,
+  `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+
 ## 2026-09-08 Public SEO ve Schema Katmanı Canlıda
 
 - Kullanıcının SEO/indexleme talebiyle public arşiv head ve JSON-LD çıktısı
