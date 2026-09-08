@@ -5,6 +5,54 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-08 public SEO/schema katmanı:** Public arşiv root ve soru sayfaları
+  indekslenebilir olduğunda `robots` ve `googlebot` meta `index,follow` üretir;
+  noindex sayfalarda canonical üretilmez. Her public sayfada canlı sitemap ve
+  `llms.txt` bağlantısı bulunur. Global schema `Organization` ve `WebSite`
+  (`SearchAction`) taşır. Tekil soru-cevap sayfaları forum tipi `QAPage`
+  kullanmaz; schema.org `WebPage`, `Article`, `Question`, `Answer` ve
+  `BreadcrumbList` grafıyla yayınlanan tekil cevabı `acceptedAnswer` olarak
+  bağlar. Cevap anchor'ı `#cevap` ile işaretlenir; ayet atıfları `Article.citation`
+  içinde `CreativeWork` olarak verilir. Arşiv ve güçlü kategori sayfaları
+  `CollectionPage + ItemList + BreadcrumbList` üretir; zayıf/noindex kategori
+  sayfalarında koleksiyon şeması kapalıdır. SEO başlık/açıklama çıktıları görünür
+  metni değiştirmeden kontrollü kısaltılır. `llms.txt` artık schema açıklaması,
+  güçlü kategori girişleri ve son güncellenen soru-cevap URL'lerini listeler.
+  Production deployment `dpl_ASt6QohfvrPBkJVkBTGZkn8s5TXk`, canlı alias
+  `https://arsiv.ibrahimlive.ai`; canlı doğrulamada `/health`, root,
+  `/robots.txt`, `/sitemap.xml`, `/llms.txt` ve sitemap'ten seçilen gerçek soru
+  200 döndü. Sitemap'te 2.447 soru ve 249 kategori URL'si doğrulandı.
+  DB/schema/içerik/yayın kayıtları değiştirilmedi.
+
+- **2026-09-08 public canlı arama v6:** Public ana arama kutusu canlı öneri
+  paneli kullanır. Arama yalnız yayınlanmış `public_qa` kayıtları ve public
+  kategori indeksinden beslenir; admin/history/private veri açılmaz. Yazarken
+  uygun sonuç varsa sayfaya gömülü sınırlı public seed ile panel ağ cevabını
+  beklemeden açılır. Sunucu öneri endpoint'i hafif metadata index'iyle çalışır;
+  tam `/arama` sayfası geniş index'i kullanır. `sahibi`, `olmak`, `nasıl`,
+  `yapılır`, `olunur` gibi yardımcı kelimeler niyet ve DB sorgu terimlerinden
+  ayrılır; `Takva sahibi olmak` gibi sorgularda `Takva` çekirdeği öne çıkar.
+  Boş arama kutusu yazılıp silinen örnek sorgular gösterir. Mobilde input 16 px
+  kalır, buton tek satırda sağda kalır ve hint/input alanına dokunmak input'a
+  focus verir. Klavyedeki Enter/Search ve sağdaki yeşil ok artık `/arama?q=...`
+  sonucuna gider. `/api/public-search` root için, `/public-preview/api/public-search`
+  preview için kullanılır; arama öneri endpoint'i `X-Robots-Tag: noindex, nofollow`
+  döndürür. Production deployment `dpl_ASVJ2MKswgdkJTmgnq5fi71wYTfs`, canlı alias
+  `https://arsiv.ibrahimlive.ai`; DB/schema/içerik/yayın kayıtları değiştirilmedi,
+  GitHub push yapılmadı.
+
+- **2026-09-07 ekip/yönetim çalışma alanı ayrımı:** Ekip Üyesi alanında ham
+  yönetim statüleri gösterilmez. Ekip yalnız üç iş listesi görür:
+  `Düzenlenecekler` (`taslak`, `geri_gonderildi`), `İncelemede` (`bekliyor`,
+  `teyit_bekliyor`) ve `Sonuçlananlar` (`onaylandi`, `reddedildi`,
+  `arsivlendi`). Sunucu tarafı da ekip workspace'inde yalnız bu kovaları kabul
+  eder; `teyit_bekliyor`, `arsivlendi`, `disputed`, `copte` gibi ham yönetim
+  filtreleri ekip API sorgusu olarak kullanılamaz. Admin/süper admin Yönetim
+  alanındaki ayrıntılı kuyruklar korunur; aynı kişiler Ekip Üyesi alanına
+  geçince sade ekip görünümünü kullanır. Production deployment
+  `dpl_ATCTwj9sogNAY82UxSnTGUotXnxZ`, canlı alias `https://arsiv.ibrahimlive.ai`;
+  DB/schema/içerik/yayın verisi değiştirilmedi.
+
 - **2026-09-07 public soru araçları:** Soru detayında paylaşım, tarayıcının
   yerel paylaşım penceresine soru başlığı/metni ve URL verir; paylaşım API'si
   yoksa URL'yi panoya kopyalar. Ayrı `Cevabı Kopyala` işlemi yalnız yayınlanan

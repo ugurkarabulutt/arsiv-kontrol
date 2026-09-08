@@ -5454,12 +5454,19 @@ const PUBLIC_ARCHIVE_SUSPICIOUS_RETURN_TYPE_RANK = Object.freeze({
 });
 const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category_slug,topic_slugs,related_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
+const PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT = 'slug,title,question,summary,excerpt,answer_text,category_slug,topic_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
 const PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT = 120;
 const PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT = 90;
+const PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT = 5;
+const PUBLIC_ARCHIVE_LIVE_SEARCH_CACHE_MS = 60_000;
 const PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT = 10;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
+let publicArchiveCategoryIndexCache = { expiresAt: 0, rows: null };
+let publicArchiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
+let publicArchiveLiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
 const publicArchiveRouteCache = new Map();
+const publicArchiveLiveSearchCache = new Map();
 let publicArchiveContentReady = null;
 let publicArchiveContentReadyError = null;
 let publicArchiveAuthReady = null;
@@ -6006,9 +6013,32 @@ function setPublicArchiveRouteCache(key, data) {
   return data;
 }
 
+function publicArchiveLiveSearchCacheKey(basePath = '', query = '') {
+  return `${normalizePublicArchiveRouteBase(basePath)}:${publicArchiveComparable(query)}`;
+}
+
+function getPublicArchiveLiveSearchCache(key) {
+  const cached = publicArchiveLiveSearchCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) return null;
+  return cached.data;
+}
+
+function setPublicArchiveLiveSearchCache(key, data) {
+  if (publicArchiveLiveSearchCache.size > 120) {
+    const firstKey = publicArchiveLiveSearchCache.keys().next().value;
+    if (firstKey) publicArchiveLiveSearchCache.delete(firstKey);
+  }
+  publicArchiveLiveSearchCache.set(key, { expiresAt: Date.now() + PUBLIC_ARCHIVE_LIVE_SEARCH_CACHE_MS, data });
+  return data;
+}
+
 function clearPublicArchiveCaches() {
   publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
+  publicArchiveCategoryIndexCache = { expiresAt: 0, rows: null };
+  publicArchiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
+  publicArchiveLiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
   publicArchiveRouteCache.clear();
+  publicArchiveLiveSearchCache.clear();
 }
 
 async function ensurePublicArchiveContentReady() {
@@ -6104,6 +6134,10 @@ async function loadPublicArchiveCategoryRowsBySlug(slugs = []) {
 }
 
 async function loadPublicArchiveCategoryIndexRows() {
+  const now = Date.now();
+  if (publicArchiveCategoryIndexCache.rows && publicArchiveCategoryIndexCache.expiresAt > now) {
+    return publicArchiveCategoryIndexCache.rows;
+  }
   const [categoryRows, qaRows] = await Promise.all([
     fetchAllPages(() => supabase
       .from('public_categories')
@@ -6124,9 +6158,11 @@ async function loadPublicArchiveCategoryIndexRows() {
       counts.set(slug, (counts.get(slug) || 0) + 1);
     }
   }
-  return (categoryRows || [])
+  const rows = (categoryRows || [])
     .map(row => ({ ...row, question_count: counts.get(row.slug) || 0 }))
     .filter(row => row.question_count > 0);
+  publicArchiveCategoryIndexCache = { expiresAt: now + PUBLIC_ARCHIVE_ROUTE_CACHE_MS, rows };
+  return rows;
 }
 
 function publicArchiveStats(total = 0) {
@@ -6175,6 +6211,31 @@ function publicArchiveSearchTokens(value = '') {
     .filter(item => item.length > 1);
 }
 
+const PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS = new Set(['acaba', 'anlat', 'anlatir', 'anlatır', 'ara', 'bir', 'bize', 'bu', 'cevap', 'eder', 'ermek', 'etmek', 'gibi', 'gidilir', 'icin', 'için', 'ile', 'mi', 'mı', 'mu', 'mü', 'midir', 'mıdır', 'mudur', 'müdür', 'nasıl', 'nasil', 'ne', 'nedir', 'niye', 'olmak', 'olunur', 'olur', 'sahibi', 'sahip', 'soru', 'var', 've', 'ya', 'yapilir', 'yapılır']);
+
+function publicArchiveSearchIntentTokens(value = '') {
+  const tokens = publicArchiveSearchTokens(value);
+  const intentTokens = tokens.filter(token => !PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS.has(token));
+  return intentTokens.length ? intentTokens : tokens;
+}
+
+function publicArchiveSearchTokenForms(token = '') {
+  const value = publicArchiveComparable(token);
+  if (!value) return [];
+  const forms = new Set([value]);
+  const suffixes = ['lerinden', 'larından', 'lerden', 'lardan', 'nin', 'nın', 'nun', 'nün', 'in', 'ın', 'un', 'ün', 'den', 'dan', 'ten', 'tan', 'ye', 'ya', 'yi', 'yı', 'yu', 'yü', 'de', 'da', 'te', 'ta', 'ne', 'na', 'ni', 'nı', 'nu', 'nü', 'e', 'a', 'i', 'ı', 'u', 'ü'];
+  for (const suffix of suffixes) {
+    if (value.length > suffix.length + 3 && value.endsWith(suffix)) {
+      forms.add(value.slice(0, -suffix.length));
+    }
+  }
+  return [...forms].filter(item => item.length >= 3);
+}
+
+function publicArchiveSearchTokenMatches(haystack = '', token = '') {
+  return publicArchiveSearchTokenForms(token).some(form => haystack.includes(form));
+}
+
 function publicArchiveAccentVariants(value = '', max = PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT) {
   const source = String(value || '').trim().toLocaleLowerCase('tr-TR');
   if (!source) return [];
@@ -6208,18 +6269,23 @@ function publicArchiveSearchTerms(value = '') {
   for (const variant of publicArchiveAccentVariants(comparable)) {
     if (variant.length > 1) terms.add(variant);
   }
+  for (const token of publicArchiveSearchIntentTokens(comparable)) {
+    for (const form of publicArchiveSearchTokenForms(token)) {
+      if (form.length > 1) terms.add(form);
+    }
+  }
   return [...terms].slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT);
 }
 
 function publicArchiveCategoryMatchesSearch(category = {}, query = '') {
-  const tokens = publicArchiveSearchTokens(query);
+  const tokens = publicArchiveSearchIntentTokens(query);
   if (!tokens.length) return false;
   const haystack = publicArchiveComparable([
     category.name,
     category.slug,
     category.description
   ].join(' '));
-  return tokens.every(token => haystack.includes(token));
+  return tokens.every(token => publicArchiveSearchTokenMatches(haystack, token));
 }
 
 function publicArchiveSearchSqlOr(fields = [], term = '') {
@@ -6227,7 +6293,7 @@ function publicArchiveSearchSqlOr(fields = [], term = '') {
   return fields.map(field => `${field}.ilike.${pattern}`).join(',');
 }
 
-async function fetchPublicArchiveSearchRowsByText(fields = [], terms = [], limit = PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT) {
+async function fetchPublicArchiveSearchRowsByText(fields = [], terms = [], limit = PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT, selectColumns = PUBLIC_ARCHIVE_LIST_SELECT) {
   const rows = [];
   const seen = new Set();
   for (const term of terms.slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT)) {
@@ -6235,7 +6301,7 @@ async function fetchPublicArchiveSearchRowsByText(fields = [], terms = [], limit
     if (!filter) continue;
     const { data, error } = await supabase
       .from('public_qa')
-      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .select(selectColumns)
       .eq('status', 'published')
       .or(filter)
       .order('published_at', { ascending: false })
@@ -6273,12 +6339,83 @@ async function fetchPublicArchiveSearchRowsByCategorySlugs(slugs = []) {
   return rows;
 }
 
-function publicArchiveRankSearchRows(groups = {}) {
+function publicArchiveSearchRowCategorySlugs(row = {}) {
+  const slugs = Array.isArray(row.topic_slugs) && row.topic_slugs.length
+    ? row.topic_slugs
+    : (row.category_slug ? [row.category_slug] : []);
+  return slugs.filter(Boolean);
+}
+
+function publicArchiveSearchRowWithCategoryText(row = {}, categoryMap = new Map()) {
+  const categoryText = publicArchiveSearchRowCategorySlugs(row)
+    .map(slug => categoryMap.get(slug)?.name || slug)
+    .filter(Boolean)
+    .join(' ');
+  return { ...row, search_category_text: categoryText };
+}
+
+async function loadPublicArchiveSearchIndexRows() {
+  const now = Date.now();
+  if (publicArchiveSearchIndexCache.rows && publicArchiveSearchIndexCache.expiresAt > now) {
+    return publicArchiveSearchIndexCache;
+  }
+  const [rows, categoryRows] = await Promise.all([
+    fetchAllPages(() => supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false }), 1000),
+    loadPublicArchiveCategoryIndexRows()
+  ]);
+  const categoryMap = new Map((categoryRows || []).map(category => [category.slug, category]));
+  const indexedRows = (rows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
+  publicArchiveSearchIndexCache = {
+    expiresAt: now + PUBLIC_ARCHIVE_ROUTE_CACHE_MS,
+    rows: indexedRows,
+    categoryRows: categoryRows || []
+  };
+  return publicArchiveSearchIndexCache;
+}
+
+async function loadPublicArchiveLiveSearchIndexRows() {
+  const now = Date.now();
+  if (publicArchiveLiveSearchIndexCache.rows && publicArchiveLiveSearchIndexCache.expiresAt > now) {
+    return publicArchiveLiveSearchIndexCache;
+  }
+  const [rows, categoryRows] = await Promise.all([
+    fetchAllPages(() => supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false }), 1000),
+    loadPublicArchiveCategoryIndexRows()
+  ]);
+  const categoryMap = new Map((categoryRows || []).map(category => [category.slug, category]));
+  const indexedRows = (rows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
+  publicArchiveLiveSearchIndexCache = {
+    expiresAt: now + PUBLIC_ARCHIVE_ROUTE_CACHE_MS,
+    rows: indexedRows,
+    categoryRows: categoryRows || []
+  };
+  return publicArchiveLiveSearchIndexCache;
+}
+
+function publicArchiveRowIntentRank(row = {}, query = '') {
+  const q = publicArchiveSearchInput(query);
+  if (!q) return 1;
+  const titleRank = publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q);
+  const metaRank = publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, row.category_slug, Array.isArray(row.topic_slugs) ? row.topic_slugs.join(' ') : '', row.search_category_text].join(' '), q);
+  const answerRank = publicArchiveLiveSearchMatchScore(row.answer_text || '', q);
+  return (titleRank * 12) + (metaRank * 8) + (answerRank * 3);
+}
+
+function publicArchiveRankSearchRows(groups = {}, query = '') {
   const scored = new Map();
   function addRows(rows = [], source = '', score = 0) {
     for (const row of rows || []) {
       if (!row?.slug) continue;
       const existing = scored.get(row.slug) || { row, score: 0, sources: new Set() };
+      existing.row = { ...existing.row, ...row };
       if (!existing.sources.has(source)) {
         existing.score += score;
         existing.sources.add(source);
@@ -6291,7 +6428,10 @@ function publicArchiveRankSearchRows(groups = {}) {
   addRows(groups.summaryRows, 'summary', 360);
   addRows(groups.bodyRows, 'body', 120);
   return [...scored.values()]
-    .sort((a, b) => b.score - a.score
+    .map(item => ({ ...item, rank: publicArchiveRowIntentRank(item.row, query) }))
+    .filter(item => !query || item.rank > 0)
+    .sort((a, b) => b.rank - a.rank
+      || b.score - a.score
       || String(b.row.published_at || b.row.created_at || '').localeCompare(String(a.row.published_at || a.row.created_at || ''))
       || String(a.row.title || '').localeCompare(String(b.row.title || ''), 'tr'))
     .slice(0, PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT)
@@ -6446,7 +6586,7 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
 }
 
 async function loadPublicArchiveHomeDataset() {
-  const [featuredResult, latestResult] = await Promise.all([
+  const [featuredResult, latestResult, categoryRows] = await Promise.all([
     supabase
       .from('public_qa')
       .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
@@ -6459,7 +6599,8 @@ async function loadPublicArchiveHomeDataset() {
       .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
       .eq('status', 'published')
       .order('published_at', { ascending: false })
-      .range(0, 35)
+      .range(0, 35),
+    loadPublicArchiveCategoryIndexRows()
   ]);
   if (featuredResult.error) throw new Error(featuredResult.error.message);
   if (latestResult.error) throw new Error(latestResult.error.message);
@@ -6467,6 +6608,7 @@ async function loadPublicArchiveHomeDataset() {
   const total = Number(latestResult.count || rows.length || 0);
   return publicArchiveDatasetForRows({
     rows,
+    categoryRows,
     stats: publicArchiveStats(total),
     allowEmpty: true
   });
@@ -6542,24 +6684,21 @@ async function loadPublicArchiveSearchDataset(query = {}) {
     });
   }
 
-  const categoryIndexRows = await loadPublicArchiveCategoryIndexRows();
+  const searchIndex = await loadPublicArchiveSearchIndexRows();
+  const categoryIndexRows = searchIndex.categoryRows || [];
+  const searchRows = searchIndex.rows || [];
   const matchedCategories = categoryIndexRows
     .filter(category => publicArchiveCategoryMatchesSearch(category, q))
     .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
     .slice(0, 8);
-  const terms = publicArchiveSearchTerms(q);
-  const [
-    categoryRows,
-    titleRows,
-    summaryRows,
-    bodyRows
-  ] = await Promise.all([
-    fetchPublicArchiveSearchRowsByCategorySlugs(matchedCategories.map(category => category.slug)),
-    fetchPublicArchiveSearchRowsByText(['title', 'question'], terms, PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT),
-    fetchPublicArchiveSearchRowsByText(['summary', 'excerpt'], terms, PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT),
-    fetchPublicArchiveSearchRowsByText(['answer_text'], terms, PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT)
-  ]);
-  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows });
+  const matchedCategorySlugs = new Set(matchedCategories.map(category => category.slug));
+  const categoryRows = matchedCategorySlugs.size
+    ? searchRows.filter(row => publicArchiveSearchRowCategorySlugs(row).some(slug => matchedCategorySlugs.has(slug)))
+    : [];
+  const titleRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q) > 0);
+  const summaryRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, row.search_category_text].join(' '), q) > 0);
+  const bodyRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore(row.answer_text || '', q) > 0);
+  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows }, q);
   return publicArchiveDatasetForRows({
     rows,
     categoryRows: categoryIndexRows,
@@ -6576,6 +6715,164 @@ async function loadPublicArchiveSearchDataset(query = {}) {
     },
     allowEmpty: true
   });
+}
+
+function publicArchiveLiveSearchMatchScore(value = '', query = '') {
+  const haystack = publicArchiveComparable(value);
+  const needle = publicArchiveComparable(query);
+  const tokens = publicArchiveSearchIntentTokens(query);
+  if (!haystack || !needle || !tokens.length) return 0;
+  if (haystack === needle) return 100;
+  if (haystack.startsWith(needle)) return 84;
+  if (haystack.includes(needle)) return 68;
+  let rank = 0;
+  tokens.forEach((token, index) => {
+    if (!publicArchiveSearchTokenMatches(haystack, token)) return;
+    rank += 24;
+    if (index === 0) rank += 22;
+    if (token.length >= 5) rank += 8;
+  });
+  return Math.min(76, rank);
+}
+
+function publicArchiveLiveSearchSnippet(row = {}, query = '') {
+  const source = publicArchiveText(row.excerpt || row.summary || row.answer_text || row.question || row.title || '', 3000).replace(/\s+/g, ' ');
+  if (!source) return '';
+  const tokens = publicArchiveSearchIntentTokens(query);
+  const sourceComparable = publicArchiveComparable(source);
+  let start = 0;
+  for (const token of tokens) {
+    const matchIndex = sourceComparable.indexOf(token);
+    if (matchIndex >= 0) {
+      start = Math.max(0, matchIndex - 70);
+      break;
+    }
+  }
+  const snippet = source.slice(start, start + 180).trim();
+  return `${start > 0 ? '...' : ''}${snippet}${source.length > start + snippet.length ? '...' : ''}`;
+}
+
+function publicArchiveLiveSearchReadCountLabel(value = 0) {
+  const count = Number(value || 0);
+  return `${Number.isFinite(count) ? Math.max(0, Math.round(count)).toLocaleString('tr-TR') : '0'} okunma`;
+}
+
+function publicArchiveLiveSearchCategoryName(row = {}, categoryMap = new Map()) {
+  const slugs = Array.isArray(row.topic_slugs) && row.topic_slugs.length
+    ? row.topic_slugs
+    : (row.category_slug ? [row.category_slug] : []);
+  for (const slug of slugs) {
+    const category = categoryMap.get(slug);
+    if (category?.name) return category.name;
+  }
+  return '';
+}
+
+function publicArchiveLiveSearchRowTitle(row = {}) {
+  return publicArchiveText(row.title || row.question || 'Soru', 220).replace(/^\s*\d+\.\s*Soru:\s*/iu, '');
+}
+
+async function loadPublicArchiveLiveSearchSuggestions(req, query = '') {
+  const q = publicArchiveSearchInput(query || '');
+  if (q.length < 2) {
+    return {
+      available: true,
+      query: q,
+      total: 0,
+      groups: { categories: [], questions: [], answers: [] }
+    };
+  }
+
+  if (!await ensurePublicArchiveContentReady()) {
+    return {
+      available: false,
+      query: q,
+      error: publicArchiveContentReadyError?.message || 'Public arşiv verisi şu anda hazır değil.',
+      groups: { categories: [], questions: [], answers: [] }
+    };
+  }
+
+  const basePath = publicArchiveRequestBasePath(req);
+  const searchIndex = await loadPublicArchiveLiveSearchIndexRows();
+  const categoryIndexRows = searchIndex.categoryRows || [];
+  const searchRows = searchIndex.rows || [];
+  const matchedCategories = categoryIndexRows
+    .map(category => ({
+      category,
+      score: publicArchiveLiveSearchMatchScore([category.name, category.slug, category.description].join(' '), q)
+    }))
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || Number(b.category.question_count || 0) - Number(a.category.question_count || 0) || String(a.category.name || '').localeCompare(String(b.category.name || ''), 'tr'))
+    .slice(0, PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT)
+    .map(item => item.category);
+
+  const matchedCategorySlugs = new Set(matchedCategories.map(category => category.slug));
+  const categoryRows = matchedCategorySlugs.size
+    ? searchRows.filter(row => publicArchiveSearchRowCategorySlugs(row).some(slug => matchedCategorySlugs.has(slug)))
+    : [];
+  const titleRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q) > 0);
+  const summaryRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, row.search_category_text].join(' '), q) > 0);
+  const bodyRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore(row.answer_text || '', q) > 0);
+  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows }, q).slice(0, 40);
+  const categoryRowsForResults = [
+    ...matchedCategories.map(category => category.slug),
+    ...publicArchiveTagSlugsFromRows(rows)
+  ]
+    .map(slug => categoryIndexRows.find(category => category.slug === slug))
+    .filter(Boolean);
+  const categoryMap = new Map(categoryRowsForResults.map(category => [category.slug, category]));
+  const seenQuestionKeys = new Set();
+  const questionItems = [];
+  const answerItems = [];
+
+  for (const row of rows) {
+    if (!row?.slug) continue;
+    const questionKey = publicArchiveQuestionOnlyIdentity(row);
+    if (questionKey && seenQuestionKeys.has(questionKey)) continue;
+    const titleScore = publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q);
+    const metaScore = publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, publicArchiveLiveSearchCategoryName(row, categoryMap)].join(' '), q);
+    const answerScore = publicArchiveLiveSearchMatchScore(row.answer_text || '', q);
+    const readCount = Number(row.read_count || 0) || 0;
+    const common = {
+      href: publicArchiveRoutePath(basePath, `/soru/${row.slug}`),
+      title: publicArchiveLiveSearchRowTitle(row),
+      readCount,
+      category: publicArchiveLiveSearchCategoryName(row, categoryMap)
+    };
+    if ((titleScore || metaScore) && questionItems.length < PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT) {
+      if (questionKey) seenQuestionKeys.add(questionKey);
+      questionItems.push({
+        ...common,
+        subtitle: [common.category, readCount ? publicArchiveLiveSearchReadCountLabel(readCount) : ''].filter(Boolean).join(' - '),
+        pill: 'Oku'
+      });
+      continue;
+    }
+    if (answerScore && answerItems.length < PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT) {
+      if (questionKey) seenQuestionKeys.add(questionKey);
+      answerItems.push({
+        ...common,
+        subtitle: publicArchiveLiveSearchSnippet(row, q),
+        pill: 'Cevap'
+      });
+    }
+  }
+
+  return {
+    available: true,
+    query: q,
+    total: matchedCategories.length + questionItems.length + answerItems.length,
+    groups: {
+      categories: matchedCategories.map(category => ({
+        href: publicArchiveRoutePath(basePath, `/kategori/${category.slug}`),
+        title: category.name,
+        subtitle: `${Number(category.question_count || 0).toLocaleString('tr-TR')} ilgili soru`,
+        pill: 'Konu'
+      })),
+      questions: questionItems,
+      answers: answerItems
+    }
+  };
 }
 
 async function loadPublicArchiveCategoryIndexDataset() {
@@ -13589,6 +13886,21 @@ async function publicArchiveQuestionStatsHandler(req, res, next) {
   }
 }
 
+async function publicArchiveSearchSuggestHandler(req, res, next) {
+  try {
+    await startupReady;
+    res.set('X-Robots-Tag', 'noindex, nofollow');
+    const q = publicArchiveSearchInput(req.query.q || '');
+    const cacheKey = publicArchiveLiveSearchCacheKey(publicArchiveRequestBasePath(req), q);
+    const cached = getPublicArchiveLiveSearchCache(cacheKey);
+    if (cached) return res.json(cached);
+    const result = setPublicArchiveLiveSearchCache(cacheKey, await loadPublicArchiveLiveSearchSuggestions(req, q));
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function publicArchiveQuestionReadHandler(req, res) {
   try {
     await startupReady;
@@ -13831,10 +14143,25 @@ async function publicArchiveSitemapHandler(req, res) {
 async function publicArchiveLlmsHandler(req, res) {
   try {
     await startupReady;
-    const totalResult = await ensurePublicArchiveContentReady()
-      ? await supabase.from('public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')
-      : { count: 0 };
+    const contentReady = await ensurePublicArchiveContentReady();
+    const [totalResult, categoryRows, recentResult] = contentReady
+      ? await Promise.all([
+          supabase.from('public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published'),
+          loadPublicArchiveCategoryIndexRows(),
+          supabase
+            .from('public_qa')
+            .select('slug,title,updated_at,published_at')
+            .eq('status', 'published')
+            .order('updated_at', { ascending: false })
+            .limit(12)
+        ])
+      : [{ count: 0 }, [], { data: [] }];
     const total = Number(totalResult.count || 0);
+    const indexableCategories = (categoryRows || [])
+      .filter(row => publicArchiveCategorySeoIndexable(row.slug, row.question_count))
+      .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
+      .slice(0, 14);
+    const recentRows = Array.isArray(recentResult.data) ? recentResult.data.filter(row => row?.slug) : [];
     res.type('text/plain; charset=utf-8');
     res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
     if (!publicArchiveRootIndexingAllowed()) res.set('X-Robots-Tag', 'noindex, nofollow');
@@ -13847,15 +14174,31 @@ async function publicArchiveLlmsHandler(req, res) {
       `Canlı adres: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}`,
       `Yayınlanan soru-cevap sayısı: ${total}`,
       `Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
+      `Robots: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/robots.txt`,
       '',
       'Önemli sayfalar:',
       `- Ana sayfa: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`,
       `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
       `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
       '',
+      'Yapısal veri:',
+      '- Tekil soru-cevap sayfaları schema.org WebPage, Article, Question, Answer ve BreadcrumbList JSON-LD taşır.',
+      '- Arşiv ve güçlü kategori sayfaları schema.org CollectionPage ve ItemList olarak işaretlenir.',
+      '- QAPage kullanılmaz; sayfalar kullanıcı cevaplarının yarıştığı forum sayfası değil, yayınlanmış tekil cevap arşividir.',
+      '',
       'Index önceliği:',
       '- Tekil soru-cevap sayfaları ve sitemap içinde yer alan güçlü kategori sayfaları public kaynak kabul edilir.',
       '- Arama, hesap, soru gönderme, gizlilik ve kullanım koşulları sayfaları kullanıcı akışı içindir; kaynak sayfa olarak alıntılanmamalıdır.',
+      ...(indexableCategories.length ? [
+        '',
+        'Güçlü kategori girişleri:',
+        ...indexableCategories.map(row => `- ${row.name}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategori/${row.slug} (${Number(row.question_count || 0)} ilgili soru)`)
+      ] : []),
+      ...(recentRows.length ? [
+        '',
+        'Son güncellenen tekil soru-cevap sayfaları:',
+        ...recentRows.map(row => `- ${row.title || row.slug}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/soru/${row.slug}`)
+      ] : []),
       '',
       'Kaynak gösterimi:',
       '- Tekil soru-cevap sayfaları /soru/{slug} biçimindedir.',
@@ -13876,6 +14219,7 @@ app.post('/public-preview/api/auth/email/login', publicAuthRateLimiter, publicAr
 app.post('/public-preview/auth/logout', publicArchiveLogoutHandler);
 app.post('/public-preview/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler);
 app.get('/public-preview/api/question-stats', publicArchiveQuestionStatsHandler);
+app.get('/public-preview/api/public-search', publicArchiveSearchSuggestHandler);
 app.post('/public-preview/api/questions/:slug/read', publicReadRateLimiter, publicArchiveQuestionReadHandler);
 app.post('/public-preview/api/question-submissions', publicQuestionSubmitRateLimiter, publicArchiveQuestionSubmissionHandler);
 app.get('/public-preview/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);
@@ -13893,6 +14237,7 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.post('/auth/logout', publicArchiveLogoutHandler);
   app.post('/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler);
   app.get('/api/question-stats', publicArchiveQuestionStatsHandler);
+  app.get('/api/public-search', publicArchiveSearchSuggestHandler);
   app.post('/api/questions/:slug/read', publicReadRateLimiter, publicArchiveQuestionReadHandler);
   app.post('/api/question-submissions', publicQuestionSubmitRateLimiter, publicArchiveQuestionSubmissionHandler);
   app.get('/api/my-question-submissions', publicArchiveMyQuestionSubmissionsHandler);

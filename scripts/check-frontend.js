@@ -259,7 +259,7 @@ assert(!server.includes('loadArchiveData: async () =>'), 'Public preview router 
 assert(!server.includes('loadPublicArchiveStatsMap(qaRows.map'), 'Public dataset ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(!server.includes('const usedSlugs = rows.map'), 'Public history fallback ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(server.includes('PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT') && server.includes('publicArchiveRankSearchRows'), 'Public arama sonuclari alaka skoruyla siralanmali.');
-assert(server.includes("fetchPublicArchiveSearchRowsByCategorySlugs") && server.includes("fetchPublicArchiveSearchRowsByText(['title', 'question']"), 'Public arama etiket/kategori ve soru basligini ayri agirlikta aramali.');
+assert(server.includes('loadPublicArchiveSearchIndexRows') && server.includes('publicArchiveSearchRowCategorySlugs') && server.includes("publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q)"), 'Public arama etiket/kategori ve soru basligini ayri agirlikta aramali.');
 assert(publicRendererSource.includes('searchDirectCategoryMatches') && publicCss.includes('.pa-search-direct-card'), 'Public arama dogrudan kategori eslesmesini gostermeli.');
 assert(/\.pa-letter-search input\s*\{[\s\S]*font-size:\s*16px;/.test(publicCss), 'Arsiv ici kategori arama inputu iOS zoom tetiklememek icin 16px olmali.');
 assert(!fs.existsSync(path.join(root, 'scripts', 'build-archive-demo-static.js')), 'Eski statik demo build scripti repoda kalmamali.');
@@ -1088,7 +1088,7 @@ for (const marker of [
 ]) {
   assert(publicCss.includes(marker), `Mobil input/focus guard eksik: ${marker}`);
 }
-assert(publicRendererSource.includes('placeholder="Soru veya kategori arayın..."'), 'Mobil arama placeholder kisa ve okunabilir olmali.');
+assert(publicRendererSource.includes('data-live-search-hint') && publicRendererSource.includes('Soru veya kategori arayın...'), 'Mobil arama ipucu kisa ve okunabilir olmali.');
 assert(!publicRendererSource.includes('placeholder="Sorunuzu veya kategorinizi yazın..."'), 'Uzun arama placeholder mobilde okunamaz, geri gelmemeli.');
 for (const match of publicCss.matchAll(/\.pa-search input\s*\{([\s\S]*?)\}/g)) {
   assert(!/font-size:\s*(?:1[0-5](?:\.\d+)?px|0\.\d+rem)/.test(match[1]), 'Arama input fontu 16px altina dusmemeli; iOS zoom yapar.');
@@ -1272,7 +1272,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260907-detail-actions-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260908-live-search-v6'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1282,7 +1282,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260907-detail-actions-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260908-live-search-v6"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1305,7 +1305,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260907-detail-actions-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260908-live-search-v6', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
@@ -1336,7 +1336,7 @@ assert((publicManifest.icons || []).some(icon => icon.src === 'app-icon-maskable
 for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="256" height="256"', 'aria-hidden="true"']) {
   assert(homePreview.includes(marker), `Public logo mark HTML marker eksik: ${marker}`);
 }
-for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
+for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="googlebot" content="noindex,nofollow"', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'rel="sitemap" type="application/xml" title="Sitemap"', 'rel="alternate" type="text/plain" title="LLMs.txt"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
   assert(homePreview.includes(marker), `Public sosyal/app meta marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
@@ -1351,6 +1351,21 @@ for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeSc
 }
 for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-visitor-id', "iconSvg('arrow-up'"]) {
   assert(publicRendererSource.includes(marker), `Public analitik/yukari cik marker eksik: ${marker}`);
+}
+for (const marker of ['bindLiveSearchControls', 'data-live-search-url', 'pa-live-search-panel', 'AbortController', '/api/public-search', 'renderInstantResults', 'localResults', 'data-live-search-hint', 'submitLiveSearch', 'clientSearchTokenForms', 'window.__publicArchiveNavigateTo']) {
+  assert(publicRendererSource.includes(marker) || server.includes(marker) || publicCss.includes(marker), `Public canli arama marker eksik: ${marker}`);
+}
+for (const marker of ['PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS', 'publicArchiveSearchIntentTokens', 'publicArchiveRowIntentRank', 'publicArchiveSearchIndexCache', 'publicArchiveLiveSearchIndexCache', 'loadPublicArchiveSearchIndexRows', 'loadPublicArchiveLiveSearchIndexRows', 'publicArchiveSearchRowWithCategoryText']) {
+  assert(server.includes(marker), `Public arama niyet siralama marker eksik: ${marker}`);
+}
+for (const marker of ['PUBLIC_ARCHIVE_SEO_TITLE_MAX', 'PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX', 'questionSeoTitle', 'questionSeoDescription', 'publicArchiveOrganizationStructuredData', 'collectionPageStructuredData', "'@type': 'Question'", "'@type': 'Answer'", 'acceptedAnswer', "'@type': 'CollectionPage'", "'@type': 'ItemList'", 'id="cevap"', 'QAPage kullanılmaz']) {
+  assert(publicRendererSource.includes(marker) || server.includes(marker), `Public SEO/schema marker eksik: ${marker}`);
+}
+for (const marker of ['.pa-search button {', 'grid-column: 3;', 'grid-row: 1;', 'justify-self: end;']) {
+  assert(publicCss.includes(marker), `Public arama butonu tek satir grid marker eksik: ${marker}`);
+}
+for (const marker of ['PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT', 'loadPublicArchiveLiveSearchSuggestions', "app.get('/public-preview/api/public-search'", "app.get('/api/public-search'"]) {
+  assert(server.includes(marker), `Public canli arama endpoint marker eksik: ${marker}`);
 }
 for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
@@ -1573,10 +1588,10 @@ for (const marker of ['data-share', 'data-copy-answer', "iconSvg('share-2')", "i
 }
 assert(!detailPreview.includes('Bağlantıyı kopyala') && !publicRendererSource.includes('data-copy-link'), 'Public detail eski baglanti kopyalama aksiyonunu gostermemeli.');
 assert(publicRendererSource.includes("join('\\\\n\\\\n')"), 'Cevap kopyalama paragraf aralarini korumali.');
-for (const marker of ['application/ld+json', '"@type":"Article"', '"mainEntityOfPage"', '"articleBody"', '"@type":"BreadcrumbList"', '"@type":"SearchAction"']) {
+for (const marker of ['application/ld+json', '"@type":"Article"', '"mainEntityOfPage"', '"articleBody"', '"@type":"BreadcrumbList"', '"@type":"SearchAction"', '"@type":"Question"', '"@type":"Answer"', '"acceptedAnswer"']) {
   assert(detailPreview.includes(marker), `Public detail SEO/LLM yapisal veri eksik: ${marker}`);
 }
-assert(!detailPreview.includes('"@type":"QAPage"') && !detailPreview.includes('"acceptedAnswer"'), 'Public detail forum tipi QAPage/acceptedAnswer yapisina donmemeli.');
+assert(!detailPreview.includes('"@type":"QAPage"'), 'Public detail forum tipi QAPage yapisina donmemeli.');
 assert(detailPreview.includes('Yanıtlayan: Dr. Abdulcabbar Boran'), 'Public detail author meta eksik.');
 assert(detailPreview.includes('data-public-read-count="ornek-soru"'), 'Public detail gercek okunma sayaci marker eksik.');
 assert(!detailPreview.includes('class="pa-detail-subtitle"'), 'Public detail ust ozet paragrafinin geri gelmemesi gerekir.');
@@ -1607,7 +1622,7 @@ for (const marker of ['Kaynak ve deliller', 'Bakara-256', 'Yâsîn-62', 'data-so
   assert(sourceDetailPreview.includes(marker), `Public detail kaynak marker eksik: ${marker}`);
 }
 assert(sourceDetailPreview.includes('Bu cevapta açıkça adı geçen ayet atıfları'), 'Public kaynak metni gorunur ve acik olmali.');
-assert(sourceDetailPreview.includes('"citation":["Bakara-256","Yâsîn-62"]'), 'Public kaynaklar Article citation alanina yazilmali.');
+assert(sourceDetailPreview.includes('"citation":[{"@type":"CreativeWork","name":"Bakara-256"') && sourceDetailPreview.includes('"name":"Yâsîn-62"'), 'Public kaynaklar Article citation alanina yazilmali.');
 assert(!sourceDetailPreview.includes('Bu özet detay üstünde görünmemeli.</p>'), 'Public detail kaynakli kayitta ust ozet gorunmemeli.');
 assert(publicRendererSource.includes('data-card-href') && publicRendererSource.includes("closest('a, button, input, select, textarea')"), 'Soru kartlari tum kart tiklamasiyla soru detayina gitmeli.');
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {

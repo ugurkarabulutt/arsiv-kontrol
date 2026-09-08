@@ -1,6 +1,11 @@
 const { isAdminRole } = require('./authorization');
 
 const STATUSES = ['taslak', 'bekliyor', 'geri_gonderildi', 'teyit_bekliyor', 'onaylandi', 'reddedildi', 'arsivlendi', 'copte'];
+const MEMBER_BUCKETS = {
+  todo: ['taslak', 'geri_gonderildi'],
+  in_review: ['bekliyor', 'teyit_bekliyor'],
+  done: ['onaylandi', 'reddedildi', 'arsivlendi'],
+};
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function workspaceFor(user, requested) {
@@ -59,4 +64,13 @@ function cleanPayload(input = {}) {
   return payload;
 }
 
-module.exports = { STATUSES, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload };
+function memberDisplayStatus(status) {
+  if (MEMBER_BUCKETS.todo.includes(status)) return 'Düzenlenecek';
+  if (MEMBER_BUCKETS.in_review.includes(status)) return 'İncelemede';
+  if (status === 'onaylandi') return 'Onaylandı';
+  if (status === 'reddedildi') return 'Reddedildi';
+  if (status === 'arsivlendi') return 'Arşivlendi';
+  return status || '';
+}
+
+module.exports = { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus };

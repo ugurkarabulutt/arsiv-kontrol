@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { PGlite } = require('@electric-sql/pglite');
-const { recordActions, canReadRecord, workspaceFor, cleanPayload } = require('../review-policy');
+const { recordActions, canReadRecord, workspaceFor, cleanPayload, memberDisplayStatus } = require('../review-policy');
 
 const ids = { user: '10000000-0000-4000-8000-000000000001', other: '10000000-0000-4000-8000-000000000002',
   admin: '10000000-0000-4000-8000-000000000003', super: '10000000-0000-4000-8000-000000000004' };
@@ -185,6 +185,16 @@ test('payload rejects forged types and limits privileges to explicit fields', ()
   assert.throws(()=>cleanPayload({correctedText:{text:'X'}}),/INVALID_CONTENT/);
   assert.throws(()=>cleanPayload({tags:['Etiket',42]}),/INVALID_TAGS/);
   assert.deepEqual(cleanPayload({user_id:ids.other,role:'super_admin',questionText:'Soru?\r\n',tags:['İman','İman']}),{questionText:'Soru?\n',tags:['İman']});
+});
+
+test('member-facing statuses hide management queue vocabulary', () => {
+  assert.equal(memberDisplayStatus('taslak'),'Düzenlenecek');
+  assert.equal(memberDisplayStatus('geri_gonderildi'),'Düzenlenecek');
+  assert.equal(memberDisplayStatus('bekliyor'),'İncelemede');
+  assert.equal(memberDisplayStatus('teyit_bekliyor'),'İncelemede');
+  assert.equal(memberDisplayStatus('onaylandi'),'Onaylandı');
+  assert.equal(memberDisplayStatus('reddedildi'),'Reddedildi');
+  assert.equal(memberDisplayStatus('arsivlendi'),'Arşivlendi');
 });
 
 test('approval queue derives last submission, not creation, save, moderation or reanalysis time', async () => {

@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260907-detail-actions-v1"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260908-live-search-v6"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -84,6 +84,9 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<title>Dini Sorular ve Cevaplar Arşivi<\/title>/);
   assert.match(home, /property="og:title" content="Dini Sorular ve Cevaplar Arşivi"/);
   assert.match(home, /property="og:updated_time" content="2026-08-23T14:42:53\+03:00"/);
+  assert.match(home, /<meta name="googlebot" content="index,follow">/);
+  assert.match(home, /rel="sitemap" type="application\/xml" title="Sitemap" href="https:\/\/arsiv\.ibrahimlive\.ai\/sitemap\.xml"/);
+  assert.match(home, /rel="alternate" type="text\/plain" title="LLMs\.txt" href="https:\/\/arsiv\.ibrahimlive\.ai\/llms\.txt"/);
   assert.match(home, /property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /property="og:image:secure_url" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /property="og:image:type" content="image\/png"/);
@@ -95,9 +98,10 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260907-detail-actions-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260907-detail-actions-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260908-live-search-v6"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260908-live-search-v6"/);
   assert.match(home, /"@type":"WebSite"/);
+  assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
@@ -120,8 +124,19 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.equal(detail.status, 200);
   assert.match(detail.html, /href="\/kategori\//);
   assert.match(detail.html, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/soru\/ornek-soru">/);
+  assert.match(detail.html, /<meta name="author" content="Dr\. Abdulcabbar Boran">/);
+  assert.match(detail.html, /property="article:published_time" content="2026-08-01T00:00:00\.000Z"/);
+  assert.match(detail.html, /property="article:modified_time" content="2026-08-08T00:00:00\.000Z"/);
+  assert.match(detail.html, /property="article:section"/);
   assert.match(detail.html, /"@type":"Article"/);
+  assert.match(detail.html, /"@type":"WebPage"/);
+  assert.match(detail.html, /"@type":"Question"/);
+  assert.match(detail.html, /"@type":"Answer"/);
+  assert.match(detail.html, /"acceptedAnswer"/);
+  assert.match(detail.html, /"mainEntity":\{"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/soru\/ornek-soru#question"\}/);
   assert.match(detail.html, /"@type":"BreadcrumbList"/);
+  assert.match(detail.html, /id="cevap"/);
+  assert.doesNotMatch(detail.html, /"@type":"QAPage"/);
   assert.doesNotMatch(detail.html, /\/public-preview\//);
 
   for (const route of ['/arama', '/soru-sor', '/hesabim', '/kategoriler', '/gizlilik', '/kullanim-kosullari']) {
@@ -129,6 +144,16 @@ test('public renderer can render root launch paths behind root mode', () => {
     assert.match(rendered, /<meta name="robots" content="noindex,follow">/);
     assert.doesNotMatch(rendered, /rel="canonical"/);
   }
+
+  const archive = renderPublicArchivePreviewRoute('/arsiv', {}, rootData).html;
+  assert.match(archive, /"@type":"CollectionPage"/);
+  assert.match(archive, /"@type":"ItemList"/);
+  assert.match(archive, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/arsiv#itemlist"/);
+
+  const category = renderPublicArchivePreviewRoute('/kategori/hidayet', {}, rootData).html;
+  assert.match(category, /"@type":"CollectionPage"/);
+  assert.match(category, /"@type":"ItemList"/);
+  assert.match(category, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/kategori\/hidayet#itemlist"/);
 });
 
 test('public preview shows direct authorship without broad expert language', () => {
@@ -562,9 +587,12 @@ test('public preview can render approved records instead of fixture data', () =>
   assert.match(detail.html, /"@type":"Article"/);
   assert.match(detail.html, /"mainEntityOfPage"/);
   assert.match(detail.html, /"@type":"BreadcrumbList"/);
-  assert.match(detail.html, /"citation":\["Bakara-256","Yâsîn-62"\]/);
+  assert.match(detail.html, /"@type":"Question"/);
+  assert.match(detail.html, /"@type":"Answer"/);
+  assert.match(detail.html, /"acceptedAnswer"/);
+  assert.match(detail.html, /"citation":\[\{"@type":"CreativeWork","name":"Bakara-256"/);
+  assert.match(detail.html, /"name":"Yâsîn-62"/);
   assert.doesNotMatch(detail.html, /"@type":"QAPage"/);
-  assert.doesNotMatch(detail.html, /"acceptedAnswer"/);
   assert.doesNotMatch(detail.html, /Public okuma bağlamı\./);
 
   const topic = renderPublicArchivePreviewRoute('/public-preview/konu/zikir', {}, approvedArchiveData);
@@ -815,8 +843,25 @@ test('home page featured questions rotate across hours from a wider pool', () =>
 
 test('mobile search copy stays compact but accessible', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
-  assert.match(home, /placeholder="Soru veya kategori arayın\.\.\."/);
+  assert.match(home, /data-live-search-hint/);
+  assert.match(home, /Soru veya kategori arayın\.\.\./);
+  assert.match(home, /Mürşid farz mıdır\?/);
+  assert.match(home, /Nefs tezkiyesi nasıl yapılır\?/);
   assert.match(home, /aria-label="Sorunuzu veya kategorinizi yazın"/);
+  assert.match(home, /data-live-search/);
+  assert.match(home, /data-live-search-url="\/public-preview\/api\/public-search"/);
+  assert.match(home, /aria-controls="pa-live-search-results"/);
+  assert.match(home, /class="pa-live-search-panel"/);
+  assert.match(home, /bindLiveSearchControls/);
+  assert.match(home, /renderInstantResults/);
+  assert.match(home, /localResults/);
+  assert.match(home, /submitLiveSearch/);
+  assert.match(home, /clientSearchTokenForms/);
+  assert.match(home, /window\.__publicArchiveNavigateTo/);
+  assert.match(home, /AbortController/);
+  assert.match(home, /Konular/);
+  assert.match(home, /En uygun sorular/);
+  assert.match(home, /Cevaplarda geçenler/);
   assert.doesNotMatch(home, /placeholder="Sorunuzu veya kategorinizi yazın/);
 });
 

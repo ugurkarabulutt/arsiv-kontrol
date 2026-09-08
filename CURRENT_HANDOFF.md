@@ -1,5 +1,124 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-08 Public SEO ve Schema Katmanı Canlıda
+
+- Kullanıcının SEO/indexleme talebiyle public arşiv head ve JSON-LD çıktısı
+  güçlendirildi. Görünür soru/cevap metni ve DB kayıtları değiştirilmedi.
+- Soru detay sayfaları artık forum tipi `QAPage` kullanmadan schema.org
+  `WebPage`, `Article`, `Question`, `Answer` ve `BreadcrumbList` grafı üretir.
+  Tekil cevap `Question.acceptedAnswer` olarak bağlanır; `Article.articleBody`
+  ve `Answer.text` cevap metnini taşır, cevap bölümü `#cevap` anchor'ına sahiptir.
+  Yayın/güncelleme tarihi, author, article section/tag ve canonical meta
+  birlikte üretilir.
+- Global public head çıktısına `googlebot` meta, canlı `sitemap.xml` linki ve
+  `llms.txt` alternate linki eklendi. Global JSON-LD `Organization` ve
+  `WebSite/SearchAction` taşır. SEO title/description metinleri görünür
+  başlığı bozmadan kontrollü kısaltılır.
+- Arşiv ve SEO açısından güçlü kategori sayfaları `CollectionPage`,
+  `ItemList` ve breadcrumb schema üretir. Zayıf/noindex kategori sayfalarında
+  canonical gibi koleksiyon schema da kapalı kalır.
+- `llms.txt` içeriği genişletildi: arşivin kaynak niteliği, kullanılan schema
+  türleri, `QAPage` kullanılmadığı, güçlü kategori girişleri ve son güncellenen
+  tekil soru-cevap URL'leri makine-okunur metinle açıklanır.
+- Değişen dosyalar: `server.js`, `public-archive-renderer.js`,
+  `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`. Bu paket aynı worktree'deki önceki
+  onaylı canlı arama ve ekip/yönetim alanı değişiklikleriyle birlikte durur;
+  DB/schema/içerik/yayın verisi değiştirilmedi.
+- Doğrulama: `npm.cmd run check` 136/136 geçti. Ek render kontrolünde root
+  `robots/index`, `googlebot`, sitemap linki, `llms.txt`, `Organization` ve
+  `SearchAction`; soru sayfasında `Question`, `Answer`, `acceptedAnswer`,
+  `article:published_time`, `#cevap`, `QAPage=false`; arşiv/kategoride
+  `CollectionPage` ve `ItemList` doğrulandı.
+- Production deployment `dpl_ASt6QohfvrPBkJVkBTGZkn8s5TXk`,
+  `https://arsiv-kontrol-qb3wmhxl7-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı doğrulama:
+  `/health`, root, `/robots.txt`, `/sitemap.xml`, `/llms.txt` ve sitemap'ten
+  seçilen gerçek soru sayfası 200. Root `index,follow`, gerçek soru canonical,
+  `Question/Answer/acceptedAnswer`, `article:published_time`, `#cevap` var;
+  `QAPage` yok. Sitemap'te 2.447 soru ve 249 kategori URL'si var. Son 15 dakika
+  Vercel error logu boş.
+
+## 2026-09-08 Public Canlı Arama v6 Canlıda
+
+- Kullanıcının onayıyla public ana arama kutusu canlı/akıllı öneri deneyimine
+  çevrildi. Kullanıcı yazarken panel açılır; sonuçlar `Konular`, `En uygun
+  sorular` ve `Cevaplarda geçenler` olarak ayrılır. Sayfaya gömülü sınırlı
+  public seed ile uygun sonuç varsa panel ağ cevabını beklemeden açılır; sunucu
+  araması arkadan çalışır. Eski istekler `AbortController` ile iptal edilir,
+  kısa süreli sunucu ve istemci cache kullanılır.
+- Arama kutusunda boşken yazılıp silinen canlı örnekler gösterilir:
+  `Mürşid farz mıdır?`, `Hidayet nedir?`, `Nefs tezkiyesi nasıl yapılır?`,
+  `Zikir nedir?`, `Takva sahibi nasıl olunur?`. Mobilde input 16 px kalır;
+  iPhone zoom tetiklemez. Küçük ekranlarda sonuç paneli viewport ve
+  `.pa-mobile-nav` konumuna göre dinamik kısalır, alt menüyle çakışmaz.
+- `v6` düzeltmesi: animated hint eklenince CSS grid otomatik yerleşimi butonu
+  ikinci satıra atabiliyordu; arama ikonu, input, hint ve submit butonu açık
+  grid satır/kolonlarına sabit. Formun hint/input alanına dokunmak input'a focus
+  verir. Klavyedeki Enter/Search ve sağdaki yeşil ok artık `/arama?q=...`
+  sonucuna gider. Programatik geçiş mevcut hızlı public navigasyon kanalını
+  kullanır. Arama eşleşmesi `hidayete`, `hidayeti`, `mürşide` gibi sınırlı
+  Türkçe ek varyantlarından ana kökü yakalar.
+- Alaka düzeltmesi: `sahibi`, `olmak`, `nasıl`, `yapılır`, `olunur`, `gidilir`
+  gibi yardımcı kelimeler niyet kelimesi sayılmaz ve DB sorgu terimi olarak
+  kullanılmaz. Bu yüzden `Takva sahibi olmak` sorgusunda `sahibi/olmak` geçen
+  alakasız başlıklar yerine `Takva` ve takva soruları öne çıkar. Canlı öneri
+  endpoint'i hafif başlık/soru/özet/kategori index'iyle çalışır; tam `/arama`
+  sayfası geniş arama index'ini kullanır.
+- Yeni endpoint'ler: `/api/public-search` ve noindex preview karşılığı
+  `/public-preview/api/public-search`. Endpoint yalnız `public_qa` içindeki
+  `published` kayıtları ve public kategori indeksini okur; admin/history/private
+  tablo verisi açmaz. Arama yanıtına `X-Robots-Tag: noindex, nofollow` eklenir.
+- Değişen dosyalar: `server.js`, `public-archive-renderer.js`,
+  `public-archive.css`, `scripts/check-frontend.js`,
+  `test/public-archive-renderer.test.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  DB/schema/içerik/yayın kayıtları değişmedi.
+- Doğrulama: `npm.cmd run check` 136/136 geçti. `git diff --check` whitespace
+  hatası vermedi; yalnız mevcut CRLF uyarıları görüldü. Canlı root 200, asset
+  sürümü `20260908-live-search-v6`, canlı arama JS markerları, niyet sıralaması
+  ve `/api/public-search` URL'si doğrulandı. Playwright mobil testinde
+  `/api/public-search` isteği 1.2 sn geciktirilmesine rağmen `Takva sahibi olmak`
+  sorgusunda panel ağ cevabını beklemeden `Takva` kartını gösterdi. Enter/Search
+  `/arama?q=Takva+sahibi+olmak` sonucuna gitti ve 122 kart render etti. Yeşil ok
+  cache'li durumda aynı sonuca 140 ms civarında gitti. Console error yoktu.
+  Canlı API aynı sorguda 2.267 sn, 7 sonuç, ilk kategori `Takva`, ikinci kategori
+  `Ahsen-i Takvim`, ilk soru `Muhterem Hocam, takva ne demektir? Takva sahibi
+  olmak için nelere dikkat etmeliyiz? Açıklar mısınız?` döndürdü. Son 15 dakika
+  Vercel error logu boş.
+- Production deployment `dpl_ASVJ2MKswgdkJTmgnq5fi71wYTfs`,
+  `https://arsiv-kontrol-xnzalb0ug-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. GitHub push yapılmadı.
+
+## 2026-09-07 Ekip Çalışma Alanı Sadeleştirme Canlıda
+
+- Kullanıcının onayıyla Ekip Üyesi alanındaki durum filtresi üç kullanıcı
+  odaklı listeye indirildi: `Düzenlenecekler`, `İncelemede`, `Sonuçlananlar`.
+  Bu alan artık `Teyit bekleyenler`, `Arşivlenenler`, `Sahiplik itirazları`,
+  `Çöp kutusu` veya diğer ham yönetim kuyruklarını göstermez.
+- Backend de aynı ayrımı zorlar. `X-Review-Workspace: member` ile yalnız
+  `todo`, `in_review`, `done` kabul edilir; ham yönetim statüsü gönderilirse
+  `INVALID_STATUS` döner. Kayıt okuma kapsamı yine sadece kullanıcının kendi
+  veya kendisine atanmış kayıtlarıdır. Yönetim alanında mevcut ayrıntılı kuyruklar
+  değişmedi.
+- Değişen dosyalar: `review-policy.js`, `review-workflow.js`,
+  `review-workspace.js`, `test/review-workflow-db.test.js`,
+  `test/review-workflow-http.test.js`, `AGENTS.md`, `CURRENT_HANDOFF.md`.
+  DB/schema/içerik/yayın değişmedi.
+- Doğrulama: `npm.cmd run check` 136/136 geçti. Ek tarayıcı kontrolünde sentetik
+  `user` ve `admin` oturumlarıyla ekip seçeneklerinin yalnız üç liste olduğu,
+  admin Yönetim alanında ayrıntılı kuyrukların kaldığı ve ekip API'sinde
+  `status=teyit_bekliyor` sorgusunun 409 döndüğü doğrulandı.
+- Production deployment `dpl_ATCTwj9sogNAY82UxSnTGUotXnxZ`,
+  `https://arsiv-kontrol-2opifexch-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`,
+  `/admin` 200 noindex/no-store, public root 200 index/follow, oturumsuz
+  `/api/review/records` 401, canlı `review-workspace.js` yeni bucket markerları
+  var ve eski ekip ham seçenekleri yok. Son 15 dakika Vercel loglarında error
+  seviyesi görünmedi. GitHub push yapılmadı.
+- Sonraki onaylı iş: public ön yüzde ana arama kutusunu canlı/akıllı arama
+  deneyimine çevirmek. Bu işe geçmeden önce bu çalışma gerekiyorsa production'a
+  alınmalı.
+
 ## 2026-09-07 Public Paylaşım ve Cevap Kopyalama Canlıda
 
 - Soru detayındaki eski metin düğmeleri modern, ikonlu iki işlem olarak

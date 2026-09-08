@@ -1,5 +1,5 @@
 const express = require('express');
-const { STATUSES, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload } = require('./review-policy');
+const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus } = require('./review-policy');
 
 const ERRORS = {
   VERSION_CONFLICT: [409, 'Kayıt başka bir işlemle değişti. Metninizi koruyun; güncel kaydı açıp karşılaştırın.'],
@@ -68,7 +68,8 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
         submittedAt: row.submitted_at || null, submittedBy: row.submitted_by || null, submittedByName: names.get(row.submitted_by) || '',
         queueAt: row.queue_sort_at || row.updated_at || row.created_at,
         favorite: favorites.has(row.id), workflow: meta, returnNote: row.status === 'geri_gonderildi' ? (meta.returnNote ?? result.returnNote) : '',
-        allowedActions: recordActions(userFor(req), row, spaceFor(req)), publication: publication.get(row.id) || null };
+        allowedActions: recordActions(userFor(req), row, spaceFor(req)), publication: publication.get(row.id) || null,
+        displayStatus: spaceFor(req) === 'member' ? memberDisplayStatus(row.status) : '' };
     });
   }
   async function change(req, id, action, payload, version) {
@@ -85,11 +86,13 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
 
   router.get('/records', handler(async (req, res) => {
     const space = spaceFor(req);
-    const status = String(req.query.status || (space === 'management' ? 'bekliyor' : 'all'));
+    const status = String(req.query.status || (space === 'management' ? 'bekliyor' : 'todo'));
     const page = Math.max(1, Math.min(10000, parseInt(req.query.page, 10) || 1));
     const pageSize = 25;
     const term = String(req.query.q || '').trim().replace(/[%,()\\]/g, ' ').replace(/\s+/g, ' ').slice(0, 120);
-    if (status !== 'all' && status !== 'disputed' && !STATUSES.includes(status)) throw new Error('INVALID_STATUS');
+    const memberStatuses = MEMBER_BUCKETS[status];
+    if (space === 'member' && !memberStatuses) throw new Error('INVALID_STATUS');
+    if (space === 'management' && status !== 'all' && status !== 'disputed' && !STATUSES.includes(status)) throw new Error('INVALID_STATUS');
     const submissionOrder = status === 'bekliyor' && !readOnly;
     let query = supabase.from(readOnly ? 'history' : 'review_history_queue')
       .select(readOnly ? PREVIEW_COLUMNS : QUEUE_COLUMNS, { count: 'exact' })
@@ -97,7 +100,8 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     if (space === 'member') query = (readOnly ? query.eq('user_id',req.session.userId) : query.or(`user_id.eq.${req.session.userId},assignee_id.eq.${req.session.userId}`)).neq('status', 'copte');
     else query = query.neq('status', 'taslak');
     if (status === 'disputed' && readOnly) return res.json({ items: [], count: 0, page, pageSize, workspace: space });
-    if (status === 'disputed') query = query.eq('workflow_meta->>disputed', 'true').neq('status', 'copte');
+    if (space === 'member') query = query.in('status', memberStatuses);
+    else if (status === 'disputed') query = query.eq('workflow_meta->>disputed', 'true').neq('status', 'copte');
     else if (status !== 'all') query = query.eq('status', status);
     else query = query.neq('status', 'copte');
     if (term) query = query.or(['question_text', 'corrected_text', 'name', 'filename', 'submission_note'].map(field => `${field}.ilike.%${term}%`).join(','));

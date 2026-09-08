@@ -12,7 +12,9 @@ test('member listing is scoped for admin and super admin, management lists team'
   for(const role of ['user','admin','super_admin']){
     const result=await request('/api/review/records',role);assert.equal(result.status,200);
     assert.ok(result.data.items.every(row=>row.userId===fixture.users.find(u=>u.role===role).id));
+    assert.ok(result.data.items.every(row=>['Düzenlenecek','İncelemede','Onaylandı','Reddedildi','Arşivlendi'].includes(row.displayStatus)));
   }
+  assert.equal((await request('/api/review/records?status=teyit_bekliyor','user','member')).status,409);
   const result=await request('/api/review/records?status=all','admin','management');assert.equal(result.data.count,65);assert.equal(result.data.items.length,25);
 });
 test('detail and legacy APIs refuse other owner in member workspace',async()=>{
@@ -36,7 +38,11 @@ test('manual action cannot masquerade as completed reanalysis',async()=>{
 test('all inline and external admin scripts parse, feature routing cannot fall through legacy writes',()=>{
   const root=path.join(__dirname,'..');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
   for(const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(match[1]);
-  new vm.Script(fs.readFileSync(path.join(root,'review-workspace.js'),'utf8'));
+  const workspaceScript=fs.readFileSync(path.join(root,'review-workspace.js'),'utf8');
+  new vm.Script(workspaceScript);
+  assert.match(workspaceScript,/todo: 'Düzenlenecekler'/);
+  assert.match(workspaceScript,/: \['todo','in_review','done'\]/);
+  assert.doesNotMatch(workspaceScript,/: \['all','taslak','geri_gonderildi','bekliyor','onaylandi','reddedildi','teyit_bekliyor','arsivlendi'\]/);
   const source=fs.readFileSync(path.join(root,'server.js'),'utf8');
   assert.ok(source.indexOf("app.use('/api/history', auth, review.legacy)")<source.indexOf("app.post('/api/history/:id/approve'"));
   assert.match(source,/ADMIN_REVIEW_WORKSPACES_ENABLED = process.env.ADMIN_REVIEW_WORKSPACES_ENABLED === '1'/);
@@ -57,10 +63,12 @@ test('resubmitted old records lead the entire pending queue before pagination fo
     const newest=inserted.at(-1);
     for(const role of ['admin','super_admin','user']) {
       const space=role==='user'?'member':'management';
-      const first=await request('/api/review/records?status=bekliyor&q=Sıra%20Testi',role,space);
+      const memberQuery='/api/review/records?status=in_review&q=Sıra%20Testi';
+      const managerQuery='/api/review/records?status=bekliyor&q=Sıra%20Testi';
+      const first=await request(space==='member'?memberQuery:managerQuery,role,space);
       assert.equal(first.status,200);assert.equal(first.data.count,32);
       assert.deepEqual(first.data.items.map(h=>h.id),inserted.slice().reverse().slice(0,25));
-      const second=await request('/api/review/records?status=bekliyor&q=Sıra%20Testi&page=2',role,space);
+      const second=await request((space==='member'?memberQuery:managerQuery)+'&page=2',role,space);
       assert.deepEqual(second.data.items.map(h=>h.id),inserted.slice().reverse().slice(25));
       assert.equal(first.data.items[0].submittedBy,owner.id);
       assert.equal(first.data.items[0].submittedByName,owner.name);
@@ -74,7 +82,7 @@ test('resubmitted old records lead the entire pending queue before pagination fo
     all=await request('/api/review/records','admin','management');
     assert.equal(all.data.items[0].id,newest);
     assert.equal(all.data.items[0].correctedText,undefined); // List response must not expose full answers.
-    const own=await request('/api/review/records?status=bekliyor&q=Sıra%20Testi','admin','member');
+    const own=await request('/api/review/records?status=in_review&q=Sıra%20Testi','admin','member');
     assert.equal(own.data.count,0);
     const withdrawn=await request(`/api/review/${inserted[0]}/action`,'user','member',{version:saved.data.history.version,action:'withdraw'});
     assert.equal(withdrawn.status,200);
