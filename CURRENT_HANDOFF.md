@@ -18,6 +18,17 @@
 - Değişen dosyalar: `server.js`, `public-archive-renderer.js`,
   `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`,
   `AGENTS.md`, `CURRENT_HANDOFF.md`.
+- Runtime commit `9b0504d` GitHub'a push edildi ve production'a alındı.
+  Production deployment `dpl_J9ameYQxLiRrMUPYvPfFLZsANSvE`,
+  `https://arsiv-kontrol-dr5ksvy3l-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Doğrulama: `npm.cmd run check` 137/137 geçti ve `git diff --check` hata
+  vermedi. Canlı doğrulamada `/health`, root, `/kategoriler`, sitemap'ten
+  seçilen gerçek kategori ve soru sayfası 200 döndü. Root `index,follow`,
+  `googlebot` ve sitemap linki; `/kategoriler` canonical ve `ItemList`;
+  kategori delil kutusu ve `mentions`; soru `Article` + `acceptedAnswer`;
+  `llms.txt` kategori satırı; sitemap içinde `/kategoriler`, 2.447 soru ve
+  249 kategori URL'si doğrulandı.
 
 ## 2026-09-08 Public SEO ve Schema Katmanı Canlıda
 

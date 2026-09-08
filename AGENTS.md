@@ -15,7 +15,17 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   "delil atıfları" kutusunda listelenir ve her atıf arama sonucuna iç link
   verir. Public category dataset'i yalnız yayınlanmış kayıtların cevap alanını
   kategori sayfası delil çıkarımı için okur; admin/history/private veri açmaz.
-  DB/schema/içerik/yayın kayıtları değiştirilmedi.
+  DB/schema/içerik/yayın kayıtları değiştirilmedi. Runtime commit `9b0504d`
+  GitHub'a push edildi ve production'a alındı. Production deployment
+  `dpl_J9ameYQxLiRrMUPYvPfFLZsANSvE`,
+  `https://arsiv-kontrol-dr5ksvy3l-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Yerel doğrulama:
+  `npm.cmd run check` 137/137 geçti ve `git diff --check` hata vermedi. Canlı
+  doğrulama: `/health`, root, `/kategoriler`, sitemap'ten seçilen gerçek
+  kategori ve soru sayfası 200; root `index,follow` ve `googlebot`, sitemap
+  linki, `/kategoriler` canonical/ItemList, kategori delil kutusu ve
+  `mentions`, soru `Article` + `acceptedAnswer`, sitemap'te `/kategoriler`,
+  2.447 soru URL'si ve 249 kategori URL'si doğrulandı.
 
 - **2026-09-08 public SEO/schema katmanı:** Public arşiv root ve soru sayfaları
   indekslenebilir olduğunda `robots` ve `googlebot` meta `index,follow` üretir;
