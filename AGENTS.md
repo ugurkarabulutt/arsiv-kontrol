@@ -224,7 +224,14 @@ tespit edilir).
   kategori çıktılarında `question` metni üzerinden tekilleştirir. İçerik kararı
   gerektiren mevcut 133 aynı-soru grubu toplu gizlenmedi; yeni kod bunların
   görünür listelerde tekrar basılmasını engeller.
-- Doğrulama: `npm.cmd run check` 138/138 geçti.
+- Doğrulama: `npm.cmd run check` 138/138 geçti. Runtime commit `75db231`
+  GitHub'a push edildi ve production'a alındı. Deployment
+  `dpl_41mEdi1EFSkH3Us8xcFmJLPeymr1`,
+  `https://arsiv-kontrol-47wtiu6iw-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke'ta `/health`,
+  raporlu arama görünümü, eski slug 301 redirect'leri ve kalan büyük örnekte
+  görünür aynı-soru tekilleştirmesi doğrulandı. Son 15 dakika Vercel error logu
+  boştu.
 
 ### 2026-09-07 Tüm İnceleme Kuyruklarında Son İşlem Sırası (Canlı)
 

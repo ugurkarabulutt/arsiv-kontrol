@@ -27,6 +27,13 @@
   hatası vermedi; yalnız mevcut CRLF uyarıları görüldü. Geçici
   `.tmp-audit-irem-duplicates.cjs` ve `.tmp-fix-irem-duplicates.cjs` dosyaları
   commit'e girmedi.
+- Runtime commit `75db231` GitHub'a push edildi ve production'a alındı.
+  Production deployment `dpl_41mEdi1EFSkH3Us8xcFmJLPeymr1`,
+  `https://arsiv-kontrol-47wtiu6iw-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı smoke: `/health` ok,
+  raporlu arama sayfalarında gizlenen slug görünümü `0`, redirect kontrolünde
+  eski `-2/-3/-4` URL'leri `301`; DB'de hâlâ çoklu olan büyük örnek grupta
+  arama yalnız canonical slug'ı bastı. Son 15 dakika Vercel error logu boş.
 
 ## 2026-09-08 Public SEO Hub ve Delil Genişletmesi
 
