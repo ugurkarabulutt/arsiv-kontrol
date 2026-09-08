@@ -1,5 +1,33 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-08 İrem Raporlu Public Mükerrerler ve Aynı-Soru Koruması
+
+- İrem'in bildirdiği üç canlı arama sonucu DB üzerinden soru metnine göre
+  doğrulandı. `İdrak/anlamak` grubunda 1, `Sahabeyi misal` grubunda 3,
+  `Tasavvuf nedir` grubunda 1 olmak üzere toplam 5 `published` kopya satır
+  `duplicate_hidden` durumuna alındı. Base slug'lar yayında bırakıldı.
+- Gizlenen 5 slug için `public_question_redirects` tablosuna canonical base
+  slug'a 301 yönlendirme yazıldı. `content_correction_log` içinde
+  `irem-reported-duplicates-20260908` paket id'siyle 5 geri alınabilir kayıt,
+  `admin_action_log` içinde 3 sistem işlem kaydı oluştu.
+- Post-check: raporlanan gruplar `reportedDuplicateGroups: []`; gizlenen 5
+  soru URL'si canlıda 301 ile canonical soruya dönüyor. Yayındaki toplam
+  `public_qa` sayısı 2.446'dan 2.441'e indi.
+- Kök sebep: eski görünür kopya filtresi `question + answer` kimliğiyle
+  çalıştığı için aynı soru ama küçük imlâ/biçim farkı olan cevap varyantlarını
+  ayırmıyordu. Public renderer ve backend dataset/search katmanı artık public
+  çıktıda aynı soru metnini yalnız bir kez gösterir.
+- Kalan risk: canlı DB'de aynı soru metnine göre 133 grup daha var. Bunlar
+  içerik kararı gerektirdiği için toplu gizlenmedi; yeni kod arama/arşiv/home/
+  kategori görünümünde tekrar basılmalarını engeller.
+- Değişen dosyalar: `server.js`, `public-archive-renderer.js`,
+  `scripts/check-frontend.js`, `test/public-archive-renderer.test.js`,
+  `AGENTS.md`, `CURRENT_HANDOFF.md`.
+- Doğrulama: `npm.cmd run check` 138/138 geçti. `git diff --check` whitespace
+  hatası vermedi; yalnız mevcut CRLF uyarıları görüldü. Geçici
+  `.tmp-audit-irem-duplicates.cjs` ve `.tmp-fix-irem-duplicates.cjs` dosyaları
+  commit'e girmedi.
+
 ## 2026-09-08 Public SEO Hub ve Delil Genişletmesi
 
 - Kullanıcının Google/Search/AI görünürlüğünü artırma talebiyle mevcut public

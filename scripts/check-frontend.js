@@ -1385,9 +1385,10 @@ for (const marker of ['renderPublicArchiveUnavailableRoute', 'publicArchiveUnava
   assert(publicRendererSource.includes(marker), `Public root gecici veri hatasi ekrani eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('Arşiv geçici olarak hazırlanıyor'), 'Public root veri yok modunda site kapali mesaji gorunmemeli.');
-for (const marker of ['uniquePublicArchiveRecords', 'hidePublicArchiveDuplicateRows', '/api/public-archive/duplicates/hide', 'publicArchiveQuestionIdentity']) {
+for (const marker of ['uniquePublicArchiveRecords', 'uniquePublicArchiveQuestionRows', 'hidePublicArchiveDuplicateRows', '/api/public-archive/duplicates/hide', 'publicArchiveQuestionIdentity']) {
   assert(server.includes(marker), `Public mukerrer temizlik marker eksik: ${marker}`);
 }
+assert(publicRendererSource.includes('publicArchiveQuestionResultIdentity'), 'Public renderer ayni soru metni icin tekil sonuc kimligi kullanmali.');
 const duplicateHomePreview = renderPublicArchivePreviewRoute('/public-preview', {}, {
   brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
   categories: [{ slug: 'karar-vermek', name: 'Karar Vermek', description: 'Karar verme soruları.', topicSlugs: [] }],
@@ -1435,8 +1436,8 @@ const duplicateHomePreview = renderPublicArchivePreviewRoute('/public-preview', 
   ]
 }).html;
 assert(duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-b'), 'Public ana sayfa mukerrer sorunun secilen surumunu gostermeli.');
-assert(duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-a'), 'Public ana sayfa ayni sorunun farkli cevabini gizlememeli.');
-assert(!duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-c'), 'Public ana sayfa yalniz birebir soru-cevap kopyasini gizlemeli.');
+assert(!duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-a'), 'Public ana sayfa ayni soru metninin eski surumunu gizlemeli.');
+assert(!duplicateHomePreview.includes('/public-preview/soru/mukerrer-soru-c'), 'Public ana sayfa ayni soru metninin birebir kopyasini gizlemeli.');
 assert(duplicateHomePreview.includes('Çok okunan soru vitrinde yer bulur mu?'), 'Public ana sayfa okuma agirlikli soruyu vitrine alabilmeli.');
 assert(!homePreview.includes('Okuma düzeni'), 'Public home eski Okuma duzeni kicker ini icermemeli.');
 assert(!homePreview.includes('Her cevap; soru, ana kapı ve ilgili kavramlarla birlikte hazırlanır.'), 'Public home eski okuma duzeni basligini icermemeli.');

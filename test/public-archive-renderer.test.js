@@ -793,7 +793,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
 });
 
-test('home page question selection only deduplicates exact question-answer copies', () => {
+test('home page question selection deduplicates repeated question text', () => {
   const archiveData = {
     brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
     categories: [{ slug: 'karar-vermek', name: 'Karar Vermek', description: 'Karar verme soruları.', topicSlugs: [] }],
@@ -843,9 +843,43 @@ test('home page question selection only deduplicates exact question-answer copie
   const home = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
 
   assert.match(home, /\/public-preview\/soru\/mukerrer-soru-b/);
-  assert.match(home, /\/public-preview\/soru\/mukerrer-soru-a/);
+  assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-a/);
   assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-c/);
   assert.match(home, /Çok okunan soru vitrinde yer bulur mu\?/);
+});
+
+test('search results deduplicate repeated question text even when server prefilters rows', () => {
+  const archiveData = {
+    brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
+    categories: [{ slug: 'idrak', name: 'İdrak', description: 'İdrak soruları.', topicSlugs: [] }],
+    topics: [],
+    search: { preFiltered: true, query: 'idrak anlamak' },
+    qa: [
+      {
+        slug: 'idrak-soru',
+        title: 'Anlamakla idrak etmek aynı şey midir?',
+        question: 'Anlamakla idrak etmek aynı şey midir?',
+        answer: ['İlk cevap varyantı.'],
+        categorySlug: 'idrak',
+        publishedAt: '2026-08-20T09:00:00.000Z',
+        readCount: 1
+      },
+      {
+        slug: 'idrak-soru-2',
+        title: 'Anlamakla idrak etmek aynı şey midir?',
+        question: 'Anlamakla idrak etmek aynı şey midir?',
+        answer: ['İkinci cevap varyantı.'],
+        categorySlug: 'idrak',
+        publishedAt: '2026-08-21T09:00:00.000Z',
+        readCount: 20
+      }
+    ]
+  };
+  const search = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'idrak anlamak' }, archiveData).html;
+
+  assert.match(search, /\/public-preview\/soru\/idrak-soru-2/);
+  assert.doesNotMatch(search, /\/public-preview\/soru\/idrak-soru"/);
+  assert.match(search, /1 kayıt listeleniyor\./);
 });
 
 test('home page featured questions rotate across hours from a wider pool', () => {

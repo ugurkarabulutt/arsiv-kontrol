@@ -207,6 +207,25 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-08 Public Aynı-Soru Mükerrer Koruması
+
+- İrem'in bildirdiği üç canlı arama grubunda aynı soru metnine sahip 5 kopya
+  public satır kontrollü gizlendi: `İdrak/anlamak` 1, `Sahabeyi misal` 3,
+  `Tasavvuf nedir` 1. Base slug'lar `published` kaldı; gizlenen slug'lar
+  `public_question_redirects` ile canonical base slug'a 301 yönlenir.
+- İşlem geri alınabilir iz bıraktı: `content_correction_log` paket id'si
+  `irem-reported-duplicates-20260908`, ayrıca `admin_action_log` sistem
+  kayıtları yazıldı. Post-check'te raporlanan gruplar sıfırlandı ve 5 eski URL
+  canlıda 301 döndü.
+- Kök sebep: önceki public mükerrer filtresi yalnız `soru + cevap` birebir
+  kimliğini yakalıyordu. Aynı soru ama küçük cevap/imlâ farkı olduğunda arama
+  ve listeleme bunu tekrar gösterebiliyordu.
+- Backend ve public renderer artık görünür public dataset/search/home/arşiv/
+  kategori çıktılarında `question` metni üzerinden tekilleştirir. İçerik kararı
+  gerektiren mevcut 133 aynı-soru grubu toplu gizlenmedi; yeni kod bunların
+  görünür listelerde tekrar basılmasını engeller.
+- Doğrulama: `npm.cmd run check` 138/138 geçti.
+
 ### 2026-09-07 Tüm İnceleme Kuyruklarında Son İşlem Sırası (Canlı)
 
 - `review_history_queue` yalnız bekleyenleri değil bütün yönetim/ekip listelerini besler.

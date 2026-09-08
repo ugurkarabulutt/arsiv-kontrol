@@ -273,11 +273,11 @@ function topicsFor(entry) {
 }
 
 function entriesForTopic(slug) {
-  return publicArchiveFixtures.qa.filter(entry => (entry.topicSlugs || []).includes(slug));
+  return uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa.filter(entry => (entry.topicSlugs || []).includes(slug)));
 }
 
 function entriesForCategory(slug) {
-  return publicArchiveFixtures.qa.filter(entry => categorySlugsFor(entry).includes(slug));
+  return uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa.filter(entry => categorySlugsFor(entry).includes(slug)));
 }
 
 function categoryQuestionCount(category) {
@@ -1225,11 +1225,15 @@ function questionCard(entry, options = {}) {
   `;
 }
 
+function publicArchiveQuestionResultIdentity(entry = {}) {
+  const question = questionTextIdentity(entry);
+  if (question) return question;
+  const answer = publicArchiveComparable(plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body || ''));
+  return answer || String(entry.slug || entry.id || '');
+}
+
 function homeQuestionIdentity(entry = {}) {
-  const question = normalizeSearchText(entry.question || entry.title || '');
-  const answer = normalizeSearchText(plainText(entry.answer || entry.answerText || entry.answer_text || entry.fullAnswer || entry.body || ''));
-  if (question && answer) return `${question}\u0000${answer}`;
-  return question || answer || String(entry.slug || entry.id || '');
+  return publicArchiveQuestionResultIdentity(entry);
 }
 
 function entryPublishedTime(entry = {}) {
@@ -1252,6 +1256,18 @@ function uniqueHomeQuestions(entries = []) {
   for (const entry of entries || []) {
     if (!entry?.slug) continue;
     const key = homeQuestionIdentity(entry);
+    if (!key) continue;
+    const current = byIdentity.get(key);
+    if (!current || betterHomeDuplicate(entry, current)) byIdentity.set(key, entry);
+  }
+  return [...byIdentity.values()];
+}
+
+function uniquePublicArchiveQuestionResults(entries = []) {
+  const byIdentity = new Map();
+  for (const entry of entries || []) {
+    if (!entry?.slug) continue;
+    const key = publicArchiveQuestionResultIdentity(entry);
     if (!key) continue;
     const current = byIdentity.get(key);
     if (!current || betterHomeDuplicate(entry, current)) byIdentity.set(key, entry);
@@ -1444,9 +1460,10 @@ function searchResults(query) {
   const normalized = normalizeSearchText(query);
   const preFiltered = publicArchiveFixtures.search?.preFiltered === true;
   const preFilteredQuery = normalizeSearchText(publicArchiveFixtures.search?.query || '');
-  if (preFiltered && normalized === preFilteredQuery) return publicArchiveFixtures.qa;
-  if (!normalized) return publicArchiveFixtures.qa;
-  return publicArchiveFixtures.qa.filter(entry => {
+  const entries = uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa);
+  if (preFiltered && normalized === preFilteredQuery) return entries;
+  if (!normalized) return entries;
+  return entries.filter(entry => {
     const category = categoryFor(entry);
     const topics = topicsFor(entry).map(topic => topic.name).join(' ');
     const haystack = normalizeSearchText([
@@ -1645,7 +1662,7 @@ function renderArchive(query = {}) {
   const serverPagination = publicArchiveFixtures.pagination?.scope === 'archive'
     ? publicArchiveFixtures.pagination
     : null;
-  const entries = [...publicArchiveFixtures.qa].sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+  const entries = uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa).sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
   const answeredCount = archiveStatCount('answerCount', entries.filter(entry => Array.isArray(entry.answer) && entry.answer.length).length || entries.length);
   const categoryIndex = archiveCategoryIndex(query);
   const visibleEntries = serverPagination?.prePaginated
@@ -1908,7 +1925,7 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
   const serverPagination = publicArchiveFixtures.pagination?.scope === 'category' && publicArchiveFixtures.pagination?.slug === slug
     ? publicArchiveFixtures.pagination
     : null;
-  const entries = serverPagination?.prePaginated ? publicArchiveFixtures.qa : entriesForCategory(category.slug);
+  const entries = serverPagination?.prePaginated ? uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa) : entriesForCategory(category.slug);
   const pageState = archivePaginationState(entries, query.sayfa, serverPagination);
   const pageNoindex = !publicCategorySeoIndexable(category, pageState.total);
   const categoryTitle = categorySeoTitle(category);

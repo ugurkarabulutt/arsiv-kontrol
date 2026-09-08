@@ -5709,6 +5709,24 @@ function betterPublicArchiveDuplicateCandidate(next = {}, current = {}) {
   return String(next.slug || next.id || '').localeCompare(String(current.slug || current.id || ''), 'tr') < 0;
 }
 
+function betterPublicArchiveQuestionCandidate(next = {}, current = {}) {
+  if (publicArchiveQuestionIdentity(next) === publicArchiveQuestionIdentity(current)) {
+    return betterPublicArchiveDuplicateCandidate(next, current);
+  }
+  const nextReads = Number(next.read_count || next.readCount || 0);
+  const currentReads = Number(current.read_count || current.readCount || 0);
+  if (nextReads !== currentReads) return nextReads > currentReads;
+  if (Boolean(next.is_featured || next.isFeatured) !== Boolean(current.is_featured || current.isFeatured)) {
+    return Boolean(next.is_featured || next.isFeatured);
+  }
+  const nextRank = publicArchiveSlugDuplicateRank(next.slug);
+  const currentRank = publicArchiveSlugDuplicateRank(current.slug);
+  if (nextRank !== currentRank) return nextRank < currentRank;
+  const timeDiff = publicArchiveCandidateTime(next) - publicArchiveCandidateTime(current);
+  if (timeDiff !== 0) return timeDiff > 0;
+  return String(next.slug || next.id || '').localeCompare(String(current.slug || current.id || ''), 'tr') < 0;
+}
+
 function uniquePublicArchiveRecords(records = []) {
   const byIdentity = new Map();
   for (const record of records || []) {
@@ -5716,6 +5734,17 @@ function uniquePublicArchiveRecords(records = []) {
     if (!key) continue;
     const current = byIdentity.get(key);
     if (!current || betterPublicArchiveDuplicateCandidate(record, current)) byIdentity.set(key, record);
+  }
+  return [...byIdentity.values()];
+}
+
+function uniquePublicArchiveQuestionRows(records = []) {
+  const byIdentity = new Map();
+  for (const record of records || []) {
+    if (!record?.slug) continue;
+    const key = publicArchiveQuestionOnlyIdentity(record) || String(record.slug || record.id || '');
+    const current = byIdentity.get(key);
+    if (!current || betterPublicArchiveQuestionCandidate(record, current)) byIdentity.set(key, record);
   }
   return [...byIdentity.values()];
 }
@@ -5928,7 +5957,7 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
 
 function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], topicRows = [], statsMap = new Map(), allowEmpty = false } = {}) {
   const defaults = publicArchiveDefaultData();
-  const safeQaRows = uniquePublicArchiveRecords(qaRows || []);
+  const safeQaRows = uniquePublicArchiveQuestionRows(qaRows || []);
   const categoryRowMap = new Map((categoryRows || []).map(row => [row.slug, row]));
   const topicRowMap = new Map((topicRows || []).map(row => [row.slug, row]));
   const usedCategorySlugs = new Set();
@@ -6430,15 +6459,23 @@ function publicArchiveRankSearchRows(groups = {}, query = '') {
   addRows(groups.titleRows, 'title', 700);
   addRows(groups.summaryRows, 'summary', 360);
   addRows(groups.bodyRows, 'body', 120);
-  return [...scored.values()]
+  const ranked = [...scored.values()]
     .map(item => ({ ...item, rank: publicArchiveRowIntentRank(item.row, query) }))
     .filter(item => !query || item.rank > 0)
     .sort((a, b) => b.rank - a.rank
       || b.score - a.score
       || String(b.row.published_at || b.row.created_at || '').localeCompare(String(a.row.published_at || a.row.created_at || ''))
-      || String(a.row.title || '').localeCompare(String(b.row.title || ''), 'tr'))
-    .slice(0, PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT)
-    .map(item => item.row);
+      || String(a.row.title || '').localeCompare(String(b.row.title || ''), 'tr'));
+  const unique = [];
+  const seenQuestions = new Set();
+  for (const item of ranked) {
+    const key = publicArchiveQuestionOnlyIdentity(item.row) || item.row.slug;
+    if (key && seenQuestions.has(key)) continue;
+    if (key) seenQuestions.add(key);
+    unique.push(item);
+    if (unique.length >= PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT) break;
+  }
+  return unique.map(item => item.row);
 }
 
 let publicCategoryRedirectCache = { expiresAt: 0, redirects: {} };
@@ -6518,12 +6555,13 @@ function publicArchiveQueryCategoryRedirectMiddleware(basePath = '') {
 }
 
 async function publicArchiveDatasetForRows({ rows = [], categoryRows = [], stats = null, pagination = null, search = null, allowEmpty = true } = {}) {
+  const uniqueRows = uniquePublicArchiveQuestionRows(rows || []);
   const neededCategoryRows = categoryRows.length
     ? categoryRows
-    : await loadPublicArchiveCategoryRowsBySlug(publicArchiveTagSlugsFromRows(rows));
-  const statsMap = await loadPublicArchiveStatsMap(rows.map(row => row.slug).filter(Boolean));
+    : await loadPublicArchiveCategoryRowsBySlug(publicArchiveTagSlugsFromRows(uniqueRows));
+  const statsMap = await loadPublicArchiveStatsMap(uniqueRows.map(row => row.slug).filter(Boolean));
   const dataset = publicArchiveDatasetFromPublicRows({
-    qaRows: rows,
+    qaRows: uniqueRows,
     categoryRows: neededCategoryRows,
     topicRows: [],
     statsMap,
