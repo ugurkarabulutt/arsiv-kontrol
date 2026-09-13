@@ -5,6 +5,91 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
+  geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi
+  tıklamalarını hızlı public navigasyon hattına bağlar; cache miss fallback'i
+  260ms'dir. Soru detayları dahil güvenli public route'lar session cache'e
+  alınabilir, ancak tekil HTML 240KB üstündeyse cache'e yazılmaz. Ana sayfada ilk
+  22 öncelikli hedef ve görünür alana yaklaşan kartlar `IntersectionObserver`
+  ile prefetch edilir. Son doğrulanan canlı asset sürümü
+  `20260913-fast-home-click-v6`, cache anahtarı `dsca-page-cache:v12`,
+  deployment `dpl_64XyHLsB5c88WNMabs6cFh1wNdiM`; canlı mobil ölçümde arşiv
+  kısayolu 112ms, niyet kartı 115ms, konu kartı 60ms, prefetch edilmiş soru kartı
+  50ms açıldı. Hero görseli `hero-open-book-warm.jpg` korunmalıdır.
+
+- **2026-09-13 geri dönen kayıt onayı:** Yönetim İş Panosu'nda toplu işlem
+  dropdown sırası `Onayla`, `Reddet`, sonra diğer yönetim kararları olarak
+  kalmalıdır. `geri_gonderildi` kayıtları yönetici/üst yönetici tarafından,
+  kendi kaydı olmamak ve sahiplik itirazı bulunmamak şartıyla son kontrolden
+  sonra onaylanabilir; bu işlem canlı public yayına aktarım akışını da tetikler.
+  Kendi kaydını onaylama yasağı, sürüm kontrolü ve gerekçe isteyen diğer
+  işlemler korunur.
+
+- **2026-09-13 dashboard sayaç anlamı:** Dashboard `Canlıdaki Soru` kartı
+  `public_qa.status='published'` canlı kayıt sayısını gösterir. `Uyarı` ve
+  `Okunmamış Feedback` dashboard sayaçları çözülmüş feedbackleri aksiyon olarak
+  saymaz; yalnız açık/okunmamış feedbackler ve okunmamış düşük skor uyarıları
+  dashboard alarmına girer. Eski çözülen ama `read=false` kalmış feedback
+  bildirimleri feedback çözüm durumunu bozmaz. Dashboard sekmesi aktifken 60
+  saniyede bir otomatik yenilenir.
+
+- **2026-09-10 Aysun mutluluk sorusu cevap tekrarı düzeltmesi:** Public slug
+  `muhterem-hocam-mutluluk-icin-yola-ciktigimizda-yolda-baskalarindan-beklenti-icinde-olmamiz-dogru`
+  Aysun Aydöner'e ait tek onaylı/yayınlanmış kayıt olarak doğrulandı. Cevabın
+  ilk paragrafındaki `Suali bir kere daha tekrar edecek olursak: ... doğru
+  mudur?` soru tekrarı, değişmeyen UUID/sürüm/metin ve tek eşleşme ön koşulları
+  altında history ile public cevaptan eşzamanlı kaldırıldı. Public paragraf,
+  summary ve excerpt alanları kalan cevaptan yenilendi; soru, durum ve kalan
+  cevap korunarak kayıt yayında bırakıldı. Geri alınabilir kayıt paketi
+  `public-answer-remove-repeated-question-20260910-c1254e2f`; correction log,
+  history revision ve admin action log birer kez oluştu. Post-check'te tüm
+  ilgili alanlarda hedef ifade 0, history/public metin eşit ve canlı sayfa 200.
+
+- **2026-09-10 Bihter günah alışkanlığı sorusu geri gönderimi:** Public slug
+  `muhterem-hocam-aliskanlik-haline-gelmis-bir-gunahtan-nasil-kurtulunur-aciklar-misiniz`
+  canlı veride Bihter Oksak'a ait tek `onaylandi` history kaydı ve tek
+  `published` public kayıt olarak doğrulandı. Kullanıcı talebiyle mevcut
+  `review_history_change(return)` transaction'ı kullanılarak history durumu
+  `geri_gonderildi`, public durum `content_review_hidden` yapıldı. Geri dönüş
+  notu tam olarak `Slaytta Esmalar eksik`; bildirim ve işlem günlüğü birer kez
+  oluştu. Post-check'te canlı URL 404 ve soru metni görünmez; kayıt silinmedi.
+
+- **2026-09-09 eski uzun metin taslakları ve ekip durum ayrımı:** Eski uzun
+  metin işleme döneminden kalan `Metin Girişi - Parça n/n` satırları bağımsız
+  soru-cevap taslağı değildir. Bu teknik satırlar `taslak` durumunda kalmış olsa
+  bile ekip/yönetim iş kuyruklarında gösterilmez; içerikleri ve geçmişleri
+  silinmez. Canlıda 37 teknik satırın tamamı `history` içinde korundu, kuyrukta
+  görünen sayı 0'a; Nuray kullanıcısı için 9'dan 0'a indi. Ekip üyesinin
+  `İncelemede` kovasında `bekliyor` kaydı `Onaya gönderildi`, yöneticinin teyide
+  ayırdığı `teyit_bekliyor` kaydı `Teyit bekliyor` adıyla ayrılır. Yalnız
+  `Onaya gönderildi` kaydı mevcut yetki ve sürüm koşulları uygunsa geri
+  çekilebilir; `Teyit bekliyor` yöneticinin karar akışındadır. Migration
+  `20260909122817_hide_legacy_chunk_drafts.sql` canlı Supabase'e uygulandı.
+  `npm.cmd run check` 149/149, Playwright 16/16 geçti. Production deployment
+  `dpl_DuaNqVibdbzV6EpfvES5gkdprYc9`, canlı `https://arsiv.ibrahimlive.ai`.
+  İçerik, durum veya public yayın kaydı değiştirilmedi; paket henüz commit/push
+  edilmedi.
+
+- **2026-09-08 ekip taslak güvenliği:** Ekip üyesi yalnız kendisine ait,
+  düzeltme/atama/yayın geçmişi olmayan `taslak` kaydı `Taslağı Sil` ile
+  yönetici tarafından geri alınabilir `copte` durumuna taşıyabilir. Karar
+  yetki ve sürüm kontrolünden sonra satır kilidi altında verilir; fiziksel
+  silme yapılmaz, sürüm ve işlem kaydı tutulur. Geri gönderilmiş, atanmış,
+  public kayıtla bağlı veya eski revision/log kayıtlarında geri dönüşü olan
+  taslaklar korunur. `memberDeleteProtected` kalıcıdır; geri gönderilen kayıt
+  yeniden onaya gönderilip geri çekilince de `geri_gonderildi` olarak kalır.
+  Ekip listeleri yine üçtür; satırlarda `Taslak` ve `Geri gönderildi` ayrılır.
+  Aynı kaynak/denetlenmiş cevapla yeni denetim oluşturma kontrolü owner/assignee
+  kapsamında çalışır; kısa insert işlemi advisory lock ile korunur. Tam aynı
+  soru-cevap gönderimindeki uyarı, yalnız erişilebilir mevcut kayda bağlantı
+  verir; düzenleyicideki değişiklikleri silmez. Eski benzer/kopya kayıtlar
+  otomatik temizlenmez ve anlamsal benzerlik tek başına silme kararı değildir.
+  Migration `20260908195554_member_draft_safety.sql` canlı Supabase'e uygulandı;
+  mevcut içerik/durum/revision verisine toplu yazım yapılmadı. Production
+  `dpl_HummykutWbw2oiTu9X3xRa5PqDUa`, canlı `https://arsiv.ibrahimlive.ai`.
+  `npm.cmd run check` 147/147, Playwright 16/16 geçti. Bu paket henüz commit/push
+  edilmedi; kaynak çalışma ağacı `.tmp-admin-workspaces-v2` içindedir.
+
 - **2026-09-08 public SEO hub/delil genişletmesi:** Public arşiv SEO katmanı
   soru, kategori ve arşiv sayfalarında görünür içeriği değiştirmeden
   zenginleştirildi. Soru detay meta açıklamaları artık kategori bağlamı ve
@@ -206,6 +291,72 @@ Eski `ilk 100 karakter + uzunluk` parmak izleri geriye dönük olarak tanınır.
 tespit edilir).
 
 ## Değişiklik Günlüğü
+
+### 2026-09-13 Public Konu Rehberi Numarasız Carousel
+
+- Public ana sayfa konu rehberindeki görsel numaralandırma kaldırıldı; kartlar
+  sade konu ikonu ile gösterilir. Hero görseli `hero-open-book-warm.jpg`
+  korunmuştur.
+- Konu rehberi rayı iki setli, `scroll-snap` tabanlı otomatik carousel yapısına
+  taşındı. `bindReadingPathSliders` kart kart otomatik ilerletir; kullanıcı
+  etkileşiminde duraklar, gecikmeli devam eder ve azaltılmış hareket tercihinde
+  otomatik kayma çalışmaz.
+- Public asset cache kırıcı `20260913-topic-slider-v1`. Doğrulama:
+  `npm.cmd run check` 155/155 geçti; Playwright 390px mobil kontrolde numara
+  markerı 0, otomatik scroll 0 -> 290 ve yatay taşma 0. Production deployment
+  `dpl_54XVzWX63BkoRe6Hd2H2zgiAT3yQ`,
+  `https://arsiv-kontrol-g8pqt782x-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı ana sayfada yeni asset
+  sürümü, hero görsel, `data-reading-slider`, `bindReadingPathSliders`,
+  scroll-snap CSS ve `pa-reading-index` yokluğu doğrulandı. Bu paket henüz
+  commit/push edilmedi.
+
+### 2026-09-13 Public Ana Sayfa ve Arşiv UX Modernizasyonu
+
+- Public ana sayfa, mevcut hero görseli `hero-open-book-warm.jpg` korunarak
+  daha zengin keşif akışına taşındı. Ana sayfaya niyet kartları, gerçek öne
+  çıkanlar, son yayınlananlar, Kur'ân delili bulunan cevaplar, konu patikaları,
+  keşif haritası, modern CTA ve güven bandı eklendi.
+- `Öne çıkanları gör` ve `Son yayınlananları gör` artık genel arşive gitmez;
+  `/one-cikan-sorular` ve `/son-yayinlanan-sorular` koleksiyon rotaları gerçek
+  kayıtları sıralı gösterir. Bu rotalar sitemap ve `llms.txt` içine eklendi.
+- Arşiv listeleme klasik sayfa ilerletmeye ek olarak `Daha Fazla Göster`
+  davranışı kazandı; sonraki sayfa kartları sayfa yenilenmeden mevcut listeye
+  eklenir. Crawlability için eski sayfa bağlantıları korunur.
+- Public asset cache kırıcı `20260913-home-v2`. Doğrulama: `npm.cmd run check`
+  155/155 geçti; `node --check public-archive-renderer.js`, `node --check
+  server.js`, `git diff --check` ve Playwright 390px/1440px görsel-akış
+  kontrolleri geçti. Production deployment
+  `dpl_3L6fHYRPRAqxP9okXHhMSCfdETBh`,
+  `https://arsiv-kontrol-ir32le9y6-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa,
+  iki koleksiyon rotası, `/arsiv`, `/sitemap.xml` ve `/llms.txt` doğrulandı.
+  Bu paket henüz commit/push edilmedi.
+
+### 2026-09-13 Yönetim Özel Bekletme Bölümleri
+
+- Yönetim İş Panosu'na `Dergah Soruları` ve `Konferanslar` statüleri eklendi.
+  Dropdown/toplu işlem akışında `Dergah Sorularına Al` ve `Konferanslara Al`
+  kararları görünür; ikisi de gerekçe ister, `history_revisions` ve
+  `admin_action_log` içinde iz bırakır. Bu kayıtlar tekil olarak daha sonra
+  bekleyenlere, teyide, arşive, çöpe veya onaya taşınabilir.
+- Ekip üyesi tarafında bu statüler sonuçlanan kayıtlar içinde okunabilir etiketle
+  görünür; geri gönderilmedikçe kullanıcıdan aksiyon beklemez.
+- Supabase canlı migration `20260912211228 review_special_holding_sections`
+  uygulandı; migration dosyası repo tarafında
+  `supabase/migrations/20260913000100_review_special_holding_sections.sql`.
+  Production deploy `dpl_CZd2jYzgztHWhUySynwtGC3bsNbP`, canlı alias
+  `https://arsiv.ibrahimlive.ai`; canlı `/health` `ok`, `/admin` 200 ve
+  `review-workspace.js?v=20260913-special-buckets` içinde yeni bölüm/aksiyon
+  markerları doğrulandı. Yerel doğrulama `npm.cmd run check` 153/153 geçti.
+- Kullanıcı onayı sonrası canlı veri taşıma RPC üzerinden uygulandı: 44 kayıt
+  `dergah_sorulari`, 21 kayıt `konferanslar`, 8 kısa cevap `geri_gonderildi`,
+  2 birebir mükerrer kayıt `copte` oldu. 2 uzun kayıt aynı zamanda dergah/
+  kardeşlerimiz kapsamına girdiği için güvenlik önceliğiyle Dergah Soruları'nda
+  tutuldu. Post-check: bekleyenlerde dergah/uzun/kısa/birebir mükerrer aday 0;
+  4 aynı-soru ama farklı cevap kaydı ayrıca değerlendirmek üzere bekliyor kaldı.
+  Son 15 dakikalık aksiyon logu: `review.dergah` 44, `review.conference` 21,
+  `review.return` 8, `review.trash` 2; kısa cevap geri gönderim bildirimi 8/8.
 
 ### 2026-09-08 Public Aynı-Soru Mükerrer Koruması
 

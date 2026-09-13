@@ -16,7 +16,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260908-live-search-v6';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260913-fast-home-click-v6';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
 const PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX = 168;
@@ -149,6 +149,8 @@ function withPublicArchiveData(archiveData, renderFn) {
 const ROUTE_PATHS = [
   PREVIEW_BASE,
   `${PREVIEW_BASE}/arsiv`,
+  `${PREVIEW_BASE}/one-cikan-sorular`,
+  `${PREVIEW_BASE}/son-yayinlanan-sorular`,
   `${PREVIEW_BASE}/arama`,
   `${PREVIEW_BASE}/konular`,
   `${PREVIEW_BASE}/kategoriler`,
@@ -474,6 +476,10 @@ function previewActionNav(active) {
   `).join('');
 }
 
+function previewActionNavIndex(active) {
+  return Math.max(0, ['home', 'archive', 'search', 'ask'].indexOf(active));
+}
+
 function brandLogo() {
   const logoText = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
@@ -496,7 +502,7 @@ function header(active) {
         ${nav.map(([label, url, key]) => `<a class="${active === key ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
       </nav>
       <div class="pa-header-actions">
-        <a class="pa-account-button${active === 'account' ? ' is-active' : ''}" href="${PREVIEW_BASE}/hesabim" aria-label="Hesab\u0131m">
+        <a class="pa-account-button${active === 'account' ? ' is-active' : ''}" href="${PREVIEW_BASE}/hesabim" aria-label="Hesab\u0131m" data-account-button>
           <span class="pa-account-notice-dot" data-account-notice-dot hidden aria-hidden="true"></span>
           <span class="pa-account-icon">${iconSvg('user')}</span>
           <span class="pa-account-text">Hesab\u0131m</span>
@@ -587,6 +593,48 @@ const HERO_CONCEPT_ITEMS = [
   ['Allah’a Ulaşmayı Dilemek', 'allaha-ulasmayi-dilemek'],
   ['Nefs', 'nefs'],
   ['Ruh', 'ruh']
+];
+
+const HOME_INTENT_CARDS = [
+  {
+    title: 'Bir kavramı anlamak istiyorum',
+    text: 'Hidayet, takva, zikir ve teslimiyet gibi ana kavramlara doğrudan girin.',
+    icon: 'search',
+    href: () => `${PREVIEW_BASE}/arama?q=${encodeURIComponent('Hidayet nedir')}`
+  },
+  {
+    title: 'Bir ayetin işaret ettiği konuyu okuyacağım',
+    text: 'Cevaplarda geçen sure ve ayet atıflarıyla aynı bağlamdaki sorulara geçin.',
+    icon: 'tevhid',
+    href: () => `${PREVIEW_BASE}/arama?q=${encodeURIComponent('Kur’ân hidayet ayetleri')}`
+  },
+  {
+    title: 'Gündelik bir meseleyi sorularla takip edeceğim',
+    text: 'Dua, tövbe, ibadet bilinci ve tevekkül başlıklarından okumaya başlayın.',
+    icon: 'dua',
+    href: () => `${PREVIEW_BASE}/kategori/dua`
+  },
+  {
+    title: 'Yeni cevapları sırayla okuyacağım',
+    text: 'Arşive eklenen son soru ve cevapları yayın zamanına göre görün.',
+    icon: 'guncel',
+    href: () => `${PREVIEW_BASE}/son-yayinlanan-sorular`
+  }
+];
+
+const HOME_READING_PATHS = [
+  { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
+  { title: 'Hidayet Nedir?', slug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
+  { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
+  { title: 'Zikir ve Daimî Zikir', slug: 'zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
+  { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
+  { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', text: 'Ruhun teslimi ve Allah’a yöneliş merhaleleri.' },
+  { title: 'Teslimiyet', slug: 'teslimiyet', text: 'Teslim, tevekkül ve irade başlıklarının birlikte okunması.' },
+  { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
+  { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', query: 'Tövbe günahlardan kurtuluş', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
+  { title: 'Dua ve Tevekkül', slug: 'dua', query: 'Dua tevekkül', text: 'Talep, teslim ve sonucu Allah’a bırakma dengesi.' },
+  { title: 'Namaz ve İbadet Bilinci', slug: 'namaz', query: 'Namaz ibadet bilinci', text: 'İbadetin şuuruyla ilgili soru ve cevaplar.' },
+  { title: 'Kur’ân’da Hidayet Ayetleri', slug: 'hidayet', query: 'Kur’ân hidayet ayetleri', text: 'Hidayet konusunun ayet atıflarıyla takip edilmesi.' }
 ];
 
 function conceptSliderItems(isClone = false) {
@@ -1339,6 +1387,170 @@ function homeQuestionSets(entries = []) {
   return { featured, latest };
 }
 
+function homeLatestEntries(entries = [], limit = 6) {
+  return uniqueHomeQuestions(entries)
+    .sort((a, b) => entryPublishedTime(b) - entryPublishedTime(a) || String(a.title || '').localeCompare(String(b.title || ''), 'tr'))
+    .slice(0, limit);
+}
+
+function homePopularEntries(entries = [], limit = 6) {
+  return uniqueHomeQuestions(entries)
+    .sort((a, b) => normalizedReadCount(b) - normalizedReadCount(a) || entryPublishedTime(b) - entryPublishedTime(a))
+    .slice(0, limit);
+}
+
+function homeFeaturedEntries(entries = [], limit = 6) {
+  const hour = homeRotationHour();
+  return uniqueHomeQuestions(entries)
+    .map(entry => ({ entry, score: weightedHomeScore(entry, hour, 'featured-list') }))
+    .sort((a, b) => b.score - a.score || entryPublishedTime(b.entry) - entryPublishedTime(a.entry))
+    .slice(0, limit)
+    .map(item => item.entry);
+}
+
+function homeCollectionEntries(kind = 'featured', entries = publicArchiveFixtures.qa, limit = 36) {
+  if (kind === 'latest') return homeLatestEntries(entries, limit);
+  if (kind === 'popular') return homePopularEntries(entries, limit);
+  return homeFeaturedEntries(entries, limit);
+}
+
+function homeReadingPathHref(item = {}) {
+  const category = publicCategoryBySlug(item.slug) || publicCategoryBySlug(item.fallbackSlug);
+  if (category?.slug) return `${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}`;
+  const query = item.query || item.title || '';
+  return `${PREVIEW_BASE}/arama?q=${encodeURIComponent(query)}`;
+}
+
+function homeReadingPathItems(isClone = false) {
+  return HOME_READING_PATHS.map(item => `
+    <a class="pa-reading-card" href="${homeReadingPathHref(item)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>
+      <span class="pa-reading-mark">${iconSvg('topics')}</span>
+      <strong>${escapeHtml(item.title)}</strong>
+      <span>${escapeHtml(item.text)}</span>
+    </a>
+  `).join('');
+}
+
+function homeIntentSection() {
+  return `
+    <section class="pa-section pa-home-intents">
+      ${sectionHeader('Ne öğrenmek istiyorsunuz?')}
+      <div class="pa-intent-grid">
+        ${HOME_INTENT_CARDS.map(item => `
+          <a class="pa-intent-card" href="${escapeHtml(item.href())}">
+            <span class="pa-intent-icon">${iconSvg(item.icon)}</span>
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.text)}</span>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function quranEvidenceEntries(entries = [], limit = 4) {
+  return uniqueHomeQuestions(entries)
+    .map(entry => ({ entry, references: extractQuranReferences(entry).slice(0, 4) }))
+    .filter(item => item.references.length)
+    .sort((a, b) => b.references.length - a.references.length || normalizedReadCount(b.entry) - normalizedReadCount(a.entry) || entryPublishedTime(b.entry) - entryPublishedTime(a.entry))
+    .slice(0, limit);
+}
+
+function homeQuranEvidenceSection(items = []) {
+  if (!items.length) return '';
+  return `
+    <section class="pa-section pa-quran-evidence" aria-labelledby="pa-quran-evidence-title">
+      <div class="pa-section-head">
+        <div>
+          <p class="pa-kicker">Delilli okuma</p>
+          <h2 id="pa-quran-evidence-title">Ayet atıflarıyla öne çıkan cevaplar</h2>
+        </div>
+        <a href="${PREVIEW_BASE}/arama?q=${encodeURIComponent('Kur’ân ayetleri')}">Ayetli cevapları ara ${iconSvg('chevron-right', 'pa-inline-chevron')}</a>
+      </div>
+      <div class="pa-evidence-grid">
+        ${items.map(item => {
+          const entry = item.entry;
+          return `
+            <article class="pa-evidence-card" data-card-href="${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
+              <div class="pa-evidence-top">
+                <span>${iconSvg('tevhid')}</span>
+                <div class="pa-evidence-refs">
+                  ${item.references.map(reference => `<a href="${PREVIEW_BASE}/arama?q=${encodeURIComponent(reference.label)}">${escapeHtml(reference.label)}</a>`).join('')}
+                </div>
+              </div>
+              <a class="pa-question-title" href="${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}">${escapeHtml(entry.title)}</a>
+              <p>${escapeHtml(plainText(entry.summary || entry.excerpt || answerTextForReferences(entry)).slice(0, 150))}</p>
+            </article>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function homeReadingPathSection() {
+  return `
+    <section class="pa-section pa-topic-path" aria-labelledby="pa-reading-path-title">
+      <div class="pa-topic-path-head">
+        <p class="pa-kicker">Konu rehberleri</p>
+        <h2 id="pa-reading-path-title">Temel konuları sırayla takip edin.</h2>
+        <p>Her başlık, aynı kavram etrafındaki soru-cevapları bir araya getirir ve okumayı daha derli toplu ilerletir.</p>
+      </div>
+      <div class="pa-reading-track" data-reading-slider aria-label="Konu rehberleri">
+        <div class="pa-reading-rail" data-reading-rail>
+          <div class="pa-reading-set" data-reading-set>${homeReadingPathItems(false)}</div>
+          <div class="pa-reading-set" aria-hidden="true">${homeReadingPathItems(true)}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function homeDiscoveryMapSection(entries = []) {
+  const counts = new Map();
+  for (const entry of entries || []) {
+    for (const slug of categorySlugsFor(entry)) {
+      if (!slug) continue;
+      counts.set(slug, (counts.get(slug) || 0) + 1);
+    }
+  }
+  const categories = publicCategories()
+    .map(category => ({ category, count: counts.get(category.slug) || categoryQuestionCount(category) }))
+    .filter(item => item.count > 0)
+    .sort((a, b) => Number(b.count || 0) - Number(a.count || 0) || String(a.category.name || '').localeCompare(String(b.category.name || ''), 'tr'))
+    .slice(0, 14);
+  if (!categories.length) return '';
+  return `
+    <section class="pa-section pa-discovery-map" aria-labelledby="pa-discovery-map-title">
+      <div>
+        <p class="pa-kicker">Kavram akışı</p>
+        <h2 id="pa-discovery-map-title">Bir cevaptan diğerine konu bağıyla geçin.</h2>
+      </div>
+      <div class="pa-discovery-cloud">
+        ${categories.map((item, index) => `
+          <a class="pa-discovery-pill" href="${PREVIEW_BASE}/kategori/${escapeHtml(item.category.slug)}" style="--pa-pill-rank:${index % 5}">
+            <strong>${escapeHtml(item.category.name)}</strong>
+            <span>${archiveCountLabel(item.count)} soru</span>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderCollectionIntro(kind, pageState) {
+  const latest = kind === 'latest';
+  return {
+    canonicalPath: latest ? '/son-yayinlanan-sorular' : '/one-cikan-sorular',
+    title: latest ? 'Son Yayınlanan Sorular' : 'Öne Çıkan Sorular',
+    kicker: latest ? 'Son yayınlananlar' : 'Öne çıkanlar',
+    description: latest
+      ? `Arşive en son eklenen ${archiveCountLabel(pageState.total)} dini soru-cevap kaydı yayın sırasına göre listelenir.`
+      : `Okunma, güncellik ve konu dağılımı dikkate alınarak öne çıkan ${archiveCountLabel(pageState.total)} dini soru-cevap kaydı.`,
+    emptyTitle: latest ? 'Henüz son yayın listesi görünmüyor.' : 'Henüz öne çıkan soru görünmüyor.'
+  };
+}
+
 function topicCard(topic) {
   return `
     <a class="pa-topic-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(topic.slug)}">
@@ -1373,8 +1585,8 @@ function breadcrumb(items) {
 function ctaBand() {
   return `
     <section class="pa-cta-band">
-      <span class="pa-cta-icon">${iconSvg('help-circle')}</span>
-      <div>
+      <div class="pa-cta-copy">
+        <span class="pa-cta-symbol">${iconSvg('ask-question')}</span>
         <h2>Aklınızda bir soru mu var?</h2>
         <p>Sorunuzu kısa ve açık şekilde yazabilirsiniz.</p>
       </div>
@@ -1414,7 +1626,11 @@ function trustBand() {
 function renderHome() {
   const dataUnavailable = publicArchiveFixtures.dataUnavailable === true;
   const { featured, latest } = homeQuestionSets(publicArchiveFixtures.qa);
-  const homeSearchSeedEntries = [...featured, ...latest];
+  const featuredList = homeCollectionEntries('featured', publicArchiveFixtures.qa, 6);
+  const latestList = homeCollectionEntries('latest', publicArchiveFixtures.qa, 5);
+  const popularList = homeCollectionEntries('popular', publicArchiveFixtures.qa, 5);
+  const quranEvidenceList = quranEvidenceEntries(publicArchiveFixtures.qa, 4);
+  const homeSearchSeedEntries = [...featuredList, ...latestList, ...popularList, ...featured, ...latest];
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
@@ -1438,17 +1654,27 @@ function renderHome() {
         ${archiveShortcutBand()}
 
         ${!dataUnavailable && featured.length ? `<section class="pa-section">
-          ${sectionHeader('Öne Çıkan Sorular', 'Tümünü Gör', `${PREVIEW_BASE}/arsiv`)}
+          ${sectionHeader('Öne Çıkan Sorular', 'Öne çıkanları gör', `${PREVIEW_BASE}/one-cikan-sorular`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
         </section>` : ''}
 
         ${!dataUnavailable ? activeArchiveStatsBand(publicArchiveFixtures.qa) : ''}
 
-        ${!dataUnavailable && latest.length ? `<section class="pa-section">
-          ${sectionHeader('Son Yayınlanan Sorular', 'Arşive Git', `${PREVIEW_BASE}/arsiv`)}
-          <div class="pa-list">${latest.map(entry => questionCard(entry, true)).join('')}</div>
+        ${!dataUnavailable ? homeIntentSection() : ''}
+
+        ${!dataUnavailable && latestList.length ? `<section class="pa-section">
+          ${sectionHeader('Son Yayınlanan Sorular', 'Son yayınlananları gör', `${PREVIEW_BASE}/son-yayinlanan-sorular`)}
+          <div class="pa-list">${latestList.slice(0, 4).map(entry => questionCard(entry, true)).join('')}</div>
         </section>` : ''}
 
+        ${!dataUnavailable && popularList.length ? `<section class="pa-section pa-home-popular">
+          ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/arsiv`)}
+          <div class="pa-question-grid">${popularList.slice(0, 3).map(entry => questionCard(entry, { compact: true })).join('')}</div>
+        </section>` : ''}
+
+        ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
+        ${!dataUnavailable ? homeReadingPathSection() : ''}
+        ${!dataUnavailable ? homeDiscoveryMapSection(publicArchiveFixtures.qa) : ''}
         ${ctaBand()}
         ${trustBand()}
       </main>
@@ -1563,8 +1789,11 @@ function archivePagination(basePath, params = {}, state) {
     ? queryPageUrl(basePath, { ...params, sayfa: state.page + 1, hash: 'sorular' })
     : '';
   return `
-    <nav class="pa-pagination" aria-label="Arşiv sayfaları">
+    <nav class="pa-pagination" aria-label="Arşiv sayfaları" data-load-more-shell>
       <span class="pa-pagination-status">${archiveCountLabel(state.start)}-${archiveCountLabel(state.end)} / ${archiveCountLabel(state.total)} soru gösteriliyor</span>
+      ${nextHref
+        ? `<a class="pa-load-more" href="${escapeHtml(nextHref)}" data-load-more>Daha Fazla Göster ${iconSvg('arrow-right', 'pa-cta-icon')}</a>`
+        : `<span class="pa-load-complete">${iconSvg('check', 'pa-cta-icon')} Tüm kayıtlar gösterildi</span>`}
       <div class="pa-pagination-actions">
         ${prevHref
           ? `<a class="pa-page-link" href="${escapeHtml(prevHref)}">${iconSvg('arrow-left', 'pa-cta-icon')} Önceki</a>`
@@ -1710,9 +1939,53 @@ function renderArchive(query = {}) {
         ${!dataUnavailable ? `<section class="pa-section" id="sorular">
           ${sectionHeader(listTitle, categoryIndex.selectedCategory ? 'Tümünü göster' : '', categoryIndex.selectedCategory ? archiveQueryUrl({ harf: categoryIndex.activeLetter, hash: 'sorular' }) : '')}
           ${visibleEntries.length
-            ? `<div class="pa-list">${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>${archivePagination(`${PREVIEW_BASE}/arsiv`, paginationParams, pageState)}`
+            ? `<div class="pa-list" data-archive-results>${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>${archivePagination(`${PREVIEW_BASE}/arsiv`, paginationParams, pageState)}`
             : `<div class="pa-empty-state"><h2>Bu kategoride soru görünmüyor.</h2><p>Arşivdeki diğer kategorileri inceleyebilirsiniz.</p></div>`}
         </section>` : ''}
+      </main>
+    `
+  });
+}
+
+function renderQuestionCollection(kind = 'featured', query = {}) {
+  const entries = homeCollectionEntries(kind, publicArchiveFixtures.qa, 90);
+  const pageState = archivePaginationState(entries, query.sayfa, null);
+  const intro = renderCollectionIntro(kind, pageState);
+  return renderShell({
+    active: 'archive',
+    title: intro.title,
+    description: intro.description,
+    canonicalPath: intro.canonicalPath,
+    structuredData: collectionPageStructuredData({
+      canonicalPath: intro.canonicalPath,
+      title: intro.title,
+      description: intro.description,
+      entries: pageState.pageEntries,
+      total: pageState.total,
+      breadcrumbItems: [
+        { name: 'Ana Sayfa', url: publicArchiveCanonicalUrl('/') },
+        { name: intro.title, url: publicArchiveCanonicalUrl(intro.canonicalPath) }
+      ]
+    }),
+    searchSeedEntries: pageState.pageEntries,
+    searchSeedCategories: publicCategories(),
+    content: `
+      <main class="pa-main pa-narrow-main">
+        ${breadcrumb([{ label: intro.title }])}
+        <section class="pa-collection-hero pa-curated-hero">
+          <p class="pa-kicker">${escapeHtml(intro.kicker)}</p>
+          <h1>${escapeHtml(intro.title)}</h1>
+          <p>${escapeHtml(intro.description)}</p>
+          <div class="pa-collection-meta">
+            <span>${archiveCountLabel(pageState.total)} soru cevap</span>
+          </div>
+        </section>
+        <section class="pa-section" id="sorular">
+          ${sectionHeader(kind === 'latest' ? 'Yayın sırasına göre' : 'Okuma önceliğine göre')}
+          ${entries.length
+            ? `<div class="pa-list" data-archive-results>${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>${archivePagination(`${PREVIEW_BASE}${intro.canonicalPath}`, {}, pageState)}`
+            : `<div class="pa-empty-state"><h2>${escapeHtml(intro.emptyTitle)}</h2><p>Arşivin tamamından okumaya devam edebilirsiniz.</p></div>`}
+        </section>
       </main>
     `
   });
@@ -1967,7 +2240,7 @@ function renderCategory(slug, query = {}, basePath = `${PREVIEW_BASE}/kategori/$
         ${categoryEvidencePanel(category, pageState.pageEntries)}
         <section class="pa-section" id="sorular">
           ${sectionHeader('Bu Kategorideki Sorular')}
-          <div class="pa-list">${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>
+          <div class="pa-list" data-archive-results>${pageState.pageEntries.map(entry => questionCard(entry, true)).join('')}</div>
           ${archivePagination(basePath, {}, pageState)}
         </section>
       </main>
@@ -2367,7 +2640,7 @@ function renderShell({ title, description, active, content, status = 200, questi
     ${content}
     ${footer()}
   </div>
-  <nav class="pa-mobile-nav" aria-label="Mobil alt gezinme">
+  <nav class="pa-mobile-nav" aria-label="Mobil alt gezinme" data-active-index="${previewActionNavIndex(active)}">
     ${previewActionNav(active)}
   </nav>
   <button class="pa-scroll-top" type="button" data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1">
@@ -2420,6 +2693,14 @@ function renderShell({ title, description, active, content, status = 200, questi
         var copied = document.execCommand('copy');
         textarea.remove();
         if (!copied) throw new Error('COPY_UNAVAILABLE');
+      }
+      function openPublicArchiveHref(href) {
+        if (!href) return;
+        if (typeof window.__publicArchiveNavigateTo === 'function') {
+          window.__publicArchiveNavigateTo(href);
+          return;
+        }
+        window.location.href = href;
       }
       function setDetailActionState(button, label, icon, message) {
         var labelNode = button.querySelector('[data-action-label]');
@@ -2511,14 +2792,14 @@ function renderShell({ title, description, active, content, status = 200, questi
           function openCard(event) {
             if (event.target && event.target.closest && event.target.closest('a, button, input, select, textarea')) return;
             var href = card.getAttribute('data-card-href');
-            if (href) window.location.href = href;
+            openPublicArchiveHref(href);
           }
           card.addEventListener('click', openCard);
           card.addEventListener('keydown', function(event){
             if (event.key !== 'Enter' && event.key !== ' ') return;
             event.preventDefault();
             var href = card.getAttribute('data-card-href');
-            if (href) window.location.href = href;
+            openPublicArchiveHref(href);
           });
         });
       }
@@ -2712,6 +2993,96 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.removeEventListener('resize', measure);
             window.removeEventListener('load', measure);
             window.removeEventListener('pagehide', pageHideHandler);
+          });
+        });
+      }
+      function bindReadingPathSliders() {
+        var reduceMotion = false;
+        try {
+          reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        } catch (error) {}
+        document.querySelectorAll('[data-reading-slider]').forEach(function(track){
+          if (track.dataset.boundReadingSlider === 'true') return;
+          track.dataset.boundReadingSlider = 'true';
+          var rail = track.querySelector('[data-reading-rail]');
+          var firstSet = track.querySelector('[data-reading-set]');
+          if (!rail || !firstSet) return;
+          var timer = 0;
+          var resumeTimer = 0;
+          var normalizeTimer = 0;
+          var running = true;
+          function gap() {
+            var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
+            return styles ? (parseFloat(styles.columnGap || styles.gap || '0') || 0) : 0;
+          }
+          function cycleWidth() {
+            return firstSet.getBoundingClientRect().width + gap();
+          }
+          function stepWidth() {
+            var cards = firstSet.querySelectorAll('.pa-reading-card');
+            if (cards.length > 1) return Math.max(1, cards[1].offsetLeft - cards[0].offsetLeft);
+            if (cards.length) return Math.max(1, cards[0].getBoundingClientRect().width + gap());
+            return Math.max(1, Math.round(track.clientWidth * 0.84));
+          }
+          function normalizePosition() {
+            var cycle = cycleWidth();
+            if (cycle > 0 && track.scrollLeft >= cycle) {
+              track.scrollTo({ left: track.scrollLeft - cycle, behavior: 'auto' });
+            }
+          }
+          function schedule(delay) {
+            if (reduceMotion || !running) return;
+            window.clearTimeout(timer);
+            timer = window.setTimeout(advance, delay || 3200);
+          }
+          function advance() {
+            if (document.hidden) return schedule(1800);
+            normalizePosition();
+            var nextLeft = track.scrollLeft + stepWidth();
+            var cycle = cycleWidth();
+            if (cycle > 0 && nextLeft >= cycle) {
+              track.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+              track.scrollTo({ left: nextLeft, behavior: 'smooth' });
+            }
+            window.clearTimeout(normalizeTimer);
+            normalizeTimer = window.setTimeout(normalizePosition, 760);
+            schedule(3400);
+          }
+          function pause() {
+            window.clearTimeout(timer);
+            window.clearTimeout(resumeTimer);
+            try { track.scrollTo({ left: track.scrollLeft, behavior: 'auto' }); } catch (error) {}
+          }
+          function resume() {
+            if (reduceMotion) return;
+            window.clearTimeout(resumeTimer);
+            resumeTimer = window.setTimeout(function(){ schedule(900); }, 1700);
+          }
+          track.addEventListener('pointerdown', pause);
+          track.addEventListener('pointerup', resume);
+          track.addEventListener('pointercancel', resume);
+          track.addEventListener('wheel', resume, { passive: true });
+          track.addEventListener('mouseenter', pause);
+          track.addEventListener('mouseleave', resume);
+          track.addEventListener('focusin', pause);
+          track.addEventListener('focusout', resume);
+          window.addEventListener('resize', normalizePosition, { passive: true });
+          schedule(1600);
+          addPageCleanup(function(){
+            running = false;
+            window.clearTimeout(timer);
+            window.clearTimeout(resumeTimer);
+            window.clearTimeout(normalizeTimer);
+            track.removeEventListener('pointerdown', pause);
+            track.removeEventListener('pointerup', resume);
+            track.removeEventListener('pointercancel', resume);
+            track.removeEventListener('wheel', resume);
+            track.removeEventListener('mouseenter', pause);
+            track.removeEventListener('mouseleave', resume);
+            track.removeEventListener('focusin', pause);
+            track.removeEventListener('focusout', resume);
+            window.removeEventListener('resize', normalizePosition);
           });
         });
       }
@@ -3248,6 +3619,18 @@ function renderShell({ title, description, active, content, status = 200, questi
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
       }
+      function linkifyPublicSubmissionAnswer(value) {
+        var escaped = escapeClientHtml(value || '');
+        return escaped.replace(/https?:\\/\\/[^\\s<>"']+/g, function(url) {
+          var cleanUrl = url;
+          var trailing = '';
+          while (/[.,;:!?)]$/.test(cleanUrl)) {
+            trailing = cleanUrl.slice(-1) + trailing;
+            cleanUrl = cleanUrl.slice(0, -1);
+          }
+          return '<a class="pa-user-answer-link" href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer">' + cleanUrl + '</a>' + trailing;
+        });
+      }
       function publicSubmissionStatusLabel(status) {
         return {
           new: 'Alındı',
@@ -3265,7 +3648,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var answered = Boolean(item && item.answer_text);
         var unseen = answered && !item.user_seen_at;
         var question = escapeClientHtml(item.question || 'Soru metni');
-        var answer = escapeClientHtml(item.answer_text || '');
+        var answer = linkifyPublicSubmissionAnswer(item.answer_text || '');
         var created = publicSubmissionDate(item.created_at);
         var answeredAt = publicSubmissionDate(item.answered_at);
         return [
@@ -3287,10 +3670,16 @@ function renderShell({ title, description, active, content, status = 200, questi
         ].join('');
       }
       function setAccountNoticeDot(count) {
+        var unseen = Math.max(0, Number(count || 0));
+        var active = unseen > 0;
         document.querySelectorAll('[data-account-notice-dot]').forEach(function(dot){
-          var active = Number(count || 0) > 0;
           dot.hidden = !active;
+          dot.dataset.count = String(unseen);
           dot.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+        document.querySelectorAll('[data-account-button]').forEach(function(button){
+          button.setAttribute('aria-label', active ? 'Hesabım, ' + unseen + ' yeni cevap' : 'Hesabım');
+          button.toggleAttribute('data-has-notice', active);
         });
       }
       async function loadPublicUserQuestions(session) {
@@ -3512,7 +3901,8 @@ function renderShell({ title, description, active, content, status = 200, questi
       function bindFastPublicNavigation() {
         var root = document.documentElement;
         var ttl = 2 * 60 * 1000;
-        var cachePrefix = 'dsca-page-cache:v6:';
+        var maxCachedHtmlLength = 240000;
+        var cachePrefix = 'dsca-page-cache:v12:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
@@ -3532,7 +3922,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           return true;
         }
         function isCacheableRoute(url) {
-          return !relativePath(url).startsWith('/soru/');
+          return isSafeRoute(url);
         }
         function isFastLink(anchor) {
           if (!anchor || anchor.target || anchor.hasAttribute('download')) return false;
@@ -3541,7 +3931,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             var url = new URL(anchor.href, window.location.href);
             if (!isSafeRoute(url)) return false;
             if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return false;
-            return Boolean(anchor.closest('.pa-mobile-nav, .pa-desktop-nav, .pa-footer-links, .pa-logo, .pa-archive-cta, .pa-section-link') || anchor.classList.contains('pa-button') || anchor.classList.contains('pa-question-title') || anchor.classList.contains('pa-card-cta'));
+            return Boolean(anchor.closest('.pa-page, .pa-mobile-nav'));
           } catch (error) {
             return false;
           }
@@ -3567,6 +3957,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         function writeCached(url, html) {
           if (!isCacheableRoute(url)) return;
           if (!html || !/<html[\\s>]/i.test(html)) return;
+          if (String(html).length > maxCachedHtmlLength) return;
           try {
             window.sessionStorage.setItem(cacheKey(url), JSON.stringify({ time: Date.now(), html: html }));
           } catch (error) {}
@@ -3606,12 +3997,32 @@ function renderShell({ title, description, active, content, status = 200, questi
         function setPending(anchor, url) {
           freezeRouteBackground();
           root.setAttribute('data-pa-navigating', 'true');
+          function setMobileNavIndex(mobileNav, nextIndex) {
+            if (!mobileNav) return;
+            var value = String(Math.max(0, nextIndex));
+            var current = mobileNav.getAttribute('data-active-index');
+            mobileNav.setAttribute('data-active-index', value);
+            if (current && current !== value) {
+              mobileNav.classList.remove('is-gliding');
+              void mobileNav.offsetWidth;
+              mobileNav.classList.add('is-gliding');
+              window.clearTimeout(mobileNav.__paGlideTimer);
+              mobileNav.__paGlideTimer = window.setTimeout(function(){
+                mobileNav.classList.remove('is-gliding');
+              }, 740);
+            }
+          }
           document.querySelectorAll('.pa-bottom-link, .pa-desktop-nav a').forEach(function(link){
             link.classList.remove('is-pending');
             try {
               var linkUrl = new URL(link.href, window.location.href);
               var active = cleanPath(linkUrl.pathname) === cleanPath(url.pathname);
               link.classList.toggle('is-active', active);
+              var mobileNav = link.closest('.pa-mobile-nav');
+              if (mobileNav && active) {
+                var links = Array.from(mobileNav.querySelectorAll('.pa-bottom-link'));
+                setMobileNavIndex(mobileNav, links.indexOf(link));
+              }
             } catch (error) {}
           });
           if (anchor) anchor.classList.add('is-pending');
@@ -3681,25 +4092,100 @@ function renderShell({ title, description, active, content, status = 200, questi
           scrollToRouteTarget(url);
           initializePublicArchivePage();
         }
+        function prefetchUrl(url) {
+          if (!isSafeRoute(url)) return;
+          if (readCached(url)) return;
+          fetchPage(url).catch(function(){});
+        }
+        function prefetchHref(href) {
+          if (!href) return;
+          try {
+            prefetchUrl(new URL(href, window.location.href));
+          } catch (error) {}
+        }
         function prefetch(anchor) {
           if (!isFastLink(anchor)) return;
           try {
-            var url = new URL(anchor.href, window.location.href);
-            if (readCached(url)) return;
-            fetchPage(url).catch(function(){});
+            prefetchUrl(new URL(anchor.href, window.location.href));
           } catch (error) {}
+        }
+        function prefetchCard(card) {
+          if (!card) return;
+          prefetchHref(card.getAttribute('data-card-href'));
+        }
+        function loadMoreArchive(anchor, event) {
+          if (!anchor || !anchor.hasAttribute('data-load-more')) return false;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button > 0) return false;
+          event.preventDefault();
+          var list = document.querySelector('[data-archive-results]');
+          var shell = document.querySelector('[data-load-more-shell]');
+          if (!list || !shell) {
+            navigate(anchor, event);
+            return true;
+          }
+          var url = new URL(anchor.href, window.location.href);
+          anchor.setAttribute('aria-busy', 'true');
+          anchor.classList.add('is-loading');
+          fetchPage(url).then(function(html){
+            var nextDoc = new DOMParser().parseFromString(html, 'text/html');
+            var nextList = nextDoc.querySelector('[data-archive-results]');
+            var nextShell = nextDoc.querySelector('[data-load-more-shell]');
+            if (!nextList) throw new Error('Yeni kayıt listesi bulunamadı');
+            nextList.querySelectorAll('.pa-question-card').forEach(function(card){
+              list.appendChild(document.importNode(card, true));
+            });
+            if (nextShell && shell.parentNode) shell.replaceWith(document.importNode(nextShell, true));
+            else shell.remove();
+            try { pageStack().replaceState({ paFast: true }, '', url.href); } catch (error) {}
+            bindCardLinks();
+            loadReadCounts();
+          }).catch(function(){
+            window.location.href = url.href;
+          }).finally(function(){
+            anchor.removeAttribute('aria-busy');
+            anchor.classList.remove('is-loading');
+          });
+          return true;
         }
         function navigate(anchor, event) {
           if (!isFastLink(anchor)) return;
           if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button > 0) return;
-          event.preventDefault();
           var url = new URL(anchor.href, window.location.href);
+          event.preventDefault();
+          var cachedHtml = readCached(url);
+          var fromMobileNav = Boolean(anchor.closest && anchor.closest('.pa-mobile-nav'));
+          var startedAt = Date.now();
           setPending(anchor, url);
-          fetchPage(url).then(function(html){
-            replacePublicArchiveShell(url, html, 'push');
-          }).catch(function(){
-            window.location.href = url.href;
-          });
+          if (!cachedHtml) {
+            var fallbackTimer = window.setTimeout(function(){
+              window.location.href = url.href;
+            }, 260);
+            fetchPage(url).then(function(html){
+              window.clearTimeout(fallbackTimer);
+              var elapsed = Date.now() - startedAt;
+              var wait = fromMobileNav ? Math.max(0, 260 - elapsed) : 0;
+              window.setTimeout(function(){
+                try {
+                  replacePublicArchiveShell(url, html, 'push');
+                } catch (error) {
+                  window.location.href = url.href;
+                }
+              }, wait);
+            }).catch(function(){
+              window.clearTimeout(fallbackTimer);
+              window.location.href = url.href;
+            });
+            return;
+          }
+          var elapsed = Date.now() - startedAt;
+          var wait = fromMobileNav ? Math.max(0, 260 - elapsed) : 0;
+          window.setTimeout(function(){
+            try {
+              replacePublicArchiveShell(url, cachedHtml, 'push');
+            } catch (error) {
+              window.location.href = url.href;
+            }
+          }, wait);
         }
         window.__publicArchiveNavigateTo = function(href) {
           try {
@@ -3709,9 +4195,27 @@ function renderShell({ title, description, active, content, status = 200, questi
               return;
             }
             setPending(null, url);
+            var cachedHtml = readCached(url);
+            if (cachedHtml) {
+              try {
+                replacePublicArchiveShell(url, cachedHtml, 'push');
+              } catch (error) {
+                window.location.href = url.href;
+              }
+              return;
+            }
+            var fallbackTimer = window.setTimeout(function(){
+              window.location.href = url.href;
+            }, 260);
             fetchPage(url).then(function(html){
-              replacePublicArchiveShell(url, html, 'push');
+              window.clearTimeout(fallbackTimer);
+              try {
+                replacePublicArchiveShell(url, html, 'push');
+              } catch (error) {
+                window.location.href = url.href;
+              }
             }).catch(function(){
+              window.clearTimeout(fallbackTimer);
               window.location.href = url.href;
             });
           } catch (error) {
@@ -3721,25 +4225,81 @@ function renderShell({ title, description, active, content, status = 200, questi
         function eventAnchor(event) {
           return event && event.target && event.target.closest ? event.target.closest('a[href]') : null;
         }
+        function eventCard(event) {
+          if (!event || !event.target || !event.target.closest) return null;
+          if (event.target.closest('a, button, input, select, textarea')) return null;
+          return event.target.closest('[data-card-href]');
+        }
         var warm = function(){
-          document.querySelectorAll('.pa-mobile-nav a[href], .pa-desktop-nav a[href]').forEach(prefetch);
+          var seen = {};
+          var candidates = [];
+          function addCandidate(href) {
+            if (!href || seen[href]) return;
+            seen[href] = true;
+            candidates.push(href);
+          }
+          function addSelector(selector) {
+            Array.prototype.slice.call(document.querySelectorAll(selector)).forEach(function(element){
+              if (element.matches && element.matches('a[href]')) {
+                if (isFastLink(element)) addCandidate(element.href);
+                return;
+              }
+              var href = element.getAttribute && element.getAttribute('data-card-href');
+              if (href) {
+                try {
+                  addCandidate(new URL(href, window.location.href).href);
+                } catch (error) {}
+              }
+            });
+          }
+          addSelector('.pa-archive-shortcut, .pa-intent-card, .pa-reading-card');
+          addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]');
+          addSelector('.pa-mobile-nav a[href]');
+          addSelector('.pa-page a[href], .pa-mobile-nav a[href]');
+          candidates.slice(0, 22).forEach(prefetchHref);
         };
+        function observePrefetchCandidates() {
+          if (!('IntersectionObserver' in window)) return;
+          var observer = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+              if (!entry.isIntersecting && entry.intersectionRatio <= 0) return;
+              var element = entry.target;
+              if (element.matches && element.matches('a[href]')) prefetch(element);
+              else prefetchCard(element);
+              observer.unobserve(element);
+            });
+          }, { rootMargin: '1200px 0px 1200px 0px', threshold: 0.01 });
+          Array.prototype.slice.call(document.querySelectorAll('.pa-archive-shortcut, .pa-intent-card, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
+            .forEach(function(element){ observer.observe(element); });
+        }
         if (!window.__publicArchiveFastNavBound) {
           window.__publicArchiveFastNavBound = true;
           document.addEventListener('pointerover', function(event){
             var anchor = eventAnchor(event);
             if (anchor) prefetch(anchor);
+            else prefetchCard(eventCard(event));
           }, { passive: true });
           document.addEventListener('focusin', function(event){
             var anchor = eventAnchor(event);
             if (anchor) prefetch(anchor);
+            else prefetchCard(eventCard(event));
           }, { passive: true });
           document.addEventListener('touchstart', function(event){
             var anchor = eventAnchor(event);
-            if (anchor) prefetch(anchor);
+            if (anchor) {
+              prefetch(anchor);
+              if (anchor.closest && anchor.closest('.pa-mobile-nav') && isFastLink(anchor)) {
+                try {
+                  setPending(anchor, new URL(anchor.href, window.location.href));
+                } catch (error) {}
+              }
+            } else {
+              prefetchCard(eventCard(event));
+            }
           }, { passive: true });
           document.addEventListener('click', function(event){
             var anchor = eventAnchor(event);
+            if (anchor && loadMoreArchive(anchor, event)) return;
             if (anchor) navigate(anchor, event);
           });
           try { pageStack().replaceState({ paFast: true }, '', window.location.href); } catch (error) {}
@@ -3754,7 +4314,9 @@ function renderShell({ title, description, active, content, status = 200, questi
             });
           });
         }
-        if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 1200 });
+        window.setTimeout(warm, 180);
+        observePrefetchCandidates();
+        if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 700 });
         else window.setTimeout(warm, 700);
       }
       function initializePublicArchivePage() {
@@ -3768,6 +4330,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         trackPublicVisit();
         bindArchiveAlphaIndexes();
         bindConceptSliders();
+        bindReadingPathSliders();
         bindLiveSearchControls();
         bindActiveStatsCounters();
         bindScrollTopControl();
@@ -3795,6 +4358,8 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     const pathname = String(routePath || '').replace(/\/+$/, '') || publicArchiveHomeHref();
     if (pathname === publicArchiveHomeHref()) return renderHome();
     if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive(query);
+    if (pathname === `${PREVIEW_BASE}/one-cikan-sorular`) return renderQuestionCollection('featured', query);
+    if (pathname === `${PREVIEW_BASE}/son-yayinlanan-sorular`) return renderQuestionCollection('latest', query);
     if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
     if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
     if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
@@ -3886,6 +4451,8 @@ function createPublicArchivePreviewRouter(options = {}) {
     kategoriAra: req.query.kategoriAra || '',
     sayfa: req.query.sayfa || ''
   }));
+  router.get('/one-cikan-sorular', (req, res, next) => sendRoute(req, res, next, 'one-cikan-sorular', { sayfa: req.query.sayfa || '' }));
+  router.get('/son-yayinlanan-sorular', (req, res, next) => sendRoute(req, res, next, 'son-yayinlanan-sorular', { sayfa: req.query.sayfa || '' }));
   router.get('/arama', (req, res, next) => sendRoute(req, res, next, 'arama', { q: req.query.q || '' }));
   router.get('/konular', (req, res, next) => sendRoute(req, res, next, 'konular'));
   router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, 'kategoriler'));

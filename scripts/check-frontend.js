@@ -7,6 +7,8 @@ const schema = fs.readFileSync(path.join(__dirname, '..', 'schema.sql'), 'utf8')
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
 const script = html.match(/<script>([\s\S]*?)<\/script>/);
 const root = path.join(__dirname, '..');
+const workspaceScript = fs.readFileSync(path.join(root, 'review-workspace.js'), 'utf8');
+const policy = fs.readFileSync(path.join(root, 'review-policy.js'), 'utf8');
 const publicCss = fs.readFileSync(path.join(root, 'public-archive.css'), 'utf8');
 const publicRendererSource = fs.readFileSync(path.join(root, 'public-archive-renderer.js'), 'utf8');
 const publicAssetRoot = path.join(root, 'public-archive-assets');
@@ -168,7 +170,7 @@ if (!html.includes('const MAX_TEXT_CHARS=200000') || !server.includes('const MAX
 if (!html.includes('Metin 200.000 karakter sınırını aşıyor') || !server.includes('Metin 200.000 karakter sınırını aşıyor')) {
   throw new Error('200.000 karakter ustu icin kullaniciya net sinir mesaji gosterilmeli.');
 }
-if (!html.includes('/api/extract-file-text') || !server.includes('/api/extract-file-text') || !server.includes('skipDuplicate')) {
+if (!html.includes('/api/extract-file-text') || !server.includes('/api/extract-file-text') || !server.includes('const status = chunkPart ? CHUNK_DRAFT_STATUS')) {
   throw new Error('Uzun dosya/metin denetimi icin metin cikarma ve parca denetimi altyapisi eksik.');
 }
 if (!server.includes("status = 'taslak'") || !server.includes('/api/history/submit-merged') || !server.includes("app.post('/api/history/:id([0-9a-fA-F-]{36})/submit'")) {
@@ -387,6 +389,40 @@ if (
 ) {
   throw new Error('Admin roldeki kullanici kendi bekleyen/geri donen/taslak kayitlarinda sahip aksiyonlarini gorebilmeli.');
 }
+if (
+  !workspaceScript.includes("close_duplicate: 'Mükerrer Olarak Kapat'") ||
+  !policy.includes("['close_duplicate']") ||
+  !fs.readFileSync(path.join(root, 'supabase/migrations/20260912162000_member_duplicate_cleanup.sql'), 'utf8').includes("p_action='close_duplicate'")
+) {
+  throw new Error('Ekip uyesi mukerrer notlu kaydi aktif listesinden guvenli sekilde kapatabilmeli.');
+}
+const specialSectionsMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260913000100_review_special_holding_sections.sql'), 'utf8');
+const returnedApproveMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260913000200_management_can_approve_returned.sql'), 'utf8');
+if (
+  !workspaceScript.includes("dergah_sorulari: 'Dergah Soruları'") ||
+  !workspaceScript.includes("konferanslar: 'Konferanslar'") ||
+  !workspaceScript.includes("dergah: 'Dergah Sorularına Al'") ||
+  !workspaceScript.includes("conference: 'Konferanslara Al'") ||
+  !policy.includes("'dergah_sorulari'") ||
+  !policy.includes("'konferanslar'") ||
+  !specialSectionsMigration.includes("when 'dergah' then 'dergah_sorulari'") ||
+  !specialSectionsMigration.includes("when 'conference' then 'konferanslar'")
+) {
+  throw new Error('Yonetim dergah sorulari ve konferanslar bolumlerine notlu kayit aktarabilmeli.');
+}
+for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkStickiness', 'scheduleBulkStickiness', 'bulkActionOrder', 'bulkActionNeedsNote', 'Uygula', 'data-rw-select', 'data-rw-row-id']) {
+  assert(workspaceScript.includes(marker), `Yonetim toplu secim/islem marker eksik: ${marker}`);
+}
+const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
+assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
+assert(html.includes('/review-workspace.js?v=20260913-special-buckets') && html.includes('/review-workspace.css?v=20260913-special-buckets'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('Canlıdaki Soru') && html.includes('t.publicPublished'), 'Dashboard canli yayinlanan soru sayisini gostermeli.');
+assert(html.includes('dashRefreshTimer') && html.includes('syncDashAutoRefresh(name)'), 'Dashboard aktifken otomatik yenileme mekanizmasi bulunmali.');
+assert(server.includes("public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')"), 'Stats API public yayindaki soru sayisini public_qa slug anahtariyla saymali.');
+assert(server.includes('const unreadOpenFeedback = feedbackOpenItems.filter(a => !a.read).length;'), 'Stats API cozulmus feedbackleri okunmamis uyari sayisina katmamali.');
+assert(server.includes("historyStatusById.get(a.history_id) === 'bekliyor'"), 'Stats API dusuk skor uyarisini yalniz bekleyen kayitlarda alarm saymali.');
+assert(policy.includes("'geri_gonderildi', 'dergah_sorulari'") && returnedApproveMigration.includes("'geri_gonderildi','dergah_sorulari'"), 'Yonetici geri donen kaydi son kontrolden sonra onaylayabilmeli.');
+assert(workspaceScript.includes("const bulkActionOrder = ['approve', 'reject'"), 'Toplu islem menusu Onayla ve Reddet ile baslamali.');
 const historyEndpoint = server.match(/app\.get\('\/api\/history'[\s\S]*?\n\}\);/);
 if (!historyEndpoint || !historyEndpoint[0].includes('fetchAllPages') || historyEndpoint[0].includes('.limit(200)')) {
   throw new Error('Denetim gecmisi 200 kayitta kesilmemeli; tum ilgili kayitlar sayfali cekilmeli.');
@@ -405,7 +441,7 @@ if (!html.includes('submitApprovalModal') || !html.includes('renderApprovalActio
 }
 const approvalSubmittedFn = html.match(/function approvalSubmitted\(d\)\{[\s\S]*?\n\}/)?.[0] || '';
 if (
-  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','arsivlendi','onaylandi','reddedildi'])") ||
+  !html.includes("const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','dergah_sorulari','konferanslar','arsivlendi','onaylandi','reddedildi'])") ||
   !approvalSubmittedFn.includes('SUBMITTED_APPROVAL_STATUSES.has(status)') ||
   approvalSubmittedFn.includes('!status')
 ) {
@@ -1272,7 +1308,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260908-live-search-v6'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260913-fast-home-click-v6'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1282,7 +1318,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260908-live-search-v6"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260913-fast-home-click-v6"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1296,6 +1332,14 @@ const categoriesLaunchPreview = renderPublicArchivePreviewRoute('/kategoriler', 
 assert(categoriesLaunchPreview.includes('<meta name="robots" content="index,follow">'), '/kategoriler kategori hub olarak indexlenebilir olmali.');
 assert(categoriesLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/kategoriler">'), '/kategoriler canonical uretmeli.');
 assert(categoriesLaunchPreview.includes('"@id":"https://arsiv.ibrahimlive.ai/kategoriler#itemlist"'), '/kategoriler ItemList yapisal verisi uretmeli.');
+const featuredLaunchPreview = renderPublicArchivePreviewRoute('/one-cikan-sorular', {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
+assert(featuredLaunchPreview.includes('<meta name="robots" content="index,follow">'), '/one-cikan-sorular indexlenebilir olmali.');
+assert(featuredLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/one-cikan-sorular">'), '/one-cikan-sorular canonical uretmeli.');
+assert(featuredLaunchPreview.includes('"@id":"https://arsiv.ibrahimlive.ai/one-cikan-sorular#itemlist"'), '/one-cikan-sorular ItemList yapisal verisi uretmeli.');
+const latestLaunchPreview = renderPublicArchivePreviewRoute('/son-yayinlanan-sorular', {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
+assert(latestLaunchPreview.includes('<meta name="robots" content="index,follow">'), '/son-yayinlanan-sorular indexlenebilir olmali.');
+assert(latestLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/son-yayinlanan-sorular">'), '/son-yayinlanan-sorular canonical uretmeli.');
+assert(latestLaunchPreview.includes('Yayın sırasına göre'), '/son-yayinlanan-sorular sirali liste basligi uretmeli.');
 
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [
@@ -1309,7 +1353,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260908-live-search-v6', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260913-fast-home-click-v6', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
@@ -1347,10 +1391,20 @@ assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski ki
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(!homePreview.includes('<p class="pa-kicker">Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.</p>'), 'Public home hero ust aciklama cumlesi geri gelmemeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Ne öğrenmek istiyorsunuz?', 'pa-home-intents', 'Çok Okunan Cevaplar', 'pa-topic-path', 'Konu rehberleri', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
-for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeScore', 'homeRotationHour', 'hashString']) {
+for (const marker of ['data-reading-slider', 'data-reading-rail', 'data-reading-set', 'pa-reading-rail', 'pa-reading-set', 'pa-reading-mark']) {
+  assert(homePreview.includes(marker), `Public konu rehberi slider marker eksik: ${marker}`);
+}
+assert(!homePreview.includes('pa-reading-index'), 'Public konu rehberi kartlarinda numara markeri olmamali.');
+for (const marker of ['bindReadingPathSliders', 'data-reading-slider', "scrollTo({ left: nextLeft, behavior: 'smooth' })", 'prefers-reduced-motion: reduce']) {
+  assert(publicRendererSource.includes(marker), `Public konu rehberi otomatik slider JS marker eksik: ${marker}`);
+}
+for (const marker of ['scroll-snap-type: x mandatory', 'scroll-behavior: smooth', '.pa-reading-track::-webkit-scrollbar', 'scroll-snap-align: start']) {
+  assert(publicCss.includes(marker), `Public konu rehberi slider CSS marker eksik: ${marker}`);
+}
+for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeScore', 'homeRotationHour', 'hashString', 'homeCollectionEntries', 'quranEvidenceEntries', 'HOME_READING_PATHS', 'HOME_INTENT_CARDS']) {
   assert(publicRendererSource.includes(marker), `Public ana sayfa saatlik vitrin marker eksik: ${marker}`);
 }
 for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-visitor-id', "iconSvg('arrow-up'"]) {
@@ -1358,6 +1412,9 @@ for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-v
 }
 for (const marker of ['bindLiveSearchControls', 'data-live-search-url', 'pa-live-search-panel', 'AbortController', '/api/public-search', 'renderInstantResults', 'localResults', 'data-live-search-hint', 'submitLiveSearch', 'clientSearchTokenForms', 'window.__publicArchiveNavigateTo']) {
   assert(publicRendererSource.includes(marker) || server.includes(marker) || publicCss.includes(marker), `Public canli arama marker eksik: ${marker}`);
+}
+for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v12', 'maxCachedHtmlLength', 'prefetchCard', 'observePrefetchCandidates', 'IntersectionObserver', "rootMargin: '1200px 0px 1200px 0px'", "addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]')", "addSelector('.pa-page a[href], .pa-mobile-nav a[href]')", '.slice(0, 22)', "track.scrollTo({ left: track.scrollLeft, behavior: 'auto' })", 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, 260);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;']) {
+  assert(publicRendererSource.includes(marker), `Public ana sayfa ilk tik hiz marker eksik: ${marker}`);
 }
 for (const marker of ['PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS', 'publicArchiveSearchIntentTokens', 'publicArchiveRowIntentRank', 'publicArchiveSearchIndexCache', 'publicArchiveLiveSearchIndexCache', 'loadPublicArchiveSearchIndexRows', 'loadPublicArchiveLiveSearchIndexRows', 'publicArchiveSearchRowWithCategoryText']) {
   assert(server.includes(marker), `Public arama niyet siralama marker eksik: ${marker}`);
@@ -1374,7 +1431,7 @@ for (const marker of ['PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT', 'loadPublicArchive
 for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
 }
-for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v6', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
+for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v12', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');
@@ -1449,7 +1506,7 @@ const featuredSection = homePreview.slice(featuredStart, featuredEnd);
 assert(featuredSection.includes('has-strong-cta'), 'Public home featured kart CTA vurgusu eksik.');
 assert(!featuredSection.includes('pa-card-meta') && !featuredSection.includes('class="pa-chip"'), 'Public home featured kartlarda etiket/chip gorunmemeli.');
 const activeStatsStart = homePreview.indexOf('class="pa-active-stats"');
-const activeStatsEnd = homePreview.indexOf('Son Yayınlanan Sorular');
+const activeStatsEnd = homePreview.indexOf('</section>', activeStatsStart) + '</section>'.length;
 assert(activeStatsStart >= 0 && activeStatsEnd > activeStatsStart, 'Public home aktif arsiv sayaci sinirlari bulunmali.');
 const activeStatsSection = homePreview.slice(activeStatsStart, activeStatsEnd);
 assert(!activeStatsSection.includes('href=') && !activeStatsSection.includes('Arşive Git') && !activeStatsSection.includes('pa-active-stats-link'), 'Public home aktif arsiv sayacinda arsiv yonlendirme olmamali.');
@@ -1511,7 +1568,7 @@ for (const marker of ['pa-alpha-index', 'data-alpha-index', 'pa-alpha-shell', 'd
 assert(/<button class="pa-alpha-nav" type="button" data-alpha-scroll="next"/.test(archivePreview), 'Public arsiv ileri oku harf secmeyen kaydirma butonu olmali.');
 assert(/<button class="pa-alpha-nav" type="button" data-alpha-scroll="prev"/.test(archivePreview), 'Public arsiv geri oku harf secmeyen kaydirma butonu olmali.');
 assert(!/class="pa-alpha-nav" href=/.test(archivePreview), 'Public arsiv okları harf secen linke donmemeli.');
-for (const marker of ['ARCHIVE_PAGE_SIZE', 'archivePaginationState', 'archivePagination(', 'pa-pagination', 'pa-pagination-actions', 'Sayfa ', 'soru gösteriliyor', 'sayfa: req.query.sayfa']) {
+for (const marker of ['ARCHIVE_PAGE_SIZE', 'archivePaginationState', 'archivePagination(', 'pa-pagination', 'pa-pagination-actions', 'pa-load-more', 'data-load-more', 'loadMoreArchive', 'Daha Fazla Göster', 'Sayfa ', 'soru gösteriliyor', 'sayfa: req.query.sayfa']) {
   assert(publicRendererSource.includes(marker) || publicArchiveCss.includes(marker), `Public arsiv sayfalama marker eksik: ${marker}`);
 }
 assert(!archivePreview.includes('Soru ve cevapları kavramlarıyla birlikte keşfedin.') && !archivePreview.includes('Yayınlanan kayıtları Allah’a ulaşmayı dilemek'), 'Public arsiv sayfasi eski hero metnini icermemeli.');
@@ -1674,18 +1731,18 @@ for (const [name, source] of [['pa-card-meta', cardMetaCss], ['pa-chip-wrap', ch
   assert(!source.includes('flex-wrap: wrap'), `${name} etiketleri iki satira dusurmemeli.`);
 }
 assert(publicCss.includes('white-space: nowrap;') && publicCss.includes('.pa-card-meta::-webkit-scrollbar'), 'Public etiket chipleri tek satir ve gizli scrollbar olmali.');
-for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(34px) saturate(1.72)', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-bottom-link.is-pending', 'data-pa-navigating="true"', '@keyframes pa-fast-nav-progress', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
-  assert(publicCss.includes(marker), `Public Apple glass nav/scroll CSS marker eksik: ${marker}`);
+for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(30px) saturate(1.65)', 'data-active-index', '--pa-mobile-active-index', '--pa-mobile-glide-scale', 'transform: translateX(calc(var(--pa-mobile-active-index) * 100%)) scaleX(var(--pa-mobile-glide-scale))', '.pa-mobile-nav.is-gliding', '@keyframes pa-bottom-glide-sheen', 'background-position: 190% 0, 0 0', 'transition: transform 640ms cubic-bezier(.16, 1.18, .18, 1)', 'Math.max(0, 260 - elapsed)', 'setPending(anchor, new URL(anchor.href, window.location.href))', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-bottom-link.is-pending', 'data-pa-navigating="true"', '@keyframes pa-fast-nav-progress', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
+  assert(publicCss.includes(marker) || publicRendererSource.includes(marker), `Public Apple glass nav/scroll marker eksik: ${marker}`);
 }
 for (const marker of ['--pa-safe-top: env(safe-area-inset-top, 0px)', '--pa-header-total-height', '--pa-header-compact-total-height', 'padding-top: var(--pa-safe-top)', 'scroll-padding-top: calc(var(--pa-header-total-height) + 18px)']) {
   assert(publicCss.includes(marker), `Public iOS safe-area header CSS marker eksik: ${marker}`);
 }
 const scrollTopIconCss = publicCss.match(/\.pa-scroll-top-icon\s*\{([\s\S]*?)\}/)?.[1] || '';
 assert(!scrollTopIconCss.includes('rotate('), 'Yukari cik ikonu CSS ile dondurulmemeli.');
-for (const marker of ['.pa-account-notice-dot', '.pa-account-questions', '.pa-ask-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {
-  assert(publicCss.includes(marker), `Public hesap soru takip CSS marker eksik: ${marker}`);
+for (const marker of ['.pa-account-notice-dot', '.pa-account-notice-dot::after', 'data-account-button', 'data-has-notice', 'data-count', '.pa-account-questions', '.pa-ask-questions', '.pa-user-question-card', '.pa-new-answer-badge', '.pa-user-answer']) {
+  assert(publicCss.includes(marker) || publicRendererSource.includes(marker), `Public hesap soru takip marker eksik: ${marker}`);
 }
-for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', ':root[data-pa-scrolled="true"] .pa-header', '.pa-auth-shell', '.pa-auth-panel', '.pa-google-button', '.pa-auth-tabs', '.pa-auth-form']) {
+for (const marker of ['position: fixed;', 'var(--pa-header-height)', 'scroll-padding-top', ':root[data-pa-scrolled="true"] .pa-header', '.pa-header::before', 'backdrop-filter: blur(30px) saturate(1.58)', 'width: min(calc(var(--pa-container) + 28px), calc(100% - 28px))', '.pa-auth-shell', '.pa-auth-panel', '.pa-google-button', '.pa-auth-tabs', '.pa-auth-form']) {
   assert(publicCss.includes(marker), `Public sticky header/e-posta auth CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-logo-mark', 'width: 42px', 'height: 42px', '.pa-logo-text', ':root[data-theme="dark"] .pa-logo-mark', ':root[data-pa-scrolled="true"] .pa-logo-mark', 'width: 32px']) {

@@ -12,7 +12,7 @@ test('member listing is scoped for admin and super admin, management lists team'
   for(const role of ['user','admin','super_admin']){
     const result=await request('/api/review/records',role);assert.equal(result.status,200);
     assert.ok(result.data.items.every(row=>row.userId===fixture.users.find(u=>u.role===role).id));
-    assert.ok(result.data.items.every(row=>['Düzenlenecek','İncelemede','Onaylandı','Reddedildi','Arşivlendi'].includes(row.displayStatus)));
+    assert.ok(result.data.items.every(row=>['Taslak','Geri gönderildi','Onaya gönderildi','Teyit bekliyor','Onaylandı','Reddedildi','Arşivlendi'].includes(row.displayStatus)));
   }
   assert.equal((await request('/api/review/records?status=teyit_bekliyor','user','member')).status,409);
   const result=await request('/api/review/records?status=all','admin','management');assert.equal(result.data.count,65);assert.equal(result.data.items.length,25);
@@ -22,6 +22,14 @@ test('detail and legacy APIs refuse other owner in member workspace',async()=>{
   assert.equal((await request('/api/review/'+h.id)).status,404);
   assert.equal((await request('/api/history/'+h.id)).status,404);
   assert.equal((await request('/api/review/'+h.id,'admin','management')).status,200);
+});
+test('legacy split chunk drafts never appear as editable member drafts',async()=>{
+  const chunk=(await fixture.db.query(`insert into history(user_id,name,status,filename,question_text,corrected_text,original_text,tags)
+    values($1,'Parça Testi','taslak','Metin Girişi - Parça 1/2','','Ara parça cevabı.','Ara parça kaynak.','["Takva"]') returning *`,[fixture.users[0].id])).rows[0];
+  const list=await request('/api/review/records?status=todo&q=Parça%20Testi','user','member');
+  assert.equal(list.status,200);
+  assert.equal(list.data.count,0);
+  assert.equal((await request('/api/review/'+chunk.id,'user','member')).status,404);
 });
 test('old mutation endpoint requires version and cannot bypass role/approval safeguards',async()=>{
   const h=fixture.rows.find(row=>row.user_id===fixture.users[1].id&&row.status==='geri_gonderildi');
@@ -41,6 +49,9 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   const workspaceScript=fs.readFileSync(path.join(root,'review-workspace.js'),'utf8');
   new vm.Script(workspaceScript);
   assert.match(workspaceScript,/todo: 'Düzenlenecekler'/);
+  assert.match(workspaceScript,/close_duplicate: 'Mükerrer Olarak Kapat'/);
+  assert.match(workspaceScript,/dergah_sorulari: 'Dergah Soruları'/);
+  assert.match(workspaceScript,/conference: 'Konferanslara Al'/);
   assert.match(workspaceScript,/: \['todo','in_review','done'\]/);
   assert.doesNotMatch(workspaceScript,/: \['all','taslak','geri_gonderildi','bekliyor','onaylandi','reddedildi','teyit_bekliyor','arsivlendi'\]/);
   const source=fs.readFileSync(path.join(root,'server.js'),'utf8');
@@ -113,4 +124,61 @@ test('every non-pending list uses latest workflow activity and search remains se
     await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[inserted]);
     await fixture.db.query('delete from history where id=any($1::uuid[])',[inserted]);
   }
+});
+
+test('duplicate response links only a readable record and leaves submitted edits untouched',async()=>{
+  const seed=async(owner,status,question)=> (await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
+    values($1,'Kopya Testi',$2,$3,'Birebir test cevabı.','Kaynak '||gen_random_uuid()::text,'["Takva"]') returning *`,[owner.id,status,question])).rows[0];
+  const owner=fixture.users[0];
+  const existing=await seed(owner,'bekliyor','Kopya bağlantısı?');
+  const draft=await seed(owner,'taslak',existing.question_text);
+  const result=await request(`/api/review/${draft.id}/action`,'user','member',{
+    action:'submit',version:0,questionText:draft.question_text,correctedText:draft.corrected_text,tags:['Yeni etiket'],submissionNote:'Kaybolmamalı'
+  });
+  assert.equal(result.status,409);assert.equal(result.data.code,'EXACT_DUPLICATE');
+  assert.deepEqual(result.data.duplicate,{id:existing.id,displayStatus:'Onaya gönderildi'});
+  const after=(await fixture.db.query('select * from history where id=$1',[draft.id])).rows[0];
+  assert.equal(after.version,0);assert.deepEqual(after.tags,['Takva']);
+  const privateExisting=await seed(fixture.users[1],'onaylandi','Özel kayıt bağlantısı?');
+  const privateCopy=await seed(owner,'taslak',privateExisting.question_text);
+  const hidden=await request(`/api/review/${privateCopy.id}/action`,'user','member',{action:'submit',version:0});
+  assert.equal(hidden.status,409);assert.equal(hidden.data.duplicate,undefined);
+  assert.ok(!JSON.stringify(hidden.data).includes(privateExisting.id));
+});
+
+test('draft deletion is available in list and detail; repeat calls make only one transition',async()=>{
+  const h=(await fixture.db.query(`insert into history(user_id,name,status,question_text,original_text,corrected_text,tags)
+    values($1,'Silme Testi','taslak','Silinecek taslak?','Benzersiz silme kaynağı','Silme cevabı','["Takva"]') returning *`,[fixture.users[0].id])).rows[0];
+  const list=await request('/api/review/records?status=todo&q=Silme%20Testi','user');
+  assert.equal(list.data.items[0].displayStatus,'Taslak');assert.ok(list.data.items[0].allowedActions.includes('delete_draft'));
+  const detail=await request('/api/review/'+h.id,'user');assert.ok(detail.data.allowedActions.includes('delete_draft'));
+  const attempts=await Promise.all([1,2].map(()=>request(`/api/review/${h.id}/action`,'user','member',{action:'delete_draft',version:0})));
+  assert.deepEqual(attempts.map(r=>r.status).sort(),[200,409]);
+  assert.equal((await request('/api/review/'+h.id,'user')).status,404);
+  const trash=await request('/api/review/records?status=copte&q=Silme%20Testi','admin','management');
+  assert.equal(trash.data.items[0].id,h.id);
+  assert.equal((await fixture.db.query('select count(*)::int as n from history_revisions where history_id=$1',[h.id])).rows[0].n,1);
+});
+
+test('duplicate-marked member records can be cleaned from active list without hard delete',async()=>{
+  const h=(await fixture.db.query(`insert into history(user_id,name,status,question_text,original_text,corrected_text,tags,submission_note)
+    values($1,'Mükerrer Test','geri_gonderildi','Mükerrer temizlenecek soru?','Kaynak','Cevap','["Takva"]','MÜKERRER') returning *`,[fixture.users[0].id])).rows[0];
+  const list=await request('/api/review/records?status=todo&q=Mükerrer%20temizlenecek','user');
+  assert.equal(list.status,200);assert.equal(list.data.count,1);assert.ok(list.data.items[0].allowedActions.includes('close_duplicate'));
+  const closed=await request(`/api/review/${h.id}/action`,'user','member',{action:'close_duplicate',version:0});
+  assert.equal(closed.status,200);assert.equal(closed.data.history.status,'copte');
+  assert.equal((await request('/api/review/'+h.id,'user')).status,404);
+  const trash=await request('/api/review/records?status=copte&q=Mükerrer%20temizlenecek','admin','management');
+  assert.equal(trash.status,200);assert.equal(trash.data.items[0].id,h.id);
+});
+
+test('management can filter and act on special holding sections',async()=>{
+  const h=(await fixture.db.query(`insert into history(user_id,name,status,question_text,original_text,corrected_text,tags)
+    values($1,'Dergah Test','bekliyor','Dergah sorusu ayrı dursun mu?','Kaynak','Cevap','["Takva"]') returning *`,[fixture.users[0].id])).rows[0];
+  const moved=await request(`/api/review/${h.id}/action`,'admin','management',{action:'dergah',version:0,note:'Dergah/kardeşlerimiz kapsamı nedeniyle ayrı tutuldu.'});
+  assert.equal(moved.status,200);assert.equal(moved.data.history.status,'dergah_sorulari');
+  const list=await request('/api/review/records?status=dergah_sorulari&q=Dergah%20Test','admin','management');
+  assert.equal(list.status,200);assert.equal(list.data.count,1);assert.equal(list.data.items[0].id,h.id);
+  assert.ok(list.data.items[0].allowedActions.includes('pending'));
+  assert.ok(!list.data.items[0].allowedActions.includes('dergah'));
 });

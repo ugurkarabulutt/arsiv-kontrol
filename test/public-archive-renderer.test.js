@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260908-live-search-v6"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260913-fast-home-click-v6"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,14 +98,22 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260908-live-search-v6"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260908-live-search-v6"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260913-fast-home-click-v6"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260913-fast-home-click-v6"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
-  assert.match(home, /dsca-page-cache:v6/);
+  assert.match(home, /dsca-page-cache:v12/);
+  assert.match(home, /maxCachedHtmlLength/);
+  assert.match(home, /prefetchCard/);
+  assert.match(home, /observePrefetchCandidates/);
+  assert.match(home, /IntersectionObserver/);
+  assert.match(home, /openPublicArchiveHref/);
+  assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
+  assert.match(home, /addSelector\('\.pa-page a\[href\], \.pa-mobile-nav a\[href\]'\)/);
+  assert.match(home, /var fallbackTimer = window\.setTimeout\(function\(\)\{/);
   assert.match(home, /X-Public-Navigation/);
   assert.match(home, /data-pa-navigating/);
   assert.match(home, /data-pa-theme-boot/);
@@ -156,6 +164,16 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(archive, /"@type":"ItemList"/);
   assert.match(archive, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/arsiv#itemlist"/);
 
+  const featuredCollection = renderPublicArchivePreviewRoute('/one-cikan-sorular', {}, rootData).html;
+  assert.match(featuredCollection, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/one-cikan-sorular">/);
+  assert.match(featuredCollection, /Öne Çıkan Sorular/);
+  assert.match(featuredCollection, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/one-cikan-sorular#itemlist"/);
+
+  const latestCollection = renderPublicArchivePreviewRoute('/son-yayinlanan-sorular', {}, rootData).html;
+  assert.match(latestCollection, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/son-yayinlanan-sorular">/);
+  assert.match(latestCollection, /Son Yayınlanan Sorular/);
+  assert.match(latestCollection, /Yayın sırasına göre/);
+
   const category = renderPublicArchivePreviewRoute('/kategori/hidayet', {}, rootData).html;
   assert.match(category, /"@type":"CollectionPage"/);
   assert.match(category, /"@type":"ItemList"/);
@@ -205,6 +223,8 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.doesNotMatch(home, />Konular<\/span>|>Konular<\/a>|>Kategoriler<\/a>/);
   assert.doesNotMatch(home, /<strong>Ana Başlıklar<\/strong>|<strong>Kavramlar<\/strong>/);
   assert.match(home, /class="pa-mobile-nav"/);
+  assert.match(home, /data-active-index="0"/);
+  assert.match(home, /data-account-button/);
   assert.match(home, /class="pa-scroll-top"/);
   assert.match(home, /data-scroll-top/);
   assert.match(home, /pa-scroll-top-icon/);
@@ -398,6 +418,8 @@ test('archive lists are paginated for large public data', () => {
   assert.equal((firstPage.match(/class="pa-question-card/g) || []).length, 30);
   assert.match(firstPage, /1-30 \/ 75 soru gösteriliyor/);
   assert.match(firstPage, /Sayfa 1 \/ 3/);
+  assert.match(firstPage, /data-load-more/);
+  assert.match(firstPage, /Daha Fazla Göster/);
   assert.match(firstPage, /href="\/public-preview\/arsiv\?sayfa=2#sorular"/);
   assert.doesNotMatch(firstPage, /Soru 75/);
 
@@ -405,6 +427,7 @@ test('archive lists are paginated for large public data', () => {
   assert.equal((thirdPage.match(/class="pa-question-card/g) || []).length, 15);
   assert.match(thirdPage, /61-75 \/ 75 soru gösteriliyor/);
   assert.match(thirdPage, /Sayfa 3 \/ 3/);
+  assert.match(thirdPage, /Tüm kayıtlar gösterildi/);
   assert.match(thirdPage, /Soru 75/);
 
   const categorySecondPage = renderPublicArchivePreviewRoute('/public-preview/kategori/hidayet', { sayfa: '2' }, largeData).html;
@@ -695,6 +718,9 @@ test('public account page offers Google and email authentication', () => {
   assert.match(account, /\/public-preview\/api\/auth\/email\/login/);
   assert.match(account, /\/public-preview\/api\/auth\/email\/register/);
   assert.match(account, /\/public-preview\/api\/my-question-submissions/);
+  assert.match(account, /linkifyPublicSubmissionAnswer/);
+  assert.match(account, /class="pa-user-answer-link"/);
+  assert.match(account, /rel="noopener noreferrer"/);
   assert.match(account, /Google hesabınızla hızlıca devam edebilir/);
 });
 
@@ -768,6 +794,20 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /data-card-href="\/public-preview\/soru\/ornek-soru"/);
   assert.match(home, /role="link"/);
   assert.match(home, /Öne Çıkan Sorular/);
+  assert.match(home, /Öne çıkanları gör/);
+  assert.match(home, /\/public-preview\/one-cikan-sorular/);
+  assert.match(home, /Son yayınlananları gör/);
+  assert.match(home, /\/public-preview\/son-yayinlanan-sorular/);
+  assert.match(home, /Ne öğrenmek istiyorsunuz\?/);
+  assert.match(home, /Konu rehberleri/);
+  assert.match(home, /pa-topic-path/);
+  assert.match(home, /data-reading-slider/);
+  assert.match(home, /data-reading-rail/);
+  assert.match(home, /data-reading-set/);
+  assert.match(home, /pa-reading-rail/);
+  assert.match(home, /pa-reading-mark/);
+  assert.doesNotMatch(home, /pa-reading-index/);
+  assert.match(home, /pa-discovery-map/);
   assert.doesNotMatch(home, /Öne Çıkan Cevaplar/);
   assert.match(home, /Aktif arşiv/);
   assert.match(home, /Yayındaki soru ve cevaplar/);
@@ -783,7 +823,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(featuredSection, /has-strong-cta/);
   assert.doesNotMatch(featuredSection, /pa-card-meta/);
   assert.doesNotMatch(featuredSection, /class="pa-chip"/);
-  const activeStatsSection = home.slice(home.indexOf('class="pa-active-stats"'), home.indexOf('Son Yayınlanan Sorular'));
+  const activeStatsStart = home.indexOf('class="pa-active-stats"');
+  const activeStatsEnd = home.indexOf('</section>', activeStatsStart) + '</section>'.length;
+  const activeStatsSection = home.slice(activeStatsStart, activeStatsEnd);
   assert.doesNotMatch(activeStatsSection, /href=|Arşive Git|pa-active-stats-link/);
   assert.match(home, /Cevabı oku/);
   assert.match(home, /data-read-count-label/);
@@ -846,6 +888,31 @@ test('home page question selection deduplicates repeated question text', () => {
   assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-a/);
   assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-c/);
   assert.match(home, /Çok okunan soru vitrinde yer bulur mu\?/);
+});
+
+test('home page highlights question cards with explicit Quran references', () => {
+  const archiveData = {
+    brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },
+    categories: [{ slug: 'hidayet', name: 'Hidayet', description: 'Hidayet soruları.', topicSlugs: [] }],
+    topics: [],
+    qa: [{
+      slug: 'ayetli-hidayet-sorusu',
+      title: 'Hidayet ayetlerle nasıl açıklanır?',
+      question: 'Hidayet ayetlerle nasıl açıklanır?',
+      answer: ['Bakara-2 ve Yûnus-25 ayetleri hidayet bağlamında zikredilir.'],
+      summary: 'Hidayet meselesi ayet atıflarıyla birlikte okunur.',
+      categorySlug: 'hidayet',
+      topicSlugs: ['hidayet'],
+      publishedAt: '2026-08-21T09:00:00.000Z',
+      readCount: 20
+    }]
+  };
+  const home = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
+
+  assert.match(home, /Ayet atıflarıyla öne çıkan cevaplar/);
+  assert.match(home, /Bakara-2/);
+  assert.match(home, /Yûnus-25/);
+  assert.match(home, /pa-evidence-card/);
 });
 
 test('search results deduplicate repeated question text even when server prefilters rows', () => {

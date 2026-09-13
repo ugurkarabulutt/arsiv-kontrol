@@ -4,10 +4,16 @@
 .rw-workspace:has(select[hidden]){display:none}
 [hidden]{display:none!important}
 .rw-list{width:100%;min-width:0}
+.rw-list:has(.rw-bulk-fixed){padding-top:var(--rw-bulk-space,0)}
 .rw-toolbar{display:flex;align-items:end;gap:14px;flex-wrap:wrap;padding:0 0 16px;border-bottom:1px solid var(--line)}
 .rw-toolbar label{display:grid;gap:6px;font-size:12px;font-weight:600;min-width:0}
 .rw-search{flex:1;min-width:180px!important}.rw-count{font-size:13px;padding:12px 0;color:var(--muted)}
+.rw-bulk{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px 12px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink2);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px)}
+.rw-bulk-fixed{position:fixed;top:var(--rw-bulk-top,0);left:var(--rw-bulk-left,0);width:var(--rw-bulk-width,100vw);box-sizing:border-box;padding:10px 16px;border:1px solid var(--line);border-left:0;border-right:0;background:color-mix(in srgb,var(--bg) 96%,transparent);box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.rw-bulk-head{white-space:nowrap}.rw-bulk-actions{display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto;align-items:center;gap:8px}.rw-bulk button{min-height:38px;padding:7px 10px}.rw-bulk-select{width:100%;min-height:38px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.rw-bulk-note{display:grid;gap:7px;grid-column:1/-1;font-size:13px;font-weight:600;color:var(--ink);margin-top:2px}.rw-bulk-note textarea{width:100%;box-sizing:border-box;min-height:70px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--font-body,sans-serif);resize:vertical}
 .rw-row{display:flex;gap:18px;align-items:center;padding:20px 0;border-bottom:1px solid var(--line);min-width:0}
+.rw-select{flex:none;display:grid;place-items:center;width:34px;height:34px;margin:2px 0 0;cursor:pointer}.rw-select input{position:absolute;opacity:0;pointer-events:none}.rw-select span{width:22px;height:22px;border:1px solid var(--line);border-radius:5px;background:var(--bg);box-shadow:inset 0 0 0 2px transparent}.rw-select input:checked+span{background:var(--gold);border-color:var(--gold);box-shadow:inset 0 0 0 5px var(--bg)}.rw-select input:disabled+span{opacity:.35}.rw-select:has(input:focus-visible) span{outline:2px solid var(--gold);outline-offset:2px}
 .rw-row-main{flex:1;min-width:0}.rw-question{display:block;background:none;border:0;padding:0;text-align:left;font:600 16px/1.55 var(--font-body, sans-serif);color:var(--ink);cursor:pointer;overflow-wrap:anywhere}
 .rw-question:hover{text-decoration:underline}.rw-open{flex:none;min-width:74px;min-height:40px}
 .rw-meta,.rw-record-meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;line-height:1.6;color:var(--ink2);margin:8px 0}
@@ -36,4 +42,4 @@
 .rw-modal .modal-foot{flex:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}.rw-modal .modal-foot .rw-actions{margin-top:0}
 .rw-modal #rwDetailMessage{margin:0 0 10px}.rw-modal #rwFavorite{margin-left:auto;width:40px;height:40px;flex:none;font-size:22px}
 #rwPreviewNotice{font-size:13px;padding:10px 0;color:var(--ink2);border-bottom:1px solid var(--border)}
-@media(max-width:640px){.rw-toolbar{gap:10px}.rw-search{flex-basis:100%}.rw-row{gap:12px;align-items:flex-start}.rw-open{min-width:65px;padding:8px}.rw-question{font-size:15px}.rw-actions{gap:8px}.rw-field textarea{font-size:16px}.rw-record-meta{gap:4px 10px}}
+@media(max-width:640px){.rw-toolbar{gap:10px}.rw-search{flex-basis:100%}.rw-bulk{grid-template-columns:1fr;align-items:stretch;padding:10px 0}.rw-bulk-actions{grid-template-columns:1fr 1fr;gap:8px}.rw-bulk-select{grid-column:1/2}.rw-bulk-actions .btn-primary,.rw-bulk-actions .btn-danger{grid-column:2/3}.rw-bulk-note{width:100%}.rw-row{gap:10px;align-items:flex-start}.rw-select{width:28px;height:32px}.rw-select span{width:20px;height:20px}.rw-open{min-width:65px;padding:8px}.rw-question{font-size:15px}.rw-actions{gap:8px}.rw-field textarea{font-size:16px}.rw-record-meta{gap:4px 10px}}

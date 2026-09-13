@@ -27,6 +27,21 @@ before(async () => {
   const statusQueueMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260907030328_review_status_queue_order.sql'),'utf8');
   await db.exec(statusQueueMigration);
   await db.exec(statusQueueMigration);
+  const safetyMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260908195554_member_draft_safety.sql'),'utf8');
+  await db.exec(safetyMigration);
+  await db.exec(safetyMigration);
+  const legacyChunkMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260909122817_hide_legacy_chunk_drafts.sql'),'utf8');
+  await db.exec(legacyChunkMigration);
+  await db.exec(legacyChunkMigration);
+  const duplicateCleanupMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260912162000_member_duplicate_cleanup.sql'),'utf8');
+  await db.exec(duplicateCleanupMigration);
+  await db.exec(duplicateCleanupMigration);
+  const specialSectionsMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260913000100_review_special_holding_sections.sql'),'utf8');
+  await db.exec(specialSectionsMigration);
+  await db.exec(specialSectionsMigration);
+  const returnedApproveMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260913000200_management_can_approve_returned.sql'),'utf8');
+  await db.exec(returnedApproveMigration);
+  await db.exec(returnedApproveMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -35,7 +50,7 @@ beforeEach(async () => {
 after(async () => db?.close());
 async function seed(owner='user',status='geri_gonderildi',q='Soru?',a='İlk paragraf.\n\nÂyet: نص\nMeali.\n\nAçıklama.') {
   return (await db.query(`insert into history(user_id,name,username,status,question_text,corrected_text,original_text,tags)
-    values($1,$2,$2,$3,$4,$5,'Dokunulmayacak kaynak', '["Takva"]') returning *`,[ids[owner],owner,status,q,a])).rows[0];
+    values($1,$2,$2,$3,$4,$5,'Dokunulmayacak kaynak '||gen_random_uuid()::text, '["Takva"]') returning *`,[ids[owner],owner,status,q,a])).rows[0];
 }
 async function change(h,actor,space,action,payload={}) {
   await db.exec('set role service_role');
@@ -76,7 +91,7 @@ test('submit validates all fields; incomplete draft can still be saved', async (
   h=await change(h,'user','member','submit',{questionText:'Soru?',correctedText:'Kısa cevap.',tags:['Takva']});
   assert.equal(h.status,'bekliyor');
   await assert.rejects(change(h,'user','member','save',{questionText:'Gizli değişiklik?'}),/INVALID_STATUS/);
-  h=await change(h,'user','member','withdraw');assert.equal(h.status,'taslak');
+  h=await change(h,'user','member','withdraw');assert.equal(h.status,'geri_gonderildi');
 });
 test('both admin roles submit own work as members and cannot approve themselves', async () => {
   for (const owner of ['admin','super']) {
@@ -93,6 +108,13 @@ test('approve saves edited question, answer and tags in the same atomic revision
   const result=await change(h,'admin','management','approve',{questionText:'Kontrol edilmiş soru?',correctedText:'Kısa cevap.\n\nİkinci paragraf.',tags:['İman'],submissionNote:'Uyum kontrol edildi.'});
   assert.equal(result.corrected_text,'Kısa cevap.\n\nİkinci paragraf.');assert.equal(result.question_text,'Kontrol edilmiş soru?');assert.equal(result.status,'onaylandi');
   assert.equal((await db.query('select count(*)::int as n from history_revisions')).rows[0].n,1);
+});
+test('manager can approve returned records after final review', async () => {
+  const h=await seed('user','geri_gonderildi','Geri dönen uygun soru?','Kontrol edilmiş cevap.');
+  assert.ok(recordActions({id:ids.admin,role:'admin'},h,'management').includes('approve'));
+  const result=await change(h,'admin','management','approve');
+  assert.equal(result.status,'onaylandi');
+  assert.equal(result.approved_by,'Elçin Test');
 });
 test('duplicate requires BOTH exact Q and A across users, never only similar question or answer', async () => {
   await seed('other','onaylandi','Aynı soru?','Aynı cevap.');
@@ -188,13 +210,25 @@ test('payload rejects forged types and limits privileges to explicit fields', ()
 });
 
 test('member-facing statuses hide management queue vocabulary', () => {
-  assert.equal(memberDisplayStatus('taslak'),'Düzenlenecek');
-  assert.equal(memberDisplayStatus('geri_gonderildi'),'Düzenlenecek');
-  assert.equal(memberDisplayStatus('bekliyor'),'İncelemede');
-  assert.equal(memberDisplayStatus('teyit_bekliyor'),'İncelemede');
+  assert.equal(memberDisplayStatus('taslak'),'Taslak');
+  assert.equal(memberDisplayStatus('geri_gonderildi'),'Geri gönderildi');
+  assert.equal(memberDisplayStatus('bekliyor'),'Onaya gönderildi');
+  assert.equal(memberDisplayStatus('teyit_bekliyor'),'Teyit bekliyor');
+  assert.equal(memberDisplayStatus('dergah_sorulari'),'Dergah soruları');
+  assert.equal(memberDisplayStatus('konferanslar'),'Konferanslar');
   assert.equal(memberDisplayStatus('onaylandi'),'Onaylandı');
   assert.equal(memberDisplayStatus('reddedildi'),'Reddedildi');
   assert.equal(memberDisplayStatus('arsivlendi'),'Arşivlendi');
+});
+
+test('review queue hides legacy split chunk drafts that detail pages reject', async () => {
+  const normal=await seed('user','taslak','Gerçek taslak?','Gerçek cevap.');
+  const chunk=(await db.query(`insert into history(user_id,name,username,filename,status,question_text,corrected_text,original_text,tags)
+    values($1,'user','user','Metin Girişi - Parça 1/2','taslak','','Parça cevap.','Parça kaynak.','["Takva"]') returning *`,[ids.user])).rows[0];
+  assert.equal(canReadRecord({id:ids.user,role:'user'},chunk,'member'),false);
+  const rows=(await db.query('select id from review_history_queue order by created_at desc')).rows.map(row=>row.id);
+  assert.ok(rows.includes(normal.id));
+  assert.ok(!rows.includes(chunk.id));
 });
 
 test('approval queue derives last submission, not creation, save, moderation or reanalysis time', async () => {
@@ -257,4 +291,129 @@ test('legacy submission logs and new revisions merge without duplicate rows or u
   row=(await db.query('select * from review_history_queue')).rows[0];
   assert.equal(row.submitted_at.toISOString(),'2026-08-24T10:00:00.000Z');
   assert.equal(row.submitted_by,ids.user);
+});
+
+test('member deletes only own unprotected draft, with one reversible revision', async () => {
+  for (const owner of ['user','admin','super']) {
+    const h=await seed(owner,'taslak',`${owner} taslağı?`);
+    const actor={id:ids[owner],role:owner==='user'?'user':owner==='super'?'super_admin':'admin'};
+    assert.ok(recordActions(actor,{...h,member_delete_protected:false},'member').includes('delete_draft'));
+    assert.ok(!recordActions(actor,h,'member').includes('delete_draft')); // Unknown protection fails closed.
+    await assert.rejects(change(h,'other','member','delete_draft'),/FORBIDDEN/);
+    const deleted=await change(h,owner,'member','delete_draft');
+    assert.equal(deleted.status,'copte');assert.equal(deleted.corrected_text,h.corrected_text);
+    assert.equal(canReadRecord(actor,deleted,'member'),false);
+    await assert.rejects(change(h,owner,'member','delete_draft'),/VERSION_CONFLICT/);
+    const restored=await change(deleted,'admin','management','restore',{note:'Yanlışlıkla silinmiş.'});
+    assert.equal(restored.status,'taslak');assert.equal(restored.original_text,h.original_text);
+    assert.equal((await db.query('select count(*)::int as n from history_revisions where history_id=$1 and action=$2',[h.id,'delete_draft'])).rows[0].n,1);
+  }
+});
+
+test('return protection survives submit, withdraw, metadata changes and external legacy updates', async () => {
+  let h=await seed('user','bekliyor');
+  h=await change(h,'admin','management','return',{note:'Ayet ve etiketi kontrol edin.'});
+  await assert.rejects(change(h,'user','member','delete_draft'),/DRAFT_ONLY/);
+  h=await change(h,'user','member','submit');
+  h=await change(h,'user','member','withdraw');
+  assert.equal(h.status,'geri_gonderildi');assert.equal(h.workflow_meta.returnNote,'Ayet ve etiketi kontrol edin.');
+  h=(await db.query("update history set status='taslak',workflow_meta='{}' where id=$1 returning *",[h.id])).rows[0];
+  assert.equal(h.workflow_meta.memberDeleteProtected,true);
+  await assert.rejects(change(h,'user','member','delete_draft'),/DRAFT_PROTECTED/);
+});
+
+test('legacy return evidence, assignment and linked public rows protect drafts without a backfill', async () => {
+  for(const evidence of ['revision','log','public','assigned']) {
+    let h=await seed('user','taslak',evidence+'?');
+    if(evidence==='revision')await db.query("insert into history_revisions(history_id,version,action,before_data,after_data) values($1,10,'withdraw','{\"status\":\"geri_gonderildi\"}','{}')",[h.id]);
+    if(evidence==='log')await db.query("insert into admin_action_log(action,target_type,target_id,target_status_after) values('approval.returned','history',$1,'geri_gonderildi')",[h.id]);
+    if(evidence==='public')await publish(h,'draft-protected');
+    if(evidence==='assigned')h=(await db.query('update history set assignee_id=$2 where id=$1 returning *',[h.id,ids.user])).rows[0];
+    const result=(await db.query('select * from review_draft_protections($1)',[[h.id]])).rows[0];
+    assert.equal(result.member_delete_protected,true);
+    await assert.rejects(change(h,'user','member','delete_draft'),/DRAFT_PROTECTED/);
+    assert.equal((await db.query('select status from history where id=$1',[h.id])).rows[0].status,'taslak');
+  }
+});
+
+test('ordinary submission may be withdrawn to a deletable draft', async () => {
+  let h=await seed('user','taslak');
+  h=await change(h,'user','member','submit');
+  await assert.rejects(change(h,'user','member','delete_draft'),/DRAFT_ONLY/);
+  h=await change(h,'user','member','withdraw');
+  assert.equal(h.status,'taslak');
+  assert.equal((await change(h,'user','member','delete_draft')).status,'copte');
+});
+
+test('member closes only duplicate-marked returned or draft records without deleting audit trail', async () => {
+  let returned=await seed('user','geri_gonderildi','Mükerrer geri dönen?','Aynı cevap.');
+  assert.ok(!recordActions({id:ids.user,role:'user'},returned,'member').includes('close_duplicate'));
+  await assert.rejects(change(returned,'user','member','close_duplicate'),/DUPLICATE_NOTE_REQUIRED/);
+  returned=await change(returned,'user','member','save',{submissionNote:'MÜKERRER'});
+  assert.ok(recordActions({id:ids.user,role:'user'},returned,'member').includes('close_duplicate'));
+  const closed=await change(returned,'user','member','close_duplicate');
+  assert.equal(closed.status,'copte');
+  assert.equal(closed.workflow_meta.memberClosedDuplicate,true);
+  assert.equal(closed.workflow_meta.statusBeforeTrash,'geri_gonderildi');
+  assert.equal(canReadRecord({id:ids.user,role:'user'},closed,'member'),false);
+  assert.equal(canReadRecord({id:ids.admin,role:'admin'},closed,'management'),true);
+  assert.equal((await db.query("select count(*)::int as n from history_revisions where history_id=$1 and action='close_duplicate'",[returned.id])).rows[0].n,1);
+  assert.equal((await db.query("select action_label from admin_action_log where target_id=$1 and action='review.close_duplicate'",[returned.id])).rows[0].action_label,'Mükerrer olarak kapattı');
+
+  let draft=await seed('user','taslak','Mükerrer taslak?','Aynı cevap.');
+  draft=await change(draft,'user','member','save',{submissionNote:'mükerrer'});
+  assert.equal((await change(draft,'user','member','close_duplicate')).status,'copte');
+});
+
+test('managers can move records into special holding sections with audit notes', async () => {
+  let dergah=await seed('user','bekliyor','Dergahla ilgili soru?','Cevap.');
+  await assert.rejects(change(dergah,'admin','management','dergah'),/NOTE_REQUIRED/);
+  dergah=await change(dergah,'admin','management','dergah',{note:'Dergah/kardeşlerimiz kapsamı nedeniyle ayrı tutuldu.'});
+  assert.equal(dergah.status,'dergah_sorulari');
+  assert.equal(dergah.workflow_meta.decisionNote,'Dergah/kardeşlerimiz kapsamı nedeniyle ayrı tutuldu.');
+  assert.ok(recordActions({id:ids.super,role:'super_admin'},dergah,'management').includes('approve'));
+  assert.ok(!recordActions({id:ids.admin,role:'admin'},dergah,'management').includes('dergah'));
+  const dergahLog=(await db.query("select action_label,target_status_before,target_status_after from admin_action_log where target_id=$1 and action='review.dergah'",[dergah.id])).rows[0];
+  assert.deepEqual(dergahLog,{action_label:'Dergah sorularına aldı',target_status_before:'bekliyor',target_status_after:'dergah_sorulari'});
+
+  let conference=await seed('user','bekliyor','Uzun cevap?','Uzun konferans cevabı.');
+  conference=await change(conference,'admin','management','conference',{note:'Cevap çok uzun; konferans/makale olarak ayrıca değerlendirilecek.'});
+  assert.equal(conference.status,'konferanslar');
+  assert.ok(recordActions({id:ids.super,role:'super_admin'},conference,'management').includes('pending'));
+  assert.ok(!recordActions({id:ids.admin,role:'admin'},conference,'management').includes('conference'));
+  assert.equal(memberDisplayStatus(conference.status),'Konferanslar');
+});
+
+test('repeated creation returns existing source, corrected text and respects scope and trash', async () => {
+  let h=await seed('user','taslak');
+  const insert=()=>db.query("insert into history(user_id,status,original_text,corrected_text) values($1,'taslak',$2,'Denetlenmiş sonuç') returning *",[ids.user,h.original_text]);
+  await assert.rejects(insert(),error=>/ANALYSIS_EXISTS/.test(error.message)&&JSON.parse(error.detail).duplicateId===h.id);
+  const match=async(actor,text)=>(await db.query('select review_find_existing_analysis($1,$2) as h',[ids[actor],text])).rows[0].h;
+  assert.equal((await match('user',h.original_text)).id,h.id);
+  assert.equal((await match('user',h.corrected_text)).id,h.id);
+  assert.equal(await match('other',h.original_text),null);
+  await change(h,'user','member','delete_draft');
+  assert.equal(await match('user',h.original_text),null);
+  const recreated=(await insert()).rows[0];assert.notEqual(recreated.id,h.id);
+  const attempts=await Promise.allSettled([insert(),insert()]);assert.ok(attempts.every(r=>r.status==='rejected'));
+  assert.equal((await db.query("select count(*)::int as n from history where status='taslak'")).rows[0].n,1);
+});
+
+test('new lookup and draft protection RPCs are private', async () => {
+  for(const role of ['anon','authenticated']) {
+    await db.exec(`set role ${role}`);
+    await assert.rejects(db.query('select review_history_is_protected($1)',[ids.user]),/permission denied/);
+    await assert.rejects(db.query('select * from review_draft_protections($1)',[[ids.user]]),/permission denied/);
+    await assert.rejects(db.query('select review_find_existing_analysis($1,$2)',[ids.user,'Private source']),/permission denied/);
+    await db.exec('reset role');
+  }
+});
+
+test('two initial insert attempts keep one draft and return its identity for the retry', async () => {
+  const insert=()=>db.query("insert into history(user_id,status,original_text,corrected_text) values($1,'taslak','Eşzamanlı kaynak','Yeni cevap') returning *",[ids.user]);
+  const results=await Promise.allSettled([insert(),insert()]);
+  const success=results.filter(r=>r.status==='fulfilled'),failure=results.filter(r=>r.status==='rejected');
+  assert.equal(success.length,1);assert.equal(failure.length,1);
+  assert.equal(JSON.parse(failure[0].reason.detail).duplicateId,success[0].value.rows[0].id);
+  assert.equal((await db.query('select count(*)::int as n from history')).rows[0].n,1);
 });

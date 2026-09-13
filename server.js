@@ -9,6 +9,7 @@ const mammoth  = require('mammoth');
 const readXlsxFile = require('read-excel-file/node');
 const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
+const { canReadRecord, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 const {
   LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
   candidateTextHashes, finalizeResult, normalizeText, textHash
@@ -6655,6 +6656,49 @@ async function loadPublicArchiveHomeDataset() {
   });
 }
 
+async function loadPublicArchiveCollectionDataset(kind = 'featured') {
+  const latestMode = kind === 'latest';
+  const [primaryResult, fallbackResult, categoryRows] = await Promise.all([
+    latestMode
+      ? supabase
+        .from('public_qa')
+        .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .range(0, 89)
+      : supabase
+        .from('public_qa')
+        .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+        .eq('status', 'published')
+        .eq('is_featured', true)
+        .order('published_at', { ascending: false })
+        .range(0, 89),
+    latestMode
+      ? Promise.resolve({ data: [], count: 0, error: null })
+      : supabase
+        .from('public_qa')
+        .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .range(0, 89),
+    loadPublicArchiveCategoryIndexRows()
+  ]);
+  if (primaryResult.error) throw new Error(primaryResult.error.message);
+  if (fallbackResult.error) throw new Error(fallbackResult.error.message);
+  const rows = latestMode
+    ? (primaryResult.data || [])
+    : [...(primaryResult.data || []), ...(fallbackResult.data || [])];
+  const total = latestMode
+    ? Number(primaryResult.count || rows.length || 0)
+    : Math.max(Number(primaryResult.count || 0), rows.length);
+  return publicArchiveDatasetForRows({
+    rows,
+    categoryRows,
+    stats: publicArchiveStats(total),
+    allowEmpty: true
+  });
+}
+
 async function loadPublicArchivePageDataset(query = {}) {
   const selectedCategory = String(query.kategori || '').trim();
   const page = publicArchivePageNumber(query.sayfa);
@@ -6991,6 +7035,8 @@ async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
   let dataset = null;
   if (pathname === '/public-preview') dataset = await loadPublicArchiveHomeDataset();
   else if (pathname === '/public-preview/arsiv') dataset = await loadPublicArchivePageDataset(query);
+  else if (pathname === '/public-preview/one-cikan-sorular') dataset = await loadPublicArchiveCollectionDataset('featured');
+  else if (pathname === '/public-preview/son-yayinlanan-sorular') dataset = await loadPublicArchiveCollectionDataset('latest');
   else if (pathname === '/public-preview/arama') dataset = await loadPublicArchiveSearchDataset(query);
   else if (pathname === '/public-preview/kategoriler' || pathname === '/public-preview/konular') dataset = await loadPublicArchiveCategoryIndexDataset();
   else {
@@ -8531,12 +8577,22 @@ async function loadExistingPublicArchiveRowsByHistoryId(historyIds = []) {
     .map(row => [row.source_history_id, row]));
 }
 
+async function loadPublicArchiveUsedSlugs(exceptHistoryIds = []) {
+  const except = new Set(exceptHistoryIds.filter(Boolean));
+  const rows = await fetchAllPages(() => supabase
+    .from('public_qa')
+    .select('slug,source_history_id'), 1000);
+  return new Set((rows || [])
+    .filter(row => row.slug && !except.has(row.source_history_id))
+    .map(row => row.slug));
+}
+
 function publicArchiveReadTime(answerText = '', fallback = 1) {
   const count = String(answerText || '').split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil((count || Number(fallback || 1) * 180) / 180));
 }
 
-async function syncApprovedHistoryToPublicArchive() {
+async function publishApprovedHistoryRecords(records = []) {
   if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
     return {
       available: false,
@@ -8550,10 +8606,17 @@ async function syncApprovedHistoryToPublicArchive() {
     };
   }
 
-  const records = await loadApprovedHistoryForPublicArchive();
-  const statsMap = await loadPublicArchiveStatsMap(records.map(row => publicArchiveSlug(row.question_text || row.filename || row.id)));
-  const dataset = publicArchiveDatasetFromRecords(records, statsMap);
-  const existingByHistoryId = await loadExistingPublicArchiveRowsByHistoryId(records.map(row => row.id));
+  const cleanRecords = (records || []).filter(row => row?.id && row.status === 'onaylandi');
+  if (!cleanRecords.length) {
+    return {
+      available: false,
+      error: 'Yayınlanacak onaylı kayıt bulunamadı.'
+    };
+  }
+  const statsMap = await loadPublicArchiveStatsMap(cleanRecords.map(row => publicArchiveSlug(row.question_text || row.filename || row.id)));
+  const dataset = publicArchiveDatasetFromRecords(cleanRecords, statsMap);
+  const existingByHistoryId = await loadExistingPublicArchiveRowsByHistoryId(cleanRecords.map(row => row.id));
+  const usedSlugs = await loadPublicArchiveUsedSlugs(cleanRecords.map(row => row.id));
   const now = new Date().toISOString();
   let preservedExistingContent = 0;
   let insertedNewContent = 0;
@@ -8584,8 +8647,9 @@ async function syncApprovedHistoryToPublicArchive() {
     const answerParagraphs = existingAnswerText ? publicArchiveParagraphs(existingAnswerText) : (item.answer || []);
     if (existingAnswerText) preservedExistingContent += 1;
     else insertedNewContent += 1;
+    const slug = existing?.slug || uniquePublicArchiveSlug(item.slug || item.question || item.sourceHistoryId, usedSlugs, 'soru');
     return {
-      slug: existing?.slug || item.slug,
+      slug,
       source_history_id: item.sourceHistoryId || null,
       title: existing?.title || item.title || item.question || 'Soru',
       question: existing?.question || item.question || item.title || 'Soru',
@@ -8644,7 +8708,7 @@ async function syncApprovedHistoryToPublicArchive() {
   return {
     available: true,
     source: 'approved_history',
-    approvedRecords: records.length,
+    approvedRecords: cleanRecords.length,
     publishedRecords: qaRows.length,
     preservedExistingContent,
     insertedNewContent,
@@ -10130,7 +10194,7 @@ app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (
 if (ADMIN_REVIEW_WORKSPACES_ENABLED) {
   const { createReviewWorkflow } = require('./review-workflow');
   const review = createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes,
-    attachApprovalReturnMeta, loadApprovalFavoriteSet, clearPublicArchiveCaches, analyzeText: openaiText, analysisRateLimiter, readOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
+    attachApprovalReturnMeta, loadApprovalFavoriteSet, clearPublicArchiveCaches, publishApprovedHistoryRecord, analyzeText: openaiText, analysisRateLimiter, readOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
   app.use('/api/review', auth, review.router);
   app.use('/api/history', auth, review.legacy);
 }
@@ -10718,7 +10782,7 @@ app.post('/api/history/merged-draft', auth, async (req, res) => {
       .in('status', ['taslak', CHUNK_DRAFT_STATUS]);
     if (hideError) throw new Error(hideError.message);
     res.json({ success: true, id, status: 'taslak' });
-  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+  } catch (e) { await sendAnalysisError(req, res, e); }
 });
 
 app.post('/api/history/submit-merged', auth, async (req, res) => {
@@ -10934,7 +10998,20 @@ async function setApproval(req, res, status) {
     if (error) throw new Error(error.message);
     if (!data?.length) return res.status(404).json({ error: 'Kayıt bulunamadı.' });
     if (status === 'reddedildi') await releaseSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id);
-    if (status === 'onaylandi') await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    if (status === 'onaylandi') {
+      try {
+        await publishApprovedHistoryRecord(data[0]);
+      } catch (publishError) {
+        await supabase.from('history').update({
+          status: current.status,
+          approved_by: current.approved_by,
+          approved_at: current.approved_at
+        }).eq('id', current.id);
+        clearPublicArchiveCaches();
+        throw publishError;
+      }
+      await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
+    }
     if (status === APPROVAL_ARCHIVED_STATUS) {
       await markSubmittedCorrectedHash(current.user_id, current.corrected_text || '', current.id, status);
       const { error: archivePublicError } = await supabase
@@ -12695,20 +12772,24 @@ app.get('/api/stats', auth, admin, async (req, res) => {
       histRows,
       { data: userRows, error: uErr },
       alertRows,
-      resolutionLogResult
+      resolutionLogResult,
+      publicPublishedResult
     ] = await Promise.all([
       fetchAllPages(() => supabase.from('history').select('*').order('created_at', { ascending: false })),
       supabase.from('users').select('id,name,username,active'),
       fetchAllPages(() => supabase.from('alerts').select('*').order('created_at', { ascending: false })),
       HAS_ISSUE_RESOLUTION_LOG
         ? supabase.from('issue_resolution_log').select('*').order('created_at', { ascending: false }).limit(12)
-        : Promise.resolve({ data: [], error: null })
+        : Promise.resolve({ data: [], error: null }),
+      supabase.from('public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')
     ]);
     if (uErr) throw new Error(uErr.message);
     if (resolutionLogResult.error) throw new Error(resolutionLogResult.error.message);
+    if (publicPublishedResult.error) console.warn('Public yayın sayısı alınamadı:', publicPublishedResult.error.message);
 
     const hist = (histRows || []).map(mapHistory).filter(h => !isHiddenHistoryForRole(h, ROLES.ADMIN));
     const users = (userRows || []).filter(u => u.active);
+    const historyStatusById = new Map(hist.map(h => [h.id, h.status || 'bekliyor']));
 
     const now = Date.now();
     const day30 = hist.filter(h => now - new Date(h.createdAt).getTime() < 30 * 864e5);
@@ -12775,9 +12856,9 @@ app.get('/api/stats', auth, admin, async (req, res) => {
       .sort((a, b) => b.contributionScore - a.contributionScore || b.resolvedCount - a.resolvedCount)
       .slice(0, 8);
     const feedback7 = feedbackAlerts.filter(a => now - new Date(a.created_at).getTime() < 7 * 864e5).length;
-    const adminAlertTypes = ['feedback', 'low_score'];
-    const unreadAlerts = alerts.filter(a => !a.read && adminAlertTypes.includes(a.type)).length;
-    const unreadFeedback = feedbackAlerts.filter(a => !a.read).length;
+    const unreadOpenFeedback = feedbackOpenItems.filter(a => !a.read).length;
+    const unreadLowScoreAlerts = lowScoreAlerts.filter(a => !a.read && historyStatusById.get(a.history_id) === 'bekliyor').length;
+    const unreadAlerts = unreadOpenFeedback + unreadLowScoreAlerts;
     const pending = hist.filter(h => h.status === 'bekliyor' || h.status === APPROVAL_REVIEW_STATUS || !h.status).length;
     const riskItems = hist
       .filter(h => (h.score || 0) < 60 || (h.totalErrors || 0) >= 5)
@@ -12796,6 +12877,7 @@ app.get('/api/stats', auth, admin, async (req, res) => {
     res.json({
       totals: {
         allTime: hist.length,
+        publicPublished: publicPublishedResult.error ? 0 : (publicPublishedResult.count || 0),
         last30: day30.length,
         activeUsers: users.length,
         avgScore: hist.length ? Math.round(hist.reduce((s,h)=>s+(h.score||0),0)/hist.length) : 0,
@@ -12807,8 +12889,9 @@ app.get('/api/stats', auth, admin, async (req, res) => {
         feedbackResolvedItems: feedbackResolvedItems.length,
         feedbackResolutionRate: feedbackAlerts.length ? Math.round((feedbackResolvedItems.length / feedbackAlerts.length) * 100) : 0,
         feedbackContributors: feedbackUsers.filter(u => u.userId).length,
-        unreadFeedback,
+        unreadFeedback: unreadOpenFeedback,
         lowScoreAlerts: lowScoreAlerts.length,
+        unreadLowScoreAlerts,
         feedbackResolved: resolutionAlerts.length,
         announcements: announcementAlerts.length
       },
@@ -13517,12 +13600,40 @@ let startupReady = Promise.resolve();
 
 // Bu kullanıcı aynı metni daha önce denetledi mi?
 async function isDuplicate(req, text) {
-  if (!HAS_TEXT_HASH) return false;
+  if (ADMIN_REVIEW_WORKSPACES_ENABLED) {
+    const { data, error } = await supabase.rpc('review_find_existing_analysis', {
+      p_actor: req.session.userId, p_text: text, p_hashes: candidateTextHashes(text)
+    });
+    if (error) throw new Error('Mevcut kayıt kontrolü tamamlanamadı. Metniniz korunuyor; tekrar deneyin.');
+    return data ? { id: data.id, displayStatus: memberDisplayStatus(data.status) } : null;
+  }
+  if (!HAS_TEXT_HASH) return null;
   const hashes = candidateTextHashes(text);
   const { data, error } = await supabase.from('history')
-    .select('id').eq('user_id', req.session.userId).in('text_hash', hashes).limit(1);
-  if (error) { console.warn('Tekrar kontrolü uyarısı:', error.message); return false; }
-  return !!(data && data.length);
+    .select('id,status').eq('user_id', req.session.userId).neq('status', 'copte').in('text_hash', hashes).limit(1);
+  if (error) throw new Error('Mevcut kayıt kontrolü tamamlanamadı. Metniniz korunuyor; tekrar deneyin.');
+  return data?.length ? { id: data[0].id, displayStatus: memberDisplayStatus(data[0].status) } : null;
+}
+
+function analysisDuplicatePayload(existingRecord) {
+  return { duplicate: true, message: 'Bu metne ait bir kayıt zaten var. Mevcut kayıt üzerinden devam edebilirsiniz.', existingRecord };
+}
+
+async function analysisDuplicateFromError(req, error) {
+  const id = duplicateIdFromError(error);
+  let existingRecord;
+  if (id) {
+    const { data } = await supabase.from('history').select('id,user_id,assignee_id,status').eq('id', id).maybeSingle();
+    if (canReadRecord({ id: req.session.userId, role: req.session.role }, data, 'member')) {
+      existingRecord = { id: data.id, displayStatus: memberDisplayStatus(data.status) };
+    }
+  }
+  return analysisDuplicatePayload(existingRecord);
+}
+
+async function sendAnalysisError(req, res, error) {
+  if (String(error.message).includes('ANALYSIS_EXISTS')) return res.json(await analysisDuplicateFromError(req, error));
+  return res.status(error.statusCode || 500).json({ error: error.message });
 }
 
 async function maybeCreateLowScoreAlert(req, historyId, score, filename) {
@@ -13559,7 +13670,7 @@ async function saveHistory(req, result, filename, hash, sourceText = '', status 
   }
 
   const { data, error } = await supabase.from('history').insert(row).select('id').single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   const entryId = data.id;
 
   if (historyStatusForApproval(status)) await maybeCreateLowScoreAlert(req, entryId, result.score, filename);
@@ -13588,13 +13699,22 @@ app.post('/api/analyze', auth, analysisRateLimiter, async (req, res) => {
     const text = prepareAnalysisText(req.body?.text);
     const hash = textHash(text);
     const filename = String(req.body?.filename || 'Metin Girisi').trim().slice(0, 160) || 'Metin Girisi';
-    const skipDuplicate = req.body?.skipDuplicate === true;
-    if (!skipDuplicate && await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    const chunkPart = req.body?.chunkPart === true;
+    const existingRecord = chunkPart ? null : await isDuplicate(req, text);
+    if (existingRecord) return res.json(analysisDuplicatePayload(existingRecord));
     const result = await openaiText(text);
-    const status = req.body?.chunkPart === true ? CHUNK_DRAFT_STATUS : 'taslak';
+    const status = chunkPart ? CHUNK_DRAFT_STATUS : 'taslak';
     const id = await saveHistory(req, result, filename, hash, text, status);
     res.json({ ...result, id, originalText: text, filename, status });
-  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+  } catch (e) { await sendAnalysisError(req, res, e); }
+});
+
+app.post('/api/analysis-match', auth, analysisRateLimiter, async (req, res) => {
+  try {
+    await startupReady;
+    const existingRecord = await isDuplicate(req, prepareAnalysisText(req.body?.text));
+    res.json(existingRecord ? analysisDuplicatePayload(existingRecord) : { duplicate: false });
+  } catch (e) { await sendAnalysisError(req, res, e); }
 });
 
 app.post('/api/extract-file-text', auth, analysisRateLimiter, upload.single('file'), async (req, res) => {
@@ -13613,11 +13733,12 @@ app.post('/api/analyze-file', auth, analysisRateLimiter, upload.single('file'), 
     await startupReady;
     const text = prepareAnalysisText(await extractText(req.file.buffer));
     const hash = textHash(text);
-    if (await isDuplicate(req, text)) return res.json({ duplicate: true, message: DUPLICATE_MSG });
+    const existingRecord = await isDuplicate(req, text);
+    if (existingRecord) return res.json(analysisDuplicatePayload(existingRecord));
     const result = await openaiText(text);
     const id = await saveHistory(req, result, req.file.originalname, hash, text);
     res.json({ ...result, id, originalText: text, filename: req.file.originalname, status: 'taslak' });
-  } catch (e) { res.status(e.statusCode || 500).json({ error: e.message }); }
+  } catch (e) { await sendAnalysisError(req, res, e); }
 });
 
 app.post('/api/analyze-batch', auth, analysisRateLimiter, upload.array('files', 20), async (req, res) => {
@@ -13629,15 +13750,19 @@ app.post('/api/analyze-batch', auth, analysisRateLimiter, upload.array('files', 
     try {
       const text = prepareAnalysisText(await extractText(file.buffer));
       const hash = textHash(text);
-      if (await isDuplicate(req, text)) {
-        results.push({ filename: file.originalname, success: false, duplicate: true, error: DUPLICATE_MSG });
+      const existingRecord = await isDuplicate(req, text);
+      if (existingRecord) {
+        results.push({ filename: file.originalname, success: false, ...analysisDuplicatePayload(existingRecord), error: DUPLICATE_MSG });
         continue;
       }
       const result = await openaiText(text);
       const id = await saveHistory(req, result, file.originalname, hash, text);
       results.push({ filename: file.originalname, success: true, score: result.score, totalErrors: result.totalErrors, id, status: 'taslak' });
     } catch (e) {
-      results.push({ filename: file.originalname, success: false, error: e.message });
+      if (String(e.message).includes('ANALYSIS_EXISTS')) {
+        const duplicate = await analysisDuplicateFromError(req, e);
+        results.push({ filename: file.originalname, success: false, ...duplicate, error: duplicate.message });
+      } else results.push({ filename: file.originalname, success: false, error: e.message });
     }
   }
   res.json({ results });
@@ -14104,6 +14229,8 @@ async function publicArchiveSitemapEntries() {
   const entries = [
     publicArchiveSitemapEntry('/', today, '1.0', 'hourly'),
     publicArchiveSitemapEntry('/arsiv', today, '0.9', 'daily'),
+    publicArchiveSitemapEntry('/one-cikan-sorular', today, '0.85', 'daily'),
+    publicArchiveSitemapEntry('/son-yayinlanan-sorular', today, '0.85', 'daily'),
     publicArchiveSitemapEntry('/kategoriler', today, '0.8', 'weekly'),
     publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/nasil-kullanilir', today, '0.4', 'monthly'),
@@ -14221,6 +14348,8 @@ async function publicArchiveLlmsHandler(req, res) {
       'Önemli sayfalar:',
       `- Ana sayfa: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`,
       `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
+      `- Öne çıkan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/one-cikan-sorular`,
+      `- Son yayınlanan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/son-yayinlanan-sorular`,
       `- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`,
       `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
       '',
@@ -14310,6 +14439,27 @@ function reviewedDuplicateRedirect(basePath) {
       return res.redirect(301, `${basePath}/soru/${encodeURIComponent(target.slug)}`);
     } catch (error) { console.error('Review redirect:', error.message); return next(); }
   };
+}
+
+async function publishApprovedHistoryRecord(recordOrId) {
+  const record = typeof recordOrId === 'string'
+    ? await (async () => {
+      const { data, error } = await supabase.from('history').select('*').eq('id', recordOrId).maybeSingle();
+      if (error) throw new Error(error.message);
+      return data;
+    })()
+    : recordOrId;
+  if (!record || record.status !== 'onaylandi') {
+    throw new Error('Yayınlanacak onaylı kayıt bulunamadı.');
+  }
+  const result = await publishApprovedHistoryRecords([record]);
+  if (result.available === false) throw new Error(result.error || 'Kayıt canlı yayına aktarılamadı.');
+  return result;
+}
+
+async function syncApprovedHistoryToPublicArchive() {
+  const records = await loadApprovedHistoryForPublicArchive();
+  return publishApprovedHistoryRecords(records);
 }
 
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {

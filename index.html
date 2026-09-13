@@ -347,7 +347,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .dot-off{background:var(--red);}
 .empty-state{text-align:center;padding:36px;color:var(--ink3);font-style:italic;font-size:15px;}
 .td-actions{display:flex;gap:4px;flex-wrap:wrap;}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:16px;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;background:var(--border);border:1px solid var(--bord2);margin-bottom:16px;}
 .stat-card{background:var(--white);padding:14px 12px;}
 .stat-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
 .stat-val{font-size:24px;font-weight:700;line-height:1;color:var(--ink);}
@@ -2604,8 +2604,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=1">
-<script src="/review-workspace.js?v=1"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20260913-special-buckets">
+<script src="/review-workspace.js?v=20260913-special-buckets"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -2634,7 +2634,7 @@ const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
 const APPROVAL_ARCHIVED_STATUS='arsivlendi';
-const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','arsivlendi','onaylandi','reddedildi']);
+const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','dergah_sorulari','konferanslar','arsivlendi','onaylandi','reddedildi']);
 const APPROVAL_RETURN_REASON_LABELS={
   missing_question:'Soru eksik',
   wrong_question:'Soru yanlış',
@@ -2776,6 +2776,7 @@ async function saveMergedDraftResult(merged, originalText){
     analysisMeta:merged.analysisMeta||{}
   });
   if(r.error)throw new Error(r.error);
+  if(r.duplicate){merged.duplicate=r;return merged;}
   merged.id=r.id;
   merged.status=r.status||'taslak';
   merged.sourceIds=[];
@@ -2862,6 +2863,22 @@ function restoreWorkDraft(){
 function clearWorkDraft(){try{localStorage.removeItem(DRAFT_KEY);}catch(_){}}
 applyTheme(document.documentElement.dataset.theme||'light');
 applyFontSize(localStorage.getItem('arsiv-font-size')||document.documentElement.dataset.fontSize||'medium');
+let dashRefreshTimer=null;
+let dashRefreshInFlight=false;
+function syncDashAutoRefresh(activeTab){
+  if(dashRefreshTimer&&activeTab!=='dash'){
+    clearInterval(dashRefreshTimer);
+    dashRefreshTimer=null;
+  }
+  if(activeTab==='dash'&&!dashRefreshTimer&&hasAdminRole(me?.role)){
+    dashRefreshTimer=setInterval(()=>{
+      if(!document.hidden&&el('tabContent-dash')?.classList.contains('active'))loadDash();
+    },60000);
+  }
+}
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&el('tabContent-dash')?.classList.contains('active'))loadDash();
+});
 
 (async()=>{
   try{
@@ -3067,6 +3084,7 @@ function showTab(name){
   if(name==='kullanici')loadUsers();
   if(name==='kurallar')loadRules();
   if(name==='ayarlar')applyFontSize(localStorage.getItem('arsiv-font-size')||'medium');
+  syncDashAutoRefresh(name);
   window.scrollTo(0,0);
 }
 function switchInner(tab){
@@ -3139,7 +3157,7 @@ async function analyze(){
       }else{
         const analyzed=await api('POST','/api/analyze',{text,filename});
         if(analyzed.error)throw new Error(analyzed.error);
-        if(analyzed.duplicate){showDuplicate(res,analyzed.message);}
+        if(analyzed.duplicate){showDuplicate(res,analyzed.message,analyzed.existingRecord);}
         else{
           correctedText=analyzed.correctedText||'';
           currentOriginalText=analyzed.originalText||text;
@@ -3157,7 +3175,7 @@ async function analyze(){
       }else{
       const data=await api('POST','/api/analyze',{text});
       if(data.error)throw new Error(data.error);
-      if(data.duplicate){showDuplicate(res,data.message);}
+      if(data.duplicate){showDuplicate(res,data.message,data.existingRecord);}
       else{
         correctedText=data.correctedText||'';
         currentOriginalText=data.originalText||text;
@@ -3185,6 +3203,9 @@ function showInputError(container,message){
 }
 
 async function analyzeLongText(text,res,filename='Metin Girişi'){
+  const existing=await api('POST','/api/analysis-match',{text});
+  if(existing.error)throw new Error(existing.error);
+  if(existing.duplicate){showDuplicate(res,existing.message,existing.existingRecord);return;}
   const chunks=splitTextForLongAnalysis(text);
   const parts=new Array(chunks.length);
   let next=0,done=0;
@@ -3199,7 +3220,6 @@ async function analyzeLongText(text,res,filename='Metin Girişi'){
       const data=await api('POST','/api/analyze',{
         text:chunk,
         filename,
-        skipDuplicate:true,
         chunkPart:true
       });
       if(data.error)throw new Error(data.error);
@@ -3214,6 +3234,7 @@ async function analyzeLongText(text,res,filename='Metin Girişi'){
   const merged=mergeChunkResults(parts,text);
   merged.filename=filename;
   await saveMergedDraftResult(merged,text);
+  if(merged.duplicate){showDuplicate(res,merged.duplicate.message,merged.duplicate.existingRecord);return;}
   merged.status='taslak';
   correctedText=merged.correctedText||'';
   currentOriginalText=text;
@@ -3238,7 +3259,7 @@ async function runBatch(res){
         const data=await response.json();
         if(!response.ok)throw new Error(data.error||'Sunucu hatası');
         results[i]=data.duplicate
-          ?{filename:file.name,success:false,duplicate:true,error:data.message}
+          ?{filename:file.name,success:false,duplicate:true,error:data.message,existingRecord:data.existingRecord}
           :{filename:file.name,success:true,score:data.score,totalErrors:data.totalErrors,id:data.id};
       }catch(e){results[i]={filename:file.name,success:false,error:friendlyAnalyzeError(e.message)};}
     }
@@ -3253,14 +3274,19 @@ async function runBatch(res){
       <span style="font-size:16px">${icon}</span>
       <span style="flex:1;font-size:13px;word-break:break-all">${esc(item.filename)}</span>
       ${ok?`<span class="score-pill ${pc}">${sc}/100</span><span class="mono" style="font-size:11px;color:var(--ink3);margin-left:6px">${item.totalErrors||0} sorun</span>`:`<span style="color:${errColor};font-size:12px">${esc(item.error||'Hata')}</span>`}
+      ${analysisExistingLink(item.existingRecord)}
     </div>`;
   }).join('');
   res.innerHTML=`<div style="background:var(--white);border:1px solid var(--bord2)"><div style="padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);font-weight:600;font-size:14px">Toplu Denetim — ${batchFiles.length} dosya</div>${rows}</div>`;
   setStatus(`✓ ${batchFiles.length} dosya tamamlandı`,'ok');
 }
 
-function showDuplicate(container,msg){
-  container.innerHTML=`<div class="loading-box" style="color:var(--gold-dk,#8b6914);border:1px solid var(--gold,#c49a2a);background:var(--grn-bg,#fff8e6)">⚠ ${esc(msg||'Bu metni daha önce denetlediniz.')}</div>`;
+function analysisExistingLink(record){
+  if(!me?.reviewWorkspacesEnabled||!record?.id||!/^[0-9a-f-]{36}$/i.test(record.id))return '';
+  return `<p>${esc(record.displayStatus||'Mevcut kayıt')} · <a href="/admin?reviewRecord=${encodeURIComponent(record.id)}" target="_blank" rel="noopener">Mevcut kaydı aç</a></p>`;
+}
+function showDuplicate(container,msg,record){
+  container.innerHTML=`<div class="loading-box" style="color:var(--gold-dk,#8b6914);border:1px solid var(--gold,#c49a2a);background:var(--grn-bg,#fff8e6)">${esc(msg||'Bu metni daha önce denetlediniz.')}${analysisExistingLink(record)}</div>`;
   setStatus('Bu metin daha önce denetlenmiş.','err');
 }
 function setAssistantProcess(targetId,steps,activeIndex=0){
@@ -4569,6 +4595,9 @@ function downloadCSV(){window.open('/api/history/csv','_blank');}
 
 async function loadDash(){
   const container=el('dashContent');
+  if(dashRefreshInFlight)return;
+  dashRefreshInFlight=true;
+  try{
   const stats=await api('GET','/api/stats');
   if(stats.error){container.innerHTML='<div class="empty-state">Yüklenemedi.</div>';return;}
   const t=stats.totals;
@@ -4621,6 +4650,7 @@ async function loadDash(){
   container.innerHTML=`
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-lbl">Toplam</div><div class="stat-val">${t.allTime}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Canlıdaki Soru</div><div class="stat-val green">${t.publicPublished||0}</div></div>
       <div class="stat-card"><div class="stat-lbl">Son 30 Gün</div><div class="stat-val gold">${t.last30}</div></div>
       <div class="stat-card"><div class="stat-lbl">Kullanıcı</div><div class="stat-val">${t.activeUsers}</div></div>
       <div class="stat-card"><div class="stat-lbl">Ort. Skor</div><div class="stat-val ${t.avgScore>=80?'green':t.avgScore>=60?'gold':'red'}">${t.avgScore}</div></div>
@@ -4683,6 +4713,9 @@ async function loadDash(){
       </div>
     </div>`;
   setTimeout(()=>drawDailyChart(stats.daily||[]),80);
+  }finally{
+    dashRefreshInFlight=false;
+  }
 }
 
 function showLowScoreHistory(){

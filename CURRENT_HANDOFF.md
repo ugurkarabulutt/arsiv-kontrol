@@ -1,5 +1,646 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
+
+- Kullanıcı ana sayfadaki bazı alanların ilk tıklamada açılmadığını ve
+  tıklanır tıklanmaz hızlı açılması gerektiğini bildirdi. Ana sayfa hero
+  görseli korunarak yalnız hızlı geçiş/prefetch hattı düzenlendi.
+- Public hızlı navigasyon artık tüm `.pa-page` ve mobil nav linklerinde aynı
+  çalışır; kart gövdesi tıklamaları da `openPublicArchiveHref` üzerinden aynı
+  hatta düşer. Cache hazır değilse sessiz bekleme 900ms yerine 260ms içinde
+  normal sayfa geçişine düşer.
+- Soru detay sayfaları da güvenli session cache kapsamına alındı. Cache tekil
+  HTML için 240KB sınırıyla korunur. Ana sayfa açıldıktan 180ms sonra ilk 22
+  öncelikli hedef hazırlanır; ayrıca `IntersectionObserver` görünür alana
+  yaklaşan arşiv kısayolu, niyet kartı, konu kartı ve soru kartlarını önceden
+  ısıtır. Kart üstüne gelme/focus/dokunma da prefetch başlatır.
+- Public asset cache kırıcı `20260913-fast-home-click-v6`, session cache anahtarı
+  `dsca-page-cache:v12` oldu. Yerel doğrulama: `npm.cmd run check` başarılı;
+  155/155 test geçti. `git diff --check` whitespace hatası vermedi, yalnız mevcut
+  CRLF uyarıları görüldü.
+- Production deploy: `dpl_64XyHLsB5c88WNMabs6cFh1wNdiM`,
+  `https://arsiv-kontrol-czbhw7hi8-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` ve ana sayfa 200;
+  canlı HTML içinde `public-archive.css?v=20260913-fast-home-click-v6`,
+  `hero-open-book-warm.jpg`, `dsca-page-cache:v12`, `observePrefetchCandidates`,
+  `IntersectionObserver`, `prefetchCard` ve 260ms fallback markerları doğrulandı.
+- Canlı Playwright 390x844 mobil ölçümü: arşiv kısayolu 112ms, niyet kartı
+  115ms, konu rehberi kartı 60ms, görünür alanda prefetch edilmiş soru kartı
+  50ms. Console error yok. Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma
+  ağacından deploy edildi; henüz commit/push yapılmadı.
+
+## 2026-09-13 Public Konu Rehberi Numarasız Otomatik Carousel Canlıda
+
+- Kullanıcı konu rehberinde numaralandırma olmamasını ve alanın slider gibi
+  kendiliğinden kaymasını istedi. Ana sayfa hero görseli değiştirilmedi.
+- Konu rehberi kartlarındaki `01/02` görsel numaraları kaldırıldı; kartlara
+  sade konu ikonu eklendi. Rehber rayı iki setli, numarasız ve `scroll-snap`
+  tabanlı carousel yapısına taşındı.
+- JS tarafında `bindReadingPathSliders` eklendi. Ray kart kart otomatik ilerler,
+  kullanıcı dokununca/üzerine gelince/focus alınca durur, sonra gecikmeli devam
+  eder. `prefers-reduced-motion: reduce` olan cihazlarda otomatik kayma
+  çalışmaz.
+- Public asset cache kırıcı `20260913-topic-slider-v1` olarak güncellendi.
+  Yerel doğrulama: `npm.cmd run check` başarılı; 155/155 test geçti.
+  Playwright 390px mobil kontrolde 24 rehber kartı, 0 numara markerı, aktif
+  `scroll-snap`, `scrollLeft` 0 -> 290 otomatik ilerleme ve 0 yatay taşma
+  doğrulandı.
+- Production deploy: `dpl_54XVzWX63BkoRe6Hd2H2zgiAT3yQ`,
+  `https://arsiv-kontrol-g8pqt782x-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` ve ana sayfa
+  200; canlı HTML/CSS içinde `public-archive.css?v=20260913-topic-slider-v1`,
+  `hero-open-book-warm.jpg`, `data-reading-slider`, `pa-reading-rail`,
+  `pa-reading-mark`, `bindReadingPathSliders`, scroll-snap CSS markerları
+  mevcut ve `pa-reading-index` yok.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-13 Public Ana Sayfa ve Arşiv UX Modernizasyonu Canlıda
+
+- Kullanıcı ana sayfayı daha zengin, modern ve kullanıcıyı sitede tutacak bir
+  yapıya taşımayı onayladı; özellikle ana sayfa hero görselinin değişmemesini
+  istedi. `hero-open-book-warm.jpg` görseli korunarak ana sayfaya niyet
+  kartları, gerçek öne çıkanlar, son yayınlananlar, Kur'ân delil odaklı
+  içerikler, konu patikaları, keşif haritası, modern CTA ve güven bandı eklendi.
+- `Öne çıkanları gör` ve `Son yayınlananları gör` artık doğrudan arşive
+  göndermiyor; `/one-cikan-sorular` ve `/son-yayinlanan-sorular` sayfaları
+  gerçek kayıtları sıralı koleksiyon olarak gösteriyor. Bu iki rota sitemap ve
+  `llms.txt` içine de eklendi.
+- Arşiv sayfalaması eski tek tek sayfa ilerletme hissini azaltacak şekilde
+  `Daha Fazla Göster` davranışına taşındı. Sonraki sayfa kartları AJAX ile
+  mevcut listeye eklenir; sayfa yenilemeye gerek kalmadan URL güncellenir.
+  Eski sayfa bağlantıları crawlability/erişilebilirlik için korunur.
+- Public asset cache kırıcı `20260913-home-v2` olarak güncellendi. Yerel
+  doğrulama: `node --check public-archive-renderer.js`, `node --check
+  server.js`, `npm.cmd run check` başarılı; 155/155 test geçti. `git diff
+  --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  Playwright 390px ve 1440px ön izlemede hero görsel, yeni bloklar, taşma
+  kontrolü ve arşiv `Daha Fazla Göster` davranışı doğrulandı.
+- Production deploy: `dpl_3L6fHYRPRAqxP9okXHhMSCfdETBh`,
+  `https://arsiv-kontrol-ir32le9y6-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, `/`,
+  `/one-cikan-sorular`, `/son-yayinlanan-sorular`, `/arsiv`, `/sitemap.xml`
+  ve `/llms.txt` 200 döndü. Canlı HTML'de `public-archive.css?v=20260913-home-v2`,
+  `hero-open-book-warm.jpg`, `pa-home-intents`, `pa-topic-path`,
+  `pa-discovery-map`, `/one-cikan-sorular` ve `/son-yayinlanan-sorular`
+  markerları doğrulandı.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-13 Public Bottom Bar Süzülme Efekti Güçlendirildi
+
+- Kullanıcı ilk süzülme efektini hissedemediğini belirtti. Sebep: animasyon
+  vardı fakat hızlı route değişiminde yeni nav renderı animasyonun bir kısmını
+  kesiyordu ve CSS etkisi fazla yumuşaktı.
+- Mobil bottom bar touchstart anında `setPending` çalıştırır hale getirildi;
+  böylece kullanıcı dokunur dokunmaz aktif kapsül hareketi başlar. Mobil nav
+  tıklamalarında route replace öncesi en az 260ms görsel pencere bırakıldı.
+- Efekt v2 güçlendirildi: aktif kapsül `scaleX(1.18)` ile daha belirgin uzar,
+  transform geçişi 640ms, ışık taraması 720ms oldu; aktif ikon/metin mikro
+  hareketi artırıldı. Hareket azaltma ayarı korunur.
+- Public asset cache kırıcı `20260913-bottom-glide-v2` olarak güncellendi.
+- Doğrulama: `npm.cmd run check` başarılı; 154/154 test geçti. Playwright
+  390x844 mobil touchstart testinde `data-active-index=1`, `is-gliding=true`,
+  `scaleX(1.18)`, `0.64s` transition ve `pa-bottom-glide-sheen` animasyonunu
+  doğruladı. `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü.
+- Production deploy: `dpl_G65dbPad1TTgXDqfruafsZFKPsuj`,
+  `https://arsiv-kontrol-q37vffpz5-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa
+  200; canlı HTML içinde `public-archive.css?v=20260913-bottom-glide-v2`,
+  touchstart pending ve 260ms minimum glide markerları mevcut. Canlı CSS içinde
+  `.pa-mobile-nav.is-gliding`, `@keyframes pa-bottom-glide-sheen`,
+  `--pa-mobile-glide-scale: 1.18`, 640ms transform ve 720ms sheen markerları
+  mevcut.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-13 Public Bottom Bar Süzülme Animasyonu Canlıda
+
+- Public mobil bottom bar sekme geçişleri daha belirgin hale getirildi. Aktif
+  cam kapsül artık `--pa-mobile-glide-scale` ile kısa süreli uzayıp süzülür;
+  bar içinde `pa-bottom-glide-sheen` ışık taraması çalışır ve aktif ikon/metin
+  küçük mikro hareketle geçişi hissettirir.
+- JS tarafında bottom nav aktif indeksi değiştiğinde `is-gliding` sınıfı kısa
+  süre verilir ve otomatik temizlenir. Hareket azaltma ayarı olan kullanıcılarda
+  animasyon kapatılır.
+- Public asset cache kırıcı `20260913-bottom-glide-v1` olarak güncellendi.
+  Önceki sticky glass header, hesap bildirim noktası ve bottom nav kayan kapsül
+  davranışları korunur.
+- Doğrulama: `npm.cmd run check` başarılı; 154/154 test geçti. Playwright
+  390x844 mobil ön izlemede Arşiv geçiş simülasyonunda `data-active-index=1`,
+  `is-gliding=true`, `scaleX(1.08)`, `0.42s` transform geçişi ve
+  `pa-bottom-glide-sheen` animasyonunu doğruladı. `git diff --check`
+  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_3gMUhh3cwboRUAafeWhJNJJaFBS2`,
+  `https://arsiv-kontrol-bxxzwtfb5-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa
+  200; canlı HTML içinde `public-archive.css?v=20260913-bottom-glide-v1` ve
+  `data-active-index="0"` mevcut. Canlı CSS içinde `.pa-mobile-nav.is-gliding`,
+  `@keyframes pa-bottom-glide-sheen`, `--pa-mobile-glide-scale`, scaled bottom
+  slider transformu ve sticky glass header markerları mevcut.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-13 Public Sticky Glass Header Canlıda
+
+- Public arşiv header sticky durumda bottom bar ile aynı cam tasarım diline
+  çekildi. Scroll sonrası header tam geniş sert çizgili bar yerine yüzen,
+  yuvarlatılmış, blur/saturate cam kapsül olarak davranır.
+- Hesap ikonuna cevap bildirimi güçlendirildi. Kullanıcı oturum açmışsa ve
+  `unseenAnsweredCount > 0` ise hesap butonu `data-has-notice` alır,
+  köşedeki mint bildirim noktası görünür ve erişilebilir etiket
+  `Hesabım, X yeni cevap` olarak güncellenir.
+- Public asset cache kırıcı `20260913-glass-header-v1` olarak güncellendi.
+  Önceki mobil bottom bar kayan kapsül ve hesap cevabı linkleme düzeltmeleri
+  korunur.
+- Doğrulama: `npm.cmd run check` başarılı; 154/154 test geçti. Playwright
+  390x844 mobil ön izleme scroll sonrası header'ı `top=10px`, `width=370px`,
+  `min-height=64px`, `border-radius=28px`, `backdrop-filter: blur(30px)
+  saturate(1.58)` ve görünür bildirim noktasıyla doğruladı. `git diff
+  --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_4mhm5GbvDrV6nixArMDc9ZNi3kH2`,
+  `https://arsiv-kontrol-mvbw171yq-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa
+  200; canlı HTML içinde `public-archive.css?v=20260913-glass-header-v1`,
+  `data-account-button`, `data-account-notice-dot` ve `data-active-index="0"`
+  mevcut. Canlı CSS içinde sticky glass header, `.pa-header::before`, hesap
+  bildirim pulse'ı ve bottom nav slider markerları mevcut.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-13 Public Mobil Bottom Bar Cam Efekt Canlıda
+
+- Public arşiv mobil alt gezinme barı daha ince Apple tarzı cam yüzeye
+  çekildi. Eski alt çizgi `::after` hairline yerine aktif sekmeyi takip eden
+  kayan cam kapsül yapıldı.
+- `pa-mobile-nav` artık `data-active-index` üretir; `/`, `/arsiv`, `/arama` ve
+  `/soru-sor` için aktif indeksler 0/1/2/3 olarak doğrulandı. Hızlı nav
+  sırasında aktif link değişince indeks de anında güncellenir.
+- Public asset cache kırıcı `20260913-glass-bottom-nav-v1` olarak güncellendi.
+  Önceki hesap sayfası cevap linkleri düzeltmesi korunur.
+- Doğrulama: `npm.cmd run check` başarılı; 154/154 test geçti. Playwright
+  390x844 mobil ön izleme nav'ı `display:grid`, `backdrop-filter: blur(30px)
+  saturate(1.65)`, aktif indeks `0` ve kayan kapsül transformuyla doğruladı.
+  `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları
+  görüldü.
+- Production deploy: `dpl_j1djxwZc9a9P61j49qHzDxmdi3iw`,
+  `https://arsiv-kontrol-5q9lkfbai-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa
+  200; canlı HTML içinde `public-archive.css?v=20260913-glass-bottom-nav-v1`
+  ve `data-active-index="0"` mevcut. Canlı CSS içinde yeni cam blur, aktif
+  indeks değişkeni, kayan transform mevcut; eski `inset: auto 18px 8px`
+  hairline yok.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-13 Dashboard Uyarı Sayacı Bekleyen Kayıtlarla Sınırlandı
+
+- Kullanıcı dashboard `Uyarı 16` sayısının ne olduğunu sordu. Canlı DB
+  kırılımı: 16 okunmamış düşük skor uyarısının 13'ü `reddedildi`, 1'i
+  `onaylandi`, 1'i `teyit_bekliyor`, yalnız 1'i `bekliyor` durumundaydı.
+- Dashboard `Uyarı` ve menü rozet hesabı değiştirildi: düşük skor uyarısı
+  yalnız bağlı history kaydı hâlâ `bekliyor` ise aksiyon sayılır. Çözülmüş,
+  reddedilmiş, onaylanmış veya başka bekletme kovasına alınmış eski düşük skor
+  bildirimleri silinmez ama dashboard alarmını şişirmez.
+- Doğrulama: `npm.cmd run check` başarılı; 154/154 test geçti. `git diff
+  --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_Fb2KCHyigKmFtQxRReuW9dhRU9j9`,
+  `https://arsiv-kontrol-mm4six9fk-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, `/admin`
+  200 ve `/api/stats` oturumsuz beklenen şekilde 401 döndü.
+
+## 2026-09-13 Dashboard Yüklenemedi Hotfix Canlıda
+
+- Dashboard `Yüklenemedi` hatasının nedeni son eklenen canlı yayın sayısı
+  sorgusunun `public_qa.id` seçmesiydi. `public_qa` tablosunun birincil anahtarı
+  `slug`; `id` kolonu yok.
+- `/api/stats` public yayın sayısını artık `public_qa.slug` üzerinden
+  `count: exact, head: true` ile sayıyor. Ayrıca bu yardımcı sayaç hata verse
+  bile dashboard'un tamamı düşmesin diye hata non-fatal yapıldı; yalnız
+  `Canlıdaki Soru` kartı 0'a düşer ve server log uyarı yazar.
+- Doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` başarılı; 154/154 test geçti. `git diff --check`
+  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_96wfEJcSfma3N5TPA4qpaRdgNxmz`,
+  `https://arsiv-kontrol-5szk31csp-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`,
+  `/admin` 200 ve `/api/stats` oturumsuz beklenen şekilde 401 döndü.
+
+## 2026-09-13 Toplu İşlem Geri Dönen Onay Yetkisi Canlıda
+
+- Yönetim İş Panosu toplu işlem menüsünde `Onayla` / `Reddet` sırası zaten
+  ilk iki aksiyon olarak korunuyordu; geri dönen kayıt seçildiğinde `Onayla`
+  görünmemesinin nedeni `geri_gonderildi` statüsünün yönetici onay izninde
+  olmamasıydı.
+- Politika ve canlı `review_history_change` RPC genişletildi: yönetici/üst
+  yönetici, kendi kaydı olmamak ve sahiplik itirazı olmamak şartıyla
+  `geri_gonderildi` kaydı son kontrolden sonra onaylayabilir. Kendi kaydını
+  onaylama yasağı ve versiyon kontrolü aynen korunur.
+- Supabase canlı migration uygulandı: `management_can_approve_returned`.
+  Post-check: canlı `review_history_change` fonksiyonunda
+  `geri_gonderildi` onaylanabilir statüler arasında.
+- Doğrulama: `node --check review-policy.js`,
+  `node --check review-workspace.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` başarılı; 154/154 test geçti. `git diff --check`
+  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_AM5vwRVrgjKxG1DJaStQaZmWuA5Z`,
+  `https://arsiv-kontrol-9udd5wliu-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, `/admin`
+  200; canlı `review-workspace.js` içinde `approve: 'Onayla'`,
+  `reject: 'Reddet'` ve `bulkActionOrder = ['approve', 'reject'...]`
+  markerları mevcut.
+
+## 2026-09-13 Dashboard Canlı Yayın Sayısı ve Feedback Uyarı Ayrımı Canlıda
+
+- Dashboard üst istatistik sırasına `Canlıdaki Soru` kartı eklendi. Değer
+  `/api/stats` içinde `public_qa` tablosundaki `status='published'` kayıtların
+  canlı sayımından gelir.
+- Feedback uyarı hesabı düzeltildi: çözülmüş feedbackler artık dashboard
+  `Uyarı` ve `Okunmamış Feedback` sayılarını yükseltmez. Bu sayılar yalnız açık
+  ve okunmamış feedbackleri aksiyon olarak kabul eder; düşük skor uyarıları ayrı
+  sayılmaya devam eder.
+- Canlı DB kontrolünde mevcut durum: `public_qa.published=2576`,
+  `feedback_total=683`, `feedback_resolved=683`, `feedback_open=0`,
+  eski okunmamış feedback bildirimi `111`, okunmamış düşük skor uyarısı `16`.
+  Eski ekranda görünen `127`, bu iki okunmamış bildirim türünün toplamıydı.
+- Dashboard sekmesi açıkken 60 saniyede bir otomatik tazeleme eklendi; başka
+  sekmelerde gereksiz sorgu çalıştırmaz, sekme tekrar görünür olunca da veriyi
+  yeniler.
+- Doğrulama: `node --check server.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` başarılı; 153/153 test geçti. `git diff --check`
+  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_GzPb6nnFHgLNVYZdejTJqxNCwPzJ`,
+  `https://arsiv-kontrol-dylu3ylaq-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, `/admin`
+  200; canlı HTML içinde `Canlıdaki Soru`, `dashRefreshTimer` ve
+  `20260913-special-buckets` markerları mevcut.
+
+## 2026-09-13 Yönetim Özel Bekletme Bölümleri Canlıda
+
+- Yönetim İş Panosu'na iki yeni özel bekletme bölümü eklendi:
+  `Dergah Soruları` ve `Konferanslar`. Yönetim dropdown/toplu işlem akışında
+  `Dergah Sorularına Al` ve `Konferanslara Al` kararları görünür; ikisi de
+  gerekçe ister ve mevcut `review_history_change` RPC akışıyla revision/log
+  üretir.
+- Supabase canlı migration uygulandı: `20260912211228
+  review_special_holding_sections`. Repo migration dosyası:
+  `supabase/migrations/20260913000100_review_special_holding_sections.sql`.
+- Kod doğrulama: `node --check review-policy.js`,
+  `node --check review-workspace.js`, `node --check review-workflow.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 153/153 test
+  geçti. `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü.
+- Production deploy: `dpl_CZd2jYzgztHWhUySynwtGC3bsNbP`,
+  `https://arsiv-kontrol-53ldyfz3e-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, `/admin`
+  200; canlı HTML yeni `20260913-special-buckets` cache-buster'ı çağırıyor ve
+  canlı JS içinde `Dergah Soruları`, `Konferanslar`, `Dergah Sorularına Al`,
+  `Konferanslara Al` markerları mevcut.
+- Kullanıcı onayı sonrası canlı veri taşıma RPC üzerinden uygulandı. Plan ve
+  sonuç: 44 kayıt `dergah_sorulari`, 21 kayıt `konferanslar`, 8 kısa cevap
+  `geri_gonderildi`, 2 birebir mükerrer kayıt `copte`; hata yok. 2 uzun kayıt
+  aynı zamanda dergah/kardeşlerimiz kapsamına girdiği için güvenlik önceliğiyle
+  Dergah Soruları'nda tutuldu.
+- Post-check: bekleyenlerde dergah/kardeşlerimiz 0, çok uzun cevap 0, çok kısa
+  cevap 0, birebir mükerrer 0. 4 aynı-soru ama farklı cevap kaydı ayrıca
+  değerlendirilmek üzere bekliyor kaldı. Son 15 dakikalık action log: 44
+  `review.dergah`, 21 `review.conference`, 8 `review.return`, 2 `review.trash`.
+  Kısa cevap geri gönderim bildirimi 8/8 oluştu.
+
+## 2026-09-12 Admin Sticky Cache-Buster Düzeltmesi Canlıda
+
+- Kullanıcı admin panelde sticky toplu işlem değişikliğinin hiç görünmediğini
+  bildirdi. Canlı `/admin` HTML kontrolünde `review-workspace.js` dosyasının
+  hâlâ eski `?v=20260909-queue-clarity` etiketiyle çağrıldığı görüldü; bu,
+  özellikle mobil/PWA kullanımında eski asset'in kalmasına yol açabiliyordu.
+- `index.html` içindeki `review-workspace.css` ve `review-workspace.js`
+  çağrıları `?v=20260912-bulk-sticky-immediate` olarak güncellendi. Frontend
+  kontrol scripti de bu cache kırıcı etiketi zorunlu sayacak şekilde
+  genişletildi.
+- Doğrulama: `node --check review-workspace.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 151/151 test
+  geçti. `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü.
+- Production deploy: `dpl_4GkF3AEYk4zkRMZFxHAQt6XvDKad`,
+  `https://arsiv-kontrol-jyq8lgewp-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/admin` HTML içinde yeni
+  JS/CSS cache-buster görüldü; versiyonlu canlı JS içinde `scrollTop > 12`,
+  `normalBarTouchesHeader` ve `rw-bulk-fixed` markerları mevcut. Vercel inspect
+  `Ready`.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-12 Toplu İşlem Sticky Anchor Düzeltmesi Canlıda
+
+- Kullanıcı yeni ekran görüntülerinde iki sorun gösterdi: tek kayıt seçilince
+  sticky davranış tetiklenmiyor; aşağı inip tekrar yukarı çıkınca toplu işlem
+  barı asıl yerine dönmeyip header altında kalıyordu.
+- `updateBulkStickiness` akışı değiştirildi. Bar artık `.app-body` scroll
+  alanındaki gerçek başlangıç konumunu `rwAnchorTop` olarak kaydeder.
+  `scrollTop >= anchorTop` olunca fixed olur, `scrollTop < anchorTop` olunca
+  fixed sınıfı ve boşluk temizlenir. Seçim sayısı 1 olsa da aynı eşik hesabı
+  çalışır.
+- `renderBulkBar` sonrası ölçüm `requestAnimationFrame` ile ertelenir; bu,
+  tek seçimde DOM yeni çizilmeden ölçüm alınması ihtimalini kaldırır.
+- Doğrulama: `node --check review-workspace.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 151/151 test
+  geçti. `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü.
+- Production deploy: `dpl_HCzdYkqtnsVMofP49FjNXZcvzPaw`,
+  `https://arsiv-kontrol-6pgtfyfnn-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Vercel inspect `Ready`; canlı
+  `/health` `ok`; canlı `review-workspace.js` içinde `rwAnchorTop`,
+  `scrollHost.scrollTop`, `scheduleBulkStickiness`, `requestAnimationFrame` ve
+  anchor temizliği markerları mevcut.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-12 Toplu İşlem Sticky Sabitleme Düzeltmesi Canlıda
+
+- Kullanıcı ekran görüntüsünde toplu işlem çubuğunun aşağı kaydırınca üstte
+  kalmadığını gösterdi. Mevcut `position: sticky` uygulaması `.app-body`
+  scroll yapısında güvenilir davranmadığı için JS destekli sabitleme eklendi.
+- `review-workspace.js` içinde `updateBulkStickiness` barın viewport konumunu,
+  `.topbar` alt sınırını ve liste genişliğini hesaplar. Seçim varken bar
+  orijinal konumunu geçince `rw-bulk-fixed` sınıfı alır; seçim temizlenince,
+  üst konuma dönünce veya yönetim alanı dışındayken sabitleme temizlenir.
+- `review-workspace.css` içinde `.rw-bulk-fixed` `position: fixed` ile header
+  altında durur; `.rw-list:has(.rw-bulk-fixed)` hesaplanan boşluğu koruduğu
+  için liste içeriği barın altına zıplamaz/gizlenmez. Mobilde mevcut dropdown
+  düzeni korunur.
+- Doğrulama: `node --check review-workspace.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 151/151 test
+  geçti. `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü.
+- Production deploy: `dpl_GPMdZ7U63H5CyGB3Hh4Fk9oun8k8`,
+  `https://arsiv-kontrol-plx5fo79v-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Vercel inspect `Ready`; canlı
+  `/health` `ok`; canlı `review-workspace.js` içinde `updateBulkStickiness`,
+  `rw-bulk-fixed`, `.app-body`; canlı CSS içinde `.rw-bulk-fixed`,
+  `position:fixed` ve `--rw-bulk-space` mevcut.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-12 Yönetim Toplu İşlem Dropdown ve Sticky Bar Canlıda
+
+- Yönetim `İş Panosu` toplu seçim alanı ayrı `Seçilenleri Onayla` /
+  `Seçilenleri Reddet` butonlarından çıkarıldı. Yeni yapı: seçili kayıt sayısı,
+  `Bu Sayfayı Seç`, `Seçimi Temizle`, işlem dropdown'u ve tek `Uygula` butonu.
+- Dropdown yalnız seçili kayıtların hepsinde ortak izinli olan yönetim
+  işlemlerini gösterir: `Onayla`, `Reddet`, `Düzeltmeye Gönder`, `Teyide Al`,
+  `Bekleyenlere Al`, `Arşivle`, `Çöpe Taşı`, `Geri Al`. Kayıtların
+  `allowedActions` kuralı yine tek kaynak olarak kullanılır.
+- Gerekçe gereken toplu işlemler için not alanı otomatik açılır:
+  `Reddet`, `Düzeltmeye Gönder`, `Teyide Al`, `Çöpe Taşı`, `Geri Al`.
+  Not boşsa işlem başlatılmaz. Onay gibi not gerektirmeyen işlemlerde ek alan
+  gösterilmez.
+- Toplu işlem çubuğu sticky hale getirildi; aşağı kaydırırken seçili sayı,
+  dropdown ve `Uygula` ekranda kalır. İşlem başarıyla uygulanan kayıtlar
+  sayfa yenilemeye gerek kalmadan listeden anında kaldırılır, ardından liste
+  API'den tekrar senkronize edilir.
+- Doğrulama: `node --check review-workspace.js`,
+  `node scripts/check-frontend.js`, `npm.cmd run check` başarılı; 151/151 test
+  geçti. `git diff --check` whitespace hatası vermedi, yalnız mevcut CRLF
+  uyarıları görüldü.
+- Production deploy: `dpl_5A2nVgnNvdrZqnijgfsKuRfDKQrC`,
+  `https://arsiv-kontrol-6zu5q4shm-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Vercel inspect `Ready`; canlı
+  `/health` `ok`; canlı `review-workspace.js` içinde `rwBulkAction`,
+  `setBulkAction`, `Uygula`, `removeBulkRow`; canlı CSS içinde
+  `position:sticky` ve `.rw-bulk-select` mevcut. Review API oturumsuz 401.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-12 Yönetim Toplu Onay/Red Seçimi Canlıda
+
+- Yönetim `İş Panosu` listesine toplu seçim mekanizması eklendi. Yönetici,
+  mevcut filtredeki uygun kayıtları tek tek işaretleyebilir veya `Bu Sayfayı
+  Seç` ile sayfadaki uygun kayıtları seçebilir.
+- Toplu aksiyonlar: `Seçilenleri Onayla` ve `Seçilenleri Reddet`. Toplu onay,
+  her kaydı sırayla mevcut tekil approve API akışından geçirir; bu nedenle
+  self-approval, sürüm çakışması, zorunlu alan ve onaydan otomatik yayına alma
+  kuralları korunur. Toplu red ortak gerekçe alanı ister ve mevcut tekil reject
+  akışıyla çalışır.
+- Seçim yalnız yönetim alanında ve ilgili satırın `allowedActions` içinde
+  `approve` veya `reject` varsa aktiftir. Salt okunur önizlemede ve yetkisiz
+  satırlarda seçim kutusu devre dışıdır. Filtre/arama değişince seçim temizlenir;
+  sayfa değişiminde aynı durum filtresi içindeki seçim korunur.
+- Mobil görünüm için toplu işlem barı ve seçim kutuları `review-workspace.css`
+  içinde responsive düzenlendi; dar ekranda butonlar alt alta/akışa uygun kırılır.
+- Doğrulama: `node --check review-workspace.js`, `node scripts/check-frontend.js`,
+  `npm.cmd run check` başarılı, 151/151 test geçti; `git diff --check`
+  whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü. Hedef
+  Playwright senaryosu eklendi fakat bu ortamda test runner rapor üretmeden
+  asılı kaldığı için tamamlanmış e2e kanıtı olarak sayılmadı; bıraktığı
+  `test-results/` klasörü temizlendi.
+- Production deploy: `dpl_8tWGKqfFvwgtNMNRDz94gqVzkJec`,
+  `https://arsiv-kontrol-3tospuv4q-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` ok; canlı
+  `review-workspace.js` içinde `rwBulkBar`, `Seçilenleri Onayla`, `Seçilenleri
+  Reddet`, `rwBulkRejectNote`; canlı CSS içinde `.rw-bulk` ve `.rw-select`
+  markerları mevcut. Review API oturumsuz 401 ve Vercel loglarında hata seviyesi
+  kayıt yok.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-12 Onaydan Otomatik Yayına Geçiş Canlıda
+
+- Kullanıcının test için onayladığı iki Emine Bektaş kaydı `history.status =
+  onaylandi` olduğu halde `public_qa` satırı olmadığı için yönetim listesinde
+  `Yayında` görünmüyordu. İki kayıt canlıda tekil olarak yayına alındı:
+  `61d99077-6ecb-4eba-addf-cb290d769bb3` ve
+  `cacf60b8-ca2c-40c6-9f73-2d43f1c03b4d`.
+- Canlı public sluglar:
+  `muhterem-hocam-dinimizde-evlenmek-farz-midir-aciklar-misiniz` ve
+  `muhterem-hocam-allahu-tealayi-ilah-mevkiinden-indirip-nefsi-ilah-edinmek-ne-demektir-aciklar-misiniz`.
+  DB post-check: ikisi de `public_qa.status = published`; topic sayıları 6 ve
+  8, `public_qa_topics` toplam 14 link.
+- `server.js` içine tekil yayın helper'ı eklendi. Artık eski detay modalı
+  `/api/history/:id/approve` ve yeni ortak review workspace `approve` akışı,
+  onaylanan tek kaydı aynı işlemden sonra `public_qa` tablolarına aktarır.
+  Slug çakışmasında başka canlı kaydın üstüne yazmamak için mevcut sluglar
+  okunur ve gerekirse yeni benzersiz slug seçilir.
+- Yayın üretimi başarısız olursa onay cevabı başarılı dönmez; mümkün olduğunca
+  history kaydı eski durumuna geri alınır ve cache temizlenir. Böylece
+  `Onaylandı ama yayında değil` yarım durumu yeni onaylarda hedef davranış
+  olmaktan çıkarıldı.
+- Doğrulama: `npm.cmd run check` başarılı, 151/151 test geçti; `git diff
+  --check` whitespace hatası vermedi, yalnız mevcut CRLF uyarıları görüldü.
+- Production deploy: `dpl_A5d4uZEf5kmwfcHfn6th8jW3XB9M`,
+  `https://arsiv-kontrol-51npmpp6t-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` 200; iki yeni
+  soru URL'i 200 ve içerik görünüyor. Vercel loglarında hata seviyesi kayıt
+  görünmedi.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı.
+
+## 2026-09-12 Ekip Mükerrer Temizliği Canlıda
+
+- Ekip üyeleri artık kendilerine ait/atanmış `taslak` veya `geri_gonderildi`
+  kayıtlarda kontrol notu/gerekçe içinde `MÜKERRER` veya `mükerrer` yazıyorsa
+  `Mükerrer Olarak Kapat` aksiyonunu görebilir.
+- Bu aksiyon kaydı fiziksel olarak silmez; `copte` durumuna taşır, ekip
+  üyesinin aktif listesinden kaldırır, yönetim çöp kutusunda ve geçmiş/log
+  kayıtlarında izi korunur. Geri gönderilen kayıtlar hâlâ doğrudan silinemez.
+- DB tarafında `review_history_change(..., 'close_duplicate', ...)` yalnız ekip
+  üyesinin kendi/atanmış kaydında, durum `taslak` veya `geri_gonderildi` iken
+  ve not/gerekçe mükerrer içeriyorsa çalışır. Yanlış kullanımı
+  `DUPLICATE_NOTE_REQUIRED`, `INVALID_STATUS` veya `FORBIDDEN` ile engellenir.
+- Migration canlı Supabase `arsiv-kontrol` projesine uygulandı:
+  `20260912124803 member_duplicate_cleanup`; fonksiyon tanımı canlıda
+  `close_duplicate` içeriyor.
+- Kod doğrulama: `.tmp-admin-workspaces-v2` içinde `npm.cmd run check` başarılı,
+  151/151 test geçti.
+- Production deploy: `dpl_5QBunWhASf9k5uaihbdqwCtTr2LB`,
+  `https://arsiv-kontrol-o4q4hfk4l-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı doğrulama: `/health` `ok`, `/admin` 200 ve `X-Robots-Tag:
+  noindex, nofollow`, korumalı review workspace API oturumsuz 401,
+  canlı `review-workspace.js` içinde `Mükerrer Olarak Kapat` ve
+  `close_duplicate` markerları mevcut. Vercel loglarında yalnız bu doğrulama
+  sırasında istenen beklenen 404 asset denemesi göründü; deployment `Ready`.
+- Bu paket mevcut `.tmp-admin-workspaces-v2` çalışma ağacından deploy edildi;
+  henüz commit/push yapılmadı. Önceki kirli değişiklikler ve `output/`
+  dokunulmadan korundu.
+
+## 2026-09-10 Aysun Kaydı Cevap Tekrarı Temizlendi
+
+- Soru slug'ı:
+  `muhterem-hocam-mutluluk-icin-yola-ciktigimizda-yolda-baskalarindan-beklenti-icinde-olmamiz-dogru`.
+  Bağlı history kaydı `c1254e2f-d68d-42d7-8007-8363d0fd0176`, sahibi Aysun
+  Aydöner; history `onaylandi`, public kayıt `published` durumundaydı.
+- `Suali bir kere daha tekrar edecek olursak: Mutluluk için yola çıktığımızda
+  yolda başkalarından beklenti içinde olmak doğru mudur?` paragrafı history ve
+  public cevapta tam birer kez ve ilk paragraf olarak doğrulandı. İki cevap
+  metni işlem öncesinde birebir eşitti.
+- Değişmeyen UUID, version 0, durum, metin eşitliği, tek eşleşme ve ilk paragraf
+  kontrolleriyle yalnız hedef paragraf kaldırıldı. `answer_paragraphs` iki kalan
+  paragrafı korur; summary/excerpt mevcut `publicArchiveSummaryFromAnswer`
+  çıktısıyla uyumlu olarak `Hayır. Çoğumuz... Beklentilerimizi sıfırlamayı
+  öğreneceğiz.` metnine yenilendi.
+- Kayıt statüleri değişmedi: history `onaylandi` ve version 1, public
+  `published`. History/public cevap uzunluğu 672 ve metinler eşit. Hedef ifade
+  history, public cevap, summary ve excerpt alanlarında 0 kez geçiyor.
+- Geri alınabilir correction paketi
+  `public-answer-remove-repeated-question-20260910-c1254e2f`; bir
+  `content_correction_log`, bir `content_correction` history revision ve bir
+  `content.correction` admin action log kaydı oluştu.
+- Canlı URL cache dışı kontrolde 200; kaldırılan ifade yok, kalan cevap ve yeni
+  özet mevcut. Kod/deploy yapılmadı; yalnız onaylı tekil canlı içerik düzeltmesi
+  ve bu devir notları uygulandı.
+
+## 2026-09-10 Bihter Kaydı Canlıdan Alındı
+
+- Soru: `Muhterem Hocam, alışkanlık haline gelmiş bir günahtan nasıl
+  kurtulunur, açıklar mısınız?`
+- Canlı slug Bihter Oksak'a ait history kaydı
+  `6ee0396d-3ddc-4277-929e-97c7ef5ec0a8` ile bağlıydı; assignee yoktu.
+- Onaylı history kaydı mevcut transaction üzerinden `geri_gonderildi`, public
+  kayıt `published` durumundan `content_review_hidden` durumuna alındı.
+- Geri dönüş notu tam olarak `Slaytta Esmalar eksik`; Bihter kullanıcısına bir
+  `approval_return` bildirimi ve bir `review.return` işlem kaydı oluştu. Türkçe
+  karakterler post-check'te doğru.
+- Canlı URL cache dışı kontrolde 404 döndü ve soru metni görünmedi. Kayıt
+  silinmedi; düzeltilip yeniden onaya gönderilebilmesi için sahibinde korundu.
+
+## 2026-09-09 Eski Teknik Taslaklar ve Ekip Durumları Canlıda
+
+- Nuray Hanım'ın bildirdiği `Soru eklenmemiş / Taslak / Kayıt bulunamadı`
+  satırlarının kullanıcı taslağı değil, eski uzun metin işleme sisteminden kalan
+  `Metin Girişi - Parça n/n` teknik ara kayıtları olduğu canlı veride doğrulandı.
+  Nuray'da 9, toplamda 37 satır vardı: Serap 20, Nuray 9, Elçin 8.
+- `review_history_queue` görünümü eski dosya adı desenini de dışlayacak şekilde
+  güncellendi. Kayıtlar silinmedi veya durumları değiştirilmedi: 37 satır
+  `history` içinde korunuyor, iş kuyruğunda toplam 0 ve Nuray için 0 görünüyor.
+  Migration: `supabase/migrations/20260909122817_hide_legacy_chunk_drafts.sql`;
+  Supabase proje `bysvphnkphiilhpxykwg`.
+- Ekip `İncelemede` listesinde iki iş türü artık satır üzerinde ayrılır:
+  `bekliyor` = `Onaya gönderildi`, `teyit_bekliyor` = `Teyit bekliyor`.
+  İlkinde mevcut yetki/sürüm koşulları uygunsa `Geri Çek` vardır; ikincisi
+  yönetici teyit akışında olduğu için kullanıcı geri çekemez.
+- Değişen alanlar: `review-policy.js`, `index.html`, DB migration, fixture ve
+  API/DB/E2E testleri. Önceki ekip taslak güvenliği paketinin diğer kirli
+  değişiklikleri korundu; `output/` ekip PDF'lerine dokunulmadı.
+- Doğrulama: `npm.cmd run check` 149/149 ve Playwright 16/16 geçti. Canlı
+  üretim doğrulamasında `/health`, `/admin`, public root, arşiv, arama, hesap,
+  soru sor, sitemap ve robots başarılı; korumalı review API oturumsuz 401.
+  Supabase advisor bu değişikliğe ait yeni güvenlik veya performans uyarısı
+  üretmedi; önceden mevcut genel uyarılar kapsam dışında bırakıldı.
+- Production deployment `dpl_DuaNqVibdbzV6EpfvES5gkdprYc9`,
+  `https://arsiv-kontrol-eta7bifk0-ugurkarabulutts-projects.vercel.app`; canlı
+  alias `https://arsiv.ibrahimlive.ai`. Deployment `Ready`.
+- Çalışma ağacı `.tmp-admin-workspaces-v2`, branch
+  `codex/admin-workspaces-v2`. Bu paket henüz commit/push edilmedi; canlıya
+  doğrulanmış çalışma ağacı Vercel CLI ile alındı.
+
+## 2026-09-08 Ekip Taslak Güvenliği Canlıda
+
+- Kullanıcının `Başla` onayıyla taslak silme, geri gönderilen kayıtların
+  korunması ve mükerrer uyarısında mevcut kayda erişim paketi tamamlandı.
+- Çalışma ağacı: `C:\Users\ugur\Desktop\arsiv-kontrol\.tmp-admin-workspaces-v2`,
+  branch `codex/admin-workspaces-v2`, başlangıç HEAD `fc2bae9`. Ana çalışma
+  ağacının mevcut kirli değişikliklerine ve untracked `output/` ekip PDF'lerine
+  dokunulmadı. Yeni paket henüz commit/push edilmedi; canlıya doğrudan CLI ile
+  doğrulanmış çalışma ağacı alındı. Sonraki deploy bu değişiklikleri içermeli.
+- Ekip üyesi `Denetim Geçmişi > Düzenlenecekler > Düzenle > Taslağı Sil`
+  yolundan yalnız kendi korumasız taslağını onay penceresiyle çöpe taşıyabilir.
+  Geri alma yöneticinin çöp kutusundadır. Yetki/sürüm/sahiplik kontrolleri hem
+  API'de hem transaction içinde uygulanır. `geri_gonderildi`, atama, public
+  bağlantı, geçmiş return revision/log veya kalıcı koruma işareti silmeyi önler.
+- Yeniden gönderilen bir düzeltme görevi incelemeden geri çekilirse taslağa
+  dönüşmez; geri gönderilen durumuna döner ve düzeltme notu korunur. Üç ekip
+  listesi değişmedi; satır etiketleri `Taslak` / `Geri gönderildi` olarak ayrıldı.
+- Aynı soru+cevap hatasında yalnız erişilebilir kaydın durumu ve `Mevcut kaydı
+  aç` bağlantısı verilir. Ayrı sekme kullanılır; yazılmış soru, cevap, etiket ve
+  not mevcut düzenleyicide kalır, hata bunları kaydedilmiş gibi göstermez.
+- Yeni analiz kaynak/orijinal/denetlenmiş metin eşleşmesi owner/assignee
+  kapsamındadır. Dosya, metin, batch ve birleşik analiz akışlarına bağlandı;
+  uzun metinler parçalara ayrılmadan önce kontrol edilir. DB insert guard'ı
+  aynı kullanıcının kısa yazım işlemlerini advisory lock ile serileştirir.
+  Parça kayıtları normal taslaklardan ayrıdır; eski `skipDuplicate` istemci
+  alanı görünür taslak üretimini bypass edemez. Çöpe alınmış taslaklar yeni
+  denetimi engellemez. Eski kopyalar/benzer içerikler otomatik silinmedi.
+- Canlı migration: `supabase/migrations/20260908195554_member_draft_safety.sql`,
+  Supabase `bysvphnkphiilhpxykwg`, remote version `20260908195554`. CLI'nin ilk
+  yerel dosya zamanı MCP uygulama zamanına eşlendi. Hiçbir backfill/içerik/durum
+  UPDATE'i veya test için gerçek kayıt silme işlemi yapılmadı.
+- Migration öncesi ve sonrası aynı: 403 taslak, 395 geri gönderilen, 646
+  bekleyen, 178 teyit bekleyen, 2.584 onaylanan, 78 arşivlenen, 384 reddedilen,
+  7 çöp, 7 chunk, 527 submitted_part; 2.441 published public satır ve 958
+  revision. Taslakların 9'u geçmiş bağlantıları nedeniyle korumalı, 394'ü
+  korumasız. Geri gönderilen 395 kaydın hepsi korunuyor. Draft RPC ve iki
+  trigger canlıda doğrulandı. Yeni/değişen 6 fonksiyon security invoker,
+  anon/authenticated EXECUTE kapalı, yalnız service_role açık.
+- Doğrulama: `npm.cmd run check` 147/147 ve
+  `npx.cmd --no-install playwright test --config=playwright.review.config.js`
+  16/16. E2E 320/390/1440 px taslak silme, iptal, korumalı kayıt, sahte API
+  silme, kopya bağlantısı ve düzenleyici metin korumasını kapsar. Ekranlar
+  `.tmp-review-test-results/` içinde; 320 px ve mobil mükerrer görselleri
+  incelendi, taşma ve pageerror yok. İzole fixture sunucusu kapatıldı.
+  Migration dosya adı eşlendikten sonraki tekrar da 147/147 ve 16/16 geçti.
+  Son Playwright koşusunda Windows fixture kapanışı bekledi; üst süreç
+  zinciri doğrulanmış yalnız geçici fixture kapatıldı ve runner exit 0 verdi.
+- Yayın önce `--prod --skip-domain` ile hazırlandı; staging smoke geçtikten
+  sonra `vercel promote` uygulandı. Önceki canlı deployment
+  `dpl_BA6ug6MsKnHSnLjZpErNFLJ1rPE1`; yeni deployment
+  `dpl_HummykutWbw2oiTu9X3xRa5PqDUa`,
+  `https://arsiv-kontrol-obvpb20h1-ugurkarabulutts-projects.vercel.app`.
+  Vercel connector takım erişimi 403 verdi; doğru hesaba bağlı CLI kullanıldı.
+- Canlı `https://arsiv.ibrahimlive.ai` smoke başarılı: `/health`, `/admin`,
+  public root, arşiv, arama, hesap, soru sor, sitemap ve robots 200.
+  Admin HTML/JS/CSS SHA-256 yerel dosyalarla birebir; no-store ve admin
+  noindex doğru. `/api/review/records` ve `POST /api/analysis-match` oturumsuz
+  401. Gerçek kullanıcı hesabıyla canlı silme testi yapılmadı; mutasyonlar
+  gerçek SQL'i kullanan izole DB/API/tarayıcı fixture'ında test edildi.
+  Kanıt `.tmp-review-production-smoke/results.json`. Son 20 dakika yeni
+  deployment hata logu yok. `.vercelignore` artık `output/` PDF'lerini dışlar.
+- Security advisor yeni bulgu üretmedi. Önceden mevcut public okuma sayacı
+  `increment_public_question_read` için anon/authenticated security-definer
+  uyarıları bu kapsamda değiştirilmedi:
+  [anon açıklaması](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable),
+  [authenticated açıklaması](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
+
 ## 2026-09-08 İrem Raporlu Public Mükerrerler ve Aynı-Soru Koruması
 
 - İrem'in bildirdiği üç canlı arama sonucu DB üzerinden soru metnine göre

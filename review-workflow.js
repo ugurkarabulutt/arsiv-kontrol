@@ -1,9 +1,11 @@
 const express = require('express');
-const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus } = require('./review-policy');
+const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 
 const ERRORS = {
   VERSION_CONFLICT: [409, 'Kayıt başka bir işlemle değişti. Metninizi koruyun; güncel kaydı açıp karşılaştırın.'],
   FORBIDDEN: [403, 'Bu kayıt için işlem yetkiniz yok.'],
+  DRAFT_ONLY: [409, 'Yalnız taslak durumundaki kendi kaydınızı silebilirsiniz.'],
+  DRAFT_PROTECTED: [403, 'Bu kaydın düzeltme veya yayın geçmişi var. Ekip üyesi tarafından silinemez.'],
   NOT_FOUND: [404, 'Kayıt bulunamadı.'],
   INVALID_STATUS: [409, 'Kayıt artık bu işleme uygun durumda değil. Güncel kaydı açın.'],
   REQUIRED_FIELDS: [400, 'Onaya göndermek için soru, etiket ve cevap eksiksiz olmalı.'],
@@ -13,9 +15,10 @@ const ERRORS = {
   MANAGEMENT_WORKSPACE_REQUIRED: [403, 'Bu işlem Yönetim alanından yapılabilir.'],
   MEMBER_WORKSPACE_REQUIRED: [403, 'Kendi çalışmanızı Ekip Üyesi alanından gönderin.'],
   OWNERSHIP_REVIEW_REQUIRED: [409, 'Sahiplik itirazı yönetici tarafından sonuçlandırılmalı.'],
-  EXACT_DUPLICATE: [409, 'Soru ve cevabı birebir aynı olan bir kayıt zaten onay sürecinde. Kaydınız korunuyor.'],
+  EXACT_DUPLICATE: [409, 'Bu soru ve cevap için incelemede veya sonuçlanmış bir kayıt var. Yazdığınız değişiklikler bu ekranda korunuyor.'],
   NOT_EXACT_DUPLICATE: [400, 'Yönlendirme için soru ve cevapların ikisi de birebir aynı olmalı.'],
   DUPLICATE_NOT_PUBLISHED: [400, 'Yönlendirilecek asıl kayıt yayında olmalı.'],
+  DUPLICATE_NOTE_REQUIRED: [400, 'Mükerrer olarak kapatmak için kontrol notunda veya gerekçede MÜKERRER yazmalı.'],
   INVALID_ASSIGNEE: [400, 'Aktif bir ekip üyesi seçin.'],
   INVALID_CONTENT: [400, 'Gönderilen alanları kontrol edin.'],
   INVALID_TAGS: [400, 'Etiketleri metin olarak girin.'],
@@ -28,20 +31,30 @@ const LIST_COLUMNS = 'id,user_id,assignee_id,username,name,filename,score,total_
 const PREVIEW_COLUMNS = 'id,user_id,username,name,filename,score,total_errors,status,created_at,updated_at,question_text,tags,submission_note';
 const QUEUE_COLUMNS = LIST_COLUMNS + ',submitted_at,submitted_by,status_changed_at,status_changed_by,queue_sort_at';
 
-function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, loadApprovalFavoriteSet = async () => new Set(), readOnly = false }) {
+function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
   const router = express.Router();
   const userFor = req => ({ id: req.session.userId, role: req.session.role });
   const spaceFor = req => workspaceFor(userFor(req), req.get('X-Review-Workspace') || req.query.workspace);
-  function fail(res, error) {
+  async function fail(req, res, error) {
     const code = Object.keys(ERRORS).find(key => String(error.message || error).includes(key));
     const missingMigration = /version|review_history_change|workflow_meta|history_revisions|review_history_queue/.test(error.message || '') && ['42703', 'PGRST202', 'PGRST205', '42P01'].includes(error.code);
     const [status, message] = ERRORS[code] || (missingMigration
       ? [503, 'İnceleme altyapısı henüz hazır değil. Lütfen yöneticinize bildirin.']
       : [500, 'İşlem tamamlanamadı. Değişikliklerinizi koruyup tekrar deneyin.']);
     if (status === 500) console.error('Review workflow:', error.message);
-    return res.status(status).json({ error: message, code: code || (missingMigration ? 'MIGRATION_REQUIRED' : 'REVIEW_FAILED') });
+    let duplicate;
+    if (code === 'EXACT_DUPLICATE') {
+      const id = duplicateIdFromError(error);
+      if (id) {
+        try {
+          const row = await read(req, id);
+          duplicate = { id: row.id, displayStatus: memberDisplayStatus(row.status) };
+        } catch { /* A match must never expose a different member's private record. */ }
+      }
+    }
+    return res.status(status).json({ error: message, code: code || (missingMigration ? 'MIGRATION_REQUIRED' : 'REVIEW_FAILED'), duplicate });
   }
-  const handler = fn => async (req, res) => { try { await fn(req, res); } catch (error) { fail(res, error); } };
+  const handler = fn => async (req, res) => { try { await fn(req, res); } catch (error) { await fail(req, res, error); } };
 
   async function read(req, id) {
     if (!UUID.test(id || '')) throw new Error('NOT_FOUND');
@@ -52,6 +65,11 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
   }
   async function present(req, rows) {
     const ids = rows.map(row => row.id);
+    const draftIds = rows.filter(row => row.status === 'taslak').map(row => row.id);
+    const protections = !readOnly && draftIds.length
+      ? await supabase.rpc('review_draft_protections', { p_ids: draftIds }) : { data: [] };
+    if (protections.error) throw protections.error;
+    const protectedDrafts = new Map((protections.data || []).map(row => [row.id, row.member_delete_protected]));
     const { data: published, error } = ids.length ? await supabase.from('public_qa').select('slug,status,source_history_id').in('source_history_id', ids) : { data: [] };
     if (error) throw error;
     const publication = new Map((published || []).map(row => [row.source_history_id, row]));
@@ -68,7 +86,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
         submittedAt: row.submitted_at || null, submittedBy: row.submitted_by || null, submittedByName: names.get(row.submitted_by) || '',
         queueAt: row.queue_sort_at || row.updated_at || row.created_at,
         favorite: favorites.has(row.id), workflow: meta, returnNote: row.status === 'geri_gonderildi' ? (meta.returnNote ?? result.returnNote) : '',
-        allowedActions: recordActions(userFor(req), row, spaceFor(req)), publication: publication.get(row.id) || null,
+        allowedActions: recordActions(userFor(req), { ...row, member_delete_protected: protectedDrafts.get(row.id) ?? true }, spaceFor(req)), publication: publication.get(row.id) || null,
         displayStatus: spaceFor(req) === 'member' ? memberDisplayStatus(row.status) : '' };
     });
   }
@@ -76,10 +94,26 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     if (readOnly) throw new Error('READ_ONLY');
     if (!UUID.test(id || '')) throw new Error('NOT_FOUND');
     if (!Number.isInteger(version) || version < 0) throw new Error('VERSION_CONFLICT');
+    const previous = action === 'approve' ? await read(req, id) : null;
     const { data, error } = await supabase.rpc('review_history_change', {
       p_id: id, p_actor: req.session.userId, p_version: version, p_workspace: spaceFor(req), p_action: action, p_payload: payload
     });
     if (error) throw error;
+    if (action === 'approve') {
+      try {
+        await publishApprovedHistoryRecord(data);
+      } catch (publishError) {
+        if (previous) {
+          await supabase.from('history').update({
+            status: previous.status,
+            approved_at: previous.approved_at,
+            approved_by: previous.approved_by
+          }).eq('id', data.id);
+        }
+        clearPublicArchiveCaches();
+        throw publishError;
+      }
+    }
     clearPublicArchiveCaches();
     return (await present(req, [data]))[0];
   }
@@ -166,7 +200,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
   // Old open tabs must not bypass the same transition/version rules.
   const legacy = express.Router();
   legacy.get('/:id([0-9a-fA-F-]{36})', handler(async (req, res) => res.json((await present(req, [await read(req, req.params.id)]))[0])));
-  legacy.post('/:id([0-9a-fA-F-]{36})/:action(content|submit|withdraw|approve|reject|review|pending|return|archive|tags)', handler(async (req, res) => {
+  legacy.post('/:id([0-9a-fA-F-]{36})/:action(content|submit|withdraw|approve|reject|review|dergah|conference|pending|return|archive|tags)', handler(async (req, res) => {
     const action = { content: 'save', tags: 'save' }[req.params.action] || req.params.action;
     const item = await change(req, req.params.id, action, cleanPayload(req.body), req.body?.version);
     res.json({ success: true, id: item.id, status: item.status, tags: item.tags, questionText: item.questionText, submissionNote: item.submissionNote, version: item.version, history: item });

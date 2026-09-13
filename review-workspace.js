@@ -1,16 +1,22 @@
 /* Shared member/management workspace. Capabilities come from the server. */
 const ReviewWorkspace = (() => {
   const labels = { all: 'Tümü', taslak: 'Taslaklar', bekliyor: 'Onay bekleyenler', geri_gonderildi: 'Geri dönenler',
-    teyit_bekliyor: 'Teyit bekleyenler', onaylandi: 'Onaylananlar', reddedildi: 'Reddedilenler',
+    teyit_bekliyor: 'Teyit bekleyenler', dergah_sorulari: 'Dergah Soruları', konferanslar: 'Konferanslar',
+    onaylandi: 'Onaylananlar', reddedildi: 'Reddedilenler',
     arsivlendi: 'Arşivlenenler', copte: 'Çöp kutusu', disputed: 'Sahiplik itirazları',
     todo: 'Düzenlenecekler', in_review: 'İncelemede', done: 'Sonuçlananlar' };
   const actions = { save: 'Kaydet', submit: 'Onaya Gönder', approve: 'Onayla', return: 'Düzeltmeye Gönder',
-    reject: 'Reddet', review: 'Teyide Al', pending: 'Bekleyenlere Al', archive: 'Arşivle', trash: 'Çöpe Taşı',
+    reject: 'Reddet', review: 'Teyide Al', dergah: 'Dergah Sorularına Al', conference: 'Konferanslara Al',
+    pending: 'Bekleyenlere Al', archive: 'Arşivle', trash: 'Çöpe Taşı',
     restore: 'Geri Al', dispute: 'Bu Kayıt Bana Ait Değil', resolve_dispute: 'İtirazı Sonuçlandır',
-    reanalyze: 'Yeniden Denetle', withdraw: 'Geri Çek' };
+    close_duplicate: 'Mükerrer Olarak Kapat',
+    reanalyze: 'Yeniden Denetle', withdraw: 'Geri Çek', delete_draft: 'Taslağı Sil' };
   const memberTabs = new Set(['analiz', 'gecmis', 'bildirim', 'standartlar', 'profil', 'ayarlar']);
   const states = { member: { status: 'todo', q: '', page: 1 }, management: { status: 'bekliyor', q: '', page: 1 } };
   let space = 'member', item = null, baseline = '', busy = false, requestNumber = 0, detailRequest = 0, searchTimer, returnFocus;
+  const bulkActionOrder = ['approve', 'reject', 'return', 'review', 'dergah', 'conference', 'pending', 'archive', 'trash', 'restore'];
+  const bulkActionNeedsNote = new Set(['reject', 'return', 'review', 'dergah', 'conference', 'trash', 'restore']);
+  let bulkRows = [], selectedRows = new Map(), bulkActionChoice = '', bulkStickyRaf = 0;
   const node = id => document.getElementById(id);
   const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const management = () => space === 'management' && hasAdminRole(me?.role);
@@ -30,6 +36,37 @@ const ReviewWorkspace = (() => {
   function message(text, error = false) {
     const target = node('rwDetailMessage') || node('rwListMessage') || node('reviewToast');
     if (target) { target.textContent = text; target.classList.toggle('rw-error', error); }
+  }
+  function updateBulkStickiness() {
+    const bar = node('rwBulkBar');
+    if (!bar) return;
+    const list = bar.closest('.rw-list');
+    if (!management() || !selectedRows.size || !bar.textContent.trim()) {
+      bar.classList.remove('rw-bulk-fixed');
+      delete bar.dataset.rwAnchorTop;
+      list?.style.removeProperty('--rw-bulk-space');
+      bar.style.removeProperty('--rw-bulk-top');
+      bar.style.removeProperty('--rw-bulk-left');
+      bar.style.removeProperty('--rw-bulk-width');
+      return;
+    }
+    const topbar = document.querySelector('.topbar');
+    const topOffset = topbar ? topbar.getBoundingClientRect().bottom : 0;
+    const listRect = list?.getBoundingClientRect();
+    const left = listRect ? Math.max(0, listRect.left) : 0;
+    const width = listRect ? Math.min(listRect.width, window.innerWidth - left) : window.innerWidth;
+    bar.style.setProperty('--rw-bulk-top', `${Math.max(0, topOffset)}px`);
+    bar.style.setProperty('--rw-bulk-left', `${left}px`);
+    bar.style.setProperty('--rw-bulk-width', `${width}px`);
+    list?.style.setProperty('--rw-bulk-space', `${Math.ceil(bar.offsetHeight)}px`);
+    bar.classList.add('rw-bulk-fixed');
+  }
+  function scheduleBulkStickiness() {
+    if (bulkStickyRaf) cancelAnimationFrame(bulkStickyRaf);
+    bulkStickyRaf = requestAnimationFrame(() => {
+      bulkStickyRaf = 0;
+      updateBulkStickiness();
+    });
   }
   async function request(path, method = 'GET', payload) {
     return api(method, '/api/review' + path, payload);
@@ -72,6 +109,13 @@ const ReviewWorkspace = (() => {
     }
     refreshNav();
     showHome();
+    const linked = new URLSearchParams(location.search).get('reviewRecord');
+    if (/^[0-9a-f-]{36}$/i.test(linked || '')) {
+      space = 'member';
+      refreshNav();
+      showHome();
+      open(linked);
+    }
   }
   async function switchSpace(next) {
     if (busy || isAnalyzing) { message('Devam eden işlemin tamamlanmasını bekleyin.', true); refreshNav(); return; }
@@ -82,6 +126,7 @@ const ReviewWorkspace = (() => {
     historyRows = [];
     ['histContent','onayContent'].forEach(id => { if (node(id)?.querySelector('.rw-list')) node(id).replaceChildren(); });
     clearTimeout(searchTimer);
+    clearSelection();
     requestNumber++;
     refreshNav();
     showHome();
@@ -106,12 +151,12 @@ const ReviewWorkspace = (() => {
     const holder = node('histStatusFilter')?.closest('.history-toolbar');
     if (holder) holder.hidden = true;
     if (node('scoreChartBox')) node('scoreChartBox').style.display='none';
-    const options = management() ? ['bekliyor','onaylandi','reddedildi','geri_gonderildi','disputed','teyit_bekliyor','arsivlendi','copte','all']
+    const options = management() ? ['bekliyor','dergah_sorulari','konferanslar','onaylandi','reddedildi','geri_gonderildi','disputed','teyit_bekliyor','arsivlendi','copte','all']
       : ['todo','in_review','done'];
     const inactive = node(management() ? 'histContent' : 'onayContent');
     if (inactive?.querySelector('.rw-list')) inactive.replaceChildren();
     if (!container.querySelector('.rw-list')) {
-      container.innerHTML = `<section class="rw-list"><div class="rw-toolbar"><label><span>${management()?'Durum':'Liste'}</span><select id="rwStatus" onchange="ReviewWorkspace.filter(this.value)">${options.map(key=>`<option value="${key}">${labels[key]}</option>`).join('')}</select></label><label class="rw-search"><span>Ara</span><input id="rwSearch" type="search" placeholder="Soru, cevap veya kişi ara" oninput="ReviewWorkspace.search(this.value)" autocomplete="off"></label><span id="rwCount" class="rw-count"></span></div><div id="rwListMessage" role="status" aria-live="polite"></div><div id="rwRows" aria-busy="true"></div><nav id="rwPages" class="rw-pages" aria-label="Kayıt sayfaları"></nav></section>`;
+      container.innerHTML = `<section class="rw-list"><div class="rw-toolbar"><label><span>${management()?'Durum':'Liste'}</span><select id="rwStatus" onchange="ReviewWorkspace.filter(this.value)">${options.map(key=>`<option value="${key}">${labels[key]}</option>`).join('')}</select></label><label class="rw-search"><span>Ara</span><input id="rwSearch" type="search" placeholder="Soru, cevap veya kişi ara" oninput="ReviewWorkspace.search(this.value)" autocomplete="off"></label><span id="rwCount" class="rw-count"></span></div>${management()?'<div id="rwBulkBar" class="rw-bulk" aria-live="polite"></div>':''}<div id="rwListMessage" role="status" aria-live="polite"></div><div id="rwRows" aria-busy="true"></div><nav id="rwPages" class="rw-pages" aria-label="Kayıt sayfaları"></nav></section>`;
     }
     node('rwStatus').value = s.status;
     if(me.reviewReadOnly&&!node('rwPreviewNotice'))container.querySelector('.rw-toolbar').insertAdjacentHTML('beforebegin','<p id="rwPreviewNotice" role="status">Salt okunur önizleme: kayıt değişiklikleri kapalı.</p>');
@@ -123,14 +168,63 @@ const ReviewWorkspace = (() => {
     node('rwRows').setAttribute('aria-busy','false');
     if (result.error) { message(result.error, true); return; }
     if (!result.items.length && s.page > 1) { state().page--; return load(); }
+    bulkRows = result.items || [];
+    for (const [id, row] of selectedRows) if (!row || row.status !== s.status) selectedRows.delete(id);
     node('rwListMessage').textContent = '';
     node('rwCount').textContent = `${result.count} kayıt`;
     const totalPages = Math.max(1,Math.ceil(result.count/result.pageSize));
-    node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem"><div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span>${row.submittedBy && row.submittedBy !== row.userId ? `<span>Gönderen: ${safe(row.submittedByName || 'Kayıtlı ekip üyesi')}</span>` : ''}<span>${safe(listDate(row))}</span><span>${safe(statusText(row))}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
+    node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem" data-rw-row-id="${row.id}">${bulkSelectHtml(row)}<div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span>${row.submittedBy && row.submittedBy !== row.userId ? `<span>Gönderen: ${safe(row.submittedByName || 'Kayıtlı ekip üyesi')}</span>` : ''}<span>${safe(listDate(row))}</span><span>${safe(statusText(row))}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
     node('rwPages').innerHTML = `<button class="btn-sec" ${s.page<=1?'disabled':''} onclick="ReviewWorkspace.page(-1)">Önceki</button><span>${s.page} / ${totalPages}</span><button class="btn-sec" ${s.page>=totalPages?'disabled':''} onclick="ReviewWorkspace.page(1)">Sonraki</button>`;
+    renderBulkBar();
   }
-  function filter(status) { state().status=status; state().page=1; load(); }
-  function search(q) { state().q=q; state().page=1; clearTimeout(searchTimer); searchTimer=setTimeout(load,300); }
+  function bulkAllowed(row, action) { return management() && !me.reviewReadOnly && (row.allowedActions || []).includes(action); }
+  function bulkActionsFor(row) { return bulkActionOrder.filter(action => bulkAllowed(row, action)); }
+  function bulkSelectable(row) { return bulkActionsFor(row).length > 0; }
+  function bulkSelectHtml(row) {
+    if (!management()) return '';
+    const disabled = bulkSelectable(row) ? '' : 'disabled';
+    const checked = selectedRows.has(row.id) ? 'checked' : '';
+    return `<label class="rw-select" title="Toplu işlem için seç"><input type="checkbox" data-rw-select="${row.id}" aria-label="Kaydı seç" ${checked} ${disabled} onchange="ReviewWorkspace.toggleSelect('${row.id}',this.checked)"><span></span></label>`;
+  }
+  function selectedItems() { return [...selectedRows.values()]; }
+  function clearSelection() {
+    selectedRows.clear();
+    bulkActionChoice = '';
+    document.querySelectorAll('[data-rw-select]').forEach(input => { input.checked = false; });
+    renderBulkBar();
+  }
+  function toggleSelect(id, checked) {
+    const row = bulkRows.find(item => item.id === id);
+    if (!row || !bulkSelectable(row)) return;
+    if (checked) selectedRows.set(id, row);
+    else selectedRows.delete(id);
+    renderBulkBar();
+  }
+  function selectPage() {
+    for (const row of bulkRows) if (bulkSelectable(row)) selectedRows.set(row.id, row);
+    document.querySelectorAll('[data-rw-select]').forEach(input => { input.checked = selectedRows.has(input.dataset.rwSelect); });
+    renderBulkBar();
+  }
+  function renderBulkBar() {
+    const bar = node('rwBulkBar');
+    if (!bar) return;
+    const selected = selectedItems();
+    const selectableCount = bulkRows.filter(bulkSelectable).length;
+    const available = selected.length ? bulkActionOrder.filter(action => selected.every(row => bulkAllowed(row, action))) : [];
+    if (!available.includes(bulkActionChoice)) bulkActionChoice = '';
+    const notePanel = bulkActionNeedsNote.has(bulkActionChoice)
+      ? `<label class="rw-bulk-note"><span>${safe(actions[bulkActionChoice])} gerekçesi</span><textarea id="rwBulkNote" rows="2" maxlength="1200" placeholder="Bu toplu işlem için kısa ve net gerekçe yazın"></textarea></label>`
+      : '';
+    bar.innerHTML = `<div class="rw-bulk-head"><strong>${selected.length}</strong> seçili</div><div class="rw-bulk-actions"><button type="button" class="btn-sec" ${selectableCount?'':'disabled'} onclick="ReviewWorkspace.selectPage()">Bu Sayfayı Seç</button><button type="button" class="btn-sec" ${selected.length?'':'disabled'} onclick="ReviewWorkspace.clearSelection()">Seçimi Temizle</button><select id="rwBulkAction" class="rw-bulk-select" aria-label="Toplu işlem seç" ${selected.length?'':'disabled'} onchange="ReviewWorkspace.setBulkAction(this.value)"><option value="">İşlem seç</option>${available.map(action=>`<option value="${action}" ${bulkActionChoice===action?'selected':''}>${safe(actions[action]||action)}</option>`).join('')}</select><button type="button" class="${bulkActionChoice==='reject'||bulkActionChoice==='trash'?'btn-danger':'btn-primary'}" ${bulkActionChoice?'':'disabled'} onclick="ReviewWorkspace.bulkAction()">Uygula</button></div>${notePanel}`;
+    scheduleBulkStickiness();
+  }
+  function setBulkAction(action) {
+    bulkActionChoice = bulkActionOrder.includes(action) ? action : '';
+    renderBulkBar();
+    if (bulkActionNeedsNote.has(bulkActionChoice)) node('rwBulkNote')?.focus();
+  }
+  function filter(status) { state().status=status; state().page=1; clearSelection(); load(); }
+  function search(q) { state().q=q; state().page=1; clearSelection(); clearTimeout(searchTimer); searchTimer=setTimeout(load,300); }
   function page(delta) { state().page=Math.max(1,state().page+delta); load(); }
 
   async function open(id) {
@@ -155,7 +249,7 @@ const ReviewWorkspace = (() => {
   function renderDetail() {
     const editable=can('save'), meta=item.workflow||{};
     const primary=can('submit')?'submit':can('approve')?'approve':'';
-    const others=(item.allowedActions||[]).filter(action=>!['save',primary].includes(action));
+    const others=(item.allowedActions||[]).filter(action=>!['save','delete_draft',primary].includes(action));
     node('detailBody').innerHTML=`<div class="rw-detail"><div class="rw-record-meta"><strong>${safe(item.name)}</strong><span>${safe(statusText(item))}</span><span>No: ${safe(item.id.slice(0,8))} · Sürüm ${item.version}</span><span>${date(item.updatedAt||item.createdAt)}</span><span>${item.publication?.status==='published'?'Yayında':'Yayında değil'}</span>${item.userId===me.id?'<span>Kendi kaydınız</span>':''}${item.assigneeId?`<span>Düzeltme sorumlusu: ${safe(item.assigneeName||item.assigneeId.slice(0,8))}</span>`:''}</div>
       ${item.returnNote?`<p class="rw-return">${safe(item.returnNote)}</p>`:''}
       ${meta.disputed?`<p class="rw-warning">Sahiplik itirazı: ${safe(meta.disputeNote)}</p>`:''}
@@ -167,6 +261,7 @@ const ReviewWorkspace = (() => {
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
       <div class="rw-actions">${can('save')?'<button class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button class="btn-primary" data-rw-write onclick="ReviewWorkspace.act('${primary}')">${actions[primary]}</button>`:''}
+      ${can('delete_draft')?'<button type="button" class="btn-danger" data-rw-write onclick="ReviewWorkspace.decide(\'delete_draft\')">Taslağı Sil</button>':''}
       ${others.length?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${others.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]||safe(action)}</button>`).join('')}</div></details>`:''}<button class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
     baseline=JSON.stringify(values());
     const footer=node('detailModal').querySelector('.modal-foot');
@@ -194,6 +289,17 @@ const ReviewWorkspace = (() => {
   async function decide(action) {
     if (!can(action)||busy) return;
     const decidingId=item.id;
+    if (action==='delete_draft') {
+      const confirmed=await openSystemConfirm({title:'Taslak silinsin mi?',message:'Bu taslak çöp kutusuna taşınacak. Gerekirse yöneticiniz geri alabilir.',confirmText:'Taslağı Sil',cancelText:'Vazgeç'});
+      if(confirmed&&item?.id===decidingId)await act(action);
+      return;
+    }
+    if (action==='close_duplicate') {
+      if (dirty()) {message('Önce değişikliklerinizi kaydedin veya güncel kaydı yeniden açın.',true);return;}
+      const confirmed=await openSystemConfirm({title:'Mükerrer kayıt kapatılsın mı?',message:'Bu kayıt aktif listenizden kaldırılacak. Kayıt tamamen silinmez; yönetim tarafında çöp kutusunda ve işlem geçmişinde korunur.',confirmText:'Mükerrer Olarak Kapat',cancelText:'Vazgeç'});
+      if(confirmed&&item?.id===decidingId)await act(action);
+      return;
+    }
     if (dirty() && action!=='reanalyze') {message('Önce değişikliklerinizi kaydedin veya güncel kaydı yeniden açın.',true);return;}
     const host=node('rwDecision');
     host.dataset.action=action;
@@ -225,13 +331,93 @@ const ReviewWorkspace = (() => {
     message(action==='reanalyze'?'Denetleniyor…':'İşlem sürüyor…');
     try {
       const result=await request('/'+item.id+(action==='reanalyze'?'/reanalyze':'/action'),'POST',payload);
-      if(result.error){message(result.error,true);return;}
+      if(result.error){
+        message(result.error,true);
+        if(result.duplicate?.id&&/^[0-9a-f-]{36}$/i.test(result.duplicate.id)){
+          const info=document.createElement('p');
+          info.textContent=`Mevcut kayıt: ${result.duplicate.displayStatus}. `;
+          const link=document.createElement('a');
+          link.href='/admin?reviewRecord='+encodeURIComponent(result.duplicate.id);
+          link.target='_blank';link.rel='noopener';link.textContent='Mevcut kaydı aç';
+          info.append(link);node('rwDetailMessage').append(info);
+        }
+        return;
+      }
+      if(action==='delete_draft'||action==='close_duplicate'){
+        await close(true);await load();message(action==='close_duplicate'?'Mükerrer kayıt aktif listenizden kaldırıldı.':'Taslak çöp kutusuna taşındı.');return;
+      }
       item=result.history; renderDetail(); message('İşlem tamamlandı.');
       await load();
     } finally {
       busy=false; node('detailModal').removeAttribute('aria-busy');
       document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=false);
     }
+  }
+  function bulkActionSummary(action, count) {
+    const label = actions[action] || action;
+    if (action === 'approve') return `${count} kayıt tek tek onaylanacak ve uygun olanlar canlı yayına aktarılacak.`;
+    if (action === 'reject') return `${count} kayıt aynı gerekçeyle reddedilecek.`;
+    return `${count} kayıt için "${label}" işlemi tek tek uygulanacak.`;
+  }
+  function bulkActionDoneText(action) {
+    if (action === 'approve') return 'onaylandı';
+    if (action === 'reject') return 'reddedildi';
+    if (action === 'return') return 'düzeltmeye gönderildi';
+    if (action === 'review') return 'teyide alındı';
+    if (action === 'dergah') return 'Dergah Sorularına alındı';
+    if (action === 'conference') return 'Konferanslara alındı';
+    if (action === 'pending') return 'bekleyenlere alındı';
+    if (action === 'archive') return 'arşivlendi';
+    if (action === 'trash') return 'çöpe taşındı';
+    if (action === 'restore') return 'geri alındı';
+    return 'işlendi';
+  }
+  function removeBulkRow(id) {
+    bulkRows = bulkRows.filter(row => row.id !== id);
+    selectedRows.delete(id);
+    document.querySelector(`[data-rw-row-id="${id}"]`)?.remove();
+    if (!node('rwRows')?.querySelector('.rw-row')) node('rwRows').innerHTML = '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
+    if (!busy) renderBulkBar();
+  }
+  async function bulkAction(action) {
+    if (busy || !management()) return;
+    action = action || bulkActionChoice;
+    if (!bulkActionOrder.includes(action)) return;
+    const selected = selectedItems().filter(row => bulkAllowed(row, action));
+    if (!selected.length) return;
+    let note = '';
+    if (bulkActionNeedsNote.has(action)) {
+      note = String(node('rwBulkNote')?.value || '').trim().slice(0, 1200);
+      if (!note) { message(`${actions[action]} için gerekçe gerekli.`, true); return; }
+    }
+    const confirmed = await openSystemConfirm({
+      title: `Seçilen kayıtlara "${actions[action] || action}" uygulansın mı?`,
+      message: bulkActionSummary(action, selected.length),
+      confirmText: `${actions[action] || action} Uygula`,
+      cancelText: 'Vazgeç',
+      tone: action === 'reject' || action === 'trash' ? 'danger' : 'default'
+    });
+    if (!confirmed) return;
+    busy = true;
+    document.querySelectorAll('#rwBulkBar button,#rwBulkBar select,#rwBulkBar textarea,[data-rw-select]').forEach(element => { element.disabled = true; });
+    let ok = 0, failed = 0;
+    const failures = [];
+    for (const row of selected) {
+      message(`${ok + failed + 1}/${selected.length} kayıt işleniyor…`);
+      const result = await request('/' + row.id + '/action', 'POST', { action, version: row.version, note });
+      if (result.error) {
+        failed += 1;
+        failures.push(`${row.questionText || row.id}: ${result.error}`);
+      } else {
+        ok += 1;
+        removeBulkRow(row.id);
+      }
+    }
+    busy = false;
+    bulkActionChoice = '';
+    await load();
+    const summary = `${ok} kayıt ${bulkActionDoneText(action)}${failed ? `, ${failed} kayıt işlenemedi.` : '.'}`;
+    message(failures.length ? `${summary}\n${failures.slice(0, 3).join('\n')}` : summary, Boolean(failed));
   }
   async function revisions(beforeVersion) {
     const id=item?.id;if(!id)return;
@@ -278,8 +464,11 @@ const ReviewWorkspace = (() => {
     const sidebar=document.querySelector('.side-nav'); if(sidebar)sidebar.insertAdjacentHTML('afterbegin',selectorHTML());
     const menu=node('mobileMenu'); if(menu)menu.insertAdjacentHTML('afterbegin',selectorHTML());
     document.querySelectorAll('[data-review-selector]').forEach(select=>select.hidden=true);
+    document.querySelector('.app-body')?.addEventListener('scroll', updateBulkStickiness, { passive: true });
+    window.addEventListener('resize', updateBulkStickiness);
     refreshNav();
   });
   return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,
+    toggleSelect,selectPage,clearSelection,setBulkAction,bulkAction,
     workspace:()=>space, isDetailOpen:()=>!!item, dirty};
 })();
