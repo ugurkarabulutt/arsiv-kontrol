@@ -17,7 +17,9 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `WebPage`, `BreadcrumbList` ve ilgili soru `ItemList` schema grafı üretir.
   Kullanıcının yasakladığı dış alan adı public kaynak, provider, publisher veya
   dış link olarak asla belirtilmez; ayet delilleri URL'siz ve site içi bağlamla
-  tutulur. Canlı asset sürümü `20260914-topic-blog-clean-v3`.
+  tutulur. Canlı asset sürümü `20260914-topic-blog-clean-v3`; runtime commit
+  `58b030f`, production deploy `dpl_8SGS2VwiXs5aCb2RRYXsJs2NJZYp`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi

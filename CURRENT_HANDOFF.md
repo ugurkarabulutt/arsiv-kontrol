@@ -28,8 +28,18 @@
   Playwright 390x844 ve 1440x1000 ön izlemede blog gövdesi, ayet delilleri,
   ilgili sorular, yatay konu rehberi, 0 otomatik slider markerı,
   0 süreç/kaynak/köşeli atıf sızıntısı ve 0 console/resource hatası doğrulandı.
-- Durum: Hotfix henüz production'a alınacak. Commit/push/deploy ve canlı smoke
-  tamamlanınca bu bölümde deployment ID güncellenmeli.
+- Durum: Runtime commit `58b030f` GitHub'a push edildi ve production'a alındı.
+  Production deployment `dpl_8SGS2VwiXs5aCb2RRYXsJs2NJZYp`,
+  `https://arsiv-kontrol-wuzamys8y-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı doğrulama: `/health`, ana sayfa,
+  `/konu-rehberi/allaha-ulasmayi-dilemek`, `/sitemap.xml` ve `/llms.txt`
+  başarılı. Ana sayfada `pa-reading-track`, `pa-reading-rail`, `pa-reading-set`,
+  `Rehbere Başla` ve asset sürümü `20260914-topic-blog-clean-v3` mevcut; eski
+  grid ve otomatik slider markerları yok. Blog sayfasında `BlogPosting` schema
+  ve ilgili sorular mevcut; süreç notu, kaynakça, sohbet kodu, `0/24 kaynak`,
+  köşeli atıf numaraları ve yasaklı dış kaynak sinyali canlı HTML/LLM çıktısında
+  yok.
 
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 
