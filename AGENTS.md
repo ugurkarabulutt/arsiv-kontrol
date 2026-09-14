@@ -27,7 +27,8 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   Ana sayfadaki `Çok Okunan Cevaplar` bölümü küçük öne çıkan/son yayın havuzundan
   değil, `public_question_stats.read_count` sıralamasına göre yüklenen gerçek
   popüler kayıt havuzundan beslenmelidir; `Arşivde devam et` bağlantısı
-  `/cok-okunan-cevaplar` kanonik collection sayfasına gitmelidir.
+  `/cok-okunan-cevaplar` kanonik collection sayfasına gitmelidir. Runtime commit
+  `6afb21f`, production deploy `dpl_RLDKyXc5XFbCLyWiKzFN7zF7k14V`.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi

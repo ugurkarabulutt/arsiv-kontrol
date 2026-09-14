@@ -50,6 +50,11 @@
   analytics sınıflandırmasına eklendi.
 - Yerel doğrulama: `node --check public-archive-renderer.js`,
   `node --check server.js`, `npm.cmd run check` başarılı; 156/156 test geçti.
+- Production deploy: commit `6afb21f`, deployment
+  `dpl_RLDKyXc5XFbCLyWiKzFN7zF7k14V`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulamada ana sayfa linki,
+  `/cok-okunan-cevaplar` canonical sayfası, sitemap/llms girişleri ve ilk canlı
+  soru istatistikleri 2, 1, 0... okunma sırasıyla doğrulandı.
 
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 
