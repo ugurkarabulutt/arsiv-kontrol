@@ -5,6 +5,20 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-14 konu rehberi blog taslağı:** Public konu rehberleri için uzun
+  blog içerikleri `public-archive-topic-articles.json` içinde statik ve
+  kaynaklı veri olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı
+  `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına bağlandı ve kart içinde
+  açık `Rehbere Başla` aksiyonu gösterir. Konu rehberi otomatik slider değildir;
+  tek setli responsive grid olarak kalmalıdır. Sayfa PDF formatındaki
+  başlık/paragraf/kaynak akışını korur, altta aynı konuya bağlı soruları
+  gösterir ve `BlogPosting`, `WebPage`, `BreadcrumbList`, kaynak `CreativeWork`
+  atıfları ile ilgili soru `ItemList` schema grafı üretir.
+  Kullanıcının yasakladığı dış alan adı public kaynak, provider, publisher veya
+  dış link olarak asla belirtilmez; ayet delilleri URL'siz ve site içi bağlamla
+  tutulur. Bu paket kullanıcıdan canlı onayı alınmadan production'a deploy
+  edilmemelidir.
+
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi
   tıklamalarını hızlı public navigasyon hattına bağlar; cache miss fallback'i
@@ -291,6 +305,36 @@ Eski `ilk 100 karakter + uzunluk` parmak izleri geriye dönük olarak tanınır.
 tespit edilir).
 
 ## Değişiklik Günlüğü
+
+### 2026-09-14 Public Konu Rehberi Blog Taslağı
+
+- Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` metni public konu
+  rehberi makalesi olarak hazırlandı. Başlıklar, paragraf akışı, ayet ve sohbet
+  kaynakları korunarak `public-archive-topic-articles.json` içine alındı.
+- Ana sayfadaki `Allah’a Ulaşmayı Dilemek` konu rehberi kartı artık kategoriye
+  değil `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına gider. Yazı sonunda
+  aynı konudaki ilgili soru-cevap kartları yer alır; kullanıcı buradan doğrudan
+  arşivdeki sorulara geçebilir.
+- SEO/LLM katmanı `BlogPosting`, `WebPage`, `BreadcrumbList`, URL'siz delil
+  atıfları ve ilgili soru `ItemList` şemasıyla güçlendirildi. Sitemap ve
+  `llms.txt` konu rehberi yazılarını da kapsayacak şekilde hazırlandı.
+- Kullanıcı kararıyla yasaklanan dış alan adı public kaynak olarak tamamen
+  kaldırıldı: görünen metinde, kaynak listesinde, dış linklerde,
+  provider/publisher alanlarında, JSON-LD içinde ve `llms.txt` çıktısında bu
+  kaynak sinyali üretilmez. Eski doküman/standart metinler de `arşiv imlâ
+  standardı` ifadesine çekildi.
+- Yerel doğrulama: `npm.cmd run check` başarılı, 156/156 test geçti.
+  `git diff --check` whitespace hatası vermedi; yalnız mevcut CRLF uyarıları
+  görüldü. Playwright 390x844 ve 1440x1000 kontrolde sayfa başlığı, yazı
+  gövdesi, ilgili sorular ve BlogPosting JSON-LD göründü; console/resource
+  hatası ve yatay taşma yok.
+- Bu paket `.tmp-admin-workspaces-v2` çalışma ağacında taslak olarak duruyor;
+  henüz commit/push/production deploy yapılmadı.
+- Kullanıcı kararıyla konu rehberi otomatik sliderı kapatıldı. Ana sayfadaki
+  konu rehberi artık tek setli responsive grid; `Allah’a Ulaşmayı Dilemek`
+  kartında görünür `Rehbere Başla` aksiyonu var ve kart
+  `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına gider. Asset cache kırıcı
+  `20260914-topic-blog-static-grid-v2` oldu.
 
 ### 2026-09-13 Public Konu Rehberi Numarasız Carousel
 

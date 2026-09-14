@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { publicArchiveFixtures } = require('./public-archive-fixtures');
+const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
 
 const DEFAULT_PUBLIC_ARCHIVE_BASE = '/public-preview';
 let PREVIEW_BASE = DEFAULT_PUBLIC_ARCHIVE_BASE;
@@ -16,8 +17,9 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260913-fast-home-click-v6';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260914-topic-blog-static-grid-v2';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
+const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
 const PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX = 168;
 const PUBLIC_ARCHIVE_CORE_TOPIC_NAMES = [
@@ -63,6 +65,16 @@ function publicArchiveCanonicalUrl(pathname = '') {
   const clean = String(pathname || '').trim();
   const suffix = !clean || clean === '/' ? '/' : clean.startsWith('/') ? clean : `/${clean}`;
   return `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${suffix === '/' ? '/' : suffix}`;
+}
+
+function publicTopicArticleBySlug(slug = '') {
+  return publicArchiveTopicArticles[String(slug || '').trim()] || null;
+}
+
+function publicTopicArticlePath(article = {}) {
+  const explicitPath = String(article.path || '').trim();
+  if (explicitPath) return explicitPath.startsWith('/') ? explicitPath : `/${explicitPath}`;
+  return `${PUBLIC_TOPIC_GUIDE_PATH}/${String(article.slug || '').trim()}`;
 }
 
 function publicArchiveAssetHref(filename) {
@@ -152,6 +164,7 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/one-cikan-sorular`,
   `${PREVIEW_BASE}/son-yayinlanan-sorular`,
   `${PREVIEW_BASE}/arama`,
+  `${PREVIEW_BASE}${PUBLIC_TOPIC_GUIDE_PATH}/allaha-ulasmayi-dilemek`,
   `${PREVIEW_BASE}/konular`,
   `${PREVIEW_BASE}/kategoriler`,
   `${PREVIEW_BASE}/soru/ornek-soru`,
@@ -623,7 +636,7 @@ const HOME_INTENT_CARDS = [
 ];
 
 const HOME_READING_PATHS = [
-  { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
+  { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
   { title: 'Zikir ve Daimî Zikir', slug: 'zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
@@ -1248,6 +1261,289 @@ function questionPageStructuredData(entry, category) {
   };
 }
 
+function topicArticleSourceMap(article = {}) {
+  return new Map((article.sources || []).map(source => [Number(source.id), source]));
+}
+
+function topicArticleInlineHtml(value = '', article = {}) {
+  const sourceMap = topicArticleSourceMap(article);
+  return escapeHtml(value).replace(/\[(\d+)\]/g, (match, id) => {
+    const source = sourceMap.get(Number(id));
+    const label = `[${id}]`;
+    if (!source?.url) return `<sup class="pa-topic-footnote"><a href="#kaynak-${escapeHtml(id)}">${label}</a></sup>`;
+    return `<sup class="pa-topic-footnote"><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">${label}</a></sup>`;
+  });
+}
+
+function topicArticleHeadingAnchor(text = '', index = 0) {
+  const normalized = publicArchiveComparable(text).replace(/\s+/g, '-').replace(/^-+|-+$/g, '').slice(0, 58);
+  return `bolum-${index + 1}${normalized ? `-${normalized}` : ''}`;
+}
+
+function annotatedTopicArticleBlocks(article = {}) {
+  let headingIndex = 0;
+  return (article.blocks || []).map(block => {
+    if (block?.type !== 'heading') return block;
+    const isSourcesHeading = ['Kaynaklar ve metin notu', 'Ayet ve metin notu']
+      .some(label => publicArchiveComparable(block.text) === publicArchiveComparable(label));
+    const id = isSourcesHeading ? 'kaynaklar' : topicArticleHeadingAnchor(block.text, headingIndex);
+    if (!isSourcesHeading) headingIndex += 1;
+    return { ...block, id, isSourcesHeading };
+  });
+}
+
+function topicArticleBodyText(article = {}) {
+  return readableStructuredText((article.blocks || [])
+    .map(block => {
+      if (block.type === 'heading') return block.text;
+      if (block.type === 'evidence') return `${block.reference} - ${block.note}\n${block.text}`;
+      return block.text;
+    })
+    .filter(Boolean)
+    .join('\n\n'));
+}
+
+function topicArticleSourceStructuredData(source = {}) {
+  const structured = {
+    '@type': 'CreativeWork',
+    name: source.title,
+    description: source.meta || undefined
+  };
+  if (source.url && !/mihr\.com/i.test(source.url)) structured.url = source.url;
+  return structured;
+}
+
+function topicArticleStructuredData(article = {}, relatedQuestions = []) {
+  const canonicalPath = publicTopicArticlePath(article);
+  const canonicalUrl = publicArchiveCanonicalUrl(canonicalPath);
+  const cleanDescription = compactSeoText(article.description || article.summary || publicArchiveFixtures.brand.sentence, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
+  const cleanTitle = compactSeoText(article.title, PUBLIC_ARCHIVE_SEO_TITLE_MAX);
+  const articleId = `${canonicalUrl}#article`;
+  const pageId = `${canonicalUrl}#webpage`;
+  const breadcrumbId = `${canonicalUrl}#breadcrumb`;
+  const citations = (article.sources || []).map(topicArticleSourceStructuredData);
+  const quranMentions = (article.quranReferences || []).map(reference => {
+    return publicArchiveReferenceStructuredData(reference.label);
+  });
+  const relatedItemList = (relatedQuestions || [])
+    .filter(entry => entry?.slug)
+    .slice(0, 12)
+    .map((entry, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: publicArchiveCanonicalUrl(`/soru/${entry.slug}`),
+      name: compactSeoText(entry.title || entry.question, 120)
+    }));
+  const graph = [
+    {
+      '@type': 'WebPage',
+      '@id': pageId,
+      url: canonicalUrl,
+      name: cleanTitle,
+      description: cleanDescription,
+      inLanguage: 'tr',
+      isPartOf: { '@id': `${publicArchiveCanonicalUrl('/')}#website` },
+      breadcrumb: { '@id': breadcrumbId },
+      mainEntity: { '@id': articleId },
+      datePublished: article.publishedAt,
+      dateModified: article.updatedAt || article.publishedAt,
+      primaryImageOfPage: {
+        '@type': 'ImageObject',
+        url: publicArchiveShareImageUrl(),
+        width: 1200,
+        height: 630
+      }
+    },
+    {
+      '@type': 'BlogPosting',
+      '@id': articleId,
+      url: canonicalUrl,
+      mainEntityOfPage: { '@id': pageId },
+      headline: cleanTitle,
+      alternativeHeadline: article.subtitle || undefined,
+      description: cleanDescription,
+      inLanguage: 'tr',
+      articleSection: 'Konu Rehberi',
+      articleBody: topicArticleBodyText(article),
+      keywords: (article.keywords || []).join(', '),
+      about: (article.keywords || []).slice(0, 8).map(name => ({ '@type': 'Thing', name })),
+      mentions: quranMentions,
+      citation: citations,
+      author: publicArchiveAnswerAuthor(),
+      publisher: { '@id': `${publicArchiveCanonicalUrl('/')}#organization` },
+      datePublished: article.publishedAt,
+      dateModified: article.updatedAt || article.publishedAt
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': breadcrumbId,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: publicArchiveCanonicalUrl('/') },
+        { '@type': 'ListItem', position: 2, name: 'Konu Rehberleri', item: publicArchiveCanonicalUrl('/#konu-rehberleri') },
+        { '@type': 'ListItem', position: 3, name: article.title, item: canonicalUrl }
+      ]
+    }
+  ];
+  if (relatedItemList.length) {
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${canonicalUrl}#related-questions`,
+      name: `${article.title} ile ilgili sorular`,
+      numberOfItems: relatedItemList.length,
+      itemListElement: relatedItemList
+    });
+  }
+  return {
+    '@context': 'https://schema.org',
+    '@graph': graph
+  };
+}
+
+function topicArticleRelatedQuestions(article = {}, limit = 8) {
+  const terms = (article.relatedTerms || article.keywords || [article.title]).map(publicArchiveComparable).filter(Boolean);
+  const preferredCategory = String(article.categorySlug || '').trim();
+  const scored = uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa)
+    .map(entry => {
+      const categorySlugs = categorySlugsFor(entry);
+      const categoryNames = categoriesFor(entry).map(category => category.name).join(' ');
+      const references = quranReferenceLabels(entry, 8).join(' ');
+      const titleText = publicArchiveComparable(entry.title || entry.question || '');
+      const fullText = publicArchiveComparable([entry.title, entry.question, entry.summary, plainText(entry.answer || entry.answerText || entry.answer_text), categoryNames, references].join(' '));
+      let score = categorySlugs.includes(preferredCategory) ? 110 : 0;
+      for (const term of terms) {
+        if (!term) continue;
+        if (titleText.includes(term)) score += 42;
+        else if (fullText.includes(term)) score += 22;
+      }
+      if (references) score += 8;
+      return { entry, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || normalizedReadCount(b.entry) - normalizedReadCount(a.entry) || entryPublishedTime(b.entry) - entryPublishedTime(a.entry));
+  return scored.slice(0, limit).map(item => item.entry);
+}
+
+function renderTopicArticleBlock(block = {}, article = {}) {
+  if (block.type === 'heading') {
+    return `<h2 id="${escapeHtml(block.id || '')}">${escapeHtml(block.text)}</h2>`;
+  }
+  if (block.type === 'evidence') {
+    return `
+      <aside class="pa-topic-evidence">
+        <div class="pa-topic-evidence-head">
+          <strong>${escapeHtml(block.reference)}</strong>
+          <span>${escapeHtml(block.note)}</span>
+        </div>
+        <p>${topicArticleInlineHtml(block.text, article)}</p>
+      </aside>
+    `;
+  }
+  return `<p>${topicArticleInlineHtml(block.text || '', article)}</p>`;
+}
+
+function topicArticleSourcesHtml(article = {}) {
+  if (!Array.isArray(article.sources) || !article.sources.length) return '';
+  return `
+    <ol class="pa-topic-source-list">
+      ${article.sources.map(source => `
+        <li id="kaynak-${escapeHtml(source.id)}">
+          ${source.url ? `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
+            <span>[${escapeHtml(source.id)}]</span>
+            <strong>${escapeHtml(source.title)}</strong>
+          </a>` : `<span class="pa-topic-source-entry">
+            <span>[${escapeHtml(source.id)}]</span>
+            <strong>${escapeHtml(source.title)}</strong>
+          </span>`}
+          ${source.meta ? `<small>${escapeHtml(source.meta)}</small>` : ''}
+        </li>
+      `).join('')}
+    </ol>
+  `;
+}
+
+function topicArticleAsideHtml(article = {}, blocks = []) {
+  const headings = blocks.filter(block => block.type === 'heading' && !block.isSourcesHeading);
+  return `
+    <aside class="pa-topic-article-aside" aria-label="Makale bağlantıları">
+      ${headings.length ? `
+        <nav class="pa-topic-toc" aria-label="İçindekiler">
+          <strong>İçindekiler</strong>
+          ${headings.map(block => `<a href="#${escapeHtml(block.id)}">${escapeHtml(block.text)}</a>`).join('')}
+        </nav>
+      ` : ''}
+      ${(article.quranReferences || []).length ? `
+        <section class="pa-topic-proof-card">
+          <strong>Delil atıfları</strong>
+          <div>
+            ${(article.quranReferences || []).map(reference => {
+              const hrefValue = `${PREVIEW_BASE}/arama?q=${encodeURIComponent(reference.label)}`;
+              return `<a href="${escapeHtml(hrefValue)}">${escapeHtml(reference.label)}</a>`;
+            }).join('')}
+          </div>
+        </section>
+      ` : ''}
+      <section class="pa-topic-proof-card">
+        <strong>Konu bağlantısı</strong>
+        <a href="${PREVIEW_BASE}/kategori/${escapeHtml(article.categorySlug || 'allaha-ulasmayi-dilemek')}">Allah’a Ulaşmayı Dilemek soruları</a>
+      </section>
+    </aside>
+  `;
+}
+
+function renderTopicGuideArticle(slug) {
+  const article = publicTopicArticleBySlug(slug);
+  if (!article) return renderNotFound();
+  const annotatedBlocks = annotatedTopicArticleBlocks(article);
+  const relatedQuestions = topicArticleRelatedQuestions(article, 8);
+  const canonicalPath = publicTopicArticlePath(article);
+  const description = compactSeoText(article.description || article.summary || publicArchiveFixtures.brand.sentence, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
+  return renderShell({
+    active: 'archive',
+    title: `${article.title} Nedir?`,
+    description,
+    canonicalPath,
+    structuredData: topicArticleStructuredData(article, relatedQuestions),
+    headMeta: {
+      contentType: 'article',
+      authorName: publicArchiveFixtures.brand.authorName,
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt || article.publishedAt,
+      section: 'Konu Rehberi',
+      tags: article.keywords || []
+    },
+    searchSeedEntries: relatedQuestions,
+    searchSeedCategories: [publicCategoryBySlug(article.categorySlug)].filter(Boolean),
+    content: `
+      <main class="pa-main pa-topic-article-main">
+        ${breadcrumb([{ label: 'Konu Rehberleri', href: `${PREVIEW_BASE}/#konu-rehberleri` }, { label: article.title }])}
+        <header class="pa-topic-article-hero">
+          <p class="pa-kicker">${escapeHtml(article.series || 'Konu Rehberi')}</p>
+          <h1>${escapeHtml(article.title)}</h1>
+          <p class="pa-topic-article-subtitle">${escapeHtml(article.subtitle || article.description || '')}</p>
+          <div class="pa-collection-meta">
+            ${article.readTime ? `<span>${escapeHtml(article.readTime)} dk okuma</span>` : ''}
+            <span>${escapeHtml(String((article.sources || []).length))} kaynak</span>
+            <span>${escapeHtml(String((article.quranReferences || []).length))} ayet atfı</span>
+          </div>
+        </header>
+        <div class="pa-topic-article-layout">
+          <article class="pa-topic-article-body" id="makale">
+            ${annotatedBlocks.map(block => renderTopicArticleBlock(block, article)).join('')}
+            ${topicArticleSourcesHtml(article)}
+          </article>
+          ${topicArticleAsideHtml(article, annotatedBlocks)}
+        </div>
+        ${relatedQuestions.length ? `
+          <section class="pa-section pa-topic-article-related" id="ilgili-sorular">
+            ${sectionHeader('Allah’a ulaşmayı dilemekle ilgili sorular', 'Tümünü Gör', `${PREVIEW_BASE}/kategori/${article.categorySlug || 'allaha-ulasmayi-dilemek'}`)}
+            <div class="pa-list">${relatedQuestions.map(entry => questionCard(entry, true)).join('')}</div>
+          </section>
+        ` : ''}
+      </main>
+    `
+  });
+}
+
 function questionCard(entry, options = {}) {
   const cardOptions = typeof options === 'boolean' ? { compact: options } : options;
   const compact = Boolean(cardOptions.compact);
@@ -1415,20 +1711,27 @@ function homeCollectionEntries(kind = 'featured', entries = publicArchiveFixture
 }
 
 function homeReadingPathHref(item = {}) {
+  const article = item.articleSlug ? publicTopicArticleBySlug(item.articleSlug) : null;
+  if (article?.slug) return `${PREVIEW_BASE}${publicTopicArticlePath(article)}`;
   const category = publicCategoryBySlug(item.slug) || publicCategoryBySlug(item.fallbackSlug);
   if (category?.slug) return `${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}`;
   const query = item.query || item.title || '';
   return `${PREVIEW_BASE}/arama?q=${encodeURIComponent(query)}`;
 }
 
-function homeReadingPathItems(isClone = false) {
-  return HOME_READING_PATHS.map(item => `
-    <a class="pa-reading-card" href="${homeReadingPathHref(item)}"${isClone ? ' tabindex="-1" aria-hidden="true"' : ''}>
-      <span class="pa-reading-mark">${iconSvg('topics')}</span>
-      <strong>${escapeHtml(item.title)}</strong>
-      <span>${escapeHtml(item.text)}</span>
-    </a>
-  `).join('');
+function homeReadingPathItems() {
+  return HOME_READING_PATHS.map(item => {
+    const article = item.articleSlug ? publicTopicArticleBySlug(item.articleSlug) : null;
+    const isArticle = Boolean(article?.slug);
+    return `
+      <a class="pa-reading-card" href="${escapeHtml(homeReadingPathHref(item))}"${isArticle ? ' data-topic-article-link="true"' : ''}>
+        <span class="pa-reading-mark">${iconSvg('topics')}</span>
+        <strong>${escapeHtml(item.title)}</strong>
+        <span class="pa-reading-copy">${escapeHtml(item.text)}</span>
+        <span class="pa-reading-action">${isArticle ? 'Rehbere Başla' : 'Soruları gör'} ${iconSvg('chevron-right', 'pa-inline-chevron')}</span>
+      </a>
+    `;
+  }).join('');
 }
 
 function homeIntentSection() {
@@ -1490,17 +1793,14 @@ function homeQuranEvidenceSection(items = []) {
 
 function homeReadingPathSection() {
   return `
-    <section class="pa-section pa-topic-path" aria-labelledby="pa-reading-path-title">
+    <section class="pa-section pa-topic-path" id="konu-rehberleri" aria-labelledby="pa-reading-path-title">
       <div class="pa-topic-path-head">
         <p class="pa-kicker">Konu rehberleri</p>
         <h2 id="pa-reading-path-title">Temel konuları sırayla takip edin.</h2>
         <p>Her başlık, aynı kavram etrafındaki soru-cevapları bir araya getirir ve okumayı daha derli toplu ilerletir.</p>
       </div>
-      <div class="pa-reading-track" data-reading-slider aria-label="Konu rehberleri">
-        <div class="pa-reading-rail" data-reading-rail>
-          <div class="pa-reading-set" data-reading-set>${homeReadingPathItems(false)}</div>
-          <div class="pa-reading-set" aria-hidden="true">${homeReadingPathItems(true)}</div>
-        </div>
+      <div class="pa-reading-grid" aria-label="Konu rehberleri">
+        ${homeReadingPathItems()}
       </div>
     </section>
   `;
@@ -2562,6 +2862,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   const articleTags = [...new Set((Array.isArray(headMeta.tags) ? headMeta.tags : []).map(plainText).filter(Boolean))].slice(0, 12);
   const articleSection = plainText(headMeta.section || '');
   const authorName = plainText(headMeta.authorName || '');
+  const isArticlePage = Boolean(questionSlug || headMeta.contentType === 'article');
   const structuredItems = [
     publicArchiveOrganizationStructuredData(),
     publicArchiveSiteStructuredData(),
@@ -2579,7 +2880,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="robots" content="${robotsContent}">
   <meta name="googlebot" content="${robotsContent}">
   <meta name="description" content="${escapeHtml(safeDescription)}">
-  ${questionSlug && authorName ? `<meta name="author" content="${escapeHtml(authorName)}">` : ''}
+  ${isArticlePage && authorName ? `<meta name="author" content="${escapeHtml(authorName)}">` : ''}
   <meta name="application-name" content="${escapeHtml(publicAppName)}">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2592,13 +2893,13 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta property="og:site_name" content="${escapeHtml(publicAppName)}">
   <meta property="og:title" content="${escapeHtml(safeTitle)}">
   <meta property="og:description" content="${escapeHtml(safeDescription)}">
-  <meta property="og:type" content="${questionSlug ? 'article' : 'website'}">
+  <meta property="og:type" content="${isArticlePage ? 'article' : 'website'}">
   ${canonicalHref ? `<meta property="og:url" content="${escapeHtml(canonicalHref)}">` : ''}
   <meta property="og:updated_time" content="${escapeHtml(openGraphUpdatedTime)}">
-  ${questionSlug && publishedTime ? `<meta property="article:published_time" content="${escapeHtml(publishedTime)}">` : ''}
-  ${questionSlug && modifiedTime ? `<meta property="article:modified_time" content="${escapeHtml(modifiedTime)}">` : ''}
-  ${questionSlug && articleSection ? `<meta property="article:section" content="${escapeHtml(articleSection)}">` : ''}
-  ${questionSlug ? articleTags.map(tag => `<meta property="article:tag" content="${escapeHtml(tag)}">`).join('\n  ') : ''}
+  ${isArticlePage && publishedTime ? `<meta property="article:published_time" content="${escapeHtml(publishedTime)}">` : ''}
+  ${isArticlePage && modifiedTime ? `<meta property="article:modified_time" content="${escapeHtml(modifiedTime)}">` : ''}
+  ${isArticlePage && articleSection ? `<meta property="article:section" content="${escapeHtml(articleSection)}">` : ''}
+  ${isArticlePage ? articleTags.map(tag => `<meta property="article:tag" content="${escapeHtml(tag)}">`).join('\n  ') : ''}
   <meta property="og:image" content="${escapeHtml(shareImageHref)}">
   <meta property="og:image:secure_url" content="${escapeHtml(shareImageHref)}">
   <meta property="og:image:type" content="image/png">
@@ -2993,96 +3294,6 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.removeEventListener('resize', measure);
             window.removeEventListener('load', measure);
             window.removeEventListener('pagehide', pageHideHandler);
-          });
-        });
-      }
-      function bindReadingPathSliders() {
-        var reduceMotion = false;
-        try {
-          reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        } catch (error) {}
-        document.querySelectorAll('[data-reading-slider]').forEach(function(track){
-          if (track.dataset.boundReadingSlider === 'true') return;
-          track.dataset.boundReadingSlider = 'true';
-          var rail = track.querySelector('[data-reading-rail]');
-          var firstSet = track.querySelector('[data-reading-set]');
-          if (!rail || !firstSet) return;
-          var timer = 0;
-          var resumeTimer = 0;
-          var normalizeTimer = 0;
-          var running = true;
-          function gap() {
-            var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
-            return styles ? (parseFloat(styles.columnGap || styles.gap || '0') || 0) : 0;
-          }
-          function cycleWidth() {
-            return firstSet.getBoundingClientRect().width + gap();
-          }
-          function stepWidth() {
-            var cards = firstSet.querySelectorAll('.pa-reading-card');
-            if (cards.length > 1) return Math.max(1, cards[1].offsetLeft - cards[0].offsetLeft);
-            if (cards.length) return Math.max(1, cards[0].getBoundingClientRect().width + gap());
-            return Math.max(1, Math.round(track.clientWidth * 0.84));
-          }
-          function normalizePosition() {
-            var cycle = cycleWidth();
-            if (cycle > 0 && track.scrollLeft >= cycle) {
-              track.scrollTo({ left: track.scrollLeft - cycle, behavior: 'auto' });
-            }
-          }
-          function schedule(delay) {
-            if (reduceMotion || !running) return;
-            window.clearTimeout(timer);
-            timer = window.setTimeout(advance, delay || 3200);
-          }
-          function advance() {
-            if (document.hidden) return schedule(1800);
-            normalizePosition();
-            var nextLeft = track.scrollLeft + stepWidth();
-            var cycle = cycleWidth();
-            if (cycle > 0 && nextLeft >= cycle) {
-              track.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-              track.scrollTo({ left: nextLeft, behavior: 'smooth' });
-            }
-            window.clearTimeout(normalizeTimer);
-            normalizeTimer = window.setTimeout(normalizePosition, 760);
-            schedule(3400);
-          }
-          function pause() {
-            window.clearTimeout(timer);
-            window.clearTimeout(resumeTimer);
-            try { track.scrollTo({ left: track.scrollLeft, behavior: 'auto' }); } catch (error) {}
-          }
-          function resume() {
-            if (reduceMotion) return;
-            window.clearTimeout(resumeTimer);
-            resumeTimer = window.setTimeout(function(){ schedule(900); }, 1700);
-          }
-          track.addEventListener('pointerdown', pause);
-          track.addEventListener('pointerup', resume);
-          track.addEventListener('pointercancel', resume);
-          track.addEventListener('wheel', resume, { passive: true });
-          track.addEventListener('mouseenter', pause);
-          track.addEventListener('mouseleave', resume);
-          track.addEventListener('focusin', pause);
-          track.addEventListener('focusout', resume);
-          window.addEventListener('resize', normalizePosition, { passive: true });
-          schedule(1600);
-          addPageCleanup(function(){
-            running = false;
-            window.clearTimeout(timer);
-            window.clearTimeout(resumeTimer);
-            window.clearTimeout(normalizeTimer);
-            track.removeEventListener('pointerdown', pause);
-            track.removeEventListener('pointerup', resume);
-            track.removeEventListener('pointercancel', resume);
-            track.removeEventListener('wheel', resume);
-            track.removeEventListener('mouseenter', pause);
-            track.removeEventListener('mouseleave', resume);
-            track.removeEventListener('focusin', pause);
-            track.removeEventListener('focusout', resume);
-            window.removeEventListener('resize', normalizePosition);
           });
         });
       }
@@ -4330,7 +4541,6 @@ function renderShell({ title, description, active, content, status = 200, questi
         trackPublicVisit();
         bindArchiveAlphaIndexes();
         bindConceptSliders();
-        bindReadingPathSliders();
         bindLiveSearchControls();
         bindActiveStatsCounters();
         bindScrollTopControl();
@@ -4370,6 +4580,8 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
     if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
     if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
+    const topicArticleMatch = pathname.match(publicArchiveRoutePattern('konu-rehberi'));
+    if (topicArticleMatch) return renderTopicGuideArticle(topicArticleMatch[1]);
     const questionMatch = pathname.match(publicArchiveRoutePattern('soru'));
     if (questionMatch) return renderQuestion(questionMatch[1]);
     const topicMatch = pathname.match(publicArchiveRoutePattern('konu'));
@@ -4463,6 +4675,7 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, 'iletisim'));
   router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, 'gizlilik'));
   router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, 'kullanim-kosullari'));
+  router.get('/konu-rehberi/:slug', (req, res, next) => sendRoute(req, res, next, `konu-rehberi/${req.params.slug}`));
   router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `soru/${req.params.slug}`));
   router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `konu/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
   router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `kategori/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));

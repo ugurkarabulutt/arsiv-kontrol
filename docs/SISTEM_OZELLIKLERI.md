@@ -88,7 +88,7 @@ Sistemde özel arşiv kararları kod ve kural katmanında korunur.
 - `vücud` ve `vücût` yerine `vücut` doğru kabul edilir.
 - `Hazreti İsa` ifadesine her zaman `(A.S)` eklenir.
 - `Hadîs-i Şerif` standardında `Hadîs` şapkalı, `Şerif` şapkasızdır.
-- Sure isimleri mihr.com imlâ standardına göre değerlendirilir.
+- Sure isimleri arşiv imlâ standardına göre değerlendirilir.
 - Sure isimlerinde yalnızca büyük/küçük harf farkı tek başına hata sayılmaz.
 - Asıl kontrol şapka, apostrof ve harf dizilimidir.
 

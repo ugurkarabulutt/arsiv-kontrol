@@ -10,6 +10,7 @@ const readXlsxFile = require('read-excel-file/node');
 const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
 const { canReadRecord, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
+const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
 const {
   LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
   candidateTextHashes, finalizeResult, normalizeText, textHash
@@ -1075,10 +1076,10 @@ const DEFAULT_STANDARDS = [
     createdAt: '2026-07-01T00:00:00.000Z'
   },
   {
-    id: 'sure-adlari-mihr-2026-07',
+    id: 'sure-adlari-arsiv-2026-07',
     title: 'Sure isimleri standardı',
     category: 'Sure Adları',
-    content: 'Sure isimleri mihr.com imlâ standardına göre değerlendirilir. Büyük/küçük harf farkı tek başına hata sayılmaz; asıl kontrol şapka, apostrof ve harf dizilimidir.',
+    content: 'Sure isimleri arşiv imlâ standardına göre değerlendirilir. Büyük/küçük harf farkı tek başına hata sayılmaz; asıl kontrol şapka, apostrof ve harf dizilimidir.',
     createdAt: '2026-07-02T00:00:00.000Z'
   },
   {
@@ -14224,6 +14225,11 @@ function publicArchiveCategorySeoIndexable(slug = '', questionCount = 0) {
   return (Number.isFinite(count) && count >= PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS) || PUBLIC_CATEGORY_SEO_SLUGS.has(String(slug || ''));
 }
 
+function publicArchiveTopicArticleEntries() {
+  return Object.values(publicArchiveTopicArticles || {})
+    .filter(article => article?.slug && article?.path && article?.title);
+}
+
 async function publicArchiveSitemapEntries() {
   const today = new Date().toISOString();
   const entries = [
@@ -14232,6 +14238,7 @@ async function publicArchiveSitemapEntries() {
     publicArchiveSitemapEntry('/one-cikan-sorular', today, '0.85', 'daily'),
     publicArchiveSitemapEntry('/son-yayinlanan-sorular', today, '0.85', 'daily'),
     publicArchiveSitemapEntry('/kategoriler', today, '0.8', 'weekly'),
+    ...publicArchiveTopicArticleEntries().map(article => publicArchiveSitemapEntry(article.path, article.updatedAt || article.publishedAt || today, '0.88', 'monthly')),
     publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/nasil-kullanilir', today, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/iletisim', today, '0.3', 'monthly')
@@ -14331,6 +14338,7 @@ async function publicArchiveLlmsHandler(req, res) {
       .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
       .slice(0, 14);
     const recentRows = Array.isArray(recentResult.data) ? recentResult.data.filter(row => row?.slug) : [];
+    const topicArticles = publicArchiveTopicArticleEntries();
     res.type('text/plain; charset=utf-8');
     res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
     if (!publicArchiveRootIndexingAllowed()) res.set('X-Robots-Tag', 'noindex, nofollow');
@@ -14351,12 +14359,19 @@ async function publicArchiveLlmsHandler(req, res) {
       `- Öne çıkan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/one-cikan-sorular`,
       `- Son yayınlanan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/son-yayinlanan-sorular`,
       `- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`,
+      ...topicArticles.map(article => `- ${article.title}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`),
       `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
       '',
       'Yapısal veri:',
       '- Tekil soru-cevap sayfaları schema.org WebPage, Article, Question, Answer ve BreadcrumbList JSON-LD taşır.',
       '- Arşiv ve güçlü kategori sayfaları schema.org CollectionPage ve ItemList olarak işaretlenir.',
+      '- Konu rehberi yazıları schema.org BlogPosting, WebPage, BreadcrumbList ve ilişkili soru ItemList verisi taşır.',
       '- QAPage kullanılmaz; sayfalar kullanıcı cevaplarının yarıştığı forum sayfası değil, yayınlanmış tekil cevap arşividir.',
+      ...(topicArticles.length ? [
+        '',
+        'Konu rehberleri:',
+        ...topicArticles.map(article => `- ${article.title}: ${article.description || article.summary || ''} ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`)
+      ] : []),
       '',
       'Index önceliği:',
       '- Tekil soru-cevap sayfaları ve sitemap içinde yer alan güçlü kategori sayfaları public kaynak kabul edilir.',

@@ -1082,7 +1082,7 @@ test('11 Temmuz yeni feedback vakalari kullanici lehine korunur', () => {
     '6 . C\u00c2S\u0130YE-19 ve 4 . ENF\u00c2L-73 tablo sablonudur.',
     'Efendimizin sohbetlerinde sagir yazimi geciyor.',
     'Ayet icinde rahmete kelimesi degismez.',
-    'ukba tdk ve mihr.com kullanimidir.',
+    'ukba arşiv standardı kullanimidir.',
     'Zur\u00fbf sure adi aslinda Zuhr\u00fbf olmali.'
   ].join(' ');
 
@@ -1123,7 +1123,7 @@ test('11 Temmuz yeni feedback vakalari kullanici lehine korunur', () => {
   assert.ok(result.correctedText.includes('6 . C\u00c2S\u0130YE-19'));
   assert.ok(result.correctedText.includes('sagir yazimi'));
   assert.ok(result.correctedText.includes('rahmete kelimesi'));
-  assert.ok(result.correctedText.includes('ukba tdk'));
+  assert.ok(result.correctedText.includes('ukba arşiv standardı'));
   assert.ok(result.correctedText.includes('Zuhr\u00fbf sure adi'));
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
     ["Kur'an'da", "Kur'ân'da"],

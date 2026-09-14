@@ -1,5 +1,38 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Taslağı
+
+- Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` konu rehberi
+  yazısına dönüştürüldü. İçerik `public-archive-topic-articles.json` içinde
+  başlık, paragraf, ayet/sohbet kaynakları ve SEO alanlarıyla tutuluyor.
+- Ana sayfadaki `Allah’a Ulaşmayı Dilemek` rehber kartı
+  `/konu-rehberi/allaha-ulasmayi-dilemek` rotasına bağlandı. Sayfa PDF
+  formatını koruyan makale gövdesi, kaynak listesi, yan içerik özeti ve altta
+  ilgili soru-cevap kartlarıyla render ediliyor.
+- Kullanıcı kararıyla konu rehberi slider özelliği kapatıldı. Ana sayfadaki
+  rehber alanı artık tek setli responsive grid olarak render ediliyor; kopya
+  ray, otomatik kaydırma JS'i ve slider DOM markerları yok. Blog bağlantısı
+  görünür olsun diye `Allah’a Ulaşmayı Dilemek` kartına `Rehbere Başla` aksiyonu
+  eklendi. Asset cache kırıcı `20260914-topic-blog-static-grid-v2`.
+- SEO/LLM için `BlogPosting`, `WebPage`, `BreadcrumbList`, URL'siz delil
+  atıfları ve ilgili soru `ItemList` schema grafı eklendi. `sitemap.xml` ve
+  `llms.txt` konu rehberi yazısını kapsayacak hale getirildi.
+- Kullanıcı kararıyla yasaklanan dış alan adı public kaynak olarak tamamen
+  kaldırıldı. Görünen metin, kaynak listesi, dış link, provider/publisher alanı,
+  JSON-LD ve LLM çıktılarında bu kaynak sinyali üretilmez; ayet delilleri
+  URL'siz ve site içi bağlamla kalır.
+- Doğrulama: `npm.cmd run check` başarılı; 156/156 test geçti. Playwright
+  390x844 ana sayfa kontrolünde 12 rehber kartı, tek kolon grid, görünür
+  `Rehbere Başla`, doğru blog href'i, 0 slider DOM markerı, 0 yatay taşma ve 0
+  console/resource hatası doğrulandı. `rg -i`
+  taramasında yasaklı dış alan adı ve eski URL kalıpları kalmadı. `git diff
+  --check` hata vermedi, yalnız mevcut CRLF uyarıları görüldü. Playwright
+  390x844 ve 1440x1000 ön izlemede title, H1, blog gövdesi, ilgili sorular,
+  BlogPosting JSON-LD, 0 yatay taşma ve 0 console/resource hatası doğrulandı.
+- Durum: Bu paket taslak kod olarak `.tmp-admin-workspaces-v2` çalışma ağacında
+  duruyor. Daha önceki canlıya alma sınırı korunarak henüz commit/push veya
+  production deploy yapılmadı.
+
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 
 - Kullanıcı ana sayfadaki bazı alanların ilk tıklamada açılmadığını ve

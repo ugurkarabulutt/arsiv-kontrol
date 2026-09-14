@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260913-fast-home-click-v6"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260914-topic-blog-static-grid-v2"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260913-fast-home-click-v6"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260913-fast-home-click-v6"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260914-topic-blog-static-grid-v2"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260914-topic-blog-static-grid-v2"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
@@ -800,12 +800,12 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /\/public-preview\/son-yayinlanan-sorular/);
   assert.match(home, /Ne öğrenmek istiyorsunuz\?/);
   assert.match(home, /Konu rehberleri/);
+  assert.match(home, /\/public-preview\/konu-rehberi\/allaha-ulasmayi-dilemek/);
   assert.match(home, /pa-topic-path/);
-  assert.match(home, /data-reading-slider/);
-  assert.match(home, /data-reading-rail/);
-  assert.match(home, /data-reading-set/);
-  assert.match(home, /pa-reading-rail/);
+  assert.match(home, /pa-reading-grid/);
+  assert.match(home, /Rehbere Başla/);
   assert.match(home, /pa-reading-mark/);
+  assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set|pa-reading-rail|pa-reading-set/);
   assert.doesNotMatch(home, /pa-reading-index/);
   assert.match(home, /pa-discovery-map/);
   assert.doesNotMatch(home, /Öne Çıkan Cevaplar/);
@@ -833,6 +833,32 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /pa-question-excerpt/);
   assert.doesNotMatch(home, /Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur\./);
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
+});
+
+test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema and related questions', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
+  assert.match(preview.html, /Kalpten bir dilekle başlayan hidayet/);
+  assert.match(preview.html, /pa-topic-article-body/);
+  assert.match(preview.html, /RÛM 31/);
+  assert.match(preview.html, /Ayet ve metin notu/);
+  assert.match(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  const disallowedSourcePattern = new RegExp(['mih' + 'r\\.com', 'Kuran' + 'TefsirAyet', 'dokumanli' + '-sohbet'].join('|'), 'i');
+  assert.doesNotMatch(preview.html, disallowedSourcePattern);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/allaha-ulasmayi-dilemek#article"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/allaha-ulasmayi-dilemek#related-questions"/);
+  assert.match(preview.html, /property="article:published_time"/);
+  assertOnlyPublicPreviewApi(preview.html);
+
+  const rootArticle = renderPublicArchivePreviewRoute('/konu-rehberi/allaha-ulasmayi-dilemek', {}, {
+    ...publicArchiveFixtures,
+    basePath: '',
+    noindex: false
+  }).html;
+  assert.match(rootArticle, /rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/allaha-ulasmayi-dilemek"/);
+  assert.match(rootArticle, /<meta name="robots" content="index,follow">/);
 });
 
 test('home page question selection deduplicates repeated question text', () => {

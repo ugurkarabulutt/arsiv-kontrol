@@ -242,7 +242,7 @@ Her standartta:
 
 - `din` doğru kabul edilir
 - `herşey` birleşik kabul edilir
-- sure isimleri mihr.com imlasına göre değerlendirilir
+- sure isimleri arşiv imla standardına göre değerlendirilir
 - `şer -> şerr` yalnız bağımsız kullanımda uygulanır
 
 ### 5.8 Onay ve İnceleme Merkezi
