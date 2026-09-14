@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260914-topic-blog-clean-v3';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260914-topic-flow-end-v4';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -606,33 +606,6 @@ const HERO_CONCEPT_ITEMS = [
   ['Allah’a Ulaşmayı Dilemek', 'allaha-ulasmayi-dilemek'],
   ['Nefs', 'nefs'],
   ['Ruh', 'ruh']
-];
-
-const HOME_INTENT_CARDS = [
-  {
-    title: 'Bir kavramı anlamak istiyorum',
-    text: 'Hidayet, takva, zikir ve teslimiyet gibi ana kavramlara doğrudan girin.',
-    icon: 'search',
-    href: () => `${PREVIEW_BASE}/arama?q=${encodeURIComponent('Hidayet nedir')}`
-  },
-  {
-    title: 'Bir ayetin işaret ettiği konuyu okuyacağım',
-    text: 'Cevaplarda geçen sure ve ayet atıflarıyla aynı bağlamdaki sorulara geçin.',
-    icon: 'tevhid',
-    href: () => `${PREVIEW_BASE}/arama?q=${encodeURIComponent('Kur’ân hidayet ayetleri')}`
-  },
-  {
-    title: 'Gündelik bir meseleyi sorularla takip edeceğim',
-    text: 'Dua, tövbe, ibadet bilinci ve tevekkül başlıklarından okumaya başlayın.',
-    icon: 'dua',
-    href: () => `${PREVIEW_BASE}/kategori/dua`
-  },
-  {
-    title: 'Yeni cevapları sırayla okuyacağım',
-    text: 'Arşive eklenen son soru ve cevapları yayın zamanına göre görün.',
-    icon: 'guncel',
-    href: () => `${PREVIEW_BASE}/son-yayinlanan-sorular`
-  }
 ];
 
 const HOME_READING_PATHS = [
@@ -1438,17 +1411,23 @@ function renderTopicArticleBlock(block = {}, article = {}) {
 
 function topicArticleAsideHtml(article = {}, blocks = []) {
   const headings = blocks.filter(block => block.type === 'heading');
+  if (!headings.length) return '';
   return `
     <aside class="pa-topic-article-aside" aria-label="Makale bağlantıları">
-      ${headings.length ? `
-        <nav class="pa-topic-toc" aria-label="İçindekiler">
-          <strong>İçindekiler</strong>
-          ${headings.map(block => `<a href="#${escapeHtml(block.id)}">${escapeHtml(block.text)}</a>`).join('')}
-        </nav>
-      ` : ''}
+      <nav class="pa-topic-toc" aria-label="İçindekiler">
+        <strong>İçindekiler</strong>
+        ${headings.map(block => `<a href="#${escapeHtml(block.id)}">${escapeHtml(block.text)}</a>`).join('')}
+      </nav>
+    </aside>
+  `;
+}
+
+function topicArticleFooterLinksHtml(article = {}) {
+  return `
+    <section class="pa-topic-article-support" aria-label="Makale sonu bağlantıları">
       ${(article.quranReferences || []).length ? `
         <section class="pa-topic-proof-card">
-          <strong>Delil atıfları</strong>
+          <strong>Bu yazıda geçen ayetler</strong>
           <div>
             ${(article.quranReferences || []).map(reference => {
               const hrefValue = `${PREVIEW_BASE}/arama?q=${encodeURIComponent(reference.label)}`;
@@ -1458,10 +1437,10 @@ function topicArticleAsideHtml(article = {}, blocks = []) {
         </section>
       ` : ''}
       <section class="pa-topic-proof-card">
-        <strong>Konu bağlantısı</strong>
+        <strong>Bu konudaki sorular</strong>
         <a href="${PREVIEW_BASE}/kategori/${escapeHtml(article.categorySlug || 'allaha-ulasmayi-dilemek')}">Allah’a Ulaşmayı Dilemek soruları</a>
       </section>
-    </aside>
+    </section>
   `;
 }
 
@@ -1506,6 +1485,7 @@ function renderTopicGuideArticle(slug) {
           </article>
           ${topicArticleAsideHtml(article, annotatedBlocks)}
         </div>
+        ${topicArticleFooterLinksHtml(article)}
         ${relatedQuestions.length ? `
           <section class="pa-section pa-topic-article-related" id="ilgili-sorular">
             ${sectionHeader('Allah’a ulaşmayı dilemekle ilgili sorular', 'Tümünü Gör', `${PREVIEW_BASE}/kategori/${article.categorySlug || 'allaha-ulasmayi-dilemek'}`)}
@@ -1705,23 +1685,6 @@ function homeReadingPathItems() {
       </a>
     `;
   }).join('');
-}
-
-function homeIntentSection() {
-  return `
-    <section class="pa-section pa-home-intents">
-      ${sectionHeader('Ne öğrenmek istiyorsunuz?')}
-      <div class="pa-intent-grid">
-        ${HOME_INTENT_CARDS.map(item => `
-          <a class="pa-intent-card" href="${escapeHtml(item.href())}">
-            <span class="pa-intent-icon">${iconSvg(item.icon)}</span>
-            <strong>${escapeHtml(item.title)}</strong>
-            <span>${escapeHtml(item.text)}</span>
-          </a>
-        `).join('')}
-      </div>
-    </section>
-  `;
 }
 
 function quranEvidenceEntries(entries = [], limit = 4) {
@@ -1936,8 +1899,6 @@ function renderHome() {
         </section>` : ''}
 
         ${!dataUnavailable ? activeArchiveStatsBand(publicArchiveFixtures.qa) : ''}
-
-        ${!dataUnavailable ? homeIntentSection() : ''}
 
         ${!dataUnavailable && latestList.length ? `<section class="pa-section">
           ${sectionHeader('Son Yayınlanan Sorular', 'Son yayınlananları gör', `${PREVIEW_BASE}/son-yayinlanan-sorular`)}
@@ -4440,7 +4401,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               }
             });
           }
-          addSelector('.pa-archive-shortcut, .pa-intent-card, .pa-reading-card');
+          addSelector('.pa-archive-shortcut, .pa-reading-card');
           addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]');
           addSelector('.pa-mobile-nav a[href]');
           addSelector('.pa-page a[href], .pa-mobile-nav a[href]');
@@ -4457,7 +4418,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               observer.unobserve(element);
             });
           }, { rootMargin: '1200px 0px 1200px 0px', threshold: 0.01 });
-          Array.prototype.slice.call(document.querySelectorAll('.pa-archive-shortcut, .pa-intent-card, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
+          Array.prototype.slice.call(document.querySelectorAll('.pa-archive-shortcut, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
             .forEach(function(element){ observer.observe(element); });
         }
         if (!window.__publicArchiveFastNavBound) {

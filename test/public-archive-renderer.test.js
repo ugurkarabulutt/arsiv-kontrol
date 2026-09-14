@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260914-topic-blog-clean-v3"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260914-topic-flow-end-v4"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260914-topic-blog-clean-v3"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260914-topic-blog-clean-v3"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260914-topic-flow-end-v4"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260914-topic-flow-end-v4"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
@@ -798,7 +798,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /\/public-preview\/one-cikan-sorular/);
   assert.match(home, /Son yayınlananları gör/);
   assert.match(home, /\/public-preview\/son-yayinlanan-sorular/);
-  assert.match(home, /Ne öğrenmek istiyorsunuz\?/);
+  assert.doesNotMatch(home, /Ne öğrenmek istiyorsunuz\?/);
+  assert.doesNotMatch(home, /pa-home-intents/);
+  assert.doesNotMatch(home, /pa-intent-card/);
   assert.match(home, /Konu rehberleri/);
   assert.match(home, /\/public-preview\/konu-rehberi\/allaha-ulasmayi-dilemek/);
   assert.match(home, /pa-topic-path/);
@@ -843,8 +845,20 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.match(preview.html, /Kalpten bir dilekle başlayan hidayet/);
   assert.match(preview.html, /pa-topic-article-body/);
+  assert.match(preview.html, /pa-topic-article-support/);
+  assert.match(preview.html, /Bu yazıda geçen ayetler/);
+  assert.match(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /RÛM 31/);
   assert.match(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  const bodyIndex = preview.html.indexOf('pa-topic-article-body');
+  const supportIndex = preview.html.indexOf('pa-topic-article-support');
+  const relatedIndex = preview.html.indexOf('pa-topic-article-related');
+  assert.ok(bodyIndex > -1 && supportIndex > bodyIndex, 'Makale sonu ayet ve konu baglantilari blog govdesinden sonra gelmeli.');
+  assert.ok(relatedIndex === -1 || supportIndex < relatedIndex, 'Makale sonu ayet ve konu baglantilari ilgili sorulardan once gelmeli.');
+  const asideStart = preview.html.indexOf('pa-topic-article-aside');
+  const asideEnd = preview.html.indexOf('</aside>', asideStart);
+  const asideHtml = asideStart > -1 && asideEnd > asideStart ? preview.html.slice(asideStart, asideEnd) : '';
+  assert.doesNotMatch(asideHtml, /Bu yazıda geçen ayetler|Bu konudaki sorular|Delil atıfları|Konu bağlantısı/);
   const disallowedSourcePattern = new RegExp([
     'mih' + 'r\\.com',
     'Kuran' + 'TefsirAyet',

@@ -10,16 +10,18 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   public temiz metin olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı
   `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına bağlandı ve kart içinde
   açık `Rehbere Başla` aksiyonu gösterir. Konu rehberi otomatik slider değildir;
-  tek setli yatay swipe edilebilir kart şeridi olarak kalmalıdır. Sayfa
+  tek setli yatay swipe edilebilir kart şeridi olarak kalmalıdır. Ana sayfada
+  `Ne öğrenmek istiyorsunuz?` niyet kartları kaldırıldı; geri eklenmemelidir.
+  Sayfa
   okuyucuya yalnız konu anlatımı, ayet delilleri ve ilgili soruları gösterir;
   süreç notu, kaynakça, sohbet kodu, PDF hazırlık notu ve köşeli `[1]` atıf
   numaraları public HTML/JSON-LD içinde asla görünmez. Sayfa `BlogPosting`,
   `WebPage`, `BreadcrumbList` ve ilgili soru `ItemList` schema grafı üretir.
   Kullanıcının yasakladığı dış alan adı public kaynak, provider, publisher veya
   dış link olarak asla belirtilmez; ayet delilleri URL'siz ve site içi bağlamla
-  tutulur. Canlı asset sürümü `20260914-topic-blog-clean-v3`; runtime commit
-  `58b030f`, production deploy `dpl_8SGS2VwiXs5aCb2RRYXsJs2NJZYp`, canlı alias
-  `https://arsiv.ibrahimlive.ai`.
+  tutulur. Blog destek kartları (`Bu yazıda geçen ayetler`, `Bu konudaki
+  sorular`) makale gövdesinden sonra ve ilgili sorulardan önce görünmelidir.
+  Canlı asset sürümü `20260914-topic-flow-end-v4`.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi
@@ -335,8 +337,9 @@ tespit edilir).
   swipe edilebilir yatay şerit; `Allah’a Ulaşmayı Dilemek` kartında görünür
   `Rehbere Başla` aksiyonu var ve kart `/konu-rehberi/allaha-ulasmayi-dilemek`
   yazısına gider. Blog görünümünden süreç notu, kaynakça, sohbet kodları ve
-  köşeli atıf numaraları kaldırıldı. Asset cache kırıcı
-  `20260914-topic-blog-clean-v3` oldu.
+  köşeli atıf numaraları kaldırıldı. Sonrasında kullanıcı kararıyla ana sayfadaki
+  `Ne öğrenmek istiyorsunuz?` niyet kartları kaldırıldı ve blog destek kartları
+  yazı sonuna taşındı. Asset cache kırıcı `20260914-topic-flow-end-v4` oldu.
 - Runtime commit `7da87ef` GitHub'a push edildi ve production'a deploy edildi.
   Production deployment `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`,
   `https://arsiv-kontrol-c5t4n4e6l-ugurkarabulutts-projects.vercel.app`;

@@ -15,7 +15,10 @@
   edilebilir yatay şerit olarak render ediliyor; otomatik kaydırma JS'i ve
   slider data markerları yok. Blog bağlantısı görünür olsun diye `Allah’a
   Ulaşmayı Dilemek` kartına `Rehbere Başla` aksiyonu eklendi. Asset cache kırıcı
-  `20260914-topic-blog-clean-v3`.
+  `20260914-topic-flow-end-v4`.
+- Ana sayfadaki `Ne öğrenmek istiyorsunuz?` niyet kartları kaldırıldı. Blogdaki
+  ayet ve konu bağlantısı kartları yan/üst akıştan alınıp makale gövdesinden
+  sonra, ilgili sorulardan önce gösteriliyor.
 - SEO/LLM için `BlogPosting`, `WebPage`, `BreadcrumbList`, URL'siz ayet
   delilleri ve ilgili soru `ItemList` schema grafı eklendi. `sitemap.xml` ve
   `llms.txt` konu rehberi yazısını kapsar.
@@ -26,20 +29,11 @@
 - Yerel doğrulama: `npm.cmd run check` başarılı; 156/156 test geçti.
   `git diff --check` hata vermedi, yalnız mevcut CRLF uyarıları görüldü.
   Playwright 390x844 ve 1440x1000 ön izlemede blog gövdesi, ayet delilleri,
-  ilgili sorular, yatay konu rehberi, 0 otomatik slider markerı,
+  makale sonu destek kartları, ilgili sorular, yatay konu rehberi,
+  0 ana sayfa niyet kartı, 0 otomatik slider markerı,
   0 süreç/kaynak/köşeli atıf sızıntısı ve 0 console/resource hatası doğrulandı.
-- Durum: Runtime commit `58b030f` GitHub'a push edildi ve production'a alındı.
-  Production deployment `dpl_8SGS2VwiXs5aCb2RRYXsJs2NJZYp`,
-  `https://arsiv-kontrol-wuzamys8y-ugurkarabulutts-projects.vercel.app`;
-  canlı alias `https://arsiv.ibrahimlive.ai`.
-- Canlı doğrulama: `/health`, ana sayfa,
-  `/konu-rehberi/allaha-ulasmayi-dilemek`, `/sitemap.xml` ve `/llms.txt`
-  başarılı. Ana sayfada `pa-reading-track`, `pa-reading-rail`, `pa-reading-set`,
-  `Rehbere Başla` ve asset sürümü `20260914-topic-blog-clean-v3` mevcut; eski
-  grid ve otomatik slider markerları yok. Blog sayfasında `BlogPosting` schema
-  ve ilgili sorular mevcut; süreç notu, kaynakça, sohbet kodu, `0/24 kaynak`,
-  köşeli atıf numaraları ve yasaklı dış kaynak sinyali canlı HTML/LLM çıktısında
-  yok.
+- Durum: Yeni hotfix henüz production'a alınacak. Commit/push/deploy ve canlı
+  smoke tamamlanınca deployment ID güncellenmeli.
 
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 

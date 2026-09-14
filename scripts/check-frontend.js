@@ -1308,7 +1308,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260914-topic-blog-clean-v3'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260914-topic-flow-end-v4'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1318,7 +1318,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260914-topic-blog-clean-v3"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260914-topic-flow-end-v4"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1353,7 +1353,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260914-topic-blog-clean-v3', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260914-topic-flow-end-v4', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
@@ -1391,16 +1391,24 @@ assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski ki
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(!homePreview.includes('<p class="pa-kicker">Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.</p>'), 'Public home hero ust aciklama cumlesi geri gelmemeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Ne öğrenmek istiyorsunuz?', 'pa-home-intents', 'Çok Okunan Cevaplar', 'pa-topic-path', 'Konu rehberleri', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', 'pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'Rehbere Başla', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', 'pa-topic-path', 'Konu rehberleri', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', 'pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'Rehbere Başla', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
+}
+for (const marker of ['Ne öğrenmek istiyorsunuz?', 'pa-home-intents', 'pa-intent-card']) {
+  assert(!homePreview.includes(marker), `Public ana sayfadan kaldirilan niyet bolumu gorunmemeli: ${marker}`);
 }
 for (const marker of ['pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'pa-reading-card', 'pa-reading-mark', 'pa-reading-action']) {
   assert(homePreview.includes(marker), `Public konu rehberi yatay kart marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
-for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-evidence', 'Allah’a ulaşmayı dilemekle ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
+for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Bu konudaki sorular', 'pa-topic-evidence', 'Allah’a ulaşmayı dilemekle ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
   assert(topicArticlePreview.includes(marker), `Public konu rehberi makale marker eksik: ${marker}`);
 }
+const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');
+const topicArticleSupportIndex = topicArticlePreview.indexOf('pa-topic-article-support');
+const topicArticleRelatedIndex = topicArticlePreview.indexOf('pa-topic-article-related');
+assert(topicArticleBodyIndex > -1 && topicArticleSupportIndex > topicArticleBodyIndex, 'Public konu rehberi destek kartlari blog govdesinden sonra gelmeli.');
+assert(topicArticleRelatedIndex === -1 || topicArticleSupportIndex < topicArticleRelatedIndex, 'Public konu rehberi destek kartlari ilgili sorulardan once gelmeli.');
 const disallowedTopicArticleSourcePattern = new RegExp([
   'mih' + 'r\\.com',
   'Kuran' + 'TefsirAyet',
@@ -1415,7 +1423,7 @@ const disallowedTopicArticleSourcePattern = new RegExp([
   '\\[\\d+\\]'
 ].join('|'), 'i');
 assert(!disallowedTopicArticleSourcePattern.test(topicArticlePreview), 'Public konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
-for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-body', '.pa-topic-evidence', '.pa-topic-article-aside']) {
+for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-body', '.pa-topic-evidence', '.pa-topic-article-aside', '.pa-topic-article-support']) {
   assert(publicCss.includes(marker), `Public konu rehberi makale CSS marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('pa-reading-index'), 'Public konu rehberi kartlarinda numara markeri olmamali.');
@@ -1428,7 +1436,7 @@ for (const marker of ['.pa-reading-track', '.pa-reading-track::-webkit-scrollbar
 for (const marker of ['.pa-reading-grid', '.pa-topic-source-list', '.pa-topic-footnote']) {
   assert(!publicCss.includes(marker), `Public konu rehberi eski/grid/kaynak CSS marker kalmamali: ${marker}`);
 }
-for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeScore', 'homeRotationHour', 'hashString', 'homeCollectionEntries', 'quranEvidenceEntries', 'HOME_READING_PATHS', 'HOME_INTENT_CARDS']) {
+for (const marker of ['homeQuestionSets', 'uniqueHomeQuestions', 'weightedHomeScore', 'homeRotationHour', 'hashString', 'homeCollectionEntries', 'quranEvidenceEntries', 'HOME_READING_PATHS']) {
   assert(publicRendererSource.includes(marker), `Public ana sayfa saatlik vitrin marker eksik: ${marker}`);
 }
 for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-visitor-id', "iconSvg('arrow-up'"]) {
