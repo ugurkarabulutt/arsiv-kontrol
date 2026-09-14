@@ -24,6 +24,10 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   Canlı asset sürümü `20260914-topic-flow-end-v4`; runtime commit `54465a1`,
   production deploy `dpl_6obbJ5QXk37D3wzzdGwzgrNpfg6E`, canlı alias
   `https://arsiv.ibrahimlive.ai`.
+  Ana sayfadaki `Çok Okunan Cevaplar` bölümü küçük öne çıkan/son yayın havuzundan
+  değil, `public_question_stats.read_count` sıralamasına göre yüklenen gerçek
+  popüler kayıt havuzundan beslenmelidir; `Arşivde devam et` bağlantısı
+  `/cok-okunan-cevaplar` kanonik collection sayfasına gitmelidir.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi

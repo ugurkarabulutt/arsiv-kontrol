@@ -6573,7 +6573,7 @@ async function publicArchiveDatasetForRows({ rows = [], categoryRows = [], stats
 }
 
 async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestionKeys = [], limit = 6 } = {}) {
-  const cleanLimit = Math.max(1, Math.min(Number(limit) || 6, 12));
+  const cleanLimit = Math.max(1, Math.min(Number(limit) || 6, 120));
   const excludedSlugs = new Set(excludeSlugs.filter(Boolean));
   const excludedQuestions = new Set(excludeQuestionKeys.filter(Boolean));
   const selected = [];
@@ -6629,7 +6629,7 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
 }
 
 async function loadPublicArchiveHomeDataset() {
-  const [featuredResult, latestResult, categoryRows] = await Promise.all([
+  const [featuredResult, latestResult, popularRows, categoryRows] = await Promise.all([
     supabase
       .from('public_qa')
       .select(PUBLIC_ARCHIVE_LIST_SELECT, { count: 'exact' })
@@ -6643,11 +6643,12 @@ async function loadPublicArchiveHomeDataset() {
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .range(0, 35),
+    loadPublicArchivePopularRows({ limit: 12 }),
     loadPublicArchiveCategoryIndexRows()
   ]);
   if (featuredResult.error) throw new Error(featuredResult.error.message);
   if (latestResult.error) throw new Error(latestResult.error.message);
-  const rows = [...(featuredResult.data || []), ...(latestResult.data || [])];
+  const rows = [...(featuredResult.data || []), ...(latestResult.data || []), ...(popularRows || [])];
   const total = Number(latestResult.count || rows.length || 0);
   return publicArchiveDatasetForRows({
     rows,
@@ -6659,6 +6660,19 @@ async function loadPublicArchiveHomeDataset() {
 
 async function loadPublicArchiveCollectionDataset(kind = 'featured') {
   const latestMode = kind === 'latest';
+  const popularMode = kind === 'popular';
+  if (popularMode) {
+    const [rows, categoryRows] = await Promise.all([
+      loadPublicArchivePopularRows({ limit: 90 }),
+      loadPublicArchiveCategoryIndexRows()
+    ]);
+    return publicArchiveDatasetForRows({
+      rows,
+      categoryRows,
+      stats: publicArchiveStats(rows.length),
+      allowEmpty: true
+    });
+  }
   const [primaryResult, fallbackResult, categoryRows] = await Promise.all([
     latestMode
       ? supabase
@@ -7038,6 +7052,7 @@ async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
   else if (pathname === '/public-preview/arsiv') dataset = await loadPublicArchivePageDataset(query);
   else if (pathname === '/public-preview/one-cikan-sorular') dataset = await loadPublicArchiveCollectionDataset('featured');
   else if (pathname === '/public-preview/son-yayinlanan-sorular') dataset = await loadPublicArchiveCollectionDataset('latest');
+  else if (pathname === '/public-preview/cok-okunan-cevaplar') dataset = await loadPublicArchiveCollectionDataset('popular');
   else if (pathname === '/public-preview/arama') dataset = await loadPublicArchiveSearchDataset(query);
   else if (pathname === '/public-preview/kategoriler' || pathname === '/public-preview/konular') dataset = await loadPublicArchiveCategoryIndexDataset();
   else {
@@ -7212,6 +7227,7 @@ function publicArchiveRouteTypeFromPath(pathname = '') {
   if (pathValue === '/' || pathValue === '/public-preview') return 'home';
   if (/(^|\/)soru\/[^/]+/.test(pathValue)) return 'question';
   if (pathValue.endsWith('/arsiv') || pathValue === '/arsiv') return 'archive';
+  if (pathValue.endsWith('/cok-okunan-cevaplar') || pathValue === '/cok-okunan-cevaplar') return 'archive';
   if (pathValue.endsWith('/arama') || pathValue === '/arama') return 'search';
   if (/(^|\/)kategori\/[^/]+/.test(pathValue)) return 'category';
   if (pathValue.endsWith('/soru-sor') || pathValue === '/soru-sor') return 'ask';
@@ -14237,6 +14253,7 @@ async function publicArchiveSitemapEntries() {
     publicArchiveSitemapEntry('/arsiv', today, '0.9', 'daily'),
     publicArchiveSitemapEntry('/one-cikan-sorular', today, '0.85', 'daily'),
     publicArchiveSitemapEntry('/son-yayinlanan-sorular', today, '0.85', 'daily'),
+    publicArchiveSitemapEntry('/cok-okunan-cevaplar', today, '0.85', 'daily'),
     publicArchiveSitemapEntry('/kategoriler', today, '0.8', 'weekly'),
     ...publicArchiveTopicArticleEntries().map(article => publicArchiveSitemapEntry(article.path, article.updatedAt || article.publishedAt || today, '0.88', 'monthly')),
     publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
@@ -14358,6 +14375,7 @@ async function publicArchiveLlmsHandler(req, res) {
       `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
       `- Öne çıkan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/one-cikan-sorular`,
       `- Son yayınlanan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/son-yayinlanan-sorular`,
+      `- Çok okunan cevaplar: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/cok-okunan-cevaplar`,
       `- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`,
       ...topicArticles.map(article => `- ${article.title}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`),
       `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,

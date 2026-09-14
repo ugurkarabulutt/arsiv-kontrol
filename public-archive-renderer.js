@@ -163,6 +163,7 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/arsiv`,
   `${PREVIEW_BASE}/one-cikan-sorular`,
   `${PREVIEW_BASE}/son-yayinlanan-sorular`,
+  `${PREVIEW_BASE}/cok-okunan-cevaplar`,
   `${PREVIEW_BASE}/arama`,
   `${PREVIEW_BASE}${PUBLIC_TOPIC_GUIDE_PATH}/allaha-ulasmayi-dilemek`,
   `${PREVIEW_BASE}/konular`,
@@ -1780,14 +1781,17 @@ function homeDiscoveryMapSection(entries = []) {
 
 function renderCollectionIntro(kind, pageState) {
   const latest = kind === 'latest';
+  const popular = kind === 'popular';
   return {
-    canonicalPath: latest ? '/son-yayinlanan-sorular' : '/one-cikan-sorular',
-    title: latest ? 'Son Yayınlanan Sorular' : 'Öne Çıkan Sorular',
-    kicker: latest ? 'Son yayınlananlar' : 'Öne çıkanlar',
-    description: latest
+    canonicalPath: popular ? '/cok-okunan-cevaplar' : latest ? '/son-yayinlanan-sorular' : '/one-cikan-sorular',
+    title: popular ? 'Çok Okunan Cevaplar' : latest ? 'Son Yayınlanan Sorular' : 'Öne Çıkan Sorular',
+    kicker: popular ? 'Çok okunanlar' : latest ? 'Son yayınlananlar' : 'Öne çıkanlar',
+    description: popular
+      ? `Arşivde en çok okunan ${archiveCountLabel(pageState.total)} dini soru-cevap kaydı okunma sırasına göre listelenir.`
+      : latest
       ? `Arşive en son eklenen ${archiveCountLabel(pageState.total)} dini soru-cevap kaydı yayın sırasına göre listelenir.`
       : `Okunma, güncellik ve konu dağılımı dikkate alınarak öne çıkan ${archiveCountLabel(pageState.total)} dini soru-cevap kaydı.`,
-    emptyTitle: latest ? 'Henüz son yayın listesi görünmüyor.' : 'Henüz öne çıkan soru görünmüyor.'
+    emptyTitle: popular ? 'Henüz çok okunan cevap görünmüyor.' : latest ? 'Henüz son yayın listesi görünmüyor.' : 'Henüz öne çıkan soru görünmüyor.'
   };
 }
 
@@ -1906,7 +1910,7 @@ function renderHome() {
         </section>` : ''}
 
         ${!dataUnavailable && popularList.length ? `<section class="pa-section pa-home-popular">
-          ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/arsiv`)}
+          ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/cok-okunan-cevaplar`)}
           <div class="pa-question-grid">${popularList.slice(0, 3).map(entry => questionCard(entry, { compact: true })).join('')}</div>
         </section>` : ''}
 
@@ -4508,6 +4512,7 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/arsiv`) return renderArchive(query);
     if (pathname === `${PREVIEW_BASE}/one-cikan-sorular`) return renderQuestionCollection('featured', query);
     if (pathname === `${PREVIEW_BASE}/son-yayinlanan-sorular`) return renderQuestionCollection('latest', query);
+    if (pathname === `${PREVIEW_BASE}/cok-okunan-cevaplar`) return renderQuestionCollection('popular', query);
     if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
     if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
     if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
@@ -4603,6 +4608,7 @@ function createPublicArchivePreviewRouter(options = {}) {
   }));
   router.get('/one-cikan-sorular', (req, res, next) => sendRoute(req, res, next, 'one-cikan-sorular', { sayfa: req.query.sayfa || '' }));
   router.get('/son-yayinlanan-sorular', (req, res, next) => sendRoute(req, res, next, 'son-yayinlanan-sorular', { sayfa: req.query.sayfa || '' }));
+  router.get('/cok-okunan-cevaplar', (req, res, next) => sendRoute(req, res, next, 'cok-okunan-cevaplar', { sayfa: req.query.sayfa || '' }));
   router.get('/arama', (req, res, next) => sendRoute(req, res, next, 'arama', { q: req.query.q || '' }));
   router.get('/konular', (req, res, next) => sendRoute(req, res, next, 'konular'));
   router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, 'kategoriler'));

@@ -32,8 +32,24 @@
   makale sonu destek kartları, ilgili sorular, yatay konu rehberi,
   0 ana sayfa niyet kartı, 0 otomatik slider markerı,
   0 süreç/kaynak/köşeli atıf sızıntısı ve 0 console/resource hatası doğrulandı.
-- Durum: Yeni hotfix henüz production'a alınacak. Commit/push/deploy ve canlı
-  smoke tamamlanınca deployment ID güncellenmeli.
+- Runtime production deploy: commit `54465a1`, deployment
+  `dpl_6obbJ5QXk37D3wzzdGwzgrNpfg6E`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Sonrasında deploy kaydı `efce94e` docs
+  commit'iyle pushlandı.
+
+## 2026-09-14 Çok Okunan Cevaplar Gerçek Okunma Sırasında
+
+- Ana sayfadaki `Çok Okunan Cevaplar` artık yalnız öne çıkan/son yayınlanan
+  küçük havuzdan seçilmez; backend ana sayfa dataset'ine
+  `public_question_stats.read_count` sırasındaki gerçek popüler kayıtları ayrıca
+  ekler.
+- `Arşivde devam et` bağlantısı `/arsiv` yerine `/cok-okunan-cevaplar` sayfasına
+  gider. Bu sayfa kendi canonical/CollectionPage/ItemList çıktısını üretir ve
+  kayıtları okunma sayısına göre listeler.
+- Yeni collection route `sitemap.xml`, `llms.txt`, public router ve route
+  analytics sınıflandırmasına eklendi.
+- Yerel doğrulama: `node --check public-archive-renderer.js`,
+  `node --check server.js`, `npm.cmd run check` başarılı; 156/156 test geçti.
 
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 

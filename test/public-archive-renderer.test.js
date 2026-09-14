@@ -174,6 +174,11 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(latestCollection, /Son Yayınlanan Sorular/);
   assert.match(latestCollection, /Yayın sırasına göre/);
 
+  const popularCollection = renderPublicArchivePreviewRoute('/cok-okunan-cevaplar', {}, rootData).html;
+  assert.match(popularCollection, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/cok-okunan-cevaplar">/);
+  assert.match(popularCollection, /Çok Okunan Cevaplar/);
+  assert.match(popularCollection, /okunma sırasına göre/);
+
   const category = renderPublicArchivePreviewRoute('/kategori/hidayet', {}, rootData).html;
   assert.match(category, /"@type":"CollectionPage"/);
   assert.match(category, /"@type":"ItemList"/);
@@ -798,6 +803,8 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /\/public-preview\/one-cikan-sorular/);
   assert.match(home, /Son yayınlananları gör/);
   assert.match(home, /\/public-preview\/son-yayinlanan-sorular/);
+  assert.match(home, /Arşivde devam et/);
+  assert.match(home, /\/public-preview\/cok-okunan-cevaplar/);
   assert.doesNotMatch(home, /Ne öğrenmek istiyorsunuz\?/);
   assert.doesNotMatch(home, /pa-home-intents/);
   assert.doesNotMatch(home, /pa-intent-card/);
@@ -936,11 +943,16 @@ test('home page question selection deduplicates repeated question text', () => {
     ]
   };
   const home = renderPublicArchivePreviewRoute('/public-preview', {}, archiveData).html;
+  const popular = renderPublicArchivePreviewRoute('/public-preview/cok-okunan-cevaplar', {}, archiveData).html;
 
   assert.match(home, /\/public-preview\/soru\/mukerrer-soru-b/);
   assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-a/);
   assert.doesNotMatch(home, /\/public-preview\/soru\/mukerrer-soru-c/);
   assert.match(home, /Çok okunan soru vitrinde yer bulur mu\?/);
+  assert.ok(
+    popular.indexOf('Çok okunan soru vitrinde yer bulur mu?') < popular.indexOf('Aynı karar sorusu mükerrer görünmemeli mi?'),
+    'Çok okunan cevaplar sayfasi kayitlari okunma sayisina gore siralamali.'
+  );
 });
 
 test('home page highlights question cards with explicit Quran references', () => {
