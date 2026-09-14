@@ -40,7 +40,7 @@ function recordActions(user, row, workspace) {
   if (status === 'bekliyor') return ['withdraw'];
   if (status === 'geri_gonderildi' && disputed) return [];
   if (['taslak', 'geri_gonderildi'].includes(status)) return ['save', 'submit', 'reanalyze',
-    ...(duplicateNotePattern.test(row.submission_note || '') ? ['close_duplicate'] : []),
+    'close_duplicate',
     ...(status === 'geri_gonderildi' ? ['dispute'] : []),
     ...(status === 'taslak' && row.user_id === user.id && row.member_delete_protected === false ? ['delete_draft'] : [])];
   return [];

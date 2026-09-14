@@ -391,10 +391,11 @@ if (
 }
 if (
   !workspaceScript.includes("close_duplicate: 'Mükerrer Olarak Kapat'") ||
-  !policy.includes("['close_duplicate']") ||
+  !policy.includes("'close_duplicate'") ||
+  !workspaceScript.includes('Bu kaydı mükerrer olarak kapatmak için kontrol notuna MÜKERRER yazmanız gerekiyor.') ||
   !fs.readFileSync(path.join(root, 'supabase/migrations/20260912162000_member_duplicate_cleanup.sql'), 'utf8').includes("p_action='close_duplicate'")
 ) {
-  throw new Error('Ekip uyesi mukerrer notlu kaydi aktif listesinden guvenli sekilde kapatabilmeli.');
+  throw new Error('Ekip uyesi mukerrer kapatma butonunu gormeli; not yoksa acik uyariyla korunmali.');
 }
 const specialSectionsMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260913000100_review_special_holding_sections.sql'), 'utf8');
 const returnedApproveMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260913000200_management_can_approve_returned.sql'), 'utf8');

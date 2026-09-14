@@ -347,7 +347,7 @@ test('ordinary submission may be withdrawn to a deletable draft', async () => {
 
 test('member closes only duplicate-marked returned or draft records without deleting audit trail', async () => {
   let returned=await seed('user','geri_gonderildi','Mükerrer geri dönen?','Aynı cevap.');
-  assert.ok(!recordActions({id:ids.user,role:'user'},returned,'member').includes('close_duplicate'));
+  assert.ok(recordActions({id:ids.user,role:'user'},returned,'member').includes('close_duplicate'));
   await assert.rejects(change(returned,'user','member','close_duplicate'),/DUPLICATE_NOTE_REQUIRED/);
   returned=await change(returned,'user','member','save',{submissionNote:'MÜKERRER'});
   assert.ok(recordActions({id:ids.user,role:'user'},returned,'member').includes('close_duplicate'));

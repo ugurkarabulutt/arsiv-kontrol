@@ -332,7 +332,10 @@ const ReviewWorkspace = (() => {
     try {
       const result=await request('/'+item.id+(action==='reanalyze'?'/reanalyze':'/action'),'POST',payload);
       if(result.error){
-        message(result.error,true);
+        const errorMessage = result.error === 'DUPLICATE_NOTE_REQUIRED'
+          ? 'Bu kaydı mükerrer olarak kapatmak için kontrol notuna MÜKERRER yazmanız gerekiyor.'
+          : result.error;
+        message(errorMessage,true);
         if(result.duplicate?.id&&/^[0-9a-f-]{36}$/i.test(result.duplicate.id)){
           const info=document.createElement('p');
           info.textContent=`Mevcut kayıt: ${result.duplicate.displayStatus}. `;
