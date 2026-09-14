@@ -3572,6 +3572,9 @@ function openSubmitApprovalModal(){
   const d=currentResult;
   if(!d?.id||!d.correctedText){setStatus('Onaya gönderilecek düzeltilmiş metin bulunamadı.','err');return;}
   if(approvalSubmitted(d)){setStatus('Bu kayıt zaten onay sürecine gönderilmiş.','ok');return;}
+  submitApprovalInFlight=false;
+  const submitBtn=el('submitApprovalBtn');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Onaya Gönder';}
   pendingApprovalPayload=d;
   const summary=el('submitApprovalSummary');
   if(summary)summary.innerHTML=`

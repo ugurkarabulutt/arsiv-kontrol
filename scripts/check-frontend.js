@@ -365,7 +365,12 @@ if (
 if (/select\('id,corrected_text'\)[\s\S]{0,500}textHash\(row\.corrected_text\)/.test(server)) {
   throw new Error('Onaya gonderim eski agir corrected_text taramasina donmemeli.');
 }
-if (!html.includes('submitApprovalInFlight') || !html.includes('Gönderim kontrol ediliyor') || !html.includes('api(method,url,body)')) {
+if (
+  !html.includes('submitApprovalInFlight') ||
+  !html.includes('Gönderim kontrol ediliyor') ||
+  !html.includes("submitBtn.disabled=false;submitBtn.textContent='Onaya Gönder';") ||
+  !html.includes('api(method,url,body)')
+) {
   throw new Error('Onaya gonderim UI bekleme/hata durumunu net yonetmeli.');
 }
 if (
