@@ -851,21 +851,22 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.equal(preview.status, 200);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.match(preview.html, /Kalpten bir dilekle başlayan hidayet/);
+  assert.match(preview.html, /pa-topic-article-toc-block/);
+  assert.match(preview.html, /İçindekiler/);
   assert.match(preview.html, /pa-topic-article-body/);
   assert.match(preview.html, /pa-topic-article-support/);
   assert.match(preview.html, /Bu yazıda geçen ayetler/);
   assert.match(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /RÛM 31/);
   assert.match(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  const tocIndex = preview.html.indexOf('pa-topic-article-toc-block');
   const bodyIndex = preview.html.indexOf('pa-topic-article-body');
   const supportIndex = preview.html.indexOf('pa-topic-article-support');
   const relatedIndex = preview.html.indexOf('pa-topic-article-related');
+  assert.ok(tocIndex > -1 && tocIndex < bodyIndex, 'İçindekiler blog govdesinden once gelmeli.');
   assert.ok(bodyIndex > -1 && supportIndex > bodyIndex, 'Makale sonu ayet ve konu baglantilari blog govdesinden sonra gelmeli.');
   assert.ok(relatedIndex === -1 || supportIndex < relatedIndex, 'Makale sonu ayet ve konu baglantilari ilgili sorulardan once gelmeli.');
-  const asideStart = preview.html.indexOf('pa-topic-article-aside');
-  const asideEnd = preview.html.indexOf('</aside>', asideStart);
-  const asideHtml = asideStart > -1 && asideEnd > asideStart ? preview.html.slice(asideStart, asideEnd) : '';
-  assert.doesNotMatch(asideHtml, /Bu yazıda geçen ayetler|Bu konudaki sorular|Delil atıfları|Konu bağlantısı/);
+  assert.doesNotMatch(preview.html, /pa-topic-article-aside/);
   const disallowedSourcePattern = new RegExp([
     'mih' + 'r\\.com',
     'Kuran' + 'TefsirAyet',

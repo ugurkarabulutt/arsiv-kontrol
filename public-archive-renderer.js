@@ -1410,16 +1410,16 @@ function renderTopicArticleBlock(block = {}, article = {}) {
   return `<p>${topicArticleInlineHtml(block.text || '', article)}</p>`;
 }
 
-function topicArticleAsideHtml(article = {}, blocks = []) {
+function topicArticleTocHtml(blocks = []) {
   const headings = blocks.filter(block => block.type === 'heading');
   if (!headings.length) return '';
   return `
-    <aside class="pa-topic-article-aside" aria-label="Makale bağlantıları">
+    <section class="pa-topic-article-toc-block" aria-label="Makale içindekiler">
       <nav class="pa-topic-toc" aria-label="İçindekiler">
         <strong>İçindekiler</strong>
         ${headings.map(block => `<a href="#${escapeHtml(block.id)}">${escapeHtml(block.text)}</a>`).join('')}
       </nav>
-    </aside>
+    </section>
   `;
 }
 
@@ -1480,11 +1480,11 @@ function renderTopicGuideArticle(slug) {
             <span>${escapeHtml(String((article.quranReferences || []).length))} ayet atfı</span>
           </div>
         </header>
+        ${topicArticleTocHtml(annotatedBlocks)}
         <div class="pa-topic-article-layout">
           <article class="pa-topic-article-body" id="makale">
             ${annotatedBlocks.map(block => renderTopicArticleBlock(block, article)).join('')}
           </article>
-          ${topicArticleAsideHtml(article, annotatedBlocks)}
         </div>
         ${topicArticleFooterLinksHtml(article)}
         ${relatedQuestions.length ? `

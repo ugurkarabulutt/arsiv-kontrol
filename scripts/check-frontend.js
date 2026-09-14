@@ -1423,7 +1423,7 @@ const disallowedTopicArticleSourcePattern = new RegExp([
   '\\[\\d+\\]'
 ].join('|'), 'i');
 assert(!disallowedTopicArticleSourcePattern.test(topicArticlePreview), 'Public konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
-for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-body', '.pa-topic-evidence', '.pa-topic-article-aside', '.pa-topic-article-support']) {
+for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-toc-block', '.pa-topic-article-body', '.pa-topic-evidence', '.pa-topic-article-support']) {
   assert(publicCss.includes(marker), `Public konu rehberi makale CSS marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('pa-reading-index'), 'Public konu rehberi kartlarinda numara markeri olmamali.');
