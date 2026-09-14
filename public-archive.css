@@ -461,7 +461,6 @@ svg {
 .pa-evidence-card:focus-visible,
 .pa-topic-toc a:focus-visible,
 .pa-topic-proof-card a:focus-visible,
-.pa-topic-source-list a:focus-visible,
 .pa-topic-card:focus-visible,
 .pa-category-card:focus-visible,
 .pa-question-card:focus-visible,
@@ -1536,20 +1535,43 @@ svg {
   line-height: 1.6;
 }
 
-.pa-reading-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+.pa-reading-track {
+  position: relative;
   min-width: 0;
+  margin-inline: -4px;
+  padding: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, transparent 0, rgb(0 0 0) 18px, rgb(0 0 0) calc(100% - 42px), transparent 100%);
+}
+
+.pa-reading-track::-webkit-scrollbar {
+  display: none;
+}
+
+.pa-reading-rail,
+.pa-reading-set {
+  display: flex;
+  gap: 12px;
+}
+
+.pa-reading-rail {
+  width: max-content;
 }
 
 .pa-reading-card {
   display: grid;
   align-content: start;
   gap: 10px;
+  width: min(276px, 76vw);
   min-height: 176px;
   padding: 18px;
   border-radius: 18px;
+  scroll-snap-align: start;
 }
 
 .pa-reading-mark {
@@ -3271,22 +3293,6 @@ a.pa-chip:hover,
   margin-top: 0;
 }
 
-.pa-topic-footnote {
-  display: inline-block;
-  margin-left: 2px;
-  color: var(--pa-green);
-  font-family: var(--pa-font-sans);
-  font-size: 0.68em;
-  font-weight: 850;
-  line-height: 1;
-  vertical-align: super;
-}
-
-.pa-topic-footnote a {
-  color: inherit;
-  text-decoration: none;
-}
-
 .pa-topic-evidence {
   margin: 26px 0 30px;
   padding: 20px 22px;
@@ -3324,55 +3330,6 @@ a.pa-chip:hover,
   font-family: Georgia, "Times New Roman", serif;
   font-size: 17px;
   line-height: 1.78;
-}
-
-.pa-topic-source-list {
-  display: grid;
-  gap: 12px;
-  padding: 0;
-  margin: 22px 0 0;
-  list-style: none;
-  counter-reset: none;
-}
-
-.pa-topic-source-list li {
-  min-width: 0;
-  padding: 14px 16px;
-  background: color-mix(in srgb, var(--pa-bg) 58%, var(--pa-surface));
-  border: 1px solid color-mix(in srgb, var(--pa-border) 80%, transparent);
-  border-radius: var(--pa-radius-sm);
-}
-
-.pa-topic-source-list a,
-.pa-topic-source-entry {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  max-width: 100%;
-  color: var(--pa-green);
-  font-weight: 850;
-  line-height: 1.35;
-}
-
-.pa-topic-source-list a span,
-.pa-topic-source-entry span {
-  flex: 0 0 auto;
-  font-family: var(--pa-font-sans);
-  font-size: 13px;
-}
-
-.pa-topic-source-list a strong,
-.pa-topic-source-entry strong {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.pa-topic-source-list small {
-  display: block;
-  margin-top: 4px;
-  color: var(--pa-text-3);
-  font-size: 13px;
-  line-height: 1.45;
 }
 
 .pa-topic-article-aside {
@@ -3420,8 +3377,7 @@ a.pa-chip:hover,
 }
 
 .pa-topic-toc a:hover,
-.pa-topic-proof-card a:hover,
-.pa-topic-source-list a:hover {
+.pa-topic-proof-card a:hover {
   color: var(--pa-primary-hover);
 }
 
@@ -4392,11 +4348,13 @@ a.pa-chip:hover,
     font-size: 27px;
   }
 
-  .pa-reading-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .pa-reading-track {
+    margin-right: -20px;
+    padding-right: 20px;
   }
 
   .pa-reading-card {
+    width: min(254px, 78vw);
     min-height: 164px;
   }
 
@@ -4798,7 +4756,6 @@ a.pa-chip:hover,
     font-size: 24px;
   }
 
-  .pa-topic-source-list li,
   .pa-topic-toc,
   .pa-topic-proof-card {
     padding: 14px;
@@ -4865,11 +4822,13 @@ a.pa-chip:hover,
     border-radius: 16px;
   }
 
-  .pa-reading-grid {
-    grid-template-columns: 1fr;
+  .pa-reading-track {
+    margin-right: -18px;
+    padding-right: 18px;
   }
 
   .pa-reading-card {
+    width: min(278px, 82vw);
     min-height: 142px;
   }
 

@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260914-topic-blog-static-grid-v2"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260914-topic-blog-clean-v3"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260914-topic-blog-static-grid-v2"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260914-topic-blog-static-grid-v2"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260914-topic-blog-clean-v3"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260914-topic-blog-clean-v3"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
@@ -802,10 +802,12 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /Konu rehberleri/);
   assert.match(home, /\/public-preview\/konu-rehberi\/allaha-ulasmayi-dilemek/);
   assert.match(home, /pa-topic-path/);
-  assert.match(home, /pa-reading-grid/);
+  assert.match(home, /pa-reading-track/);
+  assert.match(home, /pa-reading-rail/);
+  assert.match(home, /pa-reading-set/);
   assert.match(home, /Rehbere Başla/);
   assert.match(home, /pa-reading-mark/);
-  assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set|pa-reading-rail|pa-reading-set/);
+  assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set/);
   assert.doesNotMatch(home, /pa-reading-index/);
   assert.match(home, /pa-discovery-map/);
   assert.doesNotMatch(home, /Öne Çıkan Cevaplar/);
@@ -842,9 +844,20 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /Kalpten bir dilekle başlayan hidayet/);
   assert.match(preview.html, /pa-topic-article-body/);
   assert.match(preview.html, /RÛM 31/);
-  assert.match(preview.html, /Ayet ve metin notu/);
   assert.match(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
-  const disallowedSourcePattern = new RegExp(['mih' + 'r\\.com', 'Kuran' + 'TefsirAyet', 'dokumanli' + '-sohbet'].join('|'), 'i');
+  const disallowedSourcePattern = new RegExp([
+    'mih' + 'r\\.com',
+    'Kuran' + 'TefsirAyet',
+    'dokumanli' + '-sohbet',
+    'Ayet ve metin notu',
+    'Kaynaklar ve metin notu',
+    'Sohbet kodu',
+    'Kaynak kontrol',
+    'kullanıcı tarafından verilen PDF',
+    'pa-topic-source-list',
+    'pa-topic-footnote',
+    '\\[\\d+\\]'
+  ].join('|'), 'i');
   assert.doesNotMatch(preview.html, disallowedSourcePattern);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/allaha-ulasmayi-dilemek#article"/);

@@ -7,18 +7,17 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 - **2026-09-14 konu rehberi blog yayını:** Public konu rehberleri için uzun
   blog içerikleri `public-archive-topic-articles.json` içinde statik ve
-  kaynaklı veri olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı
+  public temiz metin olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı
   `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına bağlandı ve kart içinde
   açık `Rehbere Başla` aksiyonu gösterir. Konu rehberi otomatik slider değildir;
-  tek setli responsive grid olarak kalmalıdır. Sayfa PDF formatındaki
-  başlık/paragraf/kaynak akışını korur, altta aynı konuya bağlı soruları
-  gösterir ve `BlogPosting`, `WebPage`, `BreadcrumbList`, kaynak `CreativeWork`
-  atıfları ile ilgili soru `ItemList` schema grafı üretir.
+  tek setli yatay swipe edilebilir kart şeridi olarak kalmalıdır. Sayfa
+  okuyucuya yalnız konu anlatımı, ayet delilleri ve ilgili soruları gösterir;
+  süreç notu, kaynakça, sohbet kodu, PDF hazırlık notu ve köşeli `[1]` atıf
+  numaraları public HTML/JSON-LD içinde asla görünmez. Sayfa `BlogPosting`,
+  `WebPage`, `BreadcrumbList` ve ilgili soru `ItemList` schema grafı üretir.
   Kullanıcının yasakladığı dış alan adı public kaynak, provider, publisher veya
   dış link olarak asla belirtilmez; ayet delilleri URL'siz ve site içi bağlamla
-  tutulur. Canlı asset sürümü `20260914-topic-blog-static-grid-v2`; production
-  deploy `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`, canlı alias
-  `https://arsiv.ibrahimlive.ai`.
+  tutulur. Canlı asset sürümü `20260914-topic-blog-clean-v3`.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi
@@ -329,11 +328,13 @@ tespit edilir).
   görüldü. Playwright 390x844 ve 1440x1000 kontrolde sayfa başlığı, yazı
   gövdesi, ilgili sorular ve BlogPosting JSON-LD göründü; console/resource
   hatası ve yatay taşma yok.
-- Kullanıcı kararıyla konu rehberi otomatik sliderı kapatıldı. Ana sayfadaki
-  konu rehberi artık tek setli responsive grid; `Allah’a Ulaşmayı Dilemek`
-  kartında görünür `Rehbere Başla` aksiyonu var ve kart
-  `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına gider. Asset cache kırıcı
-  `20260914-topic-blog-static-grid-v2` oldu.
+- Kullanıcı kararıyla konu rehberi otomatik sliderı kapatıldı, ancak eski
+  yatay kart şeridi görünümü korundu. Ana sayfadaki konu rehberi artık tek setli,
+  swipe edilebilir yatay şerit; `Allah’a Ulaşmayı Dilemek` kartında görünür
+  `Rehbere Başla` aksiyonu var ve kart `/konu-rehberi/allaha-ulasmayi-dilemek`
+  yazısına gider. Blog görünümünden süreç notu, kaynakça, sohbet kodları ve
+  köşeli atıf numaraları kaldırıldı. Asset cache kırıcı
+  `20260914-topic-blog-clean-v3` oldu.
 - Runtime commit `7da87ef` GitHub'a push edildi ve production'a deploy edildi.
   Production deployment `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`,
   `https://arsiv-kontrol-c5t4n4e6l-ugurkarabulutts-projects.vercel.app`;

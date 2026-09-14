@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260914-topic-blog-static-grid-v2';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260914-topic-blog-clean-v3';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -1261,18 +1261,12 @@ function questionPageStructuredData(entry, category) {
   };
 }
 
-function topicArticleSourceMap(article = {}) {
-  return new Map((article.sources || []).map(source => [Number(source.id), source]));
+function cleanTopicArticleText(value = '') {
+  return String(value || '').replace(/\s*\[\d+\]/g, '');
 }
 
-function topicArticleInlineHtml(value = '', article = {}) {
-  const sourceMap = topicArticleSourceMap(article);
-  return escapeHtml(value).replace(/\[(\d+)\]/g, (match, id) => {
-    const source = sourceMap.get(Number(id));
-    const label = `[${id}]`;
-    if (!source?.url) return `<sup class="pa-topic-footnote"><a href="#kaynak-${escapeHtml(id)}">${label}</a></sup>`;
-    return `<sup class="pa-topic-footnote"><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">${label}</a></sup>`;
-  });
+function topicArticleInlineHtml(value = '') {
+  return escapeHtml(cleanTopicArticleText(value));
 }
 
 function topicArticleHeadingAnchor(text = '', index = 0) {
@@ -1282,35 +1276,38 @@ function topicArticleHeadingAnchor(text = '', index = 0) {
 
 function annotatedTopicArticleBlocks(article = {}) {
   let headingIndex = 0;
-  return (article.blocks || []).map(block => {
-    if (block?.type !== 'heading') return block;
-    const isSourcesHeading = ['Kaynaklar ve metin notu', 'Ayet ve metin notu']
+  const visibleBlocks = [];
+  let skipInternalNotes = false;
+  for (const block of article.blocks || []) {
+    const isHeading = block?.type === 'heading';
+    const isInternalNoteHeading = isHeading && ['Kaynaklar ve metin notu', 'Ayet ve metin notu']
       .some(label => publicArchiveComparable(block.text) === publicArchiveComparable(label));
-    const id = isSourcesHeading ? 'kaynaklar' : topicArticleHeadingAnchor(block.text, headingIndex);
-    if (!isSourcesHeading) headingIndex += 1;
-    return { ...block, id, isSourcesHeading };
-  });
+    if (isInternalNoteHeading) {
+      skipInternalNotes = true;
+      continue;
+    }
+    if (skipInternalNotes && !isHeading) continue;
+    if (skipInternalNotes && isHeading) skipInternalNotes = false;
+    if (!isHeading) {
+      visibleBlocks.push(block);
+      continue;
+    }
+    const id = topicArticleHeadingAnchor(block.text, headingIndex);
+    headingIndex += 1;
+    visibleBlocks.push({ ...block, id });
+  }
+  return visibleBlocks;
 }
 
 function topicArticleBodyText(article = {}) {
-  return readableStructuredText((article.blocks || [])
+  return readableStructuredText(annotatedTopicArticleBlocks(article)
     .map(block => {
-      if (block.type === 'heading') return block.text;
-      if (block.type === 'evidence') return `${block.reference} - ${block.note}\n${block.text}`;
-      return block.text;
+      if (block.type === 'heading') return cleanTopicArticleText(block.text);
+      if (block.type === 'evidence') return cleanTopicArticleText(`${block.reference} - ${block.note}\n${block.text}`);
+      return cleanTopicArticleText(block.text);
     })
     .filter(Boolean)
     .join('\n\n'));
-}
-
-function topicArticleSourceStructuredData(source = {}) {
-  const structured = {
-    '@type': 'CreativeWork',
-    name: source.title,
-    description: source.meta || undefined
-  };
-  if (source.url && !/mihr\.com/i.test(source.url)) structured.url = source.url;
-  return structured;
 }
 
 function topicArticleStructuredData(article = {}, relatedQuestions = []) {
@@ -1321,7 +1318,6 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
   const articleId = `${canonicalUrl}#article`;
   const pageId = `${canonicalUrl}#webpage`;
   const breadcrumbId = `${canonicalUrl}#breadcrumb`;
-  const citations = (article.sources || []).map(topicArticleSourceStructuredData);
   const quranMentions = (article.quranReferences || []).map(reference => {
     return publicArchiveReferenceStructuredData(reference.label);
   });
@@ -1368,7 +1364,6 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
       keywords: (article.keywords || []).join(', '),
       about: (article.keywords || []).slice(0, 8).map(name => ({ '@type': 'Thing', name })),
       mentions: quranMentions,
-      citation: citations,
       author: publicArchiveAnswerAuthor(),
       publisher: { '@id': `${publicArchiveCanonicalUrl('/')}#organization` },
       datePublished: article.publishedAt,
@@ -1441,28 +1436,8 @@ function renderTopicArticleBlock(block = {}, article = {}) {
   return `<p>${topicArticleInlineHtml(block.text || '', article)}</p>`;
 }
 
-function topicArticleSourcesHtml(article = {}) {
-  if (!Array.isArray(article.sources) || !article.sources.length) return '';
-  return `
-    <ol class="pa-topic-source-list">
-      ${article.sources.map(source => `
-        <li id="kaynak-${escapeHtml(source.id)}">
-          ${source.url ? `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
-            <span>[${escapeHtml(source.id)}]</span>
-            <strong>${escapeHtml(source.title)}</strong>
-          </a>` : `<span class="pa-topic-source-entry">
-            <span>[${escapeHtml(source.id)}]</span>
-            <strong>${escapeHtml(source.title)}</strong>
-          </span>`}
-          ${source.meta ? `<small>${escapeHtml(source.meta)}</small>` : ''}
-        </li>
-      `).join('')}
-    </ol>
-  `;
-}
-
 function topicArticleAsideHtml(article = {}, blocks = []) {
-  const headings = blocks.filter(block => block.type === 'heading' && !block.isSourcesHeading);
+  const headings = blocks.filter(block => block.type === 'heading');
   return `
     <aside class="pa-topic-article-aside" aria-label="Makale bağlantıları">
       ${headings.length ? `
@@ -1522,14 +1497,12 @@ function renderTopicGuideArticle(slug) {
           <p class="pa-topic-article-subtitle">${escapeHtml(article.subtitle || article.description || '')}</p>
           <div class="pa-collection-meta">
             ${article.readTime ? `<span>${escapeHtml(article.readTime)} dk okuma</span>` : ''}
-            <span>${escapeHtml(String((article.sources || []).length))} kaynak</span>
             <span>${escapeHtml(String((article.quranReferences || []).length))} ayet atfı</span>
           </div>
         </header>
         <div class="pa-topic-article-layout">
           <article class="pa-topic-article-body" id="makale">
             ${annotatedBlocks.map(block => renderTopicArticleBlock(block, article)).join('')}
-            ${topicArticleSourcesHtml(article)}
           </article>
           ${topicArticleAsideHtml(article, annotatedBlocks)}
         </div>
@@ -1799,8 +1772,12 @@ function homeReadingPathSection() {
         <h2 id="pa-reading-path-title">Temel konuları sırayla takip edin.</h2>
         <p>Her başlık, aynı kavram etrafındaki soru-cevapları bir araya getirir ve okumayı daha derli toplu ilerletir.</p>
       </div>
-      <div class="pa-reading-grid" aria-label="Konu rehberleri">
-        ${homeReadingPathItems()}
+      <div class="pa-reading-track" aria-label="Konu rehberleri">
+        <div class="pa-reading-rail">
+          <div class="pa-reading-set">
+            ${homeReadingPathItems()}
+          </div>
+        </div>
       </div>
     </section>
   `;

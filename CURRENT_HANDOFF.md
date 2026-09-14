@@ -4,41 +4,32 @@
 
 - Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` konu rehberi
   yazısına dönüştürüldü. İçerik `public-archive-topic-articles.json` içinde
-  başlık, paragraf, ayet/sohbet kaynakları ve SEO alanlarıyla tutuluyor.
+  başlık, paragraf, ayet delilleri ve SEO alanlarıyla tutuluyor; public veride
+  sohbet kodu, kaynakça veya süreç notu tutulmuyor.
 - Ana sayfadaki `Allah’a Ulaşmayı Dilemek` rehber kartı
-  `/konu-rehberi/allaha-ulasmayi-dilemek` rotasına bağlandı. Sayfa PDF
-  formatını koruyan makale gövdesi, kaynak listesi, yan içerik özeti ve altta
-  ilgili soru-cevap kartlarıyla render ediliyor.
-- Kullanıcı kararıyla konu rehberi slider özelliği kapatıldı. Ana sayfadaki
-  rehber alanı artık tek setli responsive grid olarak render ediliyor; kopya
-  ray, otomatik kaydırma JS'i ve slider DOM markerları yok. Blog bağlantısı
-  görünür olsun diye `Allah’a Ulaşmayı Dilemek` kartına `Rehbere Başla` aksiyonu
-  eklendi. Asset cache kırıcı `20260914-topic-blog-static-grid-v2`.
-- SEO/LLM için `BlogPosting`, `WebPage`, `BreadcrumbList`, URL'siz delil
-  atıfları ve ilgili soru `ItemList` schema grafı eklendi. `sitemap.xml` ve
-  `llms.txt` konu rehberi yazısını kapsayacak hale getirildi.
-- Kullanıcı kararıyla yasaklanan dış alan adı public kaynak olarak tamamen
-  kaldırıldı. Görünen metin, kaynak listesi, dış link, provider/publisher alanı,
-  JSON-LD ve LLM çıktılarında bu kaynak sinyali üretilmez; ayet delilleri
-  URL'siz ve site içi bağlamla kalır.
-- Doğrulama: `npm.cmd run check` başarılı; 156/156 test geçti. Playwright
-  390x844 ana sayfa kontrolünde 12 rehber kartı, tek kolon grid, görünür
-  `Rehbere Başla`, doğru blog href'i, 0 slider DOM markerı, 0 yatay taşma ve 0
-  console/resource hatası doğrulandı. `rg -i`
-  taramasında yasaklı dış alan adı ve eski URL kalıpları kalmadı. `git diff
-  --check` hata vermedi, yalnız mevcut CRLF uyarıları görüldü. Playwright
-  390x844 ve 1440x1000 ön izlemede title, H1, blog gövdesi, ilgili sorular,
-  BlogPosting JSON-LD, 0 yatay taşma ve 0 console/resource hatası doğrulandı.
-- Durum: Runtime commit `7da87ef` GitHub'a push edildi ve production'a alındı.
-  Production deployment `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`,
-  `https://arsiv-kontrol-c5t4n4e6l-ugurkarabulutts-projects.vercel.app`;
-  canlı alias `https://arsiv.ibrahimlive.ai`.
-- Canlı doğrulama: `/health`, ana sayfa,
-  `/konu-rehberi/allaha-ulasmayi-dilemek`, `/sitemap.xml` ve `/llms.txt`
-  başarılı. Ana sayfada `Rehbere Başla`, doğru blog href'i ve grid markerları
-  mevcut; eski `Blogu oku` metni ve slider DOM markerları yok. Blog sayfasında
-  `BlogPosting` schema ve ilgili sorular mevcut; yasaklanan dış kaynak alan adı
-  ve eski URL kalıpları canlı HTML/LLM çıktısında yok.
+  `/konu-rehberi/allaha-ulasmayi-dilemek` rotasına bağlandı. Sayfa makale
+  gövdesi, ayet delilleri, yan içerik özeti ve altta ilgili soru-cevap
+  kartlarıyla render ediliyor.
+- Kullanıcı kararıyla konu rehberi otomatik kayma özelliği kapatıldı; mevcut
+  yatay kart şeridi görünümü korundu. Rehber alanı tek setli, elle swipe
+  edilebilir yatay şerit olarak render ediliyor; otomatik kaydırma JS'i ve
+  slider data markerları yok. Blog bağlantısı görünür olsun diye `Allah’a
+  Ulaşmayı Dilemek` kartına `Rehbere Başla` aksiyonu eklendi. Asset cache kırıcı
+  `20260914-topic-blog-clean-v3`.
+- SEO/LLM için `BlogPosting`, `WebPage`, `BreadcrumbList`, URL'siz ayet
+  delilleri ve ilgili soru `ItemList` schema grafı eklendi. `sitemap.xml` ve
+  `llms.txt` konu rehberi yazısını kapsar.
+- Public blog görünümünde süreç notu, kaynakça, sohbet kodları ve köşeli `[1]`
+  atıf numaraları render edilmez; JSON-LD `articleBody` de aynı temiz metinden
+  üretilir. Kullanıcı kararıyla yasaklanan dış alan adı public kaynak, dış link,
+  provider/publisher alanı, JSON-LD ve LLM çıktılarında üretilmez.
+- Yerel doğrulama: `npm.cmd run check` başarılı; 156/156 test geçti.
+  `git diff --check` hata vermedi, yalnız mevcut CRLF uyarıları görüldü.
+  Playwright 390x844 ve 1440x1000 ön izlemede blog gövdesi, ayet delilleri,
+  ilgili sorular, yatay konu rehberi, 0 otomatik slider markerı,
+  0 süreç/kaynak/köşeli atıf sızıntısı ve 0 console/resource hatası doğrulandı.
+- Durum: Hotfix henüz production'a alınacak. Commit/push/deploy ve canlı smoke
+  tamamlanınca bu bölümde deployment ID güncellenmeli.
 
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 
