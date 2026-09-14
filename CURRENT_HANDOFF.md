@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Taslağı
+## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Yayında
 
 - Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` konu rehberi
   yazısına dönüştürüldü. İçerik `public-archive-topic-articles.json` içinde
@@ -29,9 +29,16 @@
   --check` hata vermedi, yalnız mevcut CRLF uyarıları görüldü. Playwright
   390x844 ve 1440x1000 ön izlemede title, H1, blog gövdesi, ilgili sorular,
   BlogPosting JSON-LD, 0 yatay taşma ve 0 console/resource hatası doğrulandı.
-- Durum: Bu paket taslak kod olarak `.tmp-admin-workspaces-v2` çalışma ağacında
-  duruyor. Daha önceki canlıya alma sınırı korunarak henüz commit/push veya
-  production deploy yapılmadı.
+- Durum: Runtime commit `7da87ef` GitHub'a push edildi ve production'a alındı.
+  Production deployment `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`,
+  `https://arsiv-kontrol-c5t4n4e6l-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı doğrulama: `/health`, ana sayfa,
+  `/konu-rehberi/allaha-ulasmayi-dilemek`, `/sitemap.xml` ve `/llms.txt`
+  başarılı. Ana sayfada `Rehbere Başla`, doğru blog href'i ve grid markerları
+  mevcut; eski `Blogu oku` metni ve slider DOM markerları yok. Blog sayfasında
+  `BlogPosting` schema ve ilgili sorular mevcut; yasaklanan dış kaynak alan adı
+  ve eski URL kalıpları canlı HTML/LLM çıktısında yok.
 
 ## 2026-09-13 Public Ana Sayfa İlk Tık Hızı Canlıda
 

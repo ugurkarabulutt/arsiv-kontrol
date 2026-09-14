@@ -5,7 +5,7 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
-- **2026-09-14 konu rehberi blog taslağı:** Public konu rehberleri için uzun
+- **2026-09-14 konu rehberi blog yayını:** Public konu rehberleri için uzun
   blog içerikleri `public-archive-topic-articles.json` içinde statik ve
   kaynaklı veri olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı
   `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına bağlandı ve kart içinde
@@ -16,8 +16,9 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   atıfları ile ilgili soru `ItemList` schema grafı üretir.
   Kullanıcının yasakladığı dış alan adı public kaynak, provider, publisher veya
   dış link olarak asla belirtilmez; ayet delilleri URL'siz ve site içi bağlamla
-  tutulur. Bu paket kullanıcıdan canlı onayı alınmadan production'a deploy
-  edilmemelidir.
+  tutulur. Canlı asset sürümü `20260914-topic-blog-static-grid-v2`; production
+  deploy `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi
@@ -306,7 +307,7 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
-### 2026-09-14 Public Konu Rehberi Blog Taslağı
+### 2026-09-14 Public Konu Rehberi Blog Yayını
 
 - Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` metni public konu
   rehberi makalesi olarak hazırlandı. Başlıklar, paragraf akışı, ayet ve sohbet
@@ -328,13 +329,20 @@ tespit edilir).
   görüldü. Playwright 390x844 ve 1440x1000 kontrolde sayfa başlığı, yazı
   gövdesi, ilgili sorular ve BlogPosting JSON-LD göründü; console/resource
   hatası ve yatay taşma yok.
-- Bu paket `.tmp-admin-workspaces-v2` çalışma ağacında taslak olarak duruyor;
-  henüz commit/push/production deploy yapılmadı.
 - Kullanıcı kararıyla konu rehberi otomatik sliderı kapatıldı. Ana sayfadaki
   konu rehberi artık tek setli responsive grid; `Allah’a Ulaşmayı Dilemek`
   kartında görünür `Rehbere Başla` aksiyonu var ve kart
   `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına gider. Asset cache kırıcı
   `20260914-topic-blog-static-grid-v2` oldu.
+- Runtime commit `7da87ef` GitHub'a push edildi ve production'a deploy edildi.
+  Production deployment `dpl_CGevHRzTuw1uJ8VjbYMfDwGmdvCk`,
+  `https://arsiv-kontrol-c5t4n4e6l-ugurkarabulutts-projects.vercel.app`;
+  canlı alias `https://arsiv.ibrahimlive.ai`. Canlı doğrulamada `/health`,
+  ana sayfa, `/konu-rehberi/allaha-ulasmayi-dilemek`, `/sitemap.xml` ve
+  `/llms.txt` başarılı; ana sayfada `Rehbere Başla`, doğru blog href'i ve grid
+  markerları mevcut, eski `Blogu oku` metni ve slider DOM markerları yok.
+  Blog sayfasında `BlogPosting` schema ve ilgili sorular mevcut; yasaklanan dış
+  kaynak alan adı ve eski URL kalıpları canlı HTML/LLM çıktısında yok.
 
 ### 2026-09-13 Public Konu Rehberi Numarasız Carousel
 
