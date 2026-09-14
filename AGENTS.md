@@ -21,7 +21,9 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   dış link olarak asla belirtilmez; ayet delilleri URL'siz ve site içi bağlamla
   tutulur. Blog destek kartları (`Bu yazıda geçen ayetler`, `Bu konudaki
   sorular`) makale gövdesinden sonra ve ilgili sorulardan önce görünmelidir.
-  Canlı asset sürümü `20260914-topic-flow-end-v4`.
+  Canlı asset sürümü `20260914-topic-flow-end-v4`; runtime commit `54465a1`,
+  production deploy `dpl_6obbJ5QXk37D3wzzdGwzgrNpfg6E`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
 
 - **2026-09-13 public ana sayfa ilk tık hızı:** Public ana sayfadaki link/kart
   geçişlerinde sessiz bekleme olmamalıdır. `openPublicArchiveHref` kart gövdesi
