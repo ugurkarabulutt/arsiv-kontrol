@@ -1430,12 +1430,21 @@ function topicArticleGuideLinksHtml(article = {}) {
     .slice(0, 5);
   if (!articles.length) return '';
   return `
-        <section class="pa-topic-proof-card">
+        <section class="pa-topic-proof-card pa-topic-next-card">
+          <span class="pa-topic-next-kicker">Sıradaki rehberler</span>
           <strong>Okumaya devam edin</strong>
-          <p>Bu konuyu diğer temel rehberlerle birlikte okuyarak hidayet yolculuğunu adım adım takip edin.</p>
-          <div>
-            ${articles.map(item => `<a href="${escapeHtml(publicArchivePath(item.path))}">${escapeHtml(item.title)}</a>`).join('')}
-          </div>
+          <p>Konuları birbirine bağlayarak okuyun; her yazı bir sonraki kavramı daha net açar.</p>
+          <ol class="pa-topic-next-list">
+            ${articles.map((item, index) => `
+              <li>
+                <a href="${escapeHtml(publicArchivePath(item.path))}">
+                  <span>${String(index + 1).padStart(2, '0')}</span>
+                  <strong>${escapeHtml(item.title)}</strong>
+                  <small>${escapeHtml(item.description || item.summary || 'Konu rehberini okuyun.')}</small>
+                </a>
+              </li>
+            `).join('')}
+          </ol>
         </section>
   `;
 }
