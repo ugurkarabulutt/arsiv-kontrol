@@ -2199,8 +2199,13 @@ function renderArchive(query = {}) {
 }
 
 function renderQuestionCollection(kind = 'featured', query = {}) {
-  const entries = homeCollectionEntries(kind, publicArchiveFixtures.qa, 90);
-  const pageState = archivePaginationState(entries, query.sayfa, null);
+  const serverPagination = publicArchiveFixtures.pagination?.scope === 'collection' && publicArchiveFixtures.pagination?.kind === kind
+    ? publicArchiveFixtures.pagination
+    : null;
+  const entries = serverPagination?.prePaginated
+    ? uniquePublicArchiveQuestionResults(publicArchiveFixtures.qa)
+    : homeCollectionEntries(kind, publicArchiveFixtures.qa, kind === 'popular' ? 20 : 90);
+  const pageState = archivePaginationState(entries, query.sayfa, serverPagination);
   const intro = renderCollectionIntro(kind, pageState);
   return renderShell({
     active: 'archive',
@@ -4571,8 +4576,7 @@ function createPublicArchivePreviewRouter(options = {}) {
     try {
       const archiveData = await loadArchiveData(req, dataRouteFor(routePath), query);
       const cleanRoutePath = String(routePath || '').replace(/^\/+/, '');
-      const needsFreshArchiveHtml = !noindex && (!cleanRoutePath || cleanRoutePath === 'cok-okunan-cevaplar');
-      if (!noindex && (cleanRoutePath.startsWith('soru/') || needsFreshArchiveHtml)) {
+      if (!noindex && cleanRoutePath.startsWith('soru/')) {
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       }
       sendRendered(res, renderPublicArchivePreviewRoute(routeFor(routePath), query, {

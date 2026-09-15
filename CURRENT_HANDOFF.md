@@ -24,6 +24,12 @@
   bekletilmeden yalnız `public_question_stats` hazır kontrolü yapılır. Böylece
   ilk istek fallback/0 okuma cache'i üretmez ve gereksiz startup beklemesi
   azalır. Yerel doğrulama: `npm.cmd run check` başarılı; 157/157 test geçti.
+- Popüler koleksiyon yükü azaltıldı: `/cok-okunan-cevaplar` artık 90 kaydı tek
+  HTML içinde basmaz; 20'lik server pagination kullanır ve devamı mevcut
+  `Daha Fazla Göster` akışıyla aynı sayfaya eklenir. Ana sayfa ve çok okunanlar
+  HTML'i artık soru detayları gibi `no-store` zorlamaz; `PUBLIC_ARCHIVE_HTML_CACHE`
+  ile CDN cache alabilir. Yerel doğrulama: `npm.cmd run check` başarılı;
+  157/157 test geçti.
 
 ## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Yayında
 

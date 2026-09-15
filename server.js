@@ -6680,6 +6680,17 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
   return selected;
 }
 
+async function loadPublicArchivePopularPage(page = 1, pageSize = 20) {
+  const safePage = publicArchivePageNumber(page);
+  const safePageSize = Math.max(1, Math.min(Number(pageSize) || 20, 40));
+  const offset = (safePage - 1) * safePageSize;
+  const rowsWithProbe = await loadPublicArchivePopularRows({ limit: offset + safePageSize + 1 });
+  const rows = rowsWithProbe.slice(offset, offset + safePageSize);
+  const hasMore = rowsWithProbe.length > offset + safePageSize;
+  const total = hasMore ? offset + safePageSize + 1 : offset + rows.length;
+  return { rows, total, page: safePage, pageSize: safePageSize };
+}
+
 async function loadPublicArchiveHomeDataset() {
   const [featuredResult, latestResult, popularRows, categoryRows] = await Promise.all([
     supabase
@@ -6710,18 +6721,26 @@ async function loadPublicArchiveHomeDataset() {
   });
 }
 
-async function loadPublicArchiveCollectionDataset(kind = 'featured') {
+async function loadPublicArchiveCollectionDataset(kind = 'featured', query = {}) {
   const latestMode = kind === 'latest';
   const popularMode = kind === 'popular';
   if (popularMode) {
-    const [rows, categoryRows] = await Promise.all([
-      loadPublicArchivePopularRows({ limit: 90 }),
+    const pageResult = await loadPublicArchivePopularPage(query.sayfa, 20);
+    const [categoryRows] = await Promise.all([
       loadPublicArchiveCategoryIndexRows()
     ]);
     return publicArchiveDatasetForRows({
-      rows,
+      rows: pageResult.rows,
       categoryRows,
-      stats: publicArchiveStats(rows.length),
+      stats: publicArchiveStats(pageResult.total),
+      pagination: {
+        scope: 'collection',
+        kind: 'popular',
+        prePaginated: true,
+        page: pageResult.page,
+        pageSize: pageResult.pageSize,
+        total: pageResult.total
+      },
       allowEmpty: true
     });
   }
@@ -7102,9 +7121,9 @@ async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
   let dataset = null;
   if (pathname === '/public-preview') dataset = await loadPublicArchiveHomeDataset();
   else if (pathname === '/public-preview/arsiv') dataset = await loadPublicArchivePageDataset(query);
-  else if (pathname === '/public-preview/one-cikan-sorular') dataset = await loadPublicArchiveCollectionDataset('featured');
-  else if (pathname === '/public-preview/son-yayinlanan-sorular') dataset = await loadPublicArchiveCollectionDataset('latest');
-  else if (pathname === '/public-preview/cok-okunan-cevaplar') dataset = await loadPublicArchiveCollectionDataset('popular');
+  else if (pathname === '/public-preview/one-cikan-sorular') dataset = await loadPublicArchiveCollectionDataset('featured', query);
+  else if (pathname === '/public-preview/son-yayinlanan-sorular') dataset = await loadPublicArchiveCollectionDataset('latest', query);
+  else if (pathname === '/public-preview/cok-okunan-cevaplar') dataset = await loadPublicArchiveCollectionDataset('popular', query);
   else if (pathname === '/public-preview/arama') dataset = await loadPublicArchiveSearchDataset(query);
   else if (pathname === '/public-preview/kategoriler' || pathname === '/public-preview/konular') dataset = await loadPublicArchiveCategoryIndexDataset();
   else {
