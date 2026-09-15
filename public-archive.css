@@ -3369,11 +3369,17 @@ a.pa-chip:hover,
 .pa-topic-next-card {
   position: relative;
   overflow: hidden;
-  padding: 18px 20px;
+  padding: 18px;
 }
 
 .pa-topic-next-card > strong {
-  margin-bottom: 4px;
+  margin: 0 0 14px;
+  color: var(--pa-text);
+  font-size: 20px;
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 1.18;
+  text-transform: none;
 }
 
 .pa-topic-next-list {
@@ -3384,9 +3390,18 @@ a.pa-chip:hover,
   margin: 0;
   padding: 0;
   list-style: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--pa-mint) 7%, transparent), transparent),
+    color-mix(in srgb, var(--pa-surface-2) 74%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 78%, transparent);
+  border-radius: 14px;
 }
 
-.pa-topic-next-list li + li {
+.pa-topic-next-list li {
+  min-width: 0;
+}
+
+.pa-topic-next-list li:not(:first-child) {
   border-top: 1px solid color-mix(in srgb, var(--pa-border) 62%, transparent);
 }
 
@@ -3397,8 +3412,8 @@ a.pa-chip:hover,
   justify-content: space-between;
   gap: 18px;
   width: 100%;
-  min-height: 56px;
-  padding: 14px 30px 14px 0;
+  min-height: 58px;
+  padding: 15px 42px 15px 16px;
   color: var(--pa-text);
   background: transparent;
   border: 0;
@@ -3411,10 +3426,10 @@ a.pa-chip:hover,
 .pa-topic-next-list a::after {
   content: "›";
   position: absolute;
-  right: 2px;
+  right: 16px;
   top: 50%;
-  color: var(--pa-green);
-  font-size: 26px;
+  color: color-mix(in srgb, var(--pa-green) 78%, var(--pa-text-2));
+  font-size: 24px;
   font-weight: 520;
   line-height: 1;
   transform: translateY(-50%);
@@ -3423,19 +3438,19 @@ a.pa-chip:hover,
 
 .pa-topic-next-list a:hover {
   color: var(--pa-green);
-  transform: translateX(2px);
+  background: color-mix(in srgb, var(--pa-mint) 10%, transparent);
 }
 
 .pa-topic-next-list a:hover::after {
-  transform: translate(4px, -50%);
+  transform: translate(3px, -50%);
 }
 
 .pa-topic-next-list strong {
   min-width: 0;
   margin: 0;
   color: inherit;
-  font-size: 16px;
-  font-weight: 880;
+  font-size: 17px;
+  font-weight: 780;
   letter-spacing: 0;
   line-height: 1.25;
   text-transform: none;
