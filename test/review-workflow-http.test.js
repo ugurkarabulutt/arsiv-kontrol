@@ -38,6 +38,22 @@ test('old mutation endpoint requires version and cannot bypass role/approval saf
   assert.equal((await request(`/api/history/${h.id}/approve`,'admin','management',{version:1})).status,403);
   assert.equal((await request('/api/history/submit-merged','admin','member',{sourceIds:[h.id]})).status,409);
 });
+test('old submit endpoint is idempotent for records already past draft',async()=>{
+  const pending=fixture.rows.find(row=>row.user_id===fixture.users[0].id&&row.status==='bekliyor');
+  const pendingRetry=await request(`/api/history/${pending.id}/submit`,'user','member',{version:0,questionText:'Eski sekmeden soru?',correctedText:pending.corrected_text,tags:['Takva']});
+  assert.equal(pendingRetry.status,200);
+  assert.equal(pendingRetry.data.alreadySubmitted,true);
+  assert.equal(pendingRetry.data.status,'bekliyor');
+
+  const approved=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags,version)
+    values($1,'Ekip Örnek','onaylandi','Onaylı eski soru?','Onaylı cevap.','Kaynak metin.','["Takva"]',3) returning *`,
+    [fixture.users[0].id])).rows[0];
+  const approvedRetry=await request(`/api/history/${approved.id}/submit`,'user','member',{version:0,questionText:'Eski sekmeden değiştirilmiş soru?',correctedText:'Değişmemeli.',tags:['Yeni']});
+  assert.equal(approvedRetry.status,200);
+  assert.equal(approvedRetry.data.alreadySubmitted,true);
+  assert.equal(approvedRetry.data.status,'onaylandi');
+  assert.equal(approvedRetry.data.questionText,'Onaylı eski soru?');
+});
 test('manual action cannot masquerade as completed reanalysis',async()=>{
   const h=fixture.rows.find(row=>row.user_id===fixture.users[0].id&&row.status==='geri_gonderildi');
   const result=await request(`/api/review/${h.id}/action`,'user','member',{version:0,action:'reanalyze',correctedText:'Fake AI'});assert.equal(result.status,400);

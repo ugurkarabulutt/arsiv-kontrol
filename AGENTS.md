@@ -24,6 +24,7 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   submit yanıtında `/api/history/:id/approval-status` ile canlı durum senkronu
   yapılır; kayıt işlemde/tamamlanmışsa modal kapatılır, yerel taslak silinir ve
   kullanıcıya güncel durum kartı gösterilir. Backend `/api/history/:id/submit`
+  ve review-workspace açıkken önce çalışan `review-workflow` legacy submit hattı
   bu durumları hata yerine idempotent `alreadySubmitted` yanıtıyla döndürür.
 
 - **2026-09-14 konu rehberi blog yayını:** Public konu rehberleri için uzun

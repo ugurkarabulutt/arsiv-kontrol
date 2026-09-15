@@ -30,6 +30,7 @@ const ERRORS = {
 const LIST_COLUMNS = 'id,user_id,assignee_id,username,name,filename,score,total_errors,status,created_at,updated_at,version,question_text,tags,submission_note,disputed:workflow_meta->disputed,return_note:workflow_meta->>returnNote';
 const PREVIEW_COLUMNS = 'id,user_id,username,name,filename,score,total_errors,status,created_at,updated_at,question_text,tags,submission_note';
 const QUEUE_COLUMNS = LIST_COLUMNS + ',submitted_at,submitted_by,status_changed_at,status_changed_by,queue_sort_at';
+const SUBMITTED_APPROVAL_STATUSES = new Set(['bekliyor','teyit_bekliyor','dergah_sorulari','konferanslar','arsivlendi','onaylandi','reddedildi']);
 
 function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
   const router = express.Router();
@@ -202,6 +203,14 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
   legacy.get('/:id([0-9a-fA-F-]{36})', handler(async (req, res) => res.json((await present(req, [await read(req, req.params.id)]))[0])));
   legacy.post('/:id([0-9a-fA-F-]{36})/:action(content|submit|withdraw|approve|reject|review|dergah|conference|pending|return|archive|tags)', handler(async (req, res) => {
     const action = { content: 'save', tags: 'save' }[req.params.action] || req.params.action;
+    if (action === 'submit') {
+      const current = await read(req, req.params.id);
+      const status = current.status || 'bekliyor';
+      if (SUBMITTED_APPROVAL_STATUSES.has(status)) {
+        const item = (await present(req, [current]))[0];
+        return res.json({ success: true, id: item.id, status: item.status, alreadySubmitted: true, tags: item.tags, questionText: item.questionText, submissionNote: item.submissionNote, version: item.version, history: item });
+      }
+    }
     const item = await change(req, req.params.id, action, cleanPayload(req.body), req.body?.version);
     res.json({ success: true, id: item.id, status: item.status, tags: item.tags, questionText: item.questionText, submissionNote: item.submissionNote, version: item.version, history: item });
   }));

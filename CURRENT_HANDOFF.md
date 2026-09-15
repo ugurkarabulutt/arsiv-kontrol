@@ -9,13 +9,16 @@
 - Kök neden: tarayıcıdaki eski `arsiv-work-draft-v1` yerel taslağı kaydı hâlâ
   gönderilebilir gibi restore ediyordu. Backend canlıda kaydı bitmiş gördüğü
   için tekrar ilerlemiyor, kullanıcı soru/etiket ekranında döngüye düşüyordu.
-- `/api/history/:id/submit` aynı kayıt zaten bekliyor/teyit/onaylı/reddedilmiş/
-  arşivli ise hata yerine idempotent `alreadySubmitted` yanıtı verir.
+- `/api/history/:id/submit` ve review-workspace açıkken önce çalışan
+  `review-workflow` legacy submit hattı, aynı kayıt zaten bekliyor/teyit/
+  onaylı/reddedilmiş/arşivli/özel bölümde ise hata yerine idempotent
+  `alreadySubmitted` yanıtı verir.
 - Frontend modal açmadan ve submit yanıtında canlı `approval-status` kontrolü
   yapar; kayıt canlıda işlemde veya tamamlanmışsa eski yerel taslak temizlenir,
   modal kapanır ve kullanıcıya güncel durum kartı gösterilir.
-- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
-  `git diff --check` ve `npm.cmd run check` başarılı; 159/159 test geçti.
+- Yerel doğrulama: `node --check server.js`, `node --check review-workflow.js`,
+  hedef `node --test test\review-workflow-http.test.js`, `git diff --check` ve
+  `npm.cmd run check` başarılı; 160/160 test geçti.
 
 ## 2026-09-15 Ziyaret İstatistikleri Paneli Hazırlığı
 
