@@ -6578,6 +6578,7 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
   const excludedQuestions = new Set(excludeQuestionKeys.filter(Boolean));
   const selected = [];
   const seenQuestions = new Set(excludedQuestions);
+  const popularSlugChunkSize = 80;
 
   if (HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
     const { data: statRows, error: statError } = await supabase
@@ -6591,12 +6592,18 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
       .map(item => item.slug)
       .filter(slug => slug && !excludedSlugs.has(slug));
     if (statSlugs.length) {
-      const { data: qaRows, error: qaError } = await supabase
-        .from('public_qa')
-        .select(PUBLIC_ARCHIVE_LIST_SELECT)
-        .eq('status', 'published')
-        .in('slug', statSlugs);
-      if (qaError) throw new Error(qaError.message);
+      const qaRows = [];
+      for (let index = 0; index < statSlugs.length; index += popularSlugChunkSize) {
+        const chunk = statSlugs.slice(index, index + popularSlugChunkSize);
+        const { data, error: qaError } = await supabase
+          .from('public_qa')
+          .select(PUBLIC_ARCHIVE_LIST_SELECT)
+          .eq('status', 'published')
+          .in('slug', chunk);
+        if (qaError) throw new Error(qaError.message);
+        qaRows.push(...(data || []));
+        if (qaRows.length >= cleanLimit * 2) break;
+      }
       for (const row of (qaRows || []).sort((a, b) => (statMap.get(b.slug) || 0) - (statMap.get(a.slug) || 0))) {
         const questionKey = publicArchiveQuestionOnlyIdentity(row);
         if (questionKey && seenQuestions.has(questionKey)) continue;
