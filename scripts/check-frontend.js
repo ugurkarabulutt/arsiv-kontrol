@@ -1395,11 +1395,15 @@ assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski ki
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
 assert(!homePreview.includes('<p class="pa-kicker">Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.</p>'), 'Public home hero ust aciklama cumlesi geri gelmemeli.');
 assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-path', 'Konu rehberleri', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', 'pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'Rehbere Başla', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-path', 'Konu rehberleri', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', '/public-preview/konu-rehberi/ruhun-allaha-ulasmasi', 'Ruhun Allah’a Ulaşması', 'pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'Rehbere Başla', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 for (const marker of ['Ne öğrenmek istiyorsunuz?', 'pa-home-intents', 'pa-intent-card']) {
   assert(!homePreview.includes(marker), `Public ana sayfadan kaldirilan niyet bolumu gorunmemeli: ${marker}`);
+}
+const topicPathSlice = homePreview.slice(homePreview.indexOf('pa-topic-path'), homePreview.indexOf('pa-discovery-map'));
+for (const marker of ['Nefs Tezkiyesi', 'Teslimiyet', 'Takva', 'Tövbe ve Günahlardan Kurtuluş', 'Dua ve Tevekkül', 'Namaz ve İbadet Bilinci', 'Kur’ân’da Hidayet Ayetleri', 'Soruları gör']) {
+  assert(!topicPathSlice.includes(marker), `Public ana sayfa blogu olmayan konu rehberi gostermemeli: ${marker}`);
 }
 for (const marker of ['pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'pa-reading-card', 'pa-reading-mark', 'pa-reading-action']) {
   assert(homePreview.includes(marker), `Public konu rehberi yatay kart marker eksik: ${marker}`);
@@ -1414,6 +1418,11 @@ for (const marker of ['Zikir Nedir?', 'Kalbin nurlanması, nefsin tezkiyesi ve A
   assert(zikirArticlePreview.includes(marker), `Public zikir konu rehberi marker eksik: ${marker}`);
 }
 assert(!zikirArticlePreview.includes('Bu konudaki sorular'), 'Public zikir konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
+const ruhArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/ruhun-allaha-ulasmasi').html;
+for (const marker of ['Ruhun Allah’a Ulaşması', 'Hayattayken başlayan dönüş, nefsin tezkiyesi ve ilk teslim', 'HİCR 29', 'RA’D 21', 'FECR 30', 'Ruh ile ilgili sorular', 'Okumaya Devam Edin', 'Allah’a Ulaşmayı Dilemek', 'Zikir Nedir?', '"@type":"BlogPosting"']) {
+  assert(ruhArticlePreview.includes(marker), `Public ruh konu rehberi marker eksik: ${marker}`);
+}
+assert(!ruhArticlePreview.includes('Bu konudaki sorular'), 'Public ruh konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
 const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');
 const topicArticleSupportIndex = topicArticlePreview.indexOf('pa-topic-article-support');
 const topicArticleRelatedIndex = topicArticlePreview.indexOf('pa-topic-article-related');

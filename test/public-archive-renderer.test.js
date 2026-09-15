@@ -810,12 +810,16 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /pa-intent-card/);
   assert.match(home, /Konu rehberleri/);
   assert.match(home, /\/public-preview\/konu-rehberi\/allaha-ulasmayi-dilemek/);
+  assert.match(home, /\/public-preview\/konu-rehberi\/ruhun-allaha-ulasmasi/);
   assert.match(home, /pa-topic-path/);
   assert.match(home, /pa-reading-track/);
   assert.match(home, /pa-reading-rail/);
   assert.match(home, /pa-reading-set/);
   assert.match(home, /Rehbere Başla/);
   assert.match(home, /pa-reading-mark/);
+  const topicPathSection = home.slice(home.indexOf('pa-topic-path'), home.indexOf('pa-discovery-map'));
+  assert.match(topicPathSection, /Ruhun Allah’a Ulaşması/);
+  assert.doesNotMatch(topicPathSection, /Nefs Tezkiyesi|Teslimiyet|Takva|Tövbe ve Günahlardan Kurtuluş|Dua ve Tevekkül|Namaz ve İbadet Bilinci|Kur’ân’da Hidayet Ayetleri|Soruları gör/);
   assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set/);
   assert.doesNotMatch(home, /pa-reading-index/);
   assert.match(home, /pa-discovery-map/);
@@ -977,6 +981,37 @@ test('topic guide article renders Zikir blog and cross-links other guides', () =
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/zikir-ve-daimi-zikir#article"/);
+  const disallowedSourcePattern = new RegExp([
+    'mih' + 'r\\.com',
+    'Kuran' + 'TefsirAyet',
+    'dokumanli' + '-sohbet',
+    'Kaynaklar',
+    'Sohbet kodu',
+    'Kaynak kontrol',
+    'kullanıcı tarafından verilen PDF',
+    'pa-topic-source-list',
+    'pa-topic-footnote',
+    '\\[\\d+\\]'
+  ].join('|'), 'i');
+  assert.doesNotMatch(preview.html, disallowedSourcePattern);
+});
+
+test('topic guide article renders Ruhun Allah’a Ulaşması blog and keeps clean guide links', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/ruhun-allaha-ulasmasi');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Ruhun Allah’a Ulaşması/);
+  assert.match(preview.html, /Hayattayken başlayan dönüş, nefsin tezkiyesi ve ilk teslim/);
+  assert.match(preview.html, /pa-topic-article-toc-block/);
+  assert.match(preview.html, /HİCR 29/);
+  assert.match(preview.html, /RA’D 21/);
+  assert.match(preview.html, /FECR 30/);
+  assert.match(preview.html, /Ruh ile ilgili sorular/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
+  assert.match(preview.html, /Zikir Nedir\?/);
+  assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/ruhun-allaha-ulasmasi#article"/);
   const disallowedSourcePattern = new RegExp([
     'mih' + 'r\\.com',
     'Kuran' + 'TefsirAyet',

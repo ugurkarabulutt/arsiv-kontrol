@@ -4566,3 +4566,15 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Blogda kaynakca, sohbet kodu, PDF hazirlama notu veya koseli parantezli kaynak numarasi
   birakilmadi.
 - Dogrulama: `npm.cmd run check` basarili, 159/159 test gecti.
+
+## 2026-09-15 Ruhun Allah'a Ulasmasi blog yayini
+
+- Kullanici tarafindan verilen `Ruhun_Allah_a_Ulasmasi_Blog.pdf` icerigi konu rehberi
+  makalesine donusturuldu: `/konu-rehberi/ruhun-allaha-ulasmasi`.
+- Ana sayfadaki `Konu rehberleri` listesi yalniz blogu olan basliklara indirildi:
+  Allah'a Ulasmayi Dilemek, Hidayet, Murside Tabiiyet, Zikir ve Ruhun Allah'a Ulasmasi.
+- Blogu olmayan basliklar artik soru/kategori fallback'e gitmiyor; kullanici yeni PDF
+  gonderdikce tekrar eklenecek.
+- Blogda kaynakca, sohbet kodu, PDF hazirlama notu, sayfa numarasi veya koseli
+  parantezli kaynak numarasi birakilmadi.
+- Dogrulama: `npm.cmd run check` basarili, 160/160 test gecti.

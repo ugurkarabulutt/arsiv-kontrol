@@ -612,16 +612,9 @@ const HERO_CONCEPT_ITEMS = [
 const HOME_READING_PATHS = [
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
-  { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
+  { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
-  { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
-  { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', text: 'Ruhun teslimi ve Allah’a yöneliş merhaleleri.' },
-  { title: 'Teslimiyet', slug: 'teslimiyet', text: 'Teslim, tevekkül ve irade başlıklarının birlikte okunması.' },
-  { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
-  { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', query: 'Tövbe günahlardan kurtuluş', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
-  { title: 'Dua ve Tevekkül', slug: 'dua', query: 'Dua tevekkül', text: 'Talep, teslim ve sonucu Allah’a bırakma dengesi.' },
-  { title: 'Namaz ve İbadet Bilinci', slug: 'namaz', query: 'Namaz ibadet bilinci', text: 'İbadetin şuuruyla ilgili soru ve cevaplar.' },
-  { title: 'Kur’ân’da Hidayet Ayetleri', slug: 'hidayet', query: 'Kur’ân hidayet ayetleri', text: 'Hidayet konusunun ayet atıflarıyla takip edilmesi.' }
+  { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', articleSlug: 'ruhun-allaha-ulasmasi', text: 'Ruhun teslimi, vuslat ve nefs tezkiyesi.' }
 ];
 
 function conceptSliderItems(isClone = false) {
