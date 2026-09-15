@@ -4,423 +4,345 @@
     "path": "/konu-rehberi/allaha-ulasmayi-dilemek",
     "series": "Hidayet Yolculuğu / Blog Serisi 01",
     "title": "Allah’a Ulaşmayı Dilemek",
-    "subtitle": "Kalpten bir dilekle başlayan hidayet",
-    "description": "Allah’a ulaşmayı dilemek nedir, hidayetin başlangıcı nasıl anlaşılır ve Kur’ân ayetleriyle bu yol nasıl açıklanır?",
-    "summary": "Allah’a ulaşmayı dilemek; ruhun hayattayken Allah’a ulaşmasını kalpten istemek, Allah’ın ulaştırma vaadine güvenmek ve bu yönelişi ibadet, zikir, mürşide tâbiiyet ve teslimiyet yoluyla canlı tutmaktır.",
+    "subtitle": "Kalpten başlayan yol",
+    "description": "Allah’a ulaşmayı dilemek nedir, Allah’a yönelmek ne anlama gelir ve Kur’ân ayetleri bu başlangıcı nasıl açıklar?",
+    "summary": "Allah’a ulaşmayı dilemek, dünya hayatı devam ederken ruhunu Allah’a ulaştırmayı kalpten istemek; Allah’ın davetine cevap verip O’nun ulaştırma vaadine güvenerek yola girmektir.",
     "categorySlug": "allaha-ulasmayi-dilemek",
     "publishedAt": "2026-09-13T21:07:52+03:00",
-    "updatedAt": "2026-09-14T00:00:00+03:00",
-    "readTime": 12,
+    "updatedAt": "2026-09-15T06:45:00+03:00",
+    "readTime": 8,
     "keywords": [
       "Allah’a ulaşmayı dilemek",
-      "hidayet",
-      "takva",
-      "ruh",
-      "mürşid",
-      "tâbiiyet",
-      "zikir",
-      "nefs tezkiyesi",
-      "teslimiyet"
-    ],
-    "relatedTerms": [
-      "Allah’a ulaşmayı dilemek",
-      "Allah’a ulaşmayı",
       "Allah’a yönelmek",
       "hidayet",
-      "ruhunu Allah’a ulaştırmak",
       "ruh",
+      "takva",
       "mürşid",
       "tâbiiyet",
-      "takva",
       "zikir",
       "nefs tezkiyesi"
     ],
+    "relatedTerms": [
+      "Allah’a ulaşmayı dilemek",
+      "Allah’a yönelmek",
+      "Allah’a mülâki olmak",
+      "ruhunu Allah’a ulaştırmak",
+      "hidayet",
+      "takva",
+      "mürşid",
+      "tâbiiyet",
+      "zikir"
+    ],
     "quranReferences": [
       {
-        "label": "Rûm-31",
-        "sourceId": 6
+        "label": "Zümer-54"
       },
       {
-        "label": "Zümer-54",
-        "sourceId": 7
+        "label": "Bakara-46"
       },
       {
-        "label": "Şûrâ-13",
-        "sourceId": 8
+        "label": "Ra’d-21"
       },
       {
-        "label": "Ra’d-27",
-        "sourceId": 9
+        "label": "Şûrâ-13"
       },
       {
-        "label": "Ankebût-5",
-        "sourceId": 10
+        "label": "Ra’d-27"
       },
       {
-        "label": "Yûnus-7",
-        "sourceId": 12
+        "label": "Ankebût-5"
       },
       {
-        "label": "Yûnus-8",
-        "sourceId": 13
+        "label": "Rûm-31"
       },
       {
-        "label": "Zümer-17",
-        "sourceId": 14
+        "label": "Yûnus-7"
       },
       {
-        "label": "Enfâl-29",
-        "sourceId": 17
+        "label": "Yûnus-8"
       },
       {
-        "label": "Furkân-70",
-        "sourceId": 19
+        "label": "Zümer-17"
       },
       {
-        "label": "Bakara-257",
-        "sourceId": 21
+        "label": "Bakara-257"
       },
       {
-        "label": "Ra’d-28",
-        "sourceId": 22
-      },
-      {
-        "label": "Yûnus-64",
-        "sourceId": 24
+        "label": "Ra’d-28"
       }
     ],
     "blocks": [
       {
         "type": "paragraph",
-        "text": "İnsan bazen geçmişine bakar da Allah’a yaklaşmak için çok geç kaldığını düşünür. Yapamadıkları, yarım bıraktıkları, tekrar tekrar düştüğü hatalar gelir aklına. Bir başkası ise ibadetlerini yerine getirdiği hâlde kendi kendine sorar: “Allah ile aramdaki yakınlık nasıl başlayacak? O’na yönelmek, hayatımda neyi değiştirecek?”"
+        "text": "Allah’a ulaşmayı dilemek, dünya hayatı devam ederken ruhunu Allah’a ulaştırmayı kalpten istemektir. İnsan Rabbine yönelir; O’na ulaşmayı arzu eder ve ruhunu Kendisine ulaştırmasını Allah’tan diler. Bu, ölümün gelmesini beklemek değil, hayattayken Allah’ın davetine cevap vermektir."
       },
       {
         "type": "paragraph",
-        "text": "Sevgili kardeşlerim, bu soruların bizi getirdiği yerde önce büyük işler, uzun yıllar veya aşılması imkânsız engeller yoktur. Önce kalbin bir talebi vardır: Allah’a ulaşmayı dilemek. Ruhumuzu, dünya hayatını yaşarken Allah’a ulaştırmayı gerçekten istemek. Hidayetin başlangıcındaki bu dilek, insanın kendi gücüne dayanarak verdiği bir başarı sözü değil; Allah’ın yardımına, sevgisine ve ulaştırma vaadine yönelişidir. [1]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Bu yüzden başlangıcı, kendimizi bütünüyle düzeltmiş olacağımız bir güne bırakmayalım. Allah’ın ihsanlarına muhtaç olduğumuz için O’na yöneliriz. Yolun başında bütün güzelliklere sahip olmamız beklenmez; o güzelliklere Allah’ın yardımıyla ulaşmayı istememiz beklenir. İnsanın attığı ilk adım ile Allah’ın o kula açtığı imkânlar arasındaki farkı düşündüğümüzde, bu dileğin neden böylesine kıymetli olduğunu daha iyi anlarız. [2]"
+        "text": "Allah’a giden yol bu dilekle başlar. Ruhun Allah’a ulaşması, daha sonra gerçekleşecek bir safhadır; dilemek ise o ulaşmayı istemektir. Birbirini takip eden bu iki hâli ayırdığımızda, başlangıçta insandan ne istendiği de açıklığa kavuşur: Önce kalpten Allah’a yönelmek."
       },
       {
         "type": "heading",
-        "text": "Allah’a ulaşmayı dilemek ne demektir?"
+        "text": "Allah’a yönelmek bir emirdir"
       },
       {
         "type": "paragraph",
-        "text": "Allah’a ulaşmayı dilemek, ruhumuzun ölmeden evvel Allah’a ulaşmasını kalpten istemektir. Burada söz konusu olan fizik vücudumuzun bir yere gitmesi değildir. Ölümü istemek de değildir. İnsan dünya hayatını sürdürürken ruhunun Allah’a dönmesini, O’na teslim olmasını diler. Hayatın sona ermesiyle gerçekleşen dönüş ile insan hayattayken gerçekleşen ruhun teslimi birbirine karıştırılmamalıdır. [3]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Dilemek, yola çıkmak ve ulaşmak da aynı safha değildir. Kalpteki talep başlangıçtır. Ardından Allah’ın yardımlarıyla mürşide ulaşma ve tâbiiyet gelir; ruhun Allah’a doğru yolculuğu bu tâbiiyetle başlar. Ruhun Allah’a ulaşması ise bu yolculuğun neticesidir. Böylece dilek, henüz gerçekleşmemiş bir teslimin yerine geçirilmez; o teslime açılan ilk adım olarak anlaşılır. [3]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Buradaki incelik şudur: Allah’a ulaşmayı dilemek, yalnızca daha huzurlu bir hayat istemek değildir. Huzur da kurtuluş da kıymetlidir; fakat talebin yöneldiği asıl hedef Allah’tır. İnsan, kendisine emanet edilen ruhun sahibine dönmesini ister. Allah ile beraberliğin başlangıcına bu niyetle adım atar. [4]"
-      },
-      {
-        "type": "heading",
-        "text": "Dilek, yalnızca dilde kalan bir söz değildir"
-      },
-      {
-        "type": "paragraph",
-        "text": "Bir insanın “Allah’a ulaşmayı diliyorum.” demesiyle, kalbinin gerçekten Allah’a yönelmesi her zaman aynı şey değildir. Sözü söylemek kolaydır; önemli olan, o sözün insanın içinde bir karşılığının bulunmasıdır. Muhterem Efendimiz, bu ayrımı bir soruya verdiği cevapta şöyle ifade eder: “Kelimeler değil kalp önemlidir.” [5]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Öyleyse kendimize soracağımız soru yalnızca “Bu cümleyi söyledim mi?” olmamalıdır. “Ruhumun hayattayken Allah’a ulaşmasını gerçekten istiyor muyum? Allah’ın beni bu hedefe ulaştıracağına güveniyor muyum?” diye de düşünmeliyiz. Bir sözün tekrarıyla yetinmek yerine, o sözün taşıdığı talebi kalbimizde aramalıyız. [5]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Bu talebi anlatmak için gösterişli cümlelere ihtiyaç yoktur. Sohbette verilen dua örneği son derece sadedir: “Yarabbi! Ben de ruhumu Sana ulaştırmak istiyorum.” Esas olan, bu sözün kalpten gelmesidir. Dua, bir cümleyi okuyup geçmek değil; Allah’a yönelmiş bir isteğin ifadesi olduğunda başlangıç yerli yerine oturur. [1]"
-      },
-      {
-        "type": "heading",
-        "text": "Kur’ân’da bize ne emrediliyor?"
-      },
-      {
-        "type": "paragraph",
-        "text": "Allah’a ulaşmayı dilemek, insanın kendiliğinden geliştirdiği bir manevî temenni olarak anlatılmaz. Rûm Suresinin otuz birinci âyetinde Allah’a yönelmek, takva sahibi olmak ve namaz birlikte yer alır:"
+        "text": "Allah’a ulaşmayı dilemek, insanın kendiliğinden ortaya koyduğu bir hedef değildir. Allah, kulunu Kendisine çağırır. Zümer Suresinin 54. âyetinde bu çağrı, doğrudan bir emir olarak yer alır:"
       },
       {
         "type": "evidence",
-        "reference": "RÛM 31",
-        "note": "Âyetin Türkçe metni",
-        "text": "O’na (Allah’a) yönelin (Allah’a ulaşmayı dileyin) ve O'na karşı takva sahibi olun. Ve namazı ikame edin (namaz kılın). Ve (böylece) müşriklerden olmayın. [6]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Allah’a yönelmek, ruhun hayattayken Allah’a ulaşmasını dilemektir. Takvanın ilk kademesi de bu yönelişle başlar. Demek ki takva, yalnızca insanın kendi kendine duyduğu bir korkuyla tarif edilmez; Allah’a yönelmenin meydana getirdiği bir başlangıç noktası vardır. [6]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Zumer Suresinin elli dördüncü âyeti ise yönelişi teslimlere bağlar:"
-      },
-      {
-        "type": "evidence",
-        "reference": "ZUMER 54",
+        "reference": "ZÜMER 54",
         "note": "İlgili bölüm",
-        "text": "Ve Rabbinize (Allah’a) yönelin (ruhunuzu Allah’a ulaştırmayı dileyin)! Ve size azap gelmeden önce O’na (Allah’a) teslim olun (ruhunuzu, vechinizi, nefsinizi, iradenizi Allah’a teslim edin). [7]"
+        "text": "Ve Rabbinize (Allah’a) yönelin (ruhunuzu Allah’a ulaştırmayı dileyin)!"
       },
       {
         "type": "paragraph",
-        "text": "Önce Allah’a yönelmek, ardından O’na teslim olmak… Başlangıç ile hedef, aynı âyette birbirine bağlanır. Ruhun, fizik vücudun, nefsin ve iradenin teslimi birbirinden ayrı merhalelerdir. İlk dileği küçük görmek, bu teslimlerin kapısını küçük görmek olur. Fakat dileği bütün teslimler tamamlanmış gibi görmek de doğru değildir. Başlangıç değerlidir; çünkü bizi daha ilerisine davet eder. [7]"
+        "text": "Âyetin devamında Allah’a teslim olmak emredilir. Böylece yöneliş ile teslim arasında bir bağ kurulur. İnsan önce Rabbine ulaşmayı diler; ruhun, fizik vücudun, nefsin ve iradenin teslimine uzanan yolun ilk adımını atar. Henüz bütün teslimleri yaşamış değildir, fakat artık onları kendisinden isteyen Rabbine yönelmiştir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu yüzden Allah’a ulaşmayı dilemeyi, yalnızca ileride ulaşılabilecek yüksek bir makamın adı gibi düşünmemek gerekir. Dilek, o makamlara varmış olmanın değil, Allah’ın yoluna girmek istemenin ifadesidir. Yolun sonundaki teslimler, başlangıçtaki bu yönelişten ayrı değildir."
       },
       {
         "type": "heading",
-        "text": "Biz dileriz; Allah Kendisine ulaştırır"
+        "text": "Dilin söylediğini kalbin de istemesi"
       },
       {
         "type": "paragraph",
-        "text": "İnsan kendi eksiklerini düşünerek “Ben bunu nasıl başaracağım?” diye sorabilir. İşte Allah’ın vaadi burada kalbe kuvvet verir. Şûrâ Suresinin on üçüncü âyetinin ilgili bölümünde şöyle buyrulur:"
+        "text": "Bir insan Allah’a ulaşmak istediğini söyleyebilir. Fakat sözün söylenmesi ile kalpte gerçekten böyle bir isteğin bulunması aynı şey değildir. Allah’ın kabul ettiği dilek, samimiyetle, gönülden yapılan dilektir. Kişinin ağzından çıkan söz, içindeki isteği ifade etmelidir. Kalpte böyle bir yöneliş yoksa, kelimeleri söylemiş olmak onun yerini tutmaz."
+      },
+      {
+        "type": "paragraph",
+        "text": "Önemli olan, çok uzun veya çok güzel cümleler kurmak değil, gerçekten istemektir. Allah’a ulaşmayı dilemenin anlamını kavrayan insan, ruhunu hayattayken O’na ulaştırmasını Rabbinden ister. Kalbinde bu arzu vardır; duasıyla da onu Allah’a arz eder."
+      },
+      {
+        "type": "heading",
+        "text": "Dua"
+      },
+      {
+        "type": "paragraph",
+        "text": "Yarabbi, ben ruhumu Sana ulaştırmayı diliyorum. Benim de ruhumu Sana ulaştır, ne olur Yüce Allah’ım!"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu duadaki istek açıktır: Ruhun Allah’a ulaşması. Kul, kendi başına bir sonuç meydana getireceğini söylemez; Allah’tan kendisini o sonuca ulaştırmasını diler. Dileğin kabulünde belirleyici olan da sözün uzunluğu değil, Allah’a ulaşma isteğinin kalpten gelmesidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah, insanın kalbindekini bilir. Bunun için kişi kendisine, gerçekten ruhunu Allah’a ulaştırmak isteyip istemediğini sormalıdır. Dilek başkasına söylenmiş bir söz olarak kalmamalı; insanın Allah ile ilişkisinde kendi isteği, kendi yönelişi olmalıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Allah’a ulaşmak, ölümü istemek değildir"
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’a ulaşmaktan söz edildiğinde, bunu yalnızca ölümden sonraki dönüş olarak anlamak mümkündür. Oysa Bakara Suresinin 46. âyeti, dünya hayatındaki mülâki oluş ile ölümle gerçekleşen dönüşü birlikte anlatır:"
+      },
+      {
+        "type": "evidence",
+        "reference": "BAKARA 46",
+        "note": "Âyet metni",
+        "text": "Onlar (o huşû sahipleri) ki, Rab’lerine (dünya hayatında) muhakkak mülâki olacaklarına ve (sonunda ölümle) O’na döneceklerine yakîn derecesinde inanırlar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Burada huşû sahiplerinin inandığı iki husus vardır. Biri, dünya hayatında Rablerine mülâki olmak; diğeri, sonunda ölümle O’na dönmektir. Allah’a ulaşmayı dileyen insanın istediği, âyetteki dünya hayatında mülâki oluştur. Ölmeyi değil, hayattayken ruhunun Allah’a ulaşmasını diler."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’a ulaşacak olan fizik vücut veya nefs değil, ruhtur. İnsan dünya hayatını sürdürürken ruhunun Allah’a dönmesini ister. Bu nedenle dileğin konusu, bedenen bir yere gitmek ya da dünya hayatını sona erdirmek değildir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ra’d Suresinin 21. âyeti de Allah’ın ulaştırılmasını emrettiği şeyi O’na ulaştıranlardan söz eder:"
+      },
+      {
+        "type": "evidence",
+        "reference": "RA’D 21",
+        "note": "Âyet metni",
+        "text": "Ve onlar Allah’ın (ölümden evvel), Allah’a ulaştırılmasını emrettiği şeyi (ruhlarını), O’na (Allah’a) ulaştırırlar. Ve Rab’lerine karşı huşû duyarlar ve kötü hesaptan (cehenneme girmekten) korkarlar."
+      },
+      {
+        "type": "paragraph",
+        "text": "İnsana düşen, ruhun Allah’a ulaşmasını yalnızca ölümün sonrasına bırakan bir bekleyiş değil, bu emrin hayattayken yerine gelmesini dilemektir. Âyetteki ulaştırma emri, kalpten başlayan yönelişin nereye varacağını gösterir."
+      },
+      {
+        "type": "heading",
+        "text": "Dileyen kuldur, ulaştıran Allah"
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’ın varlığına inanmak ile Allah’a ulaşmayı dilemek aynı şey değildir. İnsan Allah’a inanabilir; ruhun hayattayken Allah’a ulaşabileceğini de kabul edebilir. Fakat kendisi için bunu istemedikçe, inanmak henüz Allah’a ulaşma dileğine dönüşmüş olmaz. Bu yola girmek isteyen kişinin, ruhunu Allah’a ulaştırmayı bizzat dilemesi gerekir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Peki böyle bir dileğin sahibi olan insanı Allah’a kim ulaştıracaktır? Şûrâ Suresinin 13. âyetinde cevap açıkça verilir:"
       },
       {
         "type": "evidence",
         "reference": "ŞÛRÂ 13",
         "note": "İlgili bölüm",
-        "text": "Allah, dilediğini Kendisine seçer ve O’na yöneleni, Kendisine ulaştırır (ruhunu hayatta iken Kendisine ulaştırır). [8]"
+        "text": "Allah, dilediğini Kendisine seçer ve O’na yöneleni, Kendisine ulaştırır (ruhunu hayatta iken Kendisine ulaştırır)."
       },
       {
         "type": "paragraph",
-        "text": "Dikkat edelim: Yönelen kuldur; ulaştıran Allah’tır. Kulun talebi değersiz değildir, vazgeçilmezdir. Fakat neticeyi meydana getiren, kulun tek başına yeterli oluşu değil, Allah’ın yardım ve ihsanlarıdır. Bu sebeple kendi zayıflığımızı, Allah’ın vaadinden daha büyük bir engel gibi görmemeliyiz. Yardımına ihtiyaç duyduğumuz Rabbimiz, bizi yardımsız yürümeye çağırmıyor. [8]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Ra’d Suresinin yirmi yedinci âyeti de yönelme ile hidayete erdirilme arasındaki bağı gösterir:"
+        "text": "Kulun yönelişine karşılık Allah’ın ulaştırması vardır. Allah, Kendisine yönelen insanı, ruhunu Kendisine ulaştırmak üzere kabul eder. Bu sebeple dilek, insanın yalnız kendi gücüne dayanarak aşmaya çalışacağı bir yolun başlangıcı değildir. Allah’ın yardımına ve ulaştırmasına güvenerek O’na yönelmektir."
       },
       {
         "type": "evidence",
         "reference": "RA’D 27",
         "note": "İlgili bölüm",
-        "text": "De ki: “Muhakkak ki Allah, dilediği kimseyi dalâlette bırakır ve O’na yönelen kimseyi Kendine ulaştırır (hidayete erdirir).” [9]"
+        "text": "De ki: “Muhakkak ki Allah, dilediği kimseyi dalâlette bırakır ve O’na yönelen kimseyi Kendine ulaştırır (hidayete erdirir).”"
       },
       {
         "type": "paragraph",
-        "text": "Bu âyetin açıklamasında, Allah’a ulaşmayı dilemeyenin bulunduğu dalâlet hâlinde kalması ile Allah’a yönelenin hidayete alınması birbirinden ayrılır. İnsan, değişmeyecek bir mahrumiyete mahkûm değildir. Allah’a yönelmeyi dilediği yerde yeni bir başlangıç vardır. Bu dilekle hidayete adım atılır; ruhun Allah’a ulaştırılmasıyla hidayete erilir. Başlangıç ile varış arasındaki bu farkı korumak gerekir. [9]"
+        "text": "Ra’d Suresinin 27. âyetinde de yönelmek ile hidayete erdirilmek arasındaki aynı bağ vardır. Allah’a ulaşmayı dilemek başlangıçtır; Allah’ın o kişinin ruhunu Kendisine ulaştırması ise hidayete ermektir. Kul ister, Allah ulaştırır."
       },
       {
         "type": "paragraph",
-        "text": "Ankebût Suresinin beşinci âyetinde ise dileğin karşılıksız kalmayacağı bildirilir:"
+        "text": "Ankebût Suresinin 5. âyeti, Allah’a mülâki olmayı dileyen kişi için tayin edilmiş zamanın geleceğini bildirir:"
       },
       {
         "type": "evidence",
         "reference": "ANKEBÛT 5",
         "note": "İlgili bölüm",
-        "text": "Kim Allah’a mülâki olmayı (hayattayken Allah’a ulaşmayı) dilerse, o taktirde muhakkak ki Allah’ın tayin ettiği zaman mutlaka gelecektir (ruhu mutlaka hayattayken Allah’a ulaşacaktır). [10]"
+        "text": "Kim Allah’a mülâki olmayı (hayattayken Allah’a ulaşmayı) dilerse, o taktirde muhakkak ki Allah’ın tayin ettiği zaman mutlaka gelecektir (ruhu mutlaka hayattayken Allah’a ulaşacaktır)."
       },
       {
         "type": "paragraph",
-        "text": "Bu müjde, kalpten yönelen insanın ümidini kendi geçmişine değil, Allah’ın sözüne bağlar. Dileği gerçek olan kul için yol, ulaşılması belirsiz bir arayış olarak bırakılmaz; Allah’a ulaşma hedefiyle açılır. [10]"
+        "text": "Bu müjde, dileğin kalpten olmasına duyulan ihtiyacı ortadan kaldırmaz. Aksine, insanın gerçek bir istekle Rabbine yönelmesini anlamlı kılar. Dileyen kul, ruhunu Allah’a ulaştıranın Allah olduğunu bilerek, O’nun vaadine güvenir."
       },
       {
         "type": "heading",
-        "text": "Allah’a inanmakla Allah’a ulaşmayı dilemek aynı şey midir?"
+        "text": "Takva bu yönelişle başlar"
       },
       {
         "type": "paragraph",
-        "text": "Allah’ın varlığına inanmak ile ruhunu hayattayken Allah’a ulaştırmayı istemek birbirinden farklıdır. İnsan bir hakikatin varlığına inanabilir; fakat henüz o hakikati kendi hayatında yaşamayı dilememiş olabilir. Bu sebeple Allah’a inanıyorum demek, Allah’a ulaşmayı da dilediğimiz sonucunu kendiliğinden doğurmaz. [11]"
+        "text": "Allah’a ulaşmayı dilemek, takva ile de doğrudan bağlantılıdır. Rûm Suresinin 31. âyetinde Allah’a yönelmek, O’na karşı takva sahibi olmak, namaz kılmak ve müşriklerden olmamak bir arada yer alır:"
+      },
+      {
+        "type": "evidence",
+        "reference": "RÛM 31",
+        "note": "Âyet metni",
+        "text": "O’na (Allah’a) yönelin (Allah’a ulaşmayı dileyin) ve O’na karşı takva sahibi olun. Ve namazı ikame edin (namaz kılın). Ve (böylece) müşriklerden olmayın."
       },
       {
         "type": "paragraph",
-        "text": "Sohbetlerde bu başlangıç; Allah’a inanmak, ruhun ölmeden evvel Allah’a ulaşabileceğine inanmak, bunun Allah’ın emri olduğunu kabul etmek ve Allah’ın dileyeni Kendisine ulaştıracağına güvenmekle birlikte ele alınır. Bilgi, kalpte bir talebe dönüşmelidir. Mesele yalnızca bir kavramı öğrenmek değil, o kavramın gösterdiği hedefi istemektir. [11]"
+        "text": "İlk takva, Allah’a ulaşmayı dilemekle başlar. Kişi Allah’a yönelerek gizli şirkten kurtulur ve takva sahibi olur. Buradaki başlangıcı, takvanın bütün derecelerini bir anda yaşamış olmakla karıştırmamak gerekir. Allah’a yöneliş ilk adımdır; Allah’ın yolunda ilerlemekle daha ileri takva kademeleri yaşanır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Âyette namaz emrinin de bulunması önemlidir. Allah’a yönelmek, ibadetlerden ayrı bir yöneliş değildir. Kul Rabbine ulaşmayı dilerken namazını da kılar. Dilek ile ibadeti birbirinin yerine koymak değil, Allah’ın emrinde birlikte görmek gerekir."
       },
       {
         "type": "heading",
-        "text": "Neden bu dilek kurtuluşun başlangıcıdır?"
+        "text": "Kur’ân neden bu dileğin üzerinde durur?"
       },
       {
         "type": "paragraph",
-        "text": "Allah’a ulaşmayı dilemek konusunun ciddiyetini anlamak için yalnızca müjdelere değil, uyarılara da bakmak gerekir. Yûnus Suresinin yedinci âyetinde şöyle buyrulur:"
+        "text": "Allah’a ulaşmayı dilemenin önemi, yalnızca bu dileğin sahiplerine verilen müjdelerle anlatılmaz. Yûnus Suresinde, Allah’a ulaşmayı dilemeyenlerin hâli de açıklanır:"
       },
       {
         "type": "evidence",
         "reference": "YÛNUS 7",
-        "note": "Âyetin Türkçe metni",
-        "text": "Muhakkak ki onlar, Bize ulaşmayı (hayatta iken ruhlarını Allah’a ulaştırmayı) dilemezler. Dünya hayatından razı olmuşlardır ve onunla doyuma ulaşmışlardır ve onlar âyetlerimizden gâfil olanlardır. [12]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Hemen ardından gelen âyet, bu durumun neticesini bildirir:"
+        "note": "Âyet metni",
+        "text": "Muhakkak ki onlar, Bize ulaşmayı (hayatta iken ruhlarını Allah’a ulaştırmayı) dilemezler. Dünya hayatından razı olmuşlardır ve onunla doyuma ulaşmışlardır ve onlar âyetlerimizden gâfil olanlardır."
       },
       {
         "type": "evidence",
         "reference": "YÛNUS 8",
-        "note": "Âyetin Türkçe metni",
-        "text": "İşte onların kazandıkları (dereceler) gereğince varacakları yer ateştir (cehennemdir). [13]"
+        "note": "Âyet metni",
+        "text": "İşte onların kazandıkları (dereceler) gereğince varacakları yer ateştir (cehennemdir)."
       },
       {
         "type": "paragraph",
-        "text": "Bu iki âyetin birlikte açıklanmasında Allah’a ulaşmayı dilememek, kurtuluşa engel olan temel eksiklik olarak gösterilir. Burada dikkatimizin yöneltildiği şey yalnızca dünya hayatının işleri değildir; insanın Allah’a ulaşmayı hedef edinmeden dünya ile yetinmesidir. Kalbin yönelişi dışarıda bırakıldığında, kurtuluşun başlangıcındaki talep de dışarıda kalır. [12]"
+        "text": "Bu iki âyet birlikte okunduğunda, Allah’a ulaşmayı dilememenin insanın âhiretiyle ilgili bir mesele olduğu görülür. Dünya hayatıyla doyuma ulaşmak, Allah’a ulaşmayı istememek ve âyetlerden gâfil olmak aynı anlatımın içinde yer alır. Ardından bu hâlin sonu bildirilir."
       },
       {
         "type": "paragraph",
-        "text": "Fakat uyarının yanında çözümü de görmek gerekir. Allah’a ulaşmayı dilememiş olmak, artık hiçbir zaman dileyemeyeceğimiz anlamına gelmez. Bu âyetleri okurken yalnızca geçmişimizi düşünerek üzülmekle kalmayalım. Bugün kalbimizden Allah’a yönelme imkânını da görelim. Dilemeyene ilişkin uyarının karşısında, dileyen için açılan kurtuluş kapısı vardır. [13]"
-      },
-      {
-        "type": "heading",
-        "text": "Allah’a yönelen kula verilen müjde"
+        "text": "Öyleyse Allah’a ulaşmayı dilemek, olsa da olur olmasa da olur denilebilecek bir temenni değildir. İnsanın kurtuluşuyla ilgilidir. Allah’ın çağrısına yönelmek yerine yalnız dünya hayatıyla yetinmek, Yûnus Suresindeki uyarının merkezindedir."
       },
       {
         "type": "paragraph",
-        "text": "Zumer Suresinin on yedinci âyeti, taguta kulluktan kurtulmayı Allah’a yönelmeyle birlikte anlatır. İlgili bölüm şöyledir:"
+        "text": "Bunun karşısında, Zümer Suresinin 17. âyetinde Allah’a yönelerek taguta kul olmaktan kurtulanlar müjdelenir. Onlar, Allah’a ulaşmayı dilemiş ve Allah’ın kulları arasına girmişlerdir."
       },
       {
         "type": "evidence",
-        "reference": "ZUMER 17",
+        "reference": "ZÜMER 17",
         "note": "İlgili bölüm",
-        "text": "Çünkü Allah’a yöneldiler (Allah’a ulaşmayı dilediler). Onlara müjdeler vardır. Öyleyse kullarımı müjdele! [14]"
+        "text": "Çünkü Allah’a yöneldiler (Allah’a ulaşmayı dilediler). Onlara müjdeler vardır. Öyleyse kullarımı müjdele!"
       },
       {
         "type": "paragraph",
-        "text": "Sahâbe Allah’a ulaşmayı dileyerek taguta kulluktan kurtulmuş, Allah’a kul olmuştur. Böylece dileğin yalnızca geleceğe ait bir beklenti olmadığı anlaşılır: Kulluktaki yönelişin başlangıcı da bu dilekle ilgilidir. Kalbin Allah’a dönmesi, insanın hayatındaki en esaslı tercihlerden biridir. [14]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Bu müjdeyi duyduğumuzda kendimizi başkalarıyla kıyaslamak yerine kendi talebimize bakalım. Allah’ın daveti karşısında hangi noktadayız? O’na ulaşmayı yalnızca konuşuyor muyuz, yoksa gerçekten istiyor muyuz? Sohbetlerde tekrar tekrar üzerinde durulan bu soru, bilgiyi hayatımıza taşıyabilmemiz içindir. [15]"
+        "text": "Uyarı ile müjde birbirini tamamlar. Allah, insanı tehlikeden haberdar ederken kurtuluşa çağırır. Allah’a ulaşmayı dilemek, bu çağrıya kalpten verilen cevaptır. İnsan Rabbine yöneldiğinde, artık âyette müjdelenen yönelişin sahibidir."
       },
       {
         "type": "heading",
-        "text": "Bir dileğin ardından gelen ihsanlar"
+        "text": "Allah’ın dostluğu ve ibadetlerin sevilmesi"
       },
       {
         "type": "paragraph",
-        "text": "Kul Allah’a ulaşmayı dilediğinde Allah’ın yardımı yalnızca yolun sonunda ortaya çıkmaz. Daha başlangıçta insanı irşada hazırlayan ihsanlar vardır. “12 İhsan” sohbetinde bu süreç; görme, işitme ve idrak önündeki manevî engellerin kaldırılması, kalbin Allah’a yönlendirilmesi ve kişinin mürşidine hazırlanmasıyla açıklanır. [16]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Gözlerdeki hicab-ı mesture, kulaklardaki vakra, kalpteki ekinnet ve bunlarla ilişkili engeller anlatılırken üzerinde durulan şey, insanın irşadı anlayabilir hâle gelmesidir. Kalbe ihbat verilmesi, idrakin açılmasıyla ilgilidir. Allah’ın kalbe ulaşması, kalbin nur kapısını Kendisine çevirmesi, göğüsten kalbe nur yolunu açması, huşû ve mürşidin gösterilmesi de bu ihsanlar içinde ele alınır. [16]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Enfâl Suresinin yirmi dokuzuncu âyeti, takva ile furkan arasındaki bağı şöyle bildirir:"
-      },
-      {
-        "type": "evidence",
-        "reference": "ENFÂL 29",
-        "note": "İlgili bölüm",
-        "text": "Ey âmenû olanlar! Allah’a karşı takva sahibi olursanız sizi furkan (hak ve bâtılı ayırma özelliği) sahibi kılar! [17]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Furkan sahibi olmak, doğruyu yanlıştan ayırt edebilme imkânıdır. Bu, insanın bir anda bütün nefs afetlerinden kurtulması demek değildir. Âyetin açıklamasında, nefsin tesiriyle hataların devam edebileceği de belirtilir. Fakat artık insanın doğruyu görmesi ve Allah’ın emirlerine yönelmesi için bir yardım vardır. Başlangıçtaki ihsanı, yolun sonundaki kemal ile karıştırmadan kıymetini bilmeliyiz. [17]"
-      },
-      {
-        "type": "paragraph",
-        "text": "İhsanların kalbimize verdiği ümit de buradadır: Yalnızca “Bunu yapmalısın.” denilen bir kul değiliz. Allah’ın yardımına muhatap olan bir kuluz. Kendi irademizle dilediğimiz başlangıcın ardından, bizi hazırlayan ve ilerleten yardımlar gelir. Bu gerçeği düşündükçe yol gözümüzde büyüyen bir yük olmaktan çıkar; Rabbimizin yardımını isteyeceğimiz bir istikamet hâline gelir. [2]"
-      },
-      {
-        "type": "heading",
-        "text": "Geçmiş günahlar yüzünden bu dilekten vazgeçilmez"
-      },
-      {
-        "type": "paragraph",
-        "text": "İnsan, geçmişteki hatalarını hatırladığında Allah’a yönelmeye lâyık olmadığını düşünebilir. Oysa Allah’a ulaşmayı dilemek, yalnızca geçmişi kusursuz olanlara açılmış bir başlangıç olarak anlatılmaz. Günahların örtülmesi de bu dileğin ardından gelen ilâhî yardımlarla birlikte ele alınır. 11 Kasım 2002 tarihli sohbette, Allah’a ulaşmayı dileyen kişiye verilen ihsanlar ve kazandırılan dereceler bu çerçevede açıklanır. [18]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Burada iki ayrı hususu birbirine karıştırmamak önemlidir: Günahların örtülmesi ile günahların sevaba çevrilmesi aynı safha değildir. Furkân Suresinin yetmişinci âyetinin açıklamasında, mürşid önünde tövbe, kalbe îmân yazılması ve nefs tezkiyesiyle birlikte günahların sevaba çevrilmesi anlatılır. Başlangıçtaki örtülme ile tâbiiyetteki mağfiretin yerleri ayrıdır. [19]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Öyleyse ümidimizi kaybetmeyelim. Geçmişte hata yapmış olmak, Allah’ın kapısına yönelmekten vazgeçme gerekçesi olmamalıdır. Hataları küçümsemeden, onları aşmak için Allah’ın yardımını istemeliyiz. Dilek, günahlara devam etmeyi meşrulaştıran bir söz değil; Allah’ın yoluna dönmenin başlangıcıdır. [18] [19]"
-      },
-      {
-        "type": "heading",
-        "text": "“Allah ulaştıracak” demek, ibadetleri bırakmak değildir"
-      },
-      {
-        "type": "paragraph",
-        "text": "Allah’ın ulaştırma vaadi, kulun namazdan, zikirden ve kulluk sorumluluğundan uzaklaşacağı anlamına gelmez. Şûrâ Suresinin on üçüncü âyetinin açıklamasında, Allah’ın dileyen kişiye ibadetleri sevdirmesi özellikle anlatılır. Yardım, ibadetin yerine konulmaz; ibadeti yaşayabilmemizi sağlayan bir lütuf olarak görülür. [8]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Sohbetlerde tâbiiyetten sonra namaz, oruç, zekât ve zikirle devam eden bir hayat anlatılır. İnsan yalnızca bir başlangıç cümlesini söyleyip olduğu yerde bırakılmaz; Allah’ın yolunda yürür. Öyleyse bir dileğin bu kadar kıymetli olması, sonrasındaki gayretin değersiz olması demek değildir. Dilek, gayretin yönünü belirler. [20]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Bakara Suresinin iki yüz elli yedinci âyetinin ilgili bölümünde bu yolculuğun kalbe bakan tarafını görürüz:"
+        "text": "Allah’a yönelen kul için yalnızca ileride gerçekleşecek bir ulaşma söz konusu değildir. Allah’ın dostluğu da bu yönelişle bağlantılıdır. Bakara Suresinin 257. âyetinde şöyle buyrulur:"
       },
       {
         "type": "evidence",
         "reference": "BAKARA 257",
         "note": "İlgili bölüm",
-        "text": "Allah, âmenû olanların (Allah’a ulaşmayı dileyenlerin) dostudur, onları (onların nefslerinin kalplerini) zulmetten nura çıkarır. [21]"
+        "text": "Allah, âmenû olanların (Allah’a ulaşmayı dileyenlerin) dostudur, onları (onların nefslerinin kalplerini) zulmetten nura çıkarır."
       },
       {
         "type": "paragraph",
-        "text": "Mürşide tâbiiyetin ardından zikirle gelen nurlar nefsin kalbinde yerleşir; nefs tezkiyesi bu şekilde gerçekleşir. Demek ki Allah’ın dostluğu, kalbin karanlıklardan aydınlığa çıkarıldığı bir süreçle birlikte yaşanır. Bu aydınlanmanın içindeki zikir, yolun dışında bırakılabilecek bir ayrıntı değildir. [21]"
+        "text": "Allah, dost olduğu kulunu zulmette bırakmaz; nefsinin kalbini nura çıkarır. Bu, Allah’a ulaşmayı dilemenin insanın iç dünyasında başlayan değişimle bağını gösterir. Dilek, yalnız dilde kalacak bir söz değil, Allah’ın yardımıyla yaşanacak bir yolun başlangıcıdır."
       },
       {
         "type": "paragraph",
-        "text": "Ra’d Suresinin yirmi sekizinci âyeti de kalbin doyumunu Allah’ı zikretmeye bağlar:"
+        "text": "Allah’a ulaşmayı gönülden dileyen insana Allah ibadetleri sevdirir. Namaz, zikir ve diğer ibadetler birer zevk hâline gelmeye başlar. Kulun içinde mürşidine ulaşma isteği oluşur. Allah’ın yardımı, insanı ibadetlerden uzak tutarak değil, onları severek yapmasını sağlayarak gerçekleşir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Böylece insanın dileği, hayatından kopuk bir düşünce olarak kalmaz. Rabbine ulaşmak isteyen kişi, O’nu zikretmeyi, O’na ibadet etmeyi sever. Zikri sevmeyen insana zikri, namazı sevmeyen insana namazı sevdiren de Allah’tır. Kul, kendisine sevdirilen ibadetleri yerine getirerek yoluna devam eder."
       },
       {
         "type": "evidence",
         "reference": "RA’D 28",
-        "note": "Âyetin Türkçe metni",
-        "text": "Onlar, âmenûdurlar ve kalpleri, Allah’ı zikretmekle mutmain olmuştur. Kalpler ancak; Allah’ı zikretmekle mutmain olur, öyle değil mi? [22]"
+        "note": "Âyet metni",
+        "text": "Onlar, âmenûdurlar ve kalpleri, Allah’ı zikretmekle mutmain olmuştur. Kalpler ancak; Allah’ı zikretmekle mutmain olur, öyle değil mi?"
       },
       {
         "type": "paragraph",
-        "text": "Allah’a yönelmekle başlayan yol, Allah’ı anarak derinleşir. Kalbin doyumunu yalnızca dış şartların değişmesine bağlamak yerine, nefsin terbiyesine ve zikre yöneliriz. Âyetin açıklamasında nefs-i mutmainne, kalbin nurlanmasının bir kademesi olarak anlatılır; insanın kendisine verilenleri yeterli bulması, mal ve para hırsını aşması bu kademeyle ilişkilendirilir. [22]"
+        "text": "Kalbin mutmain oluşu, Allah’ı zikretmekle bağlantılıdır. Ruhun Allah’a doğru yolculuğuyla birlikte nefsin kalbinde de arınma gerçekleşir. Tâbiiyetten sonra zikirle yürüyen nefs tezkiyesi, insanın içindeki afetlerin azalmasını ve nurların artmasını sağlar. Allah’a ulaşmayı dilemek, bu temizlenmenin de başlangıcındaki istektir."
       },
       {
         "type": "heading",
-        "text": "Dileğin ardından mürşide tâbiiyet ve ruhun teslimi gelir"
+        "text": "Dilekten sonra yol nasıl devam eder?"
       },
       {
         "type": "paragraph",
-        "text": "Allah’a ulaşmayı dilemek, mürşide tâbiiyetin yerine geçmez; ona hazırlayan ilk safhadır. İnsan kalpten diledikten sonra Allah’ın gösterdiği yolda ilerlemeyi de ister. Mürşide duyulan ihtiyaç, bu talebin devamında anlatılır. Başlangıçtaki samimiyetin yalnızca sözde kalmaması, insanın kendisine açılan yola yönelmesi önemlidir. [5]"
+        "text": "Allah’a ulaşmayı dileyen kişi, Allah’ın kendisine verdiği mürşid sevgisiyle mürşidini arar. Hacet namazıyla Allah’tan mürşidini sorar ve Allah’ın gösterdiği mürşide tâbî olur. Tâbiiyetle birlikte ruhun Allah’a doğru yolculuğu başlar. Dilemek, tâbî olmak ve ruhun Allah’a ulaşması; aynı anda gerçekleşen tek bir olay değil, birbirini izleyen safhalardır."
       },
       {
         "type": "paragraph",
-        "text": "İslâm’ın yedi safha ve dört teslim olarak açıklanan bütünlüğünde ilk safha Allah’a ulaşmayı dilemektir. Ardından mürşide tâbiiyet ve ruhun Allah’a teslimi gelir. Fizik vücudun teslimi, nefsin teslimi, muhlis olmak ve iradenin teslimiyle yol daha ileriye uzanır. İlk adım, bütün bu safhaların yerine geçmez; onları yaşayabilmenin başlangıcı olur. [7]"
+        "text": "Kurtuluşun başlaması için ruhun Allah’a ulaşacağı günü beklemek gerekmez. Kalpten Allah’a ulaşmayı dileyen, fakat mürşidine ulaşamadan ölen kişi için birinci kat cennet; mürşidine tâbî olduktan sonra ölen kişi için ikinci kat cennet; ruhu Allah’a ulaştıktan sonra ölen kişi için üçüncü kat cennet söz konusudur. Allah, yeterli ömür verdiği kulunu bu dilekten başlayarak ruhun Kendisine ulaşmasına kadar götürür."
       },
       {
         "type": "paragraph",
-        "text": "Allah’a ulaşmayı dileyerek hidayete adım atmak ile ruhu Allah’a ulaşmış olarak hidayete ermek arasındaki fark, bu sıralamayı anlamamızı sağlar. Ne başlangıcı küçümseyelim ne de başlangıçta bütün yolun tamamlandığını zannedelim. Allah’a güvenerek, her safhanın gereğini kendi yerinde yaşayalım. [9]"
+        "text": "Bu müjdeleri, bir defa söylenmiş bir sözün ardından Allah’ın yolundan vazgeçmenin önemsiz olduğu şeklinde anlamamak gerekir. Dilekte devam etmek, Allah’a yönelişi korumak ve ibadetleri sürdürmek esastır. Ruh Allah’a ulaştıktan sonra da zikrin ve Allah ile ilişkinin devam etmesi gerekir. Zikir terk edilir ve kişi Allah’ın yolundan uzaklaşırsa, kazandığı nurları kaybetmesi söz konusu olur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Cennet saadeti ile dünya saadetinin gelişimi de birbirinden ayrılır. Allah’a ulaşmayı dilemek kurtuluşun başlangıcıdır; fakat nefsin bütün afetleri o anda temizlenmiş olmaz. Nefs tezkiyesiyle dünya mutluluğu adım adım artar. İlk dileği, insanın bütün kusurlarının bir anda ortadan kalkması gibi düşünmek, bu safhaları birbirine karıştırır."
       },
       {
         "type": "heading",
-        "text": "Kurtuluş müjdesi nasıl anlaşılmalıdır?"
+        "text": "İlk adım, kalpten bir dilek"
       },
       {
         "type": "paragraph",
-        "text": "Sohbetlerde, Allah’a ulaşmayı kalpten dileyip daha ileriye ulaşamadan vefat eden kişinin birinci kat cennetin sahibi olduğu açıklanır. Mürşide tâbiiyet ikinci, ruhun Allah’a ulaşması üçüncü kat cennetle ilişkilendirilir. Bu sıralama, dileğin ne kadar kıymetli olduğunu gösterdiği gibi, ilerleyen safhaların birbirinden farklı olduğunu da gösterir. [23]"
+        "text": "Allah’a ulaşmayı dilemek için, önce ruhunu Allah’a ulaştırmış bir insan hâline gelmek gerekmez. Önce dilek vardır; Allah’ın yardımı, mürşide tâbiiyet, zikir ve ruhun Allah’a ulaşması bu dileğin ardından gelir. İnsanı yolun başında durduran şey, kendi gücünü yetersiz görmesi olmamalıdır. Çünkü Allah, Kendisine yönelen kulunu Kendisine ulaştıracağını bildirmiştir."
       },
       {
         "type": "paragraph",
-        "text": "Buradan “Nasıl yaşarsam yaşayayım, bir defa söyledim; artık hiçbir sorumluluğum kalmadı.” sonucu çıkarılmaz. Bakara Suresinin iki yüz elli yedinci âyetinin açıklamasında, hidayetten sonra irşad makamından şüphe ederek yeniden fıska düşme ve kalbin kararması da anlatılır. Öyleyse başlangıcın müjdesi, yolu terk etmeye verilmiş bir güvence değildir. Allah’a yönelişimizi, ibadetimizi ve istikametimizi korumamız gerekir. [21]"
-      },
-      {
-        "type": "heading",
-        "text": "Bugün kalbimizden Allah’a yönelelim"
-      },
-      {
-        "type": "paragraph",
-        "text": "Sevgili kardeşlerim, bu konuyu okuduktan sonra elimizde yalnızca yeni bilgiler kalmasın. Kendimize dönüp talebimizi yoklayalım. Allah’a ulaşmanın ne olduğunu öğrendiysek, ruhumuzun hayattayken Allah’a ulaşmasını gerçekten isteyelim. Eksiklerimizi Allah’ın yardımından ümit kesmek için değil, O’na daha samimiyetle yönelmek için hatırlayalım. [15]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Allah’ın ihsanı, insanın kendi yeterliliğine kapanmasını değil, Rabbine yönelmesini öğretir. Dileğimizle açılan yolda bize düşen, verilen yardımı küçümsememek ve kulluk hayatımızı sürdürmektir. Bugün kalbimizden başlayan talebi, yarın unutulacak bir söz hâline getirmeyelim. Zikirle, ibadetle ve Allah’ın gösterdiği yola bağlılıkla yaşatalım. [4]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Yûnus Suresinin altmış dördüncü âyetindeki müjdeyi de bu ümit içinde okuyalım:"
-      },
-      {
-        "type": "evidence",
-        "reference": "YÛNUS 64",
-        "note": "Âyetin Türkçe metni",
-        "text": "Onlara, dünya hayatında ve ahirette müjdeler (mutluluklar) vardır. Allah’ın sözü değişmez. İşte O, fevz-ül azîmdir. [24]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Davet, yalnızca uzak bir geleceğe bakmamızı istemiyor. Dünya hayatımızı da Allah ile beraberlik içinde yaşamaya çağırıyor. Kalpten gelen dileğin ardından açılan yol, Allah’ın sevgisini ve yardımını hayatımızın merkezine almamız içindir. [24]"
-      },
-      {
-        "type": "paragraph",
-        "text": "Allahû Tealâ hepimize, ruhumuzu ölmeden evvel O’na ulaştırmayı kalpten dilemeyi; ihsanlarının kıymetini bilmeyi ve teslimler yolunda sadakatle ilerlemeyi nasip etsin. Dünya saadetine de cennet saadetine de ulaşmamızı nasip etsin. Âmin."
+        "text": "Rabbine yönelen insan, Allah’ın vaadine güvenerek devam eder. Ruhunu hayattayken Allah’a ulaştırmayı gerçekten ister; namazını, zikrini ve ibadetlerini sürdürür. Bu yolun başlangıcında kalpten bir istek, devamında Allah’ın yardımı vardır. Ulaşmayı dileyen kuldur; o dileğe karşılık kulunun ruhunu Kendisine ulaştıran Allah’tır."
       }
     ],
     "sources": []

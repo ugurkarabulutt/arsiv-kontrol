@@ -850,7 +850,7 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek');
   assert.equal(preview.status, 200);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
-  assert.match(preview.html, /Kalpten bir dilekle başlayan hidayet/);
+  assert.match(preview.html, /Kalpten başlayan yol/);
   assert.match(preview.html, /pa-topic-article-toc-block/);
   assert.match(preview.html, /İçindekiler/);
   assert.match(preview.html, /pa-topic-article-body/);
