@@ -182,16 +182,14 @@ if (!html.includes('id="approveDetailBtn"') || !html.includes('approveDetailFrom
 if (html.includes('id="copyDetailBtn"') || html.includes('function copyDetail()')) {
   throw new Error('Denetim kaydi modalinda eski Kopyala butonu/akisi kalmamali.');
 }
-const noStoreHeader = (vercelConfig.headers || []).some(item =>
-  (item.headers || []).some(h => h.key === 'Cache-Control' && String(h.value || '').includes('no-store'))
-);
 const routeNoStoreHeader = (vercelConfig.routes || []).some(item =>
   item.dest === '/index.html' &&
   item.headers &&
   String(item.headers['Cache-Control'] || '').includes('no-store')
 );
-if (!noStoreHeader || !routeNoStoreHeader) {
-  throw new Error('Canli HTML eski surumden calismasin diye Vercel no-store headeri top-level ve index route seviyesinde bulunmali.');
+const catchAllRoute = (vercelConfig.routes || []).find(item => item.src === '/(.*)' && item.dest === '/server.js');
+if (!routeNoStoreHeader || !catchAllRoute || String(catchAllRoute.headers?.['Cache-Control'] || '').includes('no-store')) {
+  throw new Error('Admin HTML no-store kalmali; public catch-all route ise uygulama cache headerini ezmemeli.');
 }
 const rootFallback = "app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));";
 assert(server.includes(rootFallback), 'Root legacy SPA fallback aynen index.html dondurmeli.');

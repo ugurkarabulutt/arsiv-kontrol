@@ -4532,3 +4532,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Canli kapatma: 18 acik feedback `feedback-fix-2026-07-15-18-1784128089002` grubuyla
   kapatildi. Bihter Oksak, Serap Pamuk ve Nuray Ardagumusoglu icin 3 kisisel cozum bildirimi
   gonderildi. Son kontrolde acik feedback sayisi `0`.
+
+## 2026-09-15 Public cok okunan hiz ve cache duzeltmesi
+
+- `/cok-okunan-cevaplar` sayfasi tek seferde 90 kayit render etmek yerine sunucudan 20'lik
+  parcalar alir; `Daha Fazla Goster` ayni sayfada sonraki parcayi ekler.
+- Public root ve koleksiyon sayfalarinin CDN cache headerini Vercel catch-all route ezmesin
+  diye `vercel.json` genel `no-store` kuralindan arindirildi. Admin, API, public-preview,
+  manifest ve service worker no-store kaldi; soru detaylari runtime tarafinda no-store.
+- Dogrulama: `npm.cmd run check` basarili, 157/157 test gecti.
