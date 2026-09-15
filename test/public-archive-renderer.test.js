@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260915-topic-next-title-v3"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260916-topic-guides-blogs-only-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,14 +98,14 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260915-topic-next-title-v3"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260915-topic-next-title-v3"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260916-topic-guides-blogs-only-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260916-topic-guides-blogs-only-v1"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
-  assert.match(home, /dsca-page-cache:v13/);
+  assert.match(home, /dsca-page-cache:v14/);
   assert.match(home, /maxCachedHtmlLength/);
   assert.match(home, /prefetchCard/);
   assert.match(home, /observePrefetchCandidates/);
@@ -810,6 +810,11 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /pa-intent-card/);
   assert.match(home, /Konu rehberleri/);
   assert.match(home, /\/public-preview\/konu-rehberi\/allaha-ulasmayi-dilemek/);
+  const topicGuideSection = home.slice(home.indexOf('Konu rehberleri'), home.indexOf('Kavram akışı'));
+  assert.match(topicGuideSection, /Hidayet Nedir\?/);
+  assert.match(topicGuideSection, /Mürşide Tâbiiyet/);
+  assert.match(topicGuideSection, /Zikir Nedir\?/);
+  assert.doesNotMatch(topicGuideSection, /Nefs Tezkiyesi|Ruhun Allah’a Ulaşması|Teslimiyet|Takva|Tövbe ve Günahlardan Kurtuluş|Dua ve Tevekkül|Namaz ve İbadet Bilinci|Kur’ân’da Hidayet Ayetleri/);
   assert.match(home, /pa-topic-path/);
   assert.match(home, /pa-reading-track/);
   assert.match(home, /pa-reading-rail/);

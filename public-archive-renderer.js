@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260915-topic-next-title-v3';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260916-topic-guides-blogs-only-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -1698,16 +1698,20 @@ function homeReadingPathHref(item = {}) {
   return `${PREVIEW_BASE}/arama?q=${encodeURIComponent(query)}`;
 }
 
+function homeReadingPathArticleItems() {
+  return HOME_READING_PATHS
+    .map(item => ({ item, article: item.articleSlug ? publicTopicArticleBySlug(item.articleSlug) : null }))
+    .filter(({ article }) => Boolean(article?.slug));
+}
+
 function homeReadingPathItems() {
-  return HOME_READING_PATHS.map(item => {
-    const article = item.articleSlug ? publicTopicArticleBySlug(item.articleSlug) : null;
-    const isArticle = Boolean(article?.slug);
+  return homeReadingPathArticleItems().map(({ item }) => {
     return `
-      <a class="pa-reading-card" href="${escapeHtml(homeReadingPathHref(item))}"${isArticle ? ' data-topic-article-link="true"' : ''}>
+      <a class="pa-reading-card" href="${escapeHtml(homeReadingPathHref(item))}" data-topic-article-link="true">
         <span class="pa-reading-mark">${iconSvg('topics')}</span>
         <strong>${escapeHtml(item.title)}</strong>
         <span class="pa-reading-copy">${escapeHtml(item.text)}</span>
-        <span class="pa-reading-action">${isArticle ? 'Rehbere Başla' : 'Soruları gör'} ${iconSvg('chevron-right', 'pa-inline-chevron')}</span>
+        <span class="pa-reading-action">Rehbere Başla ${iconSvg('chevron-right', 'pa-inline-chevron')}</span>
       </a>
     `;
   }).join('');
@@ -1754,6 +1758,8 @@ function homeQuranEvidenceSection(items = []) {
 }
 
 function homeReadingPathSection() {
+  const itemsHtml = homeReadingPathItems();
+  if (!itemsHtml) return '';
   return `
     <section class="pa-section pa-topic-path" id="konu-rehberleri" aria-labelledby="pa-reading-path-title">
       <div class="pa-topic-path-head">
@@ -1764,7 +1770,7 @@ function homeReadingPathSection() {
       <div class="pa-reading-track" aria-label="Konu rehberleri">
         <div class="pa-reading-rail">
           <div class="pa-reading-set">
-            ${homeReadingPathItems()}
+            ${itemsHtml}
           </div>
         </div>
       </div>
@@ -4086,7 +4092,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v13:';
+        var cachePrefix = 'dsca-page-cache:v14:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';

@@ -32,8 +32,12 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   public temiz metin olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı
   `/konu-rehberi/allaha-ulasmayi-dilemek` yazısına bağlandı ve kart içinde
   açık `Rehbere Başla` aksiyonu gösterir. Konu rehberi otomatik slider değildir;
-  tek setli yatay swipe edilebilir kart şeridi olarak kalmalıdır. Ana sayfada
-  `Ne öğrenmek istiyorsunuz?` niyet kartları kaldırıldı; geri eklenmemelidir.
+  tek setli yatay swipe edilebilir kart şeridi olarak kalmalıdır. Ana sayfadaki
+  `Konu rehberleri` kartları yalnız `public-archive-topic-articles.json` içinde
+  gerçek blog makalesi olan `articleSlug` kayıtlarından üretilir; blogu olmayan
+  konu başlıkları kategori/arama fallback'i ile bu bölümde gösterilmemelidir.
+  Ana sayfada `Ne öğrenmek istiyorsunuz?` niyet kartları kaldırıldı; geri
+  eklenmemelidir.
   Sayfa
   okuyucuya yalnız konu anlatımı, ayet delilleri ve ilgili soruları gösterir;
   süreç notu, kaynakça, sohbet kodu, PDF hazırlık notu ve köşeli `[1]` atıf

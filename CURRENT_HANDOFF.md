@@ -1,5 +1,19 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-16 Konu Rehberleri Bloglu Başlıklarla Sınırlandı
+
+- Kullanıcı ana sayfadaki `Konu rehberleri` alanında blogu olmayan konuların
+  görünmemesini istedi.
+- `homeReadingPathItems` artık yalnız `public-archive-topic-articles.json`
+  içinde gerçek makalesi bulunan `articleSlug` kayıtlarını render eder. Blogu
+  olmayan başlıklar kategori/arama fallback'i ile bu bölümde gösterilmez.
+- Şu an görünen rehberler: `Allah’a Ulaşmayı Dilemek`, `Hidayet Nedir?`,
+  `Mürşide Tâbiiyet`, `Zikir Nedir?`.
+- Public asset sürümü `20260916-topic-guides-blogs-only-v1`, hızlı navigasyon
+  session cache anahtarı `dsca-page-cache:v14` olarak yükseltildi.
+- Yerel doğrulama: hedef `node --test test\public-archive-renderer.test.js` ve
+  tam `npm.cmd run check` başarılı; 160/160 test geçti.
+
 ## 2026-09-15 Eski Taslak Onay Döngüsü Hotfix
 
 - Nuran Çelik'in bildirdiği "soru ve etiket ekleyip Onaya Gönder deyince aynı
