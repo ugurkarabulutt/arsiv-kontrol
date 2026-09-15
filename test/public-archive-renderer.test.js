@@ -927,6 +927,35 @@ test('topic guide article renders Hidayet blog without source artifacts', () => 
   assert.doesNotMatch(preview.html, disallowedSourcePattern);
 });
 
+test('topic guide article renders Mürşide Tâbiiyet blog with its own related questions', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/murside-tabiiyet');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Mürşide Tâbiiyet/);
+  assert.match(preview.html, /Vesileyi istemek ve ruhun yolculuğa başlaması/);
+  assert.match(preview.html, /pa-topic-article-toc-block/);
+  assert.match(preview.html, /MÂİDE 35/);
+  assert.match(preview.html, /BAKARA 45/);
+  assert.match(preview.html, /FURKÂN 70/);
+  assert.match(preview.html, /Tâbiiyet ile ilgili sorular/);
+  assert.match(preview.html, /Tâbiiyet soruları/);
+  assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/murside-tabiiyet#article"/);
+  const disallowedSourcePattern = new RegExp([
+    'mih' + 'r\\.com',
+    'Kuran' + 'TefsirAyet',
+    'dokumanli' + '-sohbet',
+    'Kaynaklar',
+    'Sohbet kodu',
+    'Kaynak kontrol',
+    'kullanıcı tarafından verilen PDF',
+    'pa-topic-source-list',
+    'pa-topic-footnote',
+    '\\[\\d+\\]'
+  ].join('|'), 'i');
+  assert.doesNotMatch(preview.html, disallowedSourcePattern);
+});
+
 test('home page question selection deduplicates repeated question text', () => {
   const archiveData = {
     brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },

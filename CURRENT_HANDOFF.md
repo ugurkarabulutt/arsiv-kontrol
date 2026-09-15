@@ -4541,3 +4541,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   diye `vercel.json` genel `no-store` kuralindan arindirildi. Admin, API, public-preview,
   manifest ve service worker no-store kaldi; soru detaylari runtime tarafinda no-store.
 - Dogrulama: `npm.cmd run check` basarili, 157/157 test gecti.
+
+## 2026-09-15 Murside Tabiiyet blog yayini
+
+- Kullanici tarafindan verilen `Murside_Tabiiyet_Blog.pdf` icerigi konu rehberi makalesine
+  donusturuldu: `/konu-rehberi/murside-tabiiyet`.
+- Ana sayfadaki `Murside Tabiiyet` karti kategori yerine dogrudan bu blog yazisina baglandi.
+- Blogda kaynakca, sohbet kodu, PDF hazirlama notu veya koseli parantezli kaynak numarasi
+  birakilmadi. Schema/SEO ve konuya ozel ilgili sorular testi eklendi.
+- Dogrulama: `npm.cmd run check` basarili, 158/158 test gecti.
