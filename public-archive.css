@@ -3372,30 +3372,14 @@ a.pa-chip:hover,
   padding: 2px 0 0;
 }
 
-.pa-topic-next-head {
-  display: grid;
-  gap: 3px;
-  margin-bottom: 14px;
-}
-
-.pa-topic-next-head span {
-  color: var(--pa-green);
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-.pa-topic-next-head strong {
+.pa-topic-next-title {
   display: block;
-  margin: 0;
+  margin: 0 0 9px;
   color: var(--pa-text);
-  font-family: var(--pa-serif);
-  font-size: clamp(25px, 6vw, 34px);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1.05;
+  font-size: 22px;
+  font-weight: 820;
+  letter-spacing: 0;
+  line-height: 1.15;
   text-transform: none;
 }
 
@@ -3424,8 +3408,8 @@ a.pa-chip:hover,
   justify-content: space-between;
   gap: 18px;
   width: 100%;
-  min-height: 54px;
-  padding: 14px 34px 14px 0;
+  min-height: 48px;
+  padding: 9px 34px 9px 0;
   color: var(--pa-text);
   background: transparent;
   border: 0;

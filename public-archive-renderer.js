@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { publicArchiveFixtures } = require('./public-archive-fixtures');
@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260915-topic-next-list-v2';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260915-topic-next-title-v3';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -1431,10 +1431,7 @@ function topicArticleGuideLinksHtml(article = {}) {
   if (!articles.length) return '';
   return `
         <section class="pa-topic-next-card">
-          <div class="pa-topic-next-head">
-            <span>Konu rehberleri</span>
-            <strong>Okumaya devam edin</strong>
-          </div>
+          <strong class="pa-topic-next-title">Okumaya Devam Edin</strong>
           <ul class="pa-topic-next-list">
             ${articles.map(item => `
               <li>

@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260915-topic-next-list-v2"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260915-topic-next-title-v3"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260915-topic-next-list-v2"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260915-topic-next-list-v2"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260915-topic-next-title-v3"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260915-topic-next-title-v3"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
@@ -856,7 +856,7 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /pa-topic-article-body/);
   assert.match(preview.html, /pa-topic-article-support/);
   assert.match(preview.html, /Bu yazıda geçen ayetler/);
-  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
   assert.match(preview.html, /Hidayet Nedir\?/);
   assert.match(preview.html, /Mürşide Tâbiiyet/);
   assert.match(preview.html, /RÛM 31/);
@@ -908,7 +908,7 @@ test('topic guide article renders Hidayet blog without source artifacts', () => 
   assert.match(preview.html, /ÂL-İ İMRÂN 73/);
   assert.match(preview.html, /ZÜMER 54/);
   assert.match(preview.html, /Hidayet ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
@@ -940,7 +940,7 @@ test('topic guide article renders Mürşide Tâbiiyet blog with its own related 
   assert.match(preview.html, /BAKARA 45/);
   assert.match(preview.html, /FURKÂN 70/);
   assert.match(preview.html, /Tâbiiyet ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
   assert.match(preview.html, /Zikir Nedir\?/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
@@ -971,7 +971,7 @@ test('topic guide article renders Zikir blog and cross-links other guides', () =
   assert.match(preview.html, /ANKEBÛT 45/);
   assert.match(preview.html, /BAKARA 152/);
   assert.match(preview.html, /Zikir ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.match(preview.html, /Mürşide Tâbiiyet/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
