@@ -460,6 +460,7 @@ svg {
 .pa-evidence-card:focus-visible,
 .pa-topic-toc a:focus-visible,
 .pa-topic-proof-card a:focus-visible,
+.pa-topic-next-list a:focus-visible,
 .pa-topic-card:focus-visible,
 .pa-category-card:focus-visible,
 .pa-question-card:focus-visible,
@@ -3368,33 +3369,28 @@ a.pa-chip:hover,
 
 .pa-topic-next-card {
   position: relative;
-  overflow: hidden;
-  padding: 18px;
+  padding: 2px 0 0;
 }
 
 .pa-topic-next-card > strong {
-  margin: 0 0 14px;
+  display: block;
+  margin: 0 0 10px;
   color: var(--pa-text);
-  font-size: 20px;
-  font-weight: 850;
-  letter-spacing: 0;
-  line-height: 1.18;
+  font-size: 18px;
+  font-weight: 820;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
   text-transform: none;
 }
 
 .pa-topic-next-list {
-  position: relative;
-  z-index: 1;
   display: grid;
   gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--pa-mint) 7%, transparent), transparent),
-    color-mix(in srgb, var(--pa-surface-2) 74%, transparent);
-  border: 1px solid color-mix(in srgb, var(--pa-border) 78%, transparent);
-  border-radius: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--pa-border) 68%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pa-border) 68%, transparent);
 }
 
 .pa-topic-next-list li {
@@ -3412,8 +3408,8 @@ a.pa-chip:hover,
   justify-content: space-between;
   gap: 18px;
   width: 100%;
-  min-height: 58px;
-  padding: 15px 42px 15px 16px;
+  min-height: 54px;
+  padding: 14px 34px 14px 0;
   color: var(--pa-text);
   background: transparent;
   border: 0;
@@ -3426,7 +3422,7 @@ a.pa-chip:hover,
 .pa-topic-next-list a::after {
   content: "›";
   position: absolute;
-  right: 16px;
+  right: 0;
   top: 50%;
   color: color-mix(in srgb, var(--pa-green) 78%, var(--pa-text-2));
   font-size: 24px;
@@ -3438,19 +3434,19 @@ a.pa-chip:hover,
 
 .pa-topic-next-list a:hover {
   color: var(--pa-green);
-  background: color-mix(in srgb, var(--pa-mint) 10%, transparent);
+  background: transparent;
 }
 
 .pa-topic-next-list a:hover::after {
   transform: translate(3px, -50%);
 }
 
-.pa-topic-next-list strong {
+.pa-topic-next-list span {
   min-width: 0;
   margin: 0;
   color: inherit;
   font-size: 17px;
-  font-weight: 780;
+  font-weight: 720;
   letter-spacing: 0;
   line-height: 1.25;
   text-transform: none;
