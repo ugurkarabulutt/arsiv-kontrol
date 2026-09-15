@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-15 Ziyaret İstatistikleri Paneli Hazırlığı
+
+- Kullanıcı istatistik ekranında 24 saatten 30 güne geçince verilerin geç
+  geldiğini ve daha fazla gözlem kırılımı istediğini bildirdi.
+- `Canlı Site > Ziyaret İstatistikleri` paneline son 1 saat, 6 saat ve 12 saat
+  aralıkları; ülke dropdown'u; ülkeye bağlı şehir dropdown'u; ülke/şehir
+  kırılım kartı ve veri kapsamı notu eklendi.
+- Eski tüm satır okuma yaklaşımı yerine analytics backend'i en fazla son 1000
+  ziyaret satırını detay listeleri için okur. Örnek sınırı dolarsa üst toplamlar
+  timeout korumalı `count: 'exact'` sorgularıyla üretilir; count alınamazsa UI
+  bunu örnek veri olarak açıkça belirtir.
+- Canlı Supabase salt-okuma benchmark'ı: yeni akışta 30 gün filtresi yaklaşık
+  1.3 sn, `TR + 30 gün` yaklaşık 0.5 sn döndü. `planned/estimated` count bazı
+  kısa aralıklarda yanıltıcı olduğu için kullanılmadı.
+- Yerel doğrulama: `npm.cmd run check` başarılı; 159/159 test geçti.
+
 ## 2026-09-15 Public Popüler Liste Performans Hotfix
 
 - Kullanıcı ön yüz ve admin panelin çok yavaş çalıştığını bildirdi. Canlı ölçümde

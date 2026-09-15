@@ -5,6 +5,18 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-15 ziyaret istatistikleri paneli:** `Canlı Site > Ziyaret
+  İstatistikleri` aralığı `1s/6s/12s/24s/7g/30g/90g` destekler. Panel ülke ve
+  ülkeye bağlı şehir filtresi sunar; şehir bilgisi IP ağına dayalı gözlem
+  verisidir, kesin adres olarak yorumlanmaz. Analytics endpoint'i geniş
+  aralıklarda tüm satırları frontend'e taşımamalıdır: detay kırılımları son
+  `PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS=1000` kayıt örneğinden, üst metrikler ise
+  örnek sınırı dolduğunda timeout korumalı `count: 'exact'` DB sayımından
+  üretilir. Supabase `planned/estimated` count kısa aralıklarda yanıltıcı
+  dönebildiği için panelde kesin toplam gibi kullanılmamalıdır. Aynı filtreye
+  hızlı dönüşlerde yalnız 15 saniyelik backend cache kullanılır ve UI bunu
+  `hızlı önbellek` olarak açıkça gösterir.
+
 - **2026-09-14 konu rehberi blog yayını:** Public konu rehberleri için uzun
   blog içerikleri `public-archive-topic-articles.json` içinde statik ve
   public temiz metin olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı

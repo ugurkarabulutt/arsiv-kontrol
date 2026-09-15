@@ -462,6 +462,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .archive-ready-hero{border:1px solid rgba(var(--green-rgb),.38);background:linear-gradient(135deg,rgba(var(--green-rgb),.1),rgba(var(--gold-rgb),.06));padding:14px;margin-bottom:12px;min-width:0;}
 .archive-ready-hero strong{display:block;font-size:16px;line-height:1.35;color:var(--ink);margin-bottom:5px;overflow-wrap:anywhere;}
 .archive-ready-hero span{display:block;font-size:13px;line-height:1.55;color:var(--ink2);}
+.ops-analytics-filter-row{grid-template-columns:minmax(150px,.85fr) minmax(150px,1fr) minmax(150px,1fr) minmax(180px,1.1fr);}
 .ops-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}
 .ops-analytics-card{border:1px solid var(--bord2);background:var(--surface);padding:13px;min-width:0;}
 .ops-analytics-card h4{margin:0 0 10px;font-size:14px;color:var(--ink);}
@@ -2121,12 +2122,21 @@ canvas{width:100%!important;}
             <strong>Veri buradan okunur.</strong>
             <span>Ziyaret sayısı, tekil kişi, kaynak, cihaz ve IP ağına göre ülke/şehir dağılımı ayrı ayrı takip edilir. Şehir bilgisi kesin adres değildir; operatör veya VPN çıkışına göre değişebilir.</span>
           </div>
-          <div class="ops-filter-row">
+          <div class="ops-filter-row ops-analytics-filter-row">
             <select class="ops-field" id="archivePublicAnalyticsRange" onchange="setArchivePublicAnalyticsRange(this.value)">
+              <option value="1h">Son 1 saat</option>
+              <option value="6h">Son 6 saat</option>
+              <option value="12h">Son 12 saat</option>
               <option value="24h">Son 24 saat</option>
               <option value="7d" selected>Son 7 gün</option>
               <option value="30d">Son 30 gün</option>
               <option value="90d">Son 90 gün</option>
+            </select>
+            <select class="ops-field" id="archivePublicAnalyticsCountry" onchange="setArchivePublicAnalyticsCountry(this.value)">
+              <option value="">Tüm ülkeler</option>
+            </select>
+            <select class="ops-field" id="archivePublicAnalyticsCity" onchange="setArchivePublicAnalyticsCity(this.value)" disabled>
+              <option value="">Tüm şehirler</option>
             </select>
             <span class="ops-status" id="archivePublicAnalyticsStatus">Veri bekleniyor.</span>
           </div>
@@ -2616,7 +2626,7 @@ let archiveReadyState={items:[],counts:null,activeItem:null,query:'',kind:'',loa
 let archiveReleasePackageState={packages:[],counts:null,activePackage:null,query:'',status:'',readyItems:[],readyQuery:'',readyKind:'',selectedReadyIds:new Set(),loading:false,readyLoading:false,submitInFlight:false};
 let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',output:null,loading:false,generating:false};
 let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
-let archivePublicAnalyticsState={range:'7d',data:null,loading:false};
+let archivePublicAnalyticsState={range:'7d',country:'',city:'',data:null,loading:false};
 let archivePublicContentState={audit:null,refresh:null,suspiciousReturn:null,loading:false,refreshing:false,acting:false,queue:null,queueType:'partial',queueOffset:0,queueLimit:40,queueLoading:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
 let actionLogSearchTimer=null;
@@ -8724,22 +8734,65 @@ function publicAnalyticsListHtml(items=[],options={}){
     `;
   }).join('')}</div>`;
 }
+function publicAnalyticsOptionsHtml(items=[],current='',emptyLabel='Tümü'){
+  const seen=new Set();
+  const rows=(items||[])
+    .map(item=>({value:String(item.key||item.label||'').trim(),label:String(item.label||item.key||'').trim(),count:Number(item.count||0)}))
+    .filter(item=>item.value&&item.label&&!seen.has(item.value)&&seen.add(item.value))
+    .slice(0,80);
+  return `<option value="">${esc(emptyLabel)}</option>${rows.map(item=>`
+    <option value="${escAttr(item.value)}" ${item.value===current?'selected':''}>${esc(item.label)}${item.count?` (${item.count.toLocaleString('tr-TR')})`:''}</option>
+  `).join('')}`;
+}
+function syncArchivePublicAnalyticsFilters(data={}){
+  const countryEl=el('archivePublicAnalyticsCountry');
+  const cityEl=el('archivePublicAnalyticsCity');
+  if(countryEl&&data.available){
+    countryEl.innerHTML=publicAnalyticsOptionsHtml(data.countryOptions||data.countries||[],archivePublicAnalyticsState.country,'Tüm ülkeler');
+    countryEl.value=archivePublicAnalyticsState.country||'';
+  }
+  if(cityEl&&data.available){
+    const hasCountry=Boolean(archivePublicAnalyticsState.country);
+    cityEl.disabled=!hasCountry;
+    cityEl.innerHTML=publicAnalyticsOptionsHtml(hasCountry?(data.cityOptions||[]):[],archivePublicAnalyticsState.city,'Tüm şehirler');
+    cityEl.value=hasCountry?(archivePublicAnalyticsState.city||''):'';
+  }
+}
+function publicAnalyticsCountryCityHtml(groups=[]){
+  if(!groups.length)return '<div class="ops-analytics-empty">Henüz ülke/şehir kırılımı yok.</div>';
+  return `<div class="ops-analytics-list">${groups.map(group=>`
+    <div class="ops-analytics-row">
+      <strong title="${esc(group.label||group.key)}">${esc(group.label||group.key)}</strong>
+      <span>${Number(group.count||0).toLocaleString('tr-TR')}</span>
+      ${(group.cities||[]).length?`<div class="ops-analytics-empty" style="grid-column:1/-1;padding:7px">${(group.cities||[]).map(city=>`${esc(city.label||city.key)}: ${Number(city.count||0).toLocaleString('tr-TR')}`).join(' · ')}</div>`:''}
+    </div>
+  `).join('')}</div>`;
+}
 function renderArchivePublicAnalytics(){
   const summary=el('archivePublicAnalyticsSummary');
   const grid=el('archivePublicAnalyticsGrid');
   const status=el('archivePublicAnalyticsStatus');
   const data=archivePublicAnalyticsState.data||{};
+  syncArchivePublicAnalyticsFilters(data);
+  const activeFilters=[data.range?.label,archivePublicAnalyticsState.country,archivePublicAnalyticsState.city].filter(Boolean).join(' · ');
+  const metricMode=data.metricMode||'complete';
+  const sampleNotice=metricMode==='count'
+    ?`Yoğun aralık: üst toplamlar doğrudan veritabanı sayımıyla, detay listeleri son ${Number(data.sampledRows||0).toLocaleString('tr-TR')} ziyaret üzerinden gösteriliyor.`
+    :metricMode==='sample'
+      ?`Yoğun aralık: veritabanı sayımı alınamadığı için bu ekran son ${Number(data.sampledRows||0).toLocaleString('tr-TR')} ziyareti gösteriyor.`
+      :'Toplamlar ve listeler seçili aralıktaki ziyaretlerden hesaplanıyor.';
   if(status){
-    status.textContent=archivePublicAnalyticsState.loading?'Yükleniyor...':data.available===false?(data.error||'İstatistik tablosu bekleniyor.'):data.available?'Veri güncel.':'Veri bekleniyor.';
+    status.textContent=archivePublicAnalyticsState.loading?'Yükleniyor...':data.available===false?(data.error||'İstatistik tablosu bekleniyor.'):data.available?`Veri güncel${activeFilters?`: ${activeFilters}`:''}${data.cached?' · hızlı önbellek':''}`:'Veri bekleniyor.';
     status.className=`ops-status ${data.available?'ok':data.available===false?'err':''}`.trim();
   }
   if(summary){
     summary.innerHTML=data.available?`
-      <div class="ops-file-summary-item"><strong>${Number(data.totalVisits||0).toLocaleString('tr-TR')}</strong><span>Toplam ziyaret</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.totalVisits||0).toLocaleString('tr-TR')}</strong><span>${metricMode==='sample'?'Ziyaret örneği':'Toplam ziyaret'}</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.humanVisits||0).toLocaleString('tr-TR')}</strong><span>İnsan ziyareti</span></div>
-      <div class="ops-file-summary-item"><strong>${Number(data.uniqueVisitors||0).toLocaleString('tr-TR')}</strong><span>Tekil kişi</span></div>
+      <div class="ops-file-summary-item"><strong>${Number(data.uniqueVisitors||0).toLocaleString('tr-TR')}</strong><span>${data.uniqueVisitorsSampled?'Tekil kişi örnek':'Tekil kişi'}</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.questionViews||0).toLocaleString('tr-TR')}</strong><span>Soru okuma</span></div>
       <div class="ops-file-summary-item"><strong>${Number(data.botVisits||0).toLocaleString('tr-TR')}</strong><span>Bot / ön izleme</span></div>
+      <div class="ops-file-summary-item"><strong>${esc(data.range?.label||archivePublicAnalyticsState.range||'')}</strong><span>Seçili aralık</span></div>
     `:'<div class="ops-file-summary-item"><strong>--</strong><span>İstatistik bekleniyor</span></div>';
   }
   if(!grid)return;
@@ -8749,8 +8802,11 @@ function renderArchivePublicAnalytics(){
   }
   grid.innerHTML=`
     <div class="ops-analytics-card"><h4>Konum Notu</h4><div class="ops-analytics-empty">${esc(data.locationNotice||'Şehir bilgisi IP ağına göre gelir; kesin adres gibi yorumlanmamalıdır.')}</div></div>
+    <div class="ops-analytics-card"><h4>Veri kapsamı</h4><div class="ops-analytics-empty">${esc(sampleNotice)}</div></div>
     <div class="ops-analytics-card"><h4>Nereden geldiler?</h4>${publicAnalyticsListHtml(data.sourceTypes||[],{label:item=>publicAnalyticsSourceLabel(item.key)})}</div>
     <div class="ops-analytics-card"><h4>Hangi ülkeler?</h4>${publicAnalyticsListHtml(data.countries||[])}</div>
+    <div class="ops-analytics-card"><h4>Ülke ve şehir kırılımı</h4>${publicAnalyticsCountryCityHtml(data.countryCityGroups||[])}</div>
+    <div class="ops-analytics-card"><h4>${archivePublicAnalyticsState.country?'Seçili ülkenin şehirleri':'Şehir seçimi'}</h4>${archivePublicAnalyticsState.country?publicAnalyticsListHtml(data.cityOptions||[]):'<div class="ops-analytics-empty">Şehir kırılımı için üstten bir ülke seçin.</div>'}</div>
     <div class="ops-analytics-card"><h4>Bölgeler</h4>${publicAnalyticsListHtml(data.regions||[])}</div>
     <div class="ops-analytics-card"><h4>Şehirler (IP ağına göre)</h4>${publicAnalyticsListHtml(data.cities||[])}</div>
     <div class="ops-analytics-card"><h4>Saat dilimleri</h4>${publicAnalyticsListHtml(data.timezones||[])}</div>
@@ -8774,11 +8830,22 @@ function setArchivePublicAnalyticsRange(value){
   archivePublicAnalyticsState.range=value||'7d';
   loadArchivePublicAnalytics();
 }
+function setArchivePublicAnalyticsCountry(value){
+  archivePublicAnalyticsState.country=value||'';
+  archivePublicAnalyticsState.city='';
+  loadArchivePublicAnalytics();
+}
+function setArchivePublicAnalyticsCity(value){
+  archivePublicAnalyticsState.city=archivePublicAnalyticsState.country?(value||''):'';
+  loadArchivePublicAnalytics();
+}
 async function loadArchivePublicAnalytics(){
   if(!canUseArchiveOps())return;
   archivePublicAnalyticsState.loading=true;
   renderArchivePublicAnalytics();
   const params=new URLSearchParams({range:archivePublicAnalyticsState.range||'7d'});
+  if(archivePublicAnalyticsState.country)params.set('country',archivePublicAnalyticsState.country);
+  if(archivePublicAnalyticsState.country&&archivePublicAnalyticsState.city)params.set('city',archivePublicAnalyticsState.city);
   const data=await api('GET',`/api/public-archive/analytics?${params.toString()}`);
   archivePublicAnalyticsState.loading=false;
   archivePublicAnalyticsState.data=data.error?{available:false,error:data.error}:data;

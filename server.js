@@ -896,6 +896,21 @@ async function fetchAllPages(makeQuery, pageSize = 1000) {
   return rows;
 }
 
+async function fetchLimitedPages(makeQuery, pageSize = 1000, maxRows = pageSize) {
+  const limit = Math.max(0, Number(maxRows) || 0);
+  if (!limit) return [];
+  const rows = [];
+  for (let from = 0; rows.length < limit; from += pageSize) {
+    const size = Math.min(pageSize, limit - rows.length);
+    const { data, error } = await makeQuery().range(from, from + size - 1);
+    if (error) throw new Error(error.message);
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < size) break;
+  }
+  return rows;
+}
+
 function approvalSearchTerm(value = '') {
   return String(value || '').trim().replace(/[%,()]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
 }
@@ -5458,11 +5473,13 @@ const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category
 const PUBLIC_ARCHIVE_CATEGORY_SELECT = `${PUBLIC_ARCHIVE_LIST_SELECT},answer_text,answer_paragraphs`;
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT = 'slug,title,question,summary,excerpt,answer_text,category_slug,topic_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
-const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 20000;
+const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 1000;
+const PUBLIC_ARCHIVE_ANALYTICS_SELECT = 'created_at,path,route_type,question_slug,referrer_host,source_type,country,region,city,timezone,device_type,browser_name,os_name,visitor_id,ip_hash,is_bot';
 const PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT = 120;
 const PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT = 90;
 const PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT = 5;
 const PUBLIC_ARCHIVE_LIVE_SEARCH_CACHE_MS = 60_000;
+const PUBLIC_ARCHIVE_ANALYTICS_CACHE_MS = 15_000;
 const PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT = 10;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 let publicArchiveCategoryIndexCache = { expiresAt: 0, rows: null };
@@ -5470,6 +5487,7 @@ let publicArchiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: nu
 let publicArchiveLiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
 const publicArchiveRouteCache = new Map();
 const publicArchiveLiveSearchCache = new Map();
+const publicArchiveAnalyticsCache = new Map();
 let publicArchiveContentReady = null;
 let publicArchiveContentReadyError = null;
 let publicArchiveAuthReady = null;
@@ -7386,12 +7404,44 @@ function publicArchiveIpHash(req) {
 function publicArchiveAnalyticsRange(value = '') {
   const key = String(value || '7d').trim().toLowerCase();
   const ranges = {
+    '1h': { key: '1h', label: 'Son 1 saat', ms: 60 * 60 * 1000, bucket: 'hour' },
+    '6h': { key: '6h', label: 'Son 6 saat', ms: 6 * 60 * 60 * 1000, bucket: 'hour' },
+    '12h': { key: '12h', label: 'Son 12 saat', ms: 12 * 60 * 60 * 1000, bucket: 'hour' },
     '24h': { key: '24h', label: 'Son 24 saat', ms: 24 * 60 * 60 * 1000, bucket: 'hour' },
     '7d': { key: '7d', label: 'Son 7 gün', ms: 7 * 24 * 60 * 60 * 1000, bucket: 'day' },
     '30d': { key: '30d', label: 'Son 30 gün', ms: 30 * 24 * 60 * 60 * 1000, bucket: 'day' },
     '90d': { key: '90d', label: 'Son 90 gün', ms: 90 * 24 * 60 * 60 * 1000, bucket: 'day' }
   };
   return ranges[key] || ranges['7d'];
+}
+
+function publicArchiveAnalyticsFilterValue(value = '') {
+  return publicArchiveSafeString(value, 160);
+}
+
+function applyPublicArchiveAnalyticsFilters(query, filters = {}) {
+  let next = query.gte('created_at', filters.since);
+  if (filters.country) next = next.eq('country', filters.country);
+  if (filters.city) next = next.eq('city', filters.city);
+  if (typeof filters.isBot === 'boolean') next = next.eq('is_bot', filters.isBot);
+  if (filters.routeType) next = next.eq('route_type', filters.routeType);
+  return next;
+}
+
+async function countPublicArchiveAnalyticsRows(filters = {}, timeoutMs = 6000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const { count, error } = await applyPublicArchiveAnalyticsFilters(
+      supabase.from('public_visit_events').select('id', { count: 'exact', head: true }),
+      filters
+    ).abortSignal(controller.signal);
+    if (error) throw new Error(error.message);
+    const value = Number(count);
+    return Number.isFinite(value) ? value : null;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function publicArchiveAnalyticsTop(rows = [], getKey, limit = 8) {
@@ -7405,6 +7455,60 @@ function publicArchiveAnalyticsTop(rows = [], getKey, limit = 8) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'))
     .slice(0, limit)
     .map(([key, count]) => ({ key, label: key, count }));
+}
+
+function publicArchiveAnalyticsCountryCityGroups(rows = [], limit = 8, cityLimit = 8) {
+  const countries = new Map();
+  for (const row of rows || []) {
+    const country = publicArchiveSafeString(row.country || '', 120);
+    const city = publicArchiveSafeString(row.city || '', 120);
+    if (!country) continue;
+    if (!countries.has(country)) countries.set(country, { key: country, label: country, count: 0, cities: new Map() });
+    const group = countries.get(country);
+    group.count += 1;
+    if (city) group.cities.set(city, (group.cities.get(city) || 0) + 1);
+  }
+  return [...countries.values()]
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'tr'))
+    .slice(0, limit)
+    .map(group => ({
+      key: group.key,
+      label: group.label,
+      count: group.count,
+      cities: [...group.cities.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'))
+        .slice(0, cityLimit)
+        .map(([key, count]) => ({ key, label: key, count }))
+    }));
+}
+
+function publicArchiveAnalyticsCacheKey(rangeKey, country = '', city = '') {
+  return [rangeKey || '7d', country || '', city || ''].join('|');
+}
+
+function getPublicArchiveAnalyticsCache(key) {
+  const cached = publicArchiveAnalyticsCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) {
+    publicArchiveAnalyticsCache.delete(key);
+    return null;
+  }
+  return {
+    ...cached.data,
+    cached: true,
+    cacheAgeMs: Math.max(0, Date.now() - cached.createdAt)
+  };
+}
+
+function setPublicArchiveAnalyticsCache(key, data) {
+  if (publicArchiveAnalyticsCache.size > 80) {
+    const firstKey = publicArchiveAnalyticsCache.keys().next().value;
+    if (firstKey) publicArchiveAnalyticsCache.delete(firstKey);
+  }
+  publicArchiveAnalyticsCache.set(key, {
+    createdAt: Date.now(),
+    expiresAt: Date.now() + PUBLIC_ARCHIVE_ANALYTICS_CACHE_MS,
+    data
+  });
 }
 
 function publicArchiveAnalyticsSeries(rows = [], bucket = 'day') {
@@ -7458,16 +7562,56 @@ async function recordPublicArchiveVisit(req, payload = {}) {
   return { available: true };
 }
 
-async function loadPublicArchiveAnalytics(rangeValue = '7d') {
+async function loadPublicArchiveAnalytics(rangeValue = '7d', filters = {}) {
   if (!await ensurePublicArchiveVisitEventsReady()) return { available: false, error: 'public_visit_events tablosu yok. schema.sql içindeki ziyaret istatistikleri bölümü uygulanmalı.' };
   const range = publicArchiveAnalyticsRange(rangeValue);
   const since = new Date(Date.now() - range.ms).toISOString();
-  const rows = await fetchAllPages(() => supabase
-    .from('public_visit_events')
-    .select('*')
-    .gte('created_at', since)
-    .order('created_at', { ascending: false }), 1000);
-  const limitedRows = rows.slice(0, PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS);
+  const country = publicArchiveAnalyticsFilterValue(filters.country);
+  const city = country ? publicArchiveAnalyticsFilterValue(filters.city) : '';
+  const scopedFilters = { since, country, city };
+  const cacheKey = publicArchiveAnalyticsCacheKey(range.key, country, city);
+  const cachedResult = getPublicArchiveAnalyticsCache(cacheKey);
+  if (cachedResult) return cachedResult;
+  const limitedRows = await fetchLimitedPages(() => applyPublicArchiveAnalyticsFilters(
+    supabase
+      .from('public_visit_events')
+      .select(PUBLIC_ARCHIVE_ANALYTICS_SELECT)
+      .order('created_at', { ascending: false }),
+    scopedFilters
+  ), 1000, PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS);
+  const locationRows = country
+    ? await fetchLimitedPages(() => applyPublicArchiveAnalyticsFilters(
+      supabase
+        .from('public_visit_events')
+        .select('created_at,country,region,city')
+        .order('created_at', { ascending: false }),
+      { since }
+    ), 1000, PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS)
+    : limitedRows;
+  const sampled = limitedRows.length >= PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS;
+  const countsFromRows = {
+    totalVisits: limitedRows.length,
+    humanVisits: limitedRows.filter(row => !row.is_bot).length,
+    questionViews: limitedRows.filter(row => row.route_type === 'question').length,
+    botVisits: limitedRows.filter(row => row.is_bot).length
+  };
+  let exactCounts = {};
+  if (sampled) {
+    const [totalVisits, humanVisits, questionViews, botVisits] = await Promise.all([
+      countPublicArchiveAnalyticsRows(scopedFilters).catch(() => null),
+      countPublicArchiveAnalyticsRows({ ...scopedFilters, isBot: false }).catch(() => null),
+      countPublicArchiveAnalyticsRows({ ...scopedFilters, routeType: 'question' }).catch(() => null),
+      countPublicArchiveAnalyticsRows({ ...scopedFilters, isBot: true }).catch(() => null)
+    ]);
+    exactCounts = { totalVisits, humanVisits, questionViews, botVisits };
+  }
+  const totalVisits = sampled && exactCounts.totalVisits !== null ? exactCounts.totalVisits : countsFromRows.totalVisits;
+  const humanVisits = sampled && exactCounts.humanVisits !== null ? exactCounts.humanVisits : countsFromRows.humanVisits;
+  const questionViews = sampled && exactCounts.questionViews !== null ? exactCounts.questionViews : countsFromRows.questionViews;
+  const botVisits = sampled && exactCounts.botVisits !== null ? exactCounts.botVisits : countsFromRows.botVisits;
+  const metricMode = sampled
+    ? (exactCounts.totalVisits !== null ? 'count' : 'sample')
+    : 'complete';
   const uniqueVisitors = new Set(limitedRows.map(row => row.visitor_id || row.ip_hash).filter(Boolean));
   const topQuestions = publicArchiveAnalyticsTop(limitedRows.filter(row => row.question_slug), row => row.question_slug, 10);
   if (topQuestions.length) {
@@ -7478,18 +7622,30 @@ async function loadPublicArchiveAnalytics(rangeValue = '7d') {
     const titles = new Map((data || []).map(row => [row.slug, row.title]));
     for (const item of topQuestions) item.label = titles.get(item.key) || item.key;
   }
-  return {
+  const result = {
     available: true,
     range,
-    totalVisits: limitedRows.length,
-    humanVisits: limitedRows.filter(row => !row.is_bot).length,
+    filters: { country, city },
+    totalVisits,
+    humanVisits,
     uniqueVisitors: uniqueVisitors.size,
-    questionViews: limitedRows.filter(row => row.route_type === 'question').length,
-    botVisits: limitedRows.filter(row => row.is_bot).length,
+    uniqueVisitorsSampled: sampled,
+    questionViews,
+    botVisits,
+    sampledRows: limitedRows.length,
+    sampleLimit: PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS,
+    sampled,
+    metricMode,
+    cached: false,
+    cacheAgeMs: 0,
+    generatedAt: new Date().toISOString(),
     locationSource: 'ip_network',
     locationNotice: 'Şehir bilgisi ziyaretçinin kesin adresi değildir; operatör, VPN veya tarayıcı ağı çıkışına göre değişebilir.',
     sourceTypes: publicArchiveAnalyticsTop(limitedRows, row => row.source_type || 'direct', 8),
     countries: publicArchiveAnalyticsTop(limitedRows, row => row.country || 'Bilinmiyor', 8),
+    countryOptions: publicArchiveAnalyticsTop(locationRows, row => row.country || '', 60),
+    cityOptions: country ? publicArchiveAnalyticsTop(locationRows.filter(row => row.country === country), row => row.city || '', 80) : [],
+    countryCityGroups: publicArchiveAnalyticsCountryCityGroups(locationRows, 12, 8),
     regions: publicArchiveAnalyticsTop(limitedRows, row => [row.region, row.country].filter(Boolean).join(', ') || 'Bilinmiyor', 10),
     cities: publicArchiveAnalyticsTop(limitedRows, row => [row.city, row.country].filter(Boolean).join(', ') || 'Bilinmiyor', 10),
     timezones: publicArchiveAnalyticsTop(limitedRows, row => row.timezone || 'Bilinmiyor', 8),
@@ -7516,6 +7672,8 @@ async function loadPublicArchiveAnalytics(rangeValue = '7d') {
       isBot: row.is_bot
     }))
   };
+  setPublicArchiveAnalyticsCache(cacheKey, result);
+  return result;
 }
 
 async function analyzePublicArchiveDuplicates() {
@@ -9404,7 +9562,10 @@ app.post('/api/public-archive/content-items/:slug/status', auth, admin, superAdm
 app.get('/api/public-archive/analytics', auth, admin, async (req, res) => {
   try {
     await startupReady;
-    res.json(await loadPublicArchiveAnalytics(req.query.range || '7d'));
+    res.json(await loadPublicArchiveAnalytics(req.query.range || '7d', {
+      country: req.query.country || '',
+      city: req.query.city || ''
+    }));
   } catch (error) {
     res.status(error.statusCode || 500).json({ available: false, error: error.message });
   }

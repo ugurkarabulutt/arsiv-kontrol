@@ -1266,8 +1266,19 @@ for (const marker of [
   'answerArchivePublicQuestion',
   'archivePublicSyncSummary',
   'archivePublicAnalyticsSummary',
+  'archivePublicAnalyticsCountry',
+  'archivePublicAnalyticsCity',
+  'setArchivePublicAnalyticsCountry',
+  'setArchivePublicAnalyticsCity',
+  'Son 1 saat',
+  'Son 6 saat',
+  'Son 12 saat',
   'humanVisits',
+  'Veri kapsamı',
+  'hızlı önbellek',
   'Konum Notu',
+  'Ülke ve şehir kırılımı',
+  'Seçili ülkenin şehirleri',
   'Şehirler (IP ağına göre)',
   'Saat dilimleri',
   'Tarayıcılar',
@@ -1289,6 +1300,9 @@ for (const marker of [
   '/api/public-archive/analytics'
 ]) {
   assert(html.includes(marker), `Admin panel public soru talepleri gorunurluk marker eksik: ${marker}`);
+}
+for (const marker of ['fetchLimitedPages', 'PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 1000', 'PUBLIC_ARCHIVE_ANALYTICS_SELECT', 'PUBLIC_ARCHIVE_ANALYTICS_CACHE_MS', 'countPublicArchiveAnalyticsRows', "count: 'exact'", 'publicArchiveAnalyticsCountryCityGroups', 'metricMode', "'1h':", "'6h':", "'12h':"]) {
+  assert(server.includes(marker), `Public ziyaret analitigi backend marker eksik: ${marker}`);
 }
 
 for (const marker of ['Soru Taşanları Yayından Al', 'hideArchivePublicCopiedQuestionAnswers', 'setArchivePublicContentStatus', 'Yayından alınan kontrol', 'Kontrol Listesini Aç', 'Sitede Aç']) {
