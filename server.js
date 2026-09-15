@@ -7068,8 +7068,8 @@ async function loadPublicArchiveQuestionDataset(slug = '') {
 }
 
 async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
+  await startupReady;
   if (!await ensurePublicArchiveContentReady()) {
-    await startupReady;
     if (isPublicArchiveRootRequest(req)) {
       throw publicArchiveDataUnavailableError(publicArchiveContentReadyError?.message || '');
     }
