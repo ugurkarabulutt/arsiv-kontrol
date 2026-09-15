@@ -896,6 +896,33 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(rootArticle, /<meta name="robots" content="index,follow">/);
 });
 
+test('topic guide article renders Hidayet blog without source artifacts', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/hidayet');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Hidayet Nedir\?/);
+  assert.match(preview.html, /Ruhun Allah’a ulaşması ve teslimiyetin safhaları/);
+  assert.match(preview.html, /pa-topic-article-toc-block/);
+  assert.match(preview.html, /ÂL-İ İMRÂN 73/);
+  assert.match(preview.html, /ZÜMER 54/);
+  assert.match(preview.html, /Hidayet Nedir\? ile ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/hidayet#article"/);
+  assert.doesNotMatch(preview.html, /Hidayet Nedir\? Nedir\?/);
+  const disallowedSourcePattern = new RegExp([
+    'mih' + 'r\\.com',
+    'Kuran' + 'TefsirAyet',
+    'dokumanli' + '-sohbet',
+    'Kaynaklar',
+    'Sohbet kodu',
+    'Kaynak kontrol',
+    'kullanıcı tarafından verilen PDF',
+    'pa-topic-source-list',
+    'pa-topic-footnote',
+    '\\[\\d+\\]'
+  ].join('|'), 'i');
+  assert.doesNotMatch(preview.html, disallowedSourcePattern);
+});
+
 test('home page question selection deduplicates repeated question text', () => {
   const archiveData = {
     brand: { sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.' },

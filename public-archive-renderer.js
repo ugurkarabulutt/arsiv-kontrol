@@ -611,7 +611,7 @@ const HERO_CONCEPT_ITEMS = [
 
 const HOME_READING_PATHS = [
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
-  { title: 'Hidayet Nedir?', slug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
+  { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
   { title: 'Zikir ve Daimî Zikir', slug: 'zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
   { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
@@ -1452,9 +1452,12 @@ function renderTopicGuideArticle(slug) {
   const relatedQuestions = topicArticleRelatedQuestions(article, 8);
   const canonicalPath = publicTopicArticlePath(article);
   const description = compactSeoText(article.description || article.summary || publicArchiveFixtures.brand.sentence, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
+  const articleSeoTitle = /[?？]\s*$/.test(String(article.title || ''))
+    ? article.title
+    : `${article.title} Nedir?`;
   return renderShell({
     active: 'archive',
-    title: `${article.title} Nedir?`,
+    title: articleSeoTitle,
     description,
     canonicalPath,
     structuredData: topicArticleStructuredData(article, relatedQuestions),
