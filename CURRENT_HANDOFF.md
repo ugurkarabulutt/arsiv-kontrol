@@ -20,6 +20,10 @@
   için public asset/session cache anahtarları `20260915-popular-fast-nav-v1` /
   `dsca-page-cache:v13` oldu. Yerel doğrulama: `npm.cmd run check` başarılı;
   157/157 test geçti.
+- Cold-start takip düzeltmesi: public route datası için tüm `startupReady`
+  bekletilmeden yalnız `public_question_stats` hazır kontrolü yapılır. Böylece
+  ilk istek fallback/0 okuma cache'i üretmez ve gereksiz startup beklemesi
+  azalır. Yerel doğrulama: `npm.cmd run check` başarılı; 157/157 test geçti.
 
 ## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Yayında
 

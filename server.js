@@ -5473,6 +5473,7 @@ const publicArchiveLiveSearchCache = new Map();
 let publicArchiveContentReady = null;
 let publicArchiveContentReadyError = null;
 let publicArchiveAuthReady = null;
+let publicArchiveStatsReady = null;
 
 function isPublicArchiveRootRequest(req) {
   return PUBLIC_ARCHIVE_ROOT_ENABLED && String(req?.baseUrl || '') !== '/public-preview';
@@ -5811,6 +5812,7 @@ async function incrementPublicQuestionReadFallback(slug) {
 async function loadPublicArchiveStatsMap(slugs = []) {
   const cleanSlugs = [...new Set(slugs.filter(Boolean))].slice(0, 5000);
   if (!cleanSlugs.length) return new Map();
+  await ensurePublicArchiveStatsReady();
   if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) return loadPublicQuestionStatsFallbackMap(cleanSlugs);
   const rows = [];
   for (let index = 0; index < cleanSlugs.length; index += PUBLIC_ARCHIVE_STATS_LOOKUP_CHUNK_SIZE) {
@@ -5825,6 +5827,7 @@ async function loadPublicArchiveStatsMap(slugs = []) {
 
 async function loadPublicArchiveTopStats(limit = 120) {
   const cleanLimit = Math.max(1, Math.min(Number(limit) || 120, 600));
+  await ensurePublicArchiveStatsReady();
   if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
     const raw = normalizePublicQuestionStatsFallback(await loadJsonSetting(PUBLIC_QUESTION_STATS_FALLBACK_KEY, {}));
     return Object.entries(raw)
@@ -6121,6 +6124,23 @@ function clearPublicArchiveCaches() {
   publicArchiveLiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
   publicArchiveRouteCache.clear();
   publicArchiveLiveSearchCache.clear();
+}
+
+async function ensurePublicArchiveStatsReady() {
+  if (!publicArchiveStatsReady) {
+    publicArchiveStatsReady = (async () => {
+      const { error } = await supabase.from('public_question_stats').select('slug').limit(1);
+      HAS_PUBLIC_ARCHIVE_STATS_TABLES = !error;
+      if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) console.warn('⚠ public_question_stats tablosu yok — public okunma sayaçları pasif.');
+      return HAS_PUBLIC_ARCHIVE_STATS_TABLES;
+    })().catch(error => {
+      publicArchiveStatsReady = null;
+      HAS_PUBLIC_ARCHIVE_STATS_TABLES = false;
+      console.warn('Public okunma sayacı tablo kontrolü başarısız:', error.message);
+      return false;
+    });
+  }
+  return publicArchiveStatsReady;
 }
 
 async function ensurePublicArchiveContentReady() {
@@ -7068,7 +7088,6 @@ async function loadPublicArchiveQuestionDataset(slug = '') {
 }
 
 async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
-  await startupReady;
   if (!await ensurePublicArchiveContentReady()) {
     if (isPublicArchiveRootRequest(req)) {
       throw publicArchiveDataUnavailableError(publicArchiveContentReadyError?.message || '');
