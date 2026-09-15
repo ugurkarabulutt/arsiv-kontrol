@@ -14,6 +14,12 @@
 - Canlı Supabase okuma benchmark'ı: eski model 6294ms, optimize model 637ms.
   Yerel doğrulama: `node --check server.js`, `npm.cmd run check` başarılı;
   157/157 test geçti.
+- Devam düzeltmesi: ana sayfadaki `Çok Okunan Cevaplar` bölümü 3 yerine 5 kart
+  gösterir. Section aksiyon linkleri öncelikli prefetch'e alındı, hızlı geçiş
+  fallback'i 260ms'den 900ms'ye çıkarıldı ve eski mobil/session HTML'i kırmak
+  için public asset/session cache anahtarları `20260915-popular-fast-nav-v1` /
+  `dsca-page-cache:v13` oldu. Yerel doğrulama: `npm.cmd run check` başarılı;
+  157/157 test geçti.
 
 ## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Yayında
 

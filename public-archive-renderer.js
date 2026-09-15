@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260914-topic-flow-end-v4';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260915-popular-fast-nav-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -588,7 +588,7 @@ function sectionHeader(title, actionText, actionHref) {
   return `
     <div class="pa-section-head">
       <h2>${escapeHtml(title)}</h2>
-      ${actionHref ? `<a href="${escapeHtml(actionHref)}">${escapeHtml(actionText || 'Tümünü Gör')} ${iconSvg('chevron-right', 'pa-inline-chevron')}</a>` : ''}
+      ${actionHref ? `<a href="${escapeHtml(actionHref)}" data-prefetch-priority="true">${escapeHtml(actionText || 'Tümünü Gör')} ${iconSvg('chevron-right', 'pa-inline-chevron')}</a>` : ''}
     </div>
   `;
 }
@@ -1920,7 +1920,7 @@ function renderHome() {
 
         ${!dataUnavailable && popularList.length ? `<section class="pa-section pa-home-popular">
           ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/cok-okunan-cevaplar`)}
-          <div class="pa-question-grid">${popularList.slice(0, 3).map(entry => questionCard(entry, { compact: true })).join('')}</div>
+          <div class="pa-question-grid">${popularList.slice(0, 5).map(entry => questionCard(entry, { compact: true })).join('')}</div>
         </section>` : ''}
 
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
@@ -4063,8 +4063,9 @@ function renderShell({ title, description, active, content, status = 200, questi
       function bindFastPublicNavigation() {
         var root = document.documentElement;
         var ttl = 2 * 60 * 1000;
+        var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v12:';
+        var cachePrefix = 'dsca-page-cache:v13:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
@@ -4321,7 +4322,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (!cachedHtml) {
             var fallbackTimer = window.setTimeout(function(){
               window.location.href = url.href;
-            }, 260);
+            }, navigationFallbackMs);
             fetchPage(url).then(function(html){
               window.clearTimeout(fallbackTimer);
               var elapsed = Date.now() - startedAt;
@@ -4368,7 +4369,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             }
             var fallbackTimer = window.setTimeout(function(){
               window.location.href = url.href;
-            }, 260);
+            }, navigationFallbackMs);
             fetchPage(url).then(function(html){
               window.clearTimeout(fallbackTimer);
               try {
@@ -4414,6 +4415,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               }
             });
           }
+          addSelector('[data-prefetch-priority]');
           addSelector('.pa-archive-shortcut, .pa-reading-card');
           addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]');
           addSelector('.pa-mobile-nav a[href]');
@@ -4431,7 +4433,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               observer.unobserve(element);
             });
           }, { rootMargin: '1200px 0px 1200px 0px', threshold: 0.01 });
-          Array.prototype.slice.call(document.querySelectorAll('.pa-archive-shortcut, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
+          Array.prototype.slice.call(document.querySelectorAll('[data-prefetch-priority], .pa-archive-shortcut, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
             .forEach(function(element){ observer.observe(element); });
         }
         if (!window.__publicArchiveFastNavBound) {
