@@ -17,6 +17,15 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   hızlı dönüşlerde yalnız 15 saniyelik backend cache kullanılır ve UI bunu
   `hızlı önbellek` olarak açıkça gösterir.
 
+- **2026-09-15 eski taslak onay döngüsü:** Kullanıcı tarayıcısında restore edilen
+  `arsiv-work-draft-v1` taslağı, canlıda zaten `bekliyor`, `teyit_bekliyor`,
+  `onaylandi`, `reddedildi` veya `arsivlendi` durumuna geçmiş bir history
+  kaydını tekrar gönderilebilir göstermemelidir. Submit modalı açılmadan ve
+  submit yanıtında `/api/history/:id/approval-status` ile canlı durum senkronu
+  yapılır; kayıt işlemde/tamamlanmışsa modal kapatılır, yerel taslak silinir ve
+  kullanıcıya güncel durum kartı gösterilir. Backend `/api/history/:id/submit`
+  bu durumları hata yerine idempotent `alreadySubmitted` yanıtıyla döndürür.
+
 - **2026-09-14 konu rehberi blog yayını:** Public konu rehberleri için uzun
   blog içerikleri `public-archive-topic-articles.json` içinde statik ve
   public temiz metin olarak tutulur. `Allah’a Ulaşmayı Dilemek` rehber kartı

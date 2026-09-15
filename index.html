@@ -2858,6 +2858,7 @@ function restoreWorkDraft(){
       currentHistoryId=restoredResult.id||null;
       const res=el('resultsArea');
       if(res)renderResults(restoredResult,res);
+      if(restoredResult.id)syncLiveSubmittedApprovalStatus(restoredResult.id,{render:true,statusMessage:false});
     }else if(restoredResult&&approvalSubmitted(restoredResult)){
       correctedText='';
       currentOriginalText='';
@@ -3578,10 +3579,12 @@ function submitCategoryCounts(categories){
   });
   return out;
 }
-function openSubmitApprovalModal(){
+async function openSubmitApprovalModal(){
   const d=currentResult;
   if(!d?.id||!d.correctedText){setStatus('Onaya gönderilecek düzeltilmiş metin bulunamadı.','err');return;}
   if(approvalSubmitted(d)){setStatus('Bu kayıt zaten onay sürecine gönderilmiş.','ok');return;}
+  const synced=await syncLiveSubmittedApprovalStatus(d.id,{render:true,statusMessage:true});
+  if(synced)return;
   submitApprovalInFlight=false;
   const submitBtn=el('submitApprovalBtn');
   if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Onaya Gönder';}
@@ -3739,10 +3742,107 @@ async function withdrawCurrentSubmittedApproval(){
   }
 }
 
+function submittedApprovalSyncCopy(status){
+  const clean=String(status||'bekliyor');
+  if(clean==='onaylandi')return {
+    title:'Kayıt zaten onaylanmış',
+    text:'Bu kayıt canlı veride onaylanmış görünüyor. Tarayıcıdaki eski taslak temizlendi; güncel durumu Denetim Geçmişi’nde görebilirsiniz.',
+    status:'Bu kayıt canlıda zaten onaylanmış. Eski taslak temizlendi.'
+  };
+  if(clean==='reddedildi')return {
+    title:'Kayıt daha önce reddedilmiş',
+    text:'Bu kayıt canlı veride reddedilmiş görünüyor. Tarayıcıdaki eski taslak tekrar gönderilmeyecek şekilde temizlendi.',
+    status:'Bu kayıt daha önce reddedilmiş. Eski taslak temizlendi.'
+  };
+  if(clean==='teyit_bekliyor')return {
+    title:'Kayıt teyit bekliyor',
+    text:'Bu kayıt canlı veride teyit kuyruğunda görünüyor. Aynı kayıt tekrar onaya gönderilmeyecek.',
+    status:'Bu kayıt zaten teyit kuyruğunda.'
+  };
+  if(clean===APPROVAL_ARCHIVED_STATUS)return {
+    title:'Kayıt arşivlenmiş',
+    text:'Bu kayıt canlı veride arşivlenmiş görünüyor. Eski tarayıcı taslağı temizlendi.',
+    status:'Bu kayıt zaten arşivlenmiş. Eski taslak temizlendi.'
+  };
+  return {
+    title:'Kayıt zaten onay kuyruğunda',
+    text:'Bu kayıt canlı veride onay kuyruğunda görünüyor. Aynı kayıt tekrar gönderilmeyecek.',
+    status:'Bu kayıt zaten onay kuyruğunda.'
+  };
+}
+
+function renderSyncedSubmittedWorkspace(d,container,status){
+  if(!container)return;
+  const copy=submittedApprovalSyncCopy(status);
+  container.innerHTML=`<div class="submit-success-card">
+    <div class="submit-success-title">${esc(copy.title)}</div>
+    <div class="submit-success-text">${esc(copy.text)}</div>
+    <div class="submit-success-actions">
+      <button class="btn-primary" onclick="showSubmittedHistory()">Denetim Geçmişine Git</button>
+      <button class="btn-sec" onclick="startNewAnalysisAfterSubmit()">Yeni Denetime Başla</button>
+    </div>
+  </div>`;
+}
+
+function applySubmittedApprovalStatus(id,payload={},opts={}){
+  if(!id)return false;
+  const status=String(payload.status||'bekliyor');
+  if(!(payload.submitted===true||SUBMITTED_APPROVAL_STATUSES.has(status)))return false;
+  const patch={status};
+  if(Array.isArray(payload.tags))patch.tags=payload.tags;
+  if(typeof payload.questionText==='string')patch.questionText=payload.questionText;
+  if(typeof payload.submissionNote==='string')patch.submissionNote=payload.submissionNote;
+  if(currentResult?.id===id){
+    currentResult={...currentResult,...patch};
+    currentHistoryId=id;
+  }
+  historyRows=historyRows.map(row=>row.id===id?{...row,...patch}:row);
+  if(window._detailHistoryItem?.id===id)window._detailHistoryItem={...window._detailHistoryItem,...patch};
+  resetSubmitApprovalModalState();
+  submitApprovalInFlight=false;
+  clearWorkDraft();
+  if(opts.render&&currentResult?.id===id){
+    renderSyncedSubmittedWorkspace(currentResult,el('resultsArea'),status);
+  }
+  renderHistory();
+  if(opts.statusMessage!==false){
+    const copy=submittedApprovalSyncCopy(status);
+    setStatus(copy.status,'ok');
+    setTimeout(()=>setStatus('',''),3200);
+  }
+  return true;
+}
+
+async function fetchApprovalStatus(id){
+  if(!id)return {error:'Kayıt bulunamadı.'};
+  return api('GET',`/api/history/${id}/approval-status`);
+}
+
+async function syncLiveSubmittedApprovalStatus(id,opts={}){
+  const live=await fetchApprovalStatus(id);
+  if(live?.error)return false;
+  return applySubmittedApprovalStatus(id,live,opts);
+}
+
+function isAlreadySubmittedSubmitError(message){
+  return /zaten\s+(onay|gönderilmiş|düzeltilmiş|arşivlenmiş)|onay sürecinden geçmiş|onaya gönderilmiş bir kaydı/i.test(String(message||''));
+}
+
+async function handleAlreadySubmittedSubmitResult(id,payload,err){
+  let data=payload||{};
+  const status=String(data.status||'');
+  if(!(data.submitted===true||data.alreadySubmitted===true||SUBMITTED_APPROVAL_STATUSES.has(status))){
+    data=await fetchApprovalStatus(id);
+  }
+  const applied=applySubmittedApprovalStatus(id,data,{render:true,statusMessage:true});
+  if(applied&&err)err.textContent=submittedApprovalSyncCopy(data.status).status;
+  return applied;
+}
+
 async function verifyApprovalStatus(id){
   if(!id)return false;
   for(let attempt=0;attempt<5;attempt++){
-    const r=await api('GET',`/api/history/${id}/approval-status`);
+    const r=await fetchApprovalStatus(id);
     if(!r.error&&(SUBMITTED_APPROVAL_STATUSES.has(r.status)||r.submitted===true))return true;
     await new Promise(resolve=>setTimeout(resolve, attempt<2?450:900));
   }
@@ -3794,8 +3894,19 @@ async function confirmSubmitApproval(){
       submissionNote
     }:{questionText,tags,submissionNote};
     const r=await api('POST',endpoint,body);
-    if(r.error){if(err)err.textContent=r.error;return;}
+    if(r.error){
+      if(isAlreadySubmittedSubmitError(r.error)){
+        submitted=await handleAlreadySubmittedSubmitResult(oldId,r,err);
+        if(submitted)return;
+      }
+      if(err)err.textContent=r.error;
+      return;
+    }
     const newId=r.id||d.id;
+    if(r.alreadySubmitted){
+      submitted=await handleAlreadySubmittedSubmitResult(newId,r,err);
+      if(submitted)return;
+    }
     if(err)err.textContent='Onay kuyruğu doğrulanıyor...';
     const verified=await verifyApprovalStatus(newId);
     if(!verified){

@@ -10924,11 +10924,19 @@ app.post('/api/history/:id([0-9a-fA-F-]{36})/submit', auth, async (req, res) => 
     if (isChunkHistoryRow(history)) {
       return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez. Lütfen sonuç ekranındaki Onaya Gönder butonunu kullanın.' });
     }
-    if (history.status === 'onaylandi' || history.status === 'reddedildi' || history.status === APPROVAL_REVIEW_STATUS) {
-      return res.status(400).json({ error: 'Bu kayıt zaten onay sürecinden geçmiş.' });
+    if (history.status === 'onaylandi' || history.status === 'reddedildi' || history.status === APPROVAL_REVIEW_STATUS || history.status === APPROVAL_ARCHIVED_STATUS) {
+      return res.json({
+        success: true,
+        id: history.id,
+        status: history.status,
+        alreadySubmitted: true,
+        tags: history.tags || [],
+        questionText: history.question_text || '',
+        submissionNote: history.submission_note || ''
+      });
     }
     if (historyStatusForApproval(history.status)) {
-      return res.json({ success: true, id: history.id, status: 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '', submissionNote: history.submission_note || '' });
+      return res.json({ success: true, id: history.id, status: history.status || 'bekliyor', alreadySubmitted: true, tags: history.tags || [], questionText: history.question_text || '', submissionNote: history.submission_note || '' });
     }
     if (history.status !== 'taslak' && history.status !== APPROVAL_RETURNED_STATUS) return res.status(400).json({ error: 'Bu kayıt onaya gönderilemez.' });
     const approvalMeta = requireApprovalQuestionAndTags(req.body);

@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-15 Eski Taslak Onay Döngüsü Hotfix
+
+- Nuran Çelik'in bildirdiği "soru ve etiket ekleyip Onaya Gönder deyince aynı
+  pencereye dönüyor" kaydı canlı Supabase'de kontrol edildi. Ekran görüntüsündeki
+  soru `6b055dad-3b07-4ba0-9154-cf4d68e731ad` olarak bulundu ve kullanıcı
+  hesabında zaten `onaylandi` durumundaydı.
+- Kök neden: tarayıcıdaki eski `arsiv-work-draft-v1` yerel taslağı kaydı hâlâ
+  gönderilebilir gibi restore ediyordu. Backend canlıda kaydı bitmiş gördüğü
+  için tekrar ilerlemiyor, kullanıcı soru/etiket ekranında döngüye düşüyordu.
+- `/api/history/:id/submit` aynı kayıt zaten bekliyor/teyit/onaylı/reddedilmiş/
+  arşivli ise hata yerine idempotent `alreadySubmitted` yanıtı verir.
+- Frontend modal açmadan ve submit yanıtında canlı `approval-status` kontrolü
+  yapar; kayıt canlıda işlemde veya tamamlanmışsa eski yerel taslak temizlenir,
+  modal kapanır ve kullanıcıya güncel durum kartı gösterilir.
+- Yerel doğrulama: `node --check server.js`, `node --check scripts/check-frontend.js`,
+  `git diff --check` ve `npm.cmd run check` başarılı; 159/159 test geçti.
+
 ## 2026-09-15 Ziyaret İstatistikleri Paneli Hazırlığı
 
 - Kullanıcı istatistik ekranında 24 saatten 30 güne geçince verilerin geç
