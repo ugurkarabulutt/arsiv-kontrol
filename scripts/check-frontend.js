@@ -1410,7 +1410,7 @@ for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topi
 }
 assert(!topicArticlePreview.includes('Bu konudaki sorular'), 'Public konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
 const zikirArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/zikir-ve-daimi-zikir').html;
-for (const marker of ['Zikir ve Daimî Zikir', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'Okumaya devam edin', 'Allah’a Ulaşmayı Dilemek', 'Mürşide Tâbiiyet', '"@type":"BlogPosting"']) {
+for (const marker of ['Zikir Nedir?', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'Okumaya devam edin', 'Allah’a Ulaşmayı Dilemek', 'Mürşide Tâbiiyet', '"@type":"BlogPosting"']) {
   assert(zikirArticlePreview.includes(marker), `Public zikir konu rehberi marker eksik: ${marker}`);
 }
 assert(!zikirArticlePreview.includes('Bu konudaki sorular'), 'Public zikir konu rehberi eski Bu konudaki sorular kartini gostermemeli.');

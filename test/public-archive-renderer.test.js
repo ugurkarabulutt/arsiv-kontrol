@@ -941,7 +941,7 @@ test('topic guide article renders Mürşide Tâbiiyet blog with its own related 
   assert.match(preview.html, /FURKÂN 70/);
   assert.match(preview.html, /Tâbiiyet ile ilgili sorular/);
   assert.match(preview.html, /Okumaya devam edin/);
-  assert.match(preview.html, /Zikir ve Daimî Zikir/);
+  assert.match(preview.html, /Zikir Nedir\?/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
@@ -964,7 +964,7 @@ test('topic guide article renders Mürşide Tâbiiyet blog with its own related 
 test('topic guide article renders Zikir blog and cross-links other guides', () => {
   const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/zikir-ve-daimi-zikir');
   assert.equal(preview.status, 200);
-  assert.match(preview.html, /Zikir ve Daimî Zikir/);
+  assert.match(preview.html, /Zikir Nedir\?/);
   assert.match(preview.html, /Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet/);
   assert.match(preview.html, /pa-topic-article-toc-block/);
   assert.match(preview.html, /MÜZZEMMİL 8/);

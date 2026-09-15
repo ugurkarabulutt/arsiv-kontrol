@@ -4555,7 +4555,7 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 
 - Kullanici tarafindan verilen `Zikir_Detayli_Blog.pdf` icerigi konu rehberi makalesine
   donusturuldu: `/konu-rehberi/zikir-ve-daimi-zikir`.
-- Ana sayfadaki `Zikir ve Daimi Zikir` karti kategori yerine dogrudan bu blog yazisina
+- Ana sayfadaki `Zikir Nedir?` karti kategori yerine dogrudan bu blog yazisina
   baglandi.
 - Blog destek alanindaki eski `Bu konudaki sorular` karti tum bloglarda kaldirildi; yerine
   `Okumaya devam edin` basligi altinda diger konu rehberi yazilarina ic link veren CTA eklendi.
