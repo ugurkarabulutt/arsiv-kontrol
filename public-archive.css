@@ -3372,14 +3372,30 @@ a.pa-chip:hover,
   padding: 2px 0 0;
 }
 
-.pa-topic-next-card > strong {
+.pa-topic-next-head {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 14px;
+}
+
+.pa-topic-next-head span {
+  color: var(--pa-green);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.pa-topic-next-head strong {
   display: block;
-  margin: 0 0 10px;
+  margin: 0;
   color: var(--pa-text);
-  font-size: 18px;
-  font-weight: 820;
+  font-family: var(--pa-serif);
+  font-size: clamp(25px, 6vw, 34px);
+  font-weight: 700;
   letter-spacing: 0.01em;
-  line-height: 1.2;
+  line-height: 1.05;
   text-transform: none;
 }
 

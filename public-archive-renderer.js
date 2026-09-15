@@ -1431,7 +1431,10 @@ function topicArticleGuideLinksHtml(article = {}) {
   if (!articles.length) return '';
   return `
         <section class="pa-topic-next-card">
-          <strong>Okumaya devam edin</strong>
+          <div class="pa-topic-next-head">
+            <span>Konu rehberleri</span>
+            <strong>Okumaya devam edin</strong>
+          </div>
           <ul class="pa-topic-next-list">
             ${articles.map(item => `
               <li>
