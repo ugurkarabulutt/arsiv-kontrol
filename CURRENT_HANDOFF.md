@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-15 Public Popüler Liste Performans Hotfix
+
+- Kullanıcı ön yüz ve admin panelin çok yavaş çalıştığını bildirdi. Canlı ölçümde
+  `/health` 529ms, `/admin` 221ms, `/arsiv` 197ms iken `/` 13.1s ve
+  `/cok-okunan-cevaplar` 12.6s sürdü; kök neden son popüler liste değişikliğinin
+  her istekte 2629 yayınlı kaydı ve 1868 istatistik satırını chunk chunk çekip
+  uygulama içinde sıralamasıydı.
+- `loadPublicArchivePopularRows` artık önce `public_question_stats` içinden en çok
+  okunan slug'ları alır, yalnız gerekli `public_qa` kayıtlarını çeker ve eksik
+  kalırsa az sayıda son yayınla tamamlar. Ana sayfa ve çok okunan route'larında
+  60 sn sunucu içi route cache tekrar devrededir.
+- Canlı Supabase okuma benchmark'ı: eski model 6294ms, optimize model 637ms.
+  Yerel doğrulama: `node --check server.js`, `npm.cmd run check` başarılı;
+  157/157 test geçti.
+
 ## 2026-09-14 Allah’a Ulaşmayı Dilemek Blog Yayında
 
 - Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` konu rehberi

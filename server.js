@@ -5823,6 +5823,50 @@ async function loadPublicArchiveStatsMap(slugs = []) {
   return publicArchiveRowsFromStats(rows);
 }
 
+async function loadPublicArchiveTopStats(limit = 120) {
+  const cleanLimit = Math.max(1, Math.min(Number(limit) || 120, 600));
+  if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
+    const raw = normalizePublicQuestionStatsFallback(await loadJsonSetting(PUBLIC_QUESTION_STATS_FALLBACK_KEY, {}));
+    return Object.entries(raw)
+      .map(([slug, item]) => ({
+        slug,
+        read_count: Number(item?.readCount || item?.read_count || 0),
+        updated_at: String(item?.updatedAt || item?.updated_at || '')
+      }))
+      .filter(row => row.slug && row.read_count > 0)
+      .sort((a, b) => Number(b.read_count || 0) - Number(a.read_count || 0)
+        || String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
+      .slice(0, cleanLimit);
+  }
+  const { data, error } = await supabase
+    .from('public_question_stats')
+    .select('slug,read_count,updated_at')
+    .gt('read_count', 0)
+    .order('read_count', { ascending: false })
+    .order('updated_at', { ascending: false })
+    .limit(cleanLimit);
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+async function loadPublicArchiveRowsBySlugs(slugs = []) {
+  const cleanSlugs = [...new Set(slugs.filter(Boolean))].slice(0, 600);
+  if (!cleanSlugs.length) return [];
+  const rows = [];
+  for (let index = 0; index < cleanSlugs.length; index += 100) {
+    const slice = cleanSlugs.slice(index, index + 100);
+    const { data, error } = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .eq('status', 'published')
+      .in('slug', slice);
+    if (error) throw new Error(error.message);
+    rows.push(...(data || []));
+  }
+  const order = new Map(cleanSlugs.map((slug, index) => [slug, index]));
+  return rows.sort((a, b) => (order.get(a.slug) ?? 9999) - (order.get(b.slug) ?? 9999));
+}
+
 function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
   const defaults = publicArchiveDefaultData();
   const usedEntrySlugs = new Set();
@@ -6048,7 +6092,7 @@ function setPublicArchiveRouteCache(key, data) {
 }
 
 function publicArchiveRouteNeedsFreshStats(pathname = '') {
-  return pathname === '/public-preview' || pathname === '/public-preview/cok-okunan-cevaplar';
+  return false;
 }
 
 function publicArchiveLiveSearchCacheKey(basePath = '', query = '') {
@@ -6583,26 +6627,34 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
   const selected = [];
   const seenQuestions = new Set(excludedQuestions);
 
-  const publishedRows = await fetchAllPages(() => supabase
-      .from('public_qa')
-      .select(PUBLIC_ARCHIVE_LIST_SELECT)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false }), 1000);
-  const statsMap = await loadPublicArchiveStatsMap(publishedRows.map(row => row.slug));
-  const sortedRows = (publishedRows || [])
-    .map(row => ({ ...row, read_count: Number(statsMap.get(row.slug) || 0), detail_popular: true }))
-    .sort((a, b) => {
-      const readDiff = Number(b.read_count || 0) - Number(a.read_count || 0);
-      if (readDiff !== 0) return readDiff;
-      return String(b.published_at || b.updated_at || b.created_at || '').localeCompare(String(a.published_at || a.updated_at || a.created_at || ''));
-    });
-  for (const row of sortedRows) {
+  const topStats = await loadPublicArchiveTopStats(Math.max(cleanLimit * 5, 120));
+  const statsMap = publicArchiveRowsFromStats(topStats);
+  const popularRows = await loadPublicArchiveRowsBySlugs(topStats.map(row => row.slug));
+  for (const row of popularRows) {
     if (!row?.slug || excludedSlugs.has(row.slug)) continue;
     const questionKey = publicArchiveQuestionOnlyIdentity(row);
     if (questionKey && seenQuestions.has(questionKey)) continue;
     seenQuestions.add(questionKey);
-    selected.push(row);
+    selected.push({ ...row, read_count: Number(statsMap.get(row.slug) || 0), detail_popular: true });
     if (selected.length >= cleanLimit) break;
+  }
+
+  if (selected.length < cleanLimit) {
+    const fallbackResult = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_LIST_SELECT)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .range(0, Math.max(cleanLimit * 3, 30) - 1);
+    if (fallbackResult.error) throw new Error(fallbackResult.error.message);
+    for (const row of fallbackResult.data || []) {
+      if (!row?.slug || excludedSlugs.has(row.slug) || selected.some(item => item.slug === row.slug)) continue;
+      const questionKey = publicArchiveQuestionOnlyIdentity(row);
+      if (questionKey && seenQuestions.has(questionKey)) continue;
+      seenQuestions.add(questionKey);
+      selected.push({ ...row, read_count: 0, detail_popular: true });
+      if (selected.length >= cleanLimit) break;
+    }
   }
 
   return selected;
