@@ -1431,20 +1431,16 @@ function topicArticleGuideLinksHtml(article = {}) {
   if (!articles.length) return '';
   return `
         <section class="pa-topic-proof-card pa-topic-next-card">
-          <span class="pa-topic-next-kicker">Sıradaki rehberler</span>
           <strong>Okumaya devam edin</strong>
-          <p>Konuları birbirine bağlayarak okuyun; her yazı bir sonraki kavramı daha net açar.</p>
-          <ol class="pa-topic-next-list">
-            ${articles.map((item, index) => `
+          <ul class="pa-topic-next-list">
+            ${articles.map(item => `
               <li>
                 <a href="${escapeHtml(publicArchivePath(item.path))}">
-                  <span>${String(index + 1).padStart(2, '0')}</span>
                   <strong>${escapeHtml(item.title)}</strong>
-                  <small>${escapeHtml(item.description || item.summary || 'Konu rehberini okuyun.')}</small>
                 </a>
               </li>
             `).join('')}
-          </ol>
+          </ul>
         </section>
   `;
 }

@@ -4559,8 +4559,8 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   baglandi.
 - Blog destek alanindaki eski `Bu konudaki sorular` karti tum bloglarda kaldirildi; yerine
   `Okumaya devam edin` basligi altinda diger konu rehberi yazilarina ic link veren CTA eklendi.
-- `Okumaya devam edin` CTA'si etiket/pill görünümünden cikartilip tum bloglarda dikey,
-  aciklamali ve modern satir listesi olarak gosterilecek sekilde iyilestirildi.
+- `Okumaya devam edin` CTA'si etiket/pill görünümünden cikartildi. Son tercih olarak tum
+  bloglarda aciklamasiz, numarasiz, sade `Baslik >` satir listesi kullaniliyor.
 - Blogda kaynakca, sohbet kodu, PDF hazirlama notu veya koseli parantezli kaynak numarasi
   birakilmadi.
 - Dogrulama: `npm.cmd run check` basarili, 159/159 test gecti.
