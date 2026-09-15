@@ -6582,58 +6582,27 @@ async function loadPublicArchivePopularRows({ excludeSlugs = [], excludeQuestion
   const excludedQuestions = new Set(excludeQuestionKeys.filter(Boolean));
   const selected = [];
   const seenQuestions = new Set(excludedQuestions);
-  const popularSlugChunkSize = 80;
 
-  if (HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
-    const { data: statRows, error: statError } = await supabase
-      .from('public_question_stats')
-      .select('slug,read_count')
-      .order('read_count', { ascending: false })
-      .limit(cleanLimit * 5);
-    if (statError) throw new Error(statError.message);
-    const statMap = new Map((statRows || []).map(item => [item.slug, Number(item.read_count || 0)]));
-    const statSlugs = (statRows || [])
-      .map(item => item.slug)
-      .filter(slug => slug && !excludedSlugs.has(slug));
-    if (statSlugs.length) {
-      const qaRows = [];
-      for (let index = 0; index < statSlugs.length; index += popularSlugChunkSize) {
-        const chunk = statSlugs.slice(index, index + popularSlugChunkSize);
-        const { data, error: qaError } = await supabase
-          .from('public_qa')
-          .select(PUBLIC_ARCHIVE_LIST_SELECT)
-          .eq('status', 'published')
-          .in('slug', chunk);
-        if (qaError) throw new Error(qaError.message);
-        qaRows.push(...(data || []));
-        if (qaRows.length >= cleanLimit * 2) break;
-      }
-      for (const row of (qaRows || []).sort((a, b) => (statMap.get(b.slug) || 0) - (statMap.get(a.slug) || 0))) {
-        const questionKey = publicArchiveQuestionOnlyIdentity(row);
-        if (questionKey && seenQuestions.has(questionKey)) continue;
-        seenQuestions.add(questionKey);
-        selected.push({ ...row, read_count: statMap.get(row.slug) || 0, detail_popular: true });
-        if (selected.length >= cleanLimit) return selected;
-      }
-    }
-  }
-
-  if (selected.length < cleanLimit) {
-    const { data, error } = await supabase
+  const publishedRows = await fetchAllPages(() => supabase
       .from('public_qa')
       .select(PUBLIC_ARCHIVE_LIST_SELECT)
       .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(cleanLimit * 4);
-    if (error) throw new Error(error.message);
-    for (const row of data || []) {
-      if (!row?.slug || excludedSlugs.has(row.slug) || selected.some(item => item.slug === row.slug)) continue;
-      const questionKey = publicArchiveQuestionOnlyIdentity(row);
-      if (questionKey && seenQuestions.has(questionKey)) continue;
-      seenQuestions.add(questionKey);
-      selected.push({ ...row, detail_popular: true });
-      if (selected.length >= cleanLimit) break;
-    }
+      .order('published_at', { ascending: false }), 1000);
+  const statsMap = await loadPublicArchiveStatsMap(publishedRows.map(row => row.slug));
+  const sortedRows = (publishedRows || [])
+    .map(row => ({ ...row, read_count: Number(statsMap.get(row.slug) || 0), detail_popular: true }))
+    .sort((a, b) => {
+      const readDiff = Number(b.read_count || 0) - Number(a.read_count || 0);
+      if (readDiff !== 0) return readDiff;
+      return String(b.published_at || b.updated_at || b.created_at || '').localeCompare(String(a.published_at || a.updated_at || a.created_at || ''));
+    });
+  for (const row of sortedRows) {
+    if (!row?.slug || excludedSlugs.has(row.slug)) continue;
+    const questionKey = publicArchiveQuestionOnlyIdentity(row);
+    if (questionKey && seenQuestions.has(questionKey)) continue;
+    seenQuestions.add(questionKey);
+    selected.push(row);
+    if (selected.length >= cleanLimit) break;
   }
 
   return selected;
