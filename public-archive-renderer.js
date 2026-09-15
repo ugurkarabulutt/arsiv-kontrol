@@ -4568,7 +4568,9 @@ function createPublicArchivePreviewRouter(options = {}) {
   async function sendRoute(req, res, next, routePath, query = {}) {
     try {
       const archiveData = await loadArchiveData(req, dataRouteFor(routePath), query);
-      if (!noindex && String(routePath || '').replace(/^\/+/, '').startsWith('soru/')) {
+      const cleanRoutePath = String(routePath || '').replace(/^\/+/, '');
+      const needsFreshArchiveHtml = !noindex && (!cleanRoutePath || cleanRoutePath === 'cok-okunan-cevaplar');
+      if (!noindex && (cleanRoutePath.startsWith('soru/') || needsFreshArchiveHtml)) {
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       }
       sendRendered(res, renderPublicArchivePreviewRoute(routeFor(routePath), query, {

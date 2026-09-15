@@ -6047,6 +6047,10 @@ function setPublicArchiveRouteCache(key, data) {
   return data;
 }
 
+function publicArchiveRouteNeedsFreshStats(pathname = '') {
+  return pathname === '/public-preview' || pathname === '/public-preview/cok-okunan-cevaplar';
+}
+
 function publicArchiveLiveSearchCacheKey(basePath = '', query = '') {
   return `${normalizePublicArchiveRouteBase(basePath)}:${publicArchiveComparable(query)}`;
 }
@@ -7051,9 +7055,10 @@ async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
     return loadPublicArchiveDataset();
   }
   const key = publicArchiveRouteCacheKey(routePath, query);
-  const cached = getPublicArchiveRouteCache(key);
-  if (cached) return cached;
   const pathname = String(routePath || '').replace(/\/+$/, '') || '/public-preview';
+  const needsFreshStats = publicArchiveRouteNeedsFreshStats(pathname);
+  const cached = needsFreshStats ? null : getPublicArchiveRouteCache(key);
+  if (cached) return cached;
   let dataset = null;
   if (pathname === '/public-preview') dataset = await loadPublicArchiveHomeDataset();
   else if (pathname === '/public-preview/arsiv') dataset = await loadPublicArchivePageDataset(query);
@@ -7071,7 +7076,7 @@ async function loadPublicArchiveRouteDataset(req, routePath = '', query = {}) {
     else if (topicMatch) dataset = await loadPublicArchiveCategoryDataset(topicMatch[1], query);
   }
   if (!dataset) dataset = await loadPublicArchiveHomeDataset();
-  return setPublicArchiveRouteCache(key, dataset);
+  return needsFreshStats ? dataset : setPublicArchiveRouteCache(key, dataset);
 }
 
 async function loadApprovedHistoryForPublicArchive() {
