@@ -4550,3 +4550,15 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Blogda kaynakca, sohbet kodu, PDF hazirlama notu veya koseli parantezli kaynak numarasi
   birakilmadi. Schema/SEO ve konuya ozel ilgili sorular testi eklendi.
 - Dogrulama: `npm.cmd run check` basarili, 158/158 test gecti.
+
+## 2026-09-15 Zikir blog ve blog ici CTA duzeltmesi
+
+- Kullanici tarafindan verilen `Zikir_Detayli_Blog.pdf` icerigi konu rehberi makalesine
+  donusturuldu: `/konu-rehberi/zikir-ve-daimi-zikir`.
+- Ana sayfadaki `Zikir ve Daimi Zikir` karti kategori yerine dogrudan bu blog yazisina
+  baglandi.
+- Blog destek alanindaki eski `Bu konudaki sorular` karti tum bloglarda kaldirildi; yerine
+  `Okumaya devam edin` basligi altinda diger konu rehberi yazilarina ic link veren CTA eklendi.
+- Blogda kaynakca, sohbet kodu, PDF hazirlama notu veya koseli parantezli kaynak numarasi
+  birakilmadi.
+- Dogrulama: `npm.cmd run check` basarili, 159/159 test gecti.

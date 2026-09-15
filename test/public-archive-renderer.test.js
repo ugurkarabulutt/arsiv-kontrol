@@ -856,10 +856,12 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /pa-topic-article-body/);
   assert.match(preview.html, /pa-topic-article-support/);
   assert.match(preview.html, /Bu yazıda geçen ayetler/);
-  assert.match(preview.html, /Bu konudaki sorular/);
+  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Hidayet Nedir\?/);
+  assert.match(preview.html, /Mürşide Tâbiiyet/);
   assert.match(preview.html, /RÛM 31/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek ile ilgili sorular/);
-  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek soruları/);
+  assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   const tocIndex = preview.html.indexOf('pa-topic-article-toc-block');
   const bodyIndex = preview.html.indexOf('pa-topic-article-body');
   const supportIndex = preview.html.indexOf('pa-topic-article-support');
@@ -906,9 +908,10 @@ test('topic guide article renders Hidayet blog without source artifacts', () => 
   assert.match(preview.html, /ÂL-İ İMRÂN 73/);
   assert.match(preview.html, /ZÜMER 54/);
   assert.match(preview.html, /Hidayet ile ilgili sorular/);
-  assert.match(preview.html, /Hidayet soruları/);
+  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
-  assert.doesNotMatch(preview.html, /Allah’a Ulaşmayı Dilemek soruları/);
+  assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/hidayet#article"/);
   assert.doesNotMatch(preview.html, /Hidayet Nedir\? Nedir\?/);
@@ -937,10 +940,43 @@ test('topic guide article renders Mürşide Tâbiiyet blog with its own related 
   assert.match(preview.html, /BAKARA 45/);
   assert.match(preview.html, /FURKÂN 70/);
   assert.match(preview.html, /Tâbiiyet ile ilgili sorular/);
-  assert.match(preview.html, /Tâbiiyet soruları/);
+  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Zikir ve Daimî Zikir/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/murside-tabiiyet#article"/);
+  const disallowedSourcePattern = new RegExp([
+    'mih' + 'r\\.com',
+    'Kuran' + 'TefsirAyet',
+    'dokumanli' + '-sohbet',
+    'Kaynaklar',
+    'Sohbet kodu',
+    'Kaynak kontrol',
+    'kullanıcı tarafından verilen PDF',
+    'pa-topic-source-list',
+    'pa-topic-footnote',
+    '\\[\\d+\\]'
+  ].join('|'), 'i');
+  assert.doesNotMatch(preview.html, disallowedSourcePattern);
+});
+
+test('topic guide article renders Zikir blog and cross-links other guides', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/zikir-ve-daimi-zikir');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Zikir ve Daimî Zikir/);
+  assert.match(preview.html, /Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet/);
+  assert.match(preview.html, /pa-topic-article-toc-block/);
+  assert.match(preview.html, /MÜZZEMMİL 8/);
+  assert.match(preview.html, /ANKEBÛT 45/);
+  assert.match(preview.html, /BAKARA 152/);
+  assert.match(preview.html, /Zikir ile ilgili sorular/);
+  assert.match(preview.html, /Okumaya devam edin/);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
+  assert.match(preview.html, /Mürşide Tâbiiyet/);
+  assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/zikir-ve-daimi-zikir#article"/);
   const disallowedSourcePattern = new RegExp([
     'mih' + 'r\\.com',
     'Kuran' + 'TefsirAyet',

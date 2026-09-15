@@ -1405,9 +1405,15 @@ for (const marker of ['pa-reading-track', 'pa-reading-rail', 'pa-reading-set', '
   assert(homePreview.includes(marker), `Public konu rehberi yatay kart marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
-for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Bu konudaki sorular', 'pa-topic-evidence', 'Allah’a Ulaşmayı Dilemek ile ilgili sorular', 'Allah’a Ulaşmayı Dilemek soruları', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
+for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Okumaya devam edin', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'pa-topic-evidence', 'Allah’a Ulaşmayı Dilemek ile ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
   assert(topicArticlePreview.includes(marker), `Public konu rehberi makale marker eksik: ${marker}`);
 }
+assert(!topicArticlePreview.includes('Bu konudaki sorular'), 'Public konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
+const zikirArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/zikir-ve-daimi-zikir').html;
+for (const marker of ['Zikir ve Daimî Zikir', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'Okumaya devam edin', 'Allah’a Ulaşmayı Dilemek', 'Mürşide Tâbiiyet', '"@type":"BlogPosting"']) {
+  assert(zikirArticlePreview.includes(marker), `Public zikir konu rehberi marker eksik: ${marker}`);
+}
+assert(!zikirArticlePreview.includes('Bu konudaki sorular'), 'Public zikir konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
 const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');
 const topicArticleSupportIndex = topicArticlePreview.indexOf('pa-topic-article-support');
 const topicArticleRelatedIndex = topicArticlePreview.indexOf('pa-topic-article-related');

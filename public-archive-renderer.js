@@ -613,7 +613,7 @@ const HOME_READING_PATHS = [
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
-  { title: 'Zikir ve Daimî Zikir', slug: 'zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
+  { title: 'Zikir ve Daimî Zikir', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
   { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
   { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', text: 'Ruhun teslimi ve Allah’a yöneliş merhaleleri.' },
   { title: 'Teslimiyet', slug: 'teslimiyet', text: 'Teslim, tevekkül ve irade başlıklarının birlikte okunması.' },
@@ -1423,10 +1423,24 @@ function topicArticleTocHtml(blocks = []) {
   `;
 }
 
+function topicArticleGuideLinksHtml(article = {}) {
+  const currentSlug = String(article.slug || '').trim();
+  const articles = Object.values(publicArchiveTopicArticles || {})
+    .filter(item => item?.slug && item?.path && item.slug !== currentSlug)
+    .slice(0, 5);
+  if (!articles.length) return '';
+  return `
+        <section class="pa-topic-proof-card">
+          <strong>Okumaya devam edin</strong>
+          <p>Bu konuyu diğer temel rehberlerle birlikte okuyarak hidayet yolculuğunu adım adım takip edin.</p>
+          <div>
+            ${articles.map(item => `<a href="${escapeHtml(publicArchivePath(item.path))}">${escapeHtml(item.title)}</a>`).join('')}
+          </div>
+        </section>
+  `;
+}
+
 function topicArticleFooterLinksHtml(article = {}) {
-  const categorySlug = article.categorySlug || 'allaha-ulasmayi-dilemek';
-  const category = publicCategoryBySlug(categorySlug);
-  const questionTopicTitle = category?.name || String(article.title || '').replace(/\s+Nedir\?\s*$/i, '').trim() || article.title || 'Bu konu';
   return `
     <section class="pa-topic-article-support" aria-label="Makale sonu bağlantıları">
       ${(article.quranReferences || []).length ? `
@@ -1440,10 +1454,7 @@ function topicArticleFooterLinksHtml(article = {}) {
           </div>
         </section>
       ` : ''}
-      <section class="pa-topic-proof-card">
-        <strong>Bu konudaki sorular</strong>
-        <a href="${PREVIEW_BASE}/kategori/${escapeHtml(categorySlug)}">${escapeHtml(questionTopicTitle)} soruları</a>
-      </section>
+      ${topicArticleGuideLinksHtml(article)}
     </section>
   `;
 }
