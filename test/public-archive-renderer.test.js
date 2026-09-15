@@ -858,7 +858,8 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /Bu yazıda geçen ayetler/);
   assert.match(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /RÛM 31/);
-  assert.match(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek ile ilgili sorular/);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek soruları/);
   const tocIndex = preview.html.indexOf('pa-topic-article-toc-block');
   const bodyIndex = preview.html.indexOf('pa-topic-article-body');
   const supportIndex = preview.html.indexOf('pa-topic-article-support');
@@ -904,7 +905,10 @@ test('topic guide article renders Hidayet blog without source artifacts', () => 
   assert.match(preview.html, /pa-topic-article-toc-block/);
   assert.match(preview.html, /ÂL-İ İMRÂN 73/);
   assert.match(preview.html, /ZÜMER 54/);
-  assert.match(preview.html, /Hidayet Nedir\? ile ilgili sorular/);
+  assert.match(preview.html, /Hidayet ile ilgili sorular/);
+  assert.match(preview.html, /Hidayet soruları/);
+  assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
+  assert.doesNotMatch(preview.html, /Allah’a Ulaşmayı Dilemek soruları/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/hidayet#article"/);
   assert.doesNotMatch(preview.html, /Hidayet Nedir\? Nedir\?/);

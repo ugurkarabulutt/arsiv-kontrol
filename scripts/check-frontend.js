@@ -1407,7 +1407,7 @@ for (const marker of ['pa-reading-track', 'pa-reading-rail', 'pa-reading-set', '
   assert(homePreview.includes(marker), `Public konu rehberi yatay kart marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
-for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Bu konudaki sorular', 'pa-topic-evidence', 'Allah’a ulaşmayı dilemekle ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
+for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Bu konudaki sorular', 'pa-topic-evidence', 'Allah’a Ulaşmayı Dilemek ile ilgili sorular', 'Allah’a Ulaşmayı Dilemek soruları', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
   assert(topicArticlePreview.includes(marker), `Public konu rehberi makale marker eksik: ${marker}`);
 }
 const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');

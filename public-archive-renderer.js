@@ -1424,6 +1424,9 @@ function topicArticleTocHtml(blocks = []) {
 }
 
 function topicArticleFooterLinksHtml(article = {}) {
+  const categorySlug = article.categorySlug || 'allaha-ulasmayi-dilemek';
+  const category = publicCategoryBySlug(categorySlug);
+  const questionTopicTitle = category?.name || String(article.title || '').replace(/\s+Nedir\?\s*$/i, '').trim() || article.title || 'Bu konu';
   return `
     <section class="pa-topic-article-support" aria-label="Makale sonu bağlantıları">
       ${(article.quranReferences || []).length ? `
@@ -1439,7 +1442,7 @@ function topicArticleFooterLinksHtml(article = {}) {
       ` : ''}
       <section class="pa-topic-proof-card">
         <strong>Bu konudaki sorular</strong>
-        <a href="${PREVIEW_BASE}/kategori/${escapeHtml(article.categorySlug || 'allaha-ulasmayi-dilemek')}">Allah’a Ulaşmayı Dilemek soruları</a>
+        <a href="${PREVIEW_BASE}/kategori/${escapeHtml(categorySlug)}">${escapeHtml(questionTopicTitle)} soruları</a>
       </section>
     </section>
   `;
@@ -1452,6 +1455,9 @@ function renderTopicGuideArticle(slug) {
   const relatedQuestions = topicArticleRelatedQuestions(article, 8);
   const canonicalPath = publicTopicArticlePath(article);
   const description = compactSeoText(article.description || article.summary || publicArchiveFixtures.brand.sentence, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
+  const categorySlug = article.categorySlug || 'allaha-ulasmayi-dilemek';
+  const category = publicCategoryBySlug(categorySlug);
+  const questionTopicTitle = category?.name || String(article.title || '').replace(/\s+Nedir\?\s*$/i, '').trim() || article.title || 'Bu konu';
   const articleSeoTitle = /[?？]\s*$/.test(String(article.title || ''))
     ? article.title
     : `${article.title} Nedir?`;
@@ -1492,7 +1498,7 @@ function renderTopicGuideArticle(slug) {
         ${topicArticleFooterLinksHtml(article)}
         ${relatedQuestions.length ? `
           <section class="pa-section pa-topic-article-related" id="ilgili-sorular">
-            ${sectionHeader('Allah’a ulaşmayı dilemekle ilgili sorular', 'Tümünü Gör', `${PREVIEW_BASE}/kategori/${article.categorySlug || 'allaha-ulasmayi-dilemek'}`)}
+            ${sectionHeader(`${questionTopicTitle} ile ilgili sorular`, 'Tümünü Gör', `${PREVIEW_BASE}/kategori/${categorySlug}`)}
             <div class="pa-list">${relatedQuestions.map(entry => questionCard(entry, true)).join('')}</div>
           </section>
         ` : ''}
