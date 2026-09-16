@@ -4616,3 +4616,13 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Blogda kaynakca, sohbet kodu, PDF hazirlama notu veya koseli parantezli kaynak numarasi
   birakilmadi.
 - Dogrulama: `npm.cmd run check` basarili, 159/159 test gecti.
+
+## 2026-09-16 Nefs Tezkiyesi blog hazirligi
+
+- Kullanici tarafindan verilen `Nefs_Tezkiyesi_Blog_Duzeltilmis.pdf` icerigi konu rehberi
+  makalesine donusturuldu: `/konu-rehberi/nefs-tezkiyesi`.
+- Ana sayfadaki `Nefs Tezkiyesi` karti artik yalniz blog mevcut oldugu icin gorunur ve
+  kategori fallback'i yerine dogrudan bu blog yazisina baglanir.
+- Blogda kaynakca, sohbet kodu, PDF hazirlama notu, dis kaynak linki veya koseli parantezli
+  kaynak numarasi birakilmadi; ilgili ayet bloklari URL'siz site ici delil karti olarak
+  tutuldu.

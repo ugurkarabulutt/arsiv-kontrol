@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260916-topic-guides-blogs-only-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260916-nefs-topic-guide-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -614,7 +614,7 @@ const HOME_READING_PATHS = [
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
-  { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
+  { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', articleSlug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
   { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', text: 'Ruhun teslimi ve Allah’a yöneliş merhaleleri.' },
   { title: 'Teslimiyet', slug: 'teslimiyet', text: 'Teslim, tevekkül ve irade başlıklarının birlikte okunması.' },
   { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },

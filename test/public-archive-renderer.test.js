@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260916-topic-guides-blogs-only-v1"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260916-nefs-topic-guide-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260916-topic-guides-blogs-only-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260916-topic-guides-blogs-only-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260916-nefs-topic-guide-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260916-nefs-topic-guide-v1"/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
@@ -814,7 +814,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(topicGuideSection, /Hidayet Nedir\?/);
   assert.match(topicGuideSection, /Mürşide Tâbiiyet/);
   assert.match(topicGuideSection, /Zikir Nedir\?/);
-  assert.doesNotMatch(topicGuideSection, /Nefs Tezkiyesi|Ruhun Allah’a Ulaşması|Teslimiyet|Takva|Tövbe ve Günahlardan Kurtuluş|Dua ve Tevekkül|Namaz ve İbadet Bilinci|Kur’ân’da Hidayet Ayetleri/);
+  assert.match(topicGuideSection, /Nefs Tezkiyesi/);
+  assert.match(topicGuideSection, /\/public-preview\/konu-rehberi\/nefs-tezkiyesi/);
+  assert.doesNotMatch(topicGuideSection, /Ruhun Allah’a Ulaşması|Teslimiyet|Takva|Tövbe ve Günahlardan Kurtuluş|Dua ve Tevekkül|Namaz ve İbadet Bilinci|Kur’ân’da Hidayet Ayetleri/);
   assert.match(home, /pa-topic-path/);
   assert.match(home, /pa-reading-track/);
   assert.match(home, /pa-reading-rail/);
@@ -982,6 +984,37 @@ test('topic guide article renders Zikir blog and cross-links other guides', () =
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/zikir-ve-daimi-zikir#article"/);
+  const disallowedSourcePattern = new RegExp([
+    'mih' + 'r\\.com',
+    'Kuran' + 'TefsirAyet',
+    'dokumanli' + '-sohbet',
+    'Kaynaklar',
+    'Sohbet kodu',
+    'Kaynak kontrol',
+    'kullanıcı tarafından verilen PDF',
+    'pa-topic-source-list',
+    'pa-topic-footnote',
+    '\\[\\d+\\]'
+  ].join('|'), 'i');
+  assert.doesNotMatch(preview.html, disallowedSourcePattern);
+});
+
+test('topic guide article renders Nefs Tezkiyesi blog and cross-links other guides', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/nefs-tezkiyesi');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Nefs Tezkiyesi/);
+  assert.match(preview.html, /Kalbin temizlenmesi ve ruhun Allah’a ulaşması/);
+  assert.match(preview.html, /pa-topic-article-toc-block/);
+  assert.match(preview.html, /ŞEMS 9/);
+  assert.match(preview.html, /NÛR 21/);
+  assert.match(preview.html, /FÂTIR 18/);
+  assert.match(preview.html, /Nefs ile ilgili sorular/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
+  assert.match(preview.html, /Zikir Nedir\?/);
+  assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/nefs-tezkiyesi#article"/);
   const disallowedSourcePattern = new RegExp([
     'mih' + 'r\\.com',
     'Kuran' + 'TefsirAyet',

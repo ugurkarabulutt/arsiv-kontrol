@@ -1460,5 +1460,437 @@
       }
     ],
     "sources": []
+  },
+  "nefs-tezkiyesi": {
+    "slug": "nefs-tezkiyesi",
+    "path": "/konu-rehberi/nefs-tezkiyesi",
+    "series": "Hidayet Yolculuğu",
+    "title": "Nefs Tezkiyesi",
+    "subtitle": "Kalbin temizlenmesi ve ruhun Allah’a ulaşması",
+    "description": "Nefs tezkiyesi nedir, kalbin temizlenmesi nasıl başlar, zikir ve mürşide tâbiiyet nefsin arınmasıyla nasıl bağlantılıdır?",
+    "summary": "Nefs tezkiyesi, insanın iç dünyasındaki afetlerin Allah’ın rahmeti, fazlı ve zikriyle azalması; kalbin nurlanması ve ruhun Allah’a ulaşması yoludur.",
+    "categorySlug": "nefs",
+    "publishedAt": "2026-09-16",
+    "updatedAt": "2026-09-16",
+    "readTime": "16 dk",
+    "keywords": [
+      "nefs tezkiyesi",
+      "nefs tasfiyesi",
+      "zikir",
+      "daimi zikir",
+      "ruh Allah’a ulaşması",
+      "mürşide tabiiyet",
+      "Allah’a ulaşmayı dilemek"
+    ],
+    "relatedTerms": [
+      "Nefs",
+      "Nefs Tezkiyesi",
+      "Zikir",
+      "Daimî Zikir",
+      "Mürşide Tâbiiyet",
+      "Ruhun Allah’a Ulaşması",
+      "Hidayet"
+    ],
+    "quranReferences": [
+      { "label": "Şems-9" },
+      { "label": "Tîn-4" },
+      { "label": "Mâide-105" },
+      { "label": "Muddessir-38" },
+      { "label": "Ra’d-27" },
+      { "label": "Nûr-21" },
+      { "label": "Müzzemmil-8" },
+      { "label": "A’lâ-14" },
+      { "label": "Kehf-107" },
+      { "label": "Fâtır-18" },
+      { "label": "Nisâ-103" },
+      { "label": "Ankebût-6" }
+    ],
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "İnsan bazen doğru olanı bildiği hâlde nefsine yenilir. Öfkesine engel olamaz, kırıldığı bir sözü unutamaz, başkasının sahip olduğuna imrenirken huzurunu kaybeder."
+      },
+      {
+        "type": "paragraph",
+        "text": "İçindeki bu mücadele, yalnız davranışlarını değil, kalbini de değiştirmesi gerektiğini gösterir. Nefs tezkiyesi, insanın iç dünyasındaki karanlıkların Allah’ın nurlarıyla azalması; nefsin afetlerinin yerini faziletlerin almaya başlamasıdır."
+      },
+      {
+        "type": "evidence",
+        "reference": "ŞEMS 9",
+        "note": "Âyet metni",
+        "text": "Kim onu (nefsini) tezkiye etmişse felâha (kurtuluşa) ermiştir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Felâha götüren nefs tezkiyesi, Allah’a ulaşmayı kalpten dilemekle açılan yolun içindedir. Mürşide tâbiiyet, zikir, nefsin temizlenmesi ve ruhun Allah’a ulaşması birbirinden bağımsız değildir. İnsan bu yolu yaşarken nefsi tezkiye olur, ruhu Allah’a doğru yükselir ve Allah’a kulluğu gelişir."
+      },
+      {
+        "type": "heading",
+        "text": "Nefs tezkiyesi ne demektir?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tezkiye, nefsin kalbinin temizlenmesidir. Temizlenen şey, nefsin kendisi değil; onun kalbindeki öfke, kin, kıskançlık, haset, isyan ve düşmanlık gibi afetlerdir. Nefsin afetleri Allah’ın emirlerine karşı çıkar, yasak ettiği fiillere yönelir. Ruhun hasletleri ise Allah’ın emirlerini yerine getirmek ve yasaklarından uzak durmak ister. İç dünyadaki çatışmanın temelinde bu karşıtlık bulunur."
+      },
+      {
+        "type": "evidence",
+        "reference": "TÎN 4",
+        "note": "Âyet metni",
+        "text": "Andolsun ki Biz, insanı (nefsini), ahseni takvim içinde (nefs tezkiyesi ve tasfiyesi yaparak en güzele ulaşabilecek özellikte) yarattık."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs, başlangıçtaki hâliyle kalmaya mahkûm değildir. Allah onu, kalbi temizlenerek ahsene ulaşabilecek bir yapıda yaratmıştır. Ruh ile nefs de aynı varlık değildir: Ruhun hasletlerle donatılmış olması, nefsin temizlenmesine ihtiyaç bulunmadığı anlamına gelmez. Temizlenecek olan nefsin kalbidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu sebeple nefs tezkiyesini “nefsi öldürmek” diye anlamamak gerekir. Ortadan kaldırılması gereken nefs değil, onun afetleridir. İnsan nefsinden vazgeçerek değil, nefsinin Allah’ın emirlerine karşı çıkan yapısını değiştirerek ilerler. Tezkiye ve daha sonra tasfiye, bu değişimin birbirini takip eden merhaleleridir."
+      },
+      {
+        "type": "heading",
+        "text": "Nefsin sorumluluğu insana aittir"
+      },
+      {
+        "type": "evidence",
+        "reference": "MÂİDE 105",
+        "note": "İlgili bölüm",
+        "text": "Ey âmenû olanlar! Nefsleriniz, üzerinizedir (nefsinizin sorumluluğu üzerinize borçtur)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs tezkiyesi, yalnız bazı insanların ilgileneceği bir güzellik değildir; insanın kendi nefsiyle ilgili sorumluluğudur. Başkalarının yanlışları, kişinin kendi kalbini temizleme borcunu ortadan kaldırmaz. İnsan, nefsini afetlerin hâkimiyetinde bırakmak yerine Allah’ın temizlenmek için açtığı yola yönelmelidir."
+      },
+      {
+        "type": "evidence",
+        "reference": "MUDDESSİR 38-40",
+        "note": "İlgili bölüm",
+        "text": "Bütün nefsler, iktisap ettikleri dereceler sebebiyle rehinedirler. Yemin sahipleri hariç. Onlar cennetlerdedir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsin Allah’a verdiği yemin, kalbin temizlenmesini gerektirir. Kalbin Allah’ın nurlarıyla dolması ve afetlerin hâkimiyetinin azalması, bu yeminin yerine getirilmesidir. Muddessir sûresindeki rehin oluş ve yemin sahiplerinin kurtuluşu, nefsin temizlenmesinin âhiretle bağını gösterir."
+      },
+      {
+        "type": "heading",
+        "text": "İlk adım: Allah’a ulaşmayı kalpten dilemek"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsini temizlemek isteyen insanın başlangıcı Allah’a yönelmektir. Bu yöneliş, ruhunu dünya hayatını yaşarken Allah’a ulaştırmayı kalpten dilemektir. İnsan bütün afetlerini temizlemiş olduğu için bu dileğin sahibi olmaz; temizlenmeye muhtaç olduğu hâlde Allah’a yönelir."
+      },
+      {
+        "type": "evidence",
+        "reference": "RA’D 27",
+        "note": "İlgili bölüm",
+        "text": "De ki: “Muhakkak ki Allah, dilediği kimseyi dalâlette bırakır ve O’na yönelen kimseyi Kendine ulaştırır (hidayete erdirir).”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’a ulaşmayı dileyen kişi için kalbin hazırlanması başlar. Allah onun kalbine ulaşır, kalbinin nur kapısını Kendisine çevirir ve göğsünden kalbine nur yolu açar. Böylece insan, Allah’ın nurlarını alabilecek bir kalbî hazırlıktan geçirilir."
+      },
+      {
+        "type": "evidence",
+        "reference": "TEGÂBUN 11",
+        "note": "İlgili bölüm",
+        "text": "Ve kim Allah’a îmân ederse (âmenû olursa), (Allah) onun kalbine ulaşır."
+      },
+      {
+        "type": "evidence",
+        "reference": "ZUMER 22",
+        "note": "İlgili bölüm",
+        "text": "Allah kimin göğsünü İslâm için (Allah’a teslim için) yarmışsa artık o, Rabbinden bir nur üzere olur, değil mi?"
+      },
+      {
+        "type": "heading",
+        "text": "Kalbe ulaşan rahmet ve mürşide tâbiiyet"
+      },
+      {
+        "type": "paragraph",
+        "text": "Kalbi bu şekilde hazırlanan kişi zikrettiğinde, nefsinin kalbine ilk olarak rahmet nuru girer. Bu başlangıçtaki rahmet birikimi yüzde ikidir ve kişiyi huşûya ulaştırır. Henüz yedi tezkiye kademesi tamamlanmış değildir; ilk rahmet, mürşide ulaşma yolundaki hazırlıktır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Huşû sahibi olan kişi hacet namazıyla Allah’tan mürşidini ister; Allah’ın gösterdiği mürşide ulaşıp tövbe ederek tâbî olur. Bu tâbiiyetle kalbe îmân yazılır. Kişinin ruhu Allah’a doğru yola çıkarken nefsi de fazılların birikmesiyle temizlenmeye başlar."
+      },
+      {
+        "type": "evidence",
+        "reference": "MUCÂDELE 22",
+        "note": "İlgili bölüm",
+        "text": "İşte onlar ki, (Allah) onların kalplerinin içine îmânı yazdı."
+      },
+      {
+        "type": "paragraph",
+        "text": "Kalbe îmân yazılması, fazılların kalpte kalabilmesi bakımından belirleyicidir. Allah’ın yazdığı îmân kelimesi, fazılları kendisine çeken ve etrafında toplayan bir merkez oluşturur. Zikirle gelen fazıllar burada biriktikçe afetlerin işgal ettiği alan küçülür."
+      },
+      {
+        "type": "heading",
+        "text": "Nefs, Allah’ın rahmeti ve fazlıyla temizlenir"
+      },
+      {
+        "type": "evidence",
+        "reference": "NÛR 21",
+        "note": "İlgili bölüm",
+        "text": "Ve eğer Allah’ın rahmeti ve fazlı sizin üzerinize olmasaydı (nefsinizin kalbine yerleşmeseydi), içinizden hiçbiri ebediyyen nefsini tezkiye edemezdi. Lâkin Allah, dilediğinin nefsini tezkiye eder."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nûr sûresinin bu hükmü, tezkiyenin nasıl gerçekleştiğini açıklar. Kalpteki afetler, yalnız onların kötü olduğunu bilmekle ortadan kalkmaz. Nefsin kalbine Allah’ın rahmeti ve fazlı ulaşmalıdır. İnsanın gayreti, Allah’ın bu yardımına yönelir; kalbin temizlenmesini sağlayan nurların sahibi ise Allah’tır."
+      },
+      {
+        "type": "evidence",
+        "reference": "ZUMER 23",
+        "note": "İlgili bölüm",
+        "text": "Allah, ihdas ettiği nurların ahsen olanlarını, ikişer ikişer, Kitab’a müteşabih olarak indirdi."
+      },
+      {
+        "type": "evidence",
+        "reference": "BAKARA 157",
+        "note": "İlgili bölüm",
+        "text": "İşte onlar ki Rab’lerinden salâvât ve rahmet onların üzerinedir. İşte onlar, onlar hidayete ermiş olanlardır."
+      },
+      {
+        "type": "heading",
+        "text": "Zikir, nefsin kalbini temizleyen ibadettir"
+      },
+      {
+        "type": "evidence",
+        "reference": "MÜZZEMMİL 8",
+        "note": "Âyet metni",
+        "text": "Ve Rabbinin İsmi’ni zikret ve herşeyden kesilerek O’na ulaş."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zikir, Allah’ın isminin tekrar edilmesidir. Sesli, sessiz veya kalp zikri olarak yapılabilir. Allah’a ulaşma emriyle Rabbin ismini zikretme emrinin birlikte verilmesi, zikrin bu yoldaki yerini gösterir. Ruhun Allah’a ulaşması nefs tezkiyesiyle, nefs tezkiyesi de zikirle gelen nurların kalpte birikmesiyle gerçekleşir."
+      },
+      {
+        "type": "evidence",
+        "reference": "A’LÂ 14-15",
+        "note": "İlgili bölüm",
+        "text": "Nefsini tezkiye eden kimse felâha ermiştir. Ve Rabbinin İsmi’ni zikretti ve de namaz kıldı."
+      },
+      {
+        "type": "paragraph",
+        "text": "A‘lâ sûresinde nefs tezkiyesi, Rabbin ismini zikretmek ve namaz birlikte yer alır. Bu sebeple zikir, ibadet hayatının dışına bırakılan bir uygulama değildir. Namazını kılan insanın zikri de hayatına alması, kalbin temizlenmesinin devamı bakımından gereklidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zikir sırasında kalbin karanlıklara açılan kapısı kapanır; Allah’ın nurları kalbi doldurur. Fakat zikir boyunca meydana gelen bu nurlanmayı, afetlerin hepsinin kalıcı olarak temizlenmesiyle karıştırmamak gerekir. Îmân kelimesi etrafında yerleşen fazıllar, tezkiyenin kalıcı kazanımıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Salih amel ile nefs tezkiyesinin bağı"
+      },
+      {
+        "type": "evidence",
+        "reference": "KEHF 107",
+        "note": "İlgili bölüm",
+        "text": "Âmenû olanlar ve salih amel yapanlar; onların ikramı, firdevs cennetleridir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Salih amel, nefsi ıslah eden ameldir. İnsanın hayır işlemesi, başkalarına hizmet etmesi ve nefsinin yanlış taleplerine karşı koyması değerlidir. Ancak nefsin kalbindeki afetleri azaltıp onların yerine fazılları yerleştiren temel ibadet zikirdir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsin bir isteğini yerine getirmemek, o isteği doğuran afetin tamamen yok olduğu anlamına gelmez. Kişi iradesiyle karşı koymaya devam ederken zikir, kalpteki yapıyı değiştirir. Afetlerin azalması, mücadeleyi de hafifletir."
+      },
+      {
+        "type": "heading",
+        "text": "Nefs tezkiyesinin yedi kademesi"
+      },
+      {
+        "type": "evidence",
+        "reference": "ŞEMS 7",
+        "note": "İlgili bölüm",
+        "text": "Nefse ve onu sevva edene andolsun."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tezkiye, Emmare, Levvame, Mülhime, Mutmainne, Radiye, Mardiyye ve Tezkiye olmak üzere yedi kademede ilerler. Her kademede nefsin kalbinde yüzde yedi fazl birikir. Bu birikime paralel olarak ruh da bir gök katı yükselir."
+      },
+      {
+        "type": "heading",
+        "text": "Birinci kademe: Nefs-i Emmare"
+      },
+      {
+        "type": "evidence",
+        "reference": "YÛSUF 53",
+        "note": "İlgili bölüm",
+        "text": "Ve ben, nefsimi ibra edemem. Muhakkak ki nefs, mutlaka sui olanı emreder. Rabbimin Rahîm esmasıyla tecelli ettiği nefsler hariç."
+      },
+      {
+        "type": "paragraph",
+        "text": "Emmare, nefsin kötülüğü emreden yapısını gösterir. Bu kademede insan, nefsini kendiliğinden temiz saymak yerine kalbinin temizlenmeye ihtiyacını kabul eder. İlk yüzde yedilik fazl birikimi gerçekleştiğinde ruh birinci gök katına yükselir."
+      },
+      {
+        "type": "heading",
+        "text": "İkinci kademe: Nefs-i Levvame"
+      },
+      {
+        "type": "evidence",
+        "reference": "KIYÂME 2",
+        "note": "Âyet metni",
+        "text": "Ve hayır, levvame nefse yemin ederim."
+      },
+      {
+        "type": "paragraph",
+        "text": "Levvame kademesinde insan, nefsinin sebep olduğu yanlışlardan dolayı nefsini kınar. Hata işlediğinde bundan rahatsız olur; nefsinin aynı kötülüğü tekrar istemesine karşı mücadele eder. İkinci yüzde yedilik birikimle fazıllar yüzde on dörde ulaşır."
+      },
+      {
+        "type": "heading",
+        "text": "Üçüncü kademe: Nefs-i Mülhime"
+      },
+      {
+        "type": "evidence",
+        "reference": "ŞEMS 8",
+        "note": "Âyet metni",
+        "text": "Sonra ona (nefse) fücurunu ve takvasını ilham etti."
+      },
+      {
+        "type": "paragraph",
+        "text": "Mülhime kademesinde ilham söz konusudur. Allah’ın takvaya yönelten ilhamı ile şeytanın fücura çağıran tesiri birbirine zıttır. Üçüncü yüzde yedilik fazl birikimiyle fazıllar yüzde yirmi bire ulaşır."
+      },
+      {
+        "type": "heading",
+        "text": "Dördüncü kademe: Nefs-i Mutmainne"
+      },
+      {
+        "type": "evidence",
+        "reference": "RA’D 28",
+        "note": "Âyet metni",
+        "text": "Onlar, âmenûdurlar ve kalpleri, Allah’ı zikretmekle mutmain olmuştur. Kalpler ancak; Allah’ı zikretmekle mutmain olur, öyle değil mi?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mutmainne, kalbin doyuma ulaşmasıdır. Kişi Allah’ın kendisine verdiğini yeterli görmeye, sahip olduklarının kıymetini idrak etmeye başlar. Dördüncü yüzde yedilik birikimle fazıllar yüzde yirmi sekiz olur."
+      },
+      {
+        "type": "evidence",
+        "reference": "FECR 27",
+        "note": "Âyet metni",
+        "text": "Ey mutmain olan nefs!"
+      },
+      {
+        "type": "heading",
+        "text": "Beşinci ve altıncı kademe: Radiye ve Mardiyye"
+      },
+      {
+        "type": "evidence",
+        "reference": "FECR 28",
+        "note": "Âyet metni",
+        "text": "Rabbine dön razı olarak ve Allah’ın rızasını kazanmış olarak!"
+      },
+      {
+        "type": "paragraph",
+        "text": "Radiye, insanın Allah’tan razı olduğu kademedir. Mardiyye kademesinde ise yalnız kulun Allah’tan razı olması değil, Allah’ın da kulundan razı olması söz konusudur. Beşinci ve altıncı yüzde yedilik fazl birikimleriyle ruh beşinci ve altıncı gök katlarına yükselir."
+      },
+      {
+        "type": "heading",
+        "text": "Yedinci kademe: Nefs-i Tezkiye"
+      },
+      {
+        "type": "paragraph",
+        "text": "Son yüzde yedilik fazl birikimiyle yedi kademe tamamlanır. Fazıllar yüzde kırk dokuza ulaşmıştır. Başlangıçtaki yüzde iki rahmet de eklendiğinde nefsin kalbi yüzde elli bir nurla dolar. Artık kalpte nurlar çoğunluktadır; afetler yüzde kırk dokuz seviyesine düşmüştür."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruh yedinci gök katına yükselir, oradaki âlemleri geçerek Allah’a ulaşır. Nefsin temizlenmesiyle ruhun yolculuğu birlikte ilerlediği için bu son kademe, ruhun vuslatıyla bağlantılıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Nefs temizlenirken Allah’a ulaşan ruhtur"
+      },
+      {
+        "type": "evidence",
+        "reference": "FÂTIR 18",
+        "note": "İlgili bölüm",
+        "text": "Ve dönüş (varış) Allah’adır (Nefs tezkiyesi ile ruh Allah’a döner, ulaşır)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Fâtır sûresinde nefsin tezkiyesi ile Allah’a dönüş aynı âyette yer alır. Her yüzde yedilik fazl birikiminde ruhun bir gök katı yükselmesi, nefsin kalbinin temizlenmesiyle ruhun Allah’a ulaşması arasındaki bağı açıklar. Nefsin kalbi temizlenirken yol alan ruhtur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Fecr sûresindeki hitaplarda da bu ayrım korunur. Mutmain olan nefs anılır; Rabbine dönmesi istenen ise Allah’tan gelen ruhtur. Nefs, ruhun başka bir adı değildir."
+      },
+      {
+        "type": "evidence",
+        "reference": "FECR 29-30",
+        "note": "İlgili bölüm",
+        "text": "O zaman kullarımın arasına gir. Ve cennetime gir."
+      },
+      {
+        "type": "heading",
+        "text": "Felâh, yalnız yolun sonunda başlamaz"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsini tezkiye eden kişinin felâha ermesi, kurtuluşun ancak yüzde elli bir nura ulaşıldığında başladığı anlamına gelmez. Allah’a ulaşmayı kalpten dileyen kişi birinci kat cennetin; mürşidine tâbî olan kişi ikinci kat cennetin; nefs tezkiyesini gerçekleştirip ruhunu Allah’a ulaştıran kişi üçüncü kat cennetin sahibi olur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’ın Kendisine ulaştırma vaadi de zikri ve nefs tezkiyesini gereksiz kılmaz. Allah, Kendisine ulaşmayı dileyen kişiye zikri sevdirir ve bu yolu yaşayabilmesi için yardım eder. Kulun yönelişi ile Allah’ın yardımı birbirinden ayrılmaz."
+      },
+      {
+        "type": "heading",
+        "text": "Tezkiye ile tasfiye aynı şey değildir"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tezkiye tamamlandığında kalbin yüzde elli biri nurlanmıştır; geriye kalan yüzde kırk dokuzluk bölümde afetler hâlâ vardır. Bu sebeple nefsini tezkiye eden insanın bütün afetlerinden kurtulduğunu söylemek doğru değildir. Ruhunu Allah’a ulaştırmıştır; fakat nefsini henüz bütünüyle Allah’a teslim etmiş değildir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasfiye, nefsin kalbindeki afetlerin tamamen temizlenmesidir. Daimî zikirle kalp bütünüyle Allah’ın nurlarıyla dolar. Burada yüzde iki rahmet ile yüzde doksan sekiz fazl söz konusudur. Afetlerin yerini tamamen fazıllar alınca nefs teslimi gerçekleşir."
+      },
+      {
+        "type": "evidence",
+        "reference": "AHZÂB 41",
+        "note": "İlgili bölüm",
+        "text": "Ey âmenû olanlar! Allah’ı çok zikirle zikredin."
+      },
+      {
+        "type": "evidence",
+        "reference": "NİSÂ 103",
+        "note": "İlgili bölüm",
+        "text": "Böylece namazı bitirdiğiniz zaman, artık ayaktayken, otururken ve yan üstü iken, Allah’ı zikredin!"
+      },
+      {
+        "type": "paragraph",
+        "text": "Az zikirden çok zikre, çok zikirden daimî zikre ilerleyişin hedefi kalbin bütünüyle temizlenmesidir. Tezkiye, nefsin kalbinin temizlenmesinde önemli bir merhaledir; fakat bütün teslimlerin sonu değildir."
+      },
+      {
+        "type": "heading",
+        "text": "Kalbin temizlenmesi günlük hayata nasıl yansır?"
+      },
+      {
+        "type": "evidence",
+        "reference": "ANKEBÛT 6",
+        "note": "Âyet metni",
+        "text": "Ve kim cihad ederse, o taktirde sadece kendi nefsi için cihad eder. Muhakkak ki Allah, âlemlerden müstağnidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsle mücadelede mücahede ve riyazet birbirini tamamlar. Mücahede, nefsin istemediği hâlde Allah’ın emrettiği şeyi ona yaptırmaktır. Riyazet ise nefsin istediği, fakat Allah’ın yasakladığı şeyi ona vermemektir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Hedef, yalnız dışarıya karşı sakin görünmek değildir. İçinde kin taşıyan insanın bunu dile getirmemesi bir mücadeledir; kin afetinin azalması ise kalbin temizlenmesiyle ilgilidir. Zikirle afetlerin yerini fazıllar aldıkça insanın içindeki çatışma azalır."
+      },
+      {
+        "type": "heading",
+        "text": "Kalbin nurlanmasını korumak"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun Allah’a ulaşmasından sonra zikrin terk edilmesi, elde edilen güzelliğin kendiliğinden korunacağı düşüncesi doğru değildir. İnsan zikrini sürdürmeli, ulaştığı seviyeyi muhafaza etmeli ve daha fazlasına yönelmelidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs tezkiyesi insana, içindeki karanlıkların değişmez olmadığını gösterir. Allah’a yönelen kalp rahmete açılır; zikirle nurlanır; fazıllar çoğaldıkça afetlerin hâkimiyeti azalır. İnsan Allah’a yaklaşırken yalnız ruhunun yolculuğunu değil, kendi iç dünyasının da değişmesini yaşar."
+      }
+    ],
+    "sources": []
   }
 }
