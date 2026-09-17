@@ -5,6 +5,16 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-17 public cevap maili:** Public sitede oturum açarak soru soran
+  kullanıcılara admin panelinden cevap verildiğinde mail bildirimi Resend
+  üzerinden gönderilir. Cevap kaydı mail sonucuna bağlı olmamalıdır: önce
+  `public_question_submissions.answer_text/answered_at/status` güncellenir,
+  sonra mail denenir. Mail başarılı olursa `user_notified_at` dolmalıdır; bu
+  alan doluysa aynı kayıt için tekrar otomatik mail gönderilmez. Canlı gönderim
+  için Vercel Production ortamında `RESEND_API_KEY` gerekir. Varsayılan gönderen
+  `Dini Sorular ve Cevaplar Arşivi <no-reply@arsiv.ibrahimlive.ai>`; doğrulanmış
+  mail/domain değişirse `PUBLIC_ANSWER_EMAIL_FROM` kullanılmalıdır.
+
 - **2026-09-15 ziyaret istatistikleri paneli:** `Canlı Site > Ziyaret
   İstatistikleri` aralığı `1s/6s/12s/24s/7g/30g/90g` destekler. Panel ülke ve
   ülkeye bağlı şehir filtresi sunar; şehir bilgisi IP ağına dayalı gözlem

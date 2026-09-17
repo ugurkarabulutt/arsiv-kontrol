@@ -34,6 +34,9 @@ const GOOGLE_CLIENT_ID  = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || '';
 const GOOGLE_ROOT_REDIRECT_URI = process.env.GOOGLE_ROOT_REDIRECT_URI || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const PUBLIC_ANSWER_EMAIL_FROM = process.env.PUBLIC_ANSWER_EMAIL_FROM || process.env.EMAIL_FROM || 'Dini Sorular ve Cevaplar Arşivi <no-reply@arsiv.ibrahimlive.ai>';
+const PUBLIC_ANSWER_EMAIL_REPLY_TO = process.env.PUBLIC_ANSWER_EMAIL_REPLY_TO || '';
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -105,6 +108,15 @@ function httpError(message, statusCode, cause) {
   err.statusCode = statusCode;
   if (cause) err.cause = cause;
   return err;
+}
+
+function escapeHtmlServer(value = '') {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function safeJson(response) {
@@ -9360,6 +9372,138 @@ app.get('/api/public-archive/question-submissions', auth, admin, async (req, res
   }
 });
 
+function publicAnswerMailPreview(text = '', limit = 260) {
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, limit)
+    .replace(/\s+\S*$/, '')
+    .trim();
+}
+
+function publicQuestionAccountUrl() {
+  return `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/hesabim`;
+}
+
+function renderPublicAnswerEmailHtml({ name, question, answerPreview, accountUrl }) {
+  const safeName = escapeHtmlServer(name || 'Muhterem kullanıcı');
+  const safeQuestion = escapeHtmlServer(question || 'Gönderdiğiniz soru');
+  const safePreview = escapeHtmlServer(answerPreview || 'Cevabınız hesabınızda hazır.');
+  const safeAccountUrl = escapeHtmlServer(accountUrl);
+  return `<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sorunuz cevaplandı</title>
+</head>
+<body style="margin:0;background:#f4f1e8;color:#14241d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1e8;padding:28px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#071610;border-radius:28px;overflow:hidden;border:1px solid rgba(120,199,159,.26);box-shadow:0 24px 70px rgba(7,22,16,.18);">
+          <tr>
+            <td style="padding:30px 28px 10px;">
+              <div style="display:inline-block;padding:8px 12px;border-radius:999px;background:rgba(137,220,174,.12);color:#8fe0b2;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Dini Sorular ve Cevaplar Arşivi</div>
+              <h1 style="margin:22px 0 8px;color:#fffaf0;font-size:32px;line-height:1.12;font-weight:800;">Sorunuz cevaplandı.</h1>
+              <p style="margin:0;color:rgba(255,250,240,.72);font-size:16px;line-height:1.7;">${safeName}, gönderdiğiniz sorunun cevabı hesabınızda hazır.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px 0;">
+              <div style="background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);border-radius:20px;padding:20px;">
+                <div style="color:#8fe0b2;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Sorunuz</div>
+                <p style="margin:0;color:#fffaf0;font-size:18px;line-height:1.55;font-weight:700;">${safeQuestion}</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px 28px 0;">
+              <div style="background:rgba(143,224,178,.10);border-left:4px solid #8fe0b2;border-radius:18px;padding:18px 20px;">
+                <div style="color:#8fe0b2;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Cevaptan kısa bölüm</div>
+                <p style="margin:0;color:rgba(255,250,240,.84);font-size:15px;line-height:1.75;">${safePreview}</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:26px 28px 32px;">
+              <a href="${safeAccountUrl}" style="display:inline-block;background:#8fe0b2;color:#071610;text-decoration:none;border-radius:999px;padding:15px 24px;font-size:15px;font-weight:800;box-shadow:0 12px 34px rgba(143,224,178,.28);">Cevabı Oku</a>
+              <p style="margin:18px 0 0;color:rgba(255,250,240,.56);font-size:12px;line-height:1.6;">Bu mail, hesabınızla gönderdiğiniz soruya cevap verildiği için otomatik gönderilmiştir.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function renderPublicAnswerEmailText({ name, question, answerPreview, accountUrl }) {
+  return [
+    `Merhaba ${name || ''}`.trim(),
+    '',
+    'Sorunuz cevaplandı.',
+    '',
+    `Soru: ${question || 'Gönderdiğiniz soru'}`,
+    '',
+    answerPreview ? `Cevaptan kısa bölüm: ${answerPreview}` : '',
+    '',
+    `Cevabı okumak için hesabınıza girin: ${accountUrl}`
+  ].filter(line => line !== null).join('\n');
+}
+
+async function sendPublicAnswerNotificationEmail(submission) {
+  const recipient = String(submission?.submitter_email || '').trim();
+  if (!submission?.public_user_id || !recipient) return { sent: false, skipped: true, reason: 'missing_logged_in_recipient' };
+  if (submission?.user_notified_at) return { sent: false, skipped: true, reason: 'already_notified' };
+  if (!RESEND_API_KEY) return { sent: false, skipped: true, reason: 'missing_resend_api_key' };
+
+  const accountUrl = publicQuestionAccountUrl();
+  const answerPreview = publicAnswerMailPreview(submission.answer_text || '');
+  const payload = {
+    from: PUBLIC_ANSWER_EMAIL_FROM,
+    to: [recipient],
+    subject: 'Sorunuz cevaplandı',
+    html: renderPublicAnswerEmailHtml({
+      name: submission.submitter_name || '',
+      question: submission.question || '',
+      answerPreview,
+      accountUrl
+    }),
+    text: renderPublicAnswerEmailText({
+      name: submission.submitter_name || '',
+      question: submission.question || '',
+      answerPreview,
+      accountUrl
+    })
+  };
+  if (PUBLIC_ANSWER_EMAIL_REPLY_TO) payload.reply_to = PUBLIC_ANSWER_EMAIL_REPLY_TO;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 9000);
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    const body = await safeJson(response);
+    if (!response.ok) {
+      return { sent: false, skipped: false, reason: 'resend_error', status: response.status, error: body?.message || body?.error || 'Mail gönderilemedi.' };
+    }
+    return { sent: true, id: body?.id || '' };
+  } catch (error) {
+    return { sent: false, skipped: false, reason: 'request_failed', error: error.message };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, async (req, res) => {
   try {
     await startupReady;
@@ -9373,6 +9517,14 @@ app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, asy
     const allowedStatuses = new Set(['new', 'reviewing', 'answered', 'closed']);
     const now = new Date().toISOString();
     const actor = req.session?.name || req.session?.username || 'Yönetici';
+    const { data: previousSubmission, error: previousSubmissionError } = await supabase
+      .from('public_question_submissions')
+      .select('id,public_user_id,submitter_name,submitter_email,question,answer_text,user_notified_at,status')
+      .eq('id', id)
+      .maybeSingle();
+    if (previousSubmissionError) throw new Error(previousSubmissionError.message);
+    if (!previousSubmission) return res.status(404).json({ error: 'Soru talebi bulunamadı.' });
+
     const updates = { updated_at: now };
     if (Object.prototype.hasOwnProperty.call(req.body || {}, 'adminNote') || Object.prototype.hasOwnProperty.call(req.body || {}, 'admin_note')) {
       updates.admin_note = adminNote;
@@ -9381,7 +9533,6 @@ app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, asy
       updates.answer_text = answerText;
       updates.answered_by = actor;
       updates.answered_at = now;
-      updates.user_notified_at = now;
       updates.user_seen_at = null;
       updates.status = 'answered';
     } else if (requestedStatus === 'answered') {
@@ -9397,6 +9548,32 @@ app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, asy
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return res.status(404).json({ error: 'Soru talebi bulunamadı.' });
+
+    let emailNotification = { sent: false, skipped: true, reason: 'not_answer_update' };
+    if (answerText) {
+      emailNotification = await sendPublicAnswerNotificationEmail({
+        ...data,
+        user_notified_at: previousSubmission.user_notified_at
+      });
+      if (emailNotification.sent) {
+        const notifiedAt = new Date().toISOString();
+        const { data: notifiedSubmission, error: notifyUpdateError } = await supabase
+          .from('public_question_submissions')
+          .update({ user_notified_at: notifiedAt, updated_at: notifiedAt })
+          .eq('id', data.id)
+          .select('*')
+          .maybeSingle();
+        if (notifyUpdateError) {
+          console.error('Public cevap maili gönderildi ancak user_notified_at güncellenemedi:', notifyUpdateError.message);
+          emailNotification = { ...emailNotification, warning: 'notify_timestamp_update_failed' };
+        } else if (notifiedSubmission) {
+          Object.assign(data, notifiedSubmission);
+        }
+      } else if (!emailNotification.skipped) {
+        console.error('Public cevap maili gönderilemedi:', emailNotification);
+      }
+    }
+
     await recordAdminAction(req, {
       action: 'public_question.answer',
       targetType: 'public_question_submission',
@@ -9408,10 +9585,11 @@ app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, asy
         requestedStatus,
         answered: Boolean(answerText),
         answerLength: answerText.length,
-        hasAdminNote: Boolean(adminNote)
+        hasAdminNote: Boolean(adminNote),
+        emailNotification
       }
     });
-    res.json({ success: true, submission: data });
+    res.json({ success: true, submission: data, emailNotification });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }

@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-17 Public Soru Cevaplandı Maili
+
+- Admin panelinde public soru talebine cevap yazıldığında oturum açmış ve
+  e-postası olan kullanıcıya cevaplandı maili gönderme akışı eklendi.
+- Cevap kaydı önce güvenle yazılır; mail gönderimi ayrı yan işlem olarak çalışır.
+  Mail servisi hata verirse cevap kaydı bozulmaz, sonuç admin action metadata
+  içine `emailNotification` olarak yazılır.
+- Mail gönderimi Resend API üzerinden yapılır. Canlıda aktif olması için
+  `RESEND_API_KEY` Vercel Production ortamına eklenmelidir. Gönderen adresi
+  varsayılan olarak `Dini Sorular ve Cevaplar Arşivi <no-reply@arsiv.ibrahimlive.ai>`;
+  gerekirse `PUBLIC_ANSWER_EMAIL_FROM` ile değiştirilebilir.
+- Mükerrer maili önlemek için daha önce `user_notified_at` dolu olan kayıtlara
+  tekrar mail gönderilmez. Başarılı mailden sonra `user_notified_at` işaretlenir.
+- Yerel doğrulama: `npm.cmd run check` başarılı; 161/161 test geçti. Vercel env
+  kontrolünde `RESEND_API_KEY` henüz yok.
+
 ## 2026-09-16 Konu Rehberleri Bloglu Başlıklarla Sınırlandı
 
 - Kullanıcı ana sayfadaki `Konu rehberleri` alanında blogu olmayan konuların
