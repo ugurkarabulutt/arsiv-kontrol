@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260916-nefs-topic-guide-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260917-install-banner-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -511,6 +511,21 @@ function header(active) {
   ];
   return `
     <header class="pa-header">
+      <div class="pa-install-banner" data-install-banner hidden>
+        <div class="pa-install-main">
+          <img class="pa-install-icon" src="${publicArchiveAssetHref('app-icon-maskable-512.png')}" alt="" aria-hidden="true" width="512" height="512" decoding="async">
+          <span class="pa-install-copy">
+            <strong data-install-title>Telefona ekleyin</strong>
+            <small data-install-subtitle>Arşive tek dokunuşla ulaşın.</small>
+          </span>
+        </div>
+        <button class="pa-install-action" type="button" data-install-action>Ekle</button>
+        <button class="pa-install-close" type="button" data-install-dismiss aria-label="Bu öneriyi kapat">×</button>
+        <div class="pa-install-help" data-install-ios-help hidden>
+          <span>${iconSvg('share-2')}</span>
+          <p>iPhone’da paylaş simgesine dokunun, <strong>Ana Ekrana Ekle</strong> seçin ve <strong>Ekle</strong> ile tamamlayın.</p>
+        </div>
+      </div>
       <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
       <nav class="pa-desktop-nav" aria-label="Ana gezinme">
         ${nav.map(([label, url, key]) => `<a class="${active === key ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
@@ -3981,6 +3996,123 @@ function renderShell({ title, description, active, content, status = 200, questi
           window.removeEventListener('scroll', update);
         });
       }
+      function bindAddToHomeBanner() {
+        var root = document.documentElement;
+        var banner = document.querySelector('[data-install-banner]');
+        if (!banner) {
+          root.removeAttribute('data-pa-install-visible');
+          root.removeAttribute('data-pa-install-expanded');
+          return;
+        }
+        var action = banner.querySelector('[data-install-action]');
+        var dismiss = banner.querySelector('[data-install-dismiss]');
+        var title = banner.querySelector('[data-install-title]');
+        var subtitle = banner.querySelector('[data-install-subtitle]');
+        var iosHelp = banner.querySelector('[data-install-ios-help]');
+        var dismissKey = 'dsca-install-banner-dismissed-at';
+        var installedKey = 'dsca-install-banner-installed';
+        var dismissedMs = 30 * 24 * 60 * 60 * 1000;
+        var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+        function cleanPath(pathname) {
+          return String(pathname || '/').replace(/\\/+$/, '') || '/';
+        }
+        function isHomeRoute() {
+          var base = '${PREVIEW_BASE}' || '';
+          var path = cleanPath(window.location.pathname);
+          return path === cleanPath(base || '/') || path === '/';
+        }
+        function storageGet(key) {
+          try { return localStorage.getItem(key); } catch (error) { return ''; }
+        }
+        function storageSet(key, value) {
+          try { localStorage.setItem(key, value); } catch (error) {}
+        }
+        function storageRemove(key) {
+          try { localStorage.removeItem(key); } catch (error) {}
+        }
+        function recentlyDismissed() {
+          var dismissedAt = Number(storageGet(dismissKey) || 0);
+          return dismissedAt && Date.now() - dismissedAt < dismissedMs;
+        }
+        function hide(persist) {
+          banner.hidden = true;
+          if (iosHelp) iosHelp.hidden = true;
+          root.removeAttribute('data-pa-install-visible');
+          root.removeAttribute('data-pa-install-expanded');
+          if (persist) storageSet(dismissKey, String(Date.now()));
+        }
+        function show(mode) {
+          if (!isHomeRoute() || isStandalone || storageGet(installedKey) === 'true' || recentlyDismissed()) {
+            hide(false);
+            return;
+          }
+          if (mode !== 'ios' && mode !== 'native') {
+            hide(false);
+            return;
+          }
+          banner.setAttribute('data-install-mode', mode);
+          if (title) title.textContent = 'Telefona ekleyin';
+          if (subtitle) subtitle.textContent = mode === 'ios' ? 'Ana ekrana ekleyip hızlı açın.' : 'Arşive tek dokunuşla ulaşın.';
+          if (action) action.textContent = mode === 'ios' ? 'Nasıl?' : 'Ekle';
+          banner.hidden = false;
+          root.setAttribute('data-pa-install-visible', 'true');
+        }
+        function refresh() {
+          if (isIOS) show('ios');
+          else if (window.__paInstallOffer) show('native');
+          else hide(false);
+        }
+        window.__paInstallBannerRefresh = refresh;
+        if (!window.__paInstallOfferBound) {
+          window.__paInstallOfferBound = true;
+          window.addEventListener('before' + 'install' + 'pro' + 'mpt', function(event){
+            event.preventDefault();
+            window.__paInstallOffer = event;
+            storageRemove(dismissKey);
+            if (typeof window.__paInstallBannerRefresh === 'function') window.__paInstallBannerRefresh();
+          });
+          window.addEventListener('appinstalled', function(){
+            window.__paInstallOffer = null;
+            storageSet(installedKey, 'true');
+            if (typeof window.__paInstallBannerRefresh === 'function') window.__paInstallBannerRefresh();
+          });
+        }
+        function onAction() {
+          var mode = banner.getAttribute('data-install-mode');
+          if (mode === 'ios') {
+            if (iosHelp) iosHelp.hidden = false;
+            root.setAttribute('data-pa-install-expanded', 'true');
+            return;
+          }
+          var installOffer = window.__paInstallOffer;
+          if (!installOffer || typeof installOffer['pro' + 'mpt'] !== 'function') {
+            hide(false);
+            return;
+          }
+          installOffer['pro' + 'mpt']();
+          Promise.resolve(installOffer.userChoice).then(function(choice){
+            window.__paInstallOffer = null;
+            if (choice && choice.outcome === 'accepted') storageSet(installedKey, 'true');
+            else storageSet(dismissKey, String(Date.now()));
+            hide(false);
+          }).catch(function(){
+            hide(true);
+          });
+        }
+        function onScrollAway() {
+          if (window.scrollY > 22) hide(false);
+        }
+        if (action) action.addEventListener('click', onAction);
+        if (dismiss) dismiss.addEventListener('click', function(){ hide(true); });
+        window.addEventListener('scroll', onScrollAway, { passive: true });
+        refresh();
+        addPageCleanup(function(){
+          if (action) action.removeEventListener('click', onAction);
+          window.removeEventListener('scroll', onScrollAway);
+          if (window.__paInstallBannerRefresh === refresh) window.__paInstallBannerRefresh = null;
+        });
+      }
       function bindPublicAuthTabs() {
         var panel = document.querySelector('[data-public-auth]');
         if (!panel) return;
@@ -4525,6 +4657,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindActiveStatsCounters();
         bindScrollTopControl();
         bindShrinkingHeader();
+        bindAddToHomeBanner();
         bindPublicAuthTabs();
         bindPublicEmailAuth();
         bindFastPublicNavigation();

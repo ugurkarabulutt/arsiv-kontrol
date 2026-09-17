@@ -4626,3 +4626,13 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Blogda kaynakca, sohbet kodu, PDF hazirlama notu, dis kaynak linki veya koseli parantezli
   kaynak numarasi birakilmadi; ilgili ayet bloklari URL'siz site ici delil karti olarak
   tutuldu.
+
+## 2026-09-17 Public uygulamaya ekle banner'i
+
+- Public ana sayfa header ustune kompakt cam efektli `Telefona ekleyin` banner'i eklendi.
+- Android/Chromium tarafinda `beforeinstallprompt` yakalanirsa `Ekle` butonu gercek PWA
+  kurulum prompt'unu acar; iOS Safari tarafinda otomatik prompt desteklenmedigi icin buton
+  kisa `Paylas > Ana Ekrana Ekle` yonergesi acar.
+- Banner yalniz ana sayfada, standalone/kurulu degilken ve kullanici son 30 gunde kapatmamisken
+  gorunur. Asagi scroll'da kaybolur; carpiya basilinca root yukseklik attribute'lari kalkar ve
+  header/govdede bosluk kalmaz.

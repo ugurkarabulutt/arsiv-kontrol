@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260916-nefs-topic-guide-v1"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260917-install-banner-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,16 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260916-nefs-topic-guide-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260916-nefs-topic-guide-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260917-install-banner-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260917-install-banner-v1"/);
+  assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
+  assert.match(home, /Telefona ekleyin/);
+  assert.match(home, /data-install-action/);
+  assert.match(home, /data-install-dismiss/);
+  assert.match(home, /data-install-ios-help hidden/);
+  assert.match(home, /before' \+ 'install' \+ 'pro' \+ 'mpt/);
+  assert.match(home, /dsca-install-banner-dismissed-at/);
+  assert.match(home, /data-pa-install-visible/);
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);

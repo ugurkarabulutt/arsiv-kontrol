@@ -1326,7 +1326,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260916-nefs-topic-guide-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260917-install-banner-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1336,7 +1336,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260916-nefs-topic-guide-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260917-install-banner-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1371,7 +1371,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260916-nefs-topic-guide-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260917-install-banner-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
@@ -1404,6 +1404,12 @@ for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="25
 }
 for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="googlebot" content="noindex,nofollow"', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'rel="sitemap" type="application/xml" title="Sitemap"', 'rel="alternate" type="text/plain" title="LLMs.txt"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
   assert(homePreview.includes(marker), `Public sosyal/app meta marker eksik: ${marker}`);
+}
+for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
+  assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
+}
+for (const marker of ['--pa-install-banner-height', ':root[data-pa-install-visible="true"]:not([data-pa-scrolled="true"])', ':root[data-pa-scrolled="true"] .pa-install-banner', '.pa-install-banner[hidden]', '.pa-install-action', '.pa-install-help']) {
+  assert(publicCss.includes(marker), `Public install banner CSS marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
 assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
