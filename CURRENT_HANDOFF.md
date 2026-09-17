@@ -4,6 +4,12 @@
 
 - Admin panelinde public soru talebine cevap yazıldığında oturum açmış ve
   e-postası olan kullanıcıya cevaplandı maili gönderme akışı eklendi.
+- Public soru gönderimi başarılı olunca aynı mail altyapısı üzerinden kullanıcıya
+  `Sorunuz bize ulaştı` maili gönderilir. Soru kaydı mail sonucuna bağlı
+  değildir; mail hatası soru gönderimini bozmaz.
+- Soru Sor ekranındaki form notu ve başarı mesajı kullanıcıya cevabın e-posta
+  ile bildirileceğini ve hesabındaki gönderdiği sorular bölümünden de
+  görülebileceğini açıkça söyler.
 - Cevap kaydı önce güvenle yazılır; mail gönderimi ayrı yan işlem olarak çalışır.
   Mail servisi hata verirse cevap kaydı bozulmaz, sonuç admin action metadata
   içine `emailNotification` olarak yazılır.
@@ -13,8 +19,9 @@
   gerekirse `PUBLIC_ANSWER_EMAIL_FROM` ile değiştirilebilir.
 - Mükerrer maili önlemek için daha önce `user_notified_at` dolu olan kayıtlara
   tekrar mail gönderilmez. Başarılı mailden sonra `user_notified_at` işaretlenir.
-- Yerel doğrulama: `npm.cmd run check` başarılı; 161/161 test geçti. Vercel env
-  kontrolünde `RESEND_API_KEY` henüz yok.
+- Public asset sürümü `20260917-question-received-email-v1`. Vercel env
+  kontrolünde bu değişiklik öncesi `RESEND_API_KEY` yoktu; kullanıcı anahtarı
+  ayrıca ekliyor.
 
 ## 2026-09-16 Konu Rehberleri Bloglu Başlıklarla Sınırlandı
 

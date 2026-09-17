@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260917-install-banner-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260917-question-received-email-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -2659,7 +2659,7 @@ function renderAsk() {
               <span>Kişisel veya mahrem bilgi yazmadığımı anladım.</span>
             </label>
             <button class="pa-button" type="submit">Soruyu Gönder</button>
-            <p class="pa-form-note">Gönderdiğiniz soru kayda alınır. Cevap süresi ve yayın durumu sorunun içeriğine göre değişebilir.</p>
+            <p class="pa-form-note">Sorunuz kayda alınır. Cevap hazırlandığında size e-posta ile haber verilir; cevabınızı hesabınızda gönderdiğiniz sorular bölümünde de görebilirsiniz.</p>
             <p class="pa-form-status" data-question-form-status aria-live="polite"></p>
           </form>
         </section>
@@ -4203,7 +4203,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               return;
             }
             form.reset();
-            if (status) status.textContent = 'Sorunuz kaydedildi. Gönderdiğiniz sorular bölümünde görünecek.';
+            if (status) status.textContent = 'Sorunuz başarıyla alındı. Cevap hazırlandığında size e-posta ile haber vereceğiz; cevabınızı hesabınızda gönderdiğiniz sorular bölümünde de görebilirsiniz.';
             if (window.__publicArchiveSession) await loadPublicUserQuestions(window.__publicArchiveSession);
             var questionsSection = document.querySelector('[data-user-questions]');
             if (questionsSection) {

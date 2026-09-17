@@ -9504,6 +9504,120 @@ async function sendPublicAnswerNotificationEmail(submission) {
   }
 }
 
+function renderPublicQuestionReceivedEmailHtml({ name, question, accountUrl }) {
+  const safeName = escapeHtmlServer(name || 'Muhterem kullanıcı');
+  const safeQuestion = escapeHtmlServer(question || 'Gönderdiğiniz soru');
+  const safeAccountUrl = escapeHtmlServer(accountUrl);
+  return `<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sorunuz bize ulaştı</title>
+</head>
+<body style="margin:0;background:#f4f1e8;color:#14241d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1e8;padding:28px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#071610;border-radius:28px;overflow:hidden;border:1px solid rgba(120,199,159,.26);box-shadow:0 24px 70px rgba(7,22,16,.18);">
+          <tr>
+            <td style="padding:30px 28px 10px;">
+              <div style="display:inline-block;padding:8px 12px;border-radius:999px;background:rgba(137,220,174,.12);color:#8fe0b2;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Dini Sorular ve Cevaplar Arşivi</div>
+              <h1 style="margin:22px 0 8px;color:#fffaf0;font-size:32px;line-height:1.12;font-weight:800;">Sorunuz bize ulaştı.</h1>
+              <p style="margin:0;color:rgba(255,250,240,.72);font-size:16px;line-height:1.7;">${safeName}, sorunuzu aldık. Cevap hazırlandığında size e-posta ile haber vereceğiz.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px 0;">
+              <div style="background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);border-radius:20px;padding:20px;">
+                <div style="color:#8fe0b2;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Kayda alınan soru</div>
+                <p style="margin:0;color:#fffaf0;font-size:18px;line-height:1.55;font-weight:700;">${safeQuestion}</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px 28px 0;">
+              <div style="background:rgba(143,224,178,.10);border-left:4px solid #8fe0b2;border-radius:18px;padding:18px 20px;">
+                <p style="margin:0;color:rgba(255,250,240,.84);font-size:15px;line-height:1.75;">Cevabınızı hesabınızda, gönderdiğiniz sorular bölümünden de takip edebilirsiniz. Soru uygunluk ve yoğunluğa göre değerlendirilir.</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:26px 28px 32px;">
+              <a href="${safeAccountUrl}" style="display:inline-block;background:#8fe0b2;color:#071610;text-decoration:none;border-radius:999px;padding:15px 24px;font-size:15px;font-weight:800;box-shadow:0 12px 34px rgba(143,224,178,.28);">Sorularımı Gör</a>
+              <p style="margin:18px 0 0;color:rgba(255,250,240,.56);font-size:12px;line-height:1.6;">Bu mail, hesabınızla soru gönderdiğiniz için otomatik gönderilmiştir.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function renderPublicQuestionReceivedEmailText({ name, question, accountUrl }) {
+  return [
+    `Merhaba ${name || ''}`.trim(),
+    '',
+    'Sorunuz bize ulaştı.',
+    '',
+    `Soru: ${question || 'Gönderdiğiniz soru'}`,
+    '',
+    'Cevap hazırlandığında size e-posta ile haber vereceğiz.',
+    'Cevabınızı hesabınızda, gönderdiğiniz sorular bölümünden de takip edebilirsiniz.',
+    '',
+    `Sorularımı görmek için: ${accountUrl}`
+  ].join('\n');
+}
+
+async function sendPublicQuestionReceivedEmail(submission) {
+  const recipient = String(submission?.submitter_email || '').trim();
+  if (!submission?.public_user_id || !recipient) return { sent: false, skipped: true, reason: 'missing_logged_in_recipient' };
+  if (!RESEND_API_KEY) return { sent: false, skipped: true, reason: 'missing_resend_api_key' };
+
+  const accountUrl = publicQuestionAccountUrl();
+  const payload = {
+    from: PUBLIC_ANSWER_EMAIL_FROM,
+    to: [recipient],
+    subject: 'Sorunuz bize ulaştı',
+    html: renderPublicQuestionReceivedEmailHtml({
+      name: submission.submitter_name || '',
+      question: submission.question || '',
+      accountUrl
+    }),
+    text: renderPublicQuestionReceivedEmailText({
+      name: submission.submitter_name || '',
+      question: submission.question || '',
+      accountUrl
+    })
+  };
+  if (PUBLIC_ANSWER_EMAIL_REPLY_TO) payload.reply_to = PUBLIC_ANSWER_EMAIL_REPLY_TO;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 9000);
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    const body = await safeJson(response);
+    if (!response.ok) {
+      return { sent: false, skipped: false, reason: 'resend_error', status: response.status, error: body?.message || body?.error || 'Mail gönderilemedi.' };
+    }
+    return { sent: true, id: body?.id || '' };
+  } catch (error) {
+    return { sent: false, skipped: false, reason: 'request_failed', error: error.message };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, async (req, res) => {
   try {
     await startupReady;
@@ -14534,8 +14648,12 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
       status: 'new',
       source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
       user_agent: String(req.headers['user-agent'] || '').slice(0, 500)
-    }).select('id,created_at,status').single();
+    }).select('id,public_user_id,submitter_name,submitter_email,question,created_at,status').single();
     if (error) throw new Error(error.message);
+    const receivedEmailNotification = await sendPublicQuestionReceivedEmail(data);
+    if (!receivedEmailNotification.skipped && !receivedEmailNotification.sent) {
+      console.error('Public soru alindi maili gönderilemedi:', receivedEmailNotification);
+    }
     await recordAdminAction(req, {
       action: 'public_question.submit',
       actor: { id: user.id, name: user.name, email: user.email, role: 'public_user' },
@@ -14548,10 +14666,11 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
         category,
         topic,
         source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
-        questionLength: question.length
+        questionLength: question.length,
+        receivedEmailNotification
       }
     });
-    res.json({ success: true, submission: data });
+    res.json({ success: true, submission: data, receivedEmailNotification });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
