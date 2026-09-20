@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260920-cta-icon-restore-v4';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260920-mobile-search-focus-v5';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -664,9 +664,10 @@ function cookieConsentUi() {
   `;
 }
 
-function searchBox(value = '', label = 'Arşivde ara') {
+function searchBox(value = '', label = 'Arşivde ara', options = {}) {
+  const homeHeroAttribute = options.homeHero ? ' data-home-hero-search' : '';
   return `
-    <div class="pa-live-search" data-live-search>
+    <div class="pa-live-search" data-live-search${homeHeroAttribute}>
       <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama" data-live-search-form data-live-search-url="${PREVIEW_BASE}/api/public-search">
         <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
         <span class="pa-search-leading">${iconSvg('search')}</span>
@@ -2036,7 +2037,7 @@ function renderHome() {
           <div class="pa-hero-copy">
             <h1>Dini Sorular ve Cevaplar Arşivi</h1>
             <p>Dr. Abdulcabbar Boran’ın Kur’ân ayetleriyle açıkladığı hidayet, mürşid, zikir ve teslimiyet gibi temel konuları; ilgili sorular, cevaplar ve delillerle birlikte okuyun.</p>
-            ${searchBox()}
+            ${searchBox('', 'Arşivde ara', { homeHero: true })}
             ${heroConceptLane()}
           </div>
           ${stillLife()}
@@ -3499,6 +3500,77 @@ function renderShell({ title, description, active, content, status = 200, questi
           var hintTimer = 0;
           var requestId = 0;
           var controller = null;
+          var root = document.documentElement;
+          var isHomeHeroSearch = shell.hasAttribute('data-home-hero-search');
+          var focusAnchorY = 0;
+          var focusGuardUntil = 0;
+          var focusGuardActive = false;
+          var focusRestoreTimers = [];
+          function isIosTouchDevice() {
+            var userAgent = navigator.userAgent || '';
+            return /iPad|iPhone|iPod/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          }
+          function canStabilizeHomeHeroFocus() {
+            return isHomeHeroSearch
+              && isIosTouchDevice()
+              && window.matchMedia
+              && window.matchMedia('(max-width: 899px)').matches
+              && window.scrollY <= 48;
+          }
+          function clearFocusRestoreTimers() {
+            focusRestoreTimers.forEach(function(timerId){ window.clearTimeout(timerId); });
+            focusRestoreTimers = [];
+          }
+          function finishFocusGuard() {
+            clearFocusRestoreTimers();
+            focusGuardActive = false;
+            focusGuardUntil = 0;
+            root.removeAttribute('data-pa-search-keyboard');
+          }
+          function restoreFocusAnchor() {
+            if (!focusGuardActive || Date.now() > focusGuardUntil || document.activeElement !== input) return;
+            if (Math.abs(window.scrollY - focusAnchorY) > 1) window.scrollTo(0, focusAnchorY);
+            root.removeAttribute('data-pa-scrolled');
+          }
+          function beginFocusGuard(anchorY) {
+            if (!canStabilizeHomeHeroFocus()) return false;
+            clearFocusRestoreTimers();
+            focusAnchorY = Math.max(0, Math.round(Number(anchorY) || 0));
+            focusGuardUntil = Date.now() + 900;
+            focusGuardActive = true;
+            root.setAttribute('data-pa-search-keyboard', 'true');
+            [0, 60, 160, 320, 560, 880].forEach(function(delay, index, delays){
+              focusRestoreTimers.push(window.setTimeout(function(){
+                restoreFocusAnchor();
+                if (index === delays.length - 1) finishFocusGuard();
+              }, delay));
+            });
+            return true;
+          }
+          function focusInputWithoutScroll(event) {
+            if (!canStabilizeHomeHeroFocus()) {
+              input.focus();
+              return;
+            }
+            var anchorY = window.scrollY;
+            if (event && event.cancelable) event.preventDefault();
+            beginFocusGuard(anchorY);
+            try {
+              input.focus({ preventScroll: true });
+            } catch (error) {
+              input.focus();
+            }
+            window.requestAnimationFrame(restoreFocusAnchor);
+          }
+          function onFormPointerDown(event) {
+            if (submitButton && submitButton.contains(event.target)) return;
+            if (document.activeElement === input || !canStabilizeHomeHeroFocus()) return;
+            focusInputWithoutScroll(event);
+          }
+          function onViewportChange() {
+            fitPanelToViewport();
+            restoreFocusAnchor();
+          }
           function routeHref(type, slug) {
             return '${PREVIEW_BASE}/' + (type === 'category' ? 'kategori/' : 'soru/') + encodeURIComponent(slug || '');
           }
@@ -3742,17 +3814,22 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           updateInputState();
           bindAnimatedHint();
+          form.addEventListener('pointerdown', onFormPointerDown, { passive: false });
           form.addEventListener('click', function(event){
             if (submitButton && submitButton.contains(event.target)) return;
-            input.focus();
+            if (document.activeElement !== input) focusInputWithoutScroll(event);
           });
           form.addEventListener('submit', submitLiveSearch);
           input.addEventListener('input', scheduleSearch);
           input.addEventListener('focus', function(){
+            if (!focusGuardActive) beginFocusGuard(window.scrollY);
             updateInputState();
             if (input.value.trim().length >= 2) scheduleSearch();
           });
-          input.addEventListener('blur', updateInputState);
+          input.addEventListener('blur', function(){
+            finishFocusGuard();
+            updateInputState();
+          });
           input.addEventListener('keydown', function(event){
             if (event.key === 'Escape') closePanel();
             if (event.key === 'Enter') {
@@ -3761,7 +3838,10 @@ function renderShell({ title, description, active, content, status = 200, questi
             }
           });
           window.addEventListener('resize', fitPanelToViewport, { passive: true });
-          if (window.visualViewport) window.visualViewport.addEventListener('resize', fitPanelToViewport, { passive: true });
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', onViewportChange, { passive: true });
+            window.visualViewport.addEventListener('scroll', onViewportChange, { passive: true });
+          }
           function onDocumentClick(event) {
             if (!shell.contains(event.target)) closePanel();
           }
@@ -3770,9 +3850,14 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.clearTimeout(timer);
             window.clearTimeout(loadingTimer);
             window.clearTimeout(hintTimer);
+            finishFocusGuard();
             if (controller) controller.abort();
+            form.removeEventListener('pointerdown', onFormPointerDown);
             window.removeEventListener('resize', fitPanelToViewport);
-            if (window.visualViewport) window.visualViewport.removeEventListener('resize', fitPanelToViewport);
+            if (window.visualViewport) {
+              window.visualViewport.removeEventListener('resize', onViewportChange);
+              window.visualViewport.removeEventListener('scroll', onViewportChange);
+            }
             document.removeEventListener('click', onDocumentClick);
           });
         });
@@ -4273,6 +4358,10 @@ function renderShell({ title, description, active, content, status = 200, questi
       function bindShrinkingHeader() {
         var root = document.documentElement;
         var update = function(){
+          if (root.getAttribute('data-pa-search-keyboard') === 'true') {
+            root.removeAttribute('data-pa-scrolled');
+            return;
+          }
           if (window.scrollY > 16) root.setAttribute('data-pa-scrolled', 'true');
           else root.removeAttribute('data-pa-scrolled');
         };
@@ -4387,6 +4476,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           });
         }
         function onScrollAway() {
+          if (root.getAttribute('data-pa-search-keyboard') === 'true') return;
           if (window.scrollY > 22) hide(false);
         }
         if (action) action.addEventListener('click', onAction);
@@ -4510,7 +4600,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v18:';
+        var cachePrefix = 'dsca-page-cache:v19:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
