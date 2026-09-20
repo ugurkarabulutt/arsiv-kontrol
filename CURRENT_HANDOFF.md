@@ -15,6 +15,10 @@
   `public_newsletter_subscriptions` tablosuna yalnız server-side service role ile
   yazılır; RLS açık, `anon` ve `authenticated` erişimi kapalıdır. Geçiş canlı
   Supabase projesine uygulandı ve erişim ayrı SQL sorgusuyla doğrulandı.
+- Abonelik alanı son kullanıcı geri bildirimiyle belirgin bir `E-posta bülteni`
+  kutusuna dönüştürüldü. E-posta ikonu, görünür alan etiketi, açık kayıt amacı
+  ve ayrı form başlığı eklendi. Mobilde adres alanı ile buton alt alta yerleşir;
+  input `16px` kaldığı için iPhone odak yakınlaştırması tetiklenmez.
 - iPhone/iPad'de paylaşma aksiyonları ve telefona ekleme yardımı Apple'ın yukarı
   oklu kutu paylaşım simgesini kullanır; diğer platformlarda mevcut genel simge
   korunur.

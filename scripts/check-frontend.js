@@ -1073,6 +1073,7 @@ for (const asset of [
   'icons/edit.svg',
   'icons/eye.svg',
   'icons/ask-question.svg',
+  'icons/mail.svg',
   'icons/share-2.svg',
   'icons/share-ios.svg',
   'icons/copy.svg',
@@ -1342,7 +1343,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260920-cookie-newsletter-ios-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260920-newsletter-refine-v2'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1352,7 +1353,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260920-cookie-newsletter-ios-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260920-newsletter-refine-v2"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1387,7 +1388,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260920-cookie-newsletter-ios-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260920-newsletter-refine-v2', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
@@ -1427,13 +1428,13 @@ for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefo
 for (const marker of ['pa-ios-share-icon', "iconSvg('share-ios'", 'navigator.maxTouchPoints', "navigator.platform === 'MacIntel'"]) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public iOS paylasim ikonu marker eksik: ${marker}`);
 }
-for (const marker of ['data-newsletter-form', 'data-newsletter-endpoint="/public-preview/api/newsletter/subscribe"', 'Yeni içerik duyurularını e-posta ile almayı kabul ediyorum', 'bindNewsletterForms', 'data-newsletter-status']) {
+for (const marker of ['data-newsletter-form', 'data-newsletter-endpoint="/public-preview/api/newsletter/subscribe"', 'E-posta bülteni', 'Yeni içerikler doğrudan e-postanıza gelsin.', 'E-posta ile haberdar olun', 'Yeni içerik duyurularını e-posta ile almayı kabul ediyorum', "iconSvg('mail')", 'bindNewsletterForms', 'data-newsletter-status']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public abonelik formu marker eksik: ${marker}`);
 }
 for (const marker of ['data-cookie-banner hidden', 'data-cookie-reject', 'data-cookie-preferences', 'data-cookie-accept', 'data-cookie-modal hidden', 'dsca-cookie-consent:v1', 'bindCookieConsent', 'analyticsConsentGranted', 'clearAnalyticsStorage', 'X-Analytics-Consent', 'consentVersion: cookieConsentVersion']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public cerez tercihi marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-cookie-banner', '.pa-cookie-actions', '.pa-cookie-modal', '.pa-cookie-dialog', '.pa-newsletter', '.pa-newsletter-input-row', '.pa-footer-preferences']) {
+for (const marker of ['.pa-cookie-banner', '.pa-cookie-actions', '.pa-cookie-modal', '.pa-cookie-dialog', '.pa-newsletter', '.pa-newsletter-kicker', '.pa-newsletter-form-heading', '.pa-newsletter-input-row', '.pa-footer-preferences', 'font-size: 16px']) {
   assert(publicCss.includes(marker), `Public cerez/abonelik CSS marker eksik: ${marker}`);
 }
 for (const marker of ['--pa-install-banner-height', ':root[data-pa-install-visible="true"]:not([data-pa-scrolled="true"])', ':root[data-pa-scrolled="true"] .pa-install-banner', '.pa-install-banner[hidden]', '.pa-install-action', '.pa-install-help']) {
@@ -1509,7 +1510,7 @@ for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-v
 for (const marker of ['bindLiveSearchControls', 'data-live-search-url', 'pa-live-search-panel', 'AbortController', '/api/public-search', 'renderInstantResults', 'localResults', 'data-live-search-hint', 'submitLiveSearch', 'clientSearchTokenForms', 'window.__publicArchiveNavigateTo']) {
   assert(publicRendererSource.includes(marker) || server.includes(marker) || publicCss.includes(marker), `Public canli arama marker eksik: ${marker}`);
 }
-for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v15', 'maxCachedHtmlLength', 'prefetchCard', 'observePrefetchCandidates', 'IntersectionObserver', "rootMargin: '1200px 0px 1200px 0px'", "addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]')", "addSelector('.pa-page a[href], .pa-mobile-nav a[href]')", '.slice(0, 22)', 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, navigationFallbackMs);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;']) {
+for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v16', 'maxCachedHtmlLength', 'prefetchCard', 'observePrefetchCandidates', 'IntersectionObserver', "rootMargin: '1200px 0px 1200px 0px'", "addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]')", "addSelector('.pa-page a[href], .pa-mobile-nav a[href]')", '.slice(0, 22)', 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, navigationFallbackMs);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;']) {
   assert(publicRendererSource.includes(marker), `Public ana sayfa ilk tik hiz marker eksik: ${marker}`);
 }
 for (const marker of ['PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS', 'publicArchiveSearchIntentTokens', 'publicArchiveRowIntentRank', 'publicArchiveSearchIndexCache', 'publicArchiveLiveSearchIndexCache', 'loadPublicArchiveSearchIndexRows', 'loadPublicArchiveLiveSearchIndexRows', 'publicArchiveSearchRowWithCategoryText']) {
@@ -1527,7 +1528,7 @@ for (const marker of ['PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT', 'loadPublicArchive
 for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
 }
-for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v15', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
+for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v16', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');

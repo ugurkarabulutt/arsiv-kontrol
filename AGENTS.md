@@ -13,9 +13,12 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   değiştirilebilir. E-posta abonelikleri `public_newsletter_subscriptions`
   tablosunda tutulur; RLS açık, public/anon/authenticated erişimi kapalı, yazma
   yalnız rate-limitli backend üzerinden service role ile yapılır. Footer onayı
-  zorunludur. iOS paylaşım aksiyonlarında `share-ios.svg`, diğer platformlarda
-  genel paylaşım simgesi kullanılmalıdır. Public asset sürümü
-  `20260920-cookie-newsletter-ios-v1`, hızlı navigasyon cache sürümü `v15`.
+  zorunludur. Abonelik alanı `E-posta bülteni` ve `E-posta ile haberdar olun`
+  ifadeleriyle ne yapılacağını açıkça göstermeli; mobil e-posta input'u iOS'un
+  odakta sayfayı yakınlaştırmaması için en az `16px` kalmalıdır. iOS paylaşım
+  aksiyonlarında `share-ios.svg`, diğer platformlarda genel paylaşım simgesi
+  kullanılmalıdır. Public asset sürümü `20260920-newsletter-refine-v2`, hızlı
+  navigasyon cache sürümü `v16`.
   Runtime commit `a9fc453`, production deployment
   `dpl_7RKqa9vtvM3e4n7EkBwyM7pNBLtk`, canlı alias
   `https://arsiv.ibrahimlive.ai`.

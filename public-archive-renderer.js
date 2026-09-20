@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260920-cookie-newsletter-ios-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260920-newsletter-refine-v2';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -556,14 +556,19 @@ function footer() {
     <footer class="pa-footer">
       <section class="pa-newsletter" aria-labelledby="pa-newsletter-title">
         <div class="pa-newsletter-copy">
-          <p class="pa-kicker">Yeni içerikler</p>
-          <h2 id="pa-newsletter-title">Arşivdeki yeni rehberleri kaçırmayın.</h2>
-          <p>Yeni konu rehberleri ve öne çıkan cevaplar yayımlandığında kısa bir e-posta alın.</p>
+          <p class="pa-newsletter-kicker"><span>${iconSvg('mail')}</span>E-posta bülteni</p>
+          <h2 id="pa-newsletter-title">Yeni içerikler doğrudan e-postanıza gelsin.</h2>
+          <p>Yeni konu rehberleri ve öne çıkan cevaplar yayımlandığında size kısa bir e-posta gönderelim.</p>
         </div>
         <form class="pa-newsletter-form" data-newsletter-form data-newsletter-endpoint="${PREVIEW_BASE}/api/newsletter/subscribe">
-          <label class="pa-sr-only" for="pa-newsletter-email">E-posta adresiniz</label>
+          <div class="pa-newsletter-form-heading">
+            <strong>E-posta ile haberdar olun</strong>
+            <span>Yalnız yeni içerik yayımlandığında haber veriyoruz.</span>
+          </div>
+          <label class="pa-newsletter-field" for="pa-newsletter-email">E-posta adresiniz</label>
           <div class="pa-newsletter-input-row">
-            <input id="pa-newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="E-posta adresiniz" required>
+            <span class="pa-newsletter-input-icon">${iconSvg('mail')}</span>
+            <input id="pa-newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="ornek@mail.com" required>
             <button type="submit">
               <span>Abone Ol</span>
               ${iconSvg('arrow-right')}
@@ -4505,7 +4510,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v15:';
+        var cachePrefix = 'dsca-page-cache:v16:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
