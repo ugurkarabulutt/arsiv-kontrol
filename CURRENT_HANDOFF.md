@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-20 Tayy-i Mekân Cevabında Nefs Düzeltmesi
+
+- Public slug
+  `muhterem-hocam-tayy-i-mekan-ve-bast-i-zamani-aciklar-misiniz` olan
+  yayımlanmış cevapta yanlış `Nefis` kökü 11 yerde tespit edildi.
+- Kaynak history kaydı `8815747d-50b1-4ad3-9245-a20e77e40025` ve bağlı
+  `public_qa` kaydı tek transaction içinde güncellendi. `Nefis`, `Nefisine`,
+  `Nefisimizin`, `Nefise`, `Nefisiniz` ve `Nefis-i` kullanımları sırasıyla
+  `Nefs`, `Nefsine`, `Nefsimizin`, `Nefse`, `Nefsiniz` ve `Nefs-i` oldu.
+- Yalnız `history.corrected_text`, `public_qa.answer_text` ve
+  `public_qa.answer_paragraphs` değişti; soru, etiketler ve yayın/onay durumları
+  korundu. Eski ve yeni değerler
+  `single-content-correction-20260920-tayy-mekan-nefs` paket kimliğiyle üç
+  `content_correction_log` kaydında saklandı; ayrıca bir admin işlem kaydı
+  oluşturuldu.
+- Doğrulama: kaynak ve public cevap birebir eşit, paragraf listesi cevapla
+  eşleşiyor, yanlış `Nefis` sayısı sıfır ve kayıt hâlâ `published` /
+  `onaylandi`. Canlı URL `200`; HTML'de `Nefis` yok, `Nefs` ve `Nefsine`
+  mevcut.
+
 ## 2026-09-20 Yarım Canlı Cevap Denetime Geri Gönderildi
 
 - Public slug
