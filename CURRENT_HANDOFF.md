@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-20 iPhone Ana Sayfa Arama Odağı
+
+- Ana sayfa ilk açıldığında hero aramasına dokununca iOS Safari'nin klavye
+  açılırken sayfayı yukarı kaydırması düzeltildi. Yalnız ana sayfadaki hero
+  araması `data-home-hero-search` ile ayrıldı.
+- iPhone/iPad mobil görünümünde sayfa en üstteyken input doğrudan kullanıcı
+  dokunuşu içinde `focus({ preventScroll: true })` ile odaklanır. iOS klavye
+  animasyonu sırasında oluşabilecek geçici `scrollY` / `visualViewport`
+  kaydırması 900 ms boyunca başlangıç konumuna döndürülür; header ve telefona
+  ekleme bildirimi bu geçici hareketi gerçek kullanıcı kaydırması saymaz.
+- Koruma kalıcı scroll lock değildir. 900 ms sonunda kaldırılır; canlı testte
+  input odaklı kalırken manuel `scrollY=180` hareketi ve kompakt header yeniden
+  normal çalıştı. Arama sayfasındaki diğer inputlar bu davranıştan etkilenmez.
+- Public asset sürümü `20260920-mobile-search-focus-v5`, hızlı navigasyon cache
+  anahtarı `dsca-page-cache:v19` oldu.
+- Yerel `npm.cmd run check` 161/161 geçti. Preview deployment
+  `dpl_E7Gy197pAxZVxMXKzubshkebcey2`; preview ve canlı 390x844 Chrome iPhone
+  benzetiminde genişlik/scroll genişliği 390 px, input `16px`, odak sırasında
+  `scrollY=0`, header/başlık/input konumları değişmeden kaldı ve page error
+  oluşmadı.
+- Runtime commit `ac271c0`, production deployment
+  `dpl_HqDsMu2jErYGRdPurA3VWdW6PJfo`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health ok`, ana sayfa 200 ve yeni
+  asset/odak/cache işaretleri mevcut; `/admin` 200 ve `noindex, nofollow`.
+
 ## 2026-09-20 Çerez Tercihleri, Abonelik ve iPhone Paylaşımı
 
 - Public arşive ilk ziyarette görünen, içeriği engellemeyen çerez bildirimi

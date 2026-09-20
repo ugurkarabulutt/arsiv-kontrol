@@ -19,12 +19,20 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   aksiyonlarında `share-ios.svg`, diğer platformlarda genel paylaşım simgesi
   kullanılmalıdır. Ana sayfa soru CTA'sında konuşma balonlu önceki soru ikonu
   korunmalı; açık buton üzerindeki metin koyu ve WCAG AA üstü kontrastta
-  kalmalıdır. Public asset sürümü `20260920-cta-icon-restore-v4`, hızlı
-  navigasyon cache sürümü `v18`.
+  kalmalıdır. Ana sayfanın en üstündeki hero araması iPhone/iPad mobil
+  görünümünde ilk dokunuşta `focus({ preventScroll: true })` ile odaklanır;
+  klavye açılışındaki kısa `visualViewport` kaydırması 900 ms boyunca başlangıç
+  konumuna döndürülür ve header bunu gerçek sayfa kaydırması saymaz. Bu koruma
+  yalnız sayfa en üstteyken ve yalnız hero aramasında çalışır; süresi bitince
+  normal kullanıcı kaydırması tekrar serbesttir. Public asset sürümü
+  `20260920-mobile-search-focus-v5`, hızlı navigasyon cache sürümü `v19`.
   İlk runtime commit `a9fc453`; bülten arayüzü iyileştirmesi runtime commit
   `ab5849b`, production deployment `dpl_GnTP9XkhZLQoHaAc6wKTjao9wLXS`,
   soru CTA buton kontrastı ve önceki ikonun geri alınması runtime commit
   `67bcd4b`, production deployment `dpl_8dVkiT1BrQ8igFEmWiw6b4ab3wcU`,
+  iPhone hero arama odak düzeltmesi runtime commit `ac271c0`, preview
+  `dpl_E7Gy197pAxZVxMXKzubshkebcey2`, production deployment
+  `dpl_HqDsMu2jErYGRdPurA3VWdW6PJfo`,
   canlı alias `https://arsiv.ibrahimlive.ai`.
 
 - **2026-09-20 public arşiv arama otoritesi:** Ana sayfanın görünür H1'i marka ve
