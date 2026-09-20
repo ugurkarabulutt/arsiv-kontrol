@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260920-newsletter-refine-v2"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260920-cta-contrast-v3"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260920-newsletter-refine-v2"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260920-newsletter-refine-v2"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260920-cta-contrast-v3"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260920-cta-contrast-v3"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -116,7 +116,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<h1>Dini Sorular ve Cevaplar Arşivi<\/h1>/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
-  assert.match(home, /dsca-page-cache:v16/);
+  assert.match(home, /dsca-page-cache:v17/);
   assert.match(home, /data-newsletter-form/);
   assert.match(home, /data-newsletter-endpoint="\/api\/newsletter\/subscribe"/);
   assert.match(home, /E-posta bülteni/);
