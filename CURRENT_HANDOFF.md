@@ -40,16 +40,13 @@
   ölçek `1`, input yazı boyutu `16px` kaldı. Canlı ana sayfa yeni bülten
   işaretlerini taşıyor; `/health`, admin noindex, çerez politikası noindex ve
   onaysız abonelik `400` sınırı tekrar doğrulandı.
-- Ana sayfadaki `Aklınızda bir soru mu var?` CTA'sında konuşma balonu ikonu,
-  daha net `circle-help` soru ikonuyla değiştirildi. Simge 27px ve 2.2px çizgi;
-  açık buton üzerindeki metin `#17201C` yapıldı ve kontrast `16.39:1` ölçüldü.
-  Klavye odağı için altın renkli 3px odak halkası eklendi. Preview
-  `dpl_9N4kFUvh3Yrt97LdWCqy9baSr2CY`; 390px ve 1440px Playwright görsellerinde
-  taşma yok, hesaplanan ikon ve buton stilleri beklenen değerlerle eşleşiyor.
-  Runtime commit `e8c5d24`, production `dpl_FUzVjGsriWDLqCc9zrmZnEaesR7L`.
-  Canlı `/health`, ana sayfa asset/cache/ikon markerları, CTA CSS kuralları ve
-  `/admin` noindex doğrulandı. Canlı 390px görselinde viewport/scroll genişliği
-  390px, kart sağ kenarı 372px; ikon ve buton hesaplanan stilleri doğru.
+- Ana sayfadaki `Aklınızda bir soru mu var?` CTA'sında kısa süre denenmiş kare
+  içindeki `circle-help` ikonu kullanıcı geri bildirimiyle kaldırıldı. Final
+  görünüm önceki konuşma balonlu soru ikonu ve yuvarlak yarı saydam ikon alanıdır.
+  Açık buton üzerindeki koyu `#17201C` metin, `16.39:1` kontrast ve altın renkli
+  3px klavye odak halkası korundu. Preview `dpl_CkzQc9urdQEhWaSuLFPRR2c9kHEp`;
+  390px Playwright kontrolünde eski SVG yolu, `999px` yuvarlak ikon alanı,
+  yarı saydam zemin ve koyu buton metni doğrulandı; yatay taşma yok.
 
 ## 2026-09-20 Tayy-i Mekân Cevabında Nefs Düzeltmesi
 

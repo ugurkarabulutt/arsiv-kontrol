@@ -17,10 +17,10 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   ifadeleriyle ne yapılacağını açıkça göstermeli; mobil e-posta input'u iOS'un
   odakta sayfayı yakınlaştırmaması için en az `16px` kalmalıdır. iOS paylaşım
   aksiyonlarında `share-ios.svg`, diğer platformlarda genel paylaşım simgesi
-  kullanılmalıdır. Ana sayfa soru CTA'sında soru işareti en az `2.2px` çizgiyle
-  belirgin görünmeli; açık buton üzerindeki metin koyu ve WCAG AA üstü
-  kontrastta kalmalıdır. Public asset sürümü `20260920-cta-contrast-v3`, hızlı
-  navigasyon cache sürümü `v17`.
+  kullanılmalıdır. Ana sayfa soru CTA'sında konuşma balonlu önceki soru ikonu
+  korunmalı; açık buton üzerindeki metin koyu ve WCAG AA üstü kontrastta
+  kalmalıdır. Public asset sürümü `20260920-cta-icon-restore-v4`, hızlı
+  navigasyon cache sürümü `v18`.
   İlk runtime commit `a9fc453`; bülten arayüzü iyileştirmesi runtime commit
   `ab5849b`, production deployment `dpl_GnTP9XkhZLQoHaAc6wKTjao9wLXS`,
   soru CTA kontrast iyileştirmesi runtime commit `e8c5d24`, production
