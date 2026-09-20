@@ -22,6 +22,12 @@
   `dpl_GiSrTmi1vUNmSwEPGN57YPD1QATD`; masaüstü ve iPhone 390x844 Playwright
   görüntülerinde çakışma/taşma yok. Analitik ret/onay ve abonelik endpoint'leri
   canlı DB ile uçtan uca test edildi; geçici test satırları silindi.
+- Runtime commit `a9fc453`, production deployment
+  `dpl_7RKqa9vtvM3e4n7EkBwyM7pNBLtk`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa, noindex çerez
+  politikası, izin zorunlu abonelik endpoint'i ve `/admin` noindex kontrolü
+  geçti. iPhone user agent ile üst ekleme yardımı ve soru detayındaki paylaşım
+  ikonunun `share-ios` yollarını kullandığı ayrıca doğrulandı.
 
 ## 2026-09-20 Tayy-i Mekân Cevabında Nefs Düzeltmesi
 

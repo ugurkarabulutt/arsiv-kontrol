@@ -16,6 +16,9 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   zorunludur. iOS paylaşım aksiyonlarında `share-ios.svg`, diğer platformlarda
   genel paylaşım simgesi kullanılmalıdır. Public asset sürümü
   `20260920-cookie-newsletter-ios-v1`, hızlı navigasyon cache sürümü `v15`.
+  Runtime commit `a9fc453`, production deployment
+  `dpl_7RKqa9vtvM3e4n7EkBwyM7pNBLtk`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
 
 - **2026-09-20 public arşiv arama otoritesi:** Ana sayfanın görünür H1'i marka ve
   hedef aramayla aynı olan `Dini Sorular ve Cevaplar Arşivi` metnidir. Ana
