@@ -4,6 +4,12 @@ const publicArchiveFixtures = {
     logoLines: ['Dini Sorular', 've Cevaplar Arşivi'],
     sentence: 'Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.',
     authorName: 'Dr. Abdulcabbar Boran',
+    authorTitle: 'Fizik Yüksek Mühendisi, Mutasavvıf ve Yazar',
+    authorUrl: 'https://www.acboran.com/tr/p/dr-abdulcabbar-boran-kimdir',
+    authorSameAs: [
+      'https://www.acboran.com/tr/p/dr-abdulcabbar-boran-kimdir',
+      'https://www.ibrahimlive.com/tr-tr/about-us'
+    ],
     authorLine: 'Sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.',
     answererLabel: 'Yanıtlayan: Dr. Abdulcabbar Boran'
   },

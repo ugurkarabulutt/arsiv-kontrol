@@ -56,6 +56,7 @@ if (ADMIN_PREVIEW_CONTENT_READ_ONLY) app.use('/api', (req, res, next) => {
 });
 const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
+const PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT = '2026-09-20T00:00:00.000Z';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'allaha-ulasmayi-dilemek',
@@ -14784,26 +14785,33 @@ function publicArchiveTopicArticleEntries() {
 }
 
 async function publicArchiveSitemapEntries() {
-  const today = new Date().toISOString();
-  const entries = [
-    publicArchiveSitemapEntry('/', today, '1.0', 'hourly'),
-    publicArchiveSitemapEntry('/arsiv', today, '0.9', 'daily'),
-    publicArchiveSitemapEntry('/one-cikan-sorular', today, '0.85', 'daily'),
-    publicArchiveSitemapEntry('/son-yayinlanan-sorular', today, '0.85', 'daily'),
-    publicArchiveSitemapEntry('/cok-okunan-cevaplar', today, '0.85', 'daily'),
-    publicArchiveSitemapEntry('/kategoriler', today, '0.8', 'weekly'),
-    ...publicArchiveTopicArticleEntries().map(article => publicArchiveSitemapEntry(article.path, article.updatedAt || article.publishedAt || today, '0.88', 'monthly')),
-    publicArchiveSitemapEntry('/hakkimizda', today, '0.4', 'monthly'),
-    publicArchiveSitemapEntry('/nasil-kullanilir', today, '0.4', 'monthly'),
-    publicArchiveSitemapEntry('/iletisim', today, '0.3', 'monthly')
-  ];
-
+  let rows = [];
   if (await ensurePublicArchiveContentReady()) {
-    const rows = await fetchAllPages(() => supabase
+    rows = await fetchAllPages(() => supabase
       .from('public_qa')
       .select('slug,category_slug,topic_slugs,updated_at,published_at')
       .eq('status', 'published')
       .order('updated_at', { ascending: false }), 1000);
+  }
+  const latestPublishedAt = (rows || []).reduce(
+    (latest, row) => publicArchiveLatestDate(latest, row.updated_at || row.published_at || ''),
+    ''
+  );
+  const collectionLastmod = latestPublishedAt || PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT;
+  const entries = [
+    publicArchiveSitemapEntry('/', collectionLastmod, '1.0', 'daily'),
+    publicArchiveSitemapEntry('/arsiv', collectionLastmod, '0.9', 'daily'),
+    publicArchiveSitemapEntry('/one-cikan-sorular', collectionLastmod, '0.85', 'daily'),
+    publicArchiveSitemapEntry('/son-yayinlanan-sorular', collectionLastmod, '0.85', 'daily'),
+    publicArchiveSitemapEntry('/cok-okunan-cevaplar', collectionLastmod, '0.85', 'daily'),
+    publicArchiveSitemapEntry('/kategoriler', collectionLastmod, '0.8', 'weekly'),
+    ...publicArchiveTopicArticleEntries().map(article => publicArchiveSitemapEntry(article.path, article.updatedAt || article.publishedAt || PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.88', 'monthly')),
+    publicArchiveSitemapEntry('/hakkimizda', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.4', 'monthly'),
+    publicArchiveSitemapEntry('/nasil-kullanilir', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.4', 'monthly'),
+    publicArchiveSitemapEntry('/iletisim', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.3', 'monthly')
+  ];
+
+  if (rows.length) {
     const categories = new Map();
     for (const row of rows || []) {
       if (row.slug) entries.push(publicArchiveSitemapEntry(`/soru/${row.slug}`, row.updated_at || row.published_at, '0.8', 'monthly'));
@@ -14815,7 +14823,7 @@ async function publicArchiveSitemapEntries() {
         const current = categories.get(slug) || { count: 0, lastmod: '' };
         categories.set(slug, {
           count: current.count + 1,
-          lastmod: publicArchiveLatestDate(current.lastmod, row.updated_at || row.published_at || today)
+          lastmod: publicArchiveLatestDate(current.lastmod, row.updated_at || row.published_at || collectionLastmod)
         });
       }
     }

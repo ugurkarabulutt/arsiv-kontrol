@@ -1419,9 +1419,9 @@ for (const marker of ['--pa-install-banner-height', ':root[data-pa-install-visib
   assert(publicCss.includes(marker), `Public install banner CSS marker eksik: ${marker}`);
 }
 assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski kitaplik assetini icermemeli.');
-assert(homePreview.includes('Sorularınıza, kaynaklarıyla birlikte cevap bulun.'), 'Public home yeni hero basligini icermeli.');
+assert(homePreview.includes('<h1>Dini Sorular ve Cevaplar Arşivi</h1>'), 'Public home hedef aramayla uyumlu ana basligi icermeli.');
 assert(!homePreview.includes('<p class="pa-kicker">Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.</p>'), 'Public home hero ust aciklama cumlesi geri gelmemeli.');
-assert(homePreview.includes('ilgili soruları, cevapları ve delilleri bir arada okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
+assert(homePreview.includes('ilgili sorular, cevaplar ve delillerle birlikte okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
 for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-path', 'Konu rehberleri', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', '/public-preview/konu-rehberi/nefs-tezkiyesi', 'pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'Rehbere Başla', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
@@ -1631,7 +1631,7 @@ for (const marker of ['PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5', 'PUBLIC_CATEGOR
 for (const marker of ['categorySeoDescription', 'categoryEvidencePanel', 'categoryIndexStructuredData', 'PUBLIC_ARCHIVE_CORE_TOPIC_NAMES']) {
   assert(publicRendererSource.includes(marker), `Public kategori/SEO zenginlestirme marker eksik: ${marker}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'publicArchiveCategorySeoIndexable', 'publicArchiveTopicArticleEntries', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', '`- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`', 'Konu rehberleri:']) {
+for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicArchiveCategorySeoIndexable', 'publicArchiveTopicArticleEntries', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', '`- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`', 'Konu rehberleri:']) {
   assert(server.includes(marker), `Public sitemap kategori SEO kural marker eksik: ${marker}`);
 }
 for (const forbidden of ["publicArchiveSitemapEntry('/arama'", "publicArchiveSitemapEntry('/soru-sor'", "publicArchiveSitemapEntry('/gizlilik'", "publicArchiveSitemapEntry('/kullanim-kosullari'"]) {
@@ -1846,7 +1846,7 @@ const aboutPreview = renderPublicArchivePreviewRoute('/public-preview/hakkimizda
 const contactPreview = renderPublicArchivePreviewRoute('/public-preview/iletisim').html;
 const privacyPreview = renderPublicArchivePreviewRoute('/public-preview/gizlilik').html;
 const termsPreview = renderPublicArchivePreviewRoute('/public-preview/kullanim-kosullari').html;
-assert(aboutPreview.includes('delilleri ve kaynak bağlamıyla') && aboutPreview.includes('Arşivi İncele'), 'Hakkımızda sayfasi kendi amacina uygun aciklayici metin tasimali.');
+assert(aboutPreview.includes('delilleri ve kaynak bağlamıyla') && aboutPreview.includes('Arşivi İncele') && aboutPreview.includes('Fizik Yüksek Mühendisi, Mutasavvıf ve Yazar') && aboutPreview.includes('Dr. Abdulcabbar Boran Hakkında'), 'Hakkımızda sayfasi kendi amacina ve dogrulanabilir yazar kimligine uygun metin tasimali.');
 assert(howToPreview.includes('Arama Yap') && howToPreview.includes('alfabetik olarak inceleyebilir'), 'Nasıl Kullanılır sayfasi arama/arsiv kullanimini aciklamali.');
 assert(contactPreview.includes('Düzeltme notu') && contactPreview.includes('Gizliliği Oku'), 'İletişim sayfasi duzeltme ve soru talebi ayrimini aciklamali.');
 assert(privacyPreview.includes('Üçüncü kişiler') && privacyPreview.includes('Soru Sorarken Dikkat Edin'), 'Gizlilik sayfasi mahremiyet odakli olmali.');

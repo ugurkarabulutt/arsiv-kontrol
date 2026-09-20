@@ -400,11 +400,17 @@ function publicArchivePublisher() {
 
 function publicArchiveAnswerAuthor() {
   const name = publicArchiveFixtures.brand.authorName || publicArchiveFixtures.brand.answererLabel || '';
+  const sameAs = Array.isArray(publicArchiveFixtures.brand.authorSameAs)
+    ? publicArchiveFixtures.brand.authorSameAs.map(plainText).filter(Boolean)
+    : [];
   return name
     ? {
         '@type': 'Person',
         '@id': `${publicArchiveCanonicalUrl('/')}#dr-abdulcabbar-boran`,
-        name
+        name,
+        url: plainText(publicArchiveFixtures.brand.authorUrl || '') || undefined,
+        jobTitle: plainText(publicArchiveFixtures.brand.authorTitle || '') || undefined,
+        sameAs: sameAs.length ? sameAs : undefined
       }
     : publicArchivePublisher();
 }
@@ -1915,17 +1921,26 @@ function trustBand() {
 
 function renderHome() {
   const dataUnavailable = publicArchiveFixtures.dataUnavailable === true;
+  const description = 'Dini sorular ve cevaplar arşivinde Dr. Abdulcabbar Boran’ın Kur’ân ayetleriyle açıkladığı cevapları, delilleri ve konu rehberlerini okuyun.';
   const { featured, latest } = homeQuestionSets(publicArchiveFixtures.qa);
   const featuredList = homeCollectionEntries('featured', publicArchiveFixtures.qa, 6);
   const latestList = homeCollectionEntries('latest', publicArchiveFixtures.qa, 5);
   const popularList = homeCollectionEntries('popular', publicArchiveFixtures.qa, 5);
   const quranEvidenceList = quranEvidenceEntries(publicArchiveFixtures.qa, 4);
   const homeSearchSeedEntries = [...featuredList, ...latestList, ...popularList, ...featured, ...latest];
+  const homeStructuredEntries = uniquePublicArchiveQuestionResults([...featuredList, ...latestList, ...popularList]);
   return renderShell({
     active: 'home',
     title: 'Ana Sayfa',
-    description: 'Dini sorulara Dr. Abdulcabbar Boran’ın cevaplarını; Kur’ân ayetleri, kaynak bağlamı ve ilgili kategorilerle birlikte okuyun.',
+    description,
     canonicalPath: '/',
+    structuredData: dataUnavailable ? [] : collectionPageStructuredData({
+      canonicalPath: '/',
+      title: publicArchiveFixtures.brand.name,
+      description,
+      entries: homeStructuredEntries,
+      total: Number(publicArchiveFixtures.stats?.questionCount || publicArchiveFixtures.qa.length || 0)
+    }),
     searchSeedEntries: homeSearchSeedEntries,
     searchSeedCategories: publicCategories(),
     includeHeroSearchSeed: true,
@@ -1933,8 +1948,8 @@ function renderHome() {
       <main class="pa-main">
         <section class="pa-hero">
           <div class="pa-hero-copy">
-            <h1>Sorularınıza, kaynaklarıyla birlikte cevap bulun.</h1>
-            <p>Hidayet, mürşid, zikir ve teslimiyet gibi temel kategorilerden başlayın; ilgili soruları, cevapları ve delilleri bir arada okuyun.</p>
+            <h1>Dini Sorular ve Cevaplar Arşivi</h1>
+            <p>Dr. Abdulcabbar Boran’ın Kur’ân ayetleriyle açıkladığı hidayet, mürşid, zikir ve teslimiyet gibi temel konuları; ilgili sorular, cevaplar ve delillerle birlikte okuyun.</p>
             ${searchBox()}
             ${heroConceptLane()}
           </div>
@@ -2689,17 +2704,23 @@ function renderInfoPage(kind) {
       heading: 'Dini soruların cevaplarını delilleri ve kaynak bağlamıyla birlikte sunan bir arşiv.',
       copy: [
         'Dini Sorular ve Cevaplar Arşivi, yayınlanmış soru-cevapları tek tek aramak yerine düzenli bir okuma yapısı içinde bulabilmeniz için hazırlanır.',
-        `${publicArchiveFixtures.brand.authorLine} Her cevap; ilgili kategori, bağlantılı sorular ve kaynak bağlamıyla birlikte sunularak okuyucunun konuyu daha rahat takip etmesine yardımcı olur.`
+        `${publicArchiveFixtures.brand.authorLine} Fizik Yüksek Mühendisi, Mutasavvıf ve Yazar Dr. Abdulcabbar Boran’ın cevapları; ilgili kategori, bağlantılı sorular ve kaynak bağlamıyla birlikte sunularak okuyucunun konuyu daha rahat takip etmesine yardımcı olur.`
       ],
       points: [
-        { title: 'Amacı', text: 'Merak edilen sorulara hızlı ulaşmayı, cevabı okurken ilgili başlıkları da görmeyi sağlar.' },
-        { title: 'Düzeni', text: 'Cevaplar kategori ve ilişkili soru bağlantılarıyla birlikte arşivlenir; böylece konu tek sayfada kalmaz.' },
-        { title: 'Okuma deneyimi', text: 'Uzun cevaplar mobil ve masaüstünde paragraflı, sakin ve takip edilebilir bir düzende gösterilir.' }
+        { title: 'Yanıtlayan', text: 'Arşivdeki dini sorular Dr. Abdulcabbar Boran tarafından yanıtlanır.' },
+        { title: 'Kaynak yaklaşımı', text: 'Cevaplar Kur’ân ayetleri, ilgili deliller ve kaynak bağlamı korunarak sunulur.' },
+        { title: 'Arşiv düzeni', text: 'Cevaplar kategori ve ilişkili soru bağlantılarıyla birlikte arşivlenir; böylece konu tek sayfada kalmaz.' }
       ],
       actions: [
         { label: 'Arşivi İncele', href: `${PREVIEW_BASE}/arsiv` },
-        { label: 'Nasıl Kullanılır?', href: `${PREVIEW_BASE}/nasil-kullanilir`, secondary: true }
-      ]
+        { label: 'Nasıl Kullanılır?', href: `${PREVIEW_BASE}/nasil-kullanilir`, secondary: true },
+        { label: 'Dr. Abdulcabbar Boran Hakkında', href: publicArchiveFixtures.brand.authorUrl, secondary: true }
+      ],
+      structuredData: {
+        '@context': 'https://schema.org',
+        ...publicArchiveAnswerAuthor(),
+        description: 'Dini soruları Kur’ân ayetleri ve kaynak bağlamıyla cevaplayan Fizik Yüksek Mühendisi, Mutasavvıf ve Yazar.'
+      }
     },
     'nasil-kullanilir': {
       title: 'Nasıl Kullanılır',
@@ -2781,6 +2802,7 @@ function renderInfoPage(kind) {
     description: page.heading,
     canonicalPath: `/${kind}`,
     pageNoindex: kind === 'gizlilik' || kind === 'kullanim-kosullari',
+    structuredData: page.structuredData || [],
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-info-page">

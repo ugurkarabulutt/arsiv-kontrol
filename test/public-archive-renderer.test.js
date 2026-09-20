@@ -111,6 +111,9 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /"@type":"WebSite"/);
   assert.match(home, /"@type":"Organization"/);
   assert.match(home, /"@type":"SearchAction"/);
+  assert.match(home, /"@type":"CollectionPage"/);
+  assert.match(home, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/#itemlist"/);
+  assert.match(home, /<h1>Dini Sorular ve Cevaplar Arşivi<\/h1>/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
   assert.match(home, /dsca-page-cache:v14/);
@@ -227,8 +230,8 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /class="pa-logo-text"/);
   assert.match(home, /\/public-preview\/assets\/hero-open-book-warm\.jpg/);
   assert.doesNotMatch(home, /hero-bookshelf/);
-  assert.match(home, /Sorularınıza, kaynaklarıyla birlikte cevap bulun\./);
-  assert.match(home, /ilgili soruları, cevapları ve delilleri bir arada okuyun\./);
+  assert.match(home, /Dini Sorular ve Cevaplar Arşivi/);
+  assert.match(home, /ilgili sorular, cevaplar ve delillerle birlikte okuyun\./);
   assert.match(home, /class="pa-svg-icon"/);
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
@@ -563,7 +566,7 @@ test('public unavailable mode keeps site shell without fixture questions', () =>
   const result = renderPublicArchiveUnavailableRoute('/', {}, { basePath: '' });
 
   assert.equal(result.status, 200);
-  assert.match(result.html, /Sorularınıza, kaynaklarıyla birlikte cevap bulun\./);
+  assert.match(result.html, /Dini Sorular ve Cevaplar Arşivi/);
   assert.match(result.html, /Aklınızda bir soru mu var\?/);
   assert.match(result.html, /<meta name="robots" content="noindex,nofollow">/);
   assert.doesNotMatch(result.html, /Hidayet yolu nasıl başlar\?/);
@@ -1251,6 +1254,10 @@ test('public preview exposes separate index and info pages', () => {
 test('public info pages have page-specific explanatory copy and actions', () => {
   const about = renderPublicArchivePreviewRoute('/public-preview/hakkimizda').html;
   assert.match(about, /Dini soruların cevaplarını delilleri ve kaynak bağlamıyla birlikte sunan bir arşiv\./);
+  assert.match(about, /Fizik Yüksek Mühendisi, Mutasavvıf ve Yazar/);
+  assert.match(about, /Dr\. Abdulcabbar Boran Hakkında/);
+  assert.match(about, /"jobTitle":"Fizik Yüksek Mühendisi, Mutasavvıf ve Yazar"/);
+  assert.match(about, /"sameAs":\["https:\/\/www\.acboran\.com\/tr\/p\/dr-abdulcabbar-boran-kimdir","https:\/\/www\.ibrahimlive\.com\/tr-tr\/about-us"\]/);
   assert.match(about, /Arşivi İncele/);
   assert.match(about, /Nasıl Kullanılır\?/);
 
