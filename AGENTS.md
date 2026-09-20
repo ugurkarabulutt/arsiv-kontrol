@@ -23,9 +23,9 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   navigasyon cache sürümü `v18`.
   İlk runtime commit `a9fc453`; bülten arayüzü iyileştirmesi runtime commit
   `ab5849b`, production deployment `dpl_GnTP9XkhZLQoHaAc6wKTjao9wLXS`,
-  soru CTA kontrast iyileştirmesi runtime commit `e8c5d24`, production
-  deployment `dpl_FUzVjGsriWDLqCc9zrmZnEaesR7L`, canlı alias
-  `https://arsiv.ibrahimlive.ai`.
+  soru CTA buton kontrastı ve önceki ikonun geri alınması runtime commit
+  `67bcd4b`, production deployment `dpl_8dVkiT1BrQ8igFEmWiw6b4ab3wcU`,
+  canlı alias `https://arsiv.ibrahimlive.ai`.
 
 - **2026-09-20 public arşiv arama otoritesi:** Ana sayfanın görünür H1'i marka ve
   hedef aramayla aynı olan `Dini Sorular ve Cevaplar Arşivi` metnidir. Ana

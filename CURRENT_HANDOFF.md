@@ -47,6 +47,10 @@
   3px klavye odak halkası korundu. Preview `dpl_CkzQc9urdQEhWaSuLFPRR2c9kHEp`;
   390px Playwright kontrolünde eski SVG yolu, `999px` yuvarlak ikon alanı,
   yarı saydam zemin ve koyu buton metni doğrulandı; yatay taşma yok.
+  Runtime commit `67bcd4b`, production `dpl_8dVkiT1BrQ8igFEmWiw6b4ab3wcU`.
+  Canlı `/health`, asset/cache sürümü, eski SVG yolu, yuvarlak/yarı saydam ikon
+  CSS'i ve admin noindex doğrulandı. Canlı 390px ekran görüntüsünde eski ikon
+  görünümü ve koyu buton metni birlikte doğru; viewport/scroll genişliği 390px.
 
 ## 2026-09-20 Tayy-i Mekân Cevabında Nefs Düzeltmesi
 
