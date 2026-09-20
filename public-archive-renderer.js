@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260917-question-received-email-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260920-cookie-newsletter-ios-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -177,6 +177,7 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/nasil-kullanilir`,
   `${PREVIEW_BASE}/iletisim`,
   `${PREVIEW_BASE}/gizlilik`,
+  `${PREVIEW_BASE}/cerez-politikasi`,
   `${PREVIEW_BASE}/kullanim-kosullari`,
   `${PREVIEW_BASE}/bulunamadi`
 ];
@@ -528,7 +529,7 @@ function header(active) {
         <button class="pa-install-action" type="button" data-install-action>Ekle</button>
         <button class="pa-install-close" type="button" data-install-dismiss aria-label="Bu öneriyi kapat">×</button>
         <div class="pa-install-help" data-install-ios-help hidden>
-          <span>${iconSvg('share-2')}</span>
+          <span>${iconSvg('share-ios', 'pa-svg-icon pa-ios-share-icon')}</span>
           <p>iPhone’da paylaş simgesine dokunun, <strong>Ana Ekrana Ekle</strong> seçin ve <strong>Ekle</strong> ile tamamlayın.</p>
         </div>
       </div>
@@ -553,28 +554,108 @@ function header(active) {
 function footer() {
   return `
     <footer class="pa-footer">
-      <div class="pa-footer-brand">
-        <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
-        <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
+      <section class="pa-newsletter" aria-labelledby="pa-newsletter-title">
+        <div class="pa-newsletter-copy">
+          <p class="pa-kicker">Yeni içerikler</p>
+          <h2 id="pa-newsletter-title">Arşivdeki yeni rehberleri kaçırmayın.</h2>
+          <p>Yeni konu rehberleri ve öne çıkan cevaplar yayımlandığında kısa bir e-posta alın.</p>
+        </div>
+        <form class="pa-newsletter-form" data-newsletter-form data-newsletter-endpoint="${PREVIEW_BASE}/api/newsletter/subscribe">
+          <label class="pa-sr-only" for="pa-newsletter-email">E-posta adresiniz</label>
+          <div class="pa-newsletter-input-row">
+            <input id="pa-newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="E-posta adresiniz" required>
+            <button type="submit">
+              <span>Abone Ol</span>
+              ${iconSvg('arrow-right')}
+            </button>
+          </div>
+          <label class="pa-newsletter-consent">
+            <input name="consentAccepted" type="checkbox" required>
+            <span>Yeni içerik duyurularını e-posta ile almayı kabul ediyorum.</span>
+          </label>
+          <label class="pa-newsletter-trap" aria-hidden="true">Web sitesi<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+          <p class="pa-newsletter-status" data-newsletter-status aria-live="polite"></p>
+        </form>
+      </section>
+      <div class="pa-footer-main">
+        <div class="pa-footer-brand">
+          <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
+          <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
+        </div>
+        <div class="pa-footer-groups">
+          <nav class="pa-footer-links" aria-label="Arşiv bağlantıları">
+            <strong>Arşiv</strong>
+            <a href="${PREVIEW_BASE}/arsiv">Tüm Sorular</a>
+            <a href="${PREVIEW_BASE}/arama#arama">Arama</a>
+            <a href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+          </nav>
+          <nav class="pa-footer-links" aria-label="Bilgilendirme">
+            <strong>Bilgi</strong>
+            <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
+            <a href="${PREVIEW_BASE}/nasil-kullanilir">Nasıl Kullanılır</a>
+            <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
+            <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
+            <a href="${PREVIEW_BASE}/cerez-politikasi">Çerez Politikası</a>
+            <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
+          </nav>
+        </div>
       </div>
-      <div class="pa-footer-groups">
-        <nav class="pa-footer-links" aria-label="Arşiv bağlantıları">
-          <strong>Arşiv</strong>
-          <a href="${PREVIEW_BASE}/arsiv">Tüm Sorular</a>
-          <a href="${PREVIEW_BASE}/arama#arama">Arama</a>
-          <a href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
-        </nav>
-        <nav class="pa-footer-links" aria-label="Bilgilendirme">
-          <strong>Bilgi</strong>
-          <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
-          <a href="${PREVIEW_BASE}/nasil-kullanilir">Nasıl Kullanılır</a>
-          <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
-          <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
-          <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
-        </nav>
+      <div class="pa-footer-bottom">
+        <p class="pa-copyright">© 2026 Dini Sorular ve Cevaplar Arşivi. Tüm hakları saklıdır.</p>
+        <button type="button" class="pa-footer-preferences" data-cookie-preferences-open>Çerez tercihleri</button>
       </div>
-      <p class="pa-copyright">© 2026 Dini Sorular ve Cevaplar Arşivi. Tüm hakları saklıdır.</p>
     </footer>
+  `;
+}
+
+function cookieConsentUi() {
+  return `
+    <aside class="pa-cookie-banner" data-cookie-banner hidden aria-labelledby="pa-cookie-title">
+      <div class="pa-cookie-copy">
+        <strong id="pa-cookie-title">Gizliliğiniz, tercihiniz.</strong>
+        <p>Site için gerekli depolama her zaman açıktır. Ziyaret ve okunma analitiğini yalnız izninizle kullanırız.</p>
+        <a href="${PREVIEW_BASE}/cerez-politikasi">Çerez Politikasını okuyun</a>
+      </div>
+      <div class="pa-cookie-actions" aria-label="Çerez seçenekleri">
+        <button type="button" data-cookie-reject>Reddet</button>
+        <button type="button" data-cookie-preferences>Tercihler</button>
+        <button type="button" data-cookie-accept>Kabul Et</button>
+      </div>
+    </aside>
+    <div class="pa-cookie-modal" data-cookie-modal hidden>
+      <button class="pa-cookie-backdrop" type="button" data-cookie-modal-close aria-label="Çerez tercihlerini kapat"></button>
+      <section class="pa-cookie-dialog" role="dialog" aria-modal="true" aria-labelledby="pa-cookie-dialog-title">
+        <div class="pa-cookie-dialog-head">
+          <div>
+            <p class="pa-kicker">Çerez tercihleri</p>
+            <h2 id="pa-cookie-dialog-title">Kontrol sizde.</h2>
+          </div>
+          <button type="button" class="pa-cookie-dialog-close" data-cookie-modal-close aria-label="Kapat">×</button>
+        </div>
+        <p class="pa-cookie-intro">Zorunlu depolama sitenin güvenli çalışmasını sağlar. Analitik tercihinizi dilediğiniz zaman değiştirebilirsiniz.</p>
+        <div class="pa-cookie-choice">
+          <div>
+            <strong>Zorunlu</strong>
+            <p>Oturum, tema, güvenlik ve seçiminizi hatırlamak için kullanılır.</p>
+          </div>
+          <span class="pa-cookie-always">Her zaman etkin</span>
+        </div>
+        <label class="pa-cookie-choice" for="pa-cookie-analytics">
+          <div>
+            <strong>Analitik</strong>
+            <p>Hangi sayfaların okunduğunu ve site performansını anonimleştirilmiş ziyaret verileriyle anlamamıza yardımcı olur.</p>
+          </div>
+          <span class="pa-switch">
+            <input id="pa-cookie-analytics" type="checkbox" data-cookie-analytics>
+            <span aria-hidden="true"></span>
+          </span>
+        </label>
+        <div class="pa-cookie-dialog-actions">
+          <a href="${PREVIEW_BASE}/cerez-politikasi">Ayrıntıları inceleyin</a>
+          <button type="button" data-cookie-save>Tercihleri Kaydet</button>
+        </div>
+      </section>
+    </div>
   `;
 }
 
@@ -2764,15 +2845,35 @@ function renderInfoPage(kind) {
       heading: 'Soru gönderirken ve arşivi kullanırken mahremiyetinizi korumanız önemlidir.',
       copy: [
         'Soru metninde ad, telefon, adres, özel sağlık bilgisi, aile içi ayrıntılar veya üçüncü kişilere ait mahrem bilgiler paylaşılmamalıdır.',
-        'Oturum açmanız, gönderdiğiniz sorunun size ait bir hesapla ilişkilendirilmesi ve gerektiğinde sürecin sağlıklı yürütülmesi içindir.'
+        'Oturum açmanız, gönderdiğiniz sorunun size ait bir hesapla ilişkilendirilmesi ve gerektiğinde sürecin sağlıklı yürütülmesi içindir.',
+        'Yeni içerik duyurularına abone olursanız e-posta adresiniz yalnız bu duyuruları iletmek ve abonelik kaydını yönetmek amacıyla saklanır.'
       ],
       points: [
         { title: 'Kişisel bilgi', text: 'Sorunun anlaşılması için zorunlu olmayan özel bilgileri yazmayın.' },
         { title: 'Üçüncü kişiler', text: 'Başka kişileri tanıtacak isim, adres, olay detayı veya mahrem bilgi paylaşmayın.' },
-        { title: 'Hesap kullanımı', text: 'Hesap bilgisi arşiv okuma deneyimini değil, soru gönderim sürecini düzenli yürütmeyi destekler.' }
+        { title: 'Hesap kullanımı', text: 'Hesap bilgisi arşiv okuma deneyimini değil, soru gönderim sürecini düzenli yürütmeyi destekler.' },
+        { title: 'İçerik aboneliği', text: 'Abonelik için verdiğiniz e-posta adresi soru hesabınızdan ayrı tutulur ve başka amaçla kullanılmaz.' }
       ],
       actions: [
         { label: 'Soru Sorarken Dikkat Edin', href: `${PREVIEW_BASE}/soru-sor` },
+        { label: 'Çerez Politikası', href: `${PREVIEW_BASE}/cerez-politikasi`, secondary: true }
+      ]
+    },
+    'cerez-politikasi': {
+      title: 'Çerez Politikası',
+      kicker: 'Çerez Politikası',
+      heading: 'Hangi tarayıcı verisinin neden kullanıldığını açıkça bilin ve tercihinizi yönetin.',
+      copy: [
+        'Site, güvenli oturum ve seçtiğiniz görünüm gibi temel işlevler için kesinlikle gerekli çerez ve tarayıcı depolamasını kullanır. Bu kayıtlar siteyi kullanabilmeniz için gereklidir ve kapatılamaz.',
+        'Ziyaret ve okunma analitiği ise yalnız açık onayınızdan sonra çalışır. Reddettiğinizde analitik ziyaret kaydı, anonim ziyaret kimliği ve okunma sayacı için tarayıcı kaydı oluşturulmaz. Reklam veya hedefleme çerezi kullanılmaz.'
+      ],
+      points: [
+        { title: 'Zorunlu depolama', text: 'arsiv_session oturumu en fazla 30 gün saklar. Tema, telefona ekleme ve çerez tercihi kayıtları seçiminizi hatırlamak için tarayıcınızda tutulur; çerez tercihi 180 gün sonra yeniden sorulur.' },
+        { title: 'Analitik depolama', text: 'Onay verirseniz dsca-visitor-id, dsca-session-id ve soru okunma kaydı kullanılır. Ziyaret verilerinde ham IP adresi saklanmaz; analiz tercihini kapattığınız andan itibaren yeni analitik kayıt gönderilmez.' },
+        { title: 'Tercihinizi değiştirme', text: 'Her sayfanın en altındaki Çerez tercihleri düğmesinden analitik iznini açabilir veya geri çekebilirsiniz. Ret seçeneği arşivi okumanızı, arama yapmanızı veya hesabınızı kullanmanızı engellemez.' }
+      ],
+      actions: [
+        { label: 'Gizlilik', href: `${PREVIEW_BASE}/gizlilik` },
         { label: 'Kullanım Koşulları', href: `${PREVIEW_BASE}/kullanim-kosullari`, secondary: true }
       ]
     },
@@ -2801,7 +2902,7 @@ function renderInfoPage(kind) {
     title: page.title,
     description: page.heading,
     canonicalPath: `/${kind}`,
-    pageNoindex: kind === 'gizlilik' || kind === 'kullanim-kosullari',
+    pageNoindex: kind === 'gizlilik' || kind === 'cerez-politikasi' || kind === 'kullanim-kosullari',
     structuredData: page.structuredData || [],
     content: `
       <main class="pa-main pa-narrow-main">
@@ -2956,6 +3057,7 @@ function renderShell({ title, description, active, content, status = 200, questi
     ${content}
     ${footer()}
   </div>
+  ${cookieConsentUi()}
   <nav class="pa-mobile-nav" aria-label="Mobil alt gezinme" data-active-index="${previewActionNavIndex(active)}">
     ${previewActionNav(active)}
   </nav>
@@ -3072,8 +3174,14 @@ function renderShell({ title, description, active, content, status = 200, questi
         document.querySelectorAll('[data-share]').forEach(function(button){
           if (button.dataset.shareBound === 'true') return;
           button.dataset.shareBound = 'true';
+          var genericShareIcon = ${JSON.stringify(iconSvg('share-2'))};
+          var iosShareIcon = ${JSON.stringify(iconSvg('share-ios'))};
+          var isIosSharePlatform = /iPad|iPhone|iPod/.test(navigator.userAgent || '')
+            || (navigator.platform === 'MacIntel' && Number(navigator.maxTouchPoints || 0) > 1);
+          var defaultIcon = isIosSharePlatform ? iosShareIcon : genericShareIcon;
+          var initialIcon = button.querySelector('[data-action-icon]');
+          if (initialIcon) initialIcon.innerHTML = defaultIcon;
           button.addEventListener('click', async function(){
-            var defaultIcon = ${JSON.stringify(iconSvg('share-2'))};
             var doneIcon = ${JSON.stringify(iconSvg('check'))};
             var question = document.querySelector('.pa-answer-primary .pa-reading-block p');
             var shareData = { title: document.title, text: question ? question.textContent.trim() : document.title, url: window.location.href };
@@ -3769,7 +3877,155 @@ function renderShell({ title, description, active, content, status = 200, questi
           button.removeEventListener('click', onClick);
         });
       }
+      var cookieConsentKey = 'dsca-cookie-consent:v1';
+      var cookieConsentVersion = 1;
+      var cookieConsentMaxAge = 180 * 24 * 60 * 60 * 1000;
+      function readCookieConsent() {
+        try {
+          var value = JSON.parse(window.localStorage.getItem(cookieConsentKey) || 'null');
+          if (!value || Number(value.version) !== cookieConsentVersion) return null;
+          if (!Number(value.expiresAt) || Number(value.expiresAt) <= Date.now()) {
+            window.localStorage.removeItem(cookieConsentKey);
+            return null;
+          }
+          return value;
+        } catch (error) {
+          return null;
+        }
+      }
+      function analyticsConsentGranted() {
+        var consent = readCookieConsent();
+        return Boolean(consent && consent.analytics === true);
+      }
+      function clearAnalyticsStorage() {
+        try {
+          window.localStorage.removeItem('dsca-visitor-id');
+          window.sessionStorage.removeItem('dsca-session-id');
+          Array.from({ length: window.localStorage.length }, function(_, index){ return window.localStorage.key(index); })
+            .filter(function(key){ return key && key.indexOf('dsca-read-') === 0; })
+            .forEach(function(key){ window.localStorage.removeItem(key); });
+        } catch (error) {}
+      }
+      function persistCookieConsent(analytics) {
+        var now = Date.now();
+        var value = {
+          version: cookieConsentVersion,
+          necessary: true,
+          analytics: analytics === true,
+          decidedAt: now,
+          expiresAt: now + cookieConsentMaxAge
+        };
+        try { window.localStorage.setItem(cookieConsentKey, JSON.stringify(value)); } catch (error) {}
+        if (!value.analytics) clearAnalyticsStorage();
+        document.documentElement.setAttribute('data-pa-analytics-consent', value.analytics ? 'true' : 'false');
+        return value;
+      }
+      function bindCookieConsent() {
+        var root = document.documentElement;
+        var banner = document.querySelector('[data-cookie-banner]');
+        var modal = document.querySelector('[data-cookie-modal]');
+        if (!banner || !modal) return;
+        var analyticsInput = modal.querySelector('[data-cookie-analytics]');
+        var lastFocus = null;
+        function closeModal() {
+          modal.hidden = true;
+          root.removeAttribute('data-pa-cookie-modal-open');
+          if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+        }
+        function openModal(trigger) {
+          var consent = readCookieConsent();
+          lastFocus = trigger || document.activeElement;
+          if (analyticsInput) analyticsInput.checked = Boolean(consent && consent.analytics === true);
+          modal.hidden = false;
+          root.setAttribute('data-pa-cookie-modal-open', 'true');
+          var close = modal.querySelector('.pa-cookie-dialog-close');
+          if (close) window.setTimeout(function(){ close.focus(); }, 20);
+        }
+        function renderConsentState() {
+          var consent = readCookieConsent();
+          banner.hidden = Boolean(consent);
+          if (consent) root.setAttribute('data-pa-analytics-consent', consent.analytics ? 'true' : 'false');
+          else root.removeAttribute('data-pa-analytics-consent');
+        }
+        function choose(analytics) {
+          persistCookieConsent(analytics);
+          banner.hidden = true;
+          closeModal();
+          if (analytics) {
+            trackQuestionRead();
+            trackPublicVisit();
+          }
+        }
+        if (banner.dataset.cookieBound !== 'true') {
+          banner.dataset.cookieBound = 'true';
+          var accept = banner.querySelector('[data-cookie-accept]');
+          var reject = banner.querySelector('[data-cookie-reject]');
+          var preferences = banner.querySelector('[data-cookie-preferences]');
+          if (accept) accept.addEventListener('click', function(){ choose(true); });
+          if (reject) reject.addEventListener('click', function(){ choose(false); });
+          if (preferences) preferences.addEventListener('click', function(){ openModal(preferences); });
+        }
+        if (modal.dataset.cookieBound !== 'true') {
+          modal.dataset.cookieBound = 'true';
+          modal.querySelectorAll('[data-cookie-modal-close]').forEach(function(button){
+            button.addEventListener('click', closeModal);
+          });
+          var save = modal.querySelector('[data-cookie-save]');
+          if (save) save.addEventListener('click', function(){ choose(Boolean(analyticsInput && analyticsInput.checked)); });
+          modal.addEventListener('keydown', function(event){
+            if (event.key === 'Escape') closeModal();
+          });
+        }
+        document.querySelectorAll('[data-cookie-preferences-open]').forEach(function(button){
+          if (button.dataset.cookiePreferencesBound === 'true') return;
+          button.dataset.cookiePreferencesBound = 'true';
+          button.addEventListener('click', function(){ openModal(button); });
+        });
+        renderConsentState();
+      }
+      function bindNewsletterForms() {
+        document.querySelectorAll('[data-newsletter-form]').forEach(function(form){
+          if (form.dataset.newsletterBound === 'true') return;
+          form.dataset.newsletterBound = 'true';
+          form.addEventListener('submit', async function(event){
+            event.preventDefault();
+            var status = form.querySelector('[data-newsletter-status]');
+            var button = form.querySelector('button[type="submit"]');
+            if (status) {
+              status.classList.remove('is-success', 'is-error');
+              status.textContent = 'Kaydediliyor...';
+            }
+            if (button) button.disabled = true;
+            try {
+              var response = await fetch(form.getAttribute('data-newsletter-endpoint'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                  email: form.elements.email && form.elements.email.value,
+                  consentAccepted: Boolean(form.elements.consentAccepted && form.elements.consentAccepted.checked),
+                  website: form.elements.website && form.elements.website.value
+                })
+              });
+              var data = await response.json().catch(function(){ return {}; });
+              if (!response.ok) throw new Error(data.error || 'Abonelik kaydedilemedi.');
+              form.reset();
+              if (status) {
+                status.classList.add('is-success');
+                status.textContent = data.message || 'Aboneliğiniz alındı.';
+              }
+            } catch (error) {
+              if (status) {
+                status.classList.add('is-error');
+                status.textContent = error.message || 'Bağlantı kurulamadı. Lütfen tekrar deneyin.';
+              }
+            } finally {
+              if (button) button.disabled = false;
+            }
+          });
+        });
+      }
       async function trackQuestionRead() {
+        if (!analyticsConsentGranted()) return;
         var slug = document.body.getAttribute('data-question-slug');
         if (!slug) return;
         try {
@@ -3779,7 +4035,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (last && now - last < 12 * 60 * 60 * 1000) return loadReadCounts();
           var response = await fetch('${PREVIEW_BASE}/api/questions/' + encodeURIComponent(slug) + '/read', {
             method: 'POST',
-            headers: { Accept: 'application/json' }
+            headers: { Accept: 'application/json', 'X-Analytics-Consent': '1' }
           });
           var data = await response.json();
           if (data && data.available) {
@@ -3806,9 +4062,12 @@ function renderShell({ title, description, active, content, status = 200, questi
         }
       }
       function trackPublicVisit() {
+        if (!analyticsConsentGranted()) return;
         try {
           var params = new URLSearchParams(window.location.search || '');
           var payload = {
+            analyticsConsent: true,
+            consentVersion: cookieConsentVersion,
             visitorId: publicArchiveClientId(window.localStorage, 'dsca-visitor-id'),
             sessionId: publicArchiveClientId(window.sessionStorage, 'dsca-session-id'),
             path: window.location.pathname + window.location.search,
@@ -4246,7 +4505,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v14:';
+        var cachePrefix = 'dsca-page-cache:v15:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
@@ -4670,6 +4929,8 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindCopyControls();
         bindShareControls();
         bindCardLinks();
+        bindCookieConsent();
+        bindNewsletterForms();
         loadReadCounts();
         trackQuestionRead();
         trackPublicVisit();
@@ -4715,6 +4976,7 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/nasil-kullanilir`) return renderInfoPage('nasil-kullanilir');
     if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
     if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
+    if (pathname === `${PREVIEW_BASE}/cerez-politikasi`) return renderInfoPage('cerez-politikasi');
     if (pathname === `${PREVIEW_BASE}/kullanim-kosullari`) return renderInfoPage('kullanim-kosullari');
     const topicArticleMatch = pathname.match(publicArchiveRoutePattern('konu-rehberi'));
     if (topicArticleMatch) return renderTopicGuideArticle(topicArticleMatch[1]);
@@ -4812,6 +5074,7 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/nasil-kullanilir', (req, res, next) => sendRoute(req, res, next, 'nasil-kullanilir'));
   router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, 'iletisim'));
   router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, 'gizlilik'));
+  router.get('/cerez-politikasi', (req, res, next) => sendRoute(req, res, next, 'cerez-politikasi'));
   router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, 'kullanim-kosullari'));
   router.get('/konu-rehberi/:slug', (req, res, next) => sendRoute(req, res, next, `konu-rehberi/${req.params.slug}`));
   router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `soru/${req.params.slug}`));

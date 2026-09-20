@@ -5186,6 +5186,10 @@ async function seed() {
   HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = !publicEmailAuthErr;
   if (!HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS) console.warn('⚠ public_users e-posta giriş kolonları yok — public e-posta oturumu pasif.');
 
+  const { error: publicNewsletterErr } = await supabase.from('public_newsletter_subscriptions').select('id').limit(1);
+  HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES = !publicNewsletterErr;
+  if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES) console.warn('⚠ public_newsletter_subscriptions tablosu yok — public abonelik formu pasif.');
+
   const { error: publicQuestionSubmissionsErr } = await supabase.from('public_question_submissions').select('id').limit(1);
   HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = !publicQuestionSubmissionsErr;
   if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) console.warn('⚠ public_question_submissions tablosu yok — public soru gönderimi pasif.');
@@ -5358,6 +5362,7 @@ app.use('/api', (req, res, next) => {
 const adminLoginRateLimiter = makeRateLimiter({ scope: 'admin-login', windowMs: 15 * 60 * 1000, max: 12 });
 const publicAuthRateLimiter = makeRateLimiter({ scope: 'public-auth', windowMs: 15 * 60 * 1000, max: 20 });
 const publicQuestionSubmitRateLimiter = makeRateLimiter({ scope: 'public-question-submit', windowMs: 15 * 60 * 1000, max: 8 });
+const publicNewsletterRateLimiter = makeRateLimiter({ scope: 'public-newsletter', windowMs: 60 * 60 * 1000, max: 12 });
 const publicAnalyticsRateLimiter = makeRateLimiter({ scope: 'public-analytics', windowMs: 60 * 1000, max: 120 });
 const publicReadRateLimiter = makeRateLimiter({ scope: 'public-read', windowMs: 60 * 1000, max: 180 });
 const analysisRateLimiter = makeRateLimiter({ scope: 'analysis', windowMs: 60 * 60 * 1000, max: 80 });
@@ -14139,6 +14144,7 @@ let HAS_ARCHIVE_WORK_TABLES = false; // startup'ta tespit edilir (çalışma kay
 let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın görevleri)
 let HAS_PUBLIC_ARCHIVE_USER_TABLES = false; // startup'ta tespit edilir (public Google kullanıcıları)
 let HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = false; // startup'ta tespit edilir (public e-posta giriş kolonları)
+let HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES = false; // startup'ta tespit edilir (public e-posta abonelikleri)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = false; // startup'ta tespit edilir (public soru cevap akışı)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
@@ -14579,6 +14585,47 @@ async function publicArchiveLogoutHandler(req, res) {
   clearPublicSession(req);
   res.json({ success: true });
 }
+
+async function publicArchiveNewsletterSubscribeHandler(req, res) {
+  try {
+    await startupReady;
+    if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES) {
+      return res.status(503).json({ error: 'Abonelik sistemi için veri tabanı hazırlığı bekleniyor.' });
+    }
+
+    // Görünmez alan botlar için tuzaktır; gerçek kullanıcıya veri varlığı açıklanmaz.
+    if (String(req.body?.website || '').trim()) {
+      return res.json({ success: true, message: 'Aboneliğiniz alındı.' });
+    }
+
+    const email = normalizePublicEmail(req.body?.email);
+    const consentAccepted = req.body?.consentAccepted === true
+      || req.body?.consentAccepted === 'true'
+      || req.body?.consentAccepted === 'on';
+    if (!validPublicEmail(email)) return res.status(400).json({ error: 'Geçerli bir e-posta adresi yazın.' });
+    if (!consentAccepted) return res.status(400).json({ error: 'E-posta aboneliği onayını işaretleyin.' });
+
+    const now = new Date().toISOString();
+    const { error } = await supabase.from('public_newsletter_subscriptions').upsert({
+      email,
+      status: 'active',
+      source: publicArchiveRequestBasePath(req) ? 'public-preview-footer' : 'public-root-footer',
+      consent_version: 'newsletter-consent-20260920-v1',
+      consented_at: now,
+      unsubscribed_at: null,
+      updated_at: now
+    }, { onConflict: 'email' });
+    if (error) throw new Error(error.message);
+
+    res.status(201).json({
+      success: true,
+      message: 'Aboneliğiniz alındı. Yeni içerikler yayımlandığında size haber vereceğiz.'
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Abonelik kaydedilemedi.' });
+  }
+}
+
 app.use('/public-preview', (req, res, next) => {
   res.set('X-Robots-Tag', 'noindex, nofollow');
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -14620,6 +14667,9 @@ async function publicArchiveSearchSuggestHandler(req, res, next) {
 async function publicArchiveQuestionReadHandler(req, res) {
   try {
     await startupReady;
+    if (String(req.get('X-Analytics-Consent') || '') !== '1') {
+      return res.json({ available: false, skipped: true, reason: 'analytics_consent_required' });
+    }
     res.json(await incrementPublicQuestionRead(req.params.slug));
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
@@ -14731,6 +14781,9 @@ async function publicArchiveQuestionSeenHandler(req, res) {
 async function publicArchiveVisitHandler(req, res) {
   try {
     await startupReady;
+    if (req.body?.analyticsConsent !== true || Number(req.body?.consentVersion) !== 1) {
+      return res.json({ success: true, recorded: false, skipped: true, reason: 'analytics_consent_required' });
+    }
     const result = await recordPublicArchiveVisit(req, req.body || {});
     res.json({ success: true, ...result });
   } catch (error) {
@@ -14967,6 +15020,7 @@ app.get('/public-preview/auth/google/callback', publicArchiveGoogleCallbackHandl
 app.post('/public-preview/api/auth/email/register', publicAuthRateLimiter, publicArchiveEmailRegisterHandler);
 app.post('/public-preview/api/auth/email/login', publicAuthRateLimiter, publicArchiveEmailLoginHandler);
 app.post('/public-preview/auth/logout', publicArchiveLogoutHandler);
+app.post('/public-preview/api/newsletter/subscribe', publicNewsletterRateLimiter, publicArchiveNewsletterSubscribeHandler);
 app.post('/public-preview/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler);
 app.get('/public-preview/api/question-stats', publicArchiveQuestionStatsHandler);
 app.get('/public-preview/api/public-search', publicArchiveSearchSuggestHandler);
@@ -14985,6 +15039,7 @@ if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.post('/api/auth/email/register', publicAuthRateLimiter, publicArchiveEmailRegisterHandler);
   app.post('/api/auth/email/login', publicAuthRateLimiter, publicArchiveEmailLoginHandler);
   app.post('/auth/logout', publicArchiveLogoutHandler);
+  app.post('/api/newsletter/subscribe', publicNewsletterRateLimiter, publicArchiveNewsletterSubscribeHandler);
   app.post('/api/public-analytics/visit', publicAnalyticsRateLimiter, publicArchiveVisitHandler);
   app.get('/api/question-stats', publicArchiveQuestionStatsHandler);
   app.get('/api/public-search', publicArchiveSearchSuggestHandler);

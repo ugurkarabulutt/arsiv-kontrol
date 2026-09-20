@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260917-question-received-email-v1"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260920-cookie-newsletter-ios-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260917-question-received-email-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260917-question-received-email-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260920-cookie-newsletter-ios-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260920-cookie-newsletter-ios-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -116,7 +116,20 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<h1>Dini Sorular ve Cevaplar Arşivi<\/h1>/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
-  assert.match(home, /dsca-page-cache:v14/);
+  assert.match(home, /dsca-page-cache:v15/);
+  assert.match(home, /data-newsletter-form/);
+  assert.match(home, /data-newsletter-endpoint="\/api\/newsletter\/subscribe"/);
+  assert.match(home, /Yeni içerik duyurularını e-posta ile almayı kabul ediyorum/);
+  assert.match(home, /data-cookie-banner hidden/);
+  assert.match(home, /data-cookie-reject>Reddet/);
+  assert.match(home, /data-cookie-preferences>Tercihler/);
+  assert.match(home, /data-cookie-accept>Kabul Et/);
+  assert.match(home, /dsca-cookie-consent:v1/);
+  assert.match(home, /analyticsConsentGranted/);
+  assert.match(home, /X-Analytics-Consent/);
+  assert.match(home, /consentVersion: cookieConsentVersion/);
+  assert.match(home, /pa-ios-share-icon/);
+  assert.match(home, /navigator\.platform === 'MacIntel'/);
   assert.match(home, /maxCachedHtmlLength/);
   assert.match(home, /prefetchCard/);
   assert.match(home, /observePrefetchCandidates/);
@@ -158,11 +171,16 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.doesNotMatch(detail.html, /"@type":"QAPage"/);
   assert.doesNotMatch(detail.html, /\/public-preview\//);
 
-  for (const route of ['/arama', '/soru-sor', '/hesabim', '/gizlilik', '/kullanim-kosullari']) {
+  for (const route of ['/arama', '/soru-sor', '/hesabim', '/gizlilik', '/cerez-politikasi', '/kullanim-kosullari']) {
     const rendered = renderPublicArchivePreviewRoute(route, {}, rootData).html;
     assert.match(rendered, /<meta name="robots" content="noindex,follow">/);
     assert.doesNotMatch(rendered, /rel="canonical"/);
   }
+
+  const cookiePolicy = renderPublicArchivePreviewRoute('/cerez-politikasi', {}, rootData).html;
+  assert.match(cookiePolicy, /Zorunlu depolama/);
+  assert.match(cookiePolicy, /Analitik depolama/);
+  assert.match(cookiePolicy, /Reklam veya hedefleme çerezi kullanılmaz/);
 
   const categoriesIndex = renderPublicArchivePreviewRoute('/kategoriler', {}, rootData).html;
   assert.match(categoriesIndex, /<meta name="robots" content="index,follow">/);
@@ -1242,6 +1260,7 @@ test('public preview exposes separate index and info pages', () => {
     '/public-preview/nasil-kullanilir',
     '/public-preview/iletisim',
     '/public-preview/gizlilik',
+    '/public-preview/cerez-politikasi',
     '/public-preview/kullanim-kosullari'
   ]) {
     const rendered = renderPublicArchivePreviewRoute(route);
@@ -1275,6 +1294,14 @@ test('public info pages have page-specific explanatory copy and actions', () => 
   assert.match(privacy, /mahremiyetinizi korumanız önemlidir/);
   assert.match(privacy, /Üçüncü kişiler/);
   assert.match(privacy, /Soru Sorarken Dikkat Edin/);
+  assert.match(privacy, /Abonelik için verdiğiniz e-posta adresi/);
+  assert.match(privacy, /başka amaçla kullanılmaz/);
+
+  const cookies = renderPublicArchivePreviewRoute('/public-preview/cerez-politikasi').html;
+  assert.match(cookies, /Hangi tarayıcı verisinin neden kullanıldığını açıkça bilin/);
+  assert.match(cookies, /Zorunlu depolama/);
+  assert.match(cookies, /Analitik depolama/);
+  assert.match(cookies, /Reklam veya hedefleme çerezi kullanılmaz/);
 
   const terms = renderPublicArchivePreviewRoute('/public-preview/kullanim-kosullari').html;
   assert.match(terms, /geçerli temel kullanım ilkeleri/);

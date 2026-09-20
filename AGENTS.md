@@ -5,6 +5,18 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-20 public çerez ve abonelik sınırı:** Public arşiv analitiği açık
+  kullanıcı izni olmadan ziyaret veya soru okunma kaydı oluşturmamalıdır.
+  Tarayıcı kontrolüne ek olarak `/api/public-analytics/visit` ve
+  `/api/questions/:slug/read` sunucu tarafında da izni doğrular. Analitik
+  varsayılan kapalıdır; ret site kullanımını engellemez ve tercih footer'dan
+  değiştirilebilir. E-posta abonelikleri `public_newsletter_subscriptions`
+  tablosunda tutulur; RLS açık, public/anon/authenticated erişimi kapalı, yazma
+  yalnız rate-limitli backend üzerinden service role ile yapılır. Footer onayı
+  zorunludur. iOS paylaşım aksiyonlarında `share-ios.svg`, diğer platformlarda
+  genel paylaşım simgesi kullanılmalıdır. Public asset sürümü
+  `20260920-cookie-newsletter-ios-v1`, hızlı navigasyon cache sürümü `v15`.
+
 - **2026-09-20 public arşiv arama otoritesi:** Ana sayfanın görünür H1'i marka ve
   hedef aramayla aynı olan `Dini Sorular ve Cevaplar Arşivi` metnidir. Ana
   sayfa, görünür gerçek soru kartlarını `CollectionPage` + `ItemList` olarak

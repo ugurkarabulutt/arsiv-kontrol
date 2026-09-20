@@ -406,6 +406,28 @@ create index if not exists public_users_email_idx on public.public_users (email)
 create unique index if not exists public_users_email_unique_idx on public.public_users (lower(email));
 create index if not exists public_users_last_login_idx on public.public_users (last_login_at desc);
 
+-- public_newsletter_subscriptions
+-- Footer abonelik formundan gelen e-postalar yalnız server API/service role üzerinden yazılır.
+-- RLS açıktır; anon/authenticated rollerine doğrudan tablo erişimi verilmez.
+create table if not exists public.public_newsletter_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  status text not null default 'active' check (status in ('active', 'unsubscribed')),
+  source text not null default 'footer',
+  consent_version text not null,
+  consented_at timestamptz not null default now(),
+  unsubscribed_at timestamptz,
+  unsubscribe_token uuid not null default gen_random_uuid() unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint public_newsletter_email_normalized check (email = lower(btrim(email)))
+);
+alter table public.public_newsletter_subscriptions enable row level security;
+revoke all on public.public_newsletter_subscriptions from public, anon, authenticated;
+grant select, insert, update, delete on public.public_newsletter_subscriptions to service_role;
+create index if not exists public_newsletter_status_created_idx
+  on public.public_newsletter_subscriptions (status, created_at desc);
+
 -- public_question_submissions
 -- Public "Soru Sor" akışından gelen sorular admin panelinde izlenir.
 -- RLS açık kalır; doğrudan istemci erişimi yoktur.

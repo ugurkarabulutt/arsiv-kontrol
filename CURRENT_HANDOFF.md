@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-20 Çerez Tercihleri, Abonelik ve iPhone Paylaşımı
+
+- Public arşive ilk ziyarette görünen, içeriği engellemeyen çerez bildirimi
+  eklendi. `Reddet`, `Tercihler` ve `Kabul Et` eşit ağırlıkta sunulur; analitik
+  varsayılan olarak kapalıdır. Tercih 180 gün tarayıcıda tutulur ve footer'daki
+  `Çerez tercihleri` düğmesiyle yeniden açılabilir.
+- Ziyaret ve soru okunma analitiği hem tarayıcıda hem backend endpoint'lerinde
+  açık analitik izni olmadan çalışmaz. Ret halinde yerel ziyaret/oturum/okunma
+  anahtarları temizlenir; site işlevleri açık kalır.
+- `/cerez-politikasi` noindex bilgi sayfası eklendi. Zorunlu depolama, isteğe
+  bağlı analitik, saklama süreleri ve tercih değiştirme yolu açıklandı.
+- Footer'a açık onay kutulu modern e-posta abonelik alanı eklendi. Kayıtlar
+  `public_newsletter_subscriptions` tablosuna yalnız server-side service role ile
+  yazılır; RLS açık, `anon` ve `authenticated` erişimi kapalıdır. Geçiş canlı
+  Supabase projesine uygulandı ve erişim ayrı SQL sorgusuyla doğrulandı.
+- iPhone/iPad'de paylaşma aksiyonları ve telefona ekleme yardımı Apple'ın yukarı
+  oklu kutu paylaşım simgesini kullanır; diğer platformlarda mevcut genel simge
+  korunur.
+- Doğrulama: `npm.cmd run check` 161/161 başarılı. Preview deployment
+  `dpl_GiSrTmi1vUNmSwEPGN57YPD1QATD`; masaüstü ve iPhone 390x844 Playwright
+  görüntülerinde çakışma/taşma yok. Analitik ret/onay ve abonelik endpoint'leri
+  canlı DB ile uçtan uca test edildi; geçici test satırları silindi.
+
 ## 2026-09-20 Tayy-i Mekân Cevabında Nefs Düzeltmesi
 
 - Public slug
