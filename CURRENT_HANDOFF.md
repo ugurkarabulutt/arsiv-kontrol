@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-20 Yarım Canlı Cevap Denetime Geri Gönderildi
+
+- Public slug
+  `muhterem-hocam-din-kavraminin-muhtevasi-nedir-insani-sadece-fizik-bedenden-ibaret-gormeyip-kamil`
+  olan cevabın kaynak ve public metinde 1.164 karakterde, `Kur'ân'ın
+  farzlarını yerine getirmediler` ifadesinde kesildiği doğrulandı.
+- Kaynak history kaydı `9298f6af-1a53-4c7d-b4c1-3fca512cdc60`; kayıt sahibi ve
+  denetleyen ekip üyesi Nuran Çelik, son onaylayan Kübra İğrek'ti.
+- Canlı `review_history_change` akışında `return` işlemi uygulandı. History
+  durumu `geri_gonderildi`, sürüm `3`; public kayıt durumu
+  `content_review_hidden` oldu. Nuran Çelik'e cevabı kaynak metnin tamamıyla
+  yeniden denetleyip soru, etiketler ve tam cevapla onaya göndermesini isteyen
+  açık not ve bildirim oluşturuldu.
+- Doğrulama: 1 `history_revisions` return kaydı, 1 `admin_action_log` kaydı ve
+  1 okunmamış `approval_return` bildirimi var. Eski canlı URL `404` dönüyor;
+  soru ve yarım cevap HTML'de görünmüyor.
+
 ## 2026-09-20 Public Arşiv Arama Otoritesi
 
 - Ana sayfa H1'i hedef sorgu ve marka adıyla birebir uyumlu olacak şekilde
