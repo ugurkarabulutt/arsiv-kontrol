@@ -32,6 +32,14 @@
   politikası, izin zorunlu abonelik endpoint'i ve `/admin` noindex kontrolü
   geçti. iPhone user agent ile üst ekleme yardımı ve soru detayındaki paylaşım
   ikonunun `share-ios` yollarını kullandığı ayrıca doğrulandı.
+- Bülten arayüzü iyileştirmesi runtime commit `ab5849b` ile push edildi.
+  Preview `dpl_9UHi9LY9pbvGFanCYDnt5emh2VRf`, production
+  `dpl_GnTP9XkhZLQoHaAc6wKTjao9wLXS`. `npm.cmd run check` 161/161 geçti.
+  Preview 390px, 360px ve 1440px görsel kontrolünde yatay taşma olmadı. Canlı
+  390px kontrolde input odak öncesi/sonrası viewport ve scroll genişliği 390px,
+  ölçek `1`, input yazı boyutu `16px` kaldı. Canlı ana sayfa yeni bülten
+  işaretlerini taşıyor; `/health`, admin noindex, çerez politikası noindex ve
+  onaysız abonelik `400` sınırı tekrar doğrulandı.
 
 ## 2026-09-20 Tayy-i Mekân Cevabında Nefs Düzeltmesi
 
