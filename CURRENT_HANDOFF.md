@@ -1,5 +1,33 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-20 Public Arşiv Arama Otoritesi
+
+- Ana sayfa H1'i hedef sorgu ve marka adıyla birebir uyumlu olacak şekilde
+  `Dini Sorular ve Cevaplar Arşivi` yapıldı. Açıklama Dr. Abdulcabbar Boran,
+  Kur'ân ayetleri, deliller ve konu rehberlerini açıkça ifade eder.
+- Ana sayfadaki görünür soru kartları `CollectionPage` + `ItemList` JSON-LD
+  grafına bağlandı. Editoryal arşiv sınırı korundu; `QAPage` eklenmedi.
+- Dr. Abdulcabbar Boran'ın doğrulanabilir `Fizik Yüksek Mühendisi, Mutasavvıf
+  ve Yazar` unvanı, resmî biyografi URL'si ve `sameAs` bağlantıları yazar
+  `Person` şemasına eklendi. Hakkımızda görünür içeriği aynı kimlikle uyumlu
+  hale getirildi.
+- Sitemap'te statik/koleksiyon URL'lerine her istekte bugünün tarihini yazan
+  sahte tazelik kaldırıldı. Koleksiyonlar en son gerçek yayın tarihini; bilgi
+  sayfaları `2026-09-20` editoryal güncellemesini kullanır.
+- Yerel doğrulama: `npm.cmd run check` başarılı, 161/161 test geçti;
+  390x844 mobil ekran görüntüsünde H1 taşması veya çakışma yok.
+- Runtime commit `cf62e13` push edildi. Preview deployment
+  `dpl_FWZPUi9CotBW8jMj6Lm5Bwbe6uvk` üzerinde public-preview SEO markerları
+  doğrulandı. Production deployment `dpl_61HSRhVQpHbFM1tKVv7QBC3NCJaM`,
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı doğrulama: `/health ok`, ana sayfa 200 ve hedef H1/canonical/
+  CollectionPage/ItemList mevcut; gerçek soru detayı 200 ve Article şemalı;
+  Hakkımızda yazar unvanı ve resmî kimlik bağlantıları mevcut; `/admin` 200 ve
+  noindex; sitemap 200 ve 3039 URL içeriyor.
+- Birincilik teknik olarak garanti edilemez. Sonraki ölçüm Google Search
+  Console'da `dini sorular`, `dini sorular ve cevaplar` sorgularının gösterim,
+  ortalama konum, tıklama ve CTR gelişimi üzerinden yapılmalıdır.
+
 ## 2026-09-17 Public Soru Cevaplandı Maili
 
 - Admin panelinde public soru talebine cevap yazıldığında oturum açmış ve

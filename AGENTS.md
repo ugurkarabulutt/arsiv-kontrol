@@ -5,6 +5,19 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## Ortak Çalışma Protokolü
 
+- **2026-09-20 public arşiv arama otoritesi:** Ana sayfanın görünür H1'i marka ve
+  hedef aramayla aynı olan `Dini Sorular ve Cevaplar Arşivi` metnidir. Ana
+  sayfa, görünür gerçek soru kartlarını `CollectionPage` + `ItemList` olarak
+  işaretler; editoryal arşiv olduğu için `QAPage` kullanılmaz. Yazar `Person`
+  şemasında Dr. Abdulcabbar Boran'ın doğrulanabilir unvanı ve resmî
+  `acboran.com` / `ibrahimlive.com` kimlik bağlantıları bulunur; Hakkımızda
+  sayfasındaki görünür metin bu şemayla uyumludur. Sitemap sabit sayfalara her
+  istekte bugünün tarihini yazmaz: koleksiyon sayfaları en son gerçek yayın
+  tarihini, bilgi sayfaları gerçek editoryal güncelleme tarihini kullanır.
+  Runtime commit `cf62e13`, production deployment
+  `dpl_61HSRhVQpHbFM1tKVv7QBC3NCJaM`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+
 - **2026-09-17 public cevap maili:** Public sitede oturum açarak soru soran
   kullanıcılara soru gönderimi sonrası `Sorunuz bize ulaştı`, admin panelinden
   cevap verildiğinde ise `Sorunuz cevaplandı` mail bildirimi Resend üzerinden
