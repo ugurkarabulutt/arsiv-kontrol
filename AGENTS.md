@@ -3,6 +3,22 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-09-21
+
+- **Üye sahiplik itirazları aktif listeden ayrıldı:** Ekip üyesinin
+  `Bu Kayıt Bana Ait Değil` işlemiyle bildirdiği `workflow_meta.disputed=true`
+  kayıtlar artık `Düzenlenecekler` sorgusunda görünmez. Kayıt silinmez;
+  yönetimin `Sahiplik itirazları` ekranında, doğrudan detay erişiminde ve işlem
+  geçmişinde korunur. İşlem sonrası modal kapanır ve üyeye kaydın yönetime
+  iletilip aktif listesinden kaldırıldığı bildirilir. Elçin Akay'ın canlı
+  hesabındaki iki itirazlı kayıt bu davranışla listeden ayrılacaktır. Ayrıca
+  soru ve etiketi eksik olduğu doğrulanan 13 `teyit_bekliyor` kaydı mevcut
+  yönetici iade işlemiyle denetim izi korunarak `geri_gonderildi` durumuna
+  taşındı; canlı `İncelemede` sayısı 329'dan 316'ya indi. Değişen runtime/test
+  dosyaları: `review-workflow.js`, `review-workspace.js`,
+  `test-support/review-fixture.js`, `test/review-workflow-http.test.js`.
+  `npm.cmd run check` başarılı, 162/162 test geçti.
+
 ## Ortak Çalışma Protokolü
 
 - **2026-09-20 public çerez ve abonelik sınırı:** Public arşiv analitiği açık

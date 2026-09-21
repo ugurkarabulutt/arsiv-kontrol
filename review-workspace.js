@@ -346,8 +346,14 @@ const ReviewWorkspace = (() => {
         }
         return;
       }
-      if(action==='delete_draft'||action==='close_duplicate'){
-        await close(true);await load();message(action==='close_duplicate'?'Mükerrer kayıt aktif listenizden kaldırıldı.':'Taslak çöp kutusuna taşındı.');return;
+      if(action==='delete_draft'||action==='close_duplicate'||action==='dispute'){
+        await close(true);await load();
+        message(action==='close_duplicate'
+          ? 'Mükerrer kayıt aktif listenizden kaldırıldı.'
+          : action==='dispute'
+            ? 'Kayıt yönetime iletildi ve Düzenlenecekler listenizden kaldırıldı.'
+            : 'Taslak çöp kutusuna taşındı.');
+        return;
       }
       item=result.history; renderDetail(); message('İşlem tamamlandı.');
       await load();

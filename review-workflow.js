@@ -135,7 +135,12 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     if (space === 'member') query = (readOnly ? query.eq('user_id',req.session.userId) : query.or(`user_id.eq.${req.session.userId},assignee_id.eq.${req.session.userId}`)).neq('status', 'copte');
     else query = query.neq('status', 'taslak');
     if (status === 'disputed' && readOnly) return res.json({ items: [], count: 0, page, pageSize, workspace: space });
-    if (space === 'member') query = query.in('status', memberStatuses);
+    if (space === 'member') {
+      query = query.in('status', memberStatuses);
+      // A reported ownership mismatch remains available to management, but it
+      // is no longer an active editing task for the reporting member.
+      if (status === 'todo') query = query.or('workflow_meta->>disputed.is.null,workflow_meta->>disputed.neq.true');
+    }
     else if (status === 'disputed') query = query.eq('workflow_meta->>disputed', 'true').neq('status', 'copte');
     else if (status !== 'all') query = query.eq('status', status);
     else query = query.neq('status', 'copte');

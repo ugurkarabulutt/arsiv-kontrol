@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-21 Elçin Akay Kayıt Akışı
+
+- Canlı incelemede Elçin Akay hesabının `İncelemede` bölümünde 329 kayıt vardı.
+  Bunların 13'ü `teyit_bekliyor` durumunda, cevapları mevcut fakat soru ve
+  etiketleri eksik kayıtlardı. Önceden eklenmiş yönetim teyit notları da aynı
+  eksikleri gösteriyordu.
+- Bu 13 kayıt mevcut `review_history_change(..., 'return', ...)` işlemiyle,
+  sürüm kontrolü ve yönetici işlem izi korunarak `geri_gonderildi` durumuna
+  taşındı. Her kayıt sürüm 2'den 3'e geçti ve Elçin'e açıklamalı bildirim
+  oluşturuldu. İşlem sonrası canlı sayılar `İncelemede: 316`, eksik kayıtların
+  tamamı `Düzenlenecekler` olarak doğrulandı.
+- Elçin'in “bana ait değil” açıklamasıyla bildirdiği iki kayıt silinmedi.
+  `workflow_meta.disputed=true` kayıtları artık üye `Düzenlenecekler`
+  sorgusundan ayrılıyor; yönetimin `Sahiplik itirazları` ekranında ve işlem
+  geçmişinde kalıyor. Bildirimden sonra detay penceresi kapanır ve kullanıcıya
+  kaydın yönetime iletilip aktif listesinden kaldırıldığı açıkça gösterilir.
+- Regresyon testi, itirazlı kaydın üye listesinden çıkıp yönetim listesinde ve
+  doğrudan detay erişiminde kalmasını doğruluyor. `npm.cmd run check` 162/162
+  başarılı. Production dağıtımı henüz yapılmadı.
+
 ## 2026-09-20 iPhone Ana Sayfa Arama Odağı
 
 - Ana sayfa ilk açıldığında hero aramasına dokununca iOS Safari'nin klavye

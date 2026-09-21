@@ -66,6 +66,7 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   new vm.Script(workspaceScript);
   assert.match(workspaceScript,/todo: 'Düzenlenecekler'/);
   assert.match(workspaceScript,/close_duplicate: 'Mükerrer Olarak Kapat'/);
+  assert.match(workspaceScript,/Kayıt yönetime iletildi ve Düzenlenecekler listenizden kaldırıldı\./);
   assert.match(workspaceScript,/dergah_sorulari: 'Dergah Soruları'/);
   assert.match(workspaceScript,/conference: 'Konferanslara Al'/);
   assert.match(workspaceScript,/: \['todo','in_review','done'\]/);
@@ -186,6 +187,18 @@ test('duplicate-marked member records can be cleaned from active list without ha
   assert.equal((await request('/api/review/'+h.id,'user')).status,404);
   const trash=await request('/api/review/records?status=copte&q=Mükerrer%20temizlenecek','admin','management');
   assert.equal(trash.status,200);assert.equal(trash.data.items[0].id,h.id);
+});
+
+test('ownership disputes leave the member todo list but stay visible to management',async()=>{
+  const h=(await fixture.db.query(`insert into history(user_id,name,status,question_text,original_text,corrected_text,tags)
+    values($1,'Sahiplik Testi','geri_gonderildi','Bu kayıt kime ait?','Kaynak','Cevap','["Takva"]') returning *`,[fixture.users[0].id])).rows[0];
+  const disputed=await request(`/api/review/${h.id}/action`,'user','member',{action:'dispute',version:0,note:'Bu kayıt bana ait değil.'});
+  assert.equal(disputed.status,200);assert.equal(disputed.data.history.workflow.disputed,true);
+  const memberList=await request('/api/review/records?status=todo&q=Sahiplik%20Testi','user','member');
+  assert.equal(memberList.status,200);assert.equal(memberList.data.count,0);
+  const managementList=await request('/api/review/records?status=disputed&q=Sahiplik%20Testi','admin','management');
+  assert.equal(managementList.status,200);assert.equal(managementList.data.count,1);assert.equal(managementList.data.items[0].id,h.id);
+  assert.equal((await request('/api/review/'+h.id,'user','member')).status,200);
 });
 
 test('management can filter and act on special holding sections',async()=>{
