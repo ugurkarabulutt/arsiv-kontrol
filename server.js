@@ -19,6 +19,13 @@ const {
   ROLES, effectiveRole, isAdminRole, isAssignableRole,
   isReservedSuperAdminUsername, isSuperAdminRole
 } = require('./authorization');
+const {
+  PUBLIC_SEARCH_EMBEDDING_DIMENSIONS,
+  PUBLIC_SEARCH_EMBEDDING_MODEL,
+  relatedCategorySlugsFromSearchRows,
+  semanticSearchBoost
+} = require('./public-search-core');
+const { indexPublicQaSearchRows } = require('./public-search-indexer');
 
 const app    = express();
 app.disable('x-powered-by');
@@ -42,6 +49,7 @@ const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
 const MAX_ANALYSIS_TEXT_CHARS = 200000;
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_EMBEDDINGS_URL = 'https://api.openai.com/v1/embeddings';
 const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 70000);
 const OPENAI_RETRY_DELAYS_MS = [800, 1800];
 const OPENAI_RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504]);
@@ -55,6 +63,11 @@ if (ADMIN_PREVIEW_CONTENT_READ_ONLY) app.use('/api', (req, res, next) => {
   return res.status(403).json({ error: 'Bu önizlemede kayıt değişiklikleri kapalı. Canlı kayıtlar korunuyor.' });
 });
 const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
+const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED = !['0', 'false', 'no'].includes(String(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED || '').toLowerCase());
+const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS = Math.max(700, Math.min(5000, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS || 1800)));
+const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD = Math.max(0.35, Math.min(0.9, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD || 0.52)));
+const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT = 48;
+const PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT = Math.max(1, Math.min(25, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT || 8)));
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT = '2026-09-20T00:00:00.000Z';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
@@ -174,6 +187,43 @@ async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
     await sleep(OPENAI_RETRY_DELAYS_MS[attempt]);
   }
   throw httpError(AI_TEMPORARY_UNAVAILABLE_MSG, 503);
+}
+
+async function fetchOpenAIEmbeddings(inputs = [], options = {}) {
+  const cleanInputs = (Array.isArray(inputs) ? inputs : [inputs]).map(value => String(value || '').trim()).filter(Boolean);
+  if (!cleanInputs.length) return [];
+  if (!OPENAI_API_KEY) throw httpError(AI_CONFIG_ERROR_MSG, 503);
+  const timeoutMs = Math.max(700, Number(options.timeoutMs || PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS));
+  const retries = Math.max(0, Math.min(2, Number(options.retries || 0)));
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(OPENAI_EMBEDDINGS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+        body: JSON.stringify({
+          model: options.model || PUBLIC_SEARCH_EMBEDDING_MODEL,
+          dimensions: options.dimensions || PUBLIC_SEARCH_EMBEDDING_DIMENSIONS,
+          input: cleanInputs,
+          encoding_format: 'float'
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      const payload = await safeJson(response);
+      if (!response.ok) throw httpError(payload?.error?.message || `Embeddings HTTP ${response.status}`, response.status);
+      const vectors = (payload.data || []).sort((a, b) => a.index - b.index).map(item => item.embedding);
+      if (vectors.length !== cleanInputs.length) throw httpError('Embedding servisi eksik yanıt döndürdü.', 502);
+      return vectors;
+    } catch (error) {
+      clearTimeout(timeout);
+      lastError = error;
+      if (attempt < retries) await sleep(500 * (attempt + 1));
+    }
+  }
+  throw lastError || httpError('Embedding üretilemedi.', 503);
 }
 
 // ── Middleware ─────────────────────────────────────────────────────────────
@@ -5212,6 +5262,7 @@ async function seed() {
   if (!HAS_HISTORY_PUBLIC_FIELDS) console.warn('⚠ history.question_text/tags alanları yok — onaylı kayıtlardan public veri üretimi pasif.');
 
   await ensurePublicArchiveContentReady();
+  await ensurePublicArchiveSemanticSearchReady();
 }
 
 // ── Auth middleware ────────────────────────────────────────────────────────
@@ -5497,19 +5548,23 @@ const PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT = 120;
 const PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT = 90;
 const PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT = 5;
 const PUBLIC_ARCHIVE_LIVE_SEARCH_CACHE_MS = 60_000;
+const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_CACHE_MS = 10 * 60_000;
 const PUBLIC_ARCHIVE_ANALYTICS_CACHE_MS = 15_000;
-const PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT = 10;
+const PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT = 12;
 let publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
 let publicArchiveCategoryIndexCache = { expiresAt: 0, rows: null };
 let publicArchiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
 let publicArchiveLiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
 const publicArchiveRouteCache = new Map();
 const publicArchiveLiveSearchCache = new Map();
+const publicArchiveSemanticSearchCache = new Map();
 const publicArchiveAnalyticsCache = new Map();
 let publicArchiveContentReady = null;
 let publicArchiveContentReadyError = null;
 let publicArchiveAuthReady = null;
 let publicArchiveStatsReady = null;
+let publicArchiveSemanticSearchReady = null;
+let publicArchiveSemanticSearchLastProbe = 0;
 
 function isPublicArchiveRootRequest(req) {
   return PUBLIC_ARCHIVE_ROOT_ENABLED && String(req?.baseUrl || '') !== '/public-preview';
@@ -6153,6 +6208,102 @@ function setPublicArchiveLiveSearchCache(key, data) {
   return data;
 }
 
+function getPublicArchiveSemanticSearchCache(query = '') {
+  const key = publicArchiveComparable(query);
+  const cached = publicArchiveSemanticSearchCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) return null;
+  return cached.data;
+}
+
+function setPublicArchiveSemanticSearchCache(query = '', data = null) {
+  const key = publicArchiveComparable(query);
+  if (!key || !data) return data;
+  if (publicArchiveSemanticSearchCache.size > 120) {
+    const firstKey = publicArchiveSemanticSearchCache.keys().next().value;
+    if (firstKey) publicArchiveSemanticSearchCache.delete(firstKey);
+  }
+  publicArchiveSemanticSearchCache.set(key, {
+    expiresAt: Date.now() + PUBLIC_ARCHIVE_SEMANTIC_SEARCH_CACHE_MS,
+    data
+  });
+  return data;
+}
+
+let publicArchiveSemanticSearchLastErrorLog = 0;
+
+async function loadPublicArchiveSemanticSearchRows(query = '') {
+  const q = publicArchiveSearchInput(query);
+  if (q.length < 3 || !await ensurePublicArchiveSemanticSearchReady()) {
+    return { available: false, rows: [], matches: [] };
+  }
+  const cached = getPublicArchiveSemanticSearchCache(q);
+  if (cached) return cached;
+
+  try {
+    const [queryEmbedding] = await fetchOpenAIEmbeddings([`Dini soru-cevap arşivinde aranan konu: ${q}`], {
+      timeoutMs: PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS,
+      retries: 0
+    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS);
+    let rpcQuery = supabase.rpc('match_public_qa_hybrid_search', {
+      p_query_embedding: queryEmbedding,
+      p_query_terms: publicArchiveHybridSearchTerms(q),
+      p_match_threshold: PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD,
+      p_match_count: PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT
+    });
+    if (typeof rpcQuery.abortSignal === 'function') rpcQuery = rpcQuery.abortSignal(controller.signal);
+    let rpcResult;
+    try {
+      rpcResult = await rpcQuery;
+    } finally {
+      clearTimeout(timeout);
+    }
+    const { data: matches, error } = rpcResult;
+    if (error) throw new Error(error.message);
+    const cleanMatches = (matches || [])
+      .filter(match => match?.qa_slug && (
+        Number(match.lexical_matches || 0) > 0
+        || Number(match.similarity || 0) >= PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD
+      ))
+      .slice(0, PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT);
+    const slugs = [...new Set(cleanMatches.map(match => match.qa_slug))];
+    if (!slugs.length) return setPublicArchiveSemanticSearchCache(q, { available: true, rows: [], matches: [] });
+    const { data: rows, error: rowsError } = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT)
+      .eq('status', 'published')
+      .in('slug', slugs);
+    if (rowsError) throw new Error(rowsError.message);
+    const matchMap = new Map(cleanMatches.map(match => [match.qa_slug, match]));
+    const rowMap = new Map((rows || []).map(row => [row.slug, row]));
+    const rankedRows = slugs.map(slug => {
+      const row = rowMap.get(slug);
+      const match = matchMap.get(slug);
+      if (!row || !match) return null;
+      return {
+        ...row,
+        search_semantic_similarity: Number(match.similarity || 0),
+        search_semantic_kind: match.document_kind || '',
+        search_semantic_excerpt: publicArchiveText(match.matched_text || '', 420),
+        search_lexical_matches: Number(match.lexical_matches || 0),
+        search_hybrid_score: Number(match.hybrid_score || 0)
+      };
+    }).filter(Boolean);
+    return setPublicArchiveSemanticSearchCache(q, {
+      available: true,
+      rows: rankedRows,
+      matches: cleanMatches
+    });
+  } catch (error) {
+    if (Date.now() - publicArchiveSemanticSearchLastErrorLog > 60_000) {
+      publicArchiveSemanticSearchLastErrorLog = Date.now();
+      console.warn('Public anlam araması geçici olarak kullanılamadı; kelime aramasına dönüldü:', error.message);
+    }
+    return { available: false, degraded: true, rows: [], matches: [] };
+  }
+}
+
 function clearPublicArchiveCaches() {
   publicArchiveDatasetCache = { expiresAt: 0, data: null, source: 'empty' };
   publicArchiveCategoryIndexCache = { expiresAt: 0, rows: null };
@@ -6160,6 +6311,7 @@ function clearPublicArchiveCaches() {
   publicArchiveLiveSearchIndexCache = { expiresAt: 0, rows: null, categoryRows: null };
   publicArchiveRouteCache.clear();
   publicArchiveLiveSearchCache.clear();
+  publicArchiveSemanticSearchCache.clear();
 }
 
 async function ensurePublicArchiveStatsReady() {
@@ -6211,6 +6363,31 @@ async function ensurePublicArchiveContentReady() {
     });
   }
   return publicArchiveContentReady;
+}
+
+async function ensurePublicArchiveSemanticSearchReady(force = false) {
+  if (!PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED || !OPENAI_API_KEY) return false;
+  const now = Date.now();
+  if (HAS_PUBLIC_ARCHIVE_SEMANTIC_SEARCH) return true;
+  if (!force && publicArchiveSemanticSearchLastProbe && now - publicArchiveSemanticSearchLastProbe < 5 * 60_000) return false;
+  if (!publicArchiveSemanticSearchReady) {
+    publicArchiveSemanticSearchLastProbe = now;
+    publicArchiveSemanticSearchReady = (async () => {
+      const { error } = await supabase.from('public_qa_search_documents').select('qa_slug').limit(1);
+      HAS_PUBLIC_ARCHIVE_SEMANTIC_SEARCH = !error;
+      if (!HAS_PUBLIC_ARCHIVE_SEMANTIC_SEARCH) {
+        console.warn('⚠ public_qa_search_documents tablosu yok — public arama kelime eşleşmesiyle çalışacak.');
+      }
+      return HAS_PUBLIC_ARCHIVE_SEMANTIC_SEARCH;
+    })().catch(error => {
+      HAS_PUBLIC_ARCHIVE_SEMANTIC_SEARCH = false;
+      console.warn('Public anlam araması tablo kontrolü başarısız:', error.message);
+      return false;
+    }).finally(() => {
+      publicArchiveSemanticSearchReady = null;
+    });
+  }
+  return publicArchiveSemanticSearchReady;
 }
 
 async function ensurePublicArchiveAuthReady() {
@@ -6361,7 +6538,7 @@ function publicArchiveSearchTokenForms(token = '') {
   const value = publicArchiveComparable(token);
   if (!value) return [];
   const forms = new Set([value]);
-  const suffixes = ['lerinden', 'larından', 'lerden', 'lardan', 'nin', 'nın', 'nun', 'nün', 'in', 'ın', 'un', 'ün', 'den', 'dan', 'ten', 'tan', 'ye', 'ya', 'yi', 'yı', 'yu', 'yü', 'de', 'da', 'te', 'ta', 'ne', 'na', 'ni', 'nı', 'nu', 'nü', 'e', 'a', 'i', 'ı', 'u', 'ü'];
+  const suffixes = ['lerinden', 'larından', 'lerden', 'lardan', 'dir', 'dır', 'dur', 'dür', 'tir', 'tır', 'tur', 'tür', 'yor', 'mak', 'mek', 'lar', 'ler', 'lik', 'lık', 'luk', 'lük', 'nin', 'nın', 'nun', 'nün', 'den', 'dan', 'ten', 'tan', 'an', 'en', 'in', 'ın', 'un', 'ün', 'ye', 'ya', 'yi', 'yı', 'yu', 'yü', 'de', 'da', 'te', 'ta', 'ne', 'na', 'ni', 'nı', 'nu', 'nü', 'e', 'a', 'i', 'ı', 'u', 'ü'];
   for (const suffix of suffixes) {
     if (value.length > suffix.length + 3 && value.endsWith(suffix)) {
       forms.add(value.slice(0, -suffix.length));
@@ -6404,15 +6581,34 @@ function publicArchiveSearchTerms(value = '') {
     const term = String(item || '').trim();
     if (term.length > 1) terms.add(term);
   }
-  for (const variant of publicArchiveAccentVariants(comparable)) {
-    if (variant.length > 1) terms.add(variant);
+  const rawTokens = clean.toLocaleLowerCase('tr-TR').split(/\s+/).filter(token => token.length > 1);
+  const usefulRawTokens = rawTokens.filter(token => !PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS.has(publicArchiveComparable(token)));
+  for (const token of usefulRawTokens.length ? usefulRawTokens : rawTokens) {
+    terms.add(token);
   }
   for (const token of publicArchiveSearchIntentTokens(comparable)) {
     for (const form of publicArchiveSearchTokenForms(token)) {
       if (form.length > 1) terms.add(form);
     }
   }
+  if (!clean.includes(' ')) {
+    for (const variant of publicArchiveAccentVariants(comparable)) {
+      if (variant.length > 1) terms.add(variant);
+    }
+  }
   return [...terms].slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT);
+}
+
+function publicArchiveHybridSearchTerms(value = '') {
+  const terms = new Set();
+  for (const token of publicArchiveSearchIntentTokens(value)) {
+    const normalizedForms = publicArchiveSearchTokenForms(token)
+      .map(form => publicArchiveSlug(form).replace(/-/g, ''))
+      .filter(form => form.length >= 3)
+      .sort((a, b) => a.length - b.length || a.localeCompare(b));
+    if (normalizedForms[0]) terms.add(normalizedForms[0]);
+  }
+  return [...terms].slice(0, 24);
 }
 
 function publicArchiveCategoryMatchesSearch(category = {}, query = '') {
@@ -6432,20 +6628,24 @@ function publicArchiveSearchSqlOr(fields = [], term = '') {
 }
 
 async function fetchPublicArchiveSearchRowsByText(fields = [], terms = [], limit = PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT, selectColumns = PUBLIC_ARCHIVE_LIST_SELECT) {
+  const filters = terms
+    .slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT)
+    .map(term => publicArchiveSearchSqlOr(fields, term))
+    .filter(Boolean);
+  if (!filters.length) return [];
+  const perTermLimit = Math.min(120, Math.max(40, Math.ceil(limit / 3)));
+  const results = await Promise.all(filters.map(filter => supabase
+    .from('public_qa')
+    .select(selectColumns)
+    .eq('status', 'published')
+    .or(filter)
+    .order('published_at', { ascending: false })
+    .limit(perTermLimit)));
   const rows = [];
   const seen = new Set();
-  for (const term of terms.slice(0, PUBLIC_ARCHIVE_SEARCH_PATTERN_LIMIT)) {
-    const filter = publicArchiveSearchSqlOr(fields, term);
-    if (!filter) continue;
-    const { data, error } = await supabase
-      .from('public_qa')
-      .select(selectColumns)
-      .eq('status', 'published')
-      .or(filter)
-      .order('published_at', { ascending: false })
-      .limit(limit);
-    if (error) throw new Error(error.message);
-    for (const row of data || []) {
+  for (const result of results) {
+    if (result.error) throw new Error(result.error.message);
+    for (const row of result.data || []) {
       if (!row?.slug || seen.has(row.slug)) continue;
       seen.add(row.slug);
       rows.push(row);
@@ -6544,7 +6744,15 @@ function publicArchiveRowIntentRank(row = {}, query = '') {
   const titleRank = publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q);
   const metaRank = publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, row.category_slug, Array.isArray(row.topic_slugs) ? row.topic_slugs.join(' ') : '', row.search_category_text].join(' '), q);
   const answerRank = publicArchiveLiveSearchMatchScore(row.answer_text || '', q);
-  return (titleRank * 12) + (metaRank * 8) + (answerRank * 3);
+  const combined = publicArchiveComparable([row.title, row.question, row.summary, row.excerpt, row.search_category_text, row.answer_text].join(' '));
+  const matchedIntentTokens = publicArchiveSearchIntentTokens(q).filter(token => publicArchiveSearchTokenMatches(combined, token)).length;
+  return (titleRank * 6)
+    + (metaRank * 4)
+    + (answerRank * 3)
+    + (matchedIntentTokens * 320)
+    + (Number(row.search_lexical_matches || 0) * 420)
+    + Math.round(Number(row.search_hybrid_score || 0) * 120)
+    + semanticSearchBoost(row.search_semantic_similarity);
 }
 
 function publicArchiveRankSearchRows(groups = {}, query = '') {
@@ -6565,6 +6773,7 @@ function publicArchiveRankSearchRows(groups = {}, query = '') {
   addRows(groups.titleRows, 'title', 700);
   addRows(groups.summaryRows, 'summary', 360);
   addRows(groups.bodyRows, 'body', 120);
+  addRows(groups.semanticRows, 'semantic', 520);
   const ranked = [...scored.values()]
     .map(item => ({ ...item, rank: publicArchiveRowIntentRank(item.row, query) }))
     .filter(item => !query || item.rank > 0)
@@ -6891,21 +7100,47 @@ async function loadPublicArchiveSearchDataset(query = {}) {
     });
   }
 
-  const searchIndex = await loadPublicArchiveSearchIndexRows();
-  const categoryIndexRows = searchIndex.categoryRows || [];
-  const searchRows = searchIndex.rows || [];
+  const searchTerms = publicArchiveSearchTerms(q);
+  const [semanticResult, categoryIndexRows] = await Promise.all([
+    loadPublicArchiveSemanticSearchRows(q),
+    loadPublicArchiveCategoryIndexRows()
+  ]);
+  const lexicalRows = semanticResult.available
+    ? []
+    : await fetchPublicArchiveSearchRowsByText(
+      ['title', 'question', 'summary', 'excerpt', 'answer_text'],
+      searchTerms,
+      PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT * 3,
+      PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT
+    );
+  const categoryMap = new Map(categoryIndexRows.map(category => [category.slug, category]));
   const matchedCategories = categoryIndexRows
     .filter(category => publicArchiveCategoryMatchesSearch(category, q))
     .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
     .slice(0, 8);
   const matchedCategorySlugs = new Set(matchedCategories.map(category => category.slug));
-  const categoryRows = matchedCategorySlugs.size
-    ? searchRows.filter(row => publicArchiveSearchRowCategorySlugs(row).some(slug => matchedCategorySlugs.has(slug)))
+  const categoryMatches = matchedCategorySlugs.size
+    ? await fetchPublicArchiveSearchRowsByCategorySlugs([...matchedCategorySlugs])
     : [];
+  const searchRows = (lexicalRows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
+  const categoryRows = (categoryMatches || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
   const titleRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q) > 0);
   const summaryRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, row.search_category_text].join(' '), q) > 0);
   const bodyRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore(row.answer_text || '', q) > 0);
-  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows }, q);
+  const semanticRows = (semanticResult.rows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
+  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows, semanticRows }, q);
+  const relatedCategorySlugs = relatedCategorySlugsFromSearchRows(rows, 8);
+  const visibleCategories = [];
+  const visibleCategorySlugs = new Set();
+  for (const category of [
+    ...matchedCategories,
+    ...relatedCategorySlugs.map(slug => categoryMap.get(slug)).filter(Boolean)
+  ]) {
+    if (!category?.slug || visibleCategorySlugs.has(category.slug)) continue;
+    visibleCategorySlugs.add(category.slug);
+    visibleCategories.push(category);
+    if (visibleCategories.length >= 4) break;
+  }
   return publicArchiveDatasetForRows({
     rows,
     categoryRows: categoryIndexRows,
@@ -6914,7 +7149,10 @@ async function loadPublicArchiveSearchDataset(query = {}) {
       preFiltered: true,
       query: q,
       total: rows.length,
-      categoryMatches: matchedCategories.slice(0, 4).map(category => ({
+      semanticApplied: semanticResult.available === true && semanticRows.length > 0,
+      semanticMatchCount: semanticRows.length,
+      semanticDegraded: semanticResult.degraded === true,
+      categoryMatches: visibleCategories.map(category => ({
         slug: category.slug,
         name: category.name,
         questionCount: Number(category.question_count || 0) || 0
@@ -8962,6 +9200,35 @@ async function publishApprovedHistoryRecords(records = []) {
     if (error) throw new Error(error.message);
   }
 
+  let semanticIndex = {
+    available: false,
+    indexedRecords: 0,
+    pendingRecords: qaRows.length
+  };
+  if (qaRows.length <= PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT && await ensurePublicArchiveSemanticSearchReady()) {
+    try {
+      const indexResult = await indexPublicQaSearchRows({
+        supabase,
+        rows: qaRows,
+        categories,
+        topics,
+        embedTexts: (inputs, options) => fetchOpenAIEmbeddings(inputs, {
+          ...options,
+          timeoutMs: 30000,
+          retries: 1
+        })
+      });
+      semanticIndex = {
+        available: true,
+        ...indexResult,
+        pendingRecords: 0
+      };
+    } catch (error) {
+      console.warn('Yayın kayıtları anlam arama indeksine eklenemedi; yayın işlemi korunarak devam etti:', error.message);
+      semanticIndex.error = 'semantic_index_deferred';
+    }
+  }
+
   clearPublicArchiveCaches();
   publicArchiveDatasetCache = {
     expiresAt: Date.now() + PUBLIC_ARCHIVE_DATA_CACHE_MS,
@@ -8978,7 +9245,8 @@ async function publishApprovedHistoryRecords(records = []) {
     insertedNewContent,
     categories: categories.length,
     topics: topics.length,
-    links: qaTopicRows.length
+    links: qaTopicRows.length,
+    semanticIndex
   };
 }
 
@@ -14150,6 +14418,7 @@ let HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = false; // startup'ta tespit ed
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
 let HAS_PUBLIC_ARCHIVE_VISIT_TABLES = false; // startup'ta tespit edilir (public ziyaret istatistikleri)
 let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
+let HAS_PUBLIC_ARCHIVE_SEMANTIC_SEARCH = false; // startup'ta tespit edilir (public anlam arama indeksi)
 let HAS_HISTORY_PUBLIC_FIELDS = false; // startup'ta tespit edilir (onaylı kayıtlardaki soru/etiket alanları)
 let HAS_HISTORY_TAG_IMPORT_TABLES = false; // startup'ta tespit edilir (Excel etiket aktarimi)
 let startupReady = Promise.resolve();

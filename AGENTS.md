@@ -3,6 +3,29 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-09-22
+
+- **Public arşiv hibrit anlam araması:** Tam `/arama` sayfası artık yalnız
+  kelime eşleşmesine dayanmaz. Yayımlanmış soru, cevap parçaları, kategori ve
+  kavramlardan `text-embedding-3-small` ile 1024 boyutlu arama belgeleri
+  hazırlanır; pgvector benzerliği ile Türkçe normalize edilmiş kelime kapsamı
+  aynı Supabase RPC'sinde birleştirilir. Her tuş vuruşunda AI çağrısı yapılmaz:
+  ana sayfa canlı önerileri hafif klasik arama olarak kalır, embedding yalnız
+  gönderilmiş tam arama sorgusunda çalışır. OpenAI, tablo veya RPC erişilemezse
+  public arama klasik sorguya geri düşerek çalışmaya devam eder; yayın işlemi de
+  indeksleme hatası yüzünden başarısız olmaz. `public_qa_search_documents`
+  tablosu RLS ile kapalıdır; `anon` ve `authenticated` tablo/RPC erişimi yoktur,
+  yalnız service role indeksleme ve arama yapabilir. Yeni/yayından kaldırılan
+  kayıtlar içerik hash'iyle artımlı senkron edilir; toplu bakım için
+  `npm run search:index -- --apply`, kalite kontrolü için `npm run search:check`
+  kullanılır. Canlı Supabase'e `20260921211831_semantic_archive_search` ve
+  `20260922001500_hybrid_archive_search` geçişleri uygulandı. İndeks 2.729
+  yayımlanmış soru için 9.557 belge içeriyor; boş `search_text` kaydı yok.
+  Örnek `Uyku halinde vücuttan ayrılan nefstir` aramasında ölüm/uyku, ruh-nefs
+  ayrımı ve canın ruh-nefs oluşu hakkındaki ilgili kayıtlar üst sıralara gelir.
+  Arama sayfası bunu `En Uygun Cevaplar` ve kısa anlam bağlantısı notuyla
+  gösterir; ilgili kategori eşleşmeleri ayrı `İlgili konular` grubundadır.
+
 ## 2026-09-21
 
 - **Üye sahiplik itirazları aktif listeden ayrıldı:** Ekip üyesinin

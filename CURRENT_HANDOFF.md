@@ -1,5 +1,32 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-22 Hibrit Anlam Araması
+
+- Public tam arama için kelime ve anlamsal benzerliği birleştiren hibrit arama
+  hazırlandı. `text-embedding-3-small` sorgu embedding'i yalnız `/arama`
+  gönderiminde üretilir; canlı yazım önerileri aynı hafif klasik endpoint'te
+  kaldığı için her tuş vuruşu AI maliyeti veya gecikmesi oluşturmaz.
+- Canlı Supabase'e `vector` / `pg_trgm`, kapalı
+  `public_qa_search_documents` tablosu ve service-role-only hibrit RPC geçişleri
+  uygulandı. Yetki kontrolünde `anon=false`, `authenticated=false`,
+  `service_role=true`. Tam indeks 2.729 yayımlanmış soru, 9.557 belge ve sıfır
+  boş normalize arama metniyle doğrulandı.
+- Yayın sırasında küçük artımlı indeks güncellemesi yapılır; içerik hash'i
+  değişmeyen belgeler atlanır, eski parçalar silinir. Embedding/RPC sorunu arama
+  veya yayını bozmaz; klasik public arama otomatik yedektir.
+- Örnek `Uyku halinde vücuttan ayrılan nefstir` sorgusunda en üst sonuç ölümden
+  sonra uyku hâli sorusu; ardından ruh-nefs farkı, can ve nefs/ruh ayrımıyla
+  ilgili kayıtlar gelir. Soğuk yerel arama yaklaşık 2,3 sn, aynı sorgunun kısa
+  süreli cache yanıtı yaklaşık 110 ms ölçüldü.
+- Public görünüm `En Uygun Cevaplar`, kısa anlam bağlantısı notu ve ayrı
+  `İlgili konular` bölümü kullanır. Public asset sürümü
+  `20260922-semantic-search-v1`.
+- Yerel `npm.cmd run check` 167/167 başarılı. Supabase güvenlik/performance
+  danışmanında bu özelliğe bağlı yeni kritik bulgu yok; görünen RLS bilgi kaydı
+  service-role-only tasarımla uyumlu, diğer uyarılar önceden mevcut okuma sayacı
+  ve genel indeks kayıtlarıdır. Kodun commit/push/preview/production durumu bu
+  bölümde dağıtım sonrası ayrıca kaydedilecektir.
+
 ## 2026-09-21 Elçin Akay Kayıt Akışı
 
 - Canlı incelemede Elçin Akay hesabının `İncelemede` bölümünde 329 kayıt vardı.

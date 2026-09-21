@@ -267,6 +267,10 @@ assert(!server.includes('loadArchiveData: async () =>'), 'Public preview router 
 assert(!server.includes('loadPublicArchiveStatsMap(qaRows.map'), 'Public dataset ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(!server.includes('const usedSlugs = rows.map'), 'Public history fallback ilk yuklemede tum okunma sayaclarini topluca beklememeli.');
 assert(server.includes('PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT') && server.includes('publicArchiveRankSearchRows'), 'Public arama sonuclari alaka skoruyla siralanmali.');
+for (const marker of ['PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED', 'loadPublicArchiveSemanticSearchRows', 'match_public_qa_hybrid_search', 'publicArchiveHybridSearchTerms', 'search_semantic_similarity', 'search_lexical_matches', 'semanticSearchBoost']) {
+  assert(server.includes(marker), `Public hibrit arama isareti eksik: ${marker}`);
+}
+assert(publicRendererSource.includes('En Uygun Cevaplar') && publicRendererSource.includes('anlamca bağlantılı cevaplar'), 'Arama sayfasi anlam eslesmesini sade dille gostermeli.');
 assert(server.includes('loadPublicArchiveSearchIndexRows') && server.includes('publicArchiveSearchRowCategorySlugs') && server.includes("publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q)"), 'Public arama etiket/kategori ve soru basligini ayri agirlikta aramali.');
 assert(publicRendererSource.includes('searchDirectCategoryMatches') && publicCss.includes('.pa-search-direct-card'), 'Public arama dogrudan kategori eslesmesini gostermeli.');
 assert(/\.pa-letter-search input\s*\{[\s\S]*font-size:\s*16px;/.test(publicCss), 'Arsiv ici kategori arama inputu iOS zoom tetiklememek icin 16px olmali.');
@@ -1345,7 +1349,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260920-mobile-search-focus-v5'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260922-semantic-search-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1355,7 +1359,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260920-mobile-search-focus-v5"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260922-semantic-search-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1390,7 +1394,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260920-mobile-search-focus-v5', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260922-semantic-search-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');

@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260920-mobile-search-focus-v5';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260922-semantic-search-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -2390,6 +2390,7 @@ function renderSearch(query = '') {
   const cleanQuery = String(query || '').trim();
   const results = searchResults(cleanQuery);
   const directCategories = searchDirectCategoryMatches();
+  const semanticApplied = publicArchiveFixtures.search?.semanticApplied === true;
   return renderShell({
     active: 'search',
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
@@ -2410,7 +2411,8 @@ function renderSearch(query = '') {
           ${directCategories}
         </section>
         <section class="pa-section">
-          ${sectionHeader(cleanQuery ? `"${cleanQuery}" araması` : 'Arşivdeki Sorular')}
+          ${sectionHeader(cleanQuery ? 'En Uygun Cevaplar' : 'Arşivdeki Sorular')}
+          ${semanticApplied ? '<p class="pa-search-method">Sonuçlar, yazdığınız ifadeyle anlamca bağlantılı cevaplar da dikkate alınarak sıralandı.</p>' : ''}
           <p class="pa-result-count">${results.length ? `${results.length} kayıt listeleniyor.` : 'Eşleşen kayıt bulunamadı.'}</p>
           ${results.length
             ? `<div class="pa-list">${results.map(entry => questionCard(entry, true)).join('')}</div>`
@@ -2427,16 +2429,19 @@ function searchDirectCategoryMatches() {
     : [];
   if (!matches.length) return '';
   return `
-    <div class="pa-search-direct" aria-label="Doğrudan kategori eşleşmeleri">
-      ${matches.map(item => `
-        <a class="pa-search-direct-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(item.slug)}">
-          <span>
-            <strong>${escapeHtml(item.name)}</strong>
-            <small>${archiveCountLabel(item.questionCount || 0)} ilgili soru</small>
-          </span>
-          ${iconSvg('arrow-right', 'pa-search-direct-icon')}
-        </a>
-      `).join('')}
+    <div class="pa-search-direct-shell" aria-label="İlgili konular">
+      <p class="pa-search-direct-heading">İlgili konular</p>
+      <div class="pa-search-direct">
+        ${matches.map(item => `
+          <a class="pa-search-direct-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(item.slug)}">
+            <span>
+              <strong>${escapeHtml(item.name)}</strong>
+              <small>${archiveCountLabel(item.questionCount || 0)} ilgili soru</small>
+            </span>
+            ${iconSvg('arrow-right', 'pa-search-direct-icon')}
+          </a>
+        `).join('')}
+      </div>
     </div>
   `;
 }

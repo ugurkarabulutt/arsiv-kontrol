@@ -2833,7 +2833,20 @@ a.pa-chip:hover,
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 8px;
+}
+
+.pa-search-direct-shell {
+  margin-top: 18px;
+}
+
+.pa-search-direct-heading {
+  margin: 0 !important;
+  color: var(--pa-text-3) !important;
+  font-size: 12px !important;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .pa-search-direct-card {
@@ -2891,6 +2904,13 @@ a.pa-chip:hover,
   color: var(--pa-text-3);
   font-size: 14px;
   font-weight: 600;
+}
+
+.pa-search-method {
+  margin: -6px 0 10px;
+  color: var(--pa-text-2);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .pa-collection-meta {

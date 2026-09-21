@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260920-mobile-search-focus-v5"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260922-semantic-search-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260920-mobile-search-focus-v5"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260920-mobile-search-focus-v5"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260922-semantic-search-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260922-semantic-search-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -616,6 +616,39 @@ test('public preview search and missing states are deterministic', () => {
   const missing = renderPublicArchivePreviewRoute('/public-preview/soru/gizli-icerik');
   assert.equal(missing.status, 404);
   assert.match(missing.html, /Sayfa bulunamadı\./);
+});
+
+test('semantic search results explain intent matching without technical jargon', () => {
+  const archiveData = {
+    brand: {},
+    categories: [{ slug: 'nefs', name: 'Nefs', description: 'Nefs konusundaki cevaplar.', topicSlugs: [] }],
+    topics: [],
+    search: {
+      preFiltered: true,
+      query: 'Uyku halinde vücuttan ayrılan nefstir',
+      semanticApplied: true,
+      categoryMatches: [{ slug: 'nefs', name: 'Nefs', questionCount: 1 }]
+    },
+    qa: [{
+      slug: 'uykuda-nefs',
+      title: 'Uyku halinde nefs',
+      question: 'Uyku halinde vücuttan ayrılan nedir?',
+      answer: ['Her gece nefsimiz vücudumuzdan ayrılır.'],
+      categorySlug: 'nefs',
+      topicSlugs: [],
+      publishedAt: '2026-09-22T00:00:00.000Z'
+    }]
+  };
+  const html = renderPublicArchivePreviewRoute('/public-preview/arama', {
+    q: 'Uyku halinde vücuttan ayrılan nefstir'
+  }, archiveData).html;
+
+  assert.match(html, /En Uygun Cevaplar/);
+  assert.match(html, /İlgili konular/);
+  assert.match(html, /anlamca bağlantılı cevaplar/);
+  const methodNote = html.match(/<p class="pa-search-method">([^<]+)<\/p>/);
+  assert.ok(methodNote);
+  assert.doesNotMatch(methodNote[1], /embedding|vektör|RAG/i);
 });
 
 test('public preview can render approved records instead of fixture data', () => {
