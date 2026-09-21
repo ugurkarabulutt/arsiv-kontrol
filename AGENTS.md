@@ -17,7 +17,12 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   taşındı; canlı `İncelemede` sayısı 329'dan 316'ya indi. Değişen runtime/test
   dosyaları: `review-workflow.js`, `review-workspace.js`,
   `test-support/review-fixture.js`, `test/review-workflow-http.test.js`.
-  `npm.cmd run check` başarılı, 162/162 test geçti.
+  `npm.cmd run check` başarılı, 162/162 test geçti. Runtime commit `b938bfb`
+  GitHub'a push edildi ve production'a alındı. Production deployment
+  `dpl_3sE8qVoPWg2vuYmLNxDeTBN3j67r`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health ok`, root/admin/asset `200`,
+  admin `noindex, nofollow`, yeni işlem mesajı mevcut ve oturumsuz inceleme
+  API'si `401` olarak doğrulandı.
 
 ## Ortak Çalışma Protokolü
 

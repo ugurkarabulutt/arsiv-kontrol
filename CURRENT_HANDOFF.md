@@ -18,7 +18,11 @@
   kaydın yönetime iletilip aktif listesinden kaldırıldığı açıkça gösterilir.
 - Regresyon testi, itirazlı kaydın üye listesinden çıkıp yönetim listesinde ve
   doğrudan detay erişiminde kalmasını doğruluyor. `npm.cmd run check` 162/162
-  başarılı. Production dağıtımı henüz yapılmadı.
+  başarılı. Runtime commit `b938bfb`, production deployment
+  `dpl_3sE8qVoPWg2vuYmLNxDeTBN3j67r`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health ok`, root/admin/asset `200`,
+  admin `noindex, nofollow`, yeni işlem mesajı mevcut ve oturumsuz inceleme
+  API'si `401` olarak doğrulandı.
 
 ## 2026-09-20 iPhone Ana Sayfa Arama Odağı
 
