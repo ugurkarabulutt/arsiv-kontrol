@@ -25,6 +25,16 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   ayrımı ve canın ruh-nefs oluşu hakkındaki ilgili kayıtlar üst sıralara gelir.
   Arama sayfası bunu `En Uygun Cevaplar` ve kısa anlam bağlantısı notuyla
   gösterir; ilgili kategori eşleşmeleri ayrı `İlgili konular` grubundadır.
+  Runtime commit `f3e4edb`, preview deployment
+  `dpl_CmkQsrh2JZepLSACig27ZL16Kjxj`, production deployment
+  `dpl_FBNhDci8xzaZPiBoT8ZGgDCVCTuw`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Yerel `npm.cmd run check` 168/168 başarılı.
+  Preview public aramada yeni asset/anlam notu/konu bağlantıları ve doğru ilk
+  beş sonuç; production'da `/health ok`, root/arama/admin `200`, admin
+  `noindex, nofollow` + `no-store`, aynı sonuç sırası ve `Nefs`, `Ruh`,
+  `Öldüğünü Farketmek` bağlantıları doğrulandı. Canlı önbellekli arama 292-397
+  ms aralığında ölçüldü; deployment sonrası ilk soğuk istek 4,1 sn sürdü. Son
+  15 dakika production error logu boştu.
 
 ## 2026-09-21
 

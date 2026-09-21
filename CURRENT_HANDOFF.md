@@ -21,11 +21,21 @@
 - Public görünüm `En Uygun Cevaplar`, kısa anlam bağlantısı notu ve ayrı
   `İlgili konular` bölümü kullanır. Public asset sürümü
   `20260922-semantic-search-v1`.
-- Yerel `npm.cmd run check` 167/167 başarılı. Supabase güvenlik/performance
+- Yerel `npm.cmd run check` 168/168 başarılı. Supabase güvenlik/performance
   danışmanında bu özelliğe bağlı yeni kritik bulgu yok; görünen RLS bilgi kaydı
   service-role-only tasarımla uyumlu, diğer uyarılar önceden mevcut okuma sayacı
-  ve genel indeks kayıtlarıdır. Kodun commit/push/preview/production durumu bu
-  bölümde dağıtım sonrası ayrıca kaydedilecektir.
+  ve genel indeks kayıtlarıdır.
+- Runtime commit `f3e4edb` uzak `codex/semantic-archive-search` dalına push
+  edildi. Preview `dpl_CmkQsrh2JZepLSACig27ZL16Kjxj`; izole public preview
+  sayfasında yeni asset sürümü, anlam notu, doğru ilk beş sonuç ve `Nefs`,
+  `Ruh`, `Öldüğünü Farketmek` konu bağlantıları doğrulandı. Preview `/health`
+  ve admin noindex/no-store sınırları geçti.
+- Production deployment `dpl_FBNhDci8xzaZPiBoT8ZGgDCVCTuw`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health ok`, root/arama/admin `200`,
+  admin `noindex, nofollow` ve `no-store`. Örnek aramada doğru ölüm/uyku sorusu
+  birinci, ruh-nefs ayrımı cevapları sonraki sıralarda; aynı üç konu bağlantısı
+  canlı HTML'de mevcut. İlk soğuk arama 4,1 sn, önbellekli tekrarlar 292-397 ms.
+  Deployment'ın son 15 dakika error logu boş.
 
 ## 2026-09-21 Elçin Akay Kayıt Akışı
 
