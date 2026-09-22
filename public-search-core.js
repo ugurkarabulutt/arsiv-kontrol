@@ -10,7 +10,7 @@ const PUBLIC_SEARCH_MAX_ANSWER_CHUNKS = 32;
 const PUBLIC_SEARCH_KEYWORD_TERM_LIMIT = 5;
 const PUBLIC_SEARCH_QUERY_FILLERS = new Set([
   'acaba', 'acikla', 'aciklar', 'anlat', 'anlatir', 'ara', 'bir', 'bize', 'bu',
-  'cevap', 'eder', 'etmek', 'gibi', 'halinde', 'hocam', 'icin', 'ile', 'mi',
+  'cevap', 'eder', 'etmek', 'gibi', 'hocam', 'icin', 'ile', 'mi',
   'insan', 'insanin', 'kisi', 'kisinin', 'midir', 'misiniz', 'muhterem', 'mu',
   'mudur', 'nasil', 'ne', 'nedir', 'sahip', 'sirasinda', 'soru', 'var', 've', 'ya'
 ]);
@@ -127,7 +127,9 @@ function scoreKeywordSearchDocument(document = {}, query = '', terms = keywordSe
   const indexes = matches.map(item => item.index);
   const span = indexes.length > 1 ? Math.max(...indexes) - Math.min(...indexes) : 9999;
   const exactQuery = normalizeSearchText(query);
-  const exactBonus = exactQuery && searchText.includes(exactQuery) ? 1200 : 0;
+  // A near-verbatim sentence is stronger evidence than a title sharing one
+  // broad term such as "uyku". Keep it ahead of partial title matches.
+  const exactBonus = exactQuery && searchText.includes(exactQuery) ? 5200 : 0;
   const coverageBonus = Math.round(coverage * 1600);
   const allTermsBonus = matchedTerms.length === terms.length ? 620 : 0;
   const proximityBonus = indexes.length > 1 ? Math.max(0, 420 - Math.min(span, 420)) : 0;

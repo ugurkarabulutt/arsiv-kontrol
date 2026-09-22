@@ -90,6 +90,27 @@ test('keyword search ranks the direct answer phrase above partial sleep matches'
   assert.ok(ranked[0].score > ranked[1].score);
 });
 
+test('keyword search keeps phrase-bearing context words for exact sentence searches', () => {
+  assert.deepEqual(
+    keywordSearchTerms('Uyku halinde vücuttan ayrılan nefstir'),
+    ['uyku', 'halinde', 'vucut', 'ayril', 'nefs']
+  );
+});
+
+test('a broad title word does not outrank a near-verbatim answer sentence', () => {
+  const ranked = rankKeywordSearchDocuments([{
+    qa_slug: 'uyku-baslikli',
+    document_kind: 'question',
+    content: 'Uyku problemi nefs vücut ayrıl.'
+  }, {
+    qa_slug: 'cevapta-birebir',
+    document_kind: 'answer',
+    content: 'Nefs uyku halinde vücuttan ayrılır.'
+  }], 'Uyku halinde vücuttan ayrılan nefstir');
+
+  assert.equal(ranked[0].slug, 'cevapta-birebir');
+});
+
 test('search match excerpts remove index labels and keep the relevant sentence', () => {
   const excerpt = buildSearchMatchExcerpt(
     'Soru: Ruh ve nefs aynı mıdır?\nİlgili konular: Ruh, Nefs\nCevap bölümü: Önce kavramları ayıralım. Nefs uyku halinde vücuttan ayrılır. Ruh Allah\'a ulaşır.',
