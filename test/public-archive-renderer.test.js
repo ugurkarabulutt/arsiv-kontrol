@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260922-search-route-instant-v2"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20260922-search-relevance-v3"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260922-search-route-instant-v2"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260922-search-route-instant-v2"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260922-search-relevance-v3"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260922-search-relevance-v3"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -116,7 +116,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<h1>Dini Sorular ve Cevaplar Arşivi<\/h1>/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
-  assert.match(home, /dsca-page-cache:v20/);
+  assert.match(home, /dsca-page-cache:v21/);
   assert.match(home, /immediateSearch: true/);
   assert.match(home, /showImmediateSearchShell/);
   assert.match(home, /pushState\(\{ paFast: true, paPending: true \}/);
@@ -638,6 +638,8 @@ test('semantic search results explain intent matching without technical jargon',
       title: 'Uyku halinde nefs',
       question: 'Uyku halinde vücuttan ayrılan nedir?',
       answer: ['Her gece nefsimiz vücudumuzdan ayrılır.'],
+      searchMatchExcerpt: 'Nefs uyku halinde vücuttan ayrılır.',
+      searchMatchKind: 'answer',
       categorySlug: 'nefs',
       topicSlugs: [],
       publishedAt: '2026-09-22T00:00:00.000Z'
@@ -650,9 +652,44 @@ test('semantic search results explain intent matching without technical jargon',
   assert.match(html, /En Uygun Cevaplar/);
   assert.match(html, /İlgili konular/);
   assert.match(html, /anlamca bağlantılı cevaplar/);
+  assert.match(html, /Cevapta geçen bölüm/);
+  assert.match(html, /Nefs uyku halinde vücuttan ayrılır/);
+  assert.match(html, /1 en ilgili kayıt gösteriliyor/);
   const methodNote = html.match(/<p class="pa-search-method">([^<]+)<\/p>/);
   assert.ok(methodNote);
   assert.doesNotMatch(methodNote[1], /embedding|vektör|RAG/i);
+});
+
+test('fast search results request semantic reranking without blocking the first list', () => {
+  const archiveData = {
+    brand: {},
+    categories: [],
+    topics: [],
+    search: {
+      preFiltered: true,
+      query: 'uykuda nefs',
+      semanticPending: true,
+      semanticApplied: false,
+      categoryMatches: []
+    },
+    qa: [{
+      slug: 'uykuda-nefs',
+      title: 'Uyku halinde nefs',
+      question: 'Uyku halinde vücuttan ayrılan nedir?',
+      answer: ['Nefs uyku halinde vücuttan ayrılır.'],
+      searchMatchExcerpt: 'Nefs uyku halinde vücuttan ayrılır.',
+      searchMatchKind: 'answer',
+      categorySlug: '',
+      topicSlugs: [],
+      publishedAt: '2026-09-22T00:00:00.000Z'
+    }]
+  };
+  const html = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'uykuda nefs' }, archiveData).html;
+
+  assert.match(html, /data-pa-semantic-url="\/public-preview\/arama\?q=uykuda%20nefs&amp;anlam=1"/);
+  assert.match(html, /En güçlü metin eşleşmeleri gösteriliyor/);
+  assert.match(html, /bindSemanticSearchEnhancement/);
+  assert.doesNotMatch(html, /120 kayıt listeleniyor/);
 });
 
 test('public preview can render approved records instead of fixture data', () => {
@@ -1218,7 +1255,7 @@ test('search results deduplicate repeated question text even when server prefilt
 
   assert.match(search, /\/public-preview\/soru\/idrak-soru-2/);
   assert.doesNotMatch(search, /\/public-preview\/soru\/idrak-soru"/);
-  assert.match(search, /1 kayıt listeleniyor\./);
+  assert.match(search, /1 en ilgili kayıt gösteriliyor\./);
 });
 
 test('home page featured questions rotate across hours from a wider pool', () => {

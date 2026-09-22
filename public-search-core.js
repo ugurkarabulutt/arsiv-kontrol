@@ -7,6 +7,13 @@ const PUBLIC_SEARCH_EMBEDDING_DIMENSIONS = 1024;
 const PUBLIC_SEARCH_ANSWER_CHUNK_CHARS = 1800;
 const PUBLIC_SEARCH_ANSWER_CHUNK_OVERLAP_CHARS = 220;
 const PUBLIC_SEARCH_MAX_ANSWER_CHUNKS = 32;
+const PUBLIC_SEARCH_KEYWORD_TERM_LIMIT = 5;
+const PUBLIC_SEARCH_QUERY_FILLERS = new Set([
+  'acaba', 'acikla', 'aciklar', 'anlat', 'anlatir', 'ara', 'bir', 'bize', 'bu',
+  'cevap', 'eder', 'etmek', 'gibi', 'halinde', 'hocam', 'icin', 'ile', 'mi',
+  'insan', 'insanin', 'kisi', 'kisinin', 'midir', 'misiniz', 'muhterem', 'mu',
+  'mudur', 'nasil', 'ne', 'nedir', 'sahip', 'sirasinda', 'soru', 'var', 've', 'ya'
+]);
 
 function cleanSearchDocumentText(value = '', max = 120000) {
   return String(value || '')
@@ -29,6 +36,129 @@ function normalizeSearchText(value = '') {
     .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function canonicalSearchTerm(value = '') {
+  const token = normalizeSearchText(value).replace(/\s+/g, '');
+  if (!token) return '';
+  if (/^uyku/.test(token) || /^uyu(?:r|du|dug|yan|mak)/.test(token)) return 'uyku';
+  if (/^vucu(?:t|d)/.test(token)) return 'vucut';
+  if (/^ayril/.test(token)) return 'ayril';
+  if (/^beden/.test(token)) return 'beden';
+  if (/^nefs/.test(token)) return 'nefs';
+  if (/^ruh/.test(token)) return 'ruh';
+  if (/^cik/.test(token)) return 'cik';
+  if (/^ulas/.test(token)) return 'ulas';
+  if (/^yonel/.test(token)) return 'yonel';
+  if (/^hidayet/.test(token)) return 'hidayet';
+  if (/^zikir/.test(token)) return 'zikir';
+
+  const suffixes = [
+    'larindan', 'lerinden', 'larina', 'lerine', 'larinin', 'lerinin',
+    'undan', 'unden', 'indan', 'inden', 'dan', 'den', 'tan', 'ten',
+    'lar', 'ler', 'dir', 'dur', 'tir', 'tur', 'nin', 'nun', 'lik', 'luk'
+  ];
+  for (const suffix of suffixes) {
+    if (token.length > suffix.length + 3 && token.endsWith(suffix)) {
+      return token.slice(0, -suffix.length);
+    }
+  }
+  return token;
+}
+
+function keywordSearchTerms(value = '', limit = PUBLIC_SEARCH_KEYWORD_TERM_LIMIT) {
+  const normalized = normalizeSearchText(value);
+  const sourceTokens = normalized.split(' ').filter(token => token.length >= 3);
+  const usefulTokens = sourceTokens.filter(token => !PUBLIC_SEARCH_QUERY_FILLERS.has(token));
+  const selectedTokens = usefulTokens.length ? usefulTokens : sourceTokens;
+  const terms = [];
+  for (const token of selectedTokens) {
+    const canonical = canonicalSearchTerm(token);
+    if (canonical.length < 3 || terms.includes(canonical)) continue;
+    terms.push(canonical);
+  }
+  return terms.slice(0, Math.max(1, Number(limit) || PUBLIC_SEARCH_KEYWORD_TERM_LIMIT));
+}
+
+function searchTextTermPositions(searchText = '', terms = []) {
+  return terms
+    .map(term => ({ term, index: searchText.indexOf(term) }))
+    .filter(item => item.index >= 0);
+}
+
+function buildSearchMatchExcerpt(value = '', terms = [], maxChars = 240) {
+  const source = cleanSearchDocumentText(value, 16000)
+    .replace(/^Soru:\s*[^\n]*\n?/iu, '')
+    .replace(/^İlgili konular:\s*[^\n]*\n?/iu, '')
+    .replace(/^Cevap bölümü:\s*/iu, '')
+    .trim();
+  if (!source) return '';
+  const sentences = source.split(/(?<=[.!?])\s+|\n+/u).map(item => item.trim()).filter(Boolean);
+  const candidates = sentences.length ? sentences : [source];
+  let best = candidates[0];
+  let bestScore = -1;
+  for (const sentence of candidates) {
+    const normalized = normalizeSearchText(sentence);
+    const matches = terms.filter(term => normalized.includes(term));
+    const positions = searchTextTermPositions(normalized, matches).map(item => item.index);
+    const span = positions.length > 1 ? Math.max(...positions) - Math.min(...positions) : 9999;
+    const score = (matches.length * 1000) + (positions.length > 1 ? Math.max(0, 320 - span) : 0);
+    if (score > bestScore) {
+      best = sentence;
+      bestScore = score;
+    }
+  }
+  if (best.length <= maxChars) return best;
+  const normalizedBest = normalizeSearchText(best);
+  const firstMatch = searchTextTermPositions(normalizedBest, terms)
+    .sort((a, b) => a.index - b.index)[0];
+  const start = firstMatch ? Math.max(0, firstMatch.index - Math.floor(maxChars * 0.28)) : 0;
+  const clipped = best.slice(start, start + maxChars).trim();
+  return `${start > 0 ? '...' : ''}${clipped}${best.length > start + clipped.length ? '...' : ''}`;
+}
+
+function scoreKeywordSearchDocument(document = {}, query = '', terms = keywordSearchTerms(query)) {
+  const searchText = normalizeSearchText(document.search_text || document.content || '');
+  if (!searchText || !terms.length) return null;
+  const matches = searchTextTermPositions(searchText, terms);
+  if (!matches.length) return null;
+  const matchedTerms = matches.map(item => item.term);
+  const coverage = matchedTerms.length / terms.length;
+  const indexes = matches.map(item => item.index);
+  const span = indexes.length > 1 ? Math.max(...indexes) - Math.min(...indexes) : 9999;
+  const exactQuery = normalizeSearchText(query);
+  const exactBonus = exactQuery && searchText.includes(exactQuery) ? 1200 : 0;
+  const coverageBonus = Math.round(coverage * 1600);
+  const allTermsBonus = matchedTerms.length === terms.length ? 620 : 0;
+  const proximityBonus = indexes.length > 1 ? Math.max(0, 420 - Math.min(span, 420)) : 0;
+  const kindBonus = document.document_kind === 'question' ? 140 : 80;
+  return {
+    slug: document.qa_slug,
+    score: exactBonus + coverageBonus + allTermsBonus + proximityBonus + (matchedTerms.length * 240) + kindBonus,
+    matchedTerms,
+    matchedCount: matchedTerms.length,
+    coverage,
+    documentKind: document.document_kind || '',
+    excerpt: buildSearchMatchExcerpt(document.content || '', matchedTerms)
+  };
+}
+
+function rankKeywordSearchDocuments(documents = [], query = '', options = {}) {
+  const terms = keywordSearchTerms(query, options.termLimit);
+  const bestBySlug = new Map();
+  for (const document of documents || []) {
+    if (!document?.qa_slug) continue;
+    const candidate = scoreKeywordSearchDocument(document, query, terms);
+    if (!candidate) continue;
+    const current = bestBySlug.get(candidate.slug);
+    if (!current || candidate.score > current.score) bestBySlug.set(candidate.slug, candidate);
+  }
+  return [...bestBySlug.values()]
+    .sort((a, b) => b.score - a.score
+      || b.coverage - a.coverage
+      || b.matchedCount - a.matchedCount
+      || a.slug.localeCompare(b.slug, 'tr'))
+    .slice(0, Math.max(1, Number(options.limit) || 60));
 }
 
 function searchDocumentHash(value = '') {
@@ -186,13 +316,18 @@ module.exports = {
   PUBLIC_SEARCH_EMBEDDING_DIMENSIONS,
   PUBLIC_SEARCH_EMBEDDING_MODEL,
   buildPublicQaSearchDocuments,
+  buildSearchMatchExcerpt,
+  canonicalSearchTerm,
   chunkSearchDocumentText,
   cleanSearchDocumentText,
+  keywordSearchTerms,
   normalizeSearchText,
   publicQaSearchLabels,
   publicQaTopicSlugs,
   relatedCategorySlugsFromSearchRows,
   rowsBySlug,
+  rankKeywordSearchDocuments,
   searchDocumentHash,
+  scoreKeywordSearchDocument,
   semanticSearchBoost
 };

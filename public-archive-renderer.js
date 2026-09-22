@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260922-search-route-instant-v2';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260922-search-relevance-v3';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -1636,6 +1636,7 @@ function questionCard(entry, options = {}) {
   const compact = Boolean(cardOptions.compact);
   const showMeta = cardOptions.showMeta !== false;
   const strongCta = Boolean(cardOptions.strongCta);
+  const searchResult = Boolean(cardOptions.searchResult);
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
   const cardCategories = categoriesFor(entry);
@@ -1645,6 +1646,12 @@ function questionCard(entry, options = {}) {
     <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${href}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
+      ${searchResult && entry.searchMatchExcerpt ? `
+        <div class="pa-search-match">
+          <span>${entry.searchMatchKind === 'question' ? 'Soruyla eşleşen bölüm' : 'Cevapta geçen bölüm'}</span>
+          <p>${escapeHtml(entry.searchMatchExcerpt)}</p>
+        </div>
+      ` : ''}
       ${showMeta ? `<div class="pa-card-meta">
         ${cardCategories.slice(0, 3).map(category => chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`)).join('')}
       </div>` : ''}
@@ -2391,6 +2398,10 @@ function renderSearch(query = '') {
   const results = searchResults(cleanQuery);
   const directCategories = searchDirectCategoryMatches();
   const semanticApplied = publicArchiveFixtures.search?.semanticApplied === true;
+  const semanticPending = publicArchiveFixtures.search?.semanticPending === true;
+  const semanticUrl = semanticPending && cleanQuery
+    ? `${PREVIEW_BASE}/arama?q=${encodeURIComponent(cleanQuery)}&anlam=1`
+    : '';
   return renderShell({
     active: 'search',
     title: cleanQuery ? `"${cleanQuery}" için arama` : 'Arama',
@@ -2410,12 +2421,13 @@ function renderSearch(query = '') {
           ${searchBox(cleanQuery)}
           ${directCategories}
         </section>
-        <section class="pa-section">
+        <section class="pa-section" data-pa-search-results${semanticUrl ? ` data-pa-semantic-url="${escapeHtml(semanticUrl)}"` : ''}>
           ${sectionHeader(cleanQuery ? 'En Uygun Cevaplar' : 'Arşivdeki Sorular')}
           ${semanticApplied ? '<p class="pa-search-method">Sonuçlar, yazdığınız ifadeyle anlamca bağlantılı cevaplar da dikkate alınarak sıralandı.</p>' : ''}
-          <p class="pa-result-count">${results.length ? `${results.length} kayıt listeleniyor.` : 'Eşleşen kayıt bulunamadı.'}</p>
+          ${semanticPending ? '<p class="pa-search-method">En güçlü metin eşleşmeleri gösteriliyor; anlam bağlantıları arka planda kontrol ediliyor.</p>' : ''}
+          <p class="pa-result-count">${results.length ? `${results.length} en ilgili kayıt gösteriliyor.` : 'Eşleşen kayıt bulunamadı.'}</p>
           ${results.length
-            ? `<div class="pa-list">${results.map(entry => questionCard(entry, true)).join('')}</div>`
+            ? `<div class="pa-list">${results.map(entry => questionCard(entry, { compact: true, searchResult: true })).join('')}</div>`
             : renderNoResults(cleanQuery)}
         </section>
       </main>
@@ -4606,7 +4618,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v20:';
+        var cachePrefix = 'dsca-page-cache:v21:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
@@ -5061,6 +5073,39 @@ function renderShell({ title, description, active, content, status = 200, questi
         if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 700 });
         else window.setTimeout(warm, 700);
       }
+      function bindSemanticSearchEnhancement() {
+        var section = document.querySelector('[data-pa-search-results][data-pa-semantic-url]');
+        if (!section || section.getAttribute('data-pa-semantic-bound') === 'true') return;
+        section.setAttribute('data-pa-semantic-bound', 'true');
+        var endpoint = section.getAttribute('data-pa-semantic-url');
+        var routeIdentity = window.location.pathname + window.location.search;
+        var controller = typeof AbortController === 'function' ? new AbortController() : null;
+        fetch(endpoint, {
+          credentials: 'same-origin',
+          headers: { Accept: 'text/html', 'X-Public-Navigation': 'semantic-enhancement' },
+          signal: controller ? controller.signal : undefined
+        }).then(function(response){
+          var type = response.headers.get('content-type') || '';
+          if (!response.ok || !type.includes('text/html')) throw new Error('Anlam sıralaması alınamadı');
+          return response.text();
+        }).then(function(html){
+          if (routeIdentity !== window.location.pathname + window.location.search) return;
+          var nextDoc = new DOMParser().parseFromString(html, 'text/html');
+          var nextSection = nextDoc.querySelector('[data-pa-search-results]');
+          var currentSection = document.querySelector('[data-pa-search-results]');
+          if (!nextSection || !currentSection) return;
+          currentSection.replaceWith(document.importNode(nextSection, true));
+          bindCardLinks();
+          loadReadCounts();
+        }).catch(function(error){
+          if (error && error.name === 'AbortError') return;
+          var method = document.querySelector('[data-pa-search-results] .pa-search-method');
+          if (method) method.textContent = 'Sonuçlar, soru ve cevap metnindeki güçlü eşleşmelere göre sıralandı.';
+        });
+        addPageCleanup(function(){
+          if (controller) controller.abort();
+        });
+      }
       function initializePublicArchivePage() {
         applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
         bindThemeControls();
@@ -5082,6 +5127,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindPublicAuthTabs();
         bindPublicEmailAuth();
         bindFastPublicNavigation();
+        bindSemanticSearchEnhancement();
         loadPublicSession().then(function(session){
           window.__publicArchiveSession = session;
           renderSessionUi(session);
@@ -5203,7 +5249,10 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/one-cikan-sorular', (req, res, next) => sendRoute(req, res, next, 'one-cikan-sorular', { sayfa: req.query.sayfa || '' }));
   router.get('/son-yayinlanan-sorular', (req, res, next) => sendRoute(req, res, next, 'son-yayinlanan-sorular', { sayfa: req.query.sayfa || '' }));
   router.get('/cok-okunan-cevaplar', (req, res, next) => sendRoute(req, res, next, 'cok-okunan-cevaplar', { sayfa: req.query.sayfa || '' }));
-  router.get('/arama', (req, res, next) => sendRoute(req, res, next, 'arama', { q: req.query.q || '' }));
+  router.get('/arama', (req, res, next) => sendRoute(req, res, next, 'arama', {
+    q: req.query.q || '',
+    anlam: req.query.anlam === '1' ? '1' : ''
+  }));
   router.get('/konular', (req, res, next) => sendRoute(req, res, next, 'konular'));
   router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, 'kategoriler'));
   router.get('/hesabim', (req, res, next) => sendRoute(req, res, next, 'hesabim'));

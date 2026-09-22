@@ -22,6 +22,9 @@ const {
 const {
   PUBLIC_SEARCH_EMBEDDING_DIMENSIONS,
   PUBLIC_SEARCH_EMBEDDING_MODEL,
+  buildSearchMatchExcerpt,
+  keywordSearchTerms,
+  rankKeywordSearchDocuments,
   relatedCategorySlugsFromSearchRows,
   semanticSearchBoost
 } = require('./public-search-core');
@@ -64,7 +67,7 @@ if (ADMIN_PREVIEW_CONTENT_READ_ONLY) app.use('/api', (req, res, next) => {
 });
 const PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED = ['1', 'true', 'yes'].includes(String(process.env.PUBLIC_ARCHIVE_ROOT_INDEXING_ENABLED || '').toLowerCase());
 const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED = !['0', 'false', 'no'].includes(String(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED || '').toLowerCase());
-const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS = Math.max(700, Math.min(5000, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS || 1800)));
+const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS = Math.max(700, Math.min(5000, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS || 4500)));
 const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD = Math.max(0.35, Math.min(0.9, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD || 0.52)));
 const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT = 48;
 const PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT = Math.max(1, Math.min(25, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT || 8)));
@@ -5542,10 +5545,13 @@ const PUBLIC_ARCHIVE_LIST_SELECT = 'slug,title,question,summary,excerpt,category
 const PUBLIC_ARCHIVE_CATEGORY_SELECT = `${PUBLIC_ARCHIVE_LIST_SELECT},answer_text,answer_paragraphs`;
 const PUBLIC_ARCHIVE_DETAIL_SELECT = 'slug,title,question,answer_text,answer_paragraphs,summary,excerpt,category_slug,topic_slugs,related_slugs,source_context_title,source_context_text,published_at,updated_at,read_time,is_featured,status,created_at';
 const PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT = 'slug,title,question,summary,excerpt,answer_text,category_slug,topic_slugs,published_at,updated_at,read_time,is_featured,status,created_at';
+const PUBLIC_ARCHIVE_SEARCH_DOCUMENT_SELECT = 'qa_slug,document_kind,content,search_text';
 const PUBLIC_ARCHIVE_ANALYTICS_MAX_ROWS = 1000;
 const PUBLIC_ARCHIVE_ANALYTICS_SELECT = 'created_at,path,route_type,question_slug,referrer_host,source_type,country,region,city,timezone,device_type,browser_name,os_name,visitor_id,ip_hash,is_bot';
-const PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT = 120;
+const PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT = 12;
 const PUBLIC_ARCHIVE_SEARCH_QUERY_LIMIT = 90;
+const PUBLIC_ARCHIVE_KEYWORD_DOCUMENT_LIMIT = 90;
+const PUBLIC_ARCHIVE_KEYWORD_SLUG_LIMIT = 60;
 const PUBLIC_ARCHIVE_LIVE_SEARCH_LIMIT = 5;
 const PUBLIC_ARCHIVE_LIVE_SEARCH_CACHE_MS = 60_000;
 const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_CACHE_MS = 10 * 60_000;
@@ -6155,6 +6161,9 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
       readCount: statsMap.get(row.slug) || Number(row.read_count || 0) || 0,
       isFeatured: row.is_featured === true,
       isDetailPopular: row.detail_popular === true,
+      searchMatchExcerpt: row.search_keyword_excerpt || row.search_semantic_excerpt || '',
+      searchMatchKind: row.search_keyword_kind || row.search_semantic_kind || '',
+      searchMatchScore: Number(row.search_keyword_score || row.search_hybrid_score || 0) || 0,
       relatedSlugs: Array.isArray(row.related_slugs) ? row.related_slugs : []
     };
   });
@@ -6164,7 +6173,7 @@ function publicArchiveDatasetFromPublicRows({ qaRows = [], categoryRows = [], to
 
 function publicArchiveRouteCacheKey(routePath = '', query = {}) {
   const cleanQuery = {};
-  for (const key of ['harf', 'kategori', 'kategoriAra', 'sayfa', 'q']) {
+  for (const key of ['harf', 'kategori', 'kategoriAra', 'sayfa', 'q', 'anlam']) {
     if (query[key]) cleanQuery[key] = String(query[key]);
   }
   return `${routePath}?${new URLSearchParams(cleanQuery).toString()}`;
@@ -6248,7 +6257,7 @@ async function loadPublicArchiveSemanticSearchRows(query = '') {
     const timeout = setTimeout(() => controller.abort(), PUBLIC_ARCHIVE_SEMANTIC_SEARCH_TIMEOUT_MS);
     let rpcQuery = supabase.rpc('match_public_qa_hybrid_search', {
       p_query_embedding: queryEmbedding,
-      p_query_terms: publicArchiveHybridSearchTerms(q),
+      p_query_terms: keywordSearchTerms(q, 8),
       p_match_threshold: PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD,
       p_match_count: PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT
     });
@@ -6285,7 +6294,7 @@ async function loadPublicArchiveSemanticSearchRows(query = '') {
         ...row,
         search_semantic_similarity: Number(match.similarity || 0),
         search_semantic_kind: match.document_kind || '',
-        search_semantic_excerpt: publicArchiveText(match.matched_text || '', 420),
+        search_semantic_excerpt: publicArchiveText(buildSearchMatchExcerpt(match.matched_text || '', keywordSearchTerms(q), 260), 360),
         search_lexical_matches: Number(match.lexical_matches || 0),
         search_hybrid_score: Number(match.hybrid_score || 0)
       };
@@ -6654,6 +6663,104 @@ async function fetchPublicArchiveSearchRowsByText(fields = [], terms = [], limit
   return rows;
 }
 
+function publicArchiveKeywordTermPairs(terms = []) {
+  const cleanTerms = [...new Set((terms || []).filter(term => /^[a-z0-9]{3,40}$/.test(term)))];
+  if (cleanTerms.length <= 1) return cleanTerms.map(term => [term]);
+  const pairs = [];
+  for (let left = 0; left < cleanTerms.length; left += 1) {
+    for (let right = left + 1; right < cleanTerms.length; right += 1) {
+      pairs.push([cleanTerms[left], cleanTerms[right]]);
+    }
+  }
+  return pairs;
+}
+
+async function fetchPublicArchiveKeywordDocuments(terms = []) {
+  const termPairs = publicArchiveKeywordTermPairs(terms);
+  if (!termPairs.length) return [];
+  const results = await Promise.all(termPairs.map(pair => {
+    let builder = supabase
+      .from('public_qa_search_documents')
+      .select(PUBLIC_ARCHIVE_SEARCH_DOCUMENT_SELECT);
+    for (const term of pair) builder = builder.ilike('search_text', `%${term}%`);
+    return builder.limit(pair.length === 1 ? PUBLIC_ARCHIVE_KEYWORD_DOCUMENT_LIMIT * 3 : PUBLIC_ARCHIVE_KEYWORD_DOCUMENT_LIMIT);
+  }));
+  const documents = [];
+  const seen = new Set();
+  for (const result of results) {
+    if (result.error) throw new Error(result.error.message);
+    for (const document of result.data || []) {
+      const key = `${document.qa_slug || ''}:${document.document_kind || ''}:${document.content || ''}`;
+      if (!document?.qa_slug || seen.has(key)) continue;
+      seen.add(key);
+      documents.push(document);
+    }
+  }
+  if (documents.length || terms.length <= 1) return documents;
+
+  const fallbackResults = await Promise.all(terms.slice(0, 3).map(term => supabase
+    .from('public_qa_search_documents')
+    .select(PUBLIC_ARCHIVE_SEARCH_DOCUMENT_SELECT)
+    .ilike('search_text', `%${term}%`)
+    .limit(PUBLIC_ARCHIVE_KEYWORD_DOCUMENT_LIMIT)));
+  for (const result of fallbackResults) {
+    if (result.error) throw new Error(result.error.message);
+    for (const document of result.data || []) {
+      const key = `${document.qa_slug || ''}:${document.document_kind || ''}:${document.content || ''}`;
+      if (!document?.qa_slug || seen.has(key)) continue;
+      seen.add(key);
+      documents.push(document);
+    }
+  }
+  return documents;
+}
+
+async function loadPublicArchiveKeywordSearchRows(query = '') {
+  const q = publicArchiveSearchInput(query);
+  const terms = keywordSearchTerms(q);
+  if (!q || !terms.length) return { available: true, rows: [], matches: [], terms };
+  try {
+    const documents = await fetchPublicArchiveKeywordDocuments(terms);
+    const rankedMatches = rankKeywordSearchDocuments(documents, q, { limit: PUBLIC_ARCHIVE_KEYWORD_SLUG_LIMIT });
+    const strongMatches = rankedMatches.filter(match => match.coverage >= 0.6);
+    const matches = strongMatches.length >= 3 ? strongMatches : rankedMatches;
+    const slugs = matches.map(match => match.slug);
+    if (!slugs.length) return { available: true, rows: [], matches, terms };
+    const { data: rows, error } = await supabase
+      .from('public_qa')
+      .select(PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT)
+      .eq('status', 'published')
+      .in('slug', slugs);
+    if (error) throw new Error(error.message);
+    const rowMap = new Map((rows || []).map(row => [row.slug, row]));
+    const matchMap = new Map(matches.map(match => [match.slug, match]));
+    return {
+      available: true,
+      terms,
+      matches,
+      rows: slugs.map(slug => {
+        const row = rowMap.get(slug);
+        const match = matchMap.get(slug);
+        if (!row || !match) return null;
+        const titleSearchText = publicArchiveSlug([row.title, row.question].join(' ')).replace(/-/g, ' ');
+        const titleMatches = terms.filter(term => titleSearchText.includes(term)).length;
+        return {
+          ...row,
+          search_keyword_score: Number(match.score || 0),
+          search_keyword_matches: Number(match.matchedCount || 0),
+          search_keyword_coverage: Number(match.coverage || 0),
+          search_keyword_title_matches: titleMatches,
+          search_keyword_kind: match.documentKind || '',
+          search_keyword_excerpt: publicArchiveText(match.excerpt || '', 360)
+        };
+      }).filter(Boolean)
+    };
+  } catch (error) {
+    console.warn('Public hızlı arama indeksi geçici olarak kullanılamadı:', error.message);
+    return { available: false, degraded: true, rows: [], matches: [], terms };
+  }
+}
+
 async function fetchPublicArchiveSearchRowsByCategorySlugs(slugs = []) {
   const rows = [];
   const seen = new Set();
@@ -6750,6 +6857,9 @@ function publicArchiveRowIntentRank(row = {}, query = '') {
     + (metaRank * 4)
     + (answerRank * 3)
     + (matchedIntentTokens * 320)
+    + Math.round(Number(row.search_keyword_score || 0) * 1.35)
+    + (Number(row.search_keyword_matches || 0) * 280)
+    + (Number(row.search_keyword_title_matches || 0) * 1500)
     + (Number(row.search_lexical_matches || 0) * 420)
     + Math.round(Number(row.search_hybrid_score || 0) * 120)
     + semanticSearchBoost(row.search_semantic_similarity);
@@ -6773,6 +6883,7 @@ function publicArchiveRankSearchRows(groups = {}, query = '') {
   addRows(groups.titleRows, 'title', 700);
   addRows(groups.summaryRows, 'summary', 360);
   addRows(groups.bodyRows, 'body', 120);
+  addRows(groups.keywordRows, 'keyword', 900);
   addRows(groups.semanticRows, 'semantic', 520);
   const ranked = [...scored.values()]
     .map(item => ({ ...item, rank: publicArchiveRowIntentRank(item.row, query) }))
@@ -7084,6 +7195,7 @@ async function loadPublicArchiveCategoryDataset(slug = '', query = {}) {
 
 async function loadPublicArchiveSearchDataset(query = {}) {
   const q = publicArchiveSearchInput(query.q || '');
+  const semanticRequested = String(query.anlam || '') === '1';
   if (!q) {
     const { data, error, count } = await supabase
       .from('public_qa')
@@ -7101,11 +7213,14 @@ async function loadPublicArchiveSearchDataset(query = {}) {
   }
 
   const searchTerms = publicArchiveSearchTerms(q);
-  const [semanticResult, categoryIndexRows] = await Promise.all([
-    loadPublicArchiveSemanticSearchRows(q),
+  const [keywordResult, categoryIndexRows] = await Promise.all([
+    loadPublicArchiveKeywordSearchRows(q),
     loadPublicArchiveCategoryIndexRows()
   ]);
-  const lexicalRows = semanticResult.available
+  const semanticResult = semanticRequested
+    ? await loadPublicArchiveSemanticSearchRows(q)
+    : { available: false, pending: PUBLIC_ARCHIVE_SEMANTIC_SEARCH_ENABLED, rows: [], matches: [] };
+  const lexicalRows = keywordResult.available
     ? []
     : await fetchPublicArchiveSearchRowsByText(
       ['title', 'question', 'summary', 'excerpt', 'answer_text'],
@@ -7118,17 +7233,22 @@ async function loadPublicArchiveSearchDataset(query = {}) {
     .filter(category => publicArchiveCategoryMatchesSearch(category, q))
     .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
     .slice(0, 8);
-  const matchedCategorySlugs = new Set(matchedCategories.map(category => category.slug));
-  const categoryMatches = matchedCategorySlugs.size
-    ? await fetchPublicArchiveSearchRowsByCategorySlugs([...matchedCategorySlugs])
-    : [];
   const searchRows = (lexicalRows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
-  const categoryRows = (categoryMatches || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
   const titleRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.title, row.question].join(' '), q) > 0);
   const summaryRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore([row.summary, row.excerpt, row.search_category_text].join(' '), q) > 0);
   const bodyRows = searchRows.filter(row => publicArchiveLiveSearchMatchScore(row.answer_text || '', q) > 0);
-  const semanticRows = (semanticResult.rows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
-  const rows = publicArchiveRankSearchRows({ categoryRows, titleRows, summaryRows, bodyRows, semanticRows }, q);
+  const keywordRows = (keywordResult.rows || []).map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
+  const strongestKeywordSlugs = new Set(keywordRows.slice(0, PUBLIC_ARCHIVE_SEARCH_RESULT_LIMIT).map(row => row.slug));
+  const semanticRows = (semanticResult.rows || [])
+    .filter(row => strongestKeywordSlugs.has(row.slug) || Number(row.search_semantic_similarity || 0) >= 0.62)
+    .map(row => publicArchiveSearchRowWithCategoryText(row, categoryMap));
+  const rows = publicArchiveRankSearchRows({
+    titleRows,
+    summaryRows,
+    bodyRows,
+    keywordRows,
+    semanticRows
+  }, q);
   const relatedCategorySlugs = relatedCategorySlugsFromSearchRows(rows, 8);
   const visibleCategories = [];
   const visibleCategorySlugs = new Set();
@@ -7150,8 +7270,11 @@ async function loadPublicArchiveSearchDataset(query = {}) {
       query: q,
       total: rows.length,
       semanticApplied: semanticResult.available === true && semanticRows.length > 0,
+      semanticPending: semanticRequested === false && semanticResult.pending === true,
       semanticMatchCount: semanticRows.length,
       semanticDegraded: semanticResult.degraded === true,
+      keywordApplied: keywordResult.available === true && keywordRows.length > 0,
+      keywordDegraded: keywordResult.degraded === true,
       categoryMatches: visibleCategories.map(category => ({
         slug: category.slug,
         name: category.name,

@@ -5,8 +5,11 @@ const assert = require('node:assert/strict');
 const {
   PUBLIC_SEARCH_EMBEDDING_DIMENSIONS,
   buildPublicQaSearchDocuments,
+  buildSearchMatchExcerpt,
   chunkSearchDocumentText,
+  keywordSearchTerms,
   normalizeSearchText,
+  rankKeywordSearchDocuments,
   relatedCategorySlugsFromSearchRows,
   semanticSearchBoost
 } = require('../public-search-core');
@@ -54,6 +57,45 @@ test('search normalization keeps Turkish intent terms comparable', () => {
     normalizeSearchText('Uyku hâlinde vücuttan ayrılan nefstir.'),
     'uyku halinde vucuttan ayrilan nefstir'
   );
+});
+
+test('fast keyword search recognizes Turkish inflections without merging doctrine concepts', () => {
+  assert.deepEqual(
+    keywordSearchTerms('Uyurken vücuttan nefs mi ayrılır?'),
+    ['uyku', 'vucut', 'nefs', 'ayril']
+  );
+  assert.deepEqual(
+    keywordSearchTerms('Uyku sırasında vücuttan çıkan ruh mudur nefs midir?'),
+    ['uyku', 'vucut', 'cik', 'ruh', 'nefs']
+  );
+  assert.deepEqual(
+    keywordSearchTerms('İnsan uyuduğunda vücudundan ayrılan nedir?'),
+    ['uyku', 'vucut', 'ayril']
+  );
+});
+
+test('keyword search ranks the direct answer phrase above partial sleep matches', () => {
+  const ranked = rankKeywordSearchDocuments([{
+    qa_slug: 'uyku-problemi',
+    document_kind: 'answer',
+    content: 'Cevap bölümü: Uyku problemi yaşayan insanın bedeni dinlenemez ve nefs tezkiyesi zorlaşabilir.'
+  }, {
+    qa_slug: 'uykuda-nefs',
+    document_kind: 'answer',
+    content: 'Cevap bölümü: Nefs uyku halinde vücuttan ayrılır. Ruh ile nefs aynı kavram değildir.'
+  }], 'Uyku halinde vücuttan ayrılan nefstir');
+
+  assert.equal(ranked[0].slug, 'uykuda-nefs');
+  assert.match(ranked[0].excerpt, /Nefs uyku halinde vücuttan ayrılır/);
+  assert.ok(ranked[0].score > ranked[1].score);
+});
+
+test('search match excerpts remove index labels and keep the relevant sentence', () => {
+  const excerpt = buildSearchMatchExcerpt(
+    'Soru: Ruh ve nefs aynı mıdır?\nİlgili konular: Ruh, Nefs\nCevap bölümü: Önce kavramları ayıralım. Nefs uyku halinde vücuttan ayrılır. Ruh Allah\'a ulaşır.',
+    ['uyku', 'vucut', 'nefs']
+  );
+  assert.equal(excerpt, 'Nefs uyku halinde vücuttan ayrılır.');
 });
 
 test('semantic boost admits meaning matches without outranking exact titles', () => {

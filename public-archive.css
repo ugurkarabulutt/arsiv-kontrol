@@ -2049,6 +2049,35 @@ svg {
   color: color-mix(in srgb, var(--pa-text) 74%, var(--pa-primary));
 }
 
+.pa-search-match {
+  grid-column: 1;
+  min-width: 0;
+  padding: 10px 0 2px 13px;
+  border-left: 2px solid color-mix(in srgb, var(--pa-primary) 68%, var(--pa-border));
+}
+
+.pa-search-match > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--pa-primary);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.pa-question-card .pa-search-match > p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--pa-text-2);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 .pa-question-excerpt,
 .pa-question-card p:not(.pa-card-foot) {
   grid-column: 1;

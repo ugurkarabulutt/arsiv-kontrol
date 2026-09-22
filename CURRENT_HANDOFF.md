@@ -1,5 +1,27 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-22 Hızlı ve Açıklanabilir Arama Sonuçları
+
+- Önceki tam arama her istekte OpenAI embedding çağrısı ve ardından Supabase
+  hibrit RPC'sini bekliyordu. Canlı ölçümde embedding yaklaşık 2,5 sn, RPC
+  yaklaşık 0,8 sn sürdü; 1,8 sn zaman aşımı bazı istekleri 12 ayrı büyük metin
+  sorgusuyla çalışan ve 120 kayıt döndüren yedeğe düşürüyordu.
+- İlk sonuç yolu `public_qa_search_documents.search_text` indeksine taşındı.
+  Türkçe çekimler hafif ve kavram koruyucu biçimde normalize edilir; en fazla
+  beş temel kavramın ikili kesişimleri paralel aranır, yerelde kapsam/yakınlık/
+  başlık bağlantısıyla sıralanır. `ruh`, `nefs` ve `can` birbirine eşitlenmez.
+- Kullanıcı en güçlü 12 sonucu yaklaşık 0,69-1,08 sn içinde görür. OpenAI +
+  hibrit RPC arka planda çalışır; tamamlandığında sonuç bölümü sessizce
+  güçlendirilir. Düşük güvenli semantik kayıtlar yeni sonuç olarak eklenmez.
+  Arka plan örnek süresi 2,04 sn; kullanıcı bu sırada ilk listeyi okuyabilir.
+- Her arama kartında `Soruyla eşleşen bölüm` veya `Cevapta geçen bölüm` alıntısı
+  görünür. Böylece başlığı başka bir konuyu çağrıştıran fakat cevabında aranan
+  cümle geçen kayıtların neden listelendiği açıktır.
+- Public asset sürümü `20260922-search-relevance-v3`, session cache anahtarı
+  `dsca-page-cache:v21`. `npm.cmd run check` 172/172 başarılı; örnek cümle ve
+  dört doğal ifade varyantı gerçek canlı Supabase verisiyle ölçüldü. Henüz
+  commit/push/deploy yapılmadı.
+
 ## 2026-09-22 Enter Sonrası Anında Arama Geçişi
 
 - Ana sayfa ve diğer public arama kutularında Enter sonrası eski sayfanın tam

@@ -5,6 +5,22 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-09-22
 
+- **Public arama ilk sonuç ve relevans iyileştirmesi:** `/arama` artık OpenAI
+  embedding ve hibrit RPC tamamlanana kadar boş yükleme ekranında beklemez.
+  İlk liste, kapalı `public_qa_search_documents` indeksinde iki temel kavramı
+  birlikte arayan paralel ve sıkı sorgularla hazırlanır; en güçlü 12 kayıt
+  yaklaşık 0,69-1,08 saniyede görünür. Anlam araması bu liste görünürken arka
+  planda tamamlanır ve yalnız güçlü ilk kelime eşleşmeleriyle en az `0.62`
+  benzerlikteki yeni kayıtları sıralamaya alır. Türkçe çekimler `uyurken` /
+  `uyuduğunda` -> `uyku`, `vücudundan` -> `vucut`, `ayrılır` -> `ayril`
+  biçiminde karşılaştırılır; `ruh` ve `nefs` ayrı kavram olarak korunur. Sonuç
+  kartları artık başlığın neden ilgili göründüğünü açıklayan `Cevapta geçen
+  bölüm` alıntısını taşır; geniş 120 kayıt listesi kaldırıldı. Asset sürümü
+  `20260922-search-relevance-v3`, hızlı navigasyon cache anahtarı
+  `dsca-page-cache:v21`. Yerel `npm.cmd run check` 172/172 başarılı. Örnek
+  sorguda ilk kayıt ölüm/uyku sorusu, ilk yanıt 1,08 sn; sıcak benzer sorgular
+  0,69-0,86 sn ve arka plan anlam sıralaması yaklaşık 2,04 sn ölçüldü.
+
 - **Enter sonrası anında arama rotası:** Public arama formu tam aramaya
   gönderildiğinde kullanıcı artık hibrit arama HTML'i dönene kadar önceki
   sayfada beklemez. URL senkron biçimde `/arama?q=...` olur ve ana içerik hemen
