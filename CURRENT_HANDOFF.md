@@ -10,6 +10,10 @@
   Türkçe çekimler hafif ve kavram koruyucu biçimde normalize edilir; en fazla
   beş temel kavramın ikili kesişimleri paralel aranır, yerelde kapsam/yakınlık/
   başlık bağlantısıyla sıralanır. `ruh`, `nefs` ve `can` birbirine eşitlenmez.
+- Cümleye yakın aramalarda doğrudan cevap cümlesi tek bir geniş başlık
+  kelimesinden daha güçlüdür. `halinde` bu örnekte bağlam terimi olarak korunur;
+  böylece uykusuzluk başlığı, birebir `Nefs uyku halinde vücuttan ayrılır.`
+  cümlesini taşıyan kayıtların önüne geçmez.
 - Kullanıcı en güçlü 12 sonucu yaklaşık 0,69-1,08 sn içinde görür. OpenAI +
   hibrit RPC arka planda çalışır; tamamlandığında sonuç bölümü sessizce
   güçlendirilir. Düşük güvenli semantik kayıtlar yeni sonuç olarak eklenmez.
@@ -18,9 +22,15 @@
   görünür. Böylece başlığı başka bir konuyu çağrıştıran fakat cevabında aranan
   cümle geçen kayıtların neden listelendiği açıktır.
 - Public asset sürümü `20260922-search-relevance-v3`, session cache anahtarı
-  `dsca-page-cache:v21`. `npm.cmd run check` 172/172 başarılı; örnek cümle ve
-  dört doğal ifade varyantı gerçek canlı Supabase verisiyle ölçüldü. Henüz
-  commit/push/deploy yapılmadı.
+  `dsca-page-cache:v21`. `npm.cmd run check` 174/174 başarılı; örnek cümle ve
+  dört doğal ifade varyantı gerçek canlı Supabase verisiyle ölçüldü. Runtime
+  commitleri `b0e0062` ve `df6b114`; son preview
+  `dpl_4RkrvzbNoPNJdLQs8CFMqWwa5vBT`, production
+  `dpl_HKeF5vdJ13xzpdLa5jw1hj2Wz3N3`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı ilk soğuk arama 3,0 sn, aynı aramanın
+  sıcak yanıtı 76 ms; tamamlanan anlam aşaması 6,42 sn fakat ilk listeyi
+  bekletmiyor. `/health ok`, admin `noindex, nofollow` + `no-store`; son 15
+  dakika production error logu boş.
 
 ## 2026-09-22 Enter Sonrası Anında Arama Geçişi
 

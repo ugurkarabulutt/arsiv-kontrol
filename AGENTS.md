@@ -17,9 +17,15 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   kartları artık başlığın neden ilgili göründüğünü açıklayan `Cevapta geçen
   bölüm` alıntısını taşır; geniş 120 kayıt listesi kaldırıldı. Asset sürümü
   `20260922-search-relevance-v3`, hızlı navigasyon cache anahtarı
-  `dsca-page-cache:v21`. Yerel `npm.cmd run check` 172/172 başarılı. Örnek
-  sorguda ilk kayıt ölüm/uyku sorusu, ilk yanıt 1,08 sn; sıcak benzer sorgular
-  0,69-0,86 sn ve arka plan anlam sıralaması yaklaşık 2,04 sn ölçüldü.
+  `dsca-page-cache:v21`. Cümleye yakın sorgularda `halinde` gibi bağlam
+  kelimeleri korunur ve doğrudan cevap cümlesi, yalnız geniş bir başlık
+  kelimesi eşleşen kayıttan daha güçlü puanlanır. Yerel `npm.cmd run check`
+  174/174 başarılı. Runtime commitleri `b0e0062` ve `df6b114`; son preview
+  `dpl_4RkrvzbNoPNJdLQs8CFMqWwa5vBT`, production
+  `dpl_HKeF5vdJ13xzpdLa5jw1hj2Wz3N3`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı ilk soğuk arama 3,0 sn, sıcak tekrar
+  76 ms; arka plan anlam sıralaması 6,42 sn sürse de ilk listeyi bekletmedi.
+  `/health ok`, admin noindex/no-store ve boş production error logu doğrulandı.
 
 - **Enter sonrası anında arama rotası:** Public arama formu tam aramaya
   gönderildiğinde kullanıcı artık hibrit arama HTML'i dönene kadar önceki
