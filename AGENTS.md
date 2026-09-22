@@ -5,6 +5,23 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-09-22
 
+- **Enter sonrası anında arama rotası:** Public arama formu tam aramaya
+  gönderildiğinde kullanıcı artık hibrit arama HTML'i dönene kadar önceki
+  sayfada beklemez. URL senkron biçimde `/arama?q=...` olur ve ana içerik hemen
+  `Sonuçlar hazırlanıyor` kabuğuna geçer; sonuç HTML'i gelince aynı history
+  girdisi gerçek sayfayla değiştirilir. Böylece arama doğruluğu ve server-side
+  sonuç üretimi değişmeden algılanan geçiş gecikmesi kaldırıldı. Diğer hızlı
+  public navigasyonlar eski akışını korur. Asset sürümü
+  `20260922-search-route-instant-v2`, session cache anahtarı
+  `dsca-page-cache:v20`. Yerel `npm.cmd run check` 168/168 başarılı. Kontrollü
+  2,5 saniye gecikmeli Playwright testinde URL 76 ms'de değişti; yükleme durumu
+  görünür ve eski ana sayfa görünmezdi. Runtime commit `ba5cc89`, preview
+  `dpl_GEmnAPbUayvDmc97vagWvqjAvy7B`, production
+  `dpl_4DSF3NmEMZ3LKvddeAEgjupXcc1a`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı geciktirilmiş testte geçiş 181 ms;
+  gerçek örnek arama 46 kart, ilk yanıt 262 ms ve sıcak yanıt 196 ms. `/health`
+  ve admin noindex/no-store sınırları geçti; son 15 dakika error logu boş.
+
 - **Public arşiv hibrit anlam araması:** Tam `/arama` sayfası artık yalnız
   kelime eşleşmesine dayanmaz. Yayımlanmış soru, cevap parçaları, kategori ve
   kavramlardan `text-embedding-3-small` ile 1024 boyutlu arama belgeleri

@@ -1,5 +1,32 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-22 Enter Sonrası Anında Arama Geçişi
+
+- Ana sayfa ve diğer public arama kutularında Enter sonrası eski sayfanın tam
+  arama HTML'i gelene kadar ekranda kalmasına neden olan bekleme kaldırıldı.
+  Sebep, hızlı navigasyonun URL/geçişi ancak `fetchPage()` tamamlanınca yapması
+  ve 900 ms sonra tam sayfa yönlendirmesine düşmesiydi.
+- Tam aramada URL artık senkron olarak `/arama?q=...` adresine geçer; ana içerik
+  hemen erişilebilir bir `Sonuçlar hazırlanıyor` kabuğuyla değiştirilir. Hibrit
+  arama arka planda tamamlanınca gerçek arama sayfası aynı history girdisine
+  yerleşir. Diğer hızlı link geçişleri mevcut davranışını korur.
+- Public asset sürümü `20260922-search-route-instant-v2`, hızlı navigasyon cache
+  anahtarı `dsca-page-cache:v20` oldu. Yerel `npm.cmd run check` 168/168 geçti.
+  2,5 saniye geciktirilmiş Playwright testinde URL 76 ms'de değişti, yükleme
+  durumu görünür oldu ve eski ana sayfa başlığı kayboldu; sonuçlar geldiğinde
+  yükleme kabuğu 120 gerçek kartla değişti. Mobil 390x844 görünümünde taşma yok.
+- Runtime commit `ba5cc89`, preview deployment
+  `dpl_GEmnAPbUayvDmc97vagWvqjAvy7B`, production deployment
+  `dpl_4DSF3NmEMZ3LKvddeAEgjupXcc1a`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı geciktirilmiş tarayıcı kontrolünde URL
+  181 ms'de değişti; `/health ok`, örnek arama 46 kart, ilk istek 262 ms ve
+  sıcak tekrar 196 ms. Admin `noindex, nofollow` + `no-store`; son 15 dakika
+  production error logu boş.
+- Preview kontrolünde Vercel CLI'nin yanlışlıkla oluşturduğu, deployment ve
+  production URL'i olmayan `.tmp-semantic-archive-search` projesi hemen silindi;
+  yerel `.vercel` bağlantısı da kaldırıldı. Asıl `arsiv-kontrol` projesi ve canlı
+  alias etkilenmedi.
+
 ## 2026-09-22 Hibrit Anlam Araması
 
 - Public tam arama için kelime ve anlamsal benzerliği birleştiren hibrit arama
