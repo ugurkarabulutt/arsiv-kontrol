@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260922-semantic-search-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20260922-search-route-instant-v2';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -3763,9 +3763,10 @@ function renderShell({ title, description, active, content, status = 200, questi
             closePanel();
             if (controller) controller.abort();
             if (typeof window.__publicArchiveNavigateTo === 'function') {
-              window.__publicArchiveNavigateTo(url.href);
+              window.__publicArchiveNavigateTo(url.href, { immediateSearch: true });
               return;
             }
+            document.documentElement.setAttribute('data-pa-navigating', 'true');
             window.location.href = url.href;
           }
           function submitLiveSearch(event) {
@@ -4605,7 +4606,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v19:';
+        var cachePrefix = 'dsca-page-cache:v20:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
@@ -4729,6 +4730,35 @@ function renderShell({ title, description, active, content, status = 200, questi
             } catch (error) {}
           });
           if (anchor) anchor.classList.add('is-pending');
+        }
+        function showImmediateSearchShell(url) {
+          if (relativePath(url) !== '/arama') return false;
+          var currentMain = document.querySelector('.pa-main');
+          if (!currentMain) return false;
+          var query = String(url.searchParams.get('q') || '').trim();
+          cleanupPublicArchivePage();
+          var nextMain = document.createElement('main');
+          nextMain.className = 'pa-main pa-narrow-main';
+          nextMain.innerHTML = '<section class="pa-search-page pa-search-transition" aria-busy="true">'
+            + '<p class="pa-kicker">Arşivde ara</p>'
+            + '<h1>Aradığınız cevaba en kısa yoldan ulaşın.</h1>'
+            + '<p class="pa-page-intro">Soru başlıkları, cevap metinleri ve kategoriler içinde aranıyor.</p>'
+            + '<div class="pa-search-transition-query" data-pa-search-transition-query></div>'
+            + '</section>'
+            + '<section class="pa-section pa-search-transition-results" aria-live="polite">'
+            + '<div class="pa-section-head"><h2>En Uygun Cevaplar</h2></div>'
+            + '<div class="pa-search-loading-state" role="status">'
+            + '<span class="pa-search-loading-indicator" aria-hidden="true"></span>'
+            + '<strong>Sonuçlar hazırlanıyor</strong>'
+            + '</div>'
+            + '<div class="pa-search-loading-lines" aria-hidden="true"><span></span><span></span><span></span></div>'
+            + '</section>';
+          var queryNode = nextMain.querySelector('[data-pa-search-transition-query]');
+          if (queryNode) queryNode.textContent = query;
+          currentMain.replaceWith(nextMain);
+          document.title = query ? '"' + query + '" için arama' : 'Arama';
+          scrollToRouteTarget(url);
+          return true;
         }
         function syncHead(nextDoc) {
           var nextTitle = nextDoc.querySelector('title');
@@ -4890,7 +4920,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             }
           }, wait);
         }
-        window.__publicArchiveNavigateTo = function(href) {
+        window.__publicArchiveNavigateTo = function(href, options) {
           try {
             var url = new URL(href, window.location.href);
             if (!isSafeRoute(url)) {
@@ -4907,19 +4937,27 @@ function renderShell({ title, description, active, content, status = 200, questi
               }
               return;
             }
+            var immediateSearch = Boolean(options && options.immediateSearch === true && relativePath(url) === '/arama');
+            if (immediateSearch) {
+              pageStack().pushState({ paFast: true, paPending: true }, '', url.href);
+              showImmediateSearchShell(url);
+            }
             var fallbackTimer = window.setTimeout(function(){
-              window.location.href = url.href;
-            }, navigationFallbackMs);
+              if (immediateSearch) window.location.reload();
+              else window.location.href = url.href;
+            }, immediateSearch ? 7000 : navigationFallbackMs);
             fetchPage(url).then(function(html){
               window.clearTimeout(fallbackTimer);
               try {
-                replacePublicArchiveShell(url, html, 'push');
+                replacePublicArchiveShell(url, html, immediateSearch ? 'replace' : 'push');
               } catch (error) {
-                window.location.href = url.href;
+                if (immediateSearch) window.location.reload();
+                else window.location.href = url.href;
               }
             }).catch(function(){
               window.clearTimeout(fallbackTimer);
-              window.location.href = url.href;
+              if (immediateSearch) window.location.reload();
+              else window.location.href = url.href;
             });
           } catch (error) {
             window.location.href = href;
