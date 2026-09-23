@@ -9,6 +9,7 @@ const mammoth  = require('mammoth');
 const readXlsxFile = require('read-excel-file/node');
 const PDFDocument = require('pdfkit');
 const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
 const { canReadRecord, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
 const {
@@ -29,6 +30,13 @@ const {
   semanticSearchBoost
 } = require('./public-search-core');
 const { indexPublicQaSearchRows } = require('./public-search-indexer');
+const {
+  normalizeNewsletterCampaignInput,
+  newsletterCampaignErrors,
+  renderNewsletterEmail,
+  renderNewsletterText,
+  newsletterEventEmail
+} = require('./newsletter-core');
 
 const app    = express();
 app.disable('x-powered-by');
@@ -47,6 +55,10 @@ const GOOGLE_ROOT_REDIRECT_URI = process.env.GOOGLE_ROOT_REDIRECT_URI || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const PUBLIC_ANSWER_EMAIL_FROM = process.env.PUBLIC_ANSWER_EMAIL_FROM || process.env.EMAIL_FROM || 'Dini Sorular ve Cevaplar Arşivi <no-reply@arsiv.ibrahimlive.ai>';
 const PUBLIC_ANSWER_EMAIL_REPLY_TO = process.env.PUBLIC_ANSWER_EMAIL_REPLY_TO || '';
+const NEWSLETTER_EMAIL_FROM = process.env.NEWSLETTER_EMAIL_FROM || 'Dini Sorular ve Cevaplar Arşivi <bulten@arsiv.ibrahimlive.ai>';
+const NEWSLETTER_EMAIL_REPLY_TO = process.env.NEWSLETTER_EMAIL_REPLY_TO || PUBLIC_ANSWER_EMAIL_REPLY_TO || '';
+const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
+const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -114,6 +126,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 const SYSTEM_SENDER_NAME = 'Arşiv Kontrol AI';
 
 function sleep(ms) {
@@ -238,7 +251,14 @@ app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)');
   next();
 });
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, _res, buffer) => {
+    if (req.originalUrl?.startsWith('/api/newsletter/webhooks/resend')) {
+      req.rawBody = buffer.toString('utf8');
+    }
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.set('trust proxy', 1);
 app.use(cookieSession({
@@ -5242,6 +5262,14 @@ async function seed() {
   const { error: publicNewsletterErr } = await supabase.from('public_newsletter_subscriptions').select('id').limit(1);
   HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES = !publicNewsletterErr;
   if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES) console.warn('⚠ public_newsletter_subscriptions tablosu yok — public abonelik formu pasif.');
+  const { error: publicNewsletterProviderErr } = HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES
+    ? await supabase.from('public_newsletter_subscriptions').select('resend_contact_id,resend_sync_status,status_reason').limit(1)
+    : { error: publicNewsletterErr };
+  HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS = !publicNewsletterProviderErr;
+  const { error: newsletterCampaignsErr } = await supabase.from('newsletter_campaigns').select('id').limit(1);
+  const { error: newsletterEventsErr } = await supabase.from('newsletter_delivery_events').select('provider_event_id').limit(1);
+  HAS_NEWSLETTER_ADMIN_TABLES = HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS && !newsletterCampaignsErr && !newsletterEventsErr;
+  if (!HAS_NEWSLETTER_ADMIN_TABLES) console.warn('⚠ Bülten yönetim merkezi tabloları yok — admin bülten ekranı pasif.');
 
   const { error: publicQuestionSubmissionsErr } = await supabase.from('public_question_submissions').select('id').limit(1);
   HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = !publicQuestionSubmissionsErr;
@@ -5351,6 +5379,7 @@ function requestHost(req) {
 
 function sameOriginMutationGuard(req, res, next) {
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+  if (req.path === '/api/newsletter/webhooks/resend') return next();
   const origin = String(req.headers.origin || '').trim();
   const fetchSite = String(req.headers['sec-fetch-site'] || '').trim().toLowerCase();
   if (fetchSite === 'cross-site') return res.status(403).json({ error: 'Bu işlem yalnız aynı site içinden yapılabilir.' });
@@ -14536,6 +14565,8 @@ let HAS_ARCHIVE_PUBLISH_TABLES = false; // startup'ta tespit edilir (yayın gör
 let HAS_PUBLIC_ARCHIVE_USER_TABLES = false; // startup'ta tespit edilir (public Google kullanıcıları)
 let HAS_PUBLIC_ARCHIVE_EMAIL_AUTH_FIELDS = false; // startup'ta tespit edilir (public e-posta giriş kolonları)
 let HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES = false; // startup'ta tespit edilir (public e-posta abonelikleri)
+let HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS = false; // startup'ta tespit edilir (Resend eşitleme kolonları)
+let HAS_NEWSLETTER_ADMIN_TABLES = false; // startup'ta tespit edilir (kampanya ve teslimat kayıtları)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = false; // startup'ta tespit edilir (public soru cevap akışı)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
@@ -14978,6 +15009,612 @@ async function publicArchiveLogoutHandler(req, res) {
   res.json({ success: true });
 }
 
+const NEWSLETTER_SEGMENT_SETTING_KEY = 'newsletter_resend_segment';
+let newsletterSegmentCache = null;
+
+function newsletterProviderError(result, fallback = 'Resend işlemi tamamlanamadı.') {
+  const error = result?.error;
+  if (!error) return null;
+  const message = String(error.message || error.name || fallback).trim();
+  const wrapped = new Error(message || fallback);
+  wrapped.statusCode = Number(error.statusCode || error.status || 502);
+  return wrapped;
+}
+
+function requireNewsletterAdminReady() {
+  if (!HAS_NEWSLETTER_ADMIN_TABLES) {
+    throw httpError('Bülten yönetim merkezi için veri tabanı geçişi bekleniyor.', 503);
+  }
+}
+
+function requireNewsletterProvider() {
+  if (!resend) throw httpError('Resend API anahtarı tanımlı değil.', 503);
+  return resend;
+}
+
+async function ensureNewsletterSegment() {
+  requireNewsletterProvider();
+  if (newsletterSegmentCache?.id) return newsletterSegmentCache;
+  const saved = await loadJsonSetting(NEWSLETTER_SEGMENT_SETTING_KEY, null);
+  if (saved?.id) {
+    const found = await resend.segments.get(saved.id);
+    if (!found.error && found.data?.id) {
+      newsletterSegmentCache = { id: found.data.id, name: found.data.name || NEWSLETTER_RESEND_SEGMENT_NAME };
+      return newsletterSegmentCache;
+    }
+  }
+  const listed = await resend.segments.list({ limit: 100 });
+  const listError = newsletterProviderError(listed, 'Resend segmentleri okunamadı.');
+  if (listError) throw listError;
+  let segment = (listed.data?.data || []).find(item => item.name === NEWSLETTER_RESEND_SEGMENT_NAME) || null;
+  if (!segment) {
+    const created = await resend.segments.create({ name: NEWSLETTER_RESEND_SEGMENT_NAME });
+    const createError = newsletterProviderError(created, 'Bülten segmenti oluşturulamadı.');
+    if (createError) throw createError;
+    segment = created.data;
+  }
+  newsletterSegmentCache = { id: segment.id, name: segment.name || NEWSLETTER_RESEND_SEGMENT_NAME };
+  await saveJsonSetting(NEWSLETTER_SEGMENT_SETTING_KEY, newsletterSegmentCache);
+  return newsletterSegmentCache;
+}
+
+async function updateNewsletterSubscriberSync(id, values = {}) {
+  if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS || !id) return;
+  const { error } = await supabase.from('public_newsletter_subscriptions')
+    .update({ ...values, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+async function syncNewsletterSubscriber(row, segment = null) {
+  if (!row?.id || !row.email) throw new Error('Eşitlenecek abone kaydı eksik.');
+  if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) return { synced: false, skipped: true, reason: 'migration_pending' };
+  if (!resend) {
+    await updateNewsletterSubscriberSync(row.id, { resend_sync_status: 'pending', resend_error: 'RESEND_API_KEY bekleniyor.' });
+    return { synced: false, skipped: true, reason: 'missing_api_key' };
+  }
+  try {
+    const targetSegment = segment || await ensureNewsletterSegment();
+    const existing = await resend.contacts.get({ email: row.email });
+    let contactId = existing.data?.id || '';
+    const notFound = existing.error && Number(existing.error.statusCode || existing.error.status) === 404;
+    if (existing.error && !notFound) throw newsletterProviderError(existing, 'Resend kişisi okunamadı.');
+    if (!contactId) {
+      const created = await resend.contacts.create({
+        email: row.email,
+        unsubscribed: row.status !== 'active',
+        segments: [{ id: targetSegment.id }]
+      }, { idempotencyKey: `newsletter-contact-${row.id}` });
+      const createError = newsletterProviderError(created, 'Resend kişisi oluşturulamadı.');
+      if (createError) throw createError;
+      contactId = created.data?.id || '';
+    } else {
+      const updated = await resend.contacts.update({ email: row.email, unsubscribed: row.status !== 'active' });
+      const updateError = newsletterProviderError(updated, 'Resend abonelik durumu güncellenemedi.');
+      if (updateError) throw updateError;
+      const attached = await resend.contacts.segments.add({ email: row.email, segmentId: targetSegment.id });
+      const attachError = newsletterProviderError(attached, 'Resend segment bağlantısı kurulamadı.');
+      if (attachError && Number(attachError.statusCode) !== 409) throw attachError;
+    }
+    await updateNewsletterSubscriberSync(row.id, {
+      resend_contact_id: contactId || null,
+      resend_sync_status: 'synced',
+      resend_synced_at: new Date().toISOString(),
+      resend_error: null
+    });
+    return { synced: true, contactId, segmentId: targetSegment.id };
+  } catch (error) {
+    await updateNewsletterSubscriberSync(row.id, {
+      resend_sync_status: 'failed',
+      resend_error: String(error.message || 'Resend eşitlemesi başarısız.').slice(0, 700)
+    }).catch(() => {});
+    return { synced: false, error: error.message || 'Resend eşitlemesi başarısız.' };
+  }
+}
+
+async function loadNewsletterSubscribersForSync(force = false) {
+  const rows = [];
+  const pageSize = 500;
+  for (let offset = 0; offset < 5000; offset += pageSize) {
+    let query = supabase.from('public_newsletter_subscriptions')
+      .select('id,email,status,resend_sync_status')
+      .eq('status', 'active')
+      .order('created_at', { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (!force) query = query.neq('resend_sync_status', 'synced');
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    rows.push(...(data || []));
+    if ((data || []).length < pageSize) break;
+  }
+  return rows;
+}
+
+async function syncNewsletterActiveSubscribers({ force = false } = {}) {
+  requireNewsletterAdminReady();
+  const segment = await ensureNewsletterSegment();
+  const rows = await loadNewsletterSubscribersForSync(force);
+  let synced = 0;
+  const failures = [];
+  for (let index = 0; index < rows.length; index += 8) {
+    const batch = rows.slice(index, index + 8);
+    const results = await Promise.all(batch.map(row => syncNewsletterSubscriber(row, segment)));
+    results.forEach((result, resultIndex) => {
+      if (result.synced) synced += 1;
+      else failures.push({ id: batch[resultIndex].id, email: batch[resultIndex].email, error: result.error || result.reason || 'Eşitlenemedi' });
+    });
+  }
+  return { attempted: rows.length, synced, failed: failures.length, failures: failures.slice(0, 20), segment };
+}
+
+async function newsletterStatusCounts() {
+  const statuses = ['active', 'unsubscribed', 'suppressed'];
+  const pairs = await Promise.all(statuses.map(async status => {
+    const { count, error } = await supabase.from('public_newsletter_subscriptions')
+      .select('id', { count: 'exact', head: true }).eq('status', status);
+    if (error) throw new Error(error.message);
+    return [status, count || 0];
+  }));
+  return Object.fromEntries(pairs);
+}
+
+async function newsletterAdminOverview() {
+  requireNewsletterAdminReady();
+  const [subscriberCounts, campaignRows, eventRows] = await Promise.all([
+    newsletterStatusCounts(),
+    supabase.from('newsletter_campaigns').select('id,status,updated_at').order('updated_at', { ascending: false }).limit(500),
+    supabase.from('newsletter_delivery_events').select('event_type,event_at').order('event_at', { ascending: false }).limit(10000)
+  ]);
+  if (campaignRows.error) throw new Error(campaignRows.error.message);
+  if (eventRows.error) throw new Error(eventRows.error.message);
+  const campaigns = campaignRows.data || [];
+  const events = eventRows.data || [];
+  const eventCounts = {};
+  events.forEach(event => { eventCounts[event.event_type] = (eventCounts[event.event_type] || 0) + 1; });
+  const { count: syncIssueCount, error: syncIssueError } = await supabase.from('public_newsletter_subscriptions')
+    .select('id', { count: 'exact', head: true }).neq('resend_sync_status', 'synced').eq('status', 'active');
+  if (syncIssueError) throw new Error(syncIssueError.message);
+  return {
+    subscribers: { ...subscriberCounts, total: Object.values(subscriberCounts).reduce((sum, value) => sum + value, 0), syncIssues: syncIssueCount || 0 },
+    campaigns: {
+      total: campaigns.length,
+      draft: campaigns.filter(item => ['draft', 'ready'].includes(item.status)).length,
+      scheduled: campaigns.filter(item => item.status === 'scheduled').length,
+      sent: campaigns.filter(item => item.status === 'sent').length
+    },
+    events: eventCounts,
+    provider: {
+      apiConfigured: Boolean(RESEND_API_KEY),
+      webhookConfigured: Boolean(RESEND_WEBHOOK_SECRET),
+      from: NEWSLETTER_EMAIL_FROM,
+      segment: newsletterSegmentCache || await loadJsonSetting(NEWSLETTER_SEGMENT_SETTING_KEY, null)
+    }
+  };
+}
+
+function newsletterCampaignDbRow(input, actorId) {
+  const campaign = normalizeNewsletterCampaignInput(input);
+  const errors = newsletterCampaignErrors(campaign);
+  if (errors.length) throw httpError(errors[0], 400);
+  return {
+    name: campaign.name,
+    subject: campaign.subject,
+    preview_text: campaign.previewText || null,
+    heading: campaign.heading,
+    body_text: campaign.bodyText,
+    cta_label: campaign.ctaLabel || null,
+    cta_url: campaign.ctaUrl || null,
+    updated_by: actorId || null,
+    updated_at: new Date().toISOString()
+  };
+}
+
+function newsletterCampaignRenderModel(row = {}) {
+  return normalizeNewsletterCampaignInput(row);
+}
+
+async function getNewsletterCampaign(id) {
+  const { data, error } = await supabase.from('newsletter_campaigns').select('*').eq('id', id).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw httpError('Kampanya bulunamadı.', 404);
+  return data;
+}
+
+async function countActiveNewsletterSubscribers() {
+  const { count, error } = await supabase.from('public_newsletter_subscriptions')
+    .select('id', { count: 'exact', head: true }).eq('status', 'active');
+  if (error) throw new Error(error.message);
+  return count || 0;
+}
+
+async function refreshNewsletterCampaignProviderStatus(campaign) {
+  if (!resend || !campaign?.resend_broadcast_id) return campaign;
+  const result = await resend.broadcasts.get(campaign.resend_broadcast_id);
+  if (result.error || !result.data) return campaign;
+  const provider = result.data;
+  const nextStatus = provider.status === 'sent'
+    ? 'sent'
+    : provider.status === 'queued'
+      ? (provider.scheduled_at ? 'scheduled' : 'sending')
+      : campaign.status;
+  const updates = {
+    status: nextStatus,
+    scheduled_at: provider.scheduled_at || campaign.scheduled_at,
+    sent_at: provider.sent_at || campaign.sent_at,
+    updated_at: new Date().toISOString()
+  };
+  const { data, error } = await supabase.from('newsletter_campaigns')
+    .update(updates).eq('id', campaign.id).select('*').single();
+  return error ? campaign : data;
+}
+
+async function prepareNewsletterCampaign(campaign) {
+  requireNewsletterProvider();
+  const syncResult = await syncNewsletterActiveSubscribers();
+  if (syncResult.failed) throw httpError(`${syncResult.failed} aktif abone Resend ile eşitlenemedi. Önce eşitleme hatalarını çözün.`, 409);
+  const activeCount = await countActiveNewsletterSubscribers();
+  if (!activeCount) throw httpError('Gönderim için aktif abone bulunmuyor.', 409);
+  const segment = syncResult.segment || await ensureNewsletterSegment();
+  const content = newsletterCampaignRenderModel(campaign);
+  const payload = {
+    name: campaign.name,
+    segmentId: segment.id,
+    from: NEWSLETTER_EMAIL_FROM,
+    subject: campaign.subject,
+    previewText: campaign.preview_text || undefined,
+    html: renderNewsletterEmail(content),
+    text: renderNewsletterText(content),
+    send: false
+  };
+  if (NEWSLETTER_EMAIL_REPLY_TO) payload.replyTo = NEWSLETTER_EMAIL_REPLY_TO;
+  let broadcastId = campaign.resend_broadcast_id || '';
+  if (broadcastId) {
+    const provider = await resend.broadcasts.get(broadcastId);
+    if (!provider.error && provider.data?.status !== 'draft') {
+      const refreshed = await refreshNewsletterCampaignProviderStatus(campaign);
+      throw httpError(`Bu kampanya Resend tarafında ${provider.data.status} durumda; yeniden taslak hazırlanamaz.`, 409, refreshed);
+    }
+    const updated = await resend.broadcasts.update(broadcastId, payload);
+    const updateError = newsletterProviderError(updated, 'Resend taslağı güncellenemedi.');
+    if (updateError) throw updateError;
+  } else {
+    const created = await resend.broadcasts.create(payload, { idempotencyKey: `newsletter-broadcast-${campaign.id}` });
+    const createError = newsletterProviderError(created, 'Resend taslağı oluşturulamadı.');
+    if (createError) throw createError;
+    broadcastId = created.data?.id || '';
+  }
+  const { data, error } = await supabase.from('newsletter_campaigns').update({
+    status: 'ready',
+    resend_segment_id: segment.id,
+    resend_broadcast_id: broadcastId,
+    recipient_count: activeCount,
+    prepared_at: new Date().toISOString(),
+    last_error: null,
+    updated_at: new Date().toISOString()
+  }).eq('id', campaign.id).select('*').single();
+  if (error) throw new Error(error.message);
+  return { campaign: data, sync: syncResult };
+}
+
+app.get('/api/newsletter/admin/overview', auth, admin, superAdmin, async (_req, res) => {
+  try { res.json(await newsletterAdminOverview()); }
+  catch (error) { res.status(error.statusCode || 500).json({ error: error.message || 'Bülten özeti okunamadı.' }); }
+});
+
+app.get('/api/newsletter/admin/subscribers', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    const limit = Math.max(20, Math.min(250, Number(req.query.limit || 100)));
+    const offset = Math.max(0, Number(req.query.offset || 0));
+    const status = ['active', 'unsubscribed', 'suppressed'].includes(String(req.query.status || '')) ? String(req.query.status) : '';
+    const search = String(req.query.q || '').trim().slice(0, 160);
+    let query = supabase.from('public_newsletter_subscriptions').select('*', { count: 'exact' })
+      .order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+    if (status) query = query.eq('status', status);
+    if (search) query = query.ilike('email', `%${search.replace(/[%_]/g, '')}%`);
+    const { data, count, error } = await query;
+    if (error) throw new Error(error.message);
+    res.json({ subscribers: data || [], count: count || 0, limit, offset });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Aboneler okunamadı.' });
+  }
+});
+
+app.post('/api/newsletter/admin/subscribers/:id/status', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    const status = String(req.body?.status || '');
+    if (!['active', 'unsubscribed'].includes(status)) return res.status(400).json({ error: 'Geçersiz abonelik durumu.' });
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from('public_newsletter_subscriptions').update({
+      status,
+      status_reason: status === 'active' ? 'admin_reactivated' : 'admin_unsubscribed',
+      unsubscribed_at: status === 'unsubscribed' ? now : null,
+      resend_sync_status: 'pending',
+      resend_error: null,
+      updated_at: now
+    }).eq('id', req.params.id).select('*').single();
+    if (error) throw new Error(error.message);
+    const sync = await syncNewsletterSubscriber(data);
+    await recordAdminAction(req, {
+      action: 'newsletter.subscriber_status', actionLabel: 'Bülten abone durumu değiştirildi',
+      targetType: 'newsletter_subscriber', targetId: data.id, targetLabel: data.email,
+      targetStatusAfter: status, summary: `${data.email} bülten durumu ${status} olarak güncellendi.`
+    });
+    res.json({ subscriber: { ...data, resend_sync_status: sync.synced ? 'synced' : data.resend_sync_status }, sync });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Abone durumu güncellenemedi.' });
+  }
+});
+
+app.post('/api/newsletter/admin/sync', auth, admin, superAdmin, async (req, res) => {
+  try {
+    const result = await syncNewsletterActiveSubscribers({ force: req.body?.force === true });
+    await recordAdminAction(req, {
+      action: 'newsletter.sync', actionLabel: 'Bülten aboneleri Resend ile eşitlendi',
+      targetType: 'newsletter_segment', targetId: result.segment?.id, targetLabel: result.segment?.name,
+      summary: `${result.synced}/${result.attempted} abone eşitlendi; ${result.failed} hata.`
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Resend eşitlemesi tamamlanamadı.' });
+  }
+});
+
+app.get('/api/newsletter/admin/campaigns', auth, admin, superAdmin, async (_req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    const { data, error } = await supabase.from('newsletter_campaigns').select('*').order('updated_at', { ascending: false }).limit(300);
+    if (error) throw new Error(error.message);
+    res.json({ campaigns: data || [] });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Kampanyalar okunamadı.' });
+  }
+});
+
+app.post('/api/newsletter/admin/campaigns', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    const row = newsletterCampaignDbRow(req.body, req.session.userId);
+    const { data, error } = await supabase.from('newsletter_campaigns').insert({ ...row, created_by: req.session.userId }).select('*').single();
+    if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'newsletter.campaign_create', actionLabel: 'Bülten kampanyası oluşturuldu',
+      targetType: 'newsletter_campaign', targetId: data.id, targetLabel: data.name,
+      targetStatusAfter: data.status, summary: `${data.name} taslak kampanyası oluşturuldu.`
+    });
+    res.status(201).json({ campaign: data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Kampanya oluşturulamadı.' });
+  }
+});
+
+app.put('/api/newsletter/admin/campaigns/:id', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    const current = await getNewsletterCampaign(req.params.id);
+    if (['scheduled', 'sending', 'sent'].includes(current.status)) throw httpError('Gönderilmiş veya zamanlanmış kampanya düzenlenemez.', 409);
+    const row = newsletterCampaignDbRow(req.body, req.session.userId);
+    const { data, error } = await supabase.from('newsletter_campaigns')
+      .update({ ...row, status: 'draft', prepared_at: null, last_error: null }).eq('id', current.id).select('*').single();
+    if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'newsletter.campaign_update', actionLabel: 'Bülten kampanyası güncellendi',
+      targetType: 'newsletter_campaign', targetId: data.id, targetLabel: data.name,
+      targetStatusBefore: current.status, targetStatusAfter: data.status, summary: `${data.name} kampanya taslağı güncellendi.`
+    });
+    res.json({ campaign: data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Kampanya güncellenemedi.' });
+  }
+});
+
+app.post('/api/newsletter/admin/campaigns/:id/test', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    requireNewsletterProvider();
+    const email = normalizePublicEmail(req.body?.email);
+    if (!validPublicEmail(email)) return res.status(400).json({ error: 'Geçerli bir test e-posta adresi yazın.' });
+    const campaign = await getNewsletterCampaign(req.params.id);
+    const payload = {
+      from: NEWSLETTER_EMAIL_FROM,
+      to: email,
+      subject: `[TEST] ${campaign.subject}`,
+      html: renderNewsletterEmail(newsletterCampaignRenderModel(campaign), { mode: 'test' }),
+      text: renderNewsletterText(newsletterCampaignRenderModel(campaign), { mode: 'test' })
+    };
+    if (NEWSLETTER_EMAIL_REPLY_TO) payload.replyTo = NEWSLETTER_EMAIL_REPLY_TO;
+    const result = await resend.emails.send(payload, { idempotencyKey: `newsletter-test-${campaign.id}-${crypto.createHash('sha256').update(email).digest('hex').slice(0, 20)}-${Date.now()}` });
+    const sendError = newsletterProviderError(result, 'Test e-postası gönderilemedi.');
+    if (sendError) throw sendError;
+    await recordAdminAction(req, {
+      action: 'newsletter.campaign_test', actionLabel: 'Bülten test e-postası gönderildi',
+      targetType: 'newsletter_campaign', targetId: campaign.id, targetLabel: campaign.name,
+      summary: `${campaign.name} için test e-postası ${email} adresine gönderildi.`, metadata: { email }
+    });
+    res.json({ success: true, id: result.data?.id || null });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Test e-postası gönderilemedi.' });
+  }
+});
+
+app.post('/api/newsletter/admin/campaigns/:id/prepare', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    const campaign = await getNewsletterCampaign(req.params.id);
+    if (['scheduled', 'sending', 'sent'].includes(campaign.status)) throw httpError('Bu kampanya artık taslak olarak hazırlanamaz.', 409);
+    const prepared = await prepareNewsletterCampaign(campaign);
+    await recordAdminAction(req, {
+      action: 'newsletter.campaign_prepare', actionLabel: 'Bülten Resend taslağı hazırlandı',
+      targetType: 'newsletter_campaign', targetId: campaign.id, targetLabel: campaign.name,
+      targetStatusBefore: campaign.status, targetStatusAfter: 'ready',
+      summary: `${campaign.name} kampanyası ${prepared.campaign.recipient_count} aktif abone için gönderime hazırlandı.`
+    });
+    res.json(prepared);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Kampanya gönderime hazırlanamadı.' });
+  }
+});
+
+app.post('/api/newsletter/admin/campaigns/:id/send', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    requireNewsletterProvider();
+    let campaign = await getNewsletterCampaign(req.params.id);
+    if (!campaign.resend_broadcast_id || campaign.status !== 'ready') throw httpError('Önce Resend taslağını hazırlayın.', 409);
+    if (String(req.body?.confirmation || '') !== 'YAYINLA') throw httpError('Gönderim için YAYINLA onayı gerekli.', 400);
+    const activeCount = await countActiveNewsletterSubscribers();
+    if (Number(req.body?.expectedRecipientCount) !== activeCount) {
+      throw httpError(`Aktif abone sayısı değişti. Güncel sayı ${activeCount}; kampanyayı yeniden hazırlayın.`, 409);
+    }
+    campaign = await refreshNewsletterCampaignProviderStatus(campaign);
+    if (['scheduled', 'sending', 'sent'].includes(campaign.status)) return res.json({ campaign, alreadyStarted: true });
+    const scheduledAtInput = String(req.body?.scheduledAt || '').trim();
+    let scheduledAt = null;
+    if (scheduledAtInput) {
+      const parsed = new Date(scheduledAtInput);
+      if (!Number.isFinite(parsed.getTime()) || parsed.getTime() < Date.now() + 5 * 60 * 1000) {
+        throw httpError('Zamanlama en az 5 dakika sonrası için geçerli bir tarih olmalı.', 400);
+      }
+      scheduledAt = parsed.toISOString();
+    }
+    const result = await resend.broadcasts.send(campaign.resend_broadcast_id, scheduledAt ? { scheduledAt } : {});
+    const sendError = newsletterProviderError(result, 'Bülten gönderimi başlatılamadı.');
+    if (sendError) throw sendError;
+    const now = new Date().toISOString();
+    const status = scheduledAt ? 'scheduled' : 'sending';
+    const { data, error } = await supabase.from('newsletter_campaigns').update({
+      status,
+      scheduled_at: scheduledAt,
+      sent_at: scheduledAt ? null : now,
+      recipient_count: activeCount,
+      last_error: null,
+      updated_by: req.session.userId,
+      updated_at: now
+    }).eq('id', campaign.id).select('*').single();
+    if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: scheduledAt ? 'newsletter.campaign_schedule' : 'newsletter.campaign_send',
+      actionLabel: scheduledAt ? 'Bülten kampanyası zamanlandı' : 'Bülten kampanyası gönderildi',
+      targetType: 'newsletter_campaign', targetId: campaign.id, targetLabel: campaign.name,
+      targetStatusBefore: campaign.status, targetStatusAfter: status,
+      summary: scheduledAt ? `${campaign.name} ${scheduledAt} için zamanlandı.` : `${campaign.name} ${activeCount} aktif aboneye gönderime alındı.`
+    });
+    res.json({ campaign: data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Bülten gönderimi başlatılamadı.' });
+  }
+});
+
+app.post('/api/newsletter/admin/campaigns/:id/cancel', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    requireNewsletterProvider();
+    const campaign = await getNewsletterCampaign(req.params.id);
+    if (!campaign.resend_broadcast_id || !['scheduled', 'sending'].includes(campaign.status)) {
+      throw httpError('Yalnız zamanlanmış veya kuyruktaki kampanya durdurulabilir.', 409);
+    }
+    const result = await resend.broadcasts.cancel(campaign.resend_broadcast_id);
+    const cancelError = newsletterProviderError(result, 'Kampanya durdurulamadı.');
+    if (cancelError) throw cancelError;
+    const { data, error } = await supabase.from('newsletter_campaigns').update({
+      status: 'canceled', updated_by: req.session.userId, updated_at: new Date().toISOString()
+    }).eq('id', campaign.id).select('*').single();
+    if (error) throw new Error(error.message);
+    await recordAdminAction(req, {
+      action: 'newsletter.campaign_cancel', actionLabel: 'Bülten kampanyası durduruldu',
+      targetType: 'newsletter_campaign', targetId: campaign.id, targetLabel: campaign.name,
+      targetStatusBefore: campaign.status, targetStatusAfter: 'canceled', summary: `${campaign.name} kampanyası durduruldu.`
+    });
+    res.json({ campaign: data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Kampanya durdurulamadı.' });
+  }
+});
+
+app.get('/api/newsletter/admin/campaigns/:id/report', auth, admin, superAdmin, async (req, res) => {
+  try {
+    requireNewsletterAdminReady();
+    let campaign = await getNewsletterCampaign(req.params.id);
+    campaign = await refreshNewsletterCampaignProviderStatus(campaign);
+    const { data, error } = await supabase.from('newsletter_delivery_events')
+      .select('event_type,recipient_email,event_at').eq('campaign_id', campaign.id)
+      .order('event_at', { ascending: false }).limit(5000);
+    if (error) throw new Error(error.message);
+    const counts = {};
+    (data || []).forEach(event => { counts[event.event_type] = (counts[event.event_type] || 0) + 1; });
+    res.json({ campaign, counts, recentEvents: (data || []).slice(0, 100) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message || 'Kampanya raporu okunamadı.' });
+  }
+});
+
+app.post('/api/newsletter/webhooks/resend', async (req, res) => {
+  try {
+    await startupReady;
+    requireNewsletterAdminReady();
+    requireNewsletterProvider();
+    if (!RESEND_WEBHOOK_SECRET) return res.status(503).json({ error: 'Webhook imza anahtarı tanımlı değil.' });
+    const headers = {
+      id: String(req.headers['svix-id'] || ''),
+      timestamp: String(req.headers['svix-timestamp'] || ''),
+      signature: String(req.headers['svix-signature'] || '')
+    };
+    if (!headers.id || !headers.timestamp || !headers.signature || !req.rawBody) {
+      return res.status(400).json({ error: 'Webhook imzası eksik.' });
+    }
+    const event = resend.webhooks.verify({ payload: req.rawBody, headers, webhookSecret: RESEND_WEBHOOK_SECRET });
+    const email = newsletterEventEmail(event);
+    const broadcastId = String(event.data?.broadcast_id || '');
+    let campaign = null;
+    if (broadcastId) {
+      const lookup = await supabase.from('newsletter_campaigns').select('id,status').eq('resend_broadcast_id', broadcastId).maybeSingle();
+      if (!lookup.error) campaign = lookup.data;
+    }
+    const { error: eventError } = await supabase.from('newsletter_delivery_events').upsert({
+      provider_event_id: headers.id,
+      campaign_id: campaign?.id || null,
+      resend_broadcast_id: broadcastId || null,
+      resend_email_id: event.data?.email_id || null,
+      event_type: event.type,
+      recipient_email: email || null,
+      event_at: event.created_at || new Date().toISOString(),
+      payload: event
+    }, { onConflict: 'provider_event_id' });
+    if (eventError) throw new Error(eventError.message);
+
+    if (email && event.type === 'contact.updated') {
+      const unsubscribed = event.data?.unsubscribed === true;
+      await supabase.from('public_newsletter_subscriptions').update({
+        status: unsubscribed ? 'unsubscribed' : 'active',
+        status_reason: unsubscribed ? 'resend_unsubscribe' : 'resend_resubscribe',
+        unsubscribed_at: unsubscribed ? (event.created_at || new Date().toISOString()) : null,
+        resend_contact_id: event.data?.id || null,
+        resend_sync_status: 'synced',
+        resend_synced_at: new Date().toISOString(),
+        resend_error: null,
+        last_provider_event_at: event.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq('email', email);
+    }
+    if (email && ['email.bounced', 'email.complained', 'email.suppressed'].includes(event.type)) {
+      await supabase.from('public_newsletter_subscriptions').update({
+        status: 'suppressed',
+        status_reason: event.type,
+        unsubscribed_at: event.created_at || new Date().toISOString(),
+        last_provider_event_at: event.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq('email', email);
+    }
+    if (campaign?.id && event.type === 'email.sent' && campaign.status === 'sending') {
+      await supabase.from('newsletter_campaigns').update({ status: 'sent', sent_at: event.created_at || new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', campaign.id);
+    }
+    res.json({ received: true });
+  } catch (error) {
+    res.status(400).json({ error: 'Geçersiz webhook isteği.' });
+  }
+});
+
 async function publicArchiveNewsletterSubscribeHandler(req, res) {
   try {
     await startupReady;
@@ -14998,20 +15635,39 @@ async function publicArchiveNewsletterSubscribeHandler(req, res) {
     if (!consentAccepted) return res.status(400).json({ error: 'E-posta aboneliği onayını işaretleyin.' });
 
     const now = new Date().toISOString();
-    const { error } = await supabase.from('public_newsletter_subscriptions').upsert({
+    const { data: existing, error: existingError } = await supabase.from('public_newsletter_subscriptions')
+      .select('*').eq('email', email).maybeSingle();
+    if (existingError) throw new Error(existingError.message);
+    const status = existing?.status === 'suppressed' ? 'suppressed' : 'active';
+    const row = {
       email,
-      status: 'active',
+      status,
       source: publicArchiveRequestBasePath(req) ? 'public-preview-footer' : 'public-root-footer',
       consent_version: 'newsletter-consent-20260920-v1',
       consented_at: now,
-      unsubscribed_at: null,
+      unsubscribed_at: status === 'active' ? null : existing?.unsubscribed_at,
       updated_at: now
-    }, { onConflict: 'email' });
+    };
+    if (HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) {
+      row.status_reason = status === 'active' ? (existing ? 'public_resubscribed' : 'public_subscribed') : existing?.status_reason;
+      row.resend_sync_status = status === 'active' ? 'pending' : existing?.resend_sync_status || 'failed';
+      row.resend_error = status === 'active' ? null : existing?.resend_error || null;
+    }
+    const { data: subscription, error } = await supabase.from('public_newsletter_subscriptions')
+      .upsert(row, { onConflict: 'email' }).select('*').single();
     if (error) throw new Error(error.message);
+
+    if (status === 'active' && HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) {
+      await syncNewsletterSubscriber(subscription).catch(error => {
+        console.warn('Public bülten Resend eşitlemesi tamamlanamadı:', error.message);
+      });
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Aboneliğiniz alındı. Yeni içerikler yayımlandığında size haber vereceğiz.'
+      message: status === 'active'
+        ? 'Aboneliğiniz alındı. Yeni içerikler yayımlandığında size haber vereceğiz.'
+        : 'Abonelik isteğiniz kaydedildi. Teslimat durumunuz ekip tarafından kontrol edilecek.'
     });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message || 'Abonelik kaydedilemedi.' });

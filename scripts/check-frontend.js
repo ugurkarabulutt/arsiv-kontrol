@@ -250,6 +250,14 @@ for (const marker of ['HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES', 'public_newsletter
 }
 assert(schema.includes('alter table public.public_newsletter_subscriptions enable row level security'), 'Abonelik tablosunda RLS acik olmali.');
 assert(schema.includes('revoke all on public.public_newsletter_subscriptions from public, anon, authenticated'), 'Abonelik tablosu public rollere kapali olmali.');
+for (const marker of ['newsletter_campaigns', 'newsletter_delivery_events', 'resend_sync_status', 'HAS_NEWSLETTER_ADMIN_TABLES', 'ensureNewsletterSegment', 'syncNewsletterActiveSubscribers', 'renderNewsletterEmail', "app.post('/api/newsletter/webhooks/resend'", "confirmation || '') !== 'YAYINLA'"]) {
+  assert(server.includes(marker) || schema.includes(marker), `Bulten yonetim merkezi backend/schema marker eksik: ${marker}`);
+}
+for (const marker of ['E-posta Bülteni', 'data-ops-view="newsletter"', 'newsletterCampaignDetail', 'newsletterSubscriberList', 'newsletterReportSummary', 'prepareNewsletterCampaignUi', 'sendNewsletterCampaignUi', 'YAYINLA yazın']) {
+  assert(html.includes(marker), `Bulten yonetim merkezi admin marker eksik: ${marker}`);
+}
+assert(schema.includes('revoke all on public.newsletter_campaigns from public, anon, authenticated'), 'Bulten kampanyalari public rollere kapali olmali.');
+assert(schema.includes('revoke all on public.newsletter_delivery_events from public, anon, authenticated'), 'Bulten teslimat olaylari public rollere kapali olmali.');
 assert(server.includes("String(req.get('X-Analytics-Consent') || '') !== '1'"), 'Okunma sayaci analitik iznine bagli olmali.');
 assert(server.includes("req.body?.analyticsConsent !== true || Number(req.body?.consentVersion) !== 1"), 'Ziyaret analitigi acik izne bagli olmali.');
 assert(server.includes("basePath: ''"), 'Root public renderer bos basePath ile baglanmali.');

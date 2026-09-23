@@ -1,5 +1,27 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-23 E-posta Bülteni Yönetim Merkezi
+
+- `/admin` içindeki `Canlı Site` bölümüne süper admin erişimli `E-posta Bülteni`
+  ekranı eklendi. Genel bakış, aranabilir aboneler, kampanya taslağı, test
+  e-postası, Resend taslağı hazırlama, zamanlama/gönderme ve teslimat raporu aynı
+  merkezden yönetilir.
+- Gönderim kaydetme sırasında başlamaz. Önce kampanya kaydedilir ve Resend
+  taslağı hazırlanır; gerçek gönderim için güncel aktif alıcı sayısı ile ekrandaki
+  sayı eşleşmeli ve `YAYINLA` onayı yazılmalıdır. Bu çalışma sırasında hiçbir
+  toplu e-posta gönderilmedi.
+- Mevcut `public_newsletter_subscriptions` tablosu Resend eşitleme alanlarıyla
+  genişletildi; `newsletter_campaigns` ve `newsletter_delivery_events` tabloları
+  eklendi. Tablolar RLS + açık rol yetkisi iptaliyle yalnız service role üzerinden
+  erişilir. Canlı geçiş mevcut 10 aktif aboneyi korudu; kampanya ve olay tabloları
+  boş başladı.
+- Resend Contacts/Segments eşitlemesi, güvenli HTML/metin şablonu, otomatik
+  abonelikten çıkma bağlantısı, imzalı webhook, bounce/şikayet bastırma ve işlem
+  günlüğü eklendi. `RESEND_WEBHOOK_SECRET` üretim ortamında ayrıca tanımlanmalıdır.
+- `resend@6.28.1` sabitlendi. `npm.cmd run check` 179/179 başarılı; Supabase
+  danışmanında bültene ait eksik yabancı anahtar indeksi kalmadı. Preview ve
+  production doğrulaması henüz yapılmadı.
+
 ## 2026-09-22 Hızlı ve Açıklanabilir Arama Sonuçları
 
 - Önceki tam arama her istekte OpenAI embedding çağrısı ve ardından Supabase

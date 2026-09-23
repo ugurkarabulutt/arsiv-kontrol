@@ -490,6 +490,21 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-23
+- **E-posta Bülteni Yönetim Merkezi hazırlandı:** `/admin` süper admin Canlı Site
+  alanına aboneleri, Resend eşitlemesini, kampanya taslaklarını, test e-postasını,
+  gönderim/zamanlama onayını ve webhook tabanlı teslimat raporlarını tek yerde
+  yöneten `E-posta Bülteni` ekranı eklendi. Gerçek gönderim; Resend taslağı,
+  değişmemiş aktif alıcı sayısı ve elle yazılan `YAYINLA` onayı olmadan başlamaz.
+  Public abonelik kaydı Resend Contacts/Segments ile eşitlenir; unsubscribe,
+  bounce ve complaint olayları imzalı webhook ile yerel duruma işlenir. Yeni
+  `newsletter_campaigns` ve `newsletter_delivery_events` tabloları ile abonelik
+  sağlayıcı alanları canlı Supabase'e uygulandı; mevcut 10 aktif abone korundu.
+  Yeni tablolar RLS açık, `anon`/`authenticated`/`public` yetkileri iptal edilmiş
+  ve yalnız `service_role` erişimine açıktır. `resend@6.28.1` sabitlendi.
+  `npm.cmd run check` 179/179 başarılı. Bu aşamada toplu e-posta gönderilmedi;
+  preview/production dağıtımı ve `RESEND_WEBHOOK_SECRET` kurulumu bekliyor.
+
 ### 2026-09-14 Public Konu Rehberi Blog Yayını
 
 - Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` metni public konu

@@ -437,6 +437,53 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-detail-head>div{min-width:0;}
 .ops-detail-title{font-size:17px;font-weight:900;color:var(--ink);line-height:1.35;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
 .ops-detail-body{padding:14px;min-width:0;max-width:100%;box-sizing:border-box;}
+.newsletter-connection{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 18px;align-items:center;border-left:3px solid var(--gold);background:rgba(var(--gold-rgb),.075);padding:12px 14px;margin-bottom:12px;color:var(--ink2);font-size:12px;line-height:1.5;}
+.newsletter-connection strong{display:block;color:var(--ink);font-size:13px;}
+.newsletter-connection span{display:block;grid-column:1 / -1;}
+.newsletter-connection.ok{border-left-color:var(--green);background:rgba(var(--green-rgb),.07);}
+.newsletter-connection.warn{border-left-color:var(--orange);background:rgba(var(--orange-rgb),.07);}
+.newsletter-tabs{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--bord2);margin-bottom:12px;overflow:auto;}
+.newsletter-tab{appearance:none;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--ink3);font:inherit;font-size:13px;font-weight:800;padding:11px 16px;cursor:pointer;white-space:nowrap;}
+.newsletter-tab:hover{color:var(--ink);}
+.newsletter-tab.active{color:var(--green);border-bottom-color:var(--green);}
+.newsletter-view[hidden]{display:none!important;}
+.newsletter-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--bord2);background:var(--border);gap:1px;margin-bottom:12px;}
+.newsletter-flow>div{background:var(--surface);padding:14px;min-height:132px;}
+.newsletter-flow span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);font-weight:900;}
+.newsletter-flow strong{display:block;color:var(--ink);font-size:14px;line-height:1.35;margin:8px 0 5px;}
+.newsletter-flow p{margin:0;color:var(--ink3);font-size:12px;line-height:1.55;}
+.newsletter-overview-events{border:1px solid var(--border);background:var(--surface-strong);padding:13px;color:var(--ink2);font-size:12px;line-height:1.6;}
+.newsletter-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 180px auto auto;gap:8px;margin-bottom:10px;}
+.newsletter-subscriber-list,.newsletter-event-list{border-top:1px solid var(--bord2);}
+.newsletter-subscriber-row{display:grid;grid-template-columns:minmax(200px,1.4fr) minmax(140px,.7fr) minmax(160px,.8fr) auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--border);min-width:0;}
+.newsletter-subscriber-email{font-size:13px;font-weight:800;color:var(--ink);overflow-wrap:anywhere;}
+.newsletter-subscriber-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);line-height:1.5;}
+.newsletter-status{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:var(--ink2);}
+.newsletter-status::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);}
+.newsletter-status.active::before,.newsletter-status.synced::before{background:var(--green);}
+.newsletter-status.unsubscribed::before,.newsletter-status.pending::before{background:var(--orange);}
+.newsletter-status.suppressed::before,.newsletter-status.failed::before{background:var(--red);}
+.newsletter-campaign-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.newsletter-campaign-head strong{display:block;color:var(--ink);font-size:15px;}
+.newsletter-campaign-head span{display:block;color:var(--ink3);font-size:12px;line-height:1.5;margin-top:3px;}
+.newsletter-campaign-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.3fr);gap:12px;}
+.newsletter-campaign-list{display:flex;flex-direction:column;border-top:1px solid var(--bord2);max-height:780px;overflow:auto;}
+.newsletter-campaign-row{appearance:none;width:100%;border:0;border-bottom:1px solid var(--border);background:transparent;text-align:left;color:var(--ink);padding:12px;cursor:pointer;}
+.newsletter-campaign-row:hover,.newsletter-campaign-row.active{background:rgba(var(--green-rgb),.07);}
+.newsletter-campaign-row.active{box-shadow:inset 3px 0 var(--green);}
+.newsletter-campaign-row strong{display:block;font-size:13px;line-height:1.4;overflow-wrap:anywhere;}
+.newsletter-campaign-row span{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);margin-top:6px;text-transform:uppercase;letter-spacing:.08em;}
+.newsletter-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.newsletter-form-grid .wide{grid-column:1 / -1;}
+.newsletter-form-label{display:grid;gap:6px;font-size:12px;font-weight:800;color:var(--ink2);}
+.newsletter-form-label textarea{min-height:96px;resize:vertical;line-height:1.55;}
+.newsletter-form-label textarea.newsletter-body{min-height:210px;}
+.newsletter-form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.newsletter-send-box{display:grid;grid-template-columns:minmax(160px,.7fr) minmax(180px,1fr) auto;gap:8px;align-items:end;margin-top:12px;padding:12px;border:1px solid rgba(var(--gold-rgb),.38);background:rgba(var(--gold-rgb),.065);}
+.newsletter-send-note{grid-column:1 / -1;font-size:11px;line-height:1.5;color:var(--ink3);}
+.newsletter-report-toolbar{display:grid;grid-template-columns:minmax(240px,1fr) auto;gap:8px;margin-bottom:12px;}
+.newsletter-event-row{display:grid;grid-template-columns:150px minmax(0,1fr) 150px;gap:12px;padding:11px 4px;border-bottom:1px solid var(--border);font-size:12px;color:var(--ink2);}
+.newsletter-event-row time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);text-align:right;}
 .ops-preview-text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:13px;font-size:14px;line-height:1.65;max-height:520px;overflow:auto;color:var(--ink2);}
 .candidate-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;}
 .candidate-review-card{border:1px solid var(--border);background:var(--bg);padding:13px;min-width:0;}
@@ -661,7 +708,9 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .ops-import-suggestion{font-size:15px;line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;word-break:break-word;}
 @media(max-width:900px){.ops-grid{grid-template-columns:1fr 1fr}.ops-flow{grid-template-columns:1fr}.ops-module-list{grid-template-columns:1fr}}
 @media(max-width:900px){.ops-form-grid,.ops-form-grid.two,.ops-filter-row,.ops-source-layout,.ops-work-layout,.ops-source-picker,.ops-import-layout,.ops-file-toolbar{grid-template-columns:1fr}.ops-import-flow{grid-template-columns:1fr 1fr}.ops-stats,.ops-file-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.newsletter-flow{grid-template-columns:1fr 1fr}.newsletter-toolbar{grid-template-columns:1fr 1fr}.newsletter-campaign-layout{grid-template-columns:1fr}.newsletter-campaign-list{max-height:320px}.newsletter-subscriber-row{grid-template-columns:1fr 1fr}.newsletter-send-box{grid-template-columns:1fr 1fr}.newsletter-send-box button{grid-column:1 / -1}.newsletter-event-row{grid-template-columns:125px minmax(0,1fr)}}
 @media(max-width:640px){.ops-grid{grid-template-columns:1fr}.ops-hero{padding:16px}.ops-title{font-size:20px}.ops-search{align-items:flex-start}.ops-step{min-height:auto}.ops-panel-body{padding:12px}.ops-stats,.ops-file-summary{grid-template-columns:1fr}.ops-folder-strip,.ops-file-grid{grid-template-columns:1fr}.ops-preview-text{max-height:420px}.ops-work-list-wrap .ops-source-list{max-height:none;overflow:visible}.ops-work-form .ops-source-actions,.ops-text-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-work-form .ops-source-actions button,.ops-text-actions button{width:100%}.ops-import-batch-bar{grid-template-columns:1fr}.ops-import-drop{align-items:flex-start}.ops-import-actions{width:100%}.ops-import-actions button{width:100%}.ops-import-layout{padding:10px;gap:10px}.ops-import-list{max-height:none;overflow:visible}.ops-detail-head{display:grid;grid-template-columns:1fr;gap:10px}.ops-detail-head .btn-mini{width:100%}.ops-detail-title{font-size:16px}.ops-detail-body{padding:12px}.ops-import-item .ops-source-actions{display:grid;grid-template-columns:1fr;gap:8px}.ops-import-item .ops-source-actions .btn-mini{width:100%}.ops-import-suggestion{font-size:14px}.ops-import-preview-text{font-size:12px;line-height:1.55;max-height:360px}}
+@media(max-width:640px){.newsletter-connection{grid-template-columns:1fr}.newsletter-flow,.newsletter-toolbar,.newsletter-form-grid,.newsletter-send-box,.newsletter-report-toolbar,.newsletter-subscriber-row,.newsletter-event-row{grid-template-columns:1fr}.newsletter-form-grid .wide,.newsletter-send-note,.newsletter-send-box button{grid-column:auto}.newsletter-form-actions{display:grid;grid-template-columns:1fr}.newsletter-form-actions button{width:100%}.newsletter-event-row time{text-align:left}.newsletter-summary{grid-template-columns:1fr 1fr}.newsletter-tabs{margin-left:-12px;margin-right:-12px;padding-left:12px}.newsletter-campaign-detail{min-height:0}}
 @media(max-width:640px){.candidate-review-grid{grid-template-columns:1fr}.candidate-trace-row{grid-template-columns:1fr;gap:2px}.candidate-public-preview{padding:12px}.candidate-public-preview h4{font-size:16px}.candidate-review-card{padding:12px}}
 .approval-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:-6px 0 12px;flex-wrap:wrap;}
 .approval-review-toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bord2);background:linear-gradient(135deg,var(--surface),var(--surface2));color:var(--ink);padding:7px 10px;border-radius:999px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;box-shadow:var(--soft-shadow);}
@@ -1207,6 +1256,7 @@ canvas{width:100%!important;}
           <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="siteAnalytics" onclick="mLiveSite('siteAnalytics')">Ziyaret İstatistikleri</button>
           <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="publicContent" onclick="mLiveSite('publicContent')">İçerik Kontrolü</button>
           <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="publicQuestions" onclick="mLiveSite('publicQuestions')">Soru Talepleri</button>
+          <button class="btn-mobile mobile-sub-link live-site-nav" data-ops-view="newsletter" onclick="mLiveSite('newsletter')">E-posta Bülteni</button>
         </div>
       </div>
       <button class="btn-mobile super-admin-only" onclick="mNav('msglog')" style="display:none">Mesaj Kayıtları</button>
@@ -1257,6 +1307,7 @@ canvas{width:100%!important;}
         <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="siteAnalytics" onclick="openLiveSite('siteAnalytics')"><span>Ziyaret İstatistikleri</span></button>
         <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="publicContent" onclick="openLiveSite('publicContent')"><span>İçerik Kontrolü</span></button>
         <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="publicQuestions" onclick="openLiveSite('publicQuestions')"><span>Soru Talepleri</span></button>
+        <button class="side-link side-sub-link live-site-nav" data-tab="archiveOps" data-ops-view="newsletter" onclick="openLiveSite('newsletter')"><span>E-posta Bülteni</span></button>
       </div>
     </div>
 
@@ -2233,6 +2284,88 @@ canvas{width:100%!important;}
         </div>
       </div>
 
+      <div class="ops-panel archive-ops-section newsletter-admin" data-ops-view="newsletter" hidden>
+        <div class="ops-panel-head">
+          <div>
+            <div class="ops-panel-title">E-posta Bülteni</div>
+            <div class="ops-panel-sub">Aboneleri, kampanya taslaklarını, test gönderimlerini ve teslimat sonuçlarını tek yerden yönetin.</div>
+          </div>
+          <button class="btn-sec" onclick="loadNewsletterAdmin()">Yenile</button>
+        </div>
+        <div class="ops-panel-body">
+          <div class="newsletter-connection" id="newsletterConnection">
+            <strong>Bağlantı kontrol ediliyor.</strong>
+            <span>Resend ve webhook durumu yüklendiğinde burada görünür.</span>
+          </div>
+          <div class="newsletter-tabs" role="tablist" aria-label="Bülten yönetimi">
+            <button class="newsletter-tab active" data-newsletter-view="overview" onclick="setNewsletterAdminView('overview')">Genel Bakış</button>
+            <button class="newsletter-tab" data-newsletter-view="subscribers" onclick="setNewsletterAdminView('subscribers')">Aboneler</button>
+            <button class="newsletter-tab" data-newsletter-view="campaigns" onclick="setNewsletterAdminView('campaigns')">Kampanyalar</button>
+            <button class="newsletter-tab" data-newsletter-view="reports" onclick="setNewsletterAdminView('reports')">Raporlar</button>
+          </div>
+          <div class="ops-file-summary newsletter-summary" id="newsletterSummary"></div>
+
+          <section class="newsletter-view" data-newsletter-panel="overview">
+            <div class="newsletter-flow">
+              <div><span>01</span><strong>Taslağı yazın</strong><p>Konu, ön izleme, başlık, metin ve isteğe bağlı bağlantıyı hazırlayın.</p></div>
+              <div><span>02</span><strong>Test e-postası alın</strong><p>Gerçek e-posta istemcisinde görünümü ve bağlantıları kontrol edin.</p></div>
+              <div><span>03</span><strong>Gönderime hazırlayın</strong><p>Aktif aboneler Resend ile eşitlenir ve gönderilmeyen bir taslak oluşur.</p></div>
+              <div><span>04</span><strong>Son onayı verin</strong><p>Güncel alıcı sayısını görün, YAYINLA onayıyla gönderin veya zamanlayın.</p></div>
+            </div>
+            <div class="newsletter-overview-events" id="newsletterOverviewEvents"></div>
+          </section>
+
+          <section class="newsletter-view" data-newsletter-panel="subscribers" hidden>
+            <div class="newsletter-toolbar">
+              <input class="ops-field" id="newsletterSubscriberSearch" type="search" placeholder="E-posta adresinde ara" oninput="queueNewsletterSubscriberSearch()">
+              <select class="ops-field" id="newsletterSubscriberStatus" onchange="setNewsletterSubscriberStatusFilter(this.value)">
+                <option value="">Tüm durumlar</option>
+                <option value="active">Aktif</option>
+                <option value="unsubscribed">Abonelikten çıktı</option>
+                <option value="suppressed">Teslimat engelli</option>
+              </select>
+              <button class="btn-sec" onclick="syncNewsletterSubscribers(false)">Eksikleri Eşitle</button>
+              <button class="btn-sec" onclick="syncNewsletterSubscribers(true)">Tümünü Yenile</button>
+            </div>
+            <div class="ops-status" id="newsletterSubscriberStatusMessage"></div>
+            <div class="newsletter-subscriber-list" id="newsletterSubscriberList">
+              <div class="archive-release-empty">Aboneler yükleniyor...</div>
+            </div>
+          </section>
+
+          <section class="newsletter-view" data-newsletter-panel="campaigns" hidden>
+            <div class="newsletter-campaign-head">
+              <div>
+                <strong>Kampanya taslakları</strong>
+                <span>Gönderimden önce kaydedin, test edin ve Resend taslağını hazırlayın.</span>
+              </div>
+              <button class="btn-primary" onclick="newNewsletterCampaign()">Yeni Kampanya</button>
+            </div>
+            <div class="newsletter-campaign-layout">
+              <div class="newsletter-campaign-list" id="newsletterCampaignList">
+                <div class="archive-release-empty">Kampanyalar yükleniyor...</div>
+              </div>
+              <div class="ops-detail newsletter-campaign-detail" id="newsletterCampaignDetail">
+                <div class="empty-state">Yeni kampanya oluşturun veya soldan bir taslak seçin.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="newsletter-view" data-newsletter-panel="reports" hidden>
+            <div class="newsletter-report-toolbar">
+              <select class="ops-field" id="newsletterReportCampaign" onchange="loadNewsletterCampaignReport(this.value)">
+                <option value="">Kampanya seçin</option>
+              </select>
+              <button class="btn-sec" onclick="loadNewsletterCampaignReport()">Raporu Yenile</button>
+            </div>
+            <div class="ops-file-summary" id="newsletterReportSummary"></div>
+            <div class="newsletter-event-list" id="newsletterEventList">
+              <div class="archive-release-empty">Teslimat raporu için bir kampanya seçin.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+
       <div class="ops-panel archive-ops-section" data-ops-view="tagImport" hidden>
         <div class="ops-panel-head">
           <div>
@@ -2628,11 +2761,12 @@ let archiveOutputState={packages:[],activePackage:null,query:'',format:'json',ou
 let archivePublicQuestionState={items:[],activeItem:null,count:0,status:'',loading:false,sync:null,syncLoading:false};
 let archivePublicAnalyticsState={range:'7d',country:'',city:'',data:null,loading:false};
 let archivePublicContentState={audit:null,refresh:null,suspiciousReturn:null,loading:false,refreshing:false,acting:false,queue:null,queueType:'partial',queueOffset:0,queueLimit:40,queueLoading:false};
+let newsletterAdminState={view:'overview',overview:null,subscribers:[],subscriberCount:0,subscriberStatus:'',subscriberQuery:'',campaigns:[],activeCampaign:null,report:null,loading:false,acting:false};
 let historyTagImportState={batches:[],activeBatch:null,matches:[],query:'',status:'ready',uploading:false,loading:false,applying:false,questionBackfillJob:null,questionBackfillPoll:null,candidatePanels:{}};
 let actionLogSearchTimer=null;
 let actionLogState={q:'',action:'',targetType:'',source:'',actor:'',dateFrom:'',dateTo:'',offset:0,limit:80,loading:false};
-const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','siteAnalytics','publicContent','publicQuestions','tagImport'];
-const LIVE_SITE_OPS_VIEWS=new Set(['siteAnalytics','publicContent','publicQuestions']);
+const ARCHIVE_OPS_VIEWS=['overview','files','sources','library','publishing','work','texts','import','candidates','ready','packages','packageOutput','siteAnalytics','publicContent','publicQuestions','newsletter','tagImport'];
+const LIVE_SITE_OPS_VIEWS=new Set(['siteAnalytics','publicContent','publicQuestions','newsletter']);
 const ARCHIVE_TEXT_SOURCE_TYPES=new Set(['hadis','slayt']);
 const ARCHIVE_IMPORT_TEXT_EXTENSIONS=new Set(['txt','md','csv','tsv','json']);
 const _textStore={}; // history id -> correctedText (modal'da göstermek için)
@@ -3044,6 +3178,7 @@ function renderArchiveOpsView(view=archiveOpsState.view){
     loadArchivePublicSyncStatus();
     loadArchivePublicQuestions();
   }
+  if(archiveOpsState.view==='newsletter')loadNewsletterAdmin();
   if(archiveOpsState.view==='tagImport')loadHistoryTagImportBatches();
 }
 function openArchiveOps(view='overview'){
@@ -9721,6 +9856,335 @@ async function loadArchivePublicQuestions(){
     archivePublicQuestionState.activeItem=archivePublicQuestionState.items.find(item=>item.id===archivePublicQuestionState.activeItem.id)||null;
   }
   renderArchivePublicQuestions();
+}
+function newsletterCampaignStatusLabel(status){
+  return {draft:'Taslak',ready:'Gönderime hazır',scheduled:'Zamanlandı',sending:'Gönderiliyor',sent:'Gönderildi',canceled:'Durduruldu',failed:'Hata'}[status]||'Taslak';
+}
+function newsletterSubscriberStatusLabel(status){
+  return {active:'Aktif',unsubscribed:'Abonelikten çıktı',suppressed:'Teslimat engelli'}[status]||status||'Bilinmiyor';
+}
+function newsletterEventLabel(type){
+  return {
+    'email.sent':'Gönderildi','email.delivered':'Teslim edildi','email.opened':'Açıldı','email.clicked':'Bağlantıya tıklandı',
+    'email.bounced':'Geri döndü','email.complained':'Spam bildirimi','email.suppressed':'Teslimat engellendi',
+    'email.failed':'Gönderilemedi','email.delivery_delayed':'Teslimat gecikti','contact.updated':'Abonelik değişti'
+  }[type]||type||'Olay';
+}
+function newsletterDate(value){
+  const date=value?new Date(value):null;
+  if(!date||!Number.isFinite(date.getTime()))return '';
+  return date.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function setNewsletterAdminView(view){
+  newsletterAdminState.view=['overview','subscribers','campaigns','reports'].includes(view)?view:'overview';
+  document.querySelectorAll('[data-newsletter-panel]').forEach(panel=>{panel.hidden=panel.dataset.newsletterPanel!==newsletterAdminState.view;});
+  document.querySelectorAll('[data-newsletter-view]').forEach(button=>button.classList.toggle('active',button.dataset.newsletterView===newsletterAdminState.view));
+  if(newsletterAdminState.view==='reports'&&!newsletterAdminState.report){
+    const candidate=newsletterAdminState.campaigns.find(item=>['sent','sending','scheduled'].includes(item.status));
+    if(candidate)loadNewsletterCampaignReport(candidate.id);
+  }
+}
+function newsletterSummaryHtml(){
+  const data=newsletterAdminState.overview||{};
+  const subscribers=data.subscribers||{};
+  const campaigns=data.campaigns||{};
+  return `
+    <div class="ops-file-summary-item"><strong>${Number(subscribers.active||0).toLocaleString('tr-TR')}</strong><span>Aktif abone</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(subscribers.syncIssues||0).toLocaleString('tr-TR')}</strong><span>Eşitleme bekleyen</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(campaigns.draft||0).toLocaleString('tr-TR')}</strong><span>Hazır / taslak</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(campaigns.sent||0).toLocaleString('tr-TR')}</strong><span>Gönderilen</span></div>
+  `;
+}
+function renderNewsletterConnection(){
+  const box=el('newsletterConnection');
+  if(!box)return;
+  const provider=newsletterAdminState.overview?.provider||{};
+  const api=provider.apiConfigured;
+  const webhook=provider.webhookConfigured;
+  const segment=provider.segment?.name||'Segment henüz hazırlanmadı';
+  box.className=`newsletter-connection ${api&&webhook?'ok':'warn'}`;
+  box.innerHTML=`
+    <strong>${api&&webhook?'Gönderim ve geri bildirim bağlantısı hazır.':api?'Resend gönderimi hazır; webhook kurulumu bekleniyor.':'Resend API anahtarı bekleniyor.'}</strong>
+    <span class="newsletter-status ${api&&webhook?'synced':'pending'}">${api&&webhook?'Bağlı':'Kurulum gerekli'}</span>
+    <span>Gönderici: ${esc(provider.from||'bulten@arsiv.ibrahimlive.ai')} · Liste: ${esc(segment)}${!webhook?' · Çıkış, bounce ve spam olaylarının otomatik işlenmesi için RESEND_WEBHOOK_SECRET gerekir.':''}</span>
+  `;
+}
+function renderNewsletterOverview(){
+  const box=el('newsletterOverviewEvents');
+  if(!box)return;
+  const events=newsletterAdminState.overview?.events||{};
+  const rows=[
+    ['email.delivered','Teslim'],['email.opened','Açılma'],['email.clicked','Tıklama'],['email.bounced','Geri dönüş'],['email.complained','Spam bildirimi']
+  ];
+  box.innerHTML=`<strong style="display:block;color:var(--ink);margin-bottom:8px">Kaydedilen teslimat hareketleri</strong><div class="ops-source-meta">${rows.map(([key,label])=>`<span>${esc(label)}: ${Number(events[key]||0).toLocaleString('tr-TR')}</span>`).join('')}</div>`;
+}
+function newsletterSubscriberRowHtml(item){
+  const sync=item.resend_sync_status||'pending';
+  const next=item.status==='active'?'unsubscribed':'active';
+  const action=item.status==='active'?'Abonelikten Çıkar':'Yeniden Etkinleştir';
+  return `
+    <div class="newsletter-subscriber-row">
+      <div><div class="newsletter-subscriber-email">${esc(item.email)}</div><div class="newsletter-subscriber-meta">${esc(item.source||'site')} · ${esc(newsletterDate(item.consented_at||item.created_at))}</div></div>
+      <span class="newsletter-status ${esc(item.status)}">${esc(newsletterSubscriberStatusLabel(item.status))}</span>
+      <div><span class="newsletter-status ${esc(sync)}">${sync==='synced'?'Resend eşitlendi':sync==='failed'?'Eşitleme hatası':'Eşitleme bekliyor'}</span>${item.resend_error?`<div class="newsletter-subscriber-meta">${esc(item.resend_error)}</div>`:''}</div>
+      ${item.status==='suppressed'?'<span class="newsletter-subscriber-meta">Teslimat engeli yönetici tarafından kaldırılmaz.</span>':`<button class="btn-mini" onclick="setNewsletterSubscriberStatus(${attrJson(item.id)},${attrJson(next)},this)">${esc(action)}</button>`}
+    </div>
+  `;
+}
+function renderNewsletterSubscribers(){
+  const list=el('newsletterSubscriberList');
+  if(!list)return;
+  list.innerHTML=newsletterAdminState.subscribers.length
+    ?newsletterAdminState.subscribers.map(newsletterSubscriberRowHtml).join('')
+    :'<div class="archive-release-empty">Bu filtreye uyan abone bulunamadı.</div>';
+  const status=el('newsletterSubscriberStatusMessage');
+  if(status&&!newsletterAdminState.acting)status.textContent=`${Number(newsletterAdminState.subscriberCount||0).toLocaleString('tr-TR')} kayıt listeleniyor.`;
+}
+function newsletterCampaignRowHtml(item){
+  const active=newsletterAdminState.activeCampaign?.id===item.id?' active':'';
+  return `<button class="newsletter-campaign-row${active}" onclick="selectNewsletterCampaign(${attrJson(item.id)})"><strong>${esc(item.name||'Adsız kampanya')}</strong><span>${esc(newsletterCampaignStatusLabel(item.status))} · ${esc(newsletterDate(item.updated_at))}${item.recipient_count?` · ${Number(item.recipient_count).toLocaleString('tr-TR')} alıcı`:''}</span></button>`;
+}
+function newsletterCampaignFormHtml(campaign){
+  if(!campaign)return '<div class="empty-state">Yeni kampanya oluşturun veya soldan bir taslak seçin.</div>';
+  const locked=['scheduled','sending','sent'].includes(campaign.status);
+  const disabled=locked?' disabled':'';
+  const saved=Boolean(campaign.id);
+  const ready=campaign.status==='ready';
+  const canCancel=['scheduled','sending'].includes(campaign.status);
+  return `
+    <div class="ops-detail-head"><div><div class="ops-detail-title">${esc(campaign.name||'Yeni Kampanya')}</div><div class="ops-source-meta"><span>${esc(newsletterCampaignStatusLabel(campaign.status))}</span>${campaign.resend_broadcast_id?'<span>Resend taslağı bağlı</span>':''}</div></div></div>
+    <div class="ops-detail-body">
+      <div class="newsletter-form-grid">
+        <label class="newsletter-form-label">Kampanya adı<input class="ops-field" id="newsletterCampaignName" maxlength="120" value="${esc(campaign.name||'')}"${disabled}></label>
+        <label class="newsletter-form-label">E-posta konusu<input class="ops-field" id="newsletterCampaignSubject" maxlength="150" value="${esc(campaign.subject||'')}"${disabled}></label>
+        <label class="newsletter-form-label wide">Gelen kutusu ön izleme metni<input class="ops-field" id="newsletterCampaignPreview" maxlength="180" value="${esc(campaign.preview_text||'')}"${disabled}></label>
+        <label class="newsletter-form-label wide">E-posta başlığı<input class="ops-field" id="newsletterCampaignHeading" maxlength="180" value="${esc(campaign.heading||'')}"${disabled}></label>
+        <label class="newsletter-form-label wide">E-posta metni<textarea class="ops-field newsletter-body" id="newsletterCampaignBody" maxlength="12000"${disabled}>${esc(campaign.body_text||'')}</textarea></label>
+        <label class="newsletter-form-label">Bağlantı düğmesi yazısı<input class="ops-field" id="newsletterCampaignCtaLabel" maxlength="80" value="${esc(campaign.cta_label||'')}"${disabled}></label>
+        <label class="newsletter-form-label">Bağlantı adresi<input class="ops-field" id="newsletterCampaignCtaUrl" maxlength="1000" inputmode="url" value="${esc(campaign.cta_url||'')}"${disabled}></label>
+      </div>
+      <div class="newsletter-form-actions">
+        ${!locked?`<button class="btn-primary" onclick="saveNewsletterCampaign(this)">${saved?'Taslağı Kaydet':'Kampanyayı Oluştur'}</button>`:''}
+        ${saved&&!locked?'<button class="btn-sec" onclick="sendNewsletterTest(this)">Test E-postası Gönder</button><button class="btn-sec" onclick="prepareNewsletterCampaignUi(this)">Resend Taslağını Hazırla</button>':''}
+        ${canCancel?'<button class="btn-danger" onclick="cancelNewsletterCampaign(this)">Gönderimi Durdur</button>':''}
+      </div>
+      ${saved&&!locked?`<label class="newsletter-form-label" style="margin-top:12px">Test e-posta adresi<input class="ops-field" id="newsletterTestEmail" type="email" inputmode="email" placeholder="ornek@mail.com"></label>`:''}
+      ${ready?`<div class="newsletter-send-box"><label class="newsletter-form-label">Son onay<input class="ops-field" id="newsletterSendConfirmation" placeholder="YAYINLA yazın" autocomplete="off"></label><label class="newsletter-form-label">Zamanla (isteğe bağlı)<input class="ops-field" id="newsletterScheduleAt" type="datetime-local"></label><button class="btn-danger" onclick="sendNewsletterCampaignUi(this)">Gönder / Zamanla</button><div class="newsletter-send-note">Hazırlanan alıcı sayısı: <strong>${Number(campaign.recipient_count||0).toLocaleString('tr-TR')}</strong>. Gönderim başlamadan önce güncel aktif abone sayısı tekrar doğrulanır.</div></div>`:''}
+      <div class="ops-status" id="newsletterCampaignActionStatus">${campaign.last_error?esc(campaign.last_error):''}</div>
+    </div>
+  `;
+}
+function renderNewsletterCampaigns(){
+  const list=el('newsletterCampaignList');
+  const detail=el('newsletterCampaignDetail');
+  if(list)list.innerHTML=newsletterAdminState.campaigns.length?newsletterAdminState.campaigns.map(newsletterCampaignRowHtml).join(''):'<div class="archive-release-empty">Henüz kampanya yok.</div>';
+  if(detail)detail.innerHTML=newsletterCampaignFormHtml(newsletterAdminState.activeCampaign);
+  const reportSelect=el('newsletterReportCampaign');
+  if(reportSelect){
+    const selected=newsletterAdminState.report?.campaign?.id||reportSelect.value||'';
+    reportSelect.innerHTML='<option value="">Kampanya seçin</option>'+newsletterAdminState.campaigns.map(item=>`<option value="${esc(item.id)}">${esc(item.name)} · ${esc(newsletterCampaignStatusLabel(item.status))}</option>`).join('');
+    reportSelect.value=selected;
+  }
+}
+function renderNewsletterReport(){
+  const summary=el('newsletterReportSummary');
+  const list=el('newsletterEventList');
+  const report=newsletterAdminState.report;
+  if(!report){
+    if(summary)summary.innerHTML='';
+    if(list)list.innerHTML='<div class="archive-release-empty">Teslimat raporu için bir kampanya seçin.</div>';
+    return;
+  }
+  const counts=report.counts||{};
+  if(summary)summary.innerHTML=`
+    <div class="ops-file-summary-item"><strong>${Number(report.campaign?.recipient_count||0).toLocaleString('tr-TR')}</strong><span>Hazırlanan alıcı</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts['email.delivered']||0).toLocaleString('tr-TR')}</strong><span>Teslim</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts['email.opened']||0).toLocaleString('tr-TR')}</strong><span>Açılma</span></div>
+    <div class="ops-file-summary-item"><strong>${Number(counts['email.clicked']||0).toLocaleString('tr-TR')}</strong><span>Tıklama</span></div>
+  `;
+  if(list)list.innerHTML=(report.recentEvents||[]).length
+    ?report.recentEvents.map(event=>`<div class="newsletter-event-row"><span class="newsletter-status ${['email.bounced','email.complained','email.failed','email.suppressed'].includes(event.event_type)?'failed':'synced'}">${esc(newsletterEventLabel(event.event_type))}</span><span>${esc(event.recipient_email||'Alıcı bilgisi yok')}</span><time>${esc(newsletterDate(event.event_at))}</time></div>`).join('')
+    :'<div class="archive-release-empty">Bu kampanya için webhook teslimat olayı henüz gelmedi.</div>';
+}
+function renderNewsletterAdmin(){
+  const summary=el('newsletterSummary');
+  if(summary)summary.innerHTML=newsletterSummaryHtml();
+  renderNewsletterConnection();
+  renderNewsletterOverview();
+  renderNewsletterSubscribers();
+  renderNewsletterCampaigns();
+  renderNewsletterReport();
+  setNewsletterAdminView(newsletterAdminState.view);
+}
+async function loadNewsletterAdmin(){
+  if(!canUseArchiveOps()||newsletterAdminState.loading)return;
+  newsletterAdminState.loading=true;
+  const [overview,subscribers,campaigns]=await Promise.all([
+    api('GET','/api/newsletter/admin/overview'),
+    api('GET','/api/newsletter/admin/subscribers?limit=100'),
+    api('GET','/api/newsletter/admin/campaigns')
+  ]);
+  newsletterAdminState.loading=false;
+  const error=overview.error||subscribers.error||campaigns.error;
+  if(error){
+    const box=el('newsletterConnection');
+    if(box){box.className='newsletter-connection warn';box.innerHTML=`<strong>Bülten yönetimi yüklenemedi.</strong><span>${esc(error)}</span>`;}
+    return;
+  }
+  newsletterAdminState.overview=overview;
+  newsletterAdminState.subscribers=subscribers.subscribers||[];
+  newsletterAdminState.subscriberCount=subscribers.count||0;
+  newsletterAdminState.campaigns=campaigns.campaigns||[];
+  if(newsletterAdminState.activeCampaign?.id){
+    newsletterAdminState.activeCampaign=newsletterAdminState.campaigns.find(item=>item.id===newsletterAdminState.activeCampaign.id)||null;
+  }
+  renderNewsletterAdmin();
+}
+async function loadNewsletterSubscribers(){
+  const params=new URLSearchParams({limit:'100'});
+  if(newsletterAdminState.subscriberStatus)params.set('status',newsletterAdminState.subscriberStatus);
+  if(newsletterAdminState.subscriberQuery)params.set('q',newsletterAdminState.subscriberQuery);
+  const data=await api('GET',`/api/newsletter/admin/subscribers?${params}`);
+  if(data.error){
+    const status=el('newsletterSubscriberStatusMessage');
+    if(status)status.textContent=data.error;
+    return;
+  }
+  newsletterAdminState.subscribers=data.subscribers||[];
+  newsletterAdminState.subscriberCount=data.count||0;
+  renderNewsletterSubscribers();
+}
+function queueNewsletterSubscriberSearch(){
+  clearTimeout(newsletterAdminState.searchTimer);
+  newsletterAdminState.searchTimer=setTimeout(()=>{
+    newsletterAdminState.subscriberQuery=el('newsletterSubscriberSearch')?.value?.trim()||'';
+    loadNewsletterSubscribers();
+  },280);
+}
+function setNewsletterSubscriberStatusFilter(status){
+  newsletterAdminState.subscriberStatus=status||'';
+  loadNewsletterSubscribers();
+}
+async function setNewsletterSubscriberStatus(id,status,button){
+  if(button)button.disabled=true;
+  const data=await api('POST',`/api/newsletter/admin/subscribers/${encodeURIComponent(id)}/status`,{status});
+  if(button)button.disabled=false;
+  if(data.error){await showSystemAlert('Abone durumu değiştirilemedi',data.error,'danger');return;}
+  await Promise.all([loadNewsletterSubscribers(),loadNewsletterOverviewOnly()]);
+}
+async function loadNewsletterOverviewOnly(){
+  const data=await api('GET','/api/newsletter/admin/overview');
+  if(!data.error){newsletterAdminState.overview=data;renderNewsletterAdmin();}
+}
+async function syncNewsletterSubscribers(force=false){
+  if(newsletterAdminState.acting)return;
+  newsletterAdminState.acting=true;
+  const status=el('newsletterSubscriberStatusMessage');
+  if(status)status.textContent='Resend eşitlemesi yapılıyor...';
+  const data=await api('POST','/api/newsletter/admin/sync',{force});
+  newsletterAdminState.acting=false;
+  if(data.error){if(status)status.textContent=data.error;await showSystemAlert('Eşitleme tamamlanamadı',data.error,'danger');return;}
+  if(status)status.textContent=`${data.synced}/${data.attempted} abone eşitlendi; ${data.failed} hata.`;
+  await Promise.all([loadNewsletterSubscribers(),loadNewsletterOverviewOnly()]);
+}
+function selectNewsletterCampaign(id){
+  newsletterAdminState.activeCampaign=newsletterAdminState.campaigns.find(item=>item.id===id)||null;
+  renderNewsletterCampaigns();
+}
+function newNewsletterCampaign(){
+  newsletterAdminState.activeCampaign={id:null,status:'draft',name:'',subject:'',preview_text:'',heading:'',body_text:'',cta_label:'',cta_url:'',recipient_count:0};
+  renderNewsletterCampaigns();
+}
+function newsletterCampaignPayload(){
+  return {
+    name:el('newsletterCampaignName')?.value||'',subject:el('newsletterCampaignSubject')?.value||'',
+    previewText:el('newsletterCampaignPreview')?.value||'',heading:el('newsletterCampaignHeading')?.value||'',
+    bodyText:el('newsletterCampaignBody')?.value||'',ctaLabel:el('newsletterCampaignCtaLabel')?.value||'',ctaUrl:el('newsletterCampaignCtaUrl')?.value||''
+  };
+}
+function setNewsletterCampaignAction(message='',kind=''){
+  const box=el('newsletterCampaignActionStatus');
+  if(box){box.textContent=message;box.className=`ops-status ${kind}`.trim();}
+}
+async function saveNewsletterCampaign(button){
+  if(newsletterAdminState.acting)return null;
+  newsletterAdminState.acting=true;if(button)button.disabled=true;setNewsletterCampaignAction('Taslak kaydediliyor...');
+  const current=newsletterAdminState.activeCampaign||{};
+  const data=await api(current.id?'PUT':'POST',current.id?`/api/newsletter/admin/campaigns/${encodeURIComponent(current.id)}`:'/api/newsletter/admin/campaigns',newsletterCampaignPayload());
+  newsletterAdminState.acting=false;if(button)button.disabled=false;
+  if(data.error){setNewsletterCampaignAction(data.error,'err');await showSystemAlert('Kampanya kaydedilemedi',data.error,'danger');return null;}
+  newsletterAdminState.activeCampaign=data.campaign;
+  await loadNewsletterCampaignsOnly(data.campaign.id);
+  setNewsletterCampaignAction('Taslak kaydedildi.','ok');
+  return data.campaign;
+}
+async function loadNewsletterCampaignsOnly(activeId=''){
+  const data=await api('GET','/api/newsletter/admin/campaigns');
+  if(data.error)return;
+  newsletterAdminState.campaigns=data.campaigns||[];
+  newsletterAdminState.activeCampaign=newsletterAdminState.campaigns.find(item=>item.id===(activeId||newsletterAdminState.activeCampaign?.id))||null;
+  renderNewsletterAdmin();
+}
+async function sendNewsletterTest(button){
+  const campaign=newsletterAdminState.activeCampaign;
+  const email=el('newsletterTestEmail')?.value?.trim()||'';
+  if(!campaign?.id){await showSystemAlert('Önce kaydedin','Testten önce kampanya taslağını kaydedin.','danger');return;}
+  if(!email){await showSystemAlert('E-posta gerekli','Testin gönderileceği e-posta adresini yazın.','danger');return;}
+  if(button)button.disabled=true;setNewsletterCampaignAction('Test e-postası gönderiliyor...');
+  const data=await api('POST',`/api/newsletter/admin/campaigns/${encodeURIComponent(campaign.id)}/test`,{email});
+  if(button)button.disabled=false;
+  if(data.error){setNewsletterCampaignAction(data.error,'err');await showSystemAlert('Test gönderilemedi',data.error,'danger');return;}
+  setNewsletterCampaignAction('Test e-postası gönderildi.','ok');
+  await showSystemAlert('Test gönderildi',`${email} adresini ve spam klasörünü kontrol edin.`,'success');
+}
+async function prepareNewsletterCampaignUi(button){
+  const campaign=newsletterAdminState.activeCampaign;
+  if(!campaign?.id)return;
+  const ok=await openSystemConfirm({title:'Gönderime hazırlansın mı?',badge:'E-posta Bülteni',message:'Aktif aboneler Resend ile eşitlenecek ve gönderilmeyen bir kampanya taslağı hazırlanacak.',detail:'Bu işlem hiçbir aboneye e-posta göndermez.',confirmText:'Taslağı Hazırla',cancelText:'Vazgeç'});
+  if(!ok)return;
+  if(button)button.disabled=true;setNewsletterCampaignAction('Aboneler eşitleniyor ve Resend taslağı hazırlanıyor...');
+  const data=await api('POST',`/api/newsletter/admin/campaigns/${encodeURIComponent(campaign.id)}/prepare`,{});
+  if(button)button.disabled=false;
+  if(data.error){setNewsletterCampaignAction(data.error,'err');await showSystemAlert('Kampanya hazırlanamadı',data.error,'danger');return;}
+  await loadNewsletterCampaignsOnly(campaign.id);
+  await loadNewsletterOverviewOnly();
+  await showSystemAlert('Gönderime hazır',`${Number(data.campaign?.recipient_count||0).toLocaleString('tr-TR')} aktif abone için Resend taslağı oluşturuldu.`,'success');
+}
+async function sendNewsletterCampaignUi(button){
+  const campaign=newsletterAdminState.activeCampaign;
+  const confirmation=el('newsletterSendConfirmation')?.value?.trim()||'';
+  if(confirmation!=='YAYINLA'){await showSystemAlert('Son onay gerekli','Gönderim alanına büyük harflerle YAYINLA yazın.','danger');return;}
+  const scheduleValue=el('newsletterScheduleAt')?.value||'';
+  const scheduledAt=scheduleValue?new Date(scheduleValue).toISOString():'';
+  const ok=await openSystemConfirm({title:scheduleValue?'Bülten zamanlansın mı?':'Bülten gönderilsin mi?',badge:'Son Kontrol',message:`${Number(campaign.recipient_count||0).toLocaleString('tr-TR')} aktif abone hedefleniyor.`,detail:scheduleValue?`Gönderim zamanı: ${newsletterDate(scheduledAt)}`:'Onaydan sonra Resend gönderim kuyruğu başlayacak.',confirmText:scheduleValue?'Zamanla':'Gönderimi Başlat',cancelText:'Vazgeç',tone:'danger'});
+  if(!ok)return;
+  if(button)button.disabled=true;setNewsletterCampaignAction('Son alıcı sayısı doğrulanıyor...');
+  const data=await api('POST',`/api/newsletter/admin/campaigns/${encodeURIComponent(campaign.id)}/send`,{confirmation,scheduledAt,expectedRecipientCount:Number(campaign.recipient_count||0)});
+  if(button)button.disabled=false;
+  if(data.error){setNewsletterCampaignAction(data.error,'err');await showSystemAlert('Gönderim başlatılamadı',data.error,'danger');return;}
+  await loadNewsletterCampaignsOnly(campaign.id);
+  await loadNewsletterOverviewOnly();
+  await showSystemAlert(scheduleValue?'Bülten zamanlandı':'Gönderim başladı',scheduleValue?`Bülten ${newsletterDate(scheduledAt)} tarihinde gönderilecek.`:'Resend kampanyayı aktif abonelere göndermeye başladı.','success');
+}
+async function cancelNewsletterCampaign(button){
+  const campaign=newsletterAdminState.activeCampaign;if(!campaign?.id)return;
+  const ok=await openSystemConfirm({title:'Gönderim durdurulsun mu?',badge:'E-posta Bülteni',message:'Resend kuyruğunda henüz gönderilmemiş e-postalar durdurulacak.',detail:'Daha önce teslim edilen e-postalar geri alınamaz.',confirmText:'Gönderimi Durdur',cancelText:'Vazgeç',tone:'danger'});
+  if(!ok)return;
+  if(button)button.disabled=true;
+  const data=await api('POST',`/api/newsletter/admin/campaigns/${encodeURIComponent(campaign.id)}/cancel`,{});
+  if(button)button.disabled=false;
+  if(data.error){await showSystemAlert('Gönderim durdurulamadı',data.error,'danger');return;}
+  await loadNewsletterCampaignsOnly(campaign.id);await loadNewsletterOverviewOnly();
+}
+async function loadNewsletterCampaignReport(id=''){
+  const campaignId=id||el('newsletterReportCampaign')?.value||newsletterAdminState.report?.campaign?.id||'';
+  if(!campaignId)return;
+  const list=el('newsletterEventList');if(list)list.innerHTML='<div class="archive-release-empty">Teslimat raporu yükleniyor...</div>';
+  const data=await api('GET',`/api/newsletter/admin/campaigns/${encodeURIComponent(campaignId)}/report`);
+  if(data.error){if(list)list.innerHTML=`<div class="archive-release-empty">${esc(data.error)}</div>`;return;}
+  newsletterAdminState.report=data;
+  const select=el('newsletterReportCampaign');if(select)select.value=campaignId;
+  renderNewsletterReport();
 }
 function historyTagImportSummaryHtml(batch){
   if(!batch)return `
