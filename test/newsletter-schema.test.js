@@ -42,3 +42,24 @@ test('newsletter admin migration preserves subscribers and keeps new tables serv
   ]);
   await db.close();
 });
+
+test('question newsletter consent migration keeps old questions opted out', async () => {
+  const db = new PGlite();
+  await db.exec(`
+    create table public.public_question_submissions (
+      id uuid primary key default gen_random_uuid(),
+      question text not null
+    );
+    insert into public.public_question_submissions (question) values ('Mevcut soru kaydı');
+  `);
+  const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260923233000_question_newsletter_consent.sql'), 'utf8');
+  await db.exec(migration);
+
+  const result = await db.query('select newsletter_consent, newsletter_consent_version, newsletter_consented_at from public.public_question_submissions');
+  assert.deepEqual(result.rows[0], {
+    newsletter_consent: false,
+    newsletter_consent_version: null,
+    newsletter_consented_at: null
+  });
+  await db.close();
+});

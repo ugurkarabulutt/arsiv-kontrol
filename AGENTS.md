@@ -491,6 +491,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-09-23
+- **Soru formu bülten rızası eklendi:** Public `Soru Sor` formunda soru gönderiminden
+  bağımsız, zorunlu olmayan ve varsayılan seçilmemiş bir bülten kutusu bulunur.
+  Kutuyu bilinçli olarak işaretleyen oturum sahibinin e-postası aynı bülten listesine
+  `public-question-form` kaynağı ve sürümlü rıza metniyle yazılır; admin listesinde
+  kaynak `Soru formu` olarak gösterilir. Soru kaydı ayrıca rıza durumu, rıza sürümü
+  ve zamanı tutar. Canlı Supabase geçişi mevcut 46 soruyu geriye dönük onaylamadı;
+  tümü `newsletter_consent=false` kaldı. Bülten yazımı başarısız olursa soru
+  gönderimi kaybolmaz. `npm.cmd run check` 180/180 başarılı; preview/production
+  dağıtımı bekliyor.
 - **E-posta Bülteni Yönetim Merkezi hazırlandı:** `/admin` süper admin Canlı Site
   alanına aboneleri, Resend eşitlemesini, kampanya taslaklarını, test e-postasını,
   gönderim/zamanlama onayını ve webhook tabanlı teslimat raporlarını tek yerde

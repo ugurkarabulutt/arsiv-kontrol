@@ -9918,13 +9918,22 @@ function renderNewsletterOverview(){
   ];
   box.innerHTML=`<strong style="display:block;color:var(--ink);margin-bottom:8px">Kaydedilen teslimat hareketleri</strong><div class="ops-source-meta">${rows.map(([key,label])=>`<span>${esc(label)}: ${Number(events[key]||0).toLocaleString('tr-TR')}</span>`).join('')}</div>`;
 }
+function newsletterSubscriberSourceLabel(source){
+  const labels={
+    'public-question-form':'Soru formu',
+    'public-preview-question-form':'Soru formu (önizleme)',
+    'public-root-footer':'Site altı abonelik alanı',
+    'public-preview-footer':'Site altı abonelik alanı (önizleme)'
+  };
+  return labels[source]||source||'Site';
+}
 function newsletterSubscriberRowHtml(item){
   const sync=item.resend_sync_status||'pending';
   const next=item.status==='active'?'unsubscribed':'active';
   const action=item.status==='active'?'Abonelikten Çıkar':'Yeniden Etkinleştir';
   return `
     <div class="newsletter-subscriber-row">
-      <div><div class="newsletter-subscriber-email">${esc(item.email)}</div><div class="newsletter-subscriber-meta">${esc(item.source||'site')} · ${esc(newsletterDate(item.consented_at||item.created_at))}</div></div>
+      <div><div class="newsletter-subscriber-email">${esc(item.email)}</div><div class="newsletter-subscriber-meta">${esc(newsletterSubscriberSourceLabel(item.source))} · ${esc(newsletterDate(item.consented_at||item.created_at))}</div></div>
       <span class="newsletter-status ${esc(item.status)}">${esc(newsletterSubscriberStatusLabel(item.status))}</span>
       <div><span class="newsletter-status ${esc(sync)}">${sync==='synced'?'Resend eşitlendi':sync==='failed'?'Eşitleme hatası':'Eşitleme bekliyor'}</span>${item.resend_error?`<div class="newsletter-subscriber-meta">${esc(item.resend_error)}</div>`:''}</div>
       ${item.status==='suppressed'?'<span class="newsletter-subscriber-meta">Teslimat engeli yönetici tarafından kaldırılmaz.</span>':`<button class="btn-mini" onclick="setNewsletterSubscriberStatus(${attrJson(item.id)},${attrJson(next)},this)">${esc(action)}</button>`}

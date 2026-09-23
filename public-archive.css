@@ -4130,6 +4130,29 @@ a.pa-chip:hover,
   accent-color: var(--pa-mint);
 }
 
+.pa-newsletter-consent-row {
+  padding: 14px 0;
+  border-top: 1px solid var(--pa-border);
+  border-bottom: 1px solid var(--pa-border);
+}
+
+.pa-check-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.pa-check-copy strong {
+  color: var(--pa-text-1);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pa-check-copy small {
+  color: var(--pa-text-3);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .pa-footer {
   width: min(var(--pa-container), calc(100% - 48px));
   margin: 64px auto 0;

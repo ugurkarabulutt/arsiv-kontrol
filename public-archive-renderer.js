@@ -2777,6 +2777,10 @@ function renderAsk() {
               <input name="privacyAccepted" type="checkbox" required>
               <span>Kişisel veya mahrem bilgi yazmadığımı anladım.</span>
             </label>
+            <label class="pa-check-row pa-newsletter-consent-row">
+              <input name="newsletterConsent" type="checkbox">
+              <span class="pa-check-copy"><strong>Yeni soru ve rehberlerden e-postayla haberdar olmak istiyorum.</strong><small>İsteğe bağlıdır. Bu tercihi vermeden de sorunuzu gönderebilir, her e-postadaki bağlantıdan istediğiniz zaman ayrılabilirsiniz.</small></span>
+            </label>
             <button class="pa-button" type="submit">Soruyu Gönder</button>
             <p class="pa-form-note">Sorunuz kayda alınır. Cevap hazırlandığında size e-posta ile haber verilir; cevabınızı hesabınızda gönderdiğiniz sorular bölümünde de görebilirsiniz.</p>
             <p class="pa-form-status" data-question-form-status aria-live="polite"></p>
@@ -4579,7 +4583,8 @@ function renderShell({ title, description, active, content, status = 200, questi
             question: form.elements.question && form.elements.question.value,
             category: '',
             topic: '',
-            privacyAccepted: Boolean(form.elements.privacyAccepted && form.elements.privacyAccepted.checked)
+            privacyAccepted: Boolean(form.elements.privacyAccepted && form.elements.privacyAccepted.checked),
+            newsletterConsent: Boolean(form.elements.newsletterConsent && form.elements.newsletterConsent.checked)
           };
           if (button) button.disabled = true;
           if (status) status.textContent = 'Sorunuz kaydediliyor...';
@@ -4597,7 +4602,12 @@ function renderShell({ title, description, active, content, status = 200, questi
               return;
             }
             form.reset();
-            if (status) status.textContent = 'Sorunuz başarıyla alındı. Cevap hazırlandığında size e-posta ile haber vereceğiz; cevabınızı hesabınızda gönderdiğiniz sorular bölümünde de görebilirsiniz.';
+            if (status) {
+              var newsletterNote = data.newsletterSubscription && data.newsletterSubscription.subscribed
+                ? ' Bülten tercihiniz de kaydedildi.'
+                : '';
+              status.textContent = 'Sorunuz başarıyla alındı. Cevap hazırlandığında size e-posta ile haber vereceğiz; cevabınızı hesabınızda gönderdiğiniz sorular bölümünde de görebilirsiniz.' + newsletterNote;
+            }
             if (window.__publicArchiveSession) await loadPublicUserQuestions(window.__publicArchiveSession);
             var questionsSection = document.querySelector('[data-user-questions]');
             if (questionsSection) {

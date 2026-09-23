@@ -810,6 +810,11 @@ test('question, topic, category, and ask pages keep public boundaries', () => {
   assert.match(ask, /Sorunuzu kısa ve açık şekilde yazabilirsiniz./);
   assert.match(ask, /Tek soruya odaklanın/);
   assert.match(ask, /Mahrem bilgi yazmayın/);
+  assert.match(ask, /name="newsletterConsent" type="checkbox"/);
+  assert.match(ask, /Yeni soru ve rehberlerden e-postayla haberdar olmak istiyorum/);
+  assert.match(ask, /newsletterConsent: Boolean\(form\.elements\.newsletterConsent/);
+  assert.doesNotMatch(ask, /name="newsletterConsent" type="checkbox"[^>]*checked/);
+  assert.doesNotMatch(ask, /name="newsletterConsent"[^>]*required/);
   assert.match(ask, /Cevap hazırlandığında size e-posta ile haber verilir/);
   assert.match(ask, /Sorunuz başarıyla alındı\. Cevap hazırlandığında size e-posta ile haber vereceğiz/);
   assert.doesNotMatch(ask, /Kategori seçin|İsteğe bağlı kategori|İsteğe bağlı konu/);

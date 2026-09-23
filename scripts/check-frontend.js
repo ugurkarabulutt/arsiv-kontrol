@@ -248,6 +248,13 @@ assert(server.includes("source: publicArchiveRequestBasePath(req) ? 'public-prev
 for (const marker of ['HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES', 'public_newsletter_subscriptions', 'newsletter-consent-20260920-v1', 'consentAccepted', "scope: 'public-newsletter'"]) {
   assert(server.includes(marker) || schema.includes(marker), `Public abonelik backend/schema marker eksik: ${marker}`);
 }
+for (const marker of ['NEWSLETTER_QUESTION_CONSENT_VERSION', 'HAS_PUBLIC_ARCHIVE_SUBMISSION_NEWSLETTER_FIELDS', 'newsletterConsent', 'subscribePublicNewsletterEmail', 'public-question-form']) {
+  assert(server.includes(marker) || schema.includes(marker), `Soru formu bulten rizasi backend/schema marker eksik: ${marker}`);
+}
+for (const marker of ['name="newsletterConsent" type="checkbox"', 'Yeni soru ve rehberlerden e-postayla haberdar olmak istiyorum', 'pa-newsletter-consent-row']) {
+  assert(publicRendererSource.includes(marker) || publicCss.includes(marker), `Soru formu bulten rizasi frontend marker eksik: ${marker}`);
+}
+assert(!publicRendererSource.includes('name="newsletterConsent" type="checkbox" checked'), 'Bulten rizasi kutusu varsayilan secili olmamali.');
 assert(schema.includes('alter table public.public_newsletter_subscriptions enable row level security'), 'Abonelik tablosunda RLS acik olmali.');
 assert(schema.includes('revoke all on public.public_newsletter_subscriptions from public, anon, authenticated'), 'Abonelik tablosu public rollere kapali olmali.');
 for (const marker of ['newsletter_campaigns', 'newsletter_delivery_events', 'resend_sync_status', 'HAS_NEWSLETTER_ADMIN_TABLES', 'ensureNewsletterSegment', 'syncNewsletterActiveSubscribers', 'requireNewsletterWebhook', 'renderNewsletterEmail', "app.post('/api/newsletter/webhooks/resend'", "confirmation || '') !== 'YAYINLA'"]) {

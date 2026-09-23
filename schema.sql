@@ -515,6 +515,9 @@ create table if not exists public.public_question_submissions (
   category text,
   topic text,
   privacy_accepted boolean not null default false,
+  newsletter_consent boolean not null default false,
+  newsletter_consent_version text,
+  newsletter_consented_at timestamptz,
   status text not null default 'new',
   source text not null default 'public-preview',
   user_agent text,
@@ -532,6 +535,9 @@ alter table public.public_question_submissions add column if not exists answered
 alter table public.public_question_submissions add column if not exists answered_at timestamptz;
 alter table public.public_question_submissions add column if not exists user_notified_at timestamptz;
 alter table public.public_question_submissions add column if not exists user_seen_at timestamptz;
+alter table public.public_question_submissions add column if not exists newsletter_consent boolean not null default false;
+alter table public.public_question_submissions add column if not exists newsletter_consent_version text;
+alter table public.public_question_submissions add column if not exists newsletter_consented_at timestamptz;
 alter table public.public_question_submissions enable row level security;
 create index if not exists public_question_submissions_created_idx on public.public_question_submissions (created_at desc);
 create index if not exists public_question_submissions_status_idx on public.public_question_submissions (status, created_at desc);

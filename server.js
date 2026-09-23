@@ -59,6 +59,8 @@ const NEWSLETTER_EMAIL_FROM = process.env.NEWSLETTER_EMAIL_FROM || 'Dini Sorular
 const NEWSLETTER_EMAIL_REPLY_TO = process.env.NEWSLETTER_EMAIL_REPLY_TO || PUBLIC_ANSWER_EMAIL_REPLY_TO || '';
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
+const NEWSLETTER_FOOTER_CONSENT_VERSION = 'newsletter-consent-20260920-v1';
+const NEWSLETTER_QUESTION_CONSENT_VERSION = 'question-newsletter-consent-20260923-v1';
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -5279,6 +5281,11 @@ async function seed() {
     : { error: publicQuestionSubmissionsErr };
   HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = !publicQuestionSubmissionAnswerErr;
   if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS) console.warn('⚠ public_question_submissions cevap kolonları yok — kullanıcıya cevap gösterimi pasif.');
+  const { error: publicQuestionSubmissionNewsletterErr } = HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES
+    ? await supabase.from('public_question_submissions').select('newsletter_consent,newsletter_consent_version,newsletter_consented_at').limit(1)
+    : { error: publicQuestionSubmissionsErr };
+  HAS_PUBLIC_ARCHIVE_SUBMISSION_NEWSLETTER_FIELDS = !publicQuestionSubmissionNewsletterErr;
+  if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_NEWSLETTER_FIELDS) console.warn('⚠ public_question_submissions bülten rıza kolonları yok — soru kaydı çalışır, kayıt içi bülten rıza izi tutulamaz.');
 
   const { error: publicQuestionStatsErr } = await supabase.from('public_question_stats').select('slug').limit(1);
   HAS_PUBLIC_ARCHIVE_STATS_TABLES = !publicQuestionStatsErr;
@@ -14569,6 +14576,7 @@ let HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS = false; // startup'ta tespit 
 let HAS_NEWSLETTER_ADMIN_TABLES = false; // startup'ta tespit edilir (kampanya ve teslimat kayıtları)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES = false; // startup'ta tespit edilir (public soru gönderimleri)
 let HAS_PUBLIC_ARCHIVE_SUBMISSION_ANSWER_FIELDS = false; // startup'ta tespit edilir (public soru cevap akışı)
+let HAS_PUBLIC_ARCHIVE_SUBMISSION_NEWSLETTER_FIELDS = false; // startup'ta tespit edilir (soru formu bülten rıza izi)
 let HAS_PUBLIC_ARCHIVE_STATS_TABLES = false; // startup'ta tespit edilir (public okunma sayaçları)
 let HAS_PUBLIC_ARCHIVE_VISIT_TABLES = false; // startup'ta tespit edilir (public ziyaret istatistikleri)
 let HAS_PUBLIC_ARCHIVE_CONTENT_TABLES = false; // startup'ta tespit edilir (public soru-cevap okuma modeli)
@@ -15623,13 +15631,46 @@ app.post('/api/newsletter/webhooks/resend', async (req, res) => {
   }
 });
 
+async function subscribePublicNewsletterEmail({ email, source, consentVersion }) {
+  if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES) {
+    throw httpError('Abonelik sistemi için veri tabanı hazırlığı bekleniyor.', 503);
+  }
+  const normalizedEmail = normalizePublicEmail(email);
+  if (!validPublicEmail(normalizedEmail)) throw httpError('Geçerli bir e-posta adresi gerekli.', 400);
+  const now = new Date().toISOString();
+  const { data: existing, error: existingError } = await supabase.from('public_newsletter_subscriptions')
+    .select('*').eq('email', normalizedEmail).maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+  const status = existing?.status === 'suppressed' ? 'suppressed' : 'active';
+  const row = {
+    email: normalizedEmail,
+    status,
+    source: String(source || 'public-form').slice(0, 120),
+    consent_version: String(consentVersion || NEWSLETTER_FOOTER_CONSENT_VERSION).slice(0, 120),
+    consented_at: now,
+    unsubscribed_at: status === 'active' ? null : existing?.unsubscribed_at,
+    updated_at: now
+  };
+  if (HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) {
+    row.status_reason = status === 'active' ? (existing ? 'public_resubscribed' : 'public_subscribed') : existing?.status_reason;
+    row.resend_sync_status = status === 'active' ? 'pending' : existing?.resend_sync_status || 'failed';
+    row.resend_error = status === 'active' ? null : existing?.resend_error || null;
+  }
+  const { data: subscription, error } = await supabase.from('public_newsletter_subscriptions')
+    .upsert(row, { onConflict: 'email' }).select('*').single();
+  if (error) throw new Error(error.message);
+
+  let sync = { synced: false, skipped: true, reason: status === 'active' ? 'provider_fields_unavailable' : 'suppressed' };
+  if (status === 'active' && HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) {
+    sync = await syncNewsletterSubscriber(subscription);
+    if (!sync.synced && !sync.skipped) console.warn('Public bülten Resend eşitlemesi tamamlanamadı:', sync.error || 'Bilinmeyen hata');
+  }
+  return { subscription, status, sync };
+}
+
 async function publicArchiveNewsletterSubscribeHandler(req, res) {
   try {
     await startupReady;
-    if (!HAS_PUBLIC_ARCHIVE_NEWSLETTER_TABLES) {
-      return res.status(503).json({ error: 'Abonelik sistemi için veri tabanı hazırlığı bekleniyor.' });
-    }
-
     // Görünmez alan botlar için tuzaktır; gerçek kullanıcıya veri varlığı açıklanmaz.
     if (String(req.body?.website || '').trim()) {
       return res.json({ success: true, message: 'Aboneliğiniz alındı.' });
@@ -15641,38 +15682,16 @@ async function publicArchiveNewsletterSubscribeHandler(req, res) {
       || req.body?.consentAccepted === 'on';
     if (!validPublicEmail(email)) return res.status(400).json({ error: 'Geçerli bir e-posta adresi yazın.' });
     if (!consentAccepted) return res.status(400).json({ error: 'E-posta aboneliği onayını işaretleyin.' });
-
-    const now = new Date().toISOString();
-    const { data: existing, error: existingError } = await supabase.from('public_newsletter_subscriptions')
-      .select('*').eq('email', email).maybeSingle();
-    if (existingError) throw new Error(existingError.message);
-    const status = existing?.status === 'suppressed' ? 'suppressed' : 'active';
-    const row = {
+    const result = await subscribePublicNewsletterEmail({
       email,
-      status,
       source: publicArchiveRequestBasePath(req) ? 'public-preview-footer' : 'public-root-footer',
-      consent_version: 'newsletter-consent-20260920-v1',
-      consented_at: now,
-      unsubscribed_at: status === 'active' ? null : existing?.unsubscribed_at,
-      updated_at: now
-    };
-    if (HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) {
-      row.status_reason = status === 'active' ? (existing ? 'public_resubscribed' : 'public_subscribed') : existing?.status_reason;
-      row.resend_sync_status = status === 'active' ? 'pending' : existing?.resend_sync_status || 'failed';
-      row.resend_error = status === 'active' ? null : existing?.resend_error || null;
-    }
-    const { data: subscription, error } = await supabase.from('public_newsletter_subscriptions')
-      .upsert(row, { onConflict: 'email' }).select('*').single();
-    if (error) throw new Error(error.message);
-
-    if (status === 'active' && HAS_PUBLIC_ARCHIVE_NEWSLETTER_PROVIDER_FIELDS) {
-      await syncNewsletterSubscriber(subscription).catch(error => {
-        console.warn('Public bülten Resend eşitlemesi tamamlanamadı:', error.message);
-      });
-    }
+      consentVersion: NEWSLETTER_FOOTER_CONSENT_VERSION
+    });
+    const status = result.status;
 
     res.status(201).json({
       success: true,
+      subscribed: status === 'active',
       message: status === 'active'
         ? 'Aboneliğiniz alındı. Yeni içerikler yayımlandığında size haber vereceğiz.'
         : 'Abonelik isteğiniz kaydedildi. Teslimat durumunuz ekip tarafından kontrol edilecek.'
@@ -15742,9 +15761,11 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
     const category = String(req.body?.category || '').trim().slice(0, 120);
     const topic = String(req.body?.topic || '').trim().slice(0, 120);
     const privacyAccepted = req.body?.privacyAccepted === true || req.body?.privacyAccepted === 'true' || req.body?.privacyAccepted === 'on';
+    const newsletterConsent = req.body?.newsletterConsent === true || req.body?.newsletterConsent === 'true' || req.body?.newsletterConsent === 'on';
     if (question.length < 20) return res.status(400).json({ error: 'Lütfen sorunuzu en az 20 karakter olacak şekilde yazın.' });
     if (!privacyAccepted) return res.status(400).json({ error: 'Kişisel bilgi paylaşmama notunu onaylayın.' });
-    const { data, error } = await supabase.from('public_question_submissions').insert({
+    const now = new Date().toISOString();
+    const submissionRow = {
       public_user_id: user.id,
       submitter_name: user.name,
       submitter_email: user.email,
@@ -15755,8 +15776,34 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
       status: 'new',
       source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
       user_agent: String(req.headers['user-agent'] || '').slice(0, 500)
-    }).select('id,public_user_id,submitter_name,submitter_email,question,created_at,status').single();
+    };
+    if (HAS_PUBLIC_ARCHIVE_SUBMISSION_NEWSLETTER_FIELDS) {
+      submissionRow.newsletter_consent = newsletterConsent;
+      submissionRow.newsletter_consent_version = newsletterConsent ? NEWSLETTER_QUESTION_CONSENT_VERSION : null;
+      submissionRow.newsletter_consented_at = newsletterConsent ? now : null;
+    }
+    const { data, error } = await supabase.from('public_question_submissions').insert(submissionRow)
+      .select('id,public_user_id,submitter_name,submitter_email,question,created_at,status').single();
     if (error) throw new Error(error.message);
+    let newsletterSubscription = { requested: newsletterConsent, subscribed: false };
+    if (newsletterConsent) {
+      try {
+        const result = await subscribePublicNewsletterEmail({
+          email: user.email,
+          source: publicArchiveRequestBasePath(req) ? 'public-preview-question-form' : 'public-question-form',
+          consentVersion: NEWSLETTER_QUESTION_CONSENT_VERSION
+        });
+        newsletterSubscription = {
+          requested: true,
+          subscribed: result.status === 'active',
+          status: result.status,
+          syncStatus: result.sync?.synced ? 'synced' : result.sync?.reason || (result.sync?.error ? 'failed' : 'pending')
+        };
+      } catch (newsletterError) {
+        newsletterSubscription = { requested: true, subscribed: false, error: 'newsletter_subscription_failed' };
+        console.error('Soru formu bülten aboneliği kaydedilemedi:', newsletterError.message);
+      }
+    }
     const receivedEmailNotification = await sendPublicQuestionReceivedEmail(data);
     if (!receivedEmailNotification.skipped && !receivedEmailNotification.sent) {
       console.error('Public soru alindi maili gönderilemedi:', receivedEmailNotification);
@@ -15774,10 +15821,13 @@ async function publicArchiveQuestionSubmissionHandler(req, res) {
         topic,
         source: publicArchiveRequestBasePath(req) ? 'public-preview' : 'public-root',
         questionLength: question.length,
+        newsletterConsent,
+        newsletterConsentVersion: newsletterConsent ? NEWSLETTER_QUESTION_CONSENT_VERSION : null,
+        newsletterSubscription,
         receivedEmailNotification
       }
     });
-    res.json({ success: true, submission: data, receivedEmailNotification });
+    res.json({ success: true, submission: data, newsletterSubscription, receivedEmailNotification });
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }

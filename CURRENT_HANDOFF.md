@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-23 Soru Formundan İsteğe Bağlı Bülten Rızası
+
+- Public `Soru Sor` formuna zorunlu olmayan `Yeni soru ve rehberlerden e-postayla
+  haberdar olmak istiyorum` kutusu eklendi. Açık rızanın bilinçli işlemle verilmesi
+  gerektiği için kutu varsayılan seçili değildir; işaretlenmeden soru gönderilebilir.
+- Kutuyu işaretleyen oturum sahibi kullanıcının e-postası aynı
+  `public_newsletter_subscriptions` listesine `public-question-form` kaynağı ve
+  `question-newsletter-consent-20260923-v1` rıza sürümüyle eklenir. Admin abone
+  listesinde kaynak `Soru formu` olarak görünür.
+- Her soru kaydına ayrı `newsletter_consent`, `newsletter_consent_version` ve
+  `newsletter_consented_at` alanları eklendi. Canlı geçiş mevcut 46 soruyu geriye
+  dönük onaylamadı; tamamı `newsletter_consent=false`, sürüm/tarih boş kaldı.
+- Bülten kaydı geçici olarak başarısız olsa bile soru kaydı ve soru alındı e-postası
+  çalışmaya devam eder. `npm.cmd run check` 180/180 başarılı. Preview ve production
+  dağıtımı henüz yapılmadı.
+
 ## 2026-09-23 E-posta Bülteni Yönetim Merkezi
 
 - `/admin` içindeki `Canlı Site` bölümüne süper admin erişimli `E-posta Bülteni`
