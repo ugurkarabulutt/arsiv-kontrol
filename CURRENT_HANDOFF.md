@@ -19,9 +19,10 @@
   abonelikten çıkma bağlantısı, imzalı webhook, bounce/şikayet bastırma ve işlem
   günlüğü eklendi. `RESEND_WEBHOOK_SECRET` üretim ortamında ayrıca tanımlanmalıdır.
 - `resend@6.28.1` sabitlendi. `npm.cmd run check` 179/179 başarılı; Supabase
-  danışmanında bültene ait eksik yabancı anahtar indeksi kalmadı. Runtime commit
-  `3817e8b`; preview `dpl_2qius1WbWVdQZAPQjLFgmasj7kod`, production
-  `dpl_CR9rdGJhgLkmSU1GZsFmr8M5kKWJ`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  danışmanında bültene ait eksik yabancı anahtar indeksi kalmadı. Runtime commitler
+  `3817e8b` ve güvenlik kapısı `89cac6a`; son preview
+  `dpl_BdprxxyFjLEeYvaUYHeBvHmKF2ZB`, son production
+  `dpl_7rwNuTx21kFXPw2QGqZ3dBnDeL7r`, canlı alias `https://arsiv.ibrahimlive.ai`.
   Canlı `/health`, root ve admin geçti; yönetim API'si oturumsuz isteğe `401`,
   onaysız abonelik `400` döndü ve son 15 dakika production error logu boştu.
   Resend anahtarı Vercel'de sensitive olduğu için imza anahtarı dışarı çıkarılmadı;
