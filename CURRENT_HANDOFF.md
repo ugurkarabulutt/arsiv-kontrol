@@ -13,8 +13,11 @@
   `newsletter_consented_at` alanları eklendi. Canlı geçiş mevcut 46 soruyu geriye
   dönük onaylamadı; tamamı `newsletter_consent=false`, sürüm/tarih boş kaldı.
 - Bülten kaydı geçici olarak başarısız olsa bile soru kaydı ve soru alındı e-postası
-  çalışmaya devam eder. `npm.cmd run check` 180/180 başarılı. Preview ve production
-  dağıtımı henüz yapılmadı.
+  çalışmaya devam eder. `npm.cmd run check` 180/180 başarılı. Runtime commit
+  `cdc80d5`; preview `dpl_Fj6NcAvyGp9R7UgqXmKgamQTLowQ`, production
+  `dpl_BW49PgYkpRGbM9MXBCRrLiroNCDe`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı `/health`, root, `/soru-sor` ve `/admin` kontrolleri geçti; kutu seçili ve
+  zorunlu değil, yetkisiz soru yazımı `401` ve son 15 dakika production error logu boş.
 
 ## 2026-09-23 E-posta Bülteni Yönetim Merkezi
 

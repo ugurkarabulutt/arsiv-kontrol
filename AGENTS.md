@@ -498,8 +498,11 @@ tespit edilir).
   kaynak `Soru formu` olarak gösterilir. Soru kaydı ayrıca rıza durumu, rıza sürümü
   ve zamanı tutar. Canlı Supabase geçişi mevcut 46 soruyu geriye dönük onaylamadı;
   tümü `newsletter_consent=false` kaldı. Bülten yazımı başarısız olursa soru
-  gönderimi kaybolmaz. `npm.cmd run check` 180/180 başarılı; preview/production
-  dağıtımı bekliyor.
+  gönderimi kaybolmaz. `npm.cmd run check` 180/180 başarılı. Runtime commit
+  `cdc80d5`; preview `dpl_Fj6NcAvyGp9R7UgqXmKgamQTLowQ`, production
+  `dpl_BW49PgYkpRGbM9MXBCRrLiroNCDe`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı `/health`, root, `/soru-sor` ve `/admin` kontrolleri geçti; kutu seçili ve
+  zorunlu değil, yetkisiz soru yazımı `401` ve production error logu boş.
 - **E-posta Bülteni Yönetim Merkezi hazırlandı:** `/admin` süper admin Canlı Site
   alanına aboneleri, Resend eşitlemesini, kampanya taslaklarını, test e-postasını,
   gönderim/zamanlama onayını ve webhook tabanlı teslimat raporlarını tek yerde
