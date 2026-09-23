@@ -15032,6 +15032,12 @@ function requireNewsletterProvider() {
   return resend;
 }
 
+function requireNewsletterWebhook() {
+  if (!RESEND_WEBHOOK_SECRET) {
+    throw httpError('Toplu gönderimden önce Resend webhook imza anahtarı kurulmalı.', 503);
+  }
+}
+
 async function ensureNewsletterSegment() {
   requireNewsletterProvider();
   if (newsletterSegmentCache?.id) return newsletterSegmentCache;
@@ -15132,6 +15138,7 @@ async function loadNewsletterSubscribersForSync(force = false) {
 
 async function syncNewsletterActiveSubscribers({ force = false } = {}) {
   requireNewsletterAdminReady();
+  requireNewsletterWebhook();
   const segment = await ensureNewsletterSegment();
   const rows = await loadNewsletterSubscribersForSync(force);
   let synced = 0;
@@ -15460,6 +15467,7 @@ app.post('/api/newsletter/admin/campaigns/:id/send', auth, admin, superAdmin, as
   try {
     requireNewsletterAdminReady();
     requireNewsletterProvider();
+    requireNewsletterWebhook();
     let campaign = await getNewsletterCampaign(req.params.id);
     if (!campaign.resend_broadcast_id || campaign.status !== 'ready') throw httpError('Önce Resend taslağını hazırlayın.', 409);
     if (String(req.body?.confirmation || '') !== 'YAYINLA') throw httpError('Gönderim için YAYINLA onayı gerekli.', 400);

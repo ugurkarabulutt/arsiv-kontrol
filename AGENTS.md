@@ -502,8 +502,15 @@ tespit edilir).
   sağlayıcı alanları canlı Supabase'e uygulandı; mevcut 10 aktif abone korundu.
   Yeni tablolar RLS açık, `anon`/`authenticated`/`public` yetkileri iptal edilmiş
   ve yalnız `service_role` erişimine açıktır. `resend@6.28.1` sabitlendi.
-  `npm.cmd run check` 179/179 başarılı. Bu aşamada toplu e-posta gönderilmedi;
-  preview/production dağıtımı ve `RESEND_WEBHOOK_SECRET` kurulumu bekliyor.
+  `npm.cmd run check` 179/179 başarılı. Runtime commit `3817e8b`, preview
+  `dpl_2qius1WbWVdQZAPQjLFgmasj7kod`, production
+  `dpl_CR9rdGJhgLkmSU1GZsFmr8M5kKWJ`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı `/health`, root/admin sınırları ve yetkisiz/onaysız API retleri geçti;
+  production error logu boştu. Bu aşamada toplu e-posta gönderilmedi. Vercel'de
+  sensitive tutulan Resend anahtarı dışarı çıkarılmadı; `RESEND_WEBHOOK_SECRET`
+  kurulumu admin entegrasyon durumunda bekliyor. Bu anahtar yokken toplu kişi
+  eşitleme, taslak hazırlama ve gerçek gönderim backend tarafından engellenir;
+  yalnız açık adrese test e-postası kullanılabilir.
 
 ### 2026-09-14 Public Konu Rehberi Blog Yayını
 
