@@ -17,8 +17,10 @@
   geri alınabilir durumda; bekleyen 2 kayıt için submitted corrected hash kilidi yenilendi.
 - Doğrulama: canlı DB'de hatalı ifadelerin pozisyonu `0`, doğru `fazıllar` ifadeleri
   mevcut, her satırda `content_correction_log.status='applied'`, `public_qa` bağlantısı yok.
-  Yerel `npm.cmd run check` 183/183 başarılı. Commit/deploy bilgisi bu bölüm tamamlanınca
-  güncellenecek.
+  Yerel `npm.cmd run check` 183/183 başarılı. Runtime commit `ad4bad7`; production deploy
+  `dpl_6HrpnkdERJ7ZZo6qvmNEp8hKwoaY`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı `/health`, root `/`, `/admin` ve Vercel deployment `READY` geçti; `/admin`
+  noindex/no-store doğru, son 15 dakika Vercel loglarında error seviyesi görünmedi.
 
 ## 2026-09-24 Ekip Üyesi Reddedilen Kayıt İşlemleri
 
