@@ -1523,6 +1523,31 @@ test('fazillar kavrami fazilet fazlalik veya fazl olarak degistirilmez', () => {
   assert.equal(result.score, 100);
 });
 
+test('AFETI basligi yapi bulgusunda sapkali Afet yapilmaz', () => {
+  const source = 'NEFS 19 AFETİ ile AKLA Ulaşır.';
+
+  const result = finalizeResult({
+    correctedText: 'NEFS 19 ÂFETİ ile AKLA Ulaşır.',
+    categories: {
+      yapi: {
+        issues: [
+          {
+            original: 'NEFS 19 AFETİ ile AKLA Ulaşır.',
+            fixed: 'NEFS 19 ÂFETİ ile AKLA Ulaşır.',
+            rule: 'Yapı standardı: Başlıkta âfet'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.categories.yapi.count, 0);
+  assert.deepEqual(result.categories.yapi.issues, []);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
+
 test('Mumtehine sure adi noktasiz i varyantina bozulmaz', () => {
   assert.equal(isProtectedChange('Mumtehine', 'Mumtehıne'), true);
 

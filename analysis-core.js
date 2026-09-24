@@ -860,6 +860,9 @@ function isDecisionProtectedTransform(original, fixed) {
   if (/^sagir$/iu.test(from) && /^sa\u011fir$/iu.test(to)) return true;
   if (/^ukba$/iu.test(from) && /^ukb\u00e2$/iu.test(to)) return true;
   if (foldedFrom.startsWith('afet') && foldedTo.startsWith('afet') && hasCircumflex(fixed)) return true;
+  if (foldedFrom === foldedTo
+    && /(?<![\p{L}\p{N}_])afet[\p{L}\p{N}_]*/iu.test(foldedFrom)
+    && /[âÂ]fet/iu.test(canonicalText(fixed))) return true;
   if (/^rahmete$/iu.test(from) && /^rahmeti$/iu.test(to)) return true;
   if (/^zur\u00fbf$/iu.test(from) && /^zumer$/iu.test(to)) return true;
   if (from.replace(/…/gu, '...') === to.replace(/…/gu, '...')) return true;

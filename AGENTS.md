@@ -5,6 +5,18 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-09-24
 
+- **`AFETİ` başlığı şapkasız korunur:** Benan Veyseloğlu'nun
+  `NEFS 19 AFETİ ile AKLA Ulaşır.` başlığının `NEFS 19 ÂFETİ ile AKLA Ulaşır.`
+  yapılması bildirimi doğrulandı. `analysis-core.js` artık `afet/AFETİ`
+  kelimesi tam başlık veya cümle içinde şapkalı `âfet/ÂFETİ` yapılırsa bulguyu
+  skor dışı bırakır ve metni kaynak haline döndürür. Canlı kayıt
+  `63f73bf5-38ff-4093-b349-d6cca969cfe2` şapkasız standarda geri alındı;
+  değişiklik `content_correction_log` içinde `cp-20260924-afeti-benan` paketiyle
+  geri alınabilir. Geri bildirim `0ab897ed-9e56-4208-897f-b199174f1fb3`
+  kapatıldı. Geniş taramada çok sayıda eski public `âfet/ÂFET` izi görüldü;
+  bunların public arşiv ve arama dokümanlarında topluca değiştirilmesi ayrı açık
+  kullanıcı onayı gerektirir. Yerel `npm.cmd run check` 184/184 başarılı.
+
 - **`fazıllar` özel kavram koruması eklendi:** İremsu Çakmak'ın
   `fazılları -> faziletleri` ve `fazıllar -> faziletler` yanlış bulgu bildirimi
   doğrulandı. `analysis-core.js` artık `fazıllar`, `fazılları`, `fazılların`

@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-24 AFETİ Şapkasız Başlık Standardı
+
+- Benan Veyseloğlu'nun bildirdiği `NEFS 19 AFETİ ile AKLA Ulaşır.` başlığının
+  `NEFS 19 ÂFETİ ile AKLA Ulaşır.` yapılması yanlış bulundu. Bağlı kayıt
+  `63f73bf5-38ff-4093-b349-d6cca969cfe2` canlı DB'de şapkasız `AFETİ` haline
+  geri alındı; değişiklik `content_correction_log` içinde `cp-20260924-afeti-benan`
+  paketiyle geri alınabilir durumda. Geri bildirim `0ab897ed-9e56-4208-897f-b199174f1fb3`
+  `content-correction-afeti-20260924` çözüm grubuyla kapatıldı.
+- Analiz çekirdeğinde koruma genişletildi: `afet/AFETİ` kelimesi tek kelime
+  olarak değil, tam başlık/cümle içinde geldiğinde de `âfet/ÂFETİ` yapılırsa
+  bulgu skor dışı kalır ve düzeltilmiş metin kaynak haline döner. Regresyon:
+  `AFETI basligi yapi bulgusunda sapkali Afet yapilmaz`.
+- Geniş geçmiş taramasında public kayıtlar dahil çok sayıda eski `âfet/ÂFET`
+  izi görüldü. Bunları topluca public arşiv ve arama dokümanlarında değiştirmek
+  geniş kapsamlı public içerik operasyonudur; ayrı açık kullanıcı onayı olmadan
+  uygulanmadı. Yerel `npm.cmd run check` 184/184 başarılı.
+
 ## 2026-09-24 Fazıllar Kavramı Koruması
 
 - İremsu Çakmak'ın bildirdiği `fazılları -> faziletleri` ve `fazıllar -> faziletler`
