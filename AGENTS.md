@@ -5,6 +5,15 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-09-24
 
+- **Public `Soru 6:` öneki kaldırıldı:** Canlı public soru
+  `/soru/soru-6-muhterem-hocam-olumden-korkmak-dogal-midir-mumin-bir-insan-olumle-ilgili-nasil-bir-bakis-`
+  başlığındaki ve soru metnindeki `Soru 6:` öneki kaldırıldı. Bağlı
+  `public_qa`, source history `12853e1c-f55b-42ad-93e2-12cdaded21dc` ve
+  2 `public_qa_search_documents` satırı eşitlendi. Değişiklik
+  `content_correction_log` içinde `cp-20260924-question6-prefix-removal`
+  paketiyle geri alınabilir. Canlı public URL `200` döndü; HTML'de `Soru 6:`
+  kalmadı. Kod değişikliği/deploy gerekmedi.
+
 - **`kıyâmet` imlâ standardı public başlıkta uygulandı:** Canlı public soru
   `/soru/soru-8-muhterem-hocam-kiyametten-sonra-tum-insanlarin-allahin-cennetine-ya-da-cehennemine-girmes`
   başlığındaki `Soru 8:` öneki kaldırıldı; `kıyametten` ifadesi `kıyâmetten`

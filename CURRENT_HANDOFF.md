@@ -1,5 +1,17 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-24 Public Soru 6 Başlık Düzeltmesi
+
+- Canlı public soru
+  `/soru/soru-6-muhterem-hocam-olumden-korkmak-dogal-midir-mumin-bir-insan-olumle-ilgili-nasil-bir-bakis-`
+  başlığında ve soru metninde görünen `Soru 6:` öneki kaldırıldı.
+- Bağlı `public_qa` kaydı, source history `12853e1c-f55b-42ad-93e2-12cdaded21dc`
+  ve 2 `public_qa_search_documents` arama dokümanı aynı metne eşitlendi.
+  Değişiklik `content_correction_log` içinde
+  `cp-20260924-question6-prefix-removal` paketiyle geri alınabilir durumda.
+- Canlı doğrulama: public soru URL'i `200`, HTML'de `Soru 6:` yok ve temiz
+  soru metni görünüyor. Kod değişikliği/deploy gerekmedi.
+
 ## 2026-09-24 Public Soru 8 Başlık Düzeltmesi
 
 - Canlı public soru
