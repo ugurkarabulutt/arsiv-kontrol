@@ -38,6 +38,7 @@ function recordActions(user, row, workspace) {
   }
   if (!worker) return [];
   if (status === 'bekliyor') return ['withdraw'];
+  if (status === 'reddedildi') return ['revise_rejected', 'dismiss_rejected'];
   if (status === 'geri_gonderildi' && disputed) return [];
   if (['taslak', 'geri_gonderildi'].includes(status)) return ['save', 'submit', 'reanalyze',
     'close_duplicate',

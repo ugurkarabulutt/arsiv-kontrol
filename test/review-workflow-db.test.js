@@ -42,6 +42,9 @@ before(async () => {
   const returnedApproveMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260913000200_management_can_approve_returned.sql'),'utf8');
   await db.exec(returnedApproveMigration);
   await db.exec(returnedApproveMigration);
+  const rejectedActionsMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260924090000_member_rejected_record_actions.sql'),'utf8');
+  await db.exec(rejectedActionsMigration);
+  await db.exec(rejectedActionsMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -219,6 +222,29 @@ test('member-facing statuses hide management queue vocabulary', () => {
   assert.equal(memberDisplayStatus('onaylandi'),'Onaylandı');
   assert.equal(memberDisplayStatus('reddedildi'),'Reddedildi');
   assert.equal(memberDisplayStatus('arsivlendi'),'Arşivlendi');
+});
+
+test('member can reopen or dismiss only own rejected records without deleting audit history', async () => {
+  let rejected=await seed('user','reddedildi','Reddedilen kayıt yeniden çalışılsın mı?','Korunan cevap.');
+  const actor={id:ids.user,role:'user'};
+  assert.deepEqual(recordActions(actor,rejected,'member'),['revise_rejected','dismiss_rejected']);
+  assert.deepEqual(recordActions({id:ids.other,role:'user'},rejected,'member'),[]);
+
+  rejected=await change(rejected,'user','member','revise_rejected');
+  assert.equal(rejected.status,'geri_gonderildi');
+  assert.equal(rejected.corrected_text,'Korunan cevap.');
+  assert.match(rejected.workflow_meta.returnNote,/yeniden düzenlemeye alındı/i);
+  assert.ok(recordActions(actor,rejected,'member').includes('save'));
+  assert.equal((await db.query("select count(*)::int as n from history_revisions where history_id=$1 and action='revise_rejected'",[rejected.id])).rows[0].n,1);
+
+  let empty=await seed('user','reddedildi','','');
+  empty=(await db.query("update history set original_text='',tags='[]'::jsonb where id=$1 returning *",[empty.id])).rows[0];
+  empty=await change(empty,'user','member','dismiss_rejected');
+  assert.equal(empty.status,'copte');
+  assert.equal(empty.workflow_meta.statusBeforeTrash,'reddedildi');
+  assert.equal(canReadRecord(actor,empty,'member'),false);
+  assert.equal(canReadRecord({id:ids.admin,role:'admin'},empty,'management'),true);
+  assert.equal((await db.query("select count(*)::int as n from history_revisions where history_id=$1 and action='dismiss_rejected'",[empty.id])).rows[0].n,1);
 });
 
 test('review queue hides legacy split chunk drafts that detail pages reject', async () => {

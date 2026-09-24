@@ -66,6 +66,9 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   new vm.Script(workspaceScript);
   assert.match(workspaceScript,/todo: 'Düzenlenecekler'/);
   assert.match(workspaceScript,/close_duplicate: 'Mükerrer Olarak Kapat'/);
+  assert.match(workspaceScript,/revise_rejected: 'Düzenlemeye Al'/);
+  assert.match(workspaceScript,/dismiss_rejected: 'Listeden Kaldır'/);
+  assert.match(workspaceScript,/İşlem Yap/);
   assert.match(workspaceScript,/Kayıt yönetime iletildi ve Düzenlenecekler listenizden kaldırıldı\./);
   assert.match(workspaceScript,/dergah_sorulari: 'Dergah Soruları'/);
   assert.match(workspaceScript,/conference: 'Konferanslara Al'/);
@@ -74,6 +77,28 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   const source=fs.readFileSync(path.join(root,'server.js'),'utf8');
   assert.ok(source.indexOf("app.use('/api/history', auth, review.legacy)")<source.indexOf("app.post('/api/history/:id/approve'"));
   assert.match(source,/ADMIN_REVIEW_WORKSPACES_ENABLED = process.env.ADMIN_REVIEW_WORKSPACES_ENABLED === '1'/);
+});
+
+test('rejected member records expose safe reopen and dismiss actions',async()=>{
+  const owner=fixture.users[0];
+  const rows=[];
+  try{
+    for(let i=0;i<2;i++)rows.push((await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
+      values($1,'Reddedilen Ekip Testi','reddedildi','','','','[]'::jsonb) returning *`,[owner.id])).rows[0]);
+    const list=await request('/api/review/records?status=done&q=Reddedilen%20Ekip%20Testi','user','member');
+    assert.equal(list.status,200);assert.equal(list.data.count,2);
+    assert.deepEqual(list.data.items[0].allowedActions,['revise_rejected','dismiss_rejected']);
+    const reopened=await request(`/api/review/${rows[0].id}/action`,'user','member',{action:'revise_rejected',version:0});
+    assert.equal(reopened.status,200);assert.equal(reopened.data.history.status,'geri_gonderildi');
+    assert.ok(reopened.data.history.allowedActions.includes('save'));
+    const dismissed=await request(`/api/review/${rows[1].id}/action`,'user','member',{action:'dismiss_rejected',version:0});
+    assert.equal(dismissed.status,200);assert.equal(dismissed.data.history.status,'copte');
+    assert.equal((await request(`/api/review/${rows[1].id}`,'user','member')).status,404);
+  }finally{
+    await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[rows.map(row=>row.id)]);
+    await fixture.db.query('delete from admin_action_log where target_id=any($1::text[])',[rows.map(row=>row.id)]);
+    await fixture.db.query('delete from history where id=any($1::uuid[])',[rows.map(row=>row.id)]);
+  }
 });
 
 test('resubmitted old records lead the entire pending queue before pagination for both admin roles',async()=>{

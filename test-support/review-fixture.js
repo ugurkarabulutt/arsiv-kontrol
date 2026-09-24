@@ -23,6 +23,7 @@ async function createFixture() {
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260912162000_member_duplicate_cleanup.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260913000100_review_special_holding_sections.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260913000200_management_can_approve_returned.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260924090000_member_rejected_record_actions.sql'),'utf8'));
   for(const user of users)await db.query('insert into users(id,role,username,name,password) values($1,$2,$3,$4,$5)',[user.id,user.role,user.username,user.name,'test-only']);
   const rows=[];
   for(let i=0;i<65;i++){
