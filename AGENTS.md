@@ -5,6 +5,22 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-09-24
 
+- **`fazıllar` özel kavram koruması eklendi:** İremsu Çakmak'ın
+  `fazılları -> faziletleri` ve `fazıllar -> faziletler` yanlış bulgu bildirimi
+  doğrulandı. `analysis-core.js` artık `fazıllar`, `fazılları`, `fazılların`
+  gibi ekli biçimleri `faziletler`, `faziletleri`, `fazlalık`, `fazl` veya başka
+  bir kelimeye dönüştüren AI bulgularını skor dışı bırakır ve metni kaynak haline
+  döndürür; `server.js` sistem prompt'una aynı sözlük kararı eklendi. Canlı
+  geçmiş taramasında public yayında olmayan 4 kayıt geri alınabilir biçimde
+  düzeltildi: `e9a5da22-f7af-408d-b82d-49c605dafaf2`,
+  `76e8a8cd-5373-4ae6-a235-a422c018f01c`,
+  `d2219d70-9188-4821-9084-f41853b8951b`,
+  `d1854667-8636-433f-a6c3-c4cc2ac01623`. Düzeltmeler
+  `content_correction_log` içinde `cp-20260924-fazillar-*` paketleriyle kayıtlı;
+  İremsu'nun iki geri bildirimi `analysis-guard-fazillar-20260924` çözüm grubuyla
+  kapatıldı. Yerel `npm.cmd run check` 183/183 başarılı. Runtime commit/deploy
+  bilgisi bu iş tamamlandığında `CURRENT_HANDOFF.md` içinde güncellenecek.
+
 - **Reddedilen ekip kayıtları zorunlu düzeltme akışına alındı:** Ekip üyesinin
   kendi veya kendisine atanmış `reddedildi` kaydında yalnız `Düzenlemeye Al`
   işlemi vardır. İşlem kaydı `geri_gonderildi` durumuna taşıyarak soru, etiket ve

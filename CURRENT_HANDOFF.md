@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-24 Fazıllar Kavramı Koruması
+
+- İremsu Çakmak'ın bildirdiği `fazılları -> faziletleri` ve `fazıllar -> faziletler`
+  yanlış bulguları incelendi. Bağlı taslak kayıt `8f322b75-f901-4315-99b9-05bef7d4af21`
+  metin olarak zaten doğru kaldı; geri bildirimler canlı DB'de
+  `analysis-guard-fazillar-20260924` çözüm grubuyla kapatıldı.
+- `analysis-core.js` koruması genişletildi: `fazıllar`, `fazılları`, `fazılların`
+  gibi ekli özel nur kavramları artık `faziletler`, `faziletleri`, `fazlalık` veya
+  `fazl` gibi kelimelere dönüştürülürse bulgu skor dışı kalır ve düzeltilmiş metin
+  kaynak metne geri döner. `server.js` sistem prompt'una aynı açık standart eklendi.
+- Canlı geçmiş etki taramasında public yayında olmayan 4 kayıt kontrollü düzeltildi:
+  `e9a5da22-f7af-408d-b82d-49c605dafaf2`, `76e8a8cd-5373-4ae6-a235-a422c018f01c`,
+  `d2219d70-9188-4821-9084-f41853b8951b`, `d1854667-8636-433f-a6c3-c4cc2ac01623`.
+  Her değişiklik `content_correction_log` içinde `cp-20260924-fazillar-*` paketleriyle
+  geri alınabilir durumda; bekleyen 2 kayıt için submitted corrected hash kilidi yenilendi.
+- Doğrulama: canlı DB'de hatalı ifadelerin pozisyonu `0`, doğru `fazıllar` ifadeleri
+  mevcut, her satırda `content_correction_log.status='applied'`, `public_qa` bağlantısı yok.
+  Yerel `npm.cmd run check` 183/183 başarılı. Commit/deploy bilgisi bu bölüm tamamlanınca
+  güncellenecek.
+
 ## 2026-09-24 Ekip Üyesi Reddedilen Kayıt İşlemleri
 
 - Ekip Üyesi alanındaki `Tamamlananlar > Reddedilenler` kayıtlarında yalnız

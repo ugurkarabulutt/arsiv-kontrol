@@ -14315,6 +14315,7 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - Özel kaynak/kitap adlarında özgün yazımı koru: "İhyâ’u Ulûmi’d-dîn" veya "İhya’u Ulumi’d-dîn" içindeki "dîn" kelimesini "din" yapma.
 - "yakîn" Efendimizin sözlüğündeki özel kullanımdır; bunu "yakın" yapma.
 - "faziletler" kelimesini "fazlalar" yapma. "fazılla" kullanımı bağlamında "fazl ile" diye bölme.
+- "fazıllar" Efendimizin sözlüğündeki özel nur kavramıdır; fazıllar, fazılları, fazılların gibi ekli biçimleri "faziletler", "fazlalık", "fazl" veya başka bir kelimeye dönüştürme.
 - "sure de" bağlaç olan de ise "surede" yapma.
 - "Tabiatıyla" kelimesini "Tabiî ki" diye değiştirme.
 - "Tabi ki" / "Tabii ki" ifadesini "Tabiatıyla" diye değiştirme.

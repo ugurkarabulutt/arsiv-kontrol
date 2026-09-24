@@ -1492,6 +1492,37 @@ test('1 Agustos acik feedback kokleri korunur ve gerekli referans duzeltmeleri u
   assert.equal(result.totalErrors, 6);
 });
 
+test('fazillar kavrami fazilet fazlalik veya fazl olarak degistirilmez', () => {
+  const source = [
+    'Salâvât fazılları kalbe taşır.',
+    'Fazıllar kalpte toplanır.',
+    'Zikir arttıkça fazıllar çoğalır.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      'Salâvât faziletleri kalbe taşır.',
+      'Faziletler kalpte toplanır.',
+      'Zikir arttıkça fazlalık çoğalır.'
+    ].join('\n'),
+    categories: {
+      imla: {
+        issues: [
+          { original: 'fazılları', fixed: 'faziletleri', rule: 'İmlâ standardı' },
+          { original: 'Fazıllar', fixed: 'Faziletler', rule: 'İmlâ standardı' },
+          { original: 'fazıllar', fixed: 'fazlalık', rule: 'İmlâ standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.categories.imla.count, 0);
+  assert.deepEqual(result.categories.imla.issues, []);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
+
 test('Mumtehine sure adi noktasiz i varyantina bozulmaz', () => {
   assert.equal(isProtectedChange('Mumtehine', 'Mumtehıne'), true);
 

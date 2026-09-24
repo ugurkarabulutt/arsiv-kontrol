@@ -501,8 +501,11 @@ function isSimplePunctuationAddition(original, fixed) {
 function isFazlFamilyFalsePositive(original, fixed) {
   const from = asciiFold(original).replace(/\s+/g, ' ').trim();
   const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+  const exactFrom = canonicalText(original).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+  const exactTo = canonicalText(fixed).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
   return (/^fazilet[\p{L}\p{N}_]*$/u.test(from) && /^fazl/u.test(to))
-    || (/^fazilla$/u.test(from) && /^fazl\s+ile$/u.test(to));
+    || (/^fazilla$/u.test(from) && /^fazl\s+ile$/u.test(to))
+    || (/^fazıllar[\p{L}\p{N}_]*$/u.test(exactFrom) && !/^fazıllar[\p{L}\p{N}_]*$/u.test(exactTo));
 }
 
 function isAhlakiPossessiveRewrite(original, fixed) {
