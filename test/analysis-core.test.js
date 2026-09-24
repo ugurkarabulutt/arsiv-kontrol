@@ -602,6 +602,7 @@ test('canli feedback standart kelimeleri kayitli tutulur', () => {
   assert.equal(CANONICAL_WORD_STANDARDS.fedakarlik, 'fedakârlık');
   assert.equal(CANONICAL_WORD_STANDARDS.kuran, "Kur'ân");
   assert.equal(CANONICAL_WORD_STANDARDS.gayy, 'gayy yolu');
+  assert.equal(CANONICAL_WORD_STANDARDS.kiyamet, 'kıyâmet');
   assert.equal(CANONICAL_WORD_STANDARDS.herbir, 'herbir');
 });
 
@@ -1546,6 +1547,24 @@ test('AFETI basligi yapi bulgusunda sapkali Afet yapilmaz', () => {
   assert.deepEqual(result.categories.yapi.issues, []);
   assert.equal(result.totalErrors, 0);
   assert.equal(result.score, 100);
+});
+
+test('kiyamet kelimesi kiyâmet olarak standartlasir', () => {
+  const source = 'Muhterem Hocam, kıyametten sonra insanlar nereye gider?';
+  const result = finalizeResult({
+    correctedText: 'Muhterem Hocam, kıyâmetten sonra insanlar nereye gider?',
+    categories: {
+      imla: {
+        issues: [
+          { original: 'kıyametten', fixed: 'kıyâmetten', rule: 'İmlâ standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, 'Muhterem Hocam, kıyâmetten sonra insanlar nereye gider?');
+  assert.equal(result.categories.imla.count, 1);
+  assert.equal(result.totalErrors, 1);
 });
 
 test('Mumtehine sure adi noktasiz i varyantina bozulmaz', () => {

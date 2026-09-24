@@ -45,6 +45,7 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   hud: 'Hûd',
   fatir: 'Fâtır',
   hacc: 'Hacc',
+  kiyamet: 'kıyâmet',
   araf: "A'râf",
   musibet: 'musîbet',
   veli: 'velî',

@@ -1,5 +1,18 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-24 Public Soru 8 Başlık Düzeltmesi
+
+- Canlı public soru
+  `/soru/soru-8-muhterem-hocam-kiyametten-sonra-tum-insanlarin-allahin-cennetine-ya-da-cehennemine-girmes`
+  başlığında ve soru metninde görünen `Soru 8:` öneki kaldırıldı; `kıyametten`
+  ifadesi `kıyâmetten` standardına taşındı.
+- Bağlı `public_qa` kaydı, source history `01ea0b51-5522-4ddc-9caf-0005abeefa5a`
+  ve 13 `public_qa_search_documents` arama dokümanı aynı metne eşitlendi.
+  Değişiklik `content_correction_log` içinde
+  `cp-20260924-question8-kiyamet-title` paketiyle geri alınabilir durumda.
+- Analiz çekirdeğine `kiyamet -> kıyâmet` sözlük standardı ve regresyon testi
+  eklendi. Yerel `npm.cmd run check` 185/185 başarılı.
+
 ## 2026-09-24 Public Soru Tablo/Liste Düzeni
 
 - Canlı public soru

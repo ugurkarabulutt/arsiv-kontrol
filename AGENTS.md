@@ -5,6 +5,16 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-09-24
 
+- **`kıyâmet` imlâ standardı public başlıkta uygulandı:** Canlı public soru
+  `/soru/soru-8-muhterem-hocam-kiyametten-sonra-tum-insanlarin-allahin-cennetine-ya-da-cehennemine-girmes`
+  başlığındaki `Soru 8:` öneki kaldırıldı; `kıyametten` ifadesi `kıyâmetten`
+  standardına taşındı. Bağlı `public_qa`, source history
+  `01ea0b51-5522-4ddc-9caf-0005abeefa5a` ve 13 `public_qa_search_documents`
+  satırı eşitlendi. Değişiklik `content_correction_log` içinde
+  `cp-20260924-question8-kiyamet-title` paketiyle geri alınabilir. Analiz
+  çekirdeğine `kiyamet -> kıyâmet` sözlük standardı ve regresyon testi eklendi.
+  Yerel `npm.cmd run check` 185/185 başarılı.
+
 - **`AFETİ` başlığı şapkasız korunur:** Benan Veyseloğlu'nun
   `NEFS 19 AFETİ ile AKLA Ulaşır.` başlığının `NEFS 19 ÂFETİ ile AKLA Ulaşır.`
   yapılması bildirimi doğrulandı. `analysis-core.js` artık `afet/AFETİ`
