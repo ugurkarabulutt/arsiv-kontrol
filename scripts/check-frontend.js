@@ -430,15 +430,19 @@ if (
 const specialSectionsMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260913000100_review_special_holding_sections.sql'), 'utf8');
 const returnedApproveMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260913000200_management_can_approve_returned.sql'), 'utf8');
 const rejectedActionsMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260924090000_member_rejected_record_actions.sql'), 'utf8');
+const rejectedReviseOnlyMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20260924103000_remove_member_rejected_dismiss.sql'), 'utf8');
 if (
   !workspaceScript.includes("revise_rejected: 'Düzenlemeye Al'") ||
-  !workspaceScript.includes("dismiss_rejected: 'Listeden Kaldır'") ||
-  !workspaceScript.includes("?'İşlem Yap':'Gör'") ||
-  !policy.includes("if (status === 'reddedildi') return ['revise_rejected', 'dismiss_rejected']") ||
+  workspaceScript.includes('dismiss_rejected') ||
+  workspaceScript.includes('Listeden Kaldır') ||
+  !workspaceScript.includes("?'Düzenlemeye Al':'Gör'") ||
+  !policy.includes("if (status === 'reddedildi') return ['revise_rejected']") ||
+  policy.includes('dismiss_rejected') ||
   !rejectedActionsMigration.includes("p_action='revise_rejected'") ||
-  !rejectedActionsMigration.includes("p_action='dismiss_rejected'")
+  !rejectedReviseOnlyMigration.includes("p_action='dismiss_rejected'") ||
+  !rejectedReviseOnlyMigration.includes("raise exception 'INVALID_ACTION'")
 ) {
-  throw new Error('Ekip uyesi kendi reddedilen kaydini duzenlemeye alabilmeli veya gecmisi silmeden listesinden kaldirabilmeli.');
+  throw new Error('Ekip uyesi kendi reddedilen kaydini yalniz duzenlemeye alip yeniden onaya gonderebilmeli; kaydi kaldiramamali.');
 }
 if (
   !workspaceScript.includes("dergah_sorulari: 'Dergah Soruları'") ||
@@ -457,7 +461,7 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20260924-rejected-actions') && html.includes('/review-workspace.css?v=20260924-rejected-actions'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20260924-rejected-revise-only') && html.includes('/review-workspace.css?v=20260924-rejected-revise-only'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
 assert(html.includes('Canlıdaki Soru') && html.includes('t.publicPublished'), 'Dashboard canli yayinlanan soru sayisini gostermeli.');
 assert(html.includes('dashRefreshTimer') && html.includes('syncDashAutoRefresh(name)'), 'Dashboard aktifken otomatik yenileme mekanizmasi bulunmali.');
 assert(server.includes("public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')"), 'Stats API public yayindaki soru sayisini public_qa slug anahtariyla saymali.');

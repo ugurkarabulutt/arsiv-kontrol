@@ -11,7 +11,7 @@ const ReviewWorkspace = (() => {
     restore: 'Geri Al', dispute: 'Bu Kayıt Bana Ait Değil', resolve_dispute: 'İtirazı Sonuçlandır',
     close_duplicate: 'Mükerrer Olarak Kapat',
     reanalyze: 'Yeniden Denetle', withdraw: 'Geri Çek', delete_draft: 'Taslağı Sil',
-    revise_rejected: 'Düzenlemeye Al', dismiss_rejected: 'Listeden Kaldır' };
+    revise_rejected: 'Düzenlemeye Al' };
   const memberTabs = new Set(['analiz', 'gecmis', 'bildirim', 'standartlar', 'profil', 'ayarlar']);
   const states = { member: { status: 'todo', q: '', page: 1 }, management: { status: 'bekliyor', q: '', page: 1 } };
   let space = 'member', item = null, baseline = '', busy = false, requestNumber = 0, detailRequest = 0, searchTimer, returnFocus;
@@ -174,7 +174,7 @@ const ReviewWorkspace = (() => {
     node('rwListMessage').textContent = '';
     node('rwCount').textContent = `${result.count} kayıt`;
     const totalPages = Math.max(1,Math.ceil(result.count/result.pageSize));
-    node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem" data-rw-row-id="${row.id}">${bulkSelectHtml(row)}<div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span>${row.submittedBy && row.submittedBy !== row.userId ? `<span>Gönderen: ${safe(row.submittedByName || 'Kayıtlı ekip üyesi')}</span>` : ''}<span>${safe(listDate(row))}</span><span>${safe(statusText(row))}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':row.allowedActions.some(action=>['revise_rejected','dismiss_rejected'].includes(action))?'İşlem Yap':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
+    node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem" data-rw-row-id="${row.id}">${bulkSelectHtml(row)}<div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span>${row.submittedBy && row.submittedBy !== row.userId ? `<span>Gönderen: ${safe(row.submittedByName || 'Kayıtlı ekip üyesi')}</span>` : ''}<span>${safe(listDate(row))}</span><span>${safe(statusText(row))}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':row.allowedActions.includes('revise_rejected')?'Düzenlemeye Al':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
     node('rwPages').innerHTML = `<button class="btn-sec" ${s.page<=1?'disabled':''} onclick="ReviewWorkspace.page(-1)">Önceki</button><span>${s.page} / ${totalPages}</span><button class="btn-sec" ${s.page>=totalPages?'disabled':''} onclick="ReviewWorkspace.page(1)">Sonraki</button>`;
     renderBulkBar();
   }
@@ -249,7 +249,7 @@ const ReviewWorkspace = (() => {
   }
   function renderDetail() {
     const editable=can('save'), meta=item.workflow||{};
-    const primary=can('submit')?'submit':can('approve')?'approve':'';
+    const primary=can('submit')?'submit':can('approve')?'approve':can('revise_rejected')?'revise_rejected':'';
     const others=(item.allowedActions||[]).filter(action=>!['save','delete_draft',primary].includes(action));
     node('detailBody').innerHTML=`<div class="rw-detail"><div class="rw-record-meta"><strong>${safe(item.name)}</strong><span>${safe(statusText(item))}</span><span>No: ${safe(item.id.slice(0,8))} · Sürüm ${item.version}</span><span>${date(item.updatedAt||item.createdAt)}</span><span>${item.publication?.status==='published'?'Yayında':'Yayında değil'}</span>${item.userId===me.id?'<span>Kendi kaydınız</span>':''}${item.assigneeId?`<span>Düzeltme sorumlusu: ${safe(item.assigneeName||item.assigneeId.slice(0,8))}</span>`:''}</div>
       ${item.returnNote?`<p class="rw-return">${safe(item.returnNote)}</p>`:''}
@@ -261,7 +261,7 @@ const ReviewWorkspace = (() => {
       <label class="rw-field"><span>Kontrol notu</span><textarea id="rwNote" ${editable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea></label>
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
-      <div class="rw-actions">${can('save')?'<button class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button class="btn-primary" data-rw-write onclick="ReviewWorkspace.act('${primary}')">${actions[primary]}</button>`:''}
+      <div class="rw-actions">${can('save')?'<button class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button class="btn-primary" data-rw-write onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
       ${can('delete_draft')?'<button type="button" class="btn-danger" data-rw-write onclick="ReviewWorkspace.decide(\'delete_draft\')">Taslağı Sil</button>':''}
       ${others.length?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${others.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]||safe(action)}</button>`).join('')}</div></details>`:''}<button class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
     baseline=JSON.stringify(values());
@@ -303,11 +303,6 @@ const ReviewWorkspace = (() => {
     }
     if (action==='revise_rejected') {
       const confirmed=await openSystemConfirm({title:'Kayıt düzenlemeye alınsın mı?',message:'Reddedilen kayıt Düzenlenecekler alanına taşınacak. Soru, etiket ve cevap alanlarını tamamlayıp yeniden onaya gönderebilirsiniz.',confirmText:'Düzenlemeye Al',cancelText:'Vazgeç'});
-      if(confirmed&&item?.id===decidingId)await act(action);
-      return;
-    }
-    if (action==='dismiss_rejected') {
-      const confirmed=await openSystemConfirm({title:'Kayıt listeden kaldırılsın mı?',message:'Kayıt aktif listenizden kaldırılacak. Tamamen silinmez; yönetim tarafında ve işlem geçmişinde korunur.',confirmText:'Listeden Kaldır',cancelText:'Vazgeç'});
       if(confirmed&&item?.id===decidingId)await act(action);
       return;
     }
@@ -357,12 +352,10 @@ const ReviewWorkspace = (() => {
         }
         return;
       }
-      if(action==='delete_draft'||action==='close_duplicate'||action==='dismiss_rejected'||action==='dispute'){
+      if(action==='delete_draft'||action==='close_duplicate'||action==='dispute'){
         await close(true);await load();
         message(action==='close_duplicate'
           ? 'Mükerrer kayıt aktif listenizden kaldırıldı.'
-          : action==='dismiss_rejected'
-            ? 'Reddedilen kayıt aktif listenizden kaldırıldı.'
           : action==='dispute'
             ? 'Kayıt yönetime iletildi ve Düzenlenecekler listenizden kaldırıldı.'
             : 'Taslak çöp kutusuna taşındı.');
