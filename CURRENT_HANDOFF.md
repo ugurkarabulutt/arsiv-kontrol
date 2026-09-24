@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-24 Public Soru Tablo/Liste Düzeni
+
+- Canlı public soru
+  `/soru/muhterem-hocam-allahu-teala-insanlar-icin-vazettigi-mutlulugu-hangi-kolay-sebeplere-baglamistir`
+  tek dev paragraf olarak yayımlandığı için `7 VASITA EMİR` ve
+  `KUR’ÂN-I KERİMİN PEYGAMBER EFENDİMİZ (S.A.V.)’E KOLAYLAŞTIRILMASI`
+  bölümleri tablo/liste düzenini kaybetmişti.
+- Bağlı `public_qa` kaydı ve source history `49249dbc-a66f-447f-b839-2895af2453ed`
+  aynı biçimlendirilmiş metne eşitlendi. `answer_paragraphs` 37 parçaya ayrıldı;
+  `content_correction_log` içinde `cp-20260924-public-table-layout-easy-happiness`
+  paketiyle geri alınabilir history logu yazıldı. Public arama dokümanlarından
+  5 chunk aynı satır düzenine güncellendi.
+- Canlı doğrulama: DB'de `answer_paragraphs` 37, ilk bölümlerde `HADÎS-İ ŞERİF`,
+  `7 VASITA EMİR`, `1. Allah’a Ulaşmayı Dilemek`, `ANKEBÛT – 5` ve ikinci
+  kolaylaştırma başlığı ayrı görünüyor. Canlı URL `200` döndü ve HTML markerları
+  mevcut. Kod değişikliği/deploy gerekmedi.
+
 ## 2026-09-24 AFETİ Şapkasız Başlık Standardı
 
 - Benan Veyseloğlu'nun bildirdiği `NEFS 19 AFETİ ile AKLA Ulaşır.` başlığının
