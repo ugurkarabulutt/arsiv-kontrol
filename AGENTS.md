@@ -13,7 +13,11 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   satırı eşitlendi. Değişiklik `content_correction_log` içinde
   `cp-20260924-question8-kiyamet-title` paketiyle geri alınabilir. Analiz
   çekirdeğine `kiyamet -> kıyâmet` sözlük standardı ve regresyon testi eklendi.
-  Yerel `npm.cmd run check` 185/185 başarılı.
+  Yerel `npm.cmd run check` 185/185 başarılı. Runtime commit `d1b391a`;
+  production deploy `dpl_37q7z4QC25RVajHy2bzwbCi5DdEb`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health`, public soru URL'i ve
+  `/admin` noindex/no-store kontrolleri geçti; son 15 dakika production error
+  logu boş.
 
 - **`AFETİ` başlığı şapkasız korunur:** Benan Veyseloğlu'nun
   `NEFS 19 AFETİ ile AKLA Ulaşır.` başlığının `NEFS 19 ÂFETİ ile AKLA Ulaşır.`

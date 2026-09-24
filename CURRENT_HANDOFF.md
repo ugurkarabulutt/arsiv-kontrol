@@ -12,6 +12,11 @@
   `cp-20260924-question8-kiyamet-title` paketiyle geri alınabilir durumda.
 - Analiz çekirdeğine `kiyamet -> kıyâmet` sözlük standardı ve regresyon testi
   eklendi. Yerel `npm.cmd run check` 185/185 başarılı.
+- Runtime commit `d1b391a`; production deploy
+  `dpl_37q7z4QC25RVajHy2bzwbCi5DdEb`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı doğrulama: `/health ok`, public soru
+  URL'i `200`, HTML'de `Soru 8:` ve düz `kıyametten` yok, `kıyâmetten` var.
+  `/admin` noindex/no-store doğru; son 15 dakika production error logu boş.
 
 ## 2026-09-24 Public Soru Tablo/Liste Düzeni
 
