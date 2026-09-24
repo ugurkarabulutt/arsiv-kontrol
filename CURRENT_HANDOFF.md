@@ -1,5 +1,24 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-09-24 Ekip Üyesi Reddedilen Kayıt İşlemleri
+
+- Ekip Üyesi alanındaki `Tamamlananlar > Reddedilenler` kayıtları artık yalnız
+  `Gör` ile kilitli kalmaz. Kaydın sahibi veya atanmış düzeltme sorumlusu
+  `Düzenlemeye Al` ile aynı kaydı `Düzenlenecekler` alanına taşıyabilir ya da
+  `Listeden Kaldır` ile aktif listesinden çıkarabilir.
+- `Listeden Kaldır` fiziksel silme yapmaz; kayıt `copte` durumunda yönetim ve
+  sürüm/işlem geçmişinde korunur. Başka kullanıcının kaydı için iki işlem de
+  verilmez. Tüm geçişler mevcut sürüm kilidi ve audit transaction'ı içindedir.
+- Canlı incelemede Tuba Aydın'ın iki reddedilen kaydının soru, etiket, cevap ve
+  kaynak alanlarının boş olduğu, yayında olmadığı doğrulandı. İki işlem bu gerçek
+  kayıtlarda transaction içinde prova edilip geri alındı; kayıtların ikisi de
+  `reddedildi` olarak bırakıldı ve kararı kullanıcıya bırakıldı.
+- `npm.cmd run check` 182/182 başarılı. Runtime commit `8b3d5c2`; Supabase migration
+  `member_rejected_record_actions`; preview `dpl_58QqhXD6BGmzahs2dLJN5YRWmvZB`,
+  production `dpl_9wohh6kLCXttuntK1gWerwwxjegW`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı health/root/admin/versiyonlu JS geçti,
+  yetkisiz review API `401` ve son 15 dakika production error logu boş.
+
 ## 2026-09-23 Soru Formundan İsteğe Bağlı Bülten Rızası
 
 - Public `Soru Sor` formuna zorunlu olmayan `Yeni soru ve rehberlerden e-postayla

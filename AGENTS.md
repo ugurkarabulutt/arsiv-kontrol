@@ -490,6 +490,23 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-09-24
+- **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
+  bölümündeki kendi/atanmış kayıtlarında ekip üyesi artık `Düzenlemeye Al` veya
+  `Listeden Kaldır` seçebilir. İlk işlem aynı kaydı `geri_gonderildi` durumuna alıp
+  soru, etiket ve cevabın tamamlanmasına açar. İkinci işlem fiziksel silme yapmadan
+  kaydı `copte` durumuna taşır; yönetim, sürüm ve işlem geçmişi korunur. Başka
+  kullanıcının kaydında bu yetkiler verilmez; geçişler version lock ve transaction
+  audit akışını kullanır. Canlı Tuba Aydın incelemesinde iki eski sistem-temizlik
+  kaydının soru/etiket/cevap/kaynak alanlarının boş ve yayında olmadığı doğrulandı.
+  İki işlem bu gerçek kayıtlar üzerinde transaction içinde denenip rollback edildi;
+  iki kayıt da `reddedildi` kaldı. `npm.cmd run check` 182/182 başarılı. Runtime
+  commit `8b3d5c2`; Supabase migration `member_rejected_record_actions`; preview
+  `dpl_58QqhXD6BGmzahs2dLJN5YRWmvZB`, production
+  `dpl_9wohh6kLCXttuntK1gWerwwxjegW`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı health/root/admin/versiyonlu JS ve `401` yetki sınırı geçti; production
+  error logu boştu. Supabase danışmanında bu değişiklikten doğan yeni bulgu yok.
+
 ### 2026-09-23
 - **Soru formu bülten rızası eklendi:** Public `Soru Sor` formunda soru gönderiminden
   bağımsız, zorunlu olmayan ve varsayılan seçilmemiş bir bülten kutusu bulunur.
