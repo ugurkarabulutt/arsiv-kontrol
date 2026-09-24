@@ -3,6 +3,21 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-09-24
+
+- **Reddedilen ekip kayıtları zorunlu düzeltme akışına alındı:** Ekip üyesinin
+  kendi veya kendisine atanmış `reddedildi` kaydında yalnız `Düzenlemeye Al`
+  işlemi vardır. İşlem kaydı `geri_gonderildi` durumuna taşıyarak soru, etiket ve
+  cevabın düzenlenmesini ve yeniden onaya gönderilmesini sağlar. Önceki
+  `Listeden Kaldır` seçeneği arayüz, izin politikası ve veritabanı RPC'sinden
+  çıkarıldı; doğrudan API denemesi `INVALID_ACTION` ile reddedilir. Tuba Aydın'ın
+  iki boş reddedilen kaydı canlıda değiştirilmedi ve ikisi de `reddedildi`
+  durumunda kaldı. `npm.cmd run check` 182/182 başarılı. Runtime commit
+  `ab47773`; Supabase migration `remove_member_rejected_dismiss`; production
+  `dpl_5aietrV4CwyMZbyaB5Q3RzgbfEm5`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı health/root/admin/asset doğrulaması geçti, yetkisiz review API `401` ve
+  son 15 dakika production error logu boş.
+
 ## 2026-09-22
 
 - **Public arama ilk sonuç ve relevans iyileştirmesi:** `/arama` artık OpenAI

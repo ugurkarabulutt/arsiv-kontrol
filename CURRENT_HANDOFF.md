@@ -2,20 +2,20 @@
 
 ## 2026-09-24 Ekip Üyesi Reddedilen Kayıt İşlemleri
 
-- Ekip Üyesi alanındaki `Tamamlananlar > Reddedilenler` kayıtları artık yalnız
-  `Gör` ile kilitli kalmaz. Kaydın sahibi veya atanmış düzeltme sorumlusu
-  `Düzenlemeye Al` ile aynı kaydı `Düzenlenecekler` alanına taşıyabilir ya da
-  `Listeden Kaldır` ile aktif listesinden çıkarabilir.
-- `Listeden Kaldır` fiziksel silme yapmaz; kayıt `copte` durumunda yönetim ve
-  sürüm/işlem geçmişinde korunur. Başka kullanıcının kaydı için iki işlem de
-  verilmez. Tüm geçişler mevcut sürüm kilidi ve audit transaction'ı içindedir.
-- Canlı incelemede Tuba Aydın'ın iki reddedilen kaydının soru, etiket, cevap ve
-  kaynak alanlarının boş olduğu, yayında olmadığı doğrulandı. İki işlem bu gerçek
-  kayıtlarda transaction içinde prova edilip geri alındı; kayıtların ikisi de
-  `reddedildi` olarak bırakıldı ve kararı kullanıcıya bırakıldı.
-- `npm.cmd run check` 182/182 başarılı. Runtime commit `8b3d5c2`; Supabase migration
-  `member_rejected_record_actions`; preview `dpl_58QqhXD6BGmzahs2dLJN5YRWmvZB`,
-  production `dpl_9wohh6kLCXttuntK1gWerwwxjegW`, canlı alias
+- Ekip Üyesi alanındaki `Tamamlananlar > Reddedilenler` kayıtlarında yalnız
+  `Düzenlemeye Al` işlemi bulunur. Bu işlem aynı kaydı ve bütün işlem geçmişini
+  koruyarak `Düzenlenecekler` alanına taşır; ekip üyesi soru, etiket ve cevabı
+  tamamladıktan sonra kaydı yeniden onaya gönderir.
+- Kullanıcı kararıyla `Listeden Kaldır` hem arayüzden hem izin politikasından hem
+  de `review_history_change` veritabanı fonksiyonundan çıkarıldı. Eski işlem adı
+  API'ye doğrudan gönderilse bile `INVALID_ACTION` ile reddedilir; reddedilen kayıt
+  çöpe taşınamaz veya aktif iş akışından çıkarılamaz.
+- Tuba Aydın'ın iki reddedilen kaydı canlı veritabanında yeniden kontrol edildi.
+  Kaldırma denemesi reddedildi; `Düzenlemeye Al` transaction içinde prova edilip
+  geri alındı. Her iki kayıt da sürüm `0` ve `reddedildi` durumunda değişmeden durur.
+- `npm.cmd run check` 182/182 başarılı. Runtime commit `ab47773`; Supabase migration
+  `remove_member_rejected_dismiss`; preview `dpl_4nwMfN5qQ8khYTy5DJA7B3dP2sMj`,
+  production `dpl_5aietrV4CwyMZbyaB5Q3RzgbfEm5`, canlı alias
   `https://arsiv.ibrahimlive.ai`. Canlı health/root/admin/versiyonlu JS geçti,
   yetkisiz review API `401` ve son 15 dakika production error logu boş.
 
