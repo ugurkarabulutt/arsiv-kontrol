@@ -1567,6 +1567,96 @@ test('kiyamet kelimesi kiyâmet olarak standartlasir', () => {
   assert.equal(result.totalErrors, 1);
 });
 
+test('29 Eylul acik feedback kokleri yanlis pozitif olarak korunur', () => {
+  const source = [
+    'Fasıklar değillerdir; onlar fasıklardır.',
+    'Allah isminin tekrarı daha faziletlidir.',
+    'Evliya, radiye, levvame ve emmare kaynak sözlükte böyle geçer.',
+    'Kaynak: Riyadussalihin, Buhari-Muslim.',
+    'Bu ilim ayet açıklamasında böyle kalır.',
+    'Af dilemek başka, âfet başka.',
+    'Mürşidle yola çıkılır ve kıyâmeti bekler.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      'Fasıklar değillerdir; onlar fâsıktır.',
+      'Allah isminin tekrarı daha fazîletlidir.',
+      'Evliyâ, râdiye, levvâme ve emmâre kaynak sözlükte böyle geçer.',
+      'Kaynak: Riyâdussâlihîn, Buhârî-Müslim.',
+      'Bu ilmi ayet açıklamasında böyle kalır.',
+      'Âf dilemek başka, âfet başka.',
+      'Mürşid ile yola çıkılır ve kıyâmet bekler.'
+    ].join('\n'),
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'fasıklardır', fixed: 'fâsıktır', rule: 'Sözlük standardı' },
+          { original: 'faziletlidir', fixed: 'fazîletlidir', rule: 'Sözlük standardı' },
+          { original: 'Evliya', fixed: 'Evliyâ', rule: 'Sözlük standardı' },
+          { original: 'radiye', fixed: 'râdiye', rule: 'Sözlük standardı' },
+          { original: 'levvame', fixed: 'levvâme', rule: 'Sözlük standardı' },
+          { original: 'emmare', fixed: 'emmâre', rule: 'Sözlük standardı' },
+          { original: 'Riyadussalihin', fixed: 'Riyâdussâlihîn', rule: 'İmlâ standardı' },
+          { original: 'Buhari-Muslim', fixed: 'Buhârî-Müslim', rule: 'İmlâ standardı' },
+          { original: 'ilim', fixed: 'ilmi', rule: 'Sözlük standardı' },
+          { original: 'Af', fixed: 'Âf', rule: 'Sözlük standardı' },
+          { original: 'Mürşidle', fixed: 'Mürşid ile', rule: 'İmlâ standardı' },
+          { original: 'kıyâmeti', fixed: 'kıyâmet', rule: 'Sözlük standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
+
+test('29 Eylul acik feedback noktalama ve kaynak metinleri korunur', () => {
+  const source = [
+    'FÂTİHA – 1: Bismillâhir rahmânir rahîm.',
+    'Dünyadan rağbetini kes ki; Allah seni sevsin.',
+    'Şeytan insanların baş düşmanı.',
+    'İkincisinde kızı Fâtıma’ya.',
+    'Bu hüküm Allah’ın emrinden.',
+    'O dalâlettedir.',
+    'Metinde tuflihûn(tuflihûne). geçer.',
+    'Arapça ma’steta’tü, şeklindedir.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      'FÂTİHA – 1: Bismillâhirrahmânirrahîm.',
+      'Dünyadan rağbetini kes ki Allah seni sevsin.',
+      'Şeytan, insanların baş düşmanı.',
+      'İkincisinde kızı Fâtıma’ya',
+      'Bu hüküm Allah’ın emrinden',
+      'O dalâlettedir',
+      'Metinde tuflihûn (tuflihûne). geçer.',
+      'Arapça ma’steta’tü. şeklindedir.'
+    ].join('\n'),
+    categories: {
+      noktalama: {
+        issues: [
+          { original: 'FÂTİHA – 1: Bismillâhir rahmânir rahîm.', fixed: 'FÂTİHA – 1: Bismillâhirrahmânirrahîm.', rule: 'Başlık ve içerik uyumu' },
+          { original: 'kes ki; Allah', fixed: 'kes ki Allah', rule: 'Noktalama standardı' },
+          { original: 'Şeytan insanların', fixed: 'Şeytan, insanların', rule: 'Noktalama standardı' },
+          { original: 'Fâtıma’ya.', fixed: 'Fâtıma’ya', rule: 'Noktalama standardı' },
+          { original: 'Allah’ın emrinden.', fixed: 'Allah’ın emrinden', rule: 'Noktalama standardı' },
+          { original: 'dalâlettedir.', fixed: 'dalâlettedir', rule: 'Noktalama standardı' },
+          { original: 'tuflihûn(tuflihûne).', fixed: 'tuflihûn (tuflihûne).', rule: 'Noktalama standardı' },
+          { original: 'ma’steta’tü,', fixed: 'ma’steta’tü.', rule: 'Noktalama standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
+
 test('Mumtehine sure adi noktasiz i varyantina bozulmaz', () => {
   assert.equal(isProtectedChange('Mumtehine', 'Mumtehıne'), true);
 

@@ -504,9 +504,43 @@ function isFazlFamilyFalsePositive(original, fixed) {
   const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
   const exactFrom = canonicalText(original).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
   const exactTo = canonicalText(fixed).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
-  return (/^fazilet[\p{L}\p{N}_]*$/u.test(from) && /^fazl/u.test(to))
+  return (/^fazilet[\p{L}\p{N}_]*$/u.test(from) && (/^fazl/u.test(to) || /^fazilet/u.test(to) && hasCircumflex(fixed)))
     || (/^fazilla$/u.test(from) && /^fazl\s+ile$/u.test(to))
     || (/^fazıllar[\p{L}\p{N}_]*$/u.test(exactFrom) && !/^fazıllar[\p{L}\p{N}_]*$/u.test(exactTo));
+}
+
+function isLiveFeedbackLexicalFalsePositive(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+  const foldedFrom = asciiFold(original).replace(/\s+/g, ' ').trim();
+  const foldedTo = asciiFold(fixed).replace(/\s+/g, ' ').trim();
+
+  if (/^fasık[\p{L}\p{N}_]*$/u.test(from) && /^fâsık(?:tır)?$/u.test(to)) return true;
+  if (/^(?:evliya|radiye|levvame|emmare)[\p{L}\p{N}_]*$/u.test(foldedFrom) && hasCircumflex(fixed)) return true;
+  if (/^ri(y|j)adussalihin$/u.test(foldedFrom) && /^riyadussalihin$/u.test(foldedTo) && hasCircumflex(fixed)) return true;
+  if (/^buhari-muslim$/u.test(foldedFrom) && /^buhari-muslim$/u.test(foldedTo) && hasCircumflex(fixed)) return true;
+  if (/^ilim$/u.test(foldedFrom) && /^ilmi$/u.test(foldedTo)) return true;
+  if (/^af$/u.test(foldedFrom) && /^af$/u.test(foldedTo) && hasCircumflex(fixed)) return true;
+  if (/^kıyâmeti$/iu.test(from) && /^kıyâmet$/iu.test(to)) return true;
+  if (/^m[üu]rşidle$/iu.test(from) && /^m[üu]rşid\s+ile$/iu.test(to)) return true;
+  return false;
+}
+
+function isLiveFeedbackPunctuationFalsePositive(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  const foldedFrom = foldText(original).replace(/\s+/g, ' ').trim();
+  const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
+
+  if (/^fâtıma['’]ya\.$/iu.test(from) && /^fâtıma['’]ya$/iu.test(to)) return true;
+  if (/^allah['’]ın emrinden\.$/iu.test(from) && /^allah['’]ın emrinden$/iu.test(to)) return true;
+  if (/^dalâlettedir\.$/iu.test(from) && /^dalâlettedir$/iu.test(to)) return true;
+  if (/^kes ki;\s*allah$/iu.test(foldedFrom) && /^kes ki\s+allah$/iu.test(foldedTo)) return true;
+  if (/^şeytan insanların$/iu.test(from) && /^şeytan,\s*insanların$/iu.test(to)) return true;
+  if (/^tuflihûn\(tuflihûne\)\.$/iu.test(from) && /^tuflihûn\s+\(tuflihûne\)\.$/iu.test(to)) return true;
+  if (/^ma'steta'tü,$/iu.test(from) && /^ma'steta'tü\.$/iu.test(to)) return true;
+  if (/bismillâhir rahmânir rahîm\.$/iu.test(from) && /bismillâhirrahmânirrahîm\.$/iu.test(to)) return true;
+  return false;
 }
 
 function isAhlakiPossessiveRewrite(original, fixed) {
@@ -993,6 +1027,8 @@ function isProtectedChange(original, fixed) {
   if (isVarYaDeletion(original, fixed)) return true;
   if (isSimplePunctuationAddition(original, fixed)) return true;
   if (isFazlFamilyFalsePositive(original, fixed)) return true;
+  if (isLiveFeedbackLexicalFalsePositive(original, fixed)) return true;
+  if (isLiveFeedbackPunctuationFalsePositive(original, fixed)) return true;
   if (isAhlakiPossessiveRewrite(original, fixed)) return true;
   if (isArdardaSplit(original, fixed)) return true;
   if (isAcizCircumflexInsertion(original, fixed)) return true;
