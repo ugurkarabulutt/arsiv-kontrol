@@ -685,7 +685,7 @@ function sourceProtectsArabicDinLine(sourceText, original, fixed) {
   if (!/^dîn[\p{L}\p{N}_]*$/iu.test(from) || !/^din[\p{L}\p{N}_]*$/iu.test(to)) return false;
   const window = asciiFold(sourceWindow(sourceText, original));
   return /\d+\s*\/\s*[\p{L}' ]+\s*-\s*\d+/u.test(window)
-    || /\b(?:tebia|dinekum|dinikum|siratin|siratekel|mustekim|mustekimin|agveyteni|akudenne)\b/u.test(window);
+    || /\b(?:tebia|yevmid|dinekum|dinikum|siratin|siratekel|mustekim|mustekimin|agveyteni|akudenne)\b/u.test(window);
 }
 
 function sourceProtectsBibliographyLine(sourceText, original, fixed) {

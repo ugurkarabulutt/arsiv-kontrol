@@ -1657,6 +1657,32 @@ test('29 Eylul acik feedback noktalama ve kaynak metinleri korunur', () => {
   assert.equal(result.score, 100);
 });
 
+test('Fatiha Arapca okuyusundaki yevmid din yalniz transliterasyonda korunur', () => {
+  const source = [
+    'FÂTİHA – 4: Mâliki yevmid dîn (dîne).',
+    'Din gününün mâlikidir.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      'FÂTİHA – 4: Mâliki yevmid din (dine).',
+      'Din gününün mâlikidir.'
+    ].join('\n'),
+    categories: {
+      imla: {
+        issues: [
+          { original: 'dîn', fixed: 'din', rule: 'Kesin arşiv standardı' },
+          { original: 'dîne', fixed: 'dine', rule: 'Ayet Arapçası' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
+
 test('Mumtehine sure adi noktasiz i varyantina bozulmaz', () => {
   assert.equal(isProtectedChange('Mumtehine', 'Mumtehıne'), true);
 
