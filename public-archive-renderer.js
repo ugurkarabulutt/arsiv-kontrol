@@ -17,7 +17,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20260922-search-relevance-v3';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261001-pagespeed-v1';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -520,7 +520,7 @@ function header(active) {
     <header class="pa-header">
       <div class="pa-install-banner" data-install-banner hidden>
         <div class="pa-install-main">
-          <img class="pa-install-icon" src="${publicArchiveAssetHref('app-icon-maskable-512.png')}" alt="" aria-hidden="true" width="512" height="512" decoding="async">
+          <img class="pa-install-icon" src="${publicArchiveAssetHref('app-icon-192.png')}" alt="" aria-hidden="true" width="192" height="192" decoding="async">
           <span class="pa-install-copy">
             <strong data-install-title>Telefona ekleyin</strong>
             <small data-install-subtitle>Arşive tek dokunuşla ulaşın.</small>
@@ -682,11 +682,13 @@ function searchBox(value = '', label = 'Arşivde ara', options = {}) {
   `;
 }
 
-function stillLife() {
+function stillLife(options = {}) {
+  const priority = options.priority === true;
   return `
     <div class="pa-still-life" aria-hidden="true">
       <picture class="pa-hero-asset pa-hero-asset-book">
-        <img src="${publicArchiveAssetHref('hero-open-book-warm.jpg')}" alt="" width="1280" height="1024" loading="eager" fetchpriority="high" decoding="async">
+        <source type="image/webp" srcset="${publicArchiveAssetHref('hero-open-book-warm-480.webp')} 480w, ${publicArchiveAssetHref('hero-open-book-warm-720.webp')} 720w, ${publicArchiveAssetHref('hero-open-book-warm-1280.webp')} 1280w" sizes="${priority ? '(max-width: 899px) calc(100vw - 36px), 1184px' : '(max-width: 899px) calc(100vw - 36px), 520px'}">
+        <img src="${publicArchiveAssetHref('hero-open-book-warm.jpg')}" alt="" width="1280" height="1024" loading="${priority ? 'eager' : 'lazy'}" fetchpriority="${priority ? 'high' : 'low'}" decoding="${priority ? 'sync' : 'async'}">
       </picture>
     </div>
   `;
@@ -2047,7 +2049,7 @@ function renderHome() {
             ${searchBox('', 'Arşivde ara', { homeHero: true })}
             ${heroConceptLane()}
           </div>
-          ${stillLife()}
+          ${stillLife({ priority: true })}
         </section>
 
         ${archiveShortcutBand()}
@@ -3013,6 +3015,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   ];
   const liveSearchSeedJson = inlineJson(publicArchiveLiveSearchSeed(searchSeedEntries, searchSeedCategories, { includeHeroConcepts: includeHeroSearchSeed }));
   const themeBootScript = `(function(){try{var saved=localStorage.getItem('dsca-theme');var theme=saved==='dark'||saved==='light'?saved:'dark';var root=document.documentElement;var bg=theme==='dark'?'#0D1412':'#F7F3EA';root.setAttribute('data-theme',theme);root.style.backgroundColor=bg;root.style.colorScheme=theme;var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',bg);}catch(error){document.documentElement.style.backgroundColor='#0D1412';}})();`;
+  const installBannerBootScript = `(function(){try{var root=document.documentElement;var ua=navigator.userAgent||'';var isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);var isAndroidChrome=/android/i.test(ua)&&/chrome/i.test(ua)&&ua.indexOf('; wv)')===-1;var isStandalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;var path=(location.pathname||'/').replace(/\\/+$/,'')||'/';var home=${inlineJson(publicArchiveHomeHref())}.replace(/\\/+$/,'')||'/';var dismissedAt=Number(localStorage.getItem('dsca-install-banner-dismissed-at')||0);var recentlyDismissed=dismissedAt&&Date.now()-dismissedAt<2592000000;var installed=localStorage.getItem('dsca-install-banner-installed')==='true';if(path===home&&!isStandalone&&!recentlyDismissed&&!installed&&(isIOS||isAndroidChrome))root.setAttribute('data-pa-install-reserved','true');}catch(error){}})();`;
   return {
     status,
     html: `<!doctype html>
@@ -3056,6 +3059,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="twitter:image:alt" content="${escapeHtml(publicAppName)}">
   <meta name="theme-color" content="#0D1412">
   <script data-pa-theme-boot>${themeBootScript}</script>
+  <script data-pa-install-boot>${installBannerBootScript}</script>
   <title>${escapeHtml(safeTitle)}</title>
   ${structuredItems.map(jsonLdScript).join('\n  ')}
   <link rel="icon" type="image/png" sizes="16x16" href="${publicArchiveAssetHref('favicon-16.png')}">
@@ -3063,9 +3067,6 @@ function renderShell({ title, description, active, content, status = 200, questi
   <link rel="icon" type="image/png" sizes="48x48" href="${publicArchiveAssetHref('favicon-48.png')}">
   <link rel="apple-touch-icon" sizes="180x180" href="${publicArchiveAssetHref('apple-touch-icon.png')}">
   <link rel="manifest" href="${publicArchiveAssetHref('site.webmanifest')}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${CSS_PATH}">
   <script>
     (function(){
@@ -3429,11 +3430,20 @@ function renderShell({ title, description, active, content, status = 200, questi
             }
             if (event.target && event.target.closest && event.target.closest('a')) pauseBriefly();
           }, true);
-          measure();
-          window.addEventListener('resize', measure, { passive: true });
-          window.addEventListener('load', measure, { once: true });
-          measureTimer = window.setTimeout(measure, 250);
-          rafId = window.requestAnimationFrame(loop);
+          function startMotion() {
+            if (!running) return;
+            measure();
+            if (!rafId) rafId = window.requestAnimationFrame(loop);
+          }
+          function scheduleMeasure() {
+            window.clearTimeout(measureTimer);
+            measureTimer = window.setTimeout(function(){
+              window.requestAnimationFrame(startMotion);
+            }, 180);
+          }
+          window.addEventListener('resize', scheduleMeasure, { passive: true });
+          window.addEventListener('load', scheduleMeasure, { once: true });
+          if (document.readyState === 'complete') scheduleMeasure();
           var pageHideHandler = function(){ if (rafId) window.cancelAnimationFrame(rafId); };
           window.addEventListener('pagehide', pageHideHandler, { once: true });
           addPageCleanup(function(){
@@ -3441,8 +3451,8 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.clearTimeout(resumeTimer);
             window.clearTimeout(measureTimer);
             if (rafId) window.cancelAnimationFrame(rafId);
-            window.removeEventListener('resize', measure);
-            window.removeEventListener('load', measure);
+            window.removeEventListener('resize', scheduleMeasure);
+            window.removeEventListener('load', scheduleMeasure);
             window.removeEventListener('pagehide', pageHideHandler);
           });
         });
@@ -3982,7 +3992,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', update, { passive: true });
         button.addEventListener('click', onClick);
-        update();
+        window.requestAnimationFrame(update);
         addPageCleanup(function(){
           window.removeEventListener('scroll', onScroll);
           window.removeEventListener('resize', update);
@@ -4436,6 +4446,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           banner.hidden = true;
           if (iosHelp) iosHelp.hidden = true;
           root.removeAttribute('data-pa-install-visible');
+          root.removeAttribute('data-pa-install-reserved');
           root.removeAttribute('data-pa-install-expanded');
           if (persist) storageSet(dismissKey, String(Date.now()));
         }
@@ -4458,6 +4469,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         function refresh() {
           if (isIOS) show('ios');
           else if (window.__paInstallOffer) show('native');
+          else if (root.getAttribute('data-pa-install-reserved') === 'true' && isHomeRoute() && !isStandalone && !recentlyDismissed()) banner.hidden = true;
           else hide(false);
         }
         window.__paInstallBannerRefresh = refresh;
@@ -4628,7 +4640,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         var ttl = 2 * 60 * 1000;
         var navigationFallbackMs = 900;
         var maxCachedHtmlLength = 240000;
-        var cachePrefix = 'dsca-page-cache:v21:';
+        var cachePrefix = 'dsca-page-cache:v22:';
         var inflight = {};
         function cleanPath(pathname) {
           return String(pathname || '/').replace(/\\/+$/, '') || '/';
@@ -4993,7 +5005,14 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (event.target.closest('a, button, input, select, textarea')) return null;
           return event.target.closest('[data-card-href]');
         }
+        function canWarmAutomatically() {
+          var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+          if (!connection) return true;
+          if (connection.saveData) return false;
+          return !/(^|-)2g$/i.test(String(connection.effectiveType || ''));
+        }
         var warm = function(){
+          if (!canWarmAutomatically() || document.visibilityState !== 'visible') return;
           var seen = {};
           var candidates = [];
           function addCandidate(href) {
@@ -5017,10 +5036,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           addSelector('[data-prefetch-priority]');
           addSelector('.pa-archive-shortcut, .pa-reading-card');
-          addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]');
           addSelector('.pa-mobile-nav a[href]');
-          addSelector('.pa-page a[href], .pa-mobile-nav a[href]');
-          candidates.slice(0, 22).forEach(prefetchHref);
+          candidates.slice(0, 4).forEach(prefetchHref);
         };
         function observePrefetchCandidates() {
           if (!('IntersectionObserver' in window)) return;
@@ -5032,7 +5049,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               else prefetchCard(element);
               observer.unobserve(element);
             });
-          }, { rootMargin: '1200px 0px 1200px 0px', threshold: 0.01 });
+          }, { rootMargin: '80px 0px 80px 0px', threshold: 0.01 });
           Array.prototype.slice.call(document.querySelectorAll('[data-prefetch-priority], .pa-archive-shortcut, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
             .forEach(function(element){ observer.observe(element); });
         }
@@ -5078,10 +5095,23 @@ function renderShell({ title, description, active, content, status = 200, questi
             });
           });
         }
-        window.setTimeout(warm, 180);
-        observePrefetchCandidates();
-        if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 700 });
-        else window.setTimeout(warm, 700);
+        var warmTimer = 0;
+        var warmIdleId = 0;
+        function scheduleWarm() {
+          if (!canWarmAutomatically()) return;
+          warmTimer = window.setTimeout(function(){
+            observePrefetchCandidates();
+            if ('requestIdleCallback' in window) warmIdleId = window.requestIdleCallback(warm, { timeout: 1800 });
+            else warm();
+          }, 1200);
+        }
+        if (document.readyState === 'complete') scheduleWarm();
+        else window.addEventListener('load', scheduleWarm, { once: true });
+        addPageCleanup(function(){
+          window.clearTimeout(warmTimer);
+          if (warmIdleId && 'cancelIdleCallback' in window) window.cancelIdleCallback(warmIdleId);
+          window.removeEventListener('load', scheduleWarm);
+        });
       }
       function bindSemanticSearchEnhancement() {
         var section = document.querySelector('[data-pa-search-results][data-pa-semantic-url]');

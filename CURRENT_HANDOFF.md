@@ -1,5 +1,21 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-01 Public Arşiv PageSpeed İyileştirmesi
+
+- Canlı başlangıç Lighthouse 13 mobil ölçümü: skor `65`, FCP `3,74 sn`,
+  LCP `7,02 sn`, Speed Index `5,63 sn`, TBT `33 ms`, CLS `0,004`, 41 istek ve
+  `1,29 MB` transfer. Ana nedenler Google Fonts render engeli, ilk açılışta çok
+  sayıda tam sayfa prefetch'i, JPEG hero ve senkron layout ölçümleriydi.
+- Google Fonts kaldırılıp fontlar yerelleştirildi; responsive WebP hero varyantları,
+  sınırlı/gecikmeli prefetch, küçük install ikonu, lazy ikinci hero ve gecikmeli
+  layout ölçümü eklendi. Mobil sonuç: skor `91`, FCP `2,26 sn`, LCP `3,01 sn`,
+  Speed Index `2,71 sn`, TBT `0`, CLS `0,058`, 19 istek, `0,368 MB` transfer.
+  Masaüstü sonuç: skor `99`, FCP `0,54 sn`, LCP `0,66 sn`, TBT `0`.
+- 390 px ve 1440 px Playwright görsel kontrollerinde yatay taşma yok; doğru WebP
+  varyantı, yerel fontlar ve install banner alan rezervasyonu doğrulandı.
+  `npm.cmd run check` 188/188 başarılı; `git diff --check` whitespace hatası vermedi.
+- Runtime commit/push, preview ve production deployment henüz yapılmadı.
+
 ## 2026-09-24 Public Soru 6 Başlık Düzeltmesi
 
 - Canlı public soru

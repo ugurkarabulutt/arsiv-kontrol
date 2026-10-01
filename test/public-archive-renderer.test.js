@@ -74,7 +74,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20260922-search-relevance-v3"/);
+  assert.match(home, /href="\/public-archive\.css\?v=20261001-pagespeed-v1"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -98,8 +98,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20260922-search-relevance-v3"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20260922-search-relevance-v3"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261001-pagespeed-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261001-pagespeed-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -116,7 +116,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /<h1>Dini Sorular ve Cevaplar Arşivi<\/h1>/);
   assert.match(home, /"image":"https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /bindFastPublicNavigation/);
-  assert.match(home, /dsca-page-cache:v21/);
+  assert.match(home, /dsca-page-cache:v22/);
   assert.match(home, /immediateSearch: true/);
   assert.match(home, /showImmediateSearchShell/);
   assert.match(home, /pushState\(\{ paFast: true, paPending: true \}/);
@@ -142,9 +142,21 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /prefetchCard/);
   assert.match(home, /observePrefetchCandidates/);
   assert.match(home, /IntersectionObserver/);
+  assert.match(home, /canWarmAutomatically/);
+  assert.match(home, /candidates\.slice\(0, 4\)/);
+  assert.match(home, /rootMargin: '80px 0px 80px 0px'/);
+  assert.match(home, /window\.addEventListener\('load', scheduleWarm/);
   assert.match(home, /openPublicArchiveHref/);
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
-  assert.match(home, /addSelector\('\.pa-page a\[href\], \.pa-mobile-nav a\[href\]'\)/);
+  assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
+  assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
+  assert.match(home, /app-icon-192\.png\?v=20261001-pagespeed-v1/);
+  assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
+  assert.match(home, /loading="eager" fetchpriority="high"/);
+  assert.match(home, /loading="lazy" fetchpriority="low"/);
+  assert.match(home, /hero-open-book-warm-480\.webp[^>]+480w/);
+  assert.match(home, /hero-open-book-warm-720\.webp[^>]+720w/);
+  assert.match(home, /hero-open-book-warm-1280\.webp[^>]+1280w/);
   assert.match(home, /var fallbackTimer = window\.setTimeout\(function\(\)\{/);
   assert.match(home, /X-Public-Navigation/);
   assert.match(home, /data-pa-navigating/);

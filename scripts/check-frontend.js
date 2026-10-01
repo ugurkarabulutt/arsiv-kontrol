@@ -1379,7 +1379,7 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20260922-search-relevance-v3'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('/public-preview/public-archive.css?v=20261001-pagespeed-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1389,7 +1389,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20260922-search-relevance-v3"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20261001-pagespeed-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1424,16 +1424,27 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20260922-search-relevance-v3', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261001-pagespeed-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
+}
+assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
+for (const fileName of ['inter-latin-ext.woff2', 'inter-latin.woff2', 'playfair-display-latin-ext.woff2', 'playfair-display-latin.woff2', 'OFL-Inter.txt', 'OFL-Playfair-Display.txt']) {
+  assert(fs.existsSync(path.join(publicAssetRoot, 'assets', 'fonts', fileName)), `Yerel public font dosyasi eksik: ${fileName}`);
+}
+for (const marker of ['assets/fonts/inter-latin-ext.woff2', 'assets/fonts/inter-latin.woff2', 'assets/fonts/playfair-display-latin-ext.woff2', 'assets/fonts/playfair-display-latin.woff2', 'font-display: swap']) {
+  assert(publicCss.includes(marker), `Yerel public font CSS markeri eksik: ${marker}`);
 }
 assert(publicRendererSource.includes('width=\\"1em\\" height=\\"1em\\"'), 'Public SVG ikonlari CSS cache gecikmesinde devlesmemek icin dogal 1em boyut tasimali.');
 assert(publicCss.includes('.pa-search-direct-card svg.pa-search-direct-icon') && publicCss.includes('max-width: 18px;') && publicCss.includes('max-height: 18px;'), 'Public arama dogrudan kategori karti oku 18px ile sinirlanmali.');
 const sideQuestionTitleRule = publicCss.match(/\.pa-side-question-title\s*\{[\s\S]*?\}/);
 assert(sideQuestionTitleRule && sideQuestionTitleRule[0].includes('display: block;'), 'Detay yan soru basliklari tam gorunmeli.');
 assert(sideQuestionTitleRule && !sideQuestionTitleRule[0].includes('-webkit-line-clamp'), 'Detay yan soru basliklari uc satirda kesilmemeli.');
-for (const marker of ['hero-open-book-warm.jpg', 'width="1280" height="1024"', 'fetchpriority="high"']) {
+for (const marker of ['hero-open-book-warm.jpg', 'hero-open-book-warm-480.webp', 'hero-open-book-warm-720.webp', 'hero-open-book-warm-1280.webp', 'width="1280" height="1024"', 'loading="eager" fetchpriority="high"', 'loading="lazy" fetchpriority="low"']) {
   assert(homePreview.includes(marker), `Public hero LCP/CLS marker eksik: ${marker}`);
+}
+for (const fileName of ['hero-open-book-warm-480.webp', 'hero-open-book-warm-720.webp', 'hero-open-book-warm-1280.webp']) {
+  const stat = fs.statSync(path.join(publicAssetRoot, 'assets', fileName));
+  assert(stat.size > 0 && stat.size < 50000, `Public hero WebP boyutu beklenen sinirda olmali: ${fileName}`);
 }
 for (const [fileName, expectedSize] of [
   ['favicon-16.png', '16x16'],
@@ -1461,6 +1472,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-192.png?v=20261001-pagespeed-v1"'), 'Public install banner gereksiz buyuk maskable ikon yerine 192px ikon kullanmali.');
 for (const marker of ['pa-ios-share-icon', "iconSvg('share-ios'", 'navigator.maxTouchPoints', "navigator.platform === 'MacIntel'"]) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public iOS paylasim ikonu marker eksik: ${marker}`);
 }
@@ -1549,7 +1561,7 @@ for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-v
 for (const marker of ['bindLiveSearchControls', 'data-live-search-url', 'pa-live-search-panel', 'AbortController', '/api/public-search', 'renderInstantResults', 'localResults', 'data-live-search-hint', 'submitLiveSearch', 'clientSearchTokenForms', 'window.__publicArchiveNavigateTo', 'data-home-hero-search', 'focus({ preventScroll: true })', 'data-pa-search-keyboard', 'focusGuardUntil', "window.visualViewport.addEventListener('scroll', onViewportChange", "root.getAttribute('data-pa-search-keyboard') === 'true'"]) {
   assert(publicRendererSource.includes(marker) || server.includes(marker) || publicCss.includes(marker), `Public canli arama marker eksik: ${marker}`);
 }
-for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v21', 'maxCachedHtmlLength', 'prefetchCard', 'observePrefetchCandidates', 'IntersectionObserver', "rootMargin: '1200px 0px 1200px 0px'", "addSelector('.pa-question-card[data-card-href], .pa-evidence-card[data-card-href]')", "addSelector('.pa-page a[href], .pa-mobile-nav a[href]')", '.slice(0, 22)', 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, navigationFallbackMs);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;', 'showImmediateSearchShell', 'immediateSearch: true', 'paPending: true', 'Sonuçlar hazırlanıyor']) {
+for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v22', 'maxCachedHtmlLength', 'prefetchCard', 'observePrefetchCandidates', 'IntersectionObserver', "rootMargin: '80px 0px 80px 0px'", 'canWarmAutomatically', 'candidates.slice(0, 4)', "window.addEventListener('load', scheduleWarm", 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, navigationFallbackMs);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;', 'showImmediateSearchShell', 'immediateSearch: true', 'paPending: true', 'Sonuçlar hazırlanıyor']) {
   assert(publicRendererSource.includes(marker), `Public ana sayfa ilk tik hiz marker eksik: ${marker}`);
 }
 for (const marker of ['PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS', 'publicArchiveSearchIntentTokens', 'publicArchiveRowIntentRank', 'publicArchiveSearchIndexCache', 'publicArchiveLiveSearchIndexCache', 'loadPublicArchiveSearchIndexRows', 'loadPublicArchiveLiveSearchIndexRows', 'publicArchiveSearchRowWithCategoryText']) {
@@ -1567,7 +1579,7 @@ for (const marker of ['PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT', 'loadPublicArchive
 for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
 }
-for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v21', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
+for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v22', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');

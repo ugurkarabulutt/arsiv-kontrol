@@ -3,6 +3,23 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-01
+
+- **Public arşiv PageSpeed iyileştirmesi:** Mobil Lighthouse 13 başlangıç ölçümünde
+  performans skoru `65`, FCP `3,74 sn`, LCP `7,02 sn`, istek sayısı `41` ve transfer
+  `1,29 MB` idi. Google Fonts render engeli kaldırılıp Inter ve Playfair Display
+  dosyaları yerelleştirildi; hero görseli 480/720/1280 px WebP `srcset` ile sunuldu;
+  ikinci hero görseli lazy/low priority yapıldı; ilk açılışta 22 sayfayı indiren
+  prefetch en fazla 4 temel rotaya, load/idle sonrasına ve bağlantı koşullarına
+  bağlandı. Install banner daha küçük ikon kullanıyor ve ilk boyamada alanı rezerve
+  ediyor. İlk karedeki senkron slider/scroll ölçümleri animation frame sonrasına
+  taşındı. Aynı mobil profilde sonuç `91`, FCP `2,26 sn`, LCP `3,01 sn`, istek `19`,
+  transfer `0,368 MB`; masaüstü skor `99`, FCP `0,54 sn`, LCP `0,66 sn` oldu.
+  390 px ve 1440 px Playwright kontrollerinde yatay taşma görülmedi; responsive
+  görseller ve yerel fontlar doğrulandı. `npm.cmd run check` 188/188 başarılı.
+  Runtime commit/deploy ve canlı doğrulama bilgileri `CURRENT_HANDOFF.md` içinde
+  yayın işlemi tamamlandığında güncellenecek.
+
 ## 2026-09-24
 
 - **Public `Soru 6:` öneki kaldırıldı:** Canlı public soru
