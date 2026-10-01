@@ -16053,35 +16053,7 @@ async function publicArchiveSitemapHandler(req, res) {
   }
 }
 
-async function publicArchiveLlmsHandler(req, res) {
-  let total = 0;
-  let indexableCategories = [];
-  let recentRows = [];
-  try {
-    await startupReady;
-    const contentReady = await ensurePublicArchiveContentReady();
-    const [totalResult, categoryRows, recentResult] = contentReady
-      ? await Promise.all([
-          supabase.from('public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published'),
-          loadPublicArchiveCategoryIndexRows(),
-          supabase
-            .from('public_qa')
-            .select('slug,title,updated_at,published_at')
-            .eq('status', 'published')
-            .order('updated_at', { ascending: false })
-            .limit(12)
-        ])
-      : [{ count: 0 }, [], { data: [] }];
-    total = Number(totalResult.count || 0);
-    indexableCategories = (categoryRows || [])
-      .filter(row => publicArchiveCategorySeoIndexable(row.slug, row.question_count))
-      .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
-      .slice(0, 14);
-    recentRows = Array.isArray(recentResult.data) ? recentResult.data.filter(row => row?.slug) : [];
-  } catch (error) {
-    console.warn('llms.txt dinamik dizini alınamadı; temel belge sunuluyor:', error?.message || error);
-  }
-
+function publicArchiveLlmsHandler(req, res) {
   const topicArticles = publicArchiveTopicArticleEntries();
   const llmsText = value => publicArchiveText(value, 1000)
     .replace(/<[^>]*>/g, ' ')
@@ -16102,7 +16074,6 @@ async function publicArchiveLlmsHandler(req, res) {
     'Arama, hesap, soru gönderme, gizlilik ve kullanım koşulları sayfaları kullanıcı akışıdır; kaynak olarak alıntılanmamalıdır.',
     'QAPage kullanılmaz; sayfalar kullanıcı cevaplarının yarıştığı bir forum değil, yayımlanmış tekil cevap arşividir.',
     '',
-    ...(total > 0 ? [`Yayınlanan soru-cevap sayısı: ${total}`, ''] : []),
     '## Temel Sayfalar',
     '',
     llmsLink('Ana sayfa', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`, 'Arşivin ana giriş ve keşif sayfası.'),
@@ -16116,18 +16087,6 @@ async function publicArchiveLlmsHandler(req, res) {
       '## Konu Rehberleri',
       '',
       ...topicArticles.map(article => llmsLink(article.title, `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`, article.description || article.summary || 'Konu rehberi.')),
-      ''
-    ] : []),
-    ...(indexableCategories.length ? [
-      '## Kategoriler',
-      '',
-      ...indexableCategories.map(row => llmsLink(row.name, `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategori/${row.slug}`, `${Number(row.question_count || 0)} ilgili soru ve cevap.`)),
-      ''
-    ] : []),
-    ...(recentRows.length ? [
-      '## Son Güncellenen Soru-Cevaplar',
-      '',
-      ...recentRows.map(row => llmsLink(row.title || row.slug, `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/soru/${row.slug}`, 'Yayımlanmış tekil soru ve cevap kaydı.')),
       ''
     ] : []),
     '## Optional',

@@ -1719,12 +1719,13 @@ for (const marker of ['PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5', 'PUBLIC_CATEGOR
 for (const marker of ['categorySeoDescription', 'categoryEvidencePanel', 'categoryIndexStructuredData', 'PUBLIC_ARCHIVE_CORE_TOPIC_NAMES']) {
   assert(publicRendererSource.includes(marker), `Public kategori/SEO zenginlestirme marker eksik: ${marker}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicArchiveCategorySeoIndexable', 'publicArchiveTopicArticleEntries', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', "'> Dini Sorular ve Cevaplar Arşivi", "'## Temel Sayfalar'", "'## Konu Rehberleri'", "'## Kategoriler'", "'## Son Güncellenen Soru-Cevaplar'", "'## Optional'", 'llmsLink']) {
+for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicArchiveCategorySeoIndexable', 'publicArchiveTopicArticleEntries', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', "'> Dini Sorular ve Cevaplar Arşivi", "'## Temel Sayfalar'", "'## Konu Rehberleri'", "'## Optional'", 'llmsLink']) {
   assert(server.includes(marker), `Public sitemap kategori SEO kural marker eksik: ${marker}`);
 }
-for (const marker of ['llms.txt dinamik dizini alınamadı; temel belge sunuluyor', 'publicArchiveAiCatalogNotFoundHandler', "app.get('/.well-known/ai-catalog.json'", "res.status(404).type('application/json; charset=utf-8')"]) {
+for (const marker of ['function publicArchiveLlmsHandler', 'publicArchiveAiCatalogNotFoundHandler', "app.get('/.well-known/ai-catalog.json'", "res.status(404).type('application/json; charset=utf-8')"]) {
   assert(server.includes(marker), `Public ajan tarama dayaniklilik marker eksik: ${marker}`);
 }
+assert(!server.includes('async function publicArchiveLlmsHandler'), 'Public llms.txt veri tabani veya soguk baslangic beklememeli.');
 for (const marker of ['const requestedSlugs = [...new Set((slugs || [])', ".in('slug', requestedSlugs)", 'requestedSlugs.filter(slug => knownSlugs.has(slug))']) {
   assert(server.includes(marker), `Public okunma sayaci toplu sorgu marker eksik: ${marker}`);
 }
