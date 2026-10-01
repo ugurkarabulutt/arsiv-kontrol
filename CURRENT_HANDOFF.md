@@ -23,6 +23,21 @@
   kontrolleri geçti. Canlı Lighthouse 13 mobil sonucu: skor `99`, FCP `1,37 sn`,
   LCP `1,86 sn`, Speed Index `1,83 sn`, TBT `75 ms`, CLS `0,013`, 19 istek ve
   yaklaşık `555 KiB`; render-blocking ve forced reflow tasarrufları `0 ms`.
+- Son PageSpeed/ajan denetimi turunda inline küçültülmüş CSS, 80 px WebP logo,
+  128 px WebP install ikonu, geçerli ARIA/combobox semantiği, DB'siz statik
+  `llms.txt`, açık `ai-catalog.json` 404 davranışı, toplu stats slug doğrulaması,
+  ilk açılışta question-stats/prefetch kaldırma ve rAF tabanlı scroll güncellemesi
+  eklendi. Font gecikmesinde hero açıklaması 96 px'ten 120 px'e büyüyüp arama
+  alanını 24 px kaydırıyordu; mobil yükseklik rezervasyonuyla önce/sonra arama
+  kutusu `top=354,09`, `height=60` olarak sabit kaldı. Runtime commitleri
+  `b4d3cf2`, `1055f53`, `e3e14ad`, `9ca02e3`, `8760184`; final production
+  `dpl_8S8DQuCJgsn2e1PCW6F1FE87ByGU` READY ve canlı aliasa bağlı. Son canlı
+  Lighthouse 13 mobil: performans `95`, erişilebilirlik `100`, en iyi uygulamalar
+  `100`, SEO `100`, ajan taraması `100`; FCP `2,2 sn`, LCP `2,5 sn`, Speed Index
+  `2,8 sn`, TBT `0 ms`, CLS `0,024`. Render-blocking, forced-reflow,
+  image-delivery, ARIA ve llms denetimleri geçti. 390 px Playwright kontrolünde
+  taşma/konsol hatası/otomatik prefetch/question-stats isteği yok; production
+  error logu boş ve `npm.cmd run check` 188/188 başarılı.
 
 ## 2026-09-24 Public Soru 6 Başlık Düzeltmesi
 

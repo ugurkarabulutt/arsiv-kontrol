@@ -5,6 +5,27 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-01
 
+- **PageSpeed erişilebilirlik ve ajan taraması tamamlandı:** İkinci denetim turunda
+  public CSS ilk HTML'e küçültülmüş olarak gömüldü; 49 KiB PNG logo ve install
+  ikonu kullanım boyutuna uygun WebP dosyalarına taşındı. Geçersiz kart `link`
+  rolleri ve çakışan logo erişilebilir adları kaldırıldı, arama alanı gerçek
+  `combobox` semantiğine geçirildi. `llms.txt` llmstxt.org yapısında, DB'den
+  bağımsız ve hızlı servis edilir; desteklenmeyen `ai-catalog.json` SPA HTML'i
+  yerine açıkça `404` döner. İlk açılıştaki otomatik sayfa prefetch'i ve ikinci
+  soru-istatistik isteği kaldırıldı; stats slug doğrulaması tek toplu sorguya
+  indirildi, scroll/layout okumaları animation frame ile sınırlandı. Mobil hero
+  açıklamasına gerçek font yüksekliği baştan ayrılarak arama kutusunun font
+  yüklenirken 24 px kayması giderildi. Runtime commitleri `b4d3cf2`, `1055f53`,
+  `e3e14ad`, `9ca02e3`, `8760184`; final production
+  `dpl_8S8DQuCJgsn2e1PCW6F1FE87ByGU`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı Lighthouse 13 mobil: performans `95`,
+  erişilebilirlik `100`, en iyi uygulamalar `100`, SEO `100`, ajan taraması
+  `100`; FCP `2,2 sn`, LCP `2,5 sn`, Speed Index `2,8 sn`, TBT `0 ms`, CLS
+  `0,024`. Render engelleme, forced reflow, image delivery, ARIA ve `llms.txt`
+  denetimleri geçti. Playwright 390 px kontrolde taşma, konsol hatası, otomatik
+  prefetch ve başlangıç question-stats isteği yok; `npm.cmd run check` 188/188
+  başarılı ve son production error logu boş.
+
 - **Public arşiv PageSpeed iyileştirmesi:** Mobil Lighthouse 13 başlangıç ölçümünde
   performans skoru `65`, FCP `3,74 sn`, LCP `7,02 sn`, istek sayısı `41` ve transfer
   `1,29 MB` idi. Google Fonts render engeli kaldırılıp Inter ve Playfair Display
