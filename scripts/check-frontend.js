@@ -1724,6 +1724,9 @@ for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIA
 for (const marker of ['llms.txt dinamik dizini alınamadı; temel belge sunuluyor', 'publicArchiveAiCatalogNotFoundHandler', "app.get('/.well-known/ai-catalog.json'", "res.status(404).type('application/json; charset=utf-8')"]) {
   assert(server.includes(marker), `Public ajan tarama dayaniklilik marker eksik: ${marker}`);
 }
+for (const marker of ['const requestedSlugs = [...new Set((slugs || [])', ".in('slug', requestedSlugs)", 'requestedSlugs.filter(slug => knownSlugs.has(slug))']) {
+  assert(server.includes(marker), `Public okunma sayaci toplu sorgu marker eksik: ${marker}`);
+}
 for (const forbidden of ["publicArchiveSitemapEntry('/arama'", "publicArchiveSitemapEntry('/soru-sor'", "publicArchiveSitemapEntry('/gizlilik'", "publicArchiveSitemapEntry('/kullanim-kosullari'"]) {
   assert(!server.includes(forbidden), `SEO disi yardimci sayfa sitemap icinde kalmamali: ${forbidden}`);
 }

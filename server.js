@@ -7645,12 +7645,27 @@ function publicQuestionStatsUnavailable() {
 }
 
 async function loadPublicQuestionStats(slugs = []) {
-  const validatedSlugs = [];
-  for (const slug of slugs) {
-    const valid = await validPublicQuestionSlug(slug);
-    if (valid) validatedSlugs.push(valid);
+  const requestedSlugs = [...new Set((slugs || [])
+    .map(slug => String(slug || '').trim())
+    .filter(slug => /^[a-z0-9-]{2,120}$/.test(slug)))]
+    .slice(0, 60);
+  if (!requestedSlugs.length) {
+    return { available: true, storage: HAS_PUBLIC_ARCHIVE_STATS_TABLES ? 'table' : 'settings', counts: {} };
   }
-  const uniqueSlugs = [...new Set(validatedSlugs)].slice(0, 60);
+
+  let uniqueSlugs = [];
+  if (HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
+    const { data, error } = await supabase
+      .from('public_qa')
+      .select('slug')
+      .eq('status', 'published')
+      .in('slug', requestedSlugs);
+    if (error) throw new Error(error.message);
+    uniqueSlugs = (data || []).map(row => row.slug).filter(Boolean);
+  } else {
+    const knownSlugs = await knownPublicQuestionSlugs();
+    uniqueSlugs = requestedSlugs.filter(slug => knownSlugs.has(slug));
+  }
   if (!uniqueSlugs.length) return { available: true, storage: HAS_PUBLIC_ARCHIVE_STATS_TABLES ? 'table' : 'settings', counts: {} };
   if (!HAS_PUBLIC_ARCHIVE_STATS_TABLES) {
     const fallbackMap = await loadPublicQuestionStatsFallbackMap(uniqueSlugs);
