@@ -1379,7 +1379,8 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('/public-preview/public-archive.css?v=20261001-pagespeed-v1'), `${item.route} yalniz versiyonlu public CSS yuklemeli.`);
+  assert(rendered.html.includes('<style data-pa-inline-css>'), `${item.route} render engellemeyen satir ici public CSS icermeli.`);
+  assert(!/<link[^>]+rel="stylesheet"/.test(rendered.html), `${item.route} render engelleyici public CSS istegi uretmemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1389,7 +1390,7 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('href="/public-archive.css?v=20261001-pagespeed-v1"'), 'Root public mode versiyonlu CSS adresini root path ile uretmeli.');
+assert(rootLaunchPreview.includes('<style data-pa-inline-css>'), 'Root public mode render engellemeyen satir ici CSS uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1415,7 +1416,7 @@ assert(latestLaunchPreview.includes('Yayın sırasına göre'), '/son-yayinlanan
 const homePreview = renderPublicArchivePreviewRoute('/public-preview').html;
 for (const assetUrl of [
   '/public-preview/assets/hero-open-book-warm.jpg',
-  '/public-preview/assets/arsiv-logo-mark.png',
+  '/public-preview/assets/arsiv-logo-mark-80.webp',
   '/public-preview/assets/favicon-16.png',
   '/public-preview/assets/favicon-32.png',
   '/public-preview/assets/favicon-48.png',
@@ -1424,7 +1425,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261001-pagespeed-v1', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261001-pagespeed-v2', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1446,6 +1447,10 @@ for (const fileName of ['hero-open-book-warm-480.webp', 'hero-open-book-warm-720
   const stat = fs.statSync(path.join(publicAssetRoot, 'assets', fileName));
   assert(stat.size > 0 && stat.size < 50000, `Public hero WebP boyutu beklenen sinirda olmali: ${fileName}`);
 }
+for (const fileName of ['arsiv-logo-mark-80.webp', 'app-icon-128.webp']) {
+  const stat = fs.statSync(path.join(publicAssetRoot, 'assets', fileName));
+  assert(stat.size > 0 && stat.size < 15000, `Public arayuz WebP boyutu beklenen sinirda olmali: ${fileName}`);
+}
 for (const [fileName, expectedSize] of [
   ['favicon-16.png', '16x16'],
   ['favicon-32.png', '32x32'],
@@ -1463,16 +1468,22 @@ const publicManifest = JSON.parse(fs.readFileSync(path.join(publicAssetRoot, 'as
 assert(publicManifest.name === 'Dini Sorular ve Cevaplar Arşivi' && publicManifest.short_name === 'Dini Sorular', 'Public app manifest isimleri dogru olmali.');
 assert(publicManifest.id === '/' && publicManifest.start_url === '/' && publicManifest.scope === '/', 'Public app manifest root uygulama kimligi/adresiyle acilmali.');
 assert((publicManifest.icons || []).some(icon => icon.src === 'app-icon-maskable-512.png' && icon.purpose === 'maskable'), 'Public manifest maskable icon icermeli.');
-for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'width="256" height="256"', 'aria-hidden="true"']) {
+for (const marker of ['class="pa-logo-mark"', 'class="pa-logo-text"', 'arsiv-logo-mark-80.webp', 'width="80" height="80"', 'aria-hidden="true"']) {
   assert(homePreview.includes(marker), `Public logo mark HTML marker eksik: ${marker}`);
 }
-for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="googlebot" content="noindex,nofollow"', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'rel="sitemap" type="application/xml" title="Sitemap"', 'rel="alternate" type="text/plain" title="LLMs.txt"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
+for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="googlebot" content="noindex,nofollow"', 'name="apple-mobile-web-app-title" content="Dini Sorular"', 'name="mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-capable" content="yes"', 'name="apple-mobile-web-app-status-bar-style" content="default"', 'rel="sitemap" type="application/xml" title="Sitemap"', 'rel="describedby" type="text/plain" title="LLMs.txt"', 'property="og:locale" content="tr_TR"', 'property="og:title" content="Dini Sorular ve Cevaplar Arşivi"', 'property="og:updated_time"', 'property="og:image"', 'public-share-card-20260823-v3.png?v=telegram-cache-refresh-20260823', 'property="og:image:secure_url"', 'property="og:image:type" content="image/png"', 'property="og:image:width" content="1200"', 'property="og:image:height" content="630"', 'name="twitter:card" content="summary_large_image"', 'name="twitter:title"', 'name="twitter:description"', 'name="twitter:image"', 'name="twitter:image:alt"', 'rel="apple-touch-icon"', 'rel="manifest"']) {
   assert(homePreview.includes(marker), `Public sosyal/app meta marker eksik: ${marker}`);
 }
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-192.png?v=20261001-pagespeed-v1"'), 'Public install banner gereksiz buyuk maskable ikon yerine 192px ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261001-pagespeed-v2"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
+assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
+assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
+for (const marker of ['role="group" aria-label="Öne çıkan kategoriler"', 'role="group" aria-label="Konu rehberleri"', 'role="group" aria-label="Çerez seçenekleri"']) {
+  assert(homePreview.includes(marker), `Public jenerik aria-label semantik grup roluyle eslesmeli: ${marker}`);
+}
 for (const marker of ['pa-ios-share-icon', "iconSvg('share-ios'", 'navigator.maxTouchPoints', "navigator.platform === 'MacIntel'"]) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public iOS paylasim ikonu marker eksik: ${marker}`);
 }
@@ -1561,8 +1572,11 @@ for (const marker of ['trackPublicVisit', '/api/public-analytics/visit', 'dsca-v
 for (const marker of ['bindLiveSearchControls', 'data-live-search-url', 'pa-live-search-panel', 'AbortController', '/api/public-search', 'renderInstantResults', 'localResults', 'data-live-search-hint', 'submitLiveSearch', 'clientSearchTokenForms', 'window.__publicArchiveNavigateTo', 'data-home-hero-search', 'focus({ preventScroll: true })', 'data-pa-search-keyboard', 'focusGuardUntil', "window.visualViewport.addEventListener('scroll', onViewportChange", "root.getAttribute('data-pa-search-keyboard') === 'true'"]) {
   assert(publicRendererSource.includes(marker) || server.includes(marker) || publicCss.includes(marker), `Public canli arama marker eksik: ${marker}`);
 }
-for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v22', 'maxCachedHtmlLength', 'prefetchCard', 'observePrefetchCandidates', 'IntersectionObserver', "rootMargin: '80px 0px 80px 0px'", 'canWarmAutomatically', 'candidates.slice(0, 4)', "window.addEventListener('load', scheduleWarm", 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, navigationFallbackMs);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;', 'showImmediateSearchShell', 'immediateSearch: true', 'paPending: true', 'Sonuçlar hazırlanıyor']) {
+for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v22', 'maxCachedHtmlLength', 'prefetchCard', "document.addEventListener('pointerover'", "document.addEventListener('touchstart'", 'var cachedHtml = readCached(url);', 'if (!cachedHtml) {', 'var fallbackTimer = window.setTimeout(function(){', '}, navigationFallbackMs);', 'fetchPage(url).then(function(html){', 'window.location.href = url.href;', 'showImmediateSearchShell', 'immediateSearch: true', 'paPending: true', 'Sonuçlar hazırlanıyor']) {
   assert(publicRendererSource.includes(marker), `Public ana sayfa ilk tik hiz marker eksik: ${marker}`);
+}
+for (const marker of ['observePrefetchCandidates', 'scheduleWarm', 'candidates.slice(0, 4)']) {
+  assert(!publicRendererSource.includes(marker), `Public ilk yuklemede otomatik sayfa indirme markeri kalmamali: ${marker}`);
 }
 for (const marker of ['PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS', 'publicArchiveSearchIntentTokens', 'publicArchiveRowIntentRank', 'publicArchiveSearchIndexCache', 'publicArchiveLiveSearchIndexCache', 'loadPublicArchiveSearchIndexRows', 'loadPublicArchiveLiveSearchIndexRows', 'publicArchiveSearchRowWithCategoryText']) {
   assert(server.includes(marker), `Public arama niyet siralama marker eksik: ${marker}`);
@@ -1579,7 +1593,7 @@ for (const marker of ['PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT', 'loadPublicArchive
 for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
 }
-for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v22', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']", 'requestIdleCallback']) {
+for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v22', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']"]) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');
@@ -1692,7 +1706,7 @@ for (const marker of ['bindScrollTopControl', 'window.scrollY > 420', "window.sc
 for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-strong-cta', 'data-read-count-label', 'okunma']) {
   assert(homePreview.includes(marker), `Public soru karti aksiyon/okunma marker eksik: ${marker}`);
 }
-assert(!homePreview.includes('pa-question-excerpt'), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
+assert(!/<[^>]+class="[^"]*pa-question-excerpt/.test(homePreview), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
 assert(archivePreview.includes('soru cevap') && !/<span>\d+ soru<\/span>\s*<span>\d+ cevap<\/span>/.test(archivePreview), 'Public arsiv sayacinda soru/cevap ayrimi tek ifadeye inmeli.');
@@ -1704,8 +1718,11 @@ for (const marker of ['PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5', 'PUBLIC_CATEGOR
 for (const marker of ['categorySeoDescription', 'categoryEvidencePanel', 'categoryIndexStructuredData', 'PUBLIC_ARCHIVE_CORE_TOPIC_NAMES']) {
   assert(publicRendererSource.includes(marker), `Public kategori/SEO zenginlestirme marker eksik: ${marker}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicArchiveCategorySeoIndexable', 'publicArchiveTopicArticleEntries', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', '`- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`', 'Konu rehberleri:']) {
+for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicArchiveCategorySeoIndexable', 'publicArchiveTopicArticleEntries', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicArchiveCategorySeoIndexable(slug, meta.count))', "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', "'> Dini Sorular ve Cevaplar Arşivi", "'## Temel Sayfalar'", "'## Konu Rehberleri'", "'## Kategoriler'", "'## Son Güncellenen Soru-Cevaplar'", "'## Optional'", 'llmsLink']) {
   assert(server.includes(marker), `Public sitemap kategori SEO kural marker eksik: ${marker}`);
+}
+for (const marker of ['llms.txt dinamik dizini alınamadı; temel belge sunuluyor', 'publicArchiveAiCatalogNotFoundHandler', "app.get('/.well-known/ai-catalog.json'", "res.status(404).type('application/json; charset=utf-8')"]) {
+  assert(server.includes(marker), `Public ajan tarama dayaniklilik marker eksik: ${marker}`);
 }
 for (const forbidden of ["publicArchiveSitemapEntry('/arama'", "publicArchiveSitemapEntry('/soru-sor'", "publicArchiveSitemapEntry('/gizlilik'", "publicArchiveSitemapEntry('/kullanim-kosullari'"]) {
   assert(!server.includes(forbidden), `SEO disi yardimci sayfa sitemap icinde kalmamali: ${forbidden}`);

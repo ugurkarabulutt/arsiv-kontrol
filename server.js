@@ -16039,6 +16039,9 @@ async function publicArchiveSitemapHandler(req, res) {
 }
 
 async function publicArchiveLlmsHandler(req, res) {
+  let total = 0;
+  let indexableCategories = [];
+  let recentRows = [];
   try {
     await startupReady;
     const contentReady = await ensurePublicArchiveContentReady();
@@ -16054,71 +16057,77 @@ async function publicArchiveLlmsHandler(req, res) {
             .limit(12)
         ])
       : [{ count: 0 }, [], { data: [] }];
-    const total = Number(totalResult.count || 0);
-    const indexableCategories = (categoryRows || [])
+    total = Number(totalResult.count || 0);
+    indexableCategories = (categoryRows || [])
       .filter(row => publicArchiveCategorySeoIndexable(row.slug, row.question_count))
       .sort((a, b) => Number(b.question_count || 0) - Number(a.question_count || 0) || String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
       .slice(0, 14);
-    const recentRows = Array.isArray(recentResult.data) ? recentResult.data.filter(row => row?.slug) : [];
-    const topicArticles = publicArchiveTopicArticleEntries();
-    res.type('text/plain; charset=utf-8');
-    res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
-    if (!publicArchiveRootIndexingAllowed()) res.set('X-Robots-Tag', 'noindex, nofollow');
-    res.send([
-      '# Dini Sorular ve Cevaplar Arşivi',
-      '',
-      'Dini Sorular ve Cevaplar Arşivi, soru-cevapları delilleri ve kaynak bağlamıyla okunabilir hale getiren Türkçe bir arşivdir.',
-      'Cevaplar Dr. Abdulcabbar Boran tarafından verilen arşiv kayıtlarından hazırlanır.',
-      '',
-      `Canlı adres: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}`,
-      `Yayınlanan soru-cevap sayısı: ${total}`,
-      `Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
-      `Robots: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/robots.txt`,
-      '',
-      'Önemli sayfalar:',
-      `- Ana sayfa: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`,
-      `- Tüm arşiv: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`,
-      `- Öne çıkan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/one-cikan-sorular`,
-      `- Son yayınlanan sorular: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/son-yayinlanan-sorular`,
-      `- Çok okunan cevaplar: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/cok-okunan-cevaplar`,
-      `- Kategoriler: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`,
-      ...topicArticles.map(article => `- ${article.title}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`),
-      `- Sitemap: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`,
-      '',
-      'Yapısal veri:',
-      '- Tekil soru-cevap sayfaları schema.org WebPage, Article, Question, Answer ve BreadcrumbList JSON-LD taşır.',
-      '- Arşiv ve güçlü kategori sayfaları schema.org CollectionPage ve ItemList olarak işaretlenir.',
-      '- Konu rehberi yazıları schema.org BlogPosting, WebPage, BreadcrumbList ve ilişkili soru ItemList verisi taşır.',
-      '- QAPage kullanılmaz; sayfalar kullanıcı cevaplarının yarıştığı forum sayfası değil, yayınlanmış tekil cevap arşividir.',
-      ...(topicArticles.length ? [
-        '',
-        'Konu rehberleri:',
-        ...topicArticles.map(article => `- ${article.title}: ${article.description || article.summary || ''} ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`)
-      ] : []),
-      '',
-      'Index önceliği:',
-      '- Tekil soru-cevap sayfaları ve sitemap içinde yer alan güçlü kategori sayfaları public kaynak kabul edilir.',
-      '- Arama, hesap, soru gönderme, gizlilik ve kullanım koşulları sayfaları kullanıcı akışı içindir; kaynak sayfa olarak alıntılanmamalıdır.',
-      ...(indexableCategories.length ? [
-        '',
-        'Güçlü kategori girişleri:',
-        ...indexableCategories.map(row => `- ${row.name}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategori/${row.slug} (${Number(row.question_count || 0)} ilgili soru)`)
-      ] : []),
-      ...(recentRows.length ? [
-        '',
-        'Son güncellenen tekil soru-cevap sayfaları:',
-        ...recentRows.map(row => `- ${row.title || row.slug}: ${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/soru/${row.slug}`)
-      ] : []),
-      '',
-      'Kaynak gösterimi:',
-      '- Tekil soru-cevap sayfaları /soru/{slug} biçimindedir.',
-      '- Alıntı veya özetlerde mümkünse tekil soru-cevap URL’si kullanılmalıdır.',
-      '- Admin, kullanıcı bilgisi ve iç süreç ekranları public kaynak değildir.',
-      ''
-    ].join('\n'));
+    recentRows = Array.isArray(recentResult.data) ? recentResult.data.filter(row => row?.slug) : [];
   } catch (error) {
-    res.status(500).type('text/plain; charset=utf-8').send(error.message || 'llms.txt üretilemedi.');
+    console.warn('llms.txt dinamik dizini alınamadı; temel belge sunuluyor:', error?.message || error);
   }
+
+  const topicArticles = publicArchiveTopicArticleEntries();
+  const llmsText = value => publicArchiveText(value, 1000)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[\[\]]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const llmsLink = (label, url, note = '') => `- [${llmsText(label)}](${url})${note ? `: ${llmsText(note)}` : ''}`;
+  res.type('text/plain; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+  if (!publicArchiveRootIndexingAllowed()) res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.send([
+    '# Dini Sorular ve Cevaplar Arşivi',
+    '',
+    '> Dini Sorular ve Cevaplar Arşivi, dinî soru ve cevapları delilleri ve kaynak bağlamıyla sunan Türkçe bir bilgi arşividir.',
+    '',
+    'Cevaplar Dr. Abdulcabbar Boran tarafından verilen arşiv kayıtlarından hazırlanır.',
+    'Tekil soru-cevap sayfaları ana kaynaklardır; alıntı ve özetlerde mümkünse doğrudan ilgili soru URL’si kullanılmalıdır.',
+    'Arama, hesap, soru gönderme, gizlilik ve kullanım koşulları sayfaları kullanıcı akışıdır; kaynak olarak alıntılanmamalıdır.',
+    'QAPage kullanılmaz; sayfalar kullanıcı cevaplarının yarıştığı bir forum değil, yayımlanmış tekil cevap arşividir.',
+    '',
+    ...(total > 0 ? [`Yayınlanan soru-cevap sayısı: ${total}`, ''] : []),
+    '## Temel Sayfalar',
+    '',
+    llmsLink('Ana sayfa', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/`, 'Arşivin ana giriş ve keşif sayfası.'),
+    llmsLink('Tüm arşiv', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/arsiv`, 'Yayımlanmış bütün soru ve cevapların dizini.'),
+    llmsLink('Öne çıkan sorular', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/one-cikan-sorular`, 'Editoryal olarak öne çıkarılan cevaplar.'),
+    llmsLink('Son yayınlanan sorular', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/son-yayinlanan-sorular`, 'En son yayımlanan soru ve cevaplar.'),
+    llmsLink('Çok okunan cevaplar', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/cok-okunan-cevaplar`, 'Okunma sayısına göre öne çıkan cevaplar.'),
+    llmsLink('Kategoriler', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`, 'Konu ve kavramlara göre arşiv dizini.'),
+    '',
+    ...(topicArticles.length ? [
+      '## Konu Rehberleri',
+      '',
+      ...topicArticles.map(article => llmsLink(article.title, `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}${article.path}`, article.description || article.summary || 'Konu rehberi.')),
+      ''
+    ] : []),
+    ...(indexableCategories.length ? [
+      '## Kategoriler',
+      '',
+      ...indexableCategories.map(row => llmsLink(row.name, `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategori/${row.slug}`, `${Number(row.question_count || 0)} ilgili soru ve cevap.`)),
+      ''
+    ] : []),
+    ...(recentRows.length ? [
+      '## Son Güncellenen Soru-Cevaplar',
+      '',
+      ...recentRows.map(row => llmsLink(row.title || row.slug, `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/soru/${row.slug}`, 'Yayımlanmış tekil soru ve cevap kaydı.')),
+      ''
+    ] : []),
+    '## Optional',
+    '',
+    llmsLink('Sitemap', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml`, 'İndekslenebilir public sayfaların XML haritası.'),
+    llmsLink('Robots', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/robots.txt`, 'Tarama kuralları ve sitemap bildirimi.'),
+    ''
+  ].join('\n'));
+}
+
+function publicArchiveAiCatalogNotFoundHandler(_req, res) {
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+  res.status(404).type('application/json; charset=utf-8').send({
+    error: 'not_found'
+  });
 }
 
 app.get('/public-preview/api/session', publicArchiveSessionHandler);
@@ -16138,6 +16147,7 @@ app.post('/public-preview/api/my-question-submissions/:id/seen', publicArchiveQu
 app.get('/robots.txt', publicArchiveRobotsHandler);
 app.get('/sitemap.xml', publicArchiveSitemapHandler);
 app.get('/llms.txt', publicArchiveLlmsHandler);
+app.get('/.well-known/ai-catalog.json', publicArchiveAiCatalogNotFoundHandler);
 
 if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/api/session', publicArchiveSessionHandler);

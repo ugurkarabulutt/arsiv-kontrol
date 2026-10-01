@@ -74,7 +74,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /href="\/public-archive\.css\?v=20261001-pagespeed-v1"/);
+  assert.match(home, /<style data-pa-inline-css>/);
+  assert.doesNotMatch(home, /<link[^>]+rel="stylesheet"/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -86,7 +87,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /property="og:updated_time" content="2026-08-23T14:42:53\+03:00"/);
   assert.match(home, /<meta name="googlebot" content="index,follow">/);
   assert.match(home, /rel="sitemap" type="application\/xml" title="Sitemap" href="https:\/\/arsiv\.ibrahimlive\.ai\/sitemap\.xml"/);
-  assert.match(home, /rel="alternate" type="text\/plain" title="LLMs\.txt" href="https:\/\/arsiv\.ibrahimlive\.ai\/llms\.txt"/);
+  assert.match(home, /rel="describedby" type="text\/plain" title="LLMs\.txt" href="https:\/\/arsiv\.ibrahimlive\.ai\/llms\.txt"/);
   assert.match(home, /property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /property="og:image:secure_url" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/public-share-card-20260823-v3\.png\?v=telegram-cache-refresh-20260823"/);
   assert.match(home, /property="og:image:type" content="image\/png"/);
@@ -98,8 +99,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261001-pagespeed-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261001-pagespeed-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261001-pagespeed-v2"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261001-pagespeed-v2"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -140,17 +141,14 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /navigator\.platform === 'MacIntel'/);
   assert.match(home, /maxCachedHtmlLength/);
   assert.match(home, /prefetchCard/);
-  assert.match(home, /observePrefetchCandidates/);
-  assert.match(home, /IntersectionObserver/);
-  assert.match(home, /canWarmAutomatically/);
-  assert.match(home, /candidates\.slice\(0, 4\)/);
-  assert.match(home, /rootMargin: '80px 0px 80px 0px'/);
-  assert.match(home, /window\.addEventListener\('load', scheduleWarm/);
+  assert.doesNotMatch(home, /observePrefetchCandidates|scheduleWarm|candidates\.slice\(0, 4\)/);
+  assert.match(home, /document\.addEventListener\('touchstart'/);
+  assert.match(home, /document\.addEventListener\('pointerover'/);
   assert.match(home, /openPublicArchiveHref/);
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-192\.png\?v=20261001-pagespeed-v1/);
+  assert.match(home, /app-icon-128\.webp\?v=20261001-pagespeed-v2/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -263,7 +261,7 @@ test('public preview output avoids internal and fake feature language', () => {
 
 test('public preview uses final handoff assets and icon system', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
-  assert.match(home, /\/public-preview\/assets\/arsiv-logo-mark\.png/);
+  assert.match(home, /\/public-preview\/assets\/arsiv-logo-mark-80\.webp/);
   assert.match(home, /class="pa-logo-mark"/);
   assert.match(home, /class="pa-logo-text"/);
   assert.match(home, /\/public-preview\/assets\/hero-open-book-warm\.jpg/);
@@ -923,7 +921,8 @@ test('question detail hides same-question related links and shows popular links 
 test('question cards are whole-card navigable without helpful voting', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
   assert.match(home, /data-card-href="\/public-preview\/soru\/ornek-soru"/);
-  assert.match(home, /role="link"/);
+  assert.doesNotMatch(home, /<article[^>]+role="link"/);
+  assert.match(home, /<a class="pa-question-title" href="\/public-preview\/soru\/ornek-soru"/);
   assert.match(home, /Öne Çıkan Sorular/);
   assert.match(home, /Öne çıkanları gör/);
   assert.match(home, /\/public-preview\/one-cikan-sorular/);
@@ -974,7 +973,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /Cevabı oku/);
   assert.match(home, /data-read-count-label/);
   assert.match(home, /okunma/);
-  assert.doesNotMatch(home, /pa-question-excerpt/);
+  assert.doesNotMatch(home, /<[^>]+class="[^"]*pa-question-excerpt/);
   assert.doesNotMatch(home, /Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur\./);
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
 });
@@ -995,10 +994,10 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /RÛM 31/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek ile ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
-  const tocIndex = preview.html.indexOf('pa-topic-article-toc-block');
-  const bodyIndex = preview.html.indexOf('pa-topic-article-body');
-  const supportIndex = preview.html.indexOf('pa-topic-article-support');
-  const relatedIndex = preview.html.indexOf('pa-topic-article-related');
+  const tocIndex = preview.html.indexOf('<section class="pa-topic-article-toc-block"');
+  const bodyIndex = preview.html.indexOf('<article class="pa-topic-article-body"');
+  const supportIndex = preview.html.indexOf('<section class="pa-topic-article-support"');
+  const relatedIndex = preview.html.indexOf('<section class="pa-section pa-topic-article-related"');
   assert.ok(tocIndex > -1 && tocIndex < bodyIndex, 'İçindekiler blog govdesinden once gelmeli.');
   assert.ok(bodyIndex > -1 && supportIndex > bodyIndex, 'Makale sonu ayet ve konu baglantilari blog govdesinden sonra gelmeli.');
   assert.ok(relatedIndex === -1 || supportIndex < relatedIndex, 'Makale sonu ayet ve konu baglantilari ilgili sorulardan once gelmeli.');
@@ -1316,6 +1315,7 @@ test('mobile search copy stays compact but accessible', () => {
   assert.match(home, /data-live-search/);
   assert.match(home, /data-live-search-url="\/public-preview\/api\/public-search"/);
   assert.match(home, /aria-controls="pa-live-search-results"/);
+  assert.match(home, /role="combobox" aria-autocomplete="list"/);
   assert.match(home, /class="pa-live-search-panel"/);
   assert.match(home, /bindLiveSearchControls/);
   assert.match(home, /data-home-hero-search/);

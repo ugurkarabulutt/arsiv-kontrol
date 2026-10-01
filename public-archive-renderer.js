@@ -17,7 +17,8 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261001-pagespeed-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261001-pagespeed-v2';
+const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -43,6 +44,23 @@ const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'ruh',
   'teslimiyet'
 ]);
+
+function minifyPublicArchiveCss(source = '') {
+  return String(source || '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{}:;,>])\s*/g, '$1')
+    .replace(/;}/g, '}')
+    .trim();
+}
+
+const PUBLIC_ARCHIVE_MINIFIED_CSS = minifyPublicArchiveCss(PUBLIC_ARCHIVE_CSS_SOURCE);
+
+function publicArchiveInlineCss() {
+  return PUBLIC_ARCHIVE_MINIFIED_CSS
+    .replaceAll('url("assets/', `url("${ASSET_PATH}/`)
+    .replace(/<\/style/gi, '<\\/style');
+}
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
@@ -504,7 +522,7 @@ function previewActionNavIndex(active) {
 function brandLogo() {
   const logoText = publicArchiveFixtures.brand.logoLines.map(line => `<span>${escapeHtml(line)}</span>`).join('');
   return `
-    <img class="pa-logo-mark" src="${publicArchiveAssetHref('arsiv-logo-mark.png')}" alt="" aria-hidden="true" width="256" height="256" decoding="async">
+    <img class="pa-logo-mark" src="${publicArchiveAssetHref('arsiv-logo-mark-80.webp')}" alt="" aria-hidden="true" width="80" height="80" decoding="async">
     <span class="pa-logo-text">${logoText}</span>
   `;
 }
@@ -520,7 +538,7 @@ function header(active) {
     <header class="pa-header">
       <div class="pa-install-banner" data-install-banner hidden>
         <div class="pa-install-main">
-          <img class="pa-install-icon" src="${publicArchiveAssetHref('app-icon-192.png')}" alt="" aria-hidden="true" width="192" height="192" decoding="async">
+          <img class="pa-install-icon" src="${publicArchiveAssetHref('app-icon-128.webp')}" alt="" aria-hidden="true" width="128" height="128" decoding="async">
           <span class="pa-install-copy">
             <strong data-install-title>Telefona ekleyin</strong>
             <small data-install-subtitle>Arşive tek dokunuşla ulaşın.</small>
@@ -533,7 +551,7 @@ function header(active) {
           <p>iPhone’da paylaş simgesine dokunun, <strong>Ana Ekrana Ekle</strong> seçin ve <strong>Ekle</strong> ile tamamlayın.</p>
         </div>
       </div>
-      <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
+      <a class="pa-logo" href="${publicArchiveHomeHref()}">${brandLogo()}</a>
       <nav class="pa-desktop-nav" aria-label="Ana gezinme">
         ${nav.map(([label, url, key]) => `<a class="${active === key ? 'is-active' : ''}" href="${escapeHtml(url)}">${escapeHtml(label)}</a>`).join('')}
       </nav>
@@ -584,7 +602,7 @@ function footer() {
       </section>
       <div class="pa-footer-main">
         <div class="pa-footer-brand">
-          <a class="pa-logo" href="${publicArchiveHomeHref()}" aria-label="${escapeHtml(publicArchiveFixtures.brand.name)}">${brandLogo()}</a>
+          <a class="pa-logo" href="${publicArchiveHomeHref()}">${brandLogo()}</a>
           <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
         </div>
         <div class="pa-footer-groups">
@@ -621,7 +639,7 @@ function cookieConsentUi() {
         <p>Site için gerekli depolama her zaman açıktır. Ziyaret ve okunma analitiğini yalnız izninizle kullanırız.</p>
         <a href="${PREVIEW_BASE}/cerez-politikasi">Çerez Politikasını okuyun</a>
       </div>
-      <div class="pa-cookie-actions" aria-label="Çerez seçenekleri">
+      <div class="pa-cookie-actions" role="group" aria-label="Çerez seçenekleri">
         <button type="button" data-cookie-reject>Reddet</button>
         <button type="button" data-cookie-preferences>Tercihler</button>
         <button type="button" data-cookie-accept>Kabul Et</button>
@@ -671,7 +689,7 @@ function searchBox(value = '', label = 'Arşivde ara', options = {}) {
       <form class="pa-search" action="${PREVIEW_BASE}/arama" method="get" role="search" id="arama" data-live-search-form data-live-search-url="${PREVIEW_BASE}/api/public-search">
         <label class="pa-sr-only" for="pa-search-input">${escapeHtml(label)}</label>
         <span class="pa-search-leading">${iconSvg('search')}</span>
-        <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="" autocomplete="off" inputmode="search" enterkeyhint="search" aria-label="Sorunuzu veya kategorinizi yazın" aria-controls="pa-live-search-results" aria-expanded="false">
+        <input id="pa-search-input" name="q" value="${escapeHtml(value)}" placeholder="" autocomplete="off" inputmode="search" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-label="Sorunuzu veya kategorinizi yazın" aria-controls="pa-live-search-results" aria-expanded="false">
         <span class="pa-search-typehint" data-live-search-hint aria-hidden="true">Soru veya kategori arayın...</span>
         <button type="submit" aria-label="Ara">
           <span class="pa-search-icon">${iconSvg('arrow-right')}</span>
@@ -745,7 +763,7 @@ function conceptSliderItems(isClone = false) {
 
 function heroConceptLane() {
   return `
-    <div class="pa-hero-concepts" data-concept-slider aria-label="Öne çıkan kategoriler">
+    <div class="pa-hero-concepts" data-concept-slider role="group" aria-label="Öne çıkan kategoriler">
       <div class="pa-concept-head">
         <span>Öne çıkan kategoriler</span>
       </div>
@@ -761,7 +779,7 @@ function heroConceptLane() {
 
 function archiveShortcutBand() {
   return `
-    <a class="pa-archive-shortcut" href="${PREVIEW_BASE}/arsiv" aria-label="Arşivin tamamına git">
+    <a class="pa-archive-shortcut" href="${PREVIEW_BASE}/arsiv">
       <span class="pa-archive-shortcut-icon">${iconSvg('archive')}</span>
       <div class="pa-archive-shortcut-copy">
         <strong>Arşivin tamamını açın.</strong>
@@ -1645,7 +1663,7 @@ function questionCard(entry, options = {}) {
   const countNode = readCountNode(entry);
   const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
-    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${href}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
+    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${href}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
       ${searchResult && entry.searchMatchExcerpt ? `
@@ -1857,7 +1875,7 @@ function homeQuranEvidenceSection(items = []) {
         ${items.map(item => {
           const entry = item.entry;
           return `
-            <article class="pa-evidence-card" data-card-href="${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}" role="link" tabindex="0" aria-label="${escapeHtml(entry.title)}">
+            <article class="pa-evidence-card" data-card-href="${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}">
               <div class="pa-evidence-top">
                 <span>${iconSvg('tevhid')}</span>
                 <div class="pa-evidence-refs">
@@ -1884,7 +1902,7 @@ function homeReadingPathSection() {
         <h2 id="pa-reading-path-title">Temel konuları sırayla takip edin.</h2>
         <p>Her başlık, aynı kavram etrafındaki soru-cevapları bir araya getirir ve okumayı daha derli toplu ilerletir.</p>
       </div>
-      <div class="pa-reading-track" aria-label="Konu rehberleri">
+      <div class="pa-reading-track" role="group" aria-label="Konu rehberleri">
         <div class="pa-reading-rail">
           <div class="pa-reading-set">
             ${itemsHtml}
@@ -2247,7 +2265,7 @@ function archiveCategoryIndex(query = {}) {
   return {
     ...state,
     html: `
-      <div class="pa-alpha-index" data-alpha-index aria-label="Alfabetik kategori dizini">
+      <div class="pa-alpha-index" data-alpha-index role="group" aria-label="Alfabetik kategori dizini">
         <div class="pa-alpha-shell">
           <button class="pa-alpha-nav" type="button" data-alpha-scroll="prev" aria-label="Önceki harfleri göster">${iconSvg('arrow-left')}</button>
           <div class="pa-alpha-track" data-alpha-track role="list" aria-label="Kategori harfleri">
@@ -3034,7 +3052,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <meta name="apple-mobile-web-app-title" content="${escapeHtml(publicShortAppName)}">
   ${shouldExposeCanonical ? `<link rel="canonical" href="${escapeHtml(canonicalHref)}">` : ''}
   <link rel="sitemap" type="application/xml" title="Sitemap" href="${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/sitemap.xml">
-  <link rel="alternate" type="text/plain" title="LLMs.txt" href="${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/llms.txt">
+  <link rel="describedby" type="text/plain" title="LLMs.txt" href="${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/llms.txt">
   <meta property="og:locale" content="tr_TR">
   <meta property="og:site_name" content="${escapeHtml(publicAppName)}">
   <meta property="og:title" content="${escapeHtml(safeTitle)}">
@@ -3067,7 +3085,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <link rel="icon" type="image/png" sizes="48x48" href="${publicArchiveAssetHref('favicon-48.png')}">
   <link rel="apple-touch-icon" sizes="180x180" href="${publicArchiveAssetHref('apple-touch-icon.png')}">
   <link rel="manifest" href="${publicArchiveAssetHref('site.webmanifest')}">
-  <link rel="stylesheet" href="${CSS_PATH}">
+  <style data-pa-inline-css>${publicArchiveInlineCss()}</style>
   <script>
     (function(){
       try {
@@ -3247,12 +3265,6 @@ function renderShell({ title, description, active, content, status = 200, questi
             openPublicArchiveHref(href);
           }
           card.addEventListener('click', openCard);
-          card.addEventListener('keydown', function(event){
-            if (event.key !== 'Enter' && event.key !== ' ') return;
-            event.preventDefault();
-            var href = card.getAttribute('data-card-href');
-            openPublicArchiveHref(href);
-          });
         });
       }
       function bindArchiveAlphaIndexes() {
@@ -3990,12 +4002,11 @@ function renderShell({ title, description, active, content, status = 200, questi
           button.blur();
         }
         window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', update, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
         button.addEventListener('click', onClick);
-        window.requestAnimationFrame(update);
         addPageCleanup(function(){
           window.removeEventListener('scroll', onScroll);
-          window.removeEventListener('resize', update);
+          window.removeEventListener('resize', onScroll);
           button.removeEventListener('click', onClick);
         });
       }
@@ -4389,18 +4400,26 @@ function renderShell({ title, description, active, content, status = 200, questi
       }
       function bindShrinkingHeader() {
         var root = document.documentElement;
+        var ticking = false;
         var update = function(){
+          var isScrolled = window.scrollY > 16;
           if (root.getAttribute('data-pa-search-keyboard') === 'true') {
             root.removeAttribute('data-pa-scrolled');
+            ticking = false;
             return;
           }
-          if (window.scrollY > 16) root.setAttribute('data-pa-scrolled', 'true');
+          if (isScrolled) root.setAttribute('data-pa-scrolled', 'true');
           else root.removeAttribute('data-pa-scrolled');
+          ticking = false;
         };
-        update();
-        window.addEventListener('scroll', update, { passive: true });
+        var requestUpdate = function(){
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(update);
+        };
+        window.addEventListener('scroll', requestUpdate, { passive: true });
         addPageCleanup(function(){
-          window.removeEventListener('scroll', update);
+          window.removeEventListener('scroll', requestUpdate);
         });
       }
       function bindAddToHomeBanner() {
@@ -5005,54 +5024,6 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (event.target.closest('a, button, input, select, textarea')) return null;
           return event.target.closest('[data-card-href]');
         }
-        function canWarmAutomatically() {
-          var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-          if (!connection) return true;
-          if (connection.saveData) return false;
-          return !/(^|-)2g$/i.test(String(connection.effectiveType || ''));
-        }
-        var warm = function(){
-          if (!canWarmAutomatically() || document.visibilityState !== 'visible') return;
-          var seen = {};
-          var candidates = [];
-          function addCandidate(href) {
-            if (!href || seen[href]) return;
-            seen[href] = true;
-            candidates.push(href);
-          }
-          function addSelector(selector) {
-            Array.prototype.slice.call(document.querySelectorAll(selector)).forEach(function(element){
-              if (element.matches && element.matches('a[href]')) {
-                if (isFastLink(element)) addCandidate(element.href);
-                return;
-              }
-              var href = element.getAttribute && element.getAttribute('data-card-href');
-              if (href) {
-                try {
-                  addCandidate(new URL(href, window.location.href).href);
-                } catch (error) {}
-              }
-            });
-          }
-          addSelector('[data-prefetch-priority]');
-          addSelector('.pa-archive-shortcut, .pa-reading-card');
-          addSelector('.pa-mobile-nav a[href]');
-          candidates.slice(0, 4).forEach(prefetchHref);
-        };
-        function observePrefetchCandidates() {
-          if (!('IntersectionObserver' in window)) return;
-          var observer = new IntersectionObserver(function(entries){
-            entries.forEach(function(entry){
-              if (!entry.isIntersecting && entry.intersectionRatio <= 0) return;
-              var element = entry.target;
-              if (element.matches && element.matches('a[href]')) prefetch(element);
-              else prefetchCard(element);
-              observer.unobserve(element);
-            });
-          }, { rootMargin: '80px 0px 80px 0px', threshold: 0.01 });
-          Array.prototype.slice.call(document.querySelectorAll('[data-prefetch-priority], .pa-archive-shortcut, .pa-reading-card, .pa-question-card[data-card-href], .pa-evidence-card[data-card-href]'))
-            .forEach(function(element){ observer.observe(element); });
-        }
         if (!window.__publicArchiveFastNavBound) {
           window.__publicArchiveFastNavBound = true;
           document.addEventListener('pointerover', function(event){
@@ -5095,23 +5066,6 @@ function renderShell({ title, description, active, content, status = 200, questi
             });
           });
         }
-        var warmTimer = 0;
-        var warmIdleId = 0;
-        function scheduleWarm() {
-          if (!canWarmAutomatically()) return;
-          warmTimer = window.setTimeout(function(){
-            observePrefetchCandidates();
-            if ('requestIdleCallback' in window) warmIdleId = window.requestIdleCallback(warm, { timeout: 1800 });
-            else warm();
-          }, 1200);
-        }
-        if (document.readyState === 'complete') scheduleWarm();
-        else window.addEventListener('load', scheduleWarm, { once: true });
-        addPageCleanup(function(){
-          window.clearTimeout(warmTimer);
-          if (warmIdleId && 'cancelIdleCallback' in window) window.cancelIdleCallback(warmIdleId);
-          window.removeEventListener('load', scheduleWarm);
-        });
       }
       function bindSemanticSearchEnhancement() {
         var section = document.querySelector('[data-pa-search-results][data-pa-semantic-url]');
