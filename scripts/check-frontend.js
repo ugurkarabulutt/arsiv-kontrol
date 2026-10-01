@@ -1578,6 +1578,7 @@ for (const marker of ['openPublicArchiveHref', 'dsca-page-cache:v22', 'maxCached
 for (const marker of ['observePrefetchCandidates', 'scheduleWarm', 'candidates.slice(0, 4)']) {
   assert(!publicRendererSource.includes(marker), `Public ilk yuklemede otomatik sayfa indirme markeri kalmamali: ${marker}`);
 }
+assert(!publicRendererSource.includes('/api/question-stats?slugs='), 'Public HTML mevcut okunma sayilarini acilista ikinci kez istememeli.');
 for (const marker of ['PUBLIC_ARCHIVE_SEARCH_FILLER_WORDS', 'publicArchiveSearchIntentTokens', 'publicArchiveRowIntentRank', 'publicArchiveSearchIndexCache', 'publicArchiveLiveSearchIndexCache', 'loadPublicArchiveSearchIndexRows', 'loadPublicArchiveLiveSearchIndexRows', 'publicArchiveSearchRowWithCategoryText']) {
   assert(server.includes(marker), `Public arama niyet siralama marker eksik: ${marker}`);
 }

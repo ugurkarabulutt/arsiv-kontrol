@@ -3917,16 +3917,6 @@ function renderShell({ title, description, active, content, status = 200, questi
           node.hidden = false;
         });
       }
-      async function loadReadCounts() {
-        var nodes = Array.from(document.querySelectorAll('[data-public-read-count]'));
-        var slugs = Array.from(new Set(nodes.map(function(node){ return node.getAttribute('data-public-read-count'); }).filter(Boolean)));
-        if (!slugs.length) return;
-        try {
-          var response = await fetch('${PREVIEW_BASE}/api/question-stats?slugs=' + encodeURIComponent(slugs.join(',')), { headers: { Accept: 'application/json' } });
-          var data = await response.json();
-          Object.keys(data.counts || {}).forEach(function(slug){ updateReadCount(slug, data.counts[slug]); });
-        } catch (error) {}
-      }
       function bindActiveStatsCounters() {
         var section = document.querySelector('[data-active-stats]');
         var counters = section ? Array.from(section.querySelectorAll('[data-count-up]')) : [];
@@ -4165,7 +4155,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           var key = 'dsca-read-' + slug;
           var last = Number(localStorage.getItem(key) || 0);
           var now = Date.now();
-          if (last && now - last < 12 * 60 * 60 * 1000) return loadReadCounts();
+          if (last && now - last < 12 * 60 * 60 * 1000) return;
           var response = await fetch('${PREVIEW_BASE}/api/questions/' + encodeURIComponent(slug) + '/read', {
             method: 'POST',
             headers: { Accept: 'application/json', 'X-Analytics-Consent': '1' }
@@ -4174,12 +4164,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (data && data.available) {
             localStorage.setItem(key, String(now));
             updateReadCount(slug, data.readCount);
-          } else {
-            await loadReadCounts();
           }
-        } catch (error) {
-          await loadReadCounts();
-        }
+        } catch (error) {}
       }
       function publicArchiveClientId(storage, key) {
         try {
@@ -4924,7 +4910,6 @@ function renderShell({ title, description, active, content, status = 200, questi
             else shell.remove();
             try { pageStack().replaceState({ paFast: true }, '', url.href); } catch (error) {}
             bindCardLinks();
-            loadReadCounts();
           }).catch(function(){
             window.location.href = url.href;
           }).finally(function(){
@@ -5090,7 +5075,6 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (!nextSection || !currentSection) return;
           currentSection.replaceWith(document.importNode(nextSection, true));
           bindCardLinks();
-          loadReadCounts();
         }).catch(function(error){
           if (error && error.name === 'AbortError') return;
           var method = document.querySelector('[data-pa-search-results] .pa-search-method');
@@ -5108,7 +5092,6 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindCardLinks();
         bindCookieConsent();
         bindNewsletterForms();
-        loadReadCounts();
         trackQuestionRead();
         trackPublicVisit();
         bindArchiveAlphaIndexes();
