@@ -5143,6 +5143,7 @@ a.pa-chip:hover,
 
   .pa-hero-copy > p:not(.pa-kicker) {
     max-width: 296px;
+    min-height: 128px;
     margin: 16px 0 24px;
     font-size: 16px;
     line-height: 1.6;
@@ -5787,6 +5788,7 @@ a.pa-chip:hover,
 
   .pa-hero-copy > p:not(.pa-kicker) {
     max-width: 286px;
+    min-height: 120px;
     margin-bottom: 22px;
     font-size: 15px;
   }

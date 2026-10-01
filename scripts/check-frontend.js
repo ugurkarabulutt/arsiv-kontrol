@@ -1481,6 +1481,8 @@ assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
+assert(/\.pa-hero-copy > p:not\(\.pa-kicker\) \{[^}]*min-height: 128px;/s.test(publicCss), 'Public mobil hero aciklamasi font yuklenirken masaustu-tablet kaymasini onlemeli.');
+assert(/\.pa-hero-copy > p:not\(\.pa-kicker\) \{[^}]*min-height: 120px;/s.test(publicCss), 'Public dar mobil hero aciklamasi font yuklenirken arama alanini sabit tutmali.');
 for (const marker of ['role="group" aria-label="Öne çıkan kategoriler"', 'role="group" aria-label="Konu rehberleri"', 'role="group" aria-label="Çerez seçenekleri"']) {
   assert(homePreview.includes(marker), `Public jenerik aria-label semantik grup roluyle eslesmeli: ${marker}`);
 }
