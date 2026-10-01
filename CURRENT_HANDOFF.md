@@ -14,7 +14,15 @@
 - 390 px ve 1440 px Playwright görsel kontrollerinde yatay taşma yok; doğru WebP
   varyantı, yerel fontlar ve install banner alan rezervasyonu doğrulandı.
   `npm.cmd run check` 188/188 başarılı; `git diff --check` whitespace hatası vermedi.
-- Runtime commit/push, preview ve production deployment henüz yapılmadı.
+- Runtime commit `878f978` `codex/pagespeed-performance` branch'ine push edildi.
+  Public preview `dpl_Drg3gRZYGYYgi45rqDqP4wvHAv86` üzerinde font/WebP MIME,
+  noindex ve responsive Chromium kontrolleri geçti; preview mobil Lighthouse skoru
+  `95`, FCP `1,61 sn`, LCP `2,28 sn` oldu. Production deployment
+  `dpl_FX7XdExPsakNhZ1LyZRCs8LwTCaC` READY ve `https://arsiv.ibrahimlive.ai`
+  aliasına bağlı. Canlı `/health`, root, admin noindex/no-store, WOFF2 ve WebP
+  kontrolleri geçti. Canlı Lighthouse 13 mobil sonucu: skor `99`, FCP `1,37 sn`,
+  LCP `1,86 sn`, Speed Index `1,83 sn`, TBT `75 ms`, CLS `0,013`, 19 istek ve
+  yaklaşık `555 KiB`; render-blocking ve forced reflow tasarrufları `0 ms`.
 
 ## 2026-09-24 Public Soru 6 Başlık Düzeltmesi
 

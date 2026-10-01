@@ -17,8 +17,11 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   transfer `0,368 MB`; masaüstü skor `99`, FCP `0,54 sn`, LCP `0,66 sn` oldu.
   390 px ve 1440 px Playwright kontrollerinde yatay taşma görülmedi; responsive
   görseller ve yerel fontlar doğrulandı. `npm.cmd run check` 188/188 başarılı.
-  Runtime commit/deploy ve canlı doğrulama bilgileri `CURRENT_HANDOFF.md` içinde
-  yayın işlemi tamamlandığında güncellenecek.
+  Runtime commit `878f978`; preview `dpl_Drg3gRZYGYYgi45rqDqP4wvHAv86`, production
+  `dpl_FX7XdExPsakNhZ1LyZRCs8LwTCaC`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı Lighthouse 13 mobil sonucu skor `99`, FCP `1,37 sn`, LCP `1,86 sn`,
+  Speed Index `1,83 sn`, TBT `75 ms`, CLS `0,013`, 19 istek ve yaklaşık `555 KiB`.
+  Canlı `/health`, root, admin noindex/no-store, yerel WOFF2 ve WebP assetleri geçti.
 
 ## 2026-09-24
 
