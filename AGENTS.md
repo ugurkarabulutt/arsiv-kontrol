@@ -3761,7 +3761,7 @@ tespit edilir).
   Tüm rotalar async hale getirildi. `schema.sql` eklendi. Seed mantığı startup'a taşındı.
 - **Render deploy** — `.gitignore`, `.env.example` ve deploy talimatları eklendi.
 ### 2026-10-01
-- **SEO ve guven sinyalleri ilk paketi yerelde hazirlandi:** Kategori yapisi, kategori adlari,
+- **SEO ve guven sinyalleri ilk paketi production'a alindi:** Kategori yapisi, kategori adlari,
   kategori URL'leri ve kategori indeksleme mantigi degistirilmeden soru sayfalarinin SEO
   basliklari temizlendi. `Soru N:` / `N. Soru:` ve `Muhterem Hocam` girisleri yalniz HTML
   title katmanindan kaldirildi; gorunen soru ve kaynak metin aynen korundu. Mevcut konu
@@ -3769,10 +3769,10 @@ tespit edilir).
   eklendi. `/yayin-ilkeleri` ile `/kaynak-ve-duzeltme-politikasi` sayfalari footer, sitemap,
   WebPage schema ve `llms.txt` baglantilariyla eklendi. `npm.cmd run check` basarili,
   189/189 test gecti; `git diff --check` basarili. Playwright mobil 390x844 ve masaustu
-  1440x1100 kontrollerinde yatay tasma gorulmedi. Bu kayit aninda degisiklikler yereldir;
-  commit, push ve production deploy yapilmamistir.
+  1440x1100 kontrollerinde yatay tasma gorulmedi. Paket `f7932da` commit'iyle push edildi ve
+  `dpl_6Zdfmr2kJaTzY5P4ei9adfZvscXg` production deployment'iyle canliya alindi.
 ### 2026-10-02
-- **Soru URL standardi ve sitemap kategori katmanlari yerelde hazirlandi:** Yeni yayinlanan
+- **Soru URL standardi ve sitemap kategori katmanlari production altyapisina alindi:** Yeni yayinlanan
   soru URL'leri gorunen soru metnini degistirmeden `Muhterem Hocam`, `Muhterem Hocamiz`,
   `Soru N:` ve `N. Soru` girislerini slug'dan cikarir. Mevcut URL'ler icin eski adresten
   yeni adrese kalici 301 uretecek transaction tabanli Supabase migrasyonu ve varsayilan
@@ -3783,5 +3783,10 @@ tespit edilir).
   canli veriye yazilmadi. Sitemap artik her kaydin `category_slug` ana kategorisini ve
   `topic_slugs` alt konularini birlikte sayar; site ici konu/kategori sunumu degismedi.
   `npm.cmd run check` basarili, 195/195 test gecti; PostgreSQL migrasyon testi bagimli
-  kayitlarin ve redirect'in atomik tasindigini dogruladi. Degisiklikler yereldir; commit,
-  push, DB migrasyonu ve production deploy yapilmadi.
+  kayitlarin ve redirect'in atomik tasindigini dogruladi. Kod `f7932da` commit'iyle push edildi.
+  Supabase altyapi migrasyonu `20261002205036 public_question_slug_cleanup` olarak uygulandi;
+  ana kayit sayilari degismedi, RPC yalniz `service_role` icin acik ve bagimli FK'ler
+  `ON UPDATE CASCADE`. Production deployment `dpl_6Zdfmr2kJaTzY5P4ei9adfZvscXg` `READY` ve
+  canli alias `https://arsiv.ibrahimlive.ai`. Canli smoke ve SEO kontrolleri gecti; sitemap
+  3.040 URL iceriyor. Son dry-run yine 3.594 aday, 2.673 yayinda, 17 kontrollu cakisma ve
+  10 mevcut redirect verdi. Soru slug verileri henuz tasinmadi.

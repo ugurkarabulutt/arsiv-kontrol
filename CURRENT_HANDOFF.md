@@ -5130,11 +5130,11 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Durum: Bu paket URL temizligi calismasiyla birlikte `f7932da` commit'inde
   `codex/pagespeed-performance` branch'ine push edildi. Production deploy yapilmadi.
 
-## 2026-10-02 Soru URL temizligi ve sitemap kategori katmanlari (preview)
+## 2026-10-02 Soru URL temizligi ve sitemap kategori katmanlari (production altyapisi)
 
 - Yeni soru slug'lari artik gorunen sorudaki `Muhterem Hocam/Hocamiz` ve numarali soru
   oneklerini URL'ye tasimiyor; gorunen soru metni aynen korunuyor.
-- Mevcut URL'leri temizlemek icin `20261002110000_public_question_slug_cleanup.sql` ve
+- Mevcut URL'leri temizlemek icin `20261002205036_public_question_slug_cleanup.sql` ve
   varsayilan olarak salt okunur `npm.cmd run urls:plan` araci eklendi. Uygulama modu ayrica
   `--apply --confirm=question-url-migration` ister.
 - Canli dry-run: toplam 3.767 kayit, 3.594 migrasyon adayi, bunlarin 2.673'u yayinda,
@@ -5152,4 +5152,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   Preview smoke testinde `/health`, public preview, iki guven sayfasi, `robots.txt`,
   `sitemap.xml` ve `llms.txt` 200 dondu; preview header'lari `noindex` kaldi. Ornek soru
   sayfasinda gorunen `Muhterem Hocam` metni korunurken SEO title temizlendi ve konu rehberi
-  render edildi. Production deploy ve Supabase migration/apply yapilmadi.
+  render edildi. Supabase altyapi migrasyonu `20261002205036 public_question_slug_cleanup`
+  olarak uygulandi: kayit sayilari degismedi, RPC yalniz `service_role` icin acik ve iki bagimli
+  FK `ON UPDATE CASCADE`. Production deployment `dpl_6Zdfmr2kJaTzY5P4ei9adfZvscXg`
+  `READY` ve `https://arsiv.ibrahimlive.ai` aliasinda. Canli `/health`, ana sayfa, iki guven
+  sayfasi, ornek soru, `robots.txt`, `sitemap.xml` ve `llms.txt` dogrulandi. Sitemap 3.040 URL,
+  2.729 soru ve 295 kategori/konu URL'si iceriyor. Son dry-run yine 3.594 aday, 2.673 yayinda,
+  17 kontrollu cakisma ve 10 mevcut redirect verdi. Soru slug verileri henuz tasinmadi.

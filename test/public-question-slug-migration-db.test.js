@@ -45,7 +45,7 @@ test('question slug migration moves dependent data and keeps a permanent redirec
     );
   `);
   const migration = fs.readFileSync(
-    path.join(__dirname, '../supabase/migrations/20261002110000_public_question_slug_cleanup.sql'),
+    path.join(__dirname, '../supabase/migrations/20261002205036_public_question_slug_cleanup.sql'),
     'utf8'
   );
   await db.exec(migration);
