@@ -22,6 +22,18 @@ test('question URL removes numbered and hyphenated editorial prefixes', () => {
   assert.equal(publicQuestionSlug('soru-6-muhterem-hocam-olumden-korkmak-dogal-midir'), 'olumden-korkmak-dogal-midir');
 });
 
+test('question URL removes numbered sual editorial prefixes without stripping meaningful numbers', () => {
+  assert.equal(
+    publicQuestionSlug('1-sual-de-dunya-insan-vucudu-seklinde-kainatin-tam-kalbine-denk-geliyor-buyurdunuz'),
+    'dunya-insan-vucudu-seklinde-kainatin-tam-kalbine-denk-geliyor-buyurdunuz'
+  );
+  assert.equal(
+    publicQuestionSlug('2-suali-risalet-ve-nubuvvet-nedir-aciklar-misiniz'),
+    'risalet-ve-nubuvvet-nedir-aciklar-misiniz'
+  );
+  assert.equal(publicQuestionSlug('41.000 zikirdeyim, ne buyurursunuz?'), '41-000-zikirdeyim-ne-buyurursunuz');
+});
+
 test('question URL removes possessive and malformed honorific openings', () => {
   assert.equal(publicQuestionSlug('Muhterem Hocamın birinci suali: Zikrin faydası nedir?'), 'birinci-suali-zikrin-faydasi-nedir');
   assert.equal(publicQuestionSlug('muhterem-hocamin-hizmette-kiskanclik-nedir'), 'hizmette-kiskanclik-nedir');
