@@ -2,12 +2,17 @@
 
 require('dotenv').config({ path: process.env.ENV_FILE || '.env' });
 
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const { buildPublicQuestionSlugMigrationPlan } = require('../public-archive-seo');
 
 const args = new Set(process.argv.slice(2));
 const apply = args.has('--apply');
 const confirmed = args.has('--confirm=question-url-migration');
+const backupFileArg = [...args].find(arg => arg.startsWith('--backup-file='));
+const backupFile = backupFileArg ? backupFileArg.slice('--backup-file='.length).trim() : '';
 
 function requiredEnv(name) {
   const value = String(process.env[name] || '').trim();
@@ -25,9 +30,34 @@ async function fetchAllPages(buildQuery, pageSize = 1000) {
   }
 }
 
+async function fetchRowsByValues(buildQuery, values, chunkSize = 120) {
+  const rows = [];
+  const uniqueValues = [...new Set(values.filter(Boolean))];
+  for (let index = 0; index < uniqueValues.length; index += chunkSize) {
+    const chunk = uniqueValues.slice(index, index + chunkSize);
+    rows.push(...await fetchAllPages(() => buildQuery(chunk)));
+  }
+  return rows;
+}
+
+function writeMigrationBackup(fileName, payload) {
+  const destination = path.resolve(process.cwd(), fileName);
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  const contents = `${JSON.stringify(payload, null, 2)}\n`;
+  fs.writeFileSync(destination, contents, { encoding: 'utf8', flag: 'wx' });
+  return {
+    destination,
+    bytes: Buffer.byteLength(contents),
+    sha256: crypto.createHash('sha256').update(contents).digest('hex')
+  };
+}
+
 async function main() {
   if (apply && !confirmed) {
     throw new Error('Uygulama için --apply --confirm=question-url-migration birlikte verilmelidir.');
+  }
+  if (apply && !backupFile) {
+    throw new Error('Uygulama için --backup-file=<dosya> zorunludur.');
   }
   const supabase = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_KEY'), {
     auth: { persistSession: false, autoRefreshToken: false }
@@ -35,11 +65,11 @@ async function main() {
   const [rows, redirects] = await Promise.all([
     fetchAllPages(() => supabase
       .from('public_qa')
-      .select('slug,source_history_id,status,updated_at')
+      .select('slug,source_history_id,status,updated_at,related_slugs')
       .order('slug', { ascending: true })),
     fetchAllPages(() => supabase
       .from('public_question_redirects')
-      .select('from_slug,to_slug')
+      .select('from_slug,to_slug,history_id,redirect_type,created_at')
       .order('from_slug', { ascending: true }))
   ]);
   const plan = buildPublicQuestionSlugMigrationPlan(rows, {
@@ -57,6 +87,36 @@ async function main() {
   console.log(JSON.stringify(report, null, 2));
   if (!apply || !plan.length) return;
 
+  const oldSlugSet = new Set(plan.map(item => item.oldSlug));
+  const involvedSlugs = plan.flatMap(item => [item.oldSlug, item.newSlug]);
+  const [questionStats, visitEvents] = await Promise.all([
+    fetchRowsByValues(chunk => supabase
+      .from('public_question_stats')
+      .select('slug,read_count,updated_at')
+      .in('slug', chunk)
+      .order('slug', { ascending: true }), involvedSlugs),
+    fetchRowsByValues(chunk => supabase
+      .from('public_visit_events')
+      .select('id,question_slug')
+      .in('question_slug', chunk)
+      .order('id', { ascending: true }), involvedSlugs)
+  ]);
+  const relatedRows = rows
+    .filter(row => Array.isArray(row.related_slugs) && row.related_slugs.some(slug => oldSlugSet.has(slug)))
+    .map(row => ({ slug: row.slug, relatedSlugs: row.related_slugs }));
+  const backup = writeMigrationBackup(backupFile, {
+    schemaVersion: 1,
+    createdAt: new Date().toISOString(),
+    projectUrl: requiredEnv('SUPABASE_URL'),
+    plan,
+    sourceQuestions: rows.filter(row => oldSlugSet.has(row.slug)),
+    relatedRows,
+    redirects,
+    questionStats,
+    visitEvents
+  });
+  console.log(JSON.stringify({ backup }, null, 2));
+
   const { data, error } = await supabase.rpc('apply_public_question_slug_migration', {
     p_pairs: plan.map(({ oldSlug, newSlug }) => ({ oldSlug, newSlug }))
   });
@@ -65,7 +125,7 @@ async function main() {
   const [remainingRows, redirectsAfter] = await Promise.all([
     fetchAllPages(() => supabase
     .from('public_qa')
-    .select('slug,source_history_id,status,updated_at')
+    .select('slug,source_history_id,status,updated_at,related_slugs')
     .order('slug', { ascending: true })),
     fetchAllPages(() => supabase
       .from('public_question_redirects')

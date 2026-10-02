@@ -3788,5 +3788,11 @@ tespit edilir).
   ana kayit sayilari degismedi, RPC yalniz `service_role` icin acik ve bagimli FK'ler
   `ON UPDATE CASCADE`. Production deployment `dpl_6Zdfmr2kJaTzY5P4ei9adfZvscXg` `READY` ve
   canli alias `https://arsiv.ibrahimlive.ai`. Canli smoke ve SEO kontrolleri gecti; sitemap
-  3.040 URL iceriyor. Son dry-run yine 3.594 aday, 2.673 yayinda, 17 kontrollu cakisma ve
-  10 mevcut redirect verdi. Soru slug verileri henuz tasinmadi.
+  3.040 URL iceriyordu. 2026-10-03'te URL veri migrasyonu tamamlandi. Ilk RPC timeout'ta
+  transaction tamamen geri alindi; service-role bakim RPC'sine ozel timeout migrasyonu
+  `20261002213649` olarak uygulandi. 3.594 ana kayit tasindi; 6 uzun collision ara slug'i ve
+  5 `Muhterem Hocamin/HocamTasavvufta` varyanti da temizlendi. Toplam 3.599 farkli soru URL'si
+  degisti. Nihai durumda 3.767 soru, 2.729 yayinda soru, 3.609 redirect ve 3.605 cleanup
+  redirect'i var. Eksik hedef, redirect zinciri, yetim topic/search, eski stats/visit/related
+  slug, `muhterem-hocam*` baslangici ve cift tireli slug sayisi sifir; son dry-run adayi `0`.
+  Yerel geri donus yedekleri ana proje `tmp/url-migration-20261003` altinda hashleriyle saklandi.

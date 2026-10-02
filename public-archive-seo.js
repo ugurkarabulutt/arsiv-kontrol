@@ -11,7 +11,8 @@ function publicSeoSlug(value = '') {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 96);
+    .slice(0, 96)
+    .replace(/-+$/g, '');
   return ascii || 'soru';
 }
 
@@ -21,14 +22,14 @@ function stripPublicQuestionAddress(value = '') {
   const slugLike = /^[a-z0-9-]+$/i.test(source);
   if (slugLike) {
     const cleaned = source
-      .replace(/^(?:(?:soru-\d+|\d+-soru)-)?muhterem-hocam(?:iz)?-+/i, '')
+      .replace(/^(?:(?:soru-\d+|\d+-soru)-)?muhterem-hocam(?:izin|iz|in)?(?:-+|(?=[a-z]))/i, '')
       .replace(/^(?:soru-\d+|\d+-soru)-+/i, '')
       .replace(/^-+|-+$/g, '');
     return cleaned || source;
   }
   const cleaned = source
     .replace(/^\s*(?:[“"'‘’]\s*)?(?:(?:Soru\s+\d+|\d+\s*[.)-]?\s*Soru)\s*[:.)-]?\s*)?/iu, '')
-    .replace(/^\s*Muhterem\s+Hocam(?:ız)?\s*[,;:–—-]?\s*/iu, '')
+    .replace(/^\s*Muhterem\s+Hocam(?:ızın|ız|ın)?\s*[,;:–—-]?\s*/iu, '')
     .replace(/^\s*(?:Soru\s+\d+|\d+\s*[.)-]?\s*Soru)\s*[:.)-]?\s*/iu, '')
     .trim();
   return cleaned || source;
@@ -45,7 +46,8 @@ function uniquePublicQuestionSlug(value, usedSlugs, fallback = 'soru') {
   let index = 2;
   while (used.has(candidate)) {
     const suffix = `-${index}`;
-    candidate = `${base.slice(0, Math.max(1, 96 - suffix.length))}${suffix}`;
+    const stem = base.slice(0, Math.max(1, 96 - suffix.length)).replace(/-+$/g, '') || fallback;
+    candidate = `${stem}${suffix}`;
     index += 1;
   }
   used.add(candidate);

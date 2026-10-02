@@ -21,9 +21,26 @@ test('question URL removes numbered and hyphenated editorial prefixes', () => {
   assert.equal(publicQuestionSlug('soru-6-muhterem-hocam-olumden-korkmak-dogal-midir'), 'olumden-korkmak-dogal-midir');
 });
 
+test('question URL removes possessive and malformed honorific openings', () => {
+  assert.equal(publicQuestionSlug('Muhterem Hocamın birinci suali: Zikrin faydası nedir?'), 'birinci-suali-zikrin-faydasi-nedir');
+  assert.equal(publicQuestionSlug('muhterem-hocamin-hizmette-kiskanclik-nedir'), 'hizmette-kiskanclik-nedir');
+  assert.equal(publicQuestionSlug('Muhterem HocamTasavvufta eğitim nasıldır?'), 'tasavvufta-egitim-nasildir');
+  assert.equal(publicQuestionSlug('muhterem-hocamtasavvufta-egitim-nasildir'), 'tasavvufta-egitim-nasildir');
+});
+
 test('future question URLs resolve collisions without changing the question', () => {
   const used = new Set(['cennete-kimler-girer']);
   assert.equal(uniquePublicQuestionSlug('Muhterem Hocam, cennete kimler girer?', used), 'cennete-kimler-girer-2');
+});
+
+test('long collision URLs never create a double hyphen before the numeric suffix', () => {
+  const longQuestion = `${'a'.repeat(93)}-bc`;
+  const base = publicQuestionSlug(longQuestion);
+  const used = new Set([base]);
+  const collisionSlug = uniquePublicQuestionSlug(longQuestion, used);
+  assert.equal(collisionSlug, `${'a'.repeat(93)}-2`);
+  assert.equal(collisionSlug.includes('--'), false);
+  assert.equal(publicQuestionSlug(`${'a'.repeat(95)} b`), 'a'.repeat(95));
 });
 
 test('migration plan preserves old URLs and creates deterministic clean destinations', () => {

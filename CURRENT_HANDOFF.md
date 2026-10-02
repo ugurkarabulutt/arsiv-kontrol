@@ -5157,5 +5157,18 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   FK `ON UPDATE CASCADE`. Production deployment `dpl_6Zdfmr2kJaTzY5P4ei9adfZvscXg`
   `READY` ve `https://arsiv.ibrahimlive.ai` aliasinda. Canli `/health`, ana sayfa, iki guven
   sayfasi, ornek soru, `robots.txt`, `sitemap.xml` ve `llms.txt` dogrulandi. Sitemap 3.040 URL,
-  2.729 soru ve 295 kategori/konu URL'si iceriyor. Son dry-run yine 3.594 aday, 2.673 yayinda,
-  17 kontrollu cakisma ve 10 mevcut redirect verdi. Soru slug verileri henuz tasinmadi.
+  2.729 soru ve 295 kategori/konu URL'si iceriyordu.
+- 2026-10-03 URL veri migrasyonu tamamlandi. Ilk RPC denemesi statement timeout nedeniyle
+  transaction'i tamamen geri aldi; 3.767 soru ve 10 redirect'in degismedigi dogrulandi.
+  `20261002213649_public_question_slug_cleanup_timeout.sql` ile yalniz service-role bakim
+  RPC'sinde timeout kaldirildi. Ikinci deneme 3.594 kaydi tasidi. Uzun collision slug'larinda
+  ortaya cikan 6 cift tireli ara adres ve `Muhterem Hocamin/HocamTasavvufta` ile baslayan 5
+  varyant ayrica temizlendi. Toplam 3.599 farkli soru kaydinin URL'si degisti; ara adreslerle
+  birlikte 3.605 `slug_cleanup` redirect'i ve toplam 3.609 redirect var.
+- Nihai DB dogrulamasi: soru 3.767, yayinda 2.729, topic linki 11.320, arama belgesi 9.556;
+  eksik redirect hedefi, redirect zinciri, yetim topic/search, eski stats/visit/related slug,
+  `muhterem-hocam*` baslangici ve cift tireli slug sayisi `0`. `npm.cmd run urls:plan`
+  migration adayi `0` dondu.
+- Kalici yerel yedekler `C:\Users\ugur\Desktop\arsiv-kontrol\tmp\url-migration-20261003`
+  altinda: `before-retry.json` SHA-256 `8DFDA016...F4423`, `remaining-six.json`
+  `6DE79182...8953`, `hocam-variants.json` `EDD13B47...6777`.
