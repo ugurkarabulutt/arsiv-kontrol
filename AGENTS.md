@@ -3791,8 +3791,15 @@ tespit edilir).
   3.040 URL iceriyordu. 2026-10-03'te URL veri migrasyonu tamamlandi. Ilk RPC timeout'ta
   transaction tamamen geri alindi; service-role bakim RPC'sine ozel timeout migrasyonu
   `20261002213649` olarak uygulandi. 3.594 ana kayit tasindi; 6 uzun collision ara slug'i ve
-  5 `Muhterem Hocamin/HocamTasavvufta` varyanti da temizlendi. Toplam 3.599 farkli soru URL'si
-  degisti. Nihai durumda 3.767 soru, 2.729 yayinda soru, 3.609 redirect ve 3.605 cleanup
+  5 `Muhterem Hocamin/HocamTasavvufta` varyanti da temizlendi. Sitemap denetiminde kalan iki
+  editoryal `1. sual` / `2. suali` oneki de kontrollu tasindi. Toplam 3.601 farkli soru URL'si
+  degisti. Nihai durumda 3.767 soru, 2.729 yayinda soru, 3.611 redirect ve 3.607 cleanup
   redirect'i var. Eksik hedef, redirect zinciri, yetim topic/search, eski stats/visit/related
   slug, `muhterem-hocam*` baslangici ve cift tireli slug sayisi sifir; son dry-run adayi `0`.
   Yerel geri donus yedekleri ana proje `tmp/url-migration-20261003` altinda hashleriyle saklandi.
+  Sitemap sayfalama sirasi `updated_at, slug` ile kararli hale getirildi ve slug bazinda
+  tekillestirildi. Canlida `3.040/3.040` toplam URL ve `2.729/2.729` soru URL'si benzersiz;
+  `muhterem-hocam*`, numarali `sual` ve cift tireli URL kalmadi. Eski adresler `301`, yeni
+  adresler `200`, son dry-run adayi `0`. `npm.cmd run check` 199/199 basarili. Runtime
+  commitleri `7df81fc`, `4a94553`; final production `dpl_D6gJZ19qbiqo1zVUgk6Bh9sLy1oF`
+  `READY` ve `https://arsiv.ibrahimlive.ai` aliasina bagli.

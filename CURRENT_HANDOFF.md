@@ -5163,12 +5163,22 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   `20261002213649_public_question_slug_cleanup_timeout.sql` ile yalniz service-role bakim
   RPC'sinde timeout kaldirildi. Ikinci deneme 3.594 kaydi tasidi. Uzun collision slug'larinda
   ortaya cikan 6 cift tireli ara adres ve `Muhterem Hocamin/HocamTasavvufta` ile baslayan 5
-  varyant ayrica temizlendi. Toplam 3.599 farkli soru kaydinin URL'si degisti; ara adreslerle
-  birlikte 3.605 `slug_cleanup` redirect'i ve toplam 3.609 redirect var.
+  varyant ayrica temizlendi. Sitemap denetiminde bulunan `1. sual` ve `2. suali` bicimindeki
+  iki editoryal onek de yalniz ilgili iki kayitta temizlendi. Toplam 3.601 farkli soru kaydinin
+  URL'si degisti; ara adreslerle birlikte 3.607 `slug_cleanup` redirect'i ve toplam 3.611
+  redirect var.
 - Nihai DB dogrulamasi: soru 3.767, yayinda 2.729, topic linki 11.320, arama belgesi 9.556;
   eksik redirect hedefi, redirect zinciri, yetim topic/search, eski stats/visit/related slug,
   `muhterem-hocam*` baslangici ve cift tireli slug sayisi `0`. `npm.cmd run urls:plan`
   migration adayi `0` dondu.
 - Kalici yerel yedekler `C:\Users\ugur\Desktop\arsiv-kontrol\tmp\url-migration-20261003`
   altinda: `before-retry.json` SHA-256 `8DFDA016...F4423`, `remaining-six.json`
-  `6DE79182...8953`, `hocam-variants.json` `EDD13B47...6777`.
+  `6DE79182...8953`, `hocam-variants.json` `EDD13B47...6777`, `numbered-suals.json`
+  `127F24FC...0C296`.
+- Sitemap sorgusu `updated_at, slug` ile kararli siralandi ve slug bazinda tekillestirildi.
+  Canli sitemap `3.040/3.040` benzersiz toplam URL ve `2.729/2.729` benzersiz soru URL'si
+  veriyor; `muhterem-hocam*`, numarali `sual` ve cift tireli soru URL'si sayisi `0`.
+  Eski ornek adresler `301`, yeni adresler `200`; yedek dosya rotasi `404`. Son dry-run
+  migration adayi `0`. `npm.cmd run check` 199/199 basarili; `git diff --check` basarili.
+  Runtime commitleri `7df81fc` ve `4a94553`; final production deployment
+  `dpl_D6gJZ19qbiqo1zVUgk6Bh9sLy1oF` `READY` ve canli aliasa bagli.
