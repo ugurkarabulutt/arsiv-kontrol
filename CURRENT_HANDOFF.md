@@ -5127,9 +5127,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   Playwright ile 390x844 ve 1440x1100 gorunumlerinde yatay tasma olmadigi, yeni sayfalarin ve
   konu rehberi kartinin render edildigi dogrulandi. Yerel fixture sunucusundaki tek 404,
   bilerek baglanmayan `/public-preview/api/session` istegidir.
-- Durum: Degisiklikler yalniz `codex/pagespeed-performance` calisma agacinda; commit, push ve
-  production deploy yapilmadi.
-## 2026-10-02 Soru URL temizligi ve sitemap kategori katmanlari (yerel)
+- Durum: Bu paket URL temizligi calismasiyla birlikte `f7932da` commit'inde
+  `codex/pagespeed-performance` branch'ine push edildi. Production deploy yapilmadi.
+
+## 2026-10-02 Soru URL temizligi ve sitemap kategori katmanlari (preview)
 
 - Yeni soru slug'lari artik gorunen sorudaki `Muhterem Hocam/Hocamiz` ve numarali soru
   oneklerini URL'ye tasimiyor; gorunen soru metni aynen korunuyor.
@@ -5145,4 +5146,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Dogrulama: `npm.cmd run check` basarili, 195/195 test; `git diff --check` basarili.
   PostgreSQL entegrasyon testi ana kayit, konu baglantilari, arama belgeleri, ilgili slug'lar,
   okunma sayaci, ziyaret gruplamasi ve redirect tasimasini dogruladi.
-- Durum: Yerel calisma agaci; commit, push, Supabase migration apply ve deploy yapilmadi.
+- Durum: Kod `f7932da` commit'iyle `codex/pagespeed-performance` branch'ine push edildi.
+  Vercel preview `dpl_5cQPKoEqs4V7NAD7YWUuoK4GzYZ2` /
+  `https://arsiv-kontrol-fbuar1ipb-ugurkarabulutts-projects.vercel.app` adresinde `READY`.
+  Preview smoke testinde `/health`, public preview, iki guven sayfasi, `robots.txt`,
+  `sitemap.xml` ve `llms.txt` 200 dondu; preview header'lari `noindex` kaldi. Ornek soru
+  sayfasinda gorunen `Muhterem Hocam` metni korunurken SEO title temizlendi ve konu rehberi
+  render edildi. Production deploy ve Supabase migration/apply yapilmadi.
