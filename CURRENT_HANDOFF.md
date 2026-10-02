@@ -5114,3 +5114,35 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Banner yalniz ana sayfada, standalone/kurulu degilken ve kullanici son 30 gunde kapatmamisken
   gorunur. Asagi scroll'da kaybolur; carpiya basilinca root yukseklik attribute'lari kalkar ve
   header/govdede bosluk kalmaz.
+## 2026-10-01 SEO ve guven sinyalleri ilk paketi (yerel)
+
+- Kategori yapisina ve kategori URL'lerine dokunulmadi.
+- Soru sayfalarinin SEO basliklarinda `Soru N:` ve `Muhterem Hocam` gibi tekrar eden girisler
+  temizlendi; gorunen soru metni ve kaynak icerik degistirilmedi.
+- Mevcut konu rehberiyle kategori eslesmesi bulunan soru sayfalarina `Konu rehberi` ic linki
+  eklendi.
+- `/yayin-ilkeleri` ve `/kaynak-ve-duzeltme-politikasi` guven sayfalari; footer, sitemap ve
+  `llms.txt` baglantilariyla birlikte eklendi.
+- Dogrulama: `npm.cmd run check` basarili, 189/189 test gecti; `git diff --check` basarili.
+  Playwright ile 390x844 ve 1440x1100 gorunumlerinde yatay tasma olmadigi, yeni sayfalarin ve
+  konu rehberi kartinin render edildigi dogrulandi. Yerel fixture sunucusundaki tek 404,
+  bilerek baglanmayan `/public-preview/api/session` istegidir.
+- Durum: Degisiklikler yalniz `codex/pagespeed-performance` calisma agacinda; commit, push ve
+  production deploy yapilmadi.
+## 2026-10-02 Soru URL temizligi ve sitemap kategori katmanlari (yerel)
+
+- Yeni soru slug'lari artik gorunen sorudaki `Muhterem Hocam/Hocamiz` ve numarali soru
+  oneklerini URL'ye tasimiyor; gorunen soru metni aynen korunuyor.
+- Mevcut URL'leri temizlemek icin `20261002110000_public_question_slug_cleanup.sql` ve
+  varsayilan olarak salt okunur `npm.cmd run urls:plan` araci eklendi. Uygulama modu ayrica
+  `--apply --confirm=question-url-migration` ister.
+- Canli dry-run: toplam 3.767 kayit, 3.594 migrasyon adayi, bunlarin 2.673'u yayinda,
+  17 kontrollu slug cakismasi ve mevcut 10 redirect. Canli DB'de hicbir kayit degistirilmedi.
+- Sitemap ana `category_slug` ve alt `topic_slugs` adreslerini birlikte kapsar. Public site
+  icindeki mevcut konu bazli sunum ve kategori arayuzu degistirilmedi.
+- Redirect middleware admin calisma alani bayragindan ayrildi; eski soru URL'leri production
+  ortaminda da kalici 301 ile yeni kanonik adrese gider.
+- Dogrulama: `npm.cmd run check` basarili, 195/195 test; `git diff --check` basarili.
+  PostgreSQL entegrasyon testi ana kayit, konu baglantilari, arama belgeleri, ilgili slug'lar,
+  okunma sayaci, ziyaret gruplamasi ve redirect tasimasini dogruladi.
+- Durum: Yerel calisma agaci; commit, push, Supabase migration apply ve deploy yapilmadi.

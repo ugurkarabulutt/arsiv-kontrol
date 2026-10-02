@@ -433,6 +433,8 @@ test('question and category pages expose evidence-aware SEO text', () => {
   const detail = renderPublicArchivePreviewRoute('/soru/hidayet-nedir', {}, { ...seoData, basePath: '', noindex: false }).html;
   assert.match(detail, /<meta name="description" content="Hidayet başlığında dini soru-cevap\. Ayet atıfları: Bakara-2, Mâide-35\./);
   assert.match(detail, /"citation":\[\{"@type":"CreativeWork","name":"Bakara-2"/);
+  assert.match(detail, /Konu rehberi/);
+  assert.match(detail, /\/konu-rehberi\/hidayet/);
 
   const category = renderPublicArchivePreviewRoute('/kategori/hidayet', {}, { ...seoData, basePath: '', noindex: false }).html;
   assert.match(category, /Hidayet Soruları ve Cevapları/);
@@ -440,6 +442,28 @@ test('question and category pages expose evidence-aware SEO text', () => {
   assert.match(category, /Bakara-2/);
   assert.match(category, /Mâide-35/);
   assert.match(category, /"mentions":\[\{"@type":"Thing","name":"Hidayet"\},\{"@type":"CreativeWork","name":"Bakara-2"/);
+});
+
+test('question SEO title removes editorial prefixes without changing the visible question', () => {
+  const question = 'Muhterem Hocam, tayy-i mekân ve bast-ı zamanı açıklar mısınız?';
+  const data = {
+    ...publicArchiveFixtures,
+    categories: [],
+    topics: [],
+    qa: [{
+      slug: 'tayyi-mekan',
+      title: question,
+      question,
+      answer: ['Cevap metni.'],
+      publishedAt: '2026-10-01T00:00:00.000Z',
+      readTime: 1,
+      relatedSlugs: []
+    }]
+  };
+  const detail = renderPublicArchivePreviewRoute('/soru/tayyi-mekan', {}, { ...data, basePath: '', noindex: false }).html;
+  assert.match(detail, /<title>Tayy-i mekân ve bast-ı zamanı açıklar mısınız\?/);
+  assert.doesNotMatch(detail, /<title>Muhterem Hocam/);
+  assert.match(detail, new RegExp(`<p>${question.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<\\/p>`));
 });
 
 test('archive lists are paginated for large public data', () => {
@@ -1358,6 +1382,8 @@ test('public preview exposes separate index and info pages', () => {
     '/public-preview/kategoriler',
     '/public-preview/hakkimizda',
     '/public-preview/nasil-kullanilir',
+    '/public-preview/yayin-ilkeleri',
+    '/public-preview/kaynak-ve-duzeltme-politikasi',
     '/public-preview/iletisim',
     '/public-preview/gizlilik',
     '/public-preview/cerez-politikasi',
@@ -1379,6 +1405,16 @@ test('public info pages have page-specific explanatory copy and actions', () => 
   assert.match(about, /"sameAs":\["https:\/\/www\.acboran\.com\/tr\/p\/dr-abdulcabbar-boran-kimdir","https:\/\/www\.ibrahimlive\.com\/tr-tr\/about-us"\]/);
   assert.match(about, /Arşivi İncele/);
   assert.match(about, /Nasıl Kullanılır\?/);
+
+  const publishing = renderPublicArchivePreviewRoute('/yayin-ilkeleri', {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
+  assert.match(publishing, /yeni bir fetva üretmez/);
+  assert.match(publishing, /Kaynağa bağlılık/);
+  assert.match(publishing, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/yayin-ilkeleri">/);
+
+  const corrections = renderPublicArchivePreviewRoute('/public-preview/kaynak-ve-duzeltme-politikasi').html;
+  assert.match(corrections, /Kaynak izi korunur/);
+  assert.match(corrections, /Kontrollü güncelleme/);
+  assert.match(corrections, /Sorunu İlet/);
 
   const howTo = renderPublicArchivePreviewRoute('/public-preview/nasil-kullanilir').html;
   assert.match(howTo, /Aradığınız cevaba arama, arşiv ve kategoriler üzerinden ulaşabilirsiniz\./);

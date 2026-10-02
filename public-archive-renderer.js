@@ -193,6 +193,8 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/soru-sor`,
   `${PREVIEW_BASE}/hakkimizda`,
   `${PREVIEW_BASE}/nasil-kullanilir`,
+  `${PREVIEW_BASE}/yayin-ilkeleri`,
+  `${PREVIEW_BASE}/kaynak-ve-duzeltme-politikasi`,
   `${PREVIEW_BASE}/iletisim`,
   `${PREVIEW_BASE}/gizlilik`,
   `${PREVIEW_BASE}/cerez-politikasi`,
@@ -616,6 +618,8 @@ function footer() {
             <strong>Bilgi</strong>
             <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
             <a href="${PREVIEW_BASE}/nasil-kullanilir">Nasıl Kullanılır</a>
+            <a href="${PREVIEW_BASE}/yayin-ilkeleri">Yayın İlkeleri</a>
+            <a href="${PREVIEW_BASE}/kaynak-ve-duzeltme-politikasi">Kaynak ve Düzeltme</a>
             <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
             <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
             <a href="${PREVIEW_BASE}/cerez-politikasi">Çerez Politikası</a>
@@ -1208,7 +1212,14 @@ function categoryIndexStructuredData({ categories = [], title = 'Dini Soru Kateg
 
 function questionSeoTitle(entry = {}) {
   const source = entry.question || entry.title || '';
-  return compactSeoText(String(source || '').replace(/^\s*\d+\.\s*Soru:\s*/iu, ''), PUBLIC_ARCHIVE_SEO_TITLE_MAX);
+  const normalized = String(source || '')
+    .replace(/^\s*(?:\d+\.\s*Soru|Soru\s+\d+)\s*:\s*/iu, '')
+    .replace(/^\s*[“"'‘’]?\s*Muhterem\s+Hocam(?:ız)?\s*[,;:–—-]?\s*/iu, '')
+    .trim();
+  const sentenceCase = normalized
+    ? `${normalized.charAt(0).toLocaleUpperCase('tr-TR')}${normalized.slice(1)}`
+    : source;
+  return compactSeoText(sentenceCase, PUBLIC_ARCHIVE_SEO_TITLE_MAX);
 }
 
 function seoList(items = [], limit = 3) {
@@ -1518,6 +1529,30 @@ function topicArticleRelatedQuestions(article = {}, limit = 8) {
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score || normalizedReadCount(b.entry) - normalizedReadCount(a.entry) || entryPublishedTime(b.entry) - entryPublishedTime(a.entry));
   return scored.slice(0, limit).map(item => item.entry);
+}
+
+function topicArticleForEntry(entry = {}) {
+  const entryCategorySlugs = new Set(categorySlugsFor(entry));
+  if (!entryCategorySlugs.size) return null;
+  return Object.values(publicArchiveTopicArticles || {}).find(article => {
+    return article?.slug && article?.path && entryCategorySlugs.has(String(article.categorySlug || '').trim());
+  }) || null;
+}
+
+function questionTopicGuideHtml(entry = {}) {
+  const article = topicArticleForEntry(entry);
+  if (!article) return '';
+  return `
+    <section class="pa-question-guide" aria-labelledby="pa-question-guide-title">
+      <p class="pa-question-guide-kicker">Konu rehberi</p>
+      <h2 id="pa-question-guide-title">${escapeHtml(article.title)}</h2>
+      <p>${escapeHtml(article.description || article.summary || 'Bu konuyu bağlantılı cevaplarla birlikte inceleyin.')}</p>
+      <a href="${escapeHtml(publicArchivePath(article.path))}">
+        <span>Rehberi aç</span>
+        ${iconSvg('arrow-right', 'pa-cta-icon')}
+      </a>
+    </section>
+  `;
 }
 
 function renderTopicArticleBlock(block = {}, article = {}) {
@@ -2535,6 +2570,7 @@ function renderQuestion(slug) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
   const related = relatedEntries(entry);
+  const topicGuideHtml = questionTopicGuideHtml(entry);
   const blockedPopular = new Set([entry.slug, ...related.map(item => item.slug)]);
   const currentQuestion = questionTextIdentity(entry);
   const seenPopularQuestions = new Set([currentQuestion, ...related.map(questionTextIdentity)].filter(Boolean));
@@ -2597,6 +2633,7 @@ function renderQuestion(slug) {
             </div>
           </div>
           <aside class="pa-answer-aside">
+            ${topicGuideHtml}
             ${related.length ? `
               <section>
                 <h2>İlgili Sorular</h2>
@@ -2868,6 +2905,44 @@ function renderInfoPage(kind) {
         { label: 'Arşive Git', href: `${PREVIEW_BASE}/arsiv`, secondary: true }
       ]
     },
+    'yayin-ilkeleri': {
+      title: 'Yayın İlkeleri',
+      kicker: 'Yayın İlkeleri',
+      heading: 'Her soru-cevap kaydı, kaynak metnin anlamını ve bağlamını koruyacak şekilde yayımlanır.',
+      copy: [
+        'Dini Sorular ve Cevaplar Arşivi yeni bir fetva üretmez. Dr. Abdulcabbar Boran tarafından verilmiş cevapları, soru ve cevap ilişkisi korunarak okunabilir ve aranabilir bir arşiv düzeninde sunar.',
+        'Yayın hazırlığında metnin kaynağa bağlı kalması, soruyla cevabın uyumu, yazım bütünlüğü ve bağlantılı kavramların doğru gösterilmesi gözetilir. Okuyucuya ait özel bilgiler sitede yayımlanmaz.'
+      ],
+      points: [
+        { title: 'Kaynağa bağlılık', text: 'Cevaba kaynakta bulunmayan yeni bir dinî hüküm, yorum veya açıklama eklenmez.' },
+        { title: 'Yayın kontrolü', text: 'Soru-cevap uyumu, metin bütünlüğü, yazım ve yayın görünümü kontrol edilmeden kayıt sitede yayımlanmaz.' },
+        { title: 'Açık kimlik', text: 'Yanıtlayan kişi, yayın tarihi, güncelleme tarihi ve metinde açıkça geçen ayet atıfları uygun sayfalarda gösterilir.' },
+        { title: 'Okuyucu yararı', text: 'Başlık, bağlantı ve rehber düzeni; metnin anlamını değiştirmeden cevabın daha kolay bulunması ve takip edilmesi için hazırlanır.' }
+      ],
+      actions: [
+        { label: 'Kaynak ve Düzeltme Politikası', href: `${PREVIEW_BASE}/kaynak-ve-duzeltme-politikasi` },
+        { label: 'Hakkımızda', href: `${PREVIEW_BASE}/hakkimizda`, secondary: true }
+      ]
+    },
+    'kaynak-ve-duzeltme-politikasi': {
+      title: 'Kaynak ve Düzeltme Politikası',
+      kicker: 'Kaynak ve Düzeltme',
+      heading: 'Kaynak izi korunur; bildirilen hatalar kayıtlı ve denetlenebilir bir süreçle düzeltilir.',
+      copy: [
+        'Arşivdeki cevaplar, yayıma esas alınan kaynak metne bağlı kalınarak hazırlanır. Metinde açıkça yer alan Kur’ân ayeti atıfları cevap sayfasında kaynak ve delil bağlamı olarak gösterilir.',
+        'Yazım hatası, eksik bölüm, soru-cevap uyuşmazlığı, tekrar veya bozuk görünüm bildirildiğinde kayıt yeniden incelenir. Uygun bulunan düzeltme yalnız görünen sayfada değil, etkilenen yayın kaydında da kontrollü biçimde uygulanır.'
+      ],
+      points: [
+        { title: 'Kaynak izi', text: 'Yayınlanan cevap, kaynak kaydı ve yayın hazırlığıyla ilişkilendirilir; kaynakta olmayan içerik eklenmez.' },
+        { title: 'Düzeltme isteği', text: 'Okuyucular sayfa bağlantısını ve gördükleri sorunu ileterek yeniden inceleme isteyebilir.' },
+        { title: 'Kontrollü güncelleme', text: 'Düzeltmeler önce kapsam ve metin eşleşmesi açısından denetlenir, ardından ilgili kayda uygulanır ve değişiklik izi korunur.' },
+        { title: 'Şeffaf tarih', text: 'Güncellenen soru-cevap sayfalarında son güncelleme tarihi görünür; eski bağlantıların çalışması korunur.' }
+      ],
+      actions: [
+        { label: 'Sorunu İlet', href: `${PREVIEW_BASE}/iletisim` },
+        { label: 'Yayın İlkeleri', href: `${PREVIEW_BASE}/yayin-ilkeleri`, secondary: true }
+      ]
+    },
     iletisim: {
       title: 'İletişim',
       kicker: 'İletişim',
@@ -2944,13 +3019,25 @@ function renderInfoPage(kind) {
     }
   };
   const page = pages[kind] || pages.hakkimizda;
+  const canonicalPath = `/${kind}`;
+  const pageStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${publicArchiveCanonicalUrl(canonicalPath)}#webpage`,
+    url: publicArchiveCanonicalUrl(canonicalPath),
+    name: page.title,
+    description: page.heading,
+    inLanguage: 'tr',
+    isPartOf: { '@id': `${publicArchiveCanonicalUrl('/')}#website` },
+    publisher: { '@id': `${publicArchiveCanonicalUrl('/')}#organization` }
+  };
   return renderShell({
     active: kind === 'iletisim' ? 'ask' : 'archive',
     title: page.title,
     description: page.heading,
-    canonicalPath: `/${kind}`,
+    canonicalPath,
     pageNoindex: kind === 'gizlilik' || kind === 'cerez-politikasi' || kind === 'kullanim-kosullari',
-    structuredData: page.structuredData || [],
+    structuredData: [pageStructuredData, ...(page.structuredData ? [page.structuredData] : [])],
     content: `
       <main class="pa-main pa-narrow-main">
         <section class="pa-info-page">
@@ -5135,6 +5222,8 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
     if (pathname === `${PREVIEW_BASE}/hakkimizda`) return renderInfoPage('hakkimizda');
     if (pathname === `${PREVIEW_BASE}/nasil-kullanilir`) return renderInfoPage('nasil-kullanilir');
+    if (pathname === `${PREVIEW_BASE}/yayin-ilkeleri`) return renderInfoPage('yayin-ilkeleri');
+    if (pathname === `${PREVIEW_BASE}/kaynak-ve-duzeltme-politikasi`) return renderInfoPage('kaynak-ve-duzeltme-politikasi');
     if (pathname === `${PREVIEW_BASE}/iletisim`) return renderInfoPage('iletisim');
     if (pathname === `${PREVIEW_BASE}/gizlilik`) return renderInfoPage('gizlilik');
     if (pathname === `${PREVIEW_BASE}/cerez-politikasi`) return renderInfoPage('cerez-politikasi');
@@ -5236,6 +5325,8 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/soru-sor', (req, res, next) => sendRoute(req, res, next, 'soru-sor'));
   router.get('/hakkimizda', (req, res, next) => sendRoute(req, res, next, 'hakkimizda'));
   router.get('/nasil-kullanilir', (req, res, next) => sendRoute(req, res, next, 'nasil-kullanilir'));
+  router.get('/yayin-ilkeleri', (req, res, next) => sendRoute(req, res, next, 'yayin-ilkeleri'));
+  router.get('/kaynak-ve-duzeltme-politikasi', (req, res, next) => sendRoute(req, res, next, 'kaynak-ve-duzeltme-politikasi'));
   router.get('/iletisim', (req, res, next) => sendRoute(req, res, next, 'iletisim'));
   router.get('/gizlilik', (req, res, next) => sendRoute(req, res, next, 'gizlilik'));
   router.get('/cerez-politikasi', (req, res, next) => sendRoute(req, res, next, 'cerez-politikasi'));

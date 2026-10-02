@@ -674,7 +674,7 @@ create index if not exists public_qa_category_idx on public.public_qa (category_
 create index if not exists public_qa_source_history_idx on public.public_qa (source_history_id);
 
 create table if not exists public.public_qa_topics (
-  qa_slug text references public.public_qa(slug) on delete cascade,
+  qa_slug text references public.public_qa(slug) on update cascade on delete cascade,
   topic_slug text references public.public_topics(slug) on delete cascade,
   updated_at timestamptz not null default now(),
   primary key (qa_slug, topic_slug)
@@ -687,7 +687,7 @@ create index if not exists public_qa_topics_topic_idx on public.public_qa_topics
 create extension if not exists vector with schema extensions;
 
 create table if not exists public.public_qa_search_documents (
-  qa_slug text not null references public.public_qa(slug) on delete cascade,
+  qa_slug text not null references public.public_qa(slug) on update cascade on delete cascade,
   document_key text not null,
   document_kind text not null check (document_kind in ('question', 'answer', 'concept')),
   content text not null,

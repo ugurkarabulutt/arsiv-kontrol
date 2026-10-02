@@ -3967,6 +3967,47 @@ a.pa-chip:hover,
   border-radius: var(--pa-radius-md);
 }
 
+.pa-answer-aside .pa-question-guide {
+  background: color-mix(in srgb, var(--pa-accent) 10%, var(--pa-surface));
+  border-color: color-mix(in srgb, var(--pa-accent) 44%, var(--pa-border));
+}
+
+.pa-question-guide-kicker {
+  margin: 0 0 8px;
+  color: var(--pa-accent-strong);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.pa-question-guide h2 {
+  margin-bottom: 10px;
+}
+
+.pa-question-guide p:not(.pa-question-guide-kicker) {
+  margin: 0;
+  color: var(--pa-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pa-question-guide a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  color: var(--pa-accent-strong);
+  font-size: 14px;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.pa-question-guide a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .pa-side-list {
   display: grid;
   gap: 12px;

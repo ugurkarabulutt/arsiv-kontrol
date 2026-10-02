@@ -13,6 +13,10 @@ const { Resend } = require('resend');
 const { canReadRecord, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
 const {
+  collectPublicSitemapTaxonomy,
+  uniquePublicQuestionSlug
+} = require('./public-archive-seo');
+const {
   LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
   candidateTextHashes, finalizeResult, normalizeText, textHash
 } = require('./analysis-core');
@@ -86,7 +90,7 @@ const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_THRESHOLD = Math.max(0.35, Math.min(0.9, Nu
 const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT = 48;
 const PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT = Math.max(1, Math.min(25, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT || 8)));
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
-const PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT = '2026-09-20T00:00:00.000Z';
+const PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT = '2026-10-01T00:00:00.000Z';
 const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
   'allaha-ulasmayi-dilemek',
@@ -6075,7 +6079,7 @@ function publicArchiveDatasetFromRecords(records = [], statsMap = new Map()) {
       }
     }
 
-    const slug = uniquePublicArchiveSlug(record.slug || record.question || record.filename || record.id, usedEntrySlugs, 'soru');
+    const slug = uniquePublicQuestionSlug(record.slug || record.question || record.filename || record.id, usedEntrySlugs, 'soru');
     const answer = publicArchiveParagraphs(record.answerText);
     const publishedAt = record.publishedAt || record.published_at || record.approved_at || record.created_at || new Date().toISOString();
     const readTime = Math.max(1, Math.ceil(record.answerText.split(/\s+/).filter(Boolean).length / 180));
@@ -9323,7 +9327,7 @@ async function publishApprovedHistoryRecords(records = []) {
     const answerParagraphs = existingAnswerText ? publicArchiveParagraphs(existingAnswerText) : (item.answer || []);
     if (existingAnswerText) preservedExistingContent += 1;
     else insertedNewContent += 1;
-    const slug = existing?.slug || uniquePublicArchiveSlug(item.slug || item.question || item.sourceHistoryId, usedSlugs, 'soru');
+    const slug = existing?.slug || uniquePublicQuestionSlug(item.slug || item.question || item.sourceHistoryId, usedSlugs, 'soru');
     return {
       slug,
       source_history_id: item.sourceHistoryId || null,
@@ -15983,28 +15987,24 @@ async function publicArchiveSitemapEntries() {
     ...publicArchiveTopicArticleEntries().map(article => publicArchiveSitemapEntry(article.path, article.updatedAt || article.publishedAt || PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.88', 'monthly')),
     publicArchiveSitemapEntry('/hakkimizda', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.4', 'monthly'),
     publicArchiveSitemapEntry('/nasil-kullanilir', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.4', 'monthly'),
+    publicArchiveSitemapEntry('/yayin-ilkeleri', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.45', 'monthly'),
+    publicArchiveSitemapEntry('/kaynak-ve-duzeltme-politikasi', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.45', 'monthly'),
     publicArchiveSitemapEntry('/iletisim', PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT, '0.3', 'monthly')
   ];
 
   if (rows.length) {
-    const categories = new Map();
     for (const row of rows || []) {
       if (row.slug) entries.push(publicArchiveSitemapEntry(`/soru/${row.slug}`, row.updated_at || row.published_at, '0.8', 'monthly'));
-      const slugs = Array.isArray(row.topic_slugs) && row.topic_slugs.length
-        ? row.topic_slugs
-        : (row.category_slug ? [row.category_slug] : []);
-      for (const slug of slugs) {
-        if (!slug) continue;
-        const current = categories.get(slug) || { count: 0, lastmod: '' };
-        categories.set(slug, {
-          count: current.count + 1,
-          lastmod: publicArchiveLatestDate(current.lastmod, row.updated_at || row.published_at || collectionLastmod)
-        });
-      }
     }
-    for (const [slug, meta] of categories.entries()) {
-      if (publicArchiveCategorySeoIndexable(slug, meta.count)) {
-        entries.push(publicArchiveSitemapEntry(`/kategori/${slug}`, meta.lastmod, '0.7', 'weekly'));
+    for (const item of collectPublicSitemapTaxonomy(rows)) {
+      if (publicArchiveCategorySeoIndexable(item.slug, item.count)) {
+        const isMainCategory = item.roles.includes('main');
+        entries.push(publicArchiveSitemapEntry(
+          `/kategori/${item.slug}`,
+          item.lastmod || collectionLastmod,
+          isMainCategory ? '0.75' : '0.68',
+          'weekly'
+        ));
       }
     }
   }
@@ -16082,6 +16082,8 @@ function publicArchiveLlmsHandler(req, res) {
     llmsLink('Son yayınlanan sorular', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/son-yayinlanan-sorular`, 'En son yayımlanan soru ve cevaplar.'),
     llmsLink('Çok okunan cevaplar', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/cok-okunan-cevaplar`, 'Okunma sayısına göre öne çıkan cevaplar.'),
     llmsLink('Kategoriler', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kategoriler`, 'Konu ve kavramlara göre arşiv dizini.'),
+    llmsLink('Yayın ilkeleri', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/yayin-ilkeleri`, 'Arşivin kaynak, denetim ve yayın yaklaşımı.'),
+    llmsLink('Kaynak ve düzeltme politikası', `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/kaynak-ve-duzeltme-politikasi`, 'Kaynak izi, hata bildirimi ve kontrollü düzeltme süreci.'),
     '',
     ...(topicArticles.length ? [
       '## Konu Rehberleri',
@@ -16149,9 +16151,8 @@ for (const asset of ['review-workspace.js','review-workspace.css']) {
   });
 }
 
-function reviewedDuplicateRedirect(basePath) {
+function publicQuestionRedirect(basePath) {
   return async (req, res, next) => {
-    if (!ADMIN_REVIEW_WORKSPACES_ENABLED) return next();
     try {
       const { data, error } = await supabase.from('public_question_redirects').select('to_slug').eq('from_slug', req.params.slug).maybeSingle();
       if (error) throw error;
@@ -16187,7 +16188,7 @@ async function syncApprovedHistoryToPublicArchive() {
 }
 
 if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
-  app.get('/public-preview/soru/:slug', reviewedDuplicateRedirect('/public-preview'));
+  app.get('/public-preview/soru/:slug', publicQuestionRedirect('/public-preview'));
   app.get('/public-preview/arsiv', publicArchiveQueryCategoryRedirectMiddleware('/public-preview'));
   app.get('/public-preview/kategori/:slug', publicArchiveCategoryRedirectMiddleware('/public-preview'));
   app.get('/public-preview/konu/:slug', publicArchiveCategoryRedirectMiddleware('/public-preview'));
@@ -16199,7 +16200,7 @@ if (PUBLIC_ARCHIVE_PREVIEW_ENABLED) {
 
 if (PUBLIC_ARCHIVE_ROOT_ENABLED) {
   app.get('/arsiv', publicArchiveQueryCategoryRedirectMiddleware(''));
-  app.get('/soru/:slug', reviewedDuplicateRedirect(''));
+  app.get('/soru/:slug', publicQuestionRedirect(''));
   app.get('/kategori/:slug', publicArchiveCategoryRedirectMiddleware(''));
   app.get('/konu/:slug', publicArchiveCategoryRedirectMiddleware(''));
   app.use('/', createPublicArchivePreviewRouter({

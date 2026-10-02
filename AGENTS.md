@@ -3760,3 +3760,28 @@ tespit edilir).
   `data/rules.txt`'ten Supabase (PostgreSQL) `@supabase/supabase-js` istemcisine taşındı.
   Tüm rotalar async hale getirildi. `schema.sql` eklendi. Seed mantığı startup'a taşındı.
 - **Render deploy** — `.gitignore`, `.env.example` ve deploy talimatları eklendi.
+### 2026-10-01
+- **SEO ve guven sinyalleri ilk paketi yerelde hazirlandi:** Kategori yapisi, kategori adlari,
+  kategori URL'leri ve kategori indeksleme mantigi degistirilmeden soru sayfalarinin SEO
+  basliklari temizlendi. `Soru N:` / `N. Soru:` ve `Muhterem Hocam` girisleri yalniz HTML
+  title katmanindan kaldirildi; gorunen soru ve kaynak metin aynen korundu. Mevcut konu
+  rehberiyle birebir kategori eslesmesi bulunan soru detaylarina `Konu rehberi` ic linki
+  eklendi. `/yayin-ilkeleri` ile `/kaynak-ve-duzeltme-politikasi` sayfalari footer, sitemap,
+  WebPage schema ve `llms.txt` baglantilariyla eklendi. `npm.cmd run check` basarili,
+  189/189 test gecti; `git diff --check` basarili. Playwright mobil 390x844 ve masaustu
+  1440x1100 kontrollerinde yatay tasma gorulmedi. Bu kayit aninda degisiklikler yereldir;
+  commit, push ve production deploy yapilmamistir.
+### 2026-10-02
+- **Soru URL standardi ve sitemap kategori katmanlari yerelde hazirlandi:** Yeni yayinlanan
+  soru URL'leri gorunen soru metnini degistirmeden `Muhterem Hocam`, `Muhterem Hocamiz`,
+  `Soru N:` ve `N. Soru` girislerini slug'dan cikarir. Mevcut URL'ler icin eski adresten
+  yeni adrese kalici 301 uretecek transaction tabanli Supabase migrasyonu ve varsayilan
+  dry-run calisan `npm.cmd run urls:plan` komutu eklendi. Migrasyon public soru, konu
+  baglantisi, anlam arama belgesi, ilgili soru slug'lari, okunma sayaci ve ziyaret gruplamasini
+  birlikte tasir; eski URL'yi `public_question_redirects` tablosunda korur. Canli salt okunur
+  dry-run: 3.767 public kaydin 3.594'u aday; bunlarin 2.673'u yayinda ve 17 slug cakismasi kontrollu son ek gerektiriyor;
+  canli veriye yazilmadi. Sitemap artik her kaydin `category_slug` ana kategorisini ve
+  `topic_slugs` alt konularini birlikte sayar; site ici konu/kategori sunumu degismedi.
+  `npm.cmd run check` basarili, 195/195 test gecti; PostgreSQL migrasyon testi bagimli
+  kayitlarin ve redirect'in atomik tasindigini dogruladi. Degisiklikler yereldir; commit,
+  push, DB migrasyonu ve production deploy yapilmadi.
