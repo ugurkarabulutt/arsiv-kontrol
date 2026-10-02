@@ -14,6 +14,7 @@ const { canReadRecord, memberDisplayStatus, duplicateIdFromError } = require('./
 const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
 const {
   collectPublicSitemapTaxonomy,
+  dedupePublicSitemapRows,
   uniquePublicQuestionSlug
 } = require('./public-archive-seo');
 const {
@@ -15966,11 +15967,13 @@ function publicArchiveTopicArticleEntries() {
 async function publicArchiveSitemapEntries() {
   let rows = [];
   if (await ensurePublicArchiveContentReady()) {
-    rows = await fetchAllPages(() => supabase
+    const loadedRows = await fetchAllPages(() => supabase
       .from('public_qa')
       .select('slug,category_slug,topic_slugs,updated_at,published_at')
       .eq('status', 'published')
-      .order('updated_at', { ascending: false }), 1000);
+      .order('updated_at', { ascending: false })
+      .order('slug', { ascending: true }), 1000);
+    rows = dedupePublicSitemapRows(loadedRows);
   }
   const latestPublishedAt = (rows || []).reduce(
     (latest, row) => publicArchiveLatestDate(latest, row.updated_at || row.published_at || ''),

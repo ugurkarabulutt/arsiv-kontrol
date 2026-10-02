@@ -78,6 +78,16 @@ function buildPublicQuestionSlugMigrationPlan(rows = [], options = {}) {
   return plan;
 }
 
+function dedupePublicSitemapRows(rows = []) {
+  const bySlug = new Map();
+  for (const row of rows || []) {
+    const slug = String(row?.slug || '').trim();
+    if (!slug || bySlug.has(slug)) continue;
+    bySlug.set(slug, { ...row, slug });
+  }
+  return [...bySlug.values()];
+}
+
 function collectPublicSitemapTaxonomy(rows = []) {
   const taxonomy = new Map();
   for (const row of rows || []) {
@@ -107,6 +117,7 @@ function collectPublicSitemapTaxonomy(rows = []) {
 module.exports = {
   buildPublicQuestionSlugMigrationPlan,
   collectPublicSitemapTaxonomy,
+  dedupePublicSitemapRows,
   publicQuestionSlug,
   publicSeoSlug,
   stripPublicQuestionAddress,

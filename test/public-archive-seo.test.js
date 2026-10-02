@@ -3,6 +3,7 @@ const test = require('node:test');
 const {
   buildPublicQuestionSlugMigrationPlan,
   collectPublicSitemapTaxonomy,
+  dedupePublicSitemapRows,
   publicQuestionSlug,
   stripPublicQuestionAddress,
   uniquePublicQuestionSlug
@@ -92,4 +93,14 @@ test('sitemap taxonomy includes main categories and lower topics without double 
       roles: ['main', 'topic']
     }
   ]);
+});
+
+test('sitemap rows keep one entry per question slug across paginated duplicates', () => {
+  const rows = dedupePublicSitemapRows([
+    { slug: 'hidayet-nedir', updated_at: '2026-10-03T00:00:00.000Z' },
+    { slug: 'hidayet-nedir', updated_at: '2026-10-03T00:00:00.000Z' },
+    { slug: 'zikir-nedir', updated_at: '2026-10-02T00:00:00.000Z' },
+    { slug: '', updated_at: '2026-10-01T00:00:00.000Z' }
+  ]);
+  assert.deepEqual(rows.map(row => row.slug), ['hidayet-nedir', 'zikir-nedir']);
 });
