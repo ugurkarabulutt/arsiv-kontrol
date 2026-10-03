@@ -20,6 +20,14 @@
 - Yerel doğrulama: `npm.cmd run check` 201/201 başarılı, `git diff --check`
   whitespace hatası vermedi. Chromium ile 390 px ve 1440 px kontrollerinde yatay
   taşma ve konsol hatası yok; iki WebP varyantının doğru yüklendiği doğrulandı.
+- Runtime commit `9d886c4` GitHub'daki `codex/homepage-discovery-preview`
+  dalına push edildi. Vercel preview deployment
+  `dpl_7Nxa11WGWA98AKwAVx3FXtjLrACz` `READY`:
+  `https://arsiv-kontrol-gosazer6o-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Ana sayfa ve `/public-preview/konu-rehberleri` `200` ve
+  `X-Robots-Tag: noindex, nofollow`; iki WebP varlığı `image/webp` olarak doğru
+  boyutlarla dönüyor. Deployment hedefi `preview`; canlı ana sayfada yeni atlas
+  veya rehber dizini işaretleri yok, production alias değiştirilmedi.
 
 ## 2026-10-03 Kategori SEO Envanteri
 

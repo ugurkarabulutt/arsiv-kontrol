@@ -626,6 +626,9 @@ tespit edilir).
   `npm.cmd run check` 201/201 başarılı; 390 px ve 1440 px Chromium kontrollerinde
   yatay taşma veya konsol hatası yok. Bu kayıt preview-only durumundadır;
   production deploy ve `arsiv.ibrahimlive.ai` alias değişikliği yapılmamıştır.
+  Runtime commit `9d886c4` preview dalına push edildi; Vercel preview
+  `dpl_7Nxa11WGWA98AKwAVx3FXtjLrACz` `READY`. Preview ana sayfa ve rehber dizini
+  `200` ile `noindex, nofollow`; canlı ana sayfada yeni atlas işareti yoktur.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
