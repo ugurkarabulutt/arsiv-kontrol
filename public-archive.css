@@ -708,6 +708,7 @@ svg {
 .pa-alpha-letter:focus-visible,
 .pa-index-category:focus-visible,
 .pa-topic-showcase-card:focus-visible,
+.pa-question-banner:focus-visible,
 .pa-guide-directory-list a:focus-visible,
 .pa-evidence-card:focus-visible,
 .pa-topic-toc a:focus-visible,
@@ -1821,6 +1822,125 @@ svg {
   align-items: center;
   gap: 8px;
   color: var(--pa-primary);
+  font-size: 13px;
+  font-weight: 830;
+}
+
+.pa-question-banners {
+  display: grid;
+  gap: 24px;
+}
+
+.pa-question-banners-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.pa-question-banners-head .pa-kicker {
+  margin-bottom: 8px;
+}
+
+.pa-question-banners-head h2 {
+  max-width: 720px;
+  margin: 0;
+  color: var(--pa-text);
+  font-family: var(--pa-font-serif);
+  font-size: 36px;
+  line-height: 1.12;
+}
+
+.pa-question-banners-head > p {
+  max-width: 390px;
+  margin: 0;
+  color: var(--pa-text-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pa-question-banner-list {
+  display: grid;
+  gap: 14px;
+}
+
+.pa-question-banner {
+  position: relative;
+  display: block;
+  min-height: 220px;
+  overflow: hidden;
+  color: #FFFFFF;
+  background: #0D1412;
+  border: 1px solid color-mix(in srgb, var(--pa-primary) 45%, var(--pa-border));
+  border-radius: 8px;
+  isolation: isolate;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.pa-question-banner:hover {
+  color: #FFFFFF;
+  border-color: color-mix(in srgb, var(--pa-mint) 72%, var(--pa-border));
+  box-shadow: 0 18px 40px rgb(9 31 22 / 0.2);
+  transform: translateY(-2px);
+}
+
+.pa-question-banner-art {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  display: block;
+}
+
+.pa-question-banner-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s ease;
+}
+
+.pa-question-banner:hover .pa-question-banner-art img {
+  transform: scale(1.018);
+}
+
+.pa-question-banner-copy {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 8px;
+  width: min(58%, 650px);
+  min-height: 220px;
+  padding: 26px 30px;
+  background: rgb(5 20 15 / 0.72);
+  border-right: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.pa-question-banner-copy small {
+  color: #9ADDB8;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.pa-question-banner-copy strong {
+  max-width: 560px;
+  font-family: var(--pa-font-serif);
+  font-size: 30px;
+  line-height: 1.08;
+}
+
+.pa-question-banner-copy > span {
+  max-width: 540px;
+  color: rgb(255 255 255 / 0.78);
+  font-size: 14px;
+  line-height: 1.48;
+}
+
+.pa-question-banner-copy b {
+  display: inline-flex;
+  align-self: end;
+  align-items: center;
+  gap: 8px;
+  color: #9ADDB8;
   font-size: 13px;
   font-weight: 830;
 }
@@ -5444,6 +5564,20 @@ a.pa-chip:hover,
     min-height: 0;
   }
 
+  .pa-question-banners-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pa-question-banners-head h2 {
+    font-size: 32px;
+  }
+
+  .pa-question-banner-copy {
+    width: 66%;
+  }
+
   .pa-quran-evidence .pa-section-head {
     align-items: flex-start;
   }
@@ -6037,6 +6171,28 @@ a.pa-chip:hover,
   .pa-topic-showcase-copy {
     min-height: 224px;
     padding: 20px;
+  }
+
+  .pa-question-banners-head h2 {
+    font-size: 29px;
+  }
+
+  .pa-question-banner {
+    min-height: 250px;
+  }
+
+  .pa-question-banner-copy {
+    width: min(82%, 330px);
+    min-height: 250px;
+    padding: 22px 20px;
+  }
+
+  .pa-question-banner-copy strong {
+    font-size: 26px;
+  }
+
+  .pa-question-banner-copy > span {
+    font-size: 13px;
   }
 
   .pa-guide-index-hero {

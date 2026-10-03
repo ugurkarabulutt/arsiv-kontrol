@@ -1942,12 +1942,12 @@ function homeTopicShowcaseSection() {
     <section class="pa-section pa-topic-showcase" aria-labelledby="pa-topic-showcase-title">
       <div class="pa-topic-showcase-head">
         <div>
-          <p class="pa-kicker">Konu vitrini</p>
-          <h2 id="pa-topic-showcase-title">Arşivin temel konularına görsel kapılar açın.</h2>
+          <p class="pa-kicker">Konu rehberleri</p>
+          <h2 id="pa-topic-showcase-title">Seçili konu rehberlerini inceleyin.</h2>
         </div>
         <div class="pa-topic-showcase-intro">
-          <p>Bir başlığı seçin; ilgili rehbere ve o konudaki sorulara ilerleyin.</p>
-          <a href="${PREVIEW_BASE}/konu-rehberleri">Tüm konu rehberleri ${iconSvg('arrow-right', 'pa-button-icon')}</a>
+          <p>Temel kavramları rehber metinleri ve ilgili sorularla birlikte okuyun.</p>
+          <a href="${PREVIEW_BASE}/konu-rehberleri">Tüm rehberleri gör ${iconSvg('arrow-right', 'pa-button-icon')}</a>
         </div>
       </div>
       <div class="pa-topic-showcase-grid">
@@ -1962,6 +1962,62 @@ function homeTopicShowcaseSection() {
               <strong>${escapeHtml(item.title)}</strong>
               <span>${escapeHtml(item.text)}</span>
               <b>Konuyu keşfet ${iconSvg('arrow-right', 'pa-button-icon')}</b>
+            </span>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function homeQuestionBannersSection() {
+  const items = [
+    {
+      kicker: 'Mürşid',
+      title: 'Doğru mürşid nasıl tanınır?',
+      text: 'Mürşid, tâbiiyet ve irşad hakkındaki soru ve cevapları inceleyin.',
+      cta: 'Mürşid sorularını aç',
+      slug: 'mursid',
+      image: 'question-banner-mursid'
+    },
+    {
+      kicker: 'Rüya',
+      title: 'Rüyaların dinimizdeki yeri nedir?',
+      text: 'Rüya, uyku ve görülenlerin anlamı hakkındaki cevaplara ulaşın.',
+      cta: 'Rüya sorularını aç',
+      slug: 'ruya',
+      image: 'question-banner-ruya'
+    },
+    {
+      kicker: 'Kıyâmet',
+      title: 'Kıyâmetten sonra ne olacak?',
+      text: 'Kıyâmet, hesap ve âhiret hayatı hakkındaki soruları birlikte okuyun.',
+      cta: 'Kıyâmet sorularını aç',
+      slug: 'kiyamet',
+      image: 'question-banner-kiyamet'
+    }
+  ];
+  return `
+    <section class="pa-section pa-question-banners" aria-labelledby="pa-question-banners-title">
+      <div class="pa-question-banners-head">
+        <div>
+          <p class="pa-kicker">Konuya göre sorular</p>
+          <h2 id="pa-question-banners-title">Merak edilen sorulara doğrudan ulaşın.</h2>
+        </div>
+        <p>Bir başlık seçin; o konudaki bütün soru ve cevapları açın.</p>
+      </div>
+      <div class="pa-question-banner-list">
+        ${items.map(item => `
+          <a class="pa-question-banner" href="${PREVIEW_BASE}/kategori/${escapeHtml(item.slug)}" data-question-banner="${escapeHtml(item.slug)}">
+            <picture class="pa-question-banner-art" aria-hidden="true">
+              <source media="(max-width: 720px)" type="image/webp" srcset="${publicArchiveAssetHref(`${item.image}-720.webp`)}">
+              <img src="${publicArchiveAssetHref(`${item.image}-1280.webp`)}" alt="" width="1280" height="420" loading="lazy" decoding="async">
+            </picture>
+            <span class="pa-question-banner-copy">
+              <small>${escapeHtml(item.kicker)}</small>
+              <strong>${escapeHtml(item.title)}</strong>
+              <span>${escapeHtml(item.text)}</span>
+              <b>${escapeHtml(item.cta)} ${iconSvg('arrow-right', 'pa-button-icon')}</b>
             </span>
           </a>
         `).join('')}
@@ -2109,12 +2165,14 @@ function renderHome() {
           <div class="pa-list">${latestList.slice(0, 4).map(entry => questionCard(entry, true)).join('')}</div>
         </section>` : ''}
 
+        ${!dataUnavailable ? homeTopicShowcaseSection() : ''}
+
         ${!dataUnavailable && popularList.length ? `<section class="pa-section pa-home-popular">
           ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/cok-okunan-cevaplar`)}
           <div class="pa-question-grid">${popularList.slice(0, 5).map(entry => questionCard(entry, { compact: true })).join('')}</div>
         </section>` : ''}
 
-        ${!dataUnavailable ? homeTopicShowcaseSection() : ''}
+        ${!dataUnavailable ? homeQuestionBannersSection() : ''}
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
         ${ctaBand()}
         ${trustBand()}

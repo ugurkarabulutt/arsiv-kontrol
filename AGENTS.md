@@ -651,6 +651,16 @@ tespit edilir).
   `dpl_6YCKJ6DcAzYjkF8iuCjfftEXbwQi` `READY`; ana sayfa ve rehber dizini `200`
   ve `noindex, nofollow`. Ana sayfada yalnız vitrin, rehber dizininde atlas var;
   canlı ana sayfada vitrin işareti yok ve production alias değiştirilmemiştir.
+- 2026-10-04 preview turunda konu vitrini `Son Yayınlanan Sorular` ile `Çok
+  Okunan Cevaplar` arasına taşındı ve başlığı `Seçili konu rehberlerini
+  inceleyin` olarak sadeleştirildi. Rehber sunumundan ayrı üç yatay soru bannerı
+  eklendi: Mürşid, Rüya ve Kıyâmet. Bannerlar doğrudan ilgili kategori soru
+  listelerine gider. Yerleşik ImageGen ile üretilen kişisiz/yazısız özgün
+  sahnelerin 1280x420 ve 720x236 WebP varyantları lazy-load edilir; masaüstü
+  dosyaları 61 KB, mobil dosyaları 26 KB altındadır. Yerel `npm.cmd run check`
+  201/201 başarılı; 390 px ve 1440 px Chromium kontrollerinde bölüm sırası,
+  kategori href'leri, responsive görseller, kontrast ve taşmasız yerleşim
+  doğrulandı. Bu tur preview-only'dir; production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

@@ -2,6 +2,22 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 turunda `Konu vitrini` bir blok yukarı, `Son Yayınlanan Sorular`
+  ile `Çok Okunan Cevaplar` arasına taşındı. Belirsiz `Arşivin temel
+  konularına görsel kapılar açın` başlığı yerine `Seçili konu rehberlerini
+  inceleyin` kullanıldı; açıklama ve tüm rehberler bağlantısı sadeleştirildi.
+- Ana sayfaya rehberlerden ayrı `Konuya göre sorular` bölümü eklendi. Üç yatay
+  banner doğrudan `/kategori/mursid`, `/kategori/ruya` ve `/kategori/kiyamet`
+  soru listelerine gider; başlıklar sırasıyla `Doğru mürşid nasıl tanınır?`,
+  `Rüyaların dinimizdeki yeri nedir?` ve `Kıyâmetten sonra ne olacak?`.
+- Bannerlar için yerleşik ImageGen ile yazısız, kişisiz ve arşiv estetiğinde üç
+  özgün sahne üretildi. Her sahnenin 1280x420 ve 720x236 WebP varyantları
+  `public-archive-assets/assets/question-banner-*` altında saklanır; tüm masaüstü
+  dosyaları 61 KB, mobil dosyaları 26 KB altındadır ve lazy-load edilir. Yerel
+  `npm.cmd run check` 201/201 başarılı. Chromium 390 px/1440 px doğrulamasında
+  doğru görsel varyantları, bölüm sırası, üç kategori bağlantısı, kontrast,
+  konsol hatasızlığı ve yatay taşmasız yerleşim doğrulandı. Bu tur henüz yerel
+  preview worktree'sindedir; production değiştirilmedi.
 - Kullanıcı geri bildirimiyle aynı konu rehberlerini tekrar eden `Kavram
   rotaları` ve `Kavram akışı` ana sayfadan kaldırıldı. Ana sayfada rehberlere
   açılan tek sunum olarak beğenilen üç görselli `Konu vitrini` bırakıldı;

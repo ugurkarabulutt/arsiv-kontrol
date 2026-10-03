@@ -1506,7 +1506,7 @@ assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski ki
 assert(homePreview.includes('<h1>Dini Sorular ve Cevaplar Arşivi</h1>'), 'Public home hedef aramayla uyumlu ana basligi icermeli.');
 assert(!homePreview.includes('<p class="pa-kicker">Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.</p>'), 'Public home hero ust aciklama cumlesi geri gelmemeli.');
 assert(homePreview.includes('ilgili sorular, cevaplar ve delillerle birlikte okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-showcase', 'Konu vitrini', 'Nefs ve ruh', 'Hidayet yolculuğu', 'Zikir ve teslimiyet', 'Tüm konu rehberleri', '/public-preview/konu-rehberleri', 'topic-showcase-nefs-480.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-zikir-720.webp', 'loading="lazy"', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-showcase', 'Konu rehberleri', 'Seçili konu rehberlerini inceleyin.', 'Nefs ve ruh', 'Hidayet yolculuğu', 'Zikir ve teslimiyet', 'Tüm rehberleri gör', '/public-preview/konu-rehberleri', 'topic-showcase-nefs-480.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-zikir-720.webp', 'pa-question-banners', 'Merak edilen sorulara doğrudan ulaşın.', 'Doğru mürşid nasıl tanınır?', 'Rüyaların dinimizdeki yeri nedir?', 'Kıyâmetten sonra ne olacak?', '/public-preview/kategori/mursid', '/public-preview/kategori/ruya', '/public-preview/kategori/kiyamet', 'question-banner-mursid-1280.webp', 'question-banner-ruya-720.webp', 'question-banner-kiyamet-1280.webp', 'loading="lazy"', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 for (const marker of ['background: rgb(255 253 247 / 0.13);', 'border-radius: 999px;', 'color: #17201C;', 'outline: 3px solid #D7B35D;']) {
@@ -1563,7 +1563,7 @@ for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa
 for (const marker of ['bindReadingPathSliders', 'data-reading-slider', 'data-reading-rail', 'data-reading-set']) {
   assert(!publicRendererSource.includes(marker) && !homePreview.includes(marker), `Public konu rehberi slider marker kalmamali: ${marker}`);
 }
-for (const marker of ['.pa-topic-showcase', '.pa-topic-showcase-card', '.pa-guide-index-hero', '.pa-guide-index-art', '.pa-guide-directory-list']) {
+for (const marker of ['.pa-topic-showcase', '.pa-topic-showcase-card', '.pa-question-banners', '.pa-question-banner', '.pa-question-banner-copy', '.pa-guide-index-hero', '.pa-guide-index-art', '.pa-guide-directory-list']) {
   assert(publicCss.includes(marker), `Public konu rotasi CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-topic-atlas', '.pa-topic-route', '.pa-discovery-map', '.pa-concept-map', '.pa-concept-node']) {
@@ -1583,6 +1583,16 @@ for (const fileName of ['topic-showcase-nefs-480.webp', 'topic-showcase-hidayet-
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public konu vitrini mobil gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 60 * 1024, `Public konu vitrini mobil gorseli hiz butcesini asmamali: ${fileName}`);
+}
+for (const fileName of ['question-banner-mursid-1280.webp', 'question-banner-ruya-1280.webp', 'question-banner-kiyamet-1280.webp']) {
+  const assetPath = path.join(publicAssetRoot, 'assets', fileName);
+  assert(fs.existsSync(assetPath), `Public soru banner masaustu gorseli eksik: ${fileName}`);
+  assert(fs.statSync(assetPath).size < 70 * 1024, `Public soru banner masaustu gorseli hiz butcesini asmamali: ${fileName}`);
+}
+for (const fileName of ['question-banner-mursid-720.webp', 'question-banner-ruya-720.webp', 'question-banner-kiyamet-720.webp']) {
+  const assetPath = path.join(publicAssetRoot, 'assets', fileName);
+  assert(fs.existsSync(assetPath), `Public soru banner mobil gorseli eksik: ${fileName}`);
+  assert(fs.statSync(assetPath).size < 32 * 1024, `Public soru banner mobil gorseli hiz butcesini asmamali: ${fileName}`);
 }
 for (const marker of ['.pa-reading-grid', '.pa-topic-source-list', '.pa-topic-footnote']) {
   assert(!publicCss.includes(marker), `Public konu rehberi eski/grid/kaynak CSS marker kalmamali: ${marker}`);
