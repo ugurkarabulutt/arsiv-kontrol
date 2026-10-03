@@ -646,8 +646,11 @@ tespit edilir).
   CSS'i temizlendi. Gelecekteki `Kavramların İlişkisi` bölümü yalnız kullanıcıdan
   gelecek gerçek ilişki yazılarıyla kurulacak; mevcut rehberler bu adla tekrar
   gösterilmeyecek. Yerel `npm.cmd run check` 201/201 başarılı; 390 px ve 1440 px
-  Chromium kontrollerinde taşma, görsel yükleme veya konsol hatası yok. Düzeltme
-  bu aşamada preview-only durumundadır; production alias değiştirilmemiştir.
+  Chromium kontrollerinde taşma, görsel yükleme veya konsol hatası yok. Runtime
+  commit `b888fe7` preview dalına push edildi. Vercel preview
+  `dpl_6YCKJ6DcAzYjkF8iuCjfftEXbwQi` `READY`; ana sayfa ve rehber dizini `200`
+  ve `noindex, nofollow`. Ana sayfada yalnız vitrin, rehber dizininde atlas var;
+  canlı ana sayfada vitrin işareti yok ve production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

@@ -14,8 +14,14 @@
   haritası CSS'i temizlendi. Yerel `npm.cmd run check` 201/201 başarılı.
   Chromium 390 px ve 1440 px doğrulamasında yatay taşma veya konsol hatası yok;
   ana sayfada üç vitrin görselinin 480/720 px varyantları, rehber dizininde
-  atlasın 720/1280 px varyantları başarıyla yüklendi. Bu düzeltme henüz yalnız
-  yerel preview worktree'sindedir; production değiştirilmedi.
+  atlasın 720/1280 px varyantları başarıyla yüklendi. Runtime commit `b888fe7`
+  preview dalına push edildi. Vercel preview
+  `dpl_6YCKJ6DcAzYjkF8iuCjfftEXbwQi` `READY`:
+  `https://arsiv-kontrol-n1djxzpqf-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview ana sayfa ve `/public-preview/konu-rehberleri` `200` ve
+  `noindex, nofollow`; ana sayfada vitrin var, atlas/kavram haritası yok, atlas
+  yalnız rehber dizininde. Canlı ana sayfada vitrin işareti yok; production alias
+  değiştirilmedi.
 - İkinci preview turunda ana sayfadaki beş konu rotasının sıra numaraları
   kaldırıldı; zorunlu öğrenme sırası izlenimi vermeyen kategori sembolleri
   kullanıldı. Rehber dizinindeki editoryal sıra numaraları değişmedi.
