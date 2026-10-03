@@ -660,7 +660,10 @@ tespit edilir).
   dosyaları 61 KB, mobil dosyaları 26 KB altındadır. Yerel `npm.cmd run check`
   201/201 başarılı; 390 px ve 1440 px Chromium kontrollerinde bölüm sırası,
   kategori href'leri, responsive görseller, kontrast ve taşmasız yerleşim
-  doğrulandı. Bu tur preview-only'dir; production alias değiştirilmemiştir.
+  doğrulandı. Runtime commit `a2b3526` preview dalına push edildi. Vercel preview
+  `dpl_AXEVbYhwQxUm3aBBJLTNJmWoFKEC` `READY`; sayfa `200` ve
+  `noindex, nofollow`, altı yeni asset `image/webp`. Canlı ana sayfada soru
+  bannerı işareti yok ve production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

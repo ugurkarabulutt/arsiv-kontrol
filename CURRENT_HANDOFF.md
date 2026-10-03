@@ -16,8 +16,13 @@
   dosyaları 61 KB, mobil dosyaları 26 KB altındadır ve lazy-load edilir. Yerel
   `npm.cmd run check` 201/201 başarılı. Chromium 390 px/1440 px doğrulamasında
   doğru görsel varyantları, bölüm sırası, üç kategori bağlantısı, kontrast,
-  konsol hatasızlığı ve yatay taşmasız yerleşim doğrulandı. Bu tur henüz yerel
-  preview worktree'sindedir; production değiştirilmedi.
+  konsol hatasızlığı ve yatay taşmasız yerleşim doğrulandı. Runtime commit
+  `a2b3526` preview dalına push edildi. Vercel preview
+  `dpl_AXEVbYhwQxUm3aBBJLTNJmWoFKEC` `READY`:
+  `https://arsiv-kontrol-o0am2dkaf-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview `200` ve `noindex, nofollow`; üç banner doğru kategori href'lerini
+  taşıyor ve altı asset `image/webp` dönüyor. Canlı ana sayfada soru bannerı
+  işareti yok; production alias değiştirilmedi.
 - Kullanıcı geri bildirimiyle aynı konu rehberlerini tekrar eden `Kavram
   rotaları` ve `Kavram akışı` ana sayfadan kaldırıldı. Ana sayfada rehberlere
   açılan tek sunum olarak beğenilen üç görselli `Konu vitrini` bırakıldı;
