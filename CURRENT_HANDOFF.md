@@ -16,6 +16,12 @@
 - Yerel `npm.cmd run check` 201/201 başarılı. Chromium 390 px ve 1440 px
   kontrollerinde yatay taşma, düğüm çakışması ve konsol hatası yok; mobilde
   480 px, masaüstünde 720 px görsellerin seçildiği doğrulandı.
+- İkinci tur runtime commit `7aa742f` aynı preview dalına push edildi. Vercel
+  preview `dpl_FLMP5faZeJvGQfnm6igs3MJqrRxs` `READY`:
+  `https://arsiv-kontrol-8reb957of-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview ana sayfa `200` ve `noindex, nofollow`; konu vitrini ile kavram haritası
+  mevcut, rota numarası yok. Yeni WebP dosyaları `image/webp` dönüyor. Canlı ana
+  sayfada yeni vitrin ve harita işaretleri yok; production alias değiştirilmedi.
 - Çalışma canlıdan ayrılmış
   `C:\Users\ugur\Desktop\arsiv-kontrol\.tmp-homepage-discovery-preview`
   worktree'sinde, `codex/homepage-discovery-preview` dalında yürütüldü.

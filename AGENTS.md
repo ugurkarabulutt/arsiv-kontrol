@@ -635,6 +635,10 @@ tespit edilir).
   CSS scroll-snap kullanır; yeni istemci JavaScript'i veya açılış API isteği yok.
   390 px ve 1440 px Chromium doğrulamasında yatay taşma, düğüm çakışması veya
   konsol hatası görülmedi; `npm.cmd run check` 201/201 başarılı.
+  Runtime commit `7aa742f` preview dalına push edildi. Vercel preview
+  `dpl_FLMP5faZeJvGQfnm6igs3MJqrRxs` `READY`; ana sayfa `200` ve
+  `noindex, nofollow`. Canlı ana sayfada yeni vitrin/harita işaretleri yok ve
+  production alias değiştirilmedi.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
