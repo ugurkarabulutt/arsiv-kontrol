@@ -2,6 +2,20 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- Kullanıcı geri bildirimiyle aynı konu rehberlerini tekrar eden `Kavram
+  rotaları` ve `Kavram akışı` ana sayfadan kaldırıldı. Ana sayfada rehberlere
+  açılan tek sunum olarak beğenilen üç görselli `Konu vitrini` bırakıldı;
+  `Tüm konu rehberleri` geçişi vitrin girişine taşındı.
+- `Kavramların İlişkisi` başlığı ileride kullanıcı tarafından sağlanacak gerçek
+  ilişki yazılarıyla ayrı bir bölüm olarak ele alınacak; mevcut rehber/blog
+  bağlantıları bu ad altında yeniden kullanılmayacak.
+- Beğenilen responsive atlas görseli kaldırılmadı; bağlamı doğru olan
+  `/konu-rehberleri` dizin girişine taşındı. Kullanılmayan atlas ve kavram
+  haritası CSS'i temizlendi. Yerel `npm.cmd run check` 201/201 başarılı.
+  Chromium 390 px ve 1440 px doğrulamasında yatay taşma veya konsol hatası yok;
+  ana sayfada üç vitrin görselinin 480/720 px varyantları, rehber dizininde
+  atlasın 720/1280 px varyantları başarıyla yüklendi. Bu düzeltme henüz yalnız
+  yerel preview worktree'sindedir; production değiştirilmedi.
 - İkinci preview turunda ana sayfadaki beş konu rotasının sıra numaraları
   kaldırıldı; zorunlu öğrenme sırası izlenimi vermeyen kategori sembolleri
   kullanıldı. Rehber dizinindeki editoryal sıra numaraları değişmedi.

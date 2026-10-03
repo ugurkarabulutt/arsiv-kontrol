@@ -639,6 +639,15 @@ tespit edilir).
   `dpl_FLMP5faZeJvGQfnm6igs3MJqrRxs` `READY`; ana sayfa `200` ve
   `noindex, nofollow`. Canlı ana sayfada yeni vitrin/harita işaretleri yok ve
   production alias değiştirilmedi.
+- Son kullanıcı değerlendirmesinde aynı rehberleri tekrar sunan `Kavram
+  rotaları` ve `Kavram akışı` ana sayfadan çıkarıldı; üç görselli `Konu vitrini`
+  ana sayfanın tek rehber keşif alanı olarak korundu. Responsive atlas görseli
+  `/konu-rehberleri` dizininin girişine taşındı ve kullanılmayan atlas/harita
+  CSS'i temizlendi. Gelecekteki `Kavramların İlişkisi` bölümü yalnız kullanıcıdan
+  gelecek gerçek ilişki yazılarıyla kurulacak; mevcut rehberler bu adla tekrar
+  gösterilmeyecek. Yerel `npm.cmd run check` 201/201 başarılı; 390 px ve 1440 px
+  Chromium kontrollerinde taşma, görsel yükleme veya konsol hatası yok. Düzeltme
+  bu aşamada preview-only durumundadır; production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

@@ -1912,44 +1912,6 @@ function homeQuranEvidenceSection(items = []) {
   `;
 }
 
-function homeTopicAtlasSection() {
-  const articles = topicGuideArticles();
-  if (!articles.length) return '';
-  return `
-    <section class="pa-section pa-topic-atlas" id="konu-rehberleri" aria-labelledby="pa-topic-atlas-title">
-      <div class="pa-topic-atlas-main">
-        <div class="pa-topic-atlas-copy">
-          <p class="pa-kicker">Kavram rotaları</p>
-          <h2 id="pa-topic-atlas-title">Sorudan cevaba, kavramların izini sürün.</h2>
-          <p>Arşivin temel konularını birbirinden kopuk başlıklar olarak değil, aynı yolun bağlantılı durakları olarak okuyun.</p>
-          <a class="pa-topic-atlas-cta" href="${PREVIEW_BASE}/konu-rehberleri">
-            <span>Tüm konu rehberlerini açın</span>
-            ${iconSvg('arrow-right', 'pa-button-icon')}
-          </a>
-        </div>
-        <picture class="pa-topic-atlas-art" aria-hidden="true">
-          <source media="(max-width: 720px)" type="image/webp" srcset="${publicArchiveAssetHref('topic-routes-archive-720.webp')}">
-          <img src="${publicArchiveAssetHref('topic-routes-archive-1280.webp')}" alt="" width="1280" height="720" loading="lazy" decoding="async">
-        </picture>
-      </div>
-      <ul class="pa-topic-route" aria-label="Konu rehberi rotası">
-        ${articles.map(article => `
-          <li>
-            <a href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(article)}`)}" data-topic-article-link="true">
-              <span class="pa-topic-route-mark">${iconSvg(categoryIconName({ slug: article.categorySlug }))}</span>
-              <span class="pa-topic-route-copy">
-                <strong>${escapeHtml(article.title)}</strong>
-                <small>${escapeHtml(article.shortText || article.description || '')}</small>
-              </span>
-              <span class="pa-topic-route-count">${archiveCountLabel(article.questionCount)} soru</span>
-            </a>
-          </li>
-        `).join('')}
-      </ul>
-    </section>
-  `;
-}
-
 function homeTopicShowcaseSection() {
   const items = [
     {
@@ -1983,7 +1945,10 @@ function homeTopicShowcaseSection() {
           <p class="pa-kicker">Konu vitrini</p>
           <h2 id="pa-topic-showcase-title">Arşivin temel konularına görsel kapılar açın.</h2>
         </div>
-        <p>Bir başlığı seçin; ilgili rehbere, sorulara ve bağlantılı kavramlara ilerleyin.</p>
+        <div class="pa-topic-showcase-intro">
+          <p>Bir başlığı seçin; ilgili rehbere ve o konudaki sorulara ilerleyin.</p>
+          <a href="${PREVIEW_BASE}/konu-rehberleri">Tüm konu rehberleri ${iconSvg('arrow-right', 'pa-button-icon')}</a>
+        </div>
       </div>
       <div class="pa-topic-showcase-grid">
         ${items.map(item => `
@@ -1998,50 +1963,6 @@ function homeTopicShowcaseSection() {
               <span>${escapeHtml(item.text)}</span>
               <b>Konuyu keşfet ${iconSvg('arrow-right', 'pa-button-icon')}</b>
             </span>
-          </a>
-        `).join('')}
-      </div>
-    </section>
-  `;
-}
-
-function homeDiscoveryMapSection(entries = []) {
-  const categoryCounts = new Map(publicCategories().map(category => [category.slug, categoryQuestionCount(category)]));
-  const entryCounts = new Map();
-  for (const entry of entries || []) {
-    for (const slug of categorySlugsFor(entry)) entryCounts.set(slug, (entryCounts.get(slug) || 0) + 1);
-  }
-  const nodes = [
-    { label: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', position: 'core' },
-    { label: 'Hidayet', slug: 'hidayet', articleSlug: 'hidayet', position: 'northwest' },
-    { label: 'Mürşid', slug: 'mursid', articleSlug: 'murside-tabiiyet', position: 'northeast' },
-    { label: 'Ruh', slug: 'ruh', position: 'west' },
-    { label: 'Zikir', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', position: 'east' },
-    { label: 'Nefs Tezkiyesi', slug: 'nefs', articleSlug: 'nefs-tezkiyesi', position: 'southwest' },
-    { label: 'Teslimiyet', slug: 'teslimiyet', position: 'southeast' }
-  ].map(item => {
-    const article = item.articleSlug ? publicTopicArticleBySlug(item.articleSlug) : null;
-    return {
-      ...item,
-      count: entryCounts.get(item.slug) || categoryCounts.get(item.slug) || 0,
-      href: article ? `${PREVIEW_BASE}${publicTopicArticlePath(article)}` : `${PREVIEW_BASE}/kategori/${item.slug}`
-    };
-  });
-  return `
-    <section class="pa-section pa-discovery-map" aria-labelledby="pa-discovery-map-title">
-      <div class="pa-discovery-map-copy">
-        <p class="pa-kicker">Kavram akışı</p>
-        <h2 id="pa-discovery-map-title">Konuların birbiriyle nasıl bağlandığını görün.</h2>
-        <p>Merkezdeki kavramdan çevresindeki başlıklara ilerleyin; her bağlantı sizi ilgili rehbere veya soru grubuna götürür.</p>
-        <a href="${PREVIEW_BASE}/konu-rehberleri">Tüm konu rehberleri ${iconSvg('arrow-right', 'pa-button-icon')}</a>
-      </div>
-      <div class="pa-concept-map" aria-label="Bağlantılı konu haritası">
-        <span class="pa-concept-map-lines" aria-hidden="true"></span>
-        ${nodes.map(item => `
-          <a class="pa-concept-node pa-concept-node--${item.position}" href="${escapeHtml(item.href)}">
-            <span>${iconSvg(categoryIconName({ slug: item.slug }))}</span>
-            <strong>${escapeHtml(item.label)}</strong>
-            <small>${archiveCountLabel(item.count)} soru</small>
           </a>
         `).join('')}
       </div>
@@ -2176,8 +2097,6 @@ function renderHome() {
 
         ${archiveShortcutBand()}
 
-        ${!dataUnavailable ? homeTopicAtlasSection() : ''}
-
         ${!dataUnavailable && featured.length ? `<section class="pa-section">
           ${sectionHeader('Öne Çıkan Sorular', 'Öne çıkanları gör', `${PREVIEW_BASE}/one-cikan-sorular`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
@@ -2197,7 +2116,6 @@ function renderHome() {
 
         ${!dataUnavailable ? homeTopicShowcaseSection() : ''}
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
-        ${!dataUnavailable ? homeDiscoveryMapSection(publicArchiveFixtures.qa) : ''}
         ${ctaBand()}
         ${trustBand()}
       </main>
@@ -2640,15 +2558,19 @@ function renderTopicGuideIndex() {
       <main class="pa-main pa-guide-index-main">
         ${breadcrumb([{ label: 'Konu Rehberleri' }])}
         <section class="pa-guide-index-hero">
-          <div>
+          <div class="pa-guide-index-copy">
             <p class="pa-kicker">Arşiv belgesi</p>
             <h1>Konu Rehberleri</h1>
             <p>${escapeHtml(description)}</p>
+            <dl>
+              <div><dt>Rehber</dt><dd>${archiveCountLabel(articles.length)}</dd></div>
+              <div><dt>Bağlantılı soru</dt><dd>${archiveCountLabel(articles.reduce((sum, article) => sum + Number(article.questionCount || 0), 0))}</dd></div>
+            </dl>
           </div>
-          <dl>
-            <div><dt>Rehber</dt><dd>${archiveCountLabel(articles.length)}</dd></div>
-            <div><dt>Bağlantılı soru</dt><dd>${archiveCountLabel(articles.reduce((sum, article) => sum + Number(article.questionCount || 0), 0))}</dd></div>
-          </dl>
+          <picture class="pa-guide-index-art" aria-hidden="true">
+            <source media="(max-width: 720px)" type="image/webp" srcset="${publicArchiveAssetHref('topic-routes-archive-720.webp')}">
+            <img src="${publicArchiveAssetHref('topic-routes-archive-1280.webp')}" alt="" width="1280" height="720" loading="lazy" decoding="async">
+          </picture>
         </section>
         <section class="pa-guide-directory" aria-labelledby="pa-guide-directory-title">
           <div class="pa-section-head">
