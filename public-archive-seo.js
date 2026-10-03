@@ -1,5 +1,18 @@
 'use strict';
 
+const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
+const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
+  'allaha-ulasmayi-dilemek',
+  'mursid',
+  'hidayet',
+  'zikir',
+  'takva',
+  'tabiiyet',
+  'nefs',
+  'ruh',
+  'teslimiyet'
+]);
+
 function publicSeoSlug(value = '') {
   const ascii = String(value || '')
     .toLocaleLowerCase('tr-TR')
@@ -115,10 +128,22 @@ function collectPublicSitemapTaxonomy(rows = []) {
     .sort((a, b) => a.slug.localeCompare(b.slug, 'tr'));
 }
 
+function publicCategorySeoIndexable(categoryOrSlug = '', explicitCount = null) {
+  const category = categoryOrSlug && typeof categoryOrSlug === 'object' ? categoryOrSlug : null;
+  const slug = String(category?.slug || categoryOrSlug || '');
+  const rawCount = explicitCount ?? category?.questionCount ?? category?.question_count ?? 0;
+  const count = Number(rawCount);
+  return (Number.isFinite(count) && count >= PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS)
+    || PUBLIC_CATEGORY_SEO_SLUGS.has(slug);
+}
+
 module.exports = {
+  PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS,
+  PUBLIC_CATEGORY_SEO_SLUGS,
   buildPublicQuestionSlugMigrationPlan,
   collectPublicSitemapTaxonomy,
   dedupePublicSitemapRows,
+  publicCategorySeoIndexable,
   publicQuestionSlug,
   publicSeoSlug,
   stripPublicQuestionAddress,

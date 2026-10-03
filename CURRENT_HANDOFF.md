@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-03 Kategori SEO Envanteri
+
+- Search Console'un 21 Eylül tarihli raporundaki 1.848 `Keşfedildi - şu anda
+  dizine eklenmiş değil` örneğinin kategori URL'leri olduğu doğrulandı. Güncel
+  canlı sitemap 3.040 URL içeriyor: 2.729 soru, 295 kategori ve 16 diğer URL.
+- Canlı Supabase salt okunur envanteri 2.735 yayımlanmış soru, 3.239 tanımlı
+  kategori, 295 indekslenebilir kategori, 2.471 eşik altı `noindex` kategori ve
+  473 boş kategori gösterdi. İndekslenebilir kategorilerin tamamında açıklama var.
+- Kategori indeks kararı `public-archive-seo.js` içinde tekleştirildi; renderer,
+  sitemap ve yeni `npm run seo:categories:audit` aracı aynı 5 soru eşiğini ve
+  temel konu istisnalarını kullanıyor. Yeni rapor:
+  `docs/project/category-indexability-audit-2026-10-03.md`.
+- İndekslenebilir kategorilerde tek tam içerik çakışması `mucahede` / `riyazet`;
+  anlam kararı gerektirdiği için otomatik redirect veya veri değişikliği yapılmadı.
+- Bu turda canlı DB yazımı, kategori silme/birleştirme, commit, push veya deploy
+  yapılmadı. Search Console'da `Düzeltmeyi doğrula` başlatılmadı.
+
 ## 2026-10-01 Public Arşiv PageSpeed İyileştirmesi
 
 - Canlı başlangıç Lighthouse 13 mobil ölçümü: skor `65`, FCP `3,74 sn`,

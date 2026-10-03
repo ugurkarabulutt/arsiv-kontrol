@@ -15,6 +15,7 @@ const publicArchiveTopicArticles = require('./public-archive-topic-articles.json
 const {
   collectPublicSitemapTaxonomy,
   dedupePublicSitemapRows,
+  publicCategorySeoIndexable,
   uniquePublicQuestionSlug
 } = require('./public-archive-seo');
 const {
@@ -92,18 +93,6 @@ const PUBLIC_ARCHIVE_SEMANTIC_SEARCH_MATCH_LIMIT = 48;
 const PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT = Math.max(1, Math.min(25, Number(process.env.PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT || 8)));
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT = '2026-10-01T00:00:00.000Z';
-const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
-const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
-  'allaha-ulasmayi-dilemek',
-  'mursid',
-  'hidayet',
-  'zikir',
-  'takva',
-  'tabiiyet',
-  'nefs',
-  'ruh',
-  'teslimiyet'
-]);
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
@@ -15954,11 +15943,6 @@ function publicArchiveLatestDate(current = '', next = '') {
   return new Date(next).getTime() > new Date(current).getTime() ? next : current;
 }
 
-function publicArchiveCategorySeoIndexable(slug = '', questionCount = 0) {
-  const count = Number(questionCount);
-  return (Number.isFinite(count) && count >= PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS) || PUBLIC_CATEGORY_SEO_SLUGS.has(String(slug || ''));
-}
-
 function publicArchiveTopicArticleEntries() {
   return Object.values(publicArchiveTopicArticles || {})
     .filter(article => article?.slug && article?.path && article?.title);
@@ -16000,7 +15984,7 @@ async function publicArchiveSitemapEntries() {
       if (row.slug) entries.push(publicArchiveSitemapEntry(`/soru/${row.slug}`, row.updated_at || row.published_at, '0.8', 'monthly'));
     }
     for (const item of collectPublicSitemapTaxonomy(rows)) {
-      if (publicArchiveCategorySeoIndexable(item.slug, item.count)) {
+      if (publicCategorySeoIndexable(item.slug, item.count)) {
         const isMainCategory = item.roles.includes('main');
         entries.push(publicArchiveSitemapEntry(
           `/kategori/${item.slug}`,

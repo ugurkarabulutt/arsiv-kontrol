@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { publicArchiveFixtures } = require('./public-archive-fixtures');
 const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
+const { publicCategorySeoIndexable } = require('./public-archive-seo');
 
 const DEFAULT_PUBLIC_ARCHIVE_BASE = '/public-preview';
 let PREVIEW_BASE = DEFAULT_PUBLIC_ARCHIVE_BASE;
@@ -19,7 +20,6 @@ const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
 const PUBLIC_ARCHIVE_ASSET_VERSION = '20261001-pagespeed-v2';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
-const PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS = 5;
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
 const PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX = 168;
@@ -33,17 +33,6 @@ const PUBLIC_ARCHIVE_CORE_TOPIC_NAMES = [
   'Teslimiyet',
   'Kur’ân ayetleri'
 ];
-const PUBLIC_CATEGORY_SEO_SLUGS = new Set([
-  'allaha-ulasmayi-dilemek',
-  'mursid',
-  'hidayet',
-  'zikir',
-  'takva',
-  'tabiiyet',
-  'nefs',
-  'ruh',
-  'teslimiyet'
-]);
 
 function minifyPublicArchiveCss(source = '') {
   return String(source || '')
@@ -320,12 +309,6 @@ function entriesForCategory(slug) {
 function categoryQuestionCount(category) {
   const count = Number(category?.questionCount ?? category?.question_count);
   return Number.isFinite(count) && count > 0 ? Math.round(count) : entriesForCategory(category?.slug).length;
-}
-
-function publicCategorySeoIndexable(category, explicitCount = null) {
-  const count = Number(explicitCount);
-  const questionCount = Number.isFinite(count) && count >= 0 ? Math.round(count) : categoryQuestionCount(category);
-  return questionCount >= PUBLIC_CATEGORY_INDEX_MIN_QUESTIONS || PUBLIC_CATEGORY_SEO_SLUGS.has(String(category?.slug || ''));
 }
 
 function relatedEntries(entry) {

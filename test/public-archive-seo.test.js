@@ -4,6 +4,7 @@ const {
   buildPublicQuestionSlugMigrationPlan,
   collectPublicSitemapTaxonomy,
   dedupePublicSitemapRows,
+  publicCategorySeoIndexable,
   publicQuestionSlug,
   stripPublicQuestionAddress,
   uniquePublicQuestionSlug
@@ -105,6 +106,12 @@ test('sitemap taxonomy includes main categories and lower topics without double 
       roles: ['main', 'topic']
     }
   ]);
+});
+
+test('category indexability keeps strong hubs and noindexes thin taxonomy pages', () => {
+  assert.equal(publicCategorySeoIndexable('aile', 12), true);
+  assert.equal(publicCategorySeoIndexable('ornek-ince-kategori', 4), false);
+  assert.equal(publicCategorySeoIndexable({ slug: 'hidayet', questionCount: 1 }), true);
 });
 
 test('sitemap rows keep one entry per question slug across paginated duplicates', () => {

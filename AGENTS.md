@@ -3,6 +3,20 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-03
+
+- **Kategori indeks politikası tekleştirildi:** Search Console'un 21 Eylül
+  raporunda 1.848 kategori URL'si `Keşfedildi - şu anda dizine eklenmiş değil`
+  görünürken güncel canlı sitemap'in yalnız 295 kategori URL'si sunduğu
+  doğrulandı. Canlı envanterde 2.471 adet 1-4 soruluk kategori zaten `noindex`,
+  473 boş kategori sitemap dışında; 295 indekslenebilir kategorinin tamamında
+  açıklama var. Beş soru eşiği ve dokuz temel konu istisnası
+  `public-archive-seo.js` içinde tek yetkili karara taşındı; renderer ve sitemap
+  aynı yardımcıyı kullanır. Tekrarlanabilir salt okunur denetim için
+  `npm run seo:categories:audit` eklendi. Ayrıntı:
+  `docs/project/category-indexability-audit-2026-10-03.md`. Bu adım canlı veri,
+  kategori yönlendirmesi veya indeks doğrulaması değiştirmedi.
+
 ## 2026-10-01
 
 - **PageSpeed erişilebilirlik ve ajan taraması tamamlandı:** İkinci denetim turunda
