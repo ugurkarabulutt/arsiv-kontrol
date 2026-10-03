@@ -1932,11 +1932,11 @@ function homeTopicAtlasSection() {
           <img src="${publicArchiveAssetHref('topic-routes-archive-1280.webp')}" alt="" width="1280" height="720" loading="lazy" decoding="async">
         </picture>
       </div>
-      <ol class="pa-topic-route" aria-label="Konu rehberi rotası">
+      <ul class="pa-topic-route" aria-label="Konu rehberi rotası">
         ${articles.map(article => `
           <li>
             <a href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(article)}`)}" data-topic-article-link="true">
-              <span class="pa-topic-route-index">${String(article.order).padStart(2, '0')}</span>
+              <span class="pa-topic-route-mark">${iconSvg(categoryIconName({ slug: article.categorySlug }))}</span>
               <span class="pa-topic-route-copy">
                 <strong>${escapeHtml(article.title)}</strong>
                 <small>${escapeHtml(article.shortText || article.description || '')}</small>
@@ -1945,36 +1945,103 @@ function homeTopicAtlasSection() {
             </a>
           </li>
         `).join('')}
-      </ol>
+      </ul>
+    </section>
+  `;
+}
+
+function homeTopicShowcaseSection() {
+  const items = [
+    {
+      kicker: 'İç dünya',
+      title: 'Nefs ve ruh',
+      text: 'Nefsin terbiyesi, ruhun teslimi ve insanın manevi yapısıyla ilgili cevapları birlikte okuyun.',
+      image: 'topic-showcase-nefs-720.webp',
+      articleSlug: 'nefs-tezkiyesi'
+    },
+    {
+      kicker: 'Yolun yönü',
+      title: 'Hidayet yolculuğu',
+      text: 'Hidayetin başlangıcından istikamete kadar birbirine bağlanan kavramları takip edin.',
+      image: 'topic-showcase-hidayet-720.webp',
+      articleSlug: 'hidayet'
+    },
+    {
+      kicker: 'Kalbin sürekliliği',
+      title: 'Zikir ve teslimiyet',
+      text: 'Zikrin kalpteki etkisini, teslim ve tevekkül konularıyla aynı okuma yolunda keşfedin.',
+      image: 'topic-showcase-zikir-720.webp',
+      articleSlug: 'zikir-ve-daimi-zikir'
+    }
+  ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
+    .filter(item => Boolean(item.article));
+  if (!items.length) return '';
+  return `
+    <section class="pa-section pa-topic-showcase" aria-labelledby="pa-topic-showcase-title">
+      <div class="pa-topic-showcase-head">
+        <div>
+          <p class="pa-kicker">Konu vitrini</p>
+          <h2 id="pa-topic-showcase-title">Arşivin temel konularına görsel kapılar açın.</h2>
+        </div>
+        <p>Bir başlığı seçin; ilgili rehbere, sorulara ve bağlantılı kavramlara ilerleyin.</p>
+      </div>
+      <div class="pa-topic-showcase-grid">
+        ${items.map(item => `
+          <a class="pa-topic-showcase-card" href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(item.article)}`)}" data-topic-article-link="true">
+            <picture class="pa-topic-showcase-art" aria-hidden="true">
+              <source media="(max-width: 520px)" type="image/webp" srcset="${publicArchiveAssetHref(item.image.replace('-720.webp', '-480.webp'))}">
+              <img src="${publicArchiveAssetHref(item.image)}" alt="" width="720" height="720" loading="lazy" decoding="async">
+            </picture>
+            <span class="pa-topic-showcase-copy">
+              <small>${escapeHtml(item.kicker)}</small>
+              <strong>${escapeHtml(item.title)}</strong>
+              <span>${escapeHtml(item.text)}</span>
+              <b>Konuyu keşfet ${iconSvg('arrow-right', 'pa-button-icon')}</b>
+            </span>
+          </a>
+        `).join('')}
+      </div>
     </section>
   `;
 }
 
 function homeDiscoveryMapSection(entries = []) {
-  const counts = new Map();
+  const categoryCounts = new Map(publicCategories().map(category => [category.slug, categoryQuestionCount(category)]));
+  const entryCounts = new Map();
   for (const entry of entries || []) {
-    for (const slug of categorySlugsFor(entry)) {
-      if (!slug) continue;
-      counts.set(slug, (counts.get(slug) || 0) + 1);
-    }
+    for (const slug of categorySlugsFor(entry)) entryCounts.set(slug, (entryCounts.get(slug) || 0) + 1);
   }
-  const categories = publicCategories()
-    .map(category => ({ category, count: counts.get(category.slug) || categoryQuestionCount(category) }))
-    .filter(item => item.count > 0)
-    .sort((a, b) => Number(b.count || 0) - Number(a.count || 0) || String(a.category.name || '').localeCompare(String(b.category.name || ''), 'tr'))
-    .slice(0, 14);
-  if (!categories.length) return '';
+  const nodes = [
+    { label: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', position: 'core' },
+    { label: 'Hidayet', slug: 'hidayet', articleSlug: 'hidayet', position: 'northwest' },
+    { label: 'Mürşid', slug: 'mursid', articleSlug: 'murside-tabiiyet', position: 'northeast' },
+    { label: 'Ruh', slug: 'ruh', position: 'west' },
+    { label: 'Zikir', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', position: 'east' },
+    { label: 'Nefs Tezkiyesi', slug: 'nefs', articleSlug: 'nefs-tezkiyesi', position: 'southwest' },
+    { label: 'Teslimiyet', slug: 'teslimiyet', position: 'southeast' }
+  ].map(item => {
+    const article = item.articleSlug ? publicTopicArticleBySlug(item.articleSlug) : null;
+    return {
+      ...item,
+      count: entryCounts.get(item.slug) || categoryCounts.get(item.slug) || 0,
+      href: article ? `${PREVIEW_BASE}${publicTopicArticlePath(article)}` : `${PREVIEW_BASE}/kategori/${item.slug}`
+    };
+  });
   return `
     <section class="pa-section pa-discovery-map" aria-labelledby="pa-discovery-map-title">
-      <div>
+      <div class="pa-discovery-map-copy">
         <p class="pa-kicker">Kavram akışı</p>
-        <h2 id="pa-discovery-map-title">Bir cevaptan diğerine konu bağıyla geçin.</h2>
+        <h2 id="pa-discovery-map-title">Konuların birbiriyle nasıl bağlandığını görün.</h2>
+        <p>Merkezdeki kavramdan çevresindeki başlıklara ilerleyin; her bağlantı sizi ilgili rehbere veya soru grubuna götürür.</p>
+        <a href="${PREVIEW_BASE}/konu-rehberleri">Tüm konu rehberleri ${iconSvg('arrow-right', 'pa-button-icon')}</a>
       </div>
-      <div class="pa-discovery-cloud">
-        ${categories.map((item, index) => `
-          <a class="pa-discovery-pill" href="${PREVIEW_BASE}/kategori/${escapeHtml(item.category.slug)}" style="--pa-pill-rank:${index % 5}">
-            <strong>${escapeHtml(item.category.name)}</strong>
-            <span>${archiveCountLabel(item.count)} soru</span>
+      <div class="pa-concept-map" aria-label="Bağlantılı konu haritası">
+        <span class="pa-concept-map-lines" aria-hidden="true"></span>
+        ${nodes.map(item => `
+          <a class="pa-concept-node pa-concept-node--${item.position}" href="${escapeHtml(item.href)}">
+            <span>${iconSvg(categoryIconName({ slug: item.slug }))}</span>
+            <strong>${escapeHtml(item.label)}</strong>
+            <small>${archiveCountLabel(item.count)} soru</small>
           </a>
         `).join('')}
       </div>
@@ -2128,6 +2195,7 @@ function renderHome() {
           <div class="pa-question-grid">${popularList.slice(0, 5).map(entry => questionCard(entry, { compact: true })).join('')}</div>
         </section>` : ''}
 
+        ${!dataUnavailable ? homeTopicShowcaseSection() : ''}
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
         ${!dataUnavailable ? homeDiscoveryMapSection(publicArchiveFixtures.qa) : ''}
         ${ctaBand()}

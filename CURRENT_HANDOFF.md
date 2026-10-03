@@ -2,6 +2,20 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- İkinci preview turunda ana sayfadaki beş konu rotasının sıra numaraları
+  kaldırıldı; zorunlu öğrenme sırası izlenimi vermeyen kategori sembolleri
+  kullanıldı. Rehber dizinindeki editoryal sıra numaraları değişmedi.
+- Sayfanın alt bölümüne üç görselli `Konu vitrini` eklendi: `Nefs ve ruh`,
+  `Hidayet yolculuğu`, `Zikir ve teslimiyet`. Özgün üçlü arşiv görselinden
+  masaüstü için 720 px (63.576-107.840 bayt), mobil için 480 px
+  (33.596-55.346 bayt) WebP varyantları üretildi. Görseller lazy-load; mobil
+  vitrin CSS scroll-snap kullanıyor ve yeni istemci JavaScript'i eklemiyor.
+- Eski etiket bulutu, merkezinde `Allah’a Ulaşmayı Dilemek` bulunan yedi
+  tıklanabilir düğümlü `Kavram akışı` haritasına dönüştürüldü. Masaüstünde
+  bağlantı çizgileri, mobilde iki sütunlu erişilebilir bağlantı listesi kullanır.
+- Yerel `npm.cmd run check` 201/201 başarılı. Chromium 390 px ve 1440 px
+  kontrollerinde yatay taşma, düğüm çakışması ve konsol hatası yok; mobilde
+  480 px, masaüstünde 720 px görsellerin seçildiği doğrulandı.
 - Çalışma canlıdan ayrılmış
   `C:\Users\ugur\Desktop\arsiv-kontrol\.tmp-homepage-discovery-preview`
   worktree'sinde, `codex/homepage-discovery-preview` dalında yürütüldü.

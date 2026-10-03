@@ -629,6 +629,12 @@ tespit edilir).
   Runtime commit `9d886c4` preview dalına push edildi; Vercel preview
   `dpl_7Nxa11WGWA98AKwAVx3FXtjLrACz` `READY`. Preview ana sayfa ve rehber dizini
   `200` ile `noindex, nofollow`; canlı ana sayfada yeni atlas işareti yoktur.
+- İkinci tasarım turunda ana sayfa konu rotalarının numaraları kaldırılıp kavram
+  sembolleri kullanıldı. Alt bölüme üç özgün ve responsive WebP görselli `Konu
+  vitrini` ile yedi tıklanabilir düğümlü `Kavram akışı` eklendi. Mobil vitrin
+  CSS scroll-snap kullanır; yeni istemci JavaScript'i veya açılış API isteği yok.
+  390 px ve 1440 px Chromium doğrulamasında yatay taşma, düğüm çakışması veya
+  konsol hatası görülmedi; `npm.cmd run check` 201/201 başarılı.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
