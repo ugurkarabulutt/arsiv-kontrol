@@ -670,8 +670,12 @@ tespit edilir).
   düzenlendi. Mürşid, Rüya ve Kıyâmet soru bannerları hero/arşiv şeridinin hemen
   altına, `Öne Çıkan Sorular`dan önce taşındı. Yerel `npm.cmd run check` 201/201
   başarılı; 390 px/1440 px Chromium kontrollerinde sıra, renkler, üç banner,
-  konsol hatasızlığı ve taşmasız yerleşim doğrulandı. Düzeltme preview-only'dir;
-  production alias değiştirilmemiştir.
+  konsol hatasızlığı ve taşmasız yerleşim doğrulandı. Runtime commit `7e952f7`
+  preview dalına push edildi. Vercel preview
+  `dpl_2fyJsdGW9fGaP3CDBuvmuuMojLxA` `READY`; sayfa `200` ve
+  `noindex, nofollow`. Dış kontrolde arşiv şeridi → üç banner → `Öne Çıkan
+  Sorular` sırası doğru; canlı ana sayfada soru bannerı yok ve production alias
+  değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

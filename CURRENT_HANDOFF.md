@@ -11,8 +11,13 @@
   şeridinin hemen sonrasına, `Öne Çıkan Sorular`dan önce taşındı. Yerel
   `npm.cmd run check` 201/201 başarılı. Chromium 390 px ve 1440 px kontrollerinde
   bölüm sırası, sabit koyu yeşil zemin, açık metin, krem CTA, üç banner, konsol
-  hatasızlığı ve yatay taşmasız yerleşim doğrulandı. Bu düzeltme henüz yalnız
-  yerel preview worktree'sindedir; production değiştirilmedi.
+  hatasızlığı ve yatay taşmasız yerleşim doğrulandı. Runtime commit `7e952f7`
+  preview dalına push edildi. Vercel preview
+  `dpl_2fyJsdGW9fGaP3CDBuvmuuMojLxA` `READY`:
+  `https://arsiv-kontrol-7o973lo5t-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview `200` ve `noindex, nofollow`; dış kontrolde arşiv şeridi, üç banner ve
+  `Öne Çıkan Sorular` sırası doğrulandı. Canlı ana sayfada soru bannerı işareti
+  yok; production alias değiştirilmedi.
 - 2026-10-04 turunda `Konu vitrini` bir blok yukarı, `Son Yayınlanan Sorular`
   ile `Çok Okunan Cevaplar` arasına taşındı. Belirsiz `Arşivin temel
   konularına görsel kapılar açın` başlığı yerine `Seçili konu rehberlerini
