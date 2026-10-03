@@ -14,8 +14,12 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `public-archive-seo.js` içinde tek yetkili karara taşındı; renderer ve sitemap
   aynı yardımcıyı kullanır. Tekrarlanabilir salt okunur denetim için
   `npm run seo:categories:audit` eklendi. Ayrıntı:
-  `docs/project/category-indexability-audit-2026-10-03.md`. Bu adım canlı veri,
-  kategori yönlendirmesi veya indeks doğrulaması değiştirmedi.
+  `docs/project/category-indexability-audit-2026-10-03.md`. Runtime commit
+  `318dc41`; production deployment `dpl_6ZQTEUW59ZkDJM2jjvW8AR3TNJ8j`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Deploy sonrası dinamik sitemap 3.101 URL,
+  2.782 soru ve 303 indekslenebilir kategori içeriyordu. `/health`, root ve Vercel
+  `READY` geçti; 4 soruluk `adem-a-s` `noindex,follow` ve sitemap dışında kaldı.
+  Canlı DB verisi veya kategori yönlendirmeleri değiştirilmedi.
 
 ## 2026-10-01
 

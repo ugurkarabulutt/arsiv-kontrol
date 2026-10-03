@@ -14,8 +14,14 @@
   `docs/project/category-indexability-audit-2026-10-03.md`.
 - İndekslenebilir kategorilerde tek tam içerik çakışması `mucahede` / `riyazet`;
   anlam kararı gerektirdiği için otomatik redirect veya veri değişikliği yapılmadı.
-- Bu turda canlı DB yazımı, kategori silme/birleştirme, commit, push veya deploy
-  yapılmadı. Search Console'da `Düzeltmeyi doğrula` başlatılmadı.
+- Canlı DB yazımı ve kategori silme/birleştirme yapılmadı. Runtime commit
+  `318dc41` GitHub'daki `codex/pagespeed-performance` branch'ine push edildi.
+  Production deployment `dpl_6ZQTEUW59ZkDJM2jjvW8AR3TNJ8j` `READY` ve
+  `https://arsiv.ibrahimlive.ai` aliasına bağlı. Deploy sonrası canlı yayınlar
+  nedeniyle sitemap 3.101 URL'ye çıktı: 2.782 soru, 303 kategori. `/health ok`,
+  root `200`; 4 soruluk `adem-a-s` kategorisi `noindex,follow` ve sitemap dışında,
+  5+ soruluk kategori örnekleri `index,follow`. Search Console'da
+  `Düzeltmeyi doğrula` başlatılmadı.
 
 ## 2026-10-01 Public Arşiv PageSpeed İyileştirmesi
 
