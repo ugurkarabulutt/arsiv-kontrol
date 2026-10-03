@@ -957,21 +957,26 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /Ne öğrenmek istiyorsunuz\?/);
   assert.doesNotMatch(home, /pa-home-intents/);
   assert.doesNotMatch(home, /pa-intent-card/);
-  assert.match(home, /Konu rehberleri/);
+  assert.match(home, /Kavram rotaları/);
+  assert.match(home, /Sorudan cevaba, kavramların izini sürün./);
+  assert.match(home, /Tüm konu rehberlerini açın/);
+  assert.match(home, /\/public-preview\/konu-rehberleri/);
   assert.match(home, /\/public-preview\/konu-rehberi\/allaha-ulasmayi-dilemek/);
-  const topicGuideSection = home.slice(home.indexOf('Konu rehberleri'), home.indexOf('Kavram akışı'));
+  const topicGuideSection = home.slice(home.indexOf('Kavram rotaları'), home.indexOf('Öne Çıkan Sorular'));
   assert.match(topicGuideSection, /Hidayet Nedir\?/);
   assert.match(topicGuideSection, /Mürşide Tâbiiyet/);
   assert.match(topicGuideSection, /Zikir Nedir\?/);
   assert.match(topicGuideSection, /Nefs Tezkiyesi/);
   assert.match(topicGuideSection, /\/public-preview\/konu-rehberi\/nefs-tezkiyesi/);
   assert.doesNotMatch(topicGuideSection, /Ruhun Allah’a Ulaşması|Teslimiyet|Takva|Tövbe ve Günahlardan Kurtuluş|Dua ve Tevekkül|Namaz ve İbadet Bilinci|Kur’ân’da Hidayet Ayetleri/);
-  assert.match(home, /pa-topic-path/);
-  assert.match(home, /pa-reading-track/);
-  assert.match(home, /pa-reading-rail/);
-  assert.match(home, /pa-reading-set/);
-  assert.match(home, /Rehbere Başla/);
-  assert.match(home, /pa-reading-mark/);
+  assert.match(home, /pa-topic-atlas/);
+  assert.match(home, /pa-topic-atlas-main/);
+  assert.match(home, /pa-topic-atlas-art/);
+  assert.match(home, /pa-topic-route/);
+  assert.match(home, /pa-topic-route-index/);
+  assert.match(home, /topic-routes-archive-720\.webp/);
+  assert.match(home, /topic-routes-archive-1280\.webp/);
+  assert.match(home, /loading="lazy"/);
   assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set/);
   assert.doesNotMatch(home, /pa-reading-index/);
   assert.match(home, /pa-discovery-map/);
@@ -1000,6 +1005,22 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /<[^>]+class="[^"]*pa-question-excerpt/);
   assert.doesNotMatch(home, /Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur\./);
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
+});
+
+test('topic guide index exposes every guide as a crawlable route without loading guide bodies', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberleri');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /<title>Konu Rehberleri \| Dini Sorular ve Cevaplar Arşivi<\/title>/);
+  assert.match(preview.html, /pa-guide-index-hero/);
+  assert.match(preview.html, /pa-guide-directory-list/);
+  assert.match(preview.html, /Okumaya bir konudan başlayın\./);
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi']) {
+    assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
+  }
+  assert.match(preview.html, /"@type":"CollectionPage"/);
+  assert.match(preview.html, /"@type":"ItemList"/);
+  assert.doesNotMatch(preview.html, /<article class="pa-topic-article-body"/);
+  assertOnlyPublicPreviewApi(preview.html);
 });
 
 test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema and related questions', () => {

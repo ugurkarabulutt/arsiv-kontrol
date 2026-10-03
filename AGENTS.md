@@ -615,6 +615,18 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- Canlıdan ayrılmış `codex/homepage-discovery-preview` dalında ana sayfanın konu
+  keşif bölümü yeniden tasarlandı. Eski yatay konu kartlarının yerine arşive özgü
+  `Kavram rotaları` bandı, beş bağlantılı konu rotası ve özgün responsive WebP
+  görsel eklendi. `/konu-rehberleri` dizin sayfası `CollectionPage` ve `ItemList`
+  şemalarıyla hazırlandı; sitemap ile `llms.txt` üretimine dahil edildi. Rehber
+  gövdeleri yalnız kendi sayfalarında tutulduğu, görsel lazy-load edildiği ve yeni
+  istemci JavaScript'i/API isteği eklenmediği için ana sayfa yükü sınırlı kaldı.
+  `npm.cmd run check` 201/201 başarılı; 390 px ve 1440 px Chromium kontrollerinde
+  yatay taşma veya konsol hatası yok. Bu kayıt preview-only durumundadır;
+  production deploy ve `arsiv.ibrahimlive.ai` alias değişikliği yapılmamıştır.
+
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
   bölümündeki kendi/atanmış kayıtlarında ekip üyesi artık `Düzenlemeye Al` veya

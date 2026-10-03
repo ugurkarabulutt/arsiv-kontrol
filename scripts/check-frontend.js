@@ -1484,7 +1484,7 @@ assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uz
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
 assert(/\.pa-hero-copy > p:not\(\.pa-kicker\) \{[^}]*min-height: 128px;/s.test(publicCss), 'Public mobil hero aciklamasi font yuklenirken masaustu-tablet kaymasini onlemeli.');
 assert(/\.pa-hero-copy > p:not\(\.pa-kicker\) \{[^}]*min-height: 120px;/s.test(publicCss), 'Public dar mobil hero aciklamasi font yuklenirken arama alanini sabit tutmali.');
-for (const marker of ['role="group" aria-label="Öne çıkan kategoriler"', 'role="group" aria-label="Konu rehberleri"', 'role="group" aria-label="Çerez seçenekleri"']) {
+for (const marker of ['role="group" aria-label="Öne çıkan kategoriler"', 'aria-label="Konu rehberi rotası"', 'role="group" aria-label="Çerez seçenekleri"']) {
   assert(homePreview.includes(marker), `Public jenerik aria-label semantik grup roluyle eslesmeli: ${marker}`);
 }
 for (const marker of ['pa-ios-share-icon', "iconSvg('share-ios'", 'navigator.maxTouchPoints', "navigator.platform === 'MacIntel'"]) {
@@ -1506,7 +1506,7 @@ assert(!homePreview.includes('hero-bookshelf'), 'Rendered public preview eski ki
 assert(homePreview.includes('<h1>Dini Sorular ve Cevaplar Arşivi</h1>'), 'Public home hedef aramayla uyumlu ana basligi icermeli.');
 assert(!homePreview.includes('<p class="pa-kicker">Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.</p>'), 'Public home hero ust aciklama cumlesi geri gelmemeli.');
 assert(homePreview.includes('ilgili sorular, cevaplar ve delillerle birlikte okuyun.'), 'Public home delil vurgulu aciklama metnini icermeli.');
-for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-path', 'Konu rehberleri', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', '/public-preview/konu-rehberi/nefs-tezkiyesi', 'pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'Rehbere Başla', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
+for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-atlas', 'Kavram rotaları', 'konu-rehberleri', '/public-preview/konu-rehberi/allaha-ulasmayi-dilemek', '/public-preview/konu-rehberi/nefs-tezkiyesi', 'pa-topic-route', 'Tüm konu rehberlerini açın', 'topic-routes-archive-720.webp', 'topic-routes-archive-1280.webp', 'loading="lazy"', 'pa-discovery-map', 'Kavram akışı', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'pa-cta-symbol', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
 for (const marker of ['background: rgb(255 253 247 / 0.13);', 'border-radius: 999px;', 'color: #17201C;', 'outline: 3px solid #D7B35D;']) {
@@ -1515,8 +1515,12 @@ for (const marker of ['background: rgb(255 253 247 / 0.13);', 'border-radius: 99
 for (const marker of ['Ne öğrenmek istiyorsunuz?', 'pa-home-intents', 'pa-intent-card']) {
   assert(!homePreview.includes(marker), `Public ana sayfadan kaldirilan niyet bolumu gorunmemeli: ${marker}`);
 }
-for (const marker of ['pa-reading-track', 'pa-reading-rail', 'pa-reading-set', 'pa-reading-card', 'pa-reading-mark', 'pa-reading-action']) {
-  assert(homePreview.includes(marker), `Public konu rehberi yatay kart marker eksik: ${marker}`);
+for (const marker of ['pa-topic-atlas-main', 'pa-topic-atlas-copy', 'pa-topic-atlas-art', 'pa-topic-route-index', 'pa-topic-route-copy', 'pa-topic-route-count']) {
+  assert(homePreview.includes(marker), `Public konu rotasi marker eksik: ${marker}`);
+}
+const topicGuideIndexPreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberleri').html;
+for (const marker of ['<title>Konu Rehberleri | Dini Sorular ve Cevaplar Arşivi</title>', 'pa-guide-index-hero', 'pa-guide-directory-list', 'Okumaya bir konudan başlayın.', 'Allah’a Ulaşmayı Dilemek', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'Zikir Nedir?', 'Nefs Tezkiyesi', '"@type":"CollectionPage"', '"@type":"ItemList"']) {
+  assert(topicGuideIndexPreview.includes(marker), `Public konu rehberleri dizini marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
 for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Okumaya Devam Edin', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'pa-topic-evidence', 'Allah’a Ulaşmayı Dilemek ile ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
@@ -1556,12 +1560,16 @@ assert(!disallowedTopicArticleSourcePattern.test(nefsArticlePreview), 'Public ne
 for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-toc-block', '.pa-topic-article-body', '.pa-topic-evidence', '.pa-topic-article-support']) {
   assert(publicCss.includes(marker), `Public konu rehberi makale CSS marker eksik: ${marker}`);
 }
-assert(!homePreview.includes('pa-reading-index'), 'Public konu rehberi kartlarinda numara markeri olmamali.');
 for (const marker of ['bindReadingPathSliders', 'data-reading-slider', 'data-reading-rail', 'data-reading-set']) {
   assert(!publicRendererSource.includes(marker) && !homePreview.includes(marker), `Public konu rehberi slider marker kalmamali: ${marker}`);
 }
-for (const marker of ['.pa-reading-track', '.pa-reading-track::-webkit-scrollbar', '.pa-reading-rail', '.pa-reading-set', 'scroll-snap-type: x mandatory', '.pa-reading-action']) {
-  assert(publicCss.includes(marker), `Public konu rehberi yatay kart CSS marker eksik: ${marker}`);
+for (const marker of ['.pa-topic-atlas', '.pa-topic-atlas-main', '.pa-topic-atlas-art', '.pa-topic-route', '.pa-guide-index-hero', '.pa-guide-directory-list']) {
+  assert(publicCss.includes(marker), `Public konu rotasi CSS marker eksik: ${marker}`);
+}
+for (const fileName of ['topic-routes-archive-720.webp', 'topic-routes-archive-1280.webp']) {
+  const assetPath = path.join(publicAssetRoot, 'assets', fileName);
+  assert(fs.existsSync(assetPath), `Public konu rotasi gorseli eksik: ${fileName}`);
+  assert(fs.statSync(assetPath).size < 125 * 1024, `Public konu rotasi gorseli hiz butcesini asmamali: ${fileName}`);
 }
 for (const marker of ['.pa-reading-grid', '.pa-topic-source-list', '.pa-topic-footnote']) {
   assert(!publicCss.includes(marker), `Public konu rehberi eski/grid/kaynak CSS marker kalmamali: ${marker}`);
@@ -1725,7 +1733,7 @@ for (const marker of ['publicCategorySeoIndexable', 'noindex,follow', 'pageNoind
 for (const marker of ['categorySeoDescription', 'categoryEvidencePanel', 'categoryIndexStructuredData', 'PUBLIC_ARCHIVE_CORE_TOPIC_NAMES']) {
   assert(publicRendererSource.includes(marker), `Public kategori/SEO zenginlestirme marker eksik: ${marker}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicCategorySeoIndexable', 'publicArchiveTopicArticleEntries', 'collectPublicSitemapTaxonomy', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicCategorySeoIndexable(item.slug, item.count))', "item.roles.includes('main')", "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", 'article.path', "'> Dini Sorular ve Cevaplar Arşivi", "'## Temel Sayfalar'", "'## Konu Rehberleri'", "'## Optional'", 'llmsLink']) {
+for (const marker of ['PUBLIC_ARCHIVE_CATEGORY_SELECT', 'PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT', 'collectionLastmod', 'publicCategorySeoIndexable', 'publicArchiveTopicArticleEntries', 'collectPublicSitemapTaxonomy', ".select('slug,category_slug,topic_slugs,updated_at,published_at')", 'if (publicCategorySeoIndexable(item.slug, item.count))', "item.roles.includes('main')", "publicArchiveSitemapEntry('/konu-rehberleri'", "publicArchiveSitemapEntry('/kategoriler'", "publicArchiveSitemapEntry('/hakkimizda'", "publicArchiveSitemapEntry('/iletisim'", "llmsLink('Konu rehberleri'", 'article.path', "'> Dini Sorular ve Cevaplar Arşivi", "'## Temel Sayfalar'", "'## Konu Rehberleri'", "'## Optional'", 'llmsLink']) {
   assert(server.includes(marker), `Public sitemap kategori SEO kural marker eksik: ${marker}`);
 }
 for (const marker of ['function publicArchiveLlmsHandler', 'publicArchiveAiCatalogNotFoundHandler', "app.get('/.well-known/ai-catalog.json'", "res.status(404).type('application/json; charset=utf-8')"]) {

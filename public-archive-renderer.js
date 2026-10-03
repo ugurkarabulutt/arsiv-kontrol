@@ -172,6 +172,7 @@ const ROUTE_PATHS = [
   `${PREVIEW_BASE}/son-yayinlanan-sorular`,
   `${PREVIEW_BASE}/cok-okunan-cevaplar`,
   `${PREVIEW_BASE}/arama`,
+  `${PREVIEW_BASE}/konu-rehberleri`,
   `${PREVIEW_BASE}${PUBLIC_TOPIC_GUIDE_PATH}/allaha-ulasmayi-dilemek`,
   `${PREVIEW_BASE}/konular`,
   `${PREVIEW_BASE}/kategoriler`,
@@ -1857,17 +1858,18 @@ function homeReadingPathArticleItems() {
     .filter(({ article }) => Boolean(article?.slug));
 }
 
-function homeReadingPathItems() {
-  return homeReadingPathArticleItems().map(({ item }) => {
-    return `
-      <a class="pa-reading-card" href="${escapeHtml(homeReadingPathHref(item))}" data-topic-article-link="true">
-        <span class="pa-reading-mark">${iconSvg('topics')}</span>
-        <strong>${escapeHtml(item.title)}</strong>
-        <span class="pa-reading-copy">${escapeHtml(item.text)}</span>
-        <span class="pa-reading-action">Rehbere Başla ${iconSvg('chevron-right', 'pa-inline-chevron')}</span>
-      </a>
-    `;
-  }).join('');
+function topicGuideQuestionCount(article = {}) {
+  const category = publicCategoryBySlug(article.categorySlug);
+  return category ? categoryQuestionCount(category) : 0;
+}
+
+function topicGuideArticles() {
+  return homeReadingPathArticleItems().map(({ item, article }, index) => ({
+    ...article,
+    shortText: item.text,
+    order: index + 1,
+    questionCount: topicGuideQuestionCount(article)
+  }));
 }
 
 function quranEvidenceEntries(entries = [], limit = 4) {
@@ -1910,23 +1912,40 @@ function homeQuranEvidenceSection(items = []) {
   `;
 }
 
-function homeReadingPathSection() {
-  const itemsHtml = homeReadingPathItems();
-  if (!itemsHtml) return '';
+function homeTopicAtlasSection() {
+  const articles = topicGuideArticles();
+  if (!articles.length) return '';
   return `
-    <section class="pa-section pa-topic-path" id="konu-rehberleri" aria-labelledby="pa-reading-path-title">
-      <div class="pa-topic-path-head">
-        <p class="pa-kicker">Konu rehberleri</p>
-        <h2 id="pa-reading-path-title">Temel konuları sırayla takip edin.</h2>
-        <p>Her başlık, aynı kavram etrafındaki soru-cevapları bir araya getirir ve okumayı daha derli toplu ilerletir.</p>
-      </div>
-      <div class="pa-reading-track" role="group" aria-label="Konu rehberleri">
-        <div class="pa-reading-rail">
-          <div class="pa-reading-set">
-            ${itemsHtml}
-          </div>
+    <section class="pa-section pa-topic-atlas" id="konu-rehberleri" aria-labelledby="pa-topic-atlas-title">
+      <div class="pa-topic-atlas-main">
+        <div class="pa-topic-atlas-copy">
+          <p class="pa-kicker">Kavram rotaları</p>
+          <h2 id="pa-topic-atlas-title">Sorudan cevaba, kavramların izini sürün.</h2>
+          <p>Arşivin temel konularını birbirinden kopuk başlıklar olarak değil, aynı yolun bağlantılı durakları olarak okuyun.</p>
+          <a class="pa-topic-atlas-cta" href="${PREVIEW_BASE}/konu-rehberleri">
+            <span>Tüm konu rehberlerini açın</span>
+            ${iconSvg('arrow-right', 'pa-button-icon')}
+          </a>
         </div>
+        <picture class="pa-topic-atlas-art" aria-hidden="true">
+          <source media="(max-width: 720px)" type="image/webp" srcset="${publicArchiveAssetHref('topic-routes-archive-720.webp')}">
+          <img src="${publicArchiveAssetHref('topic-routes-archive-1280.webp')}" alt="" width="1280" height="720" loading="lazy" decoding="async">
+        </picture>
       </div>
+      <ol class="pa-topic-route" aria-label="Konu rehberi rotası">
+        ${articles.map(article => `
+          <li>
+            <a href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(article)}`)}" data-topic-article-link="true">
+              <span class="pa-topic-route-index">${String(article.order).padStart(2, '0')}</span>
+              <span class="pa-topic-route-copy">
+                <strong>${escapeHtml(article.title)}</strong>
+                <small>${escapeHtml(article.shortText || article.description || '')}</small>
+              </span>
+              <span class="pa-topic-route-count">${archiveCountLabel(article.questionCount)} soru</span>
+            </a>
+          </li>
+        `).join('')}
+      </ol>
     </section>
   `;
 }
@@ -2090,6 +2109,8 @@ function renderHome() {
 
         ${archiveShortcutBand()}
 
+        ${!dataUnavailable ? homeTopicAtlasSection() : ''}
+
         ${!dataUnavailable && featured.length ? `<section class="pa-section">
           ${sectionHeader('Öne Çıkan Sorular', 'Öne çıkanları gör', `${PREVIEW_BASE}/one-cikan-sorular`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
@@ -2108,7 +2129,6 @@ function renderHome() {
         </section>` : ''}
 
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
-        ${!dataUnavailable ? homeReadingPathSection() : ''}
         ${!dataUnavailable ? homeDiscoveryMapSection(publicArchiveFixtures.qa) : ''}
         ${ctaBand()}
         ${trustBand()}
@@ -2498,6 +2518,95 @@ function searchDirectCategoryMatches() {
 
 function renderTopicsIndex() {
   return renderCategoriesIndex();
+}
+
+function topicGuideIndexStructuredData(articles = []) {
+  const canonicalUrl = publicArchiveCanonicalUrl('/konu-rehberleri');
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${canonicalUrl}#page`,
+        url: canonicalUrl,
+        name: 'Konu Rehberleri',
+        description: 'Dini sorular ve cevaplar arşivindeki temel kavramları bağlantılı soru, cevap ve ayet atıflarıyla izlemek için hazırlanan konu rehberleri.',
+        isPartOf: { '@id': `${publicArchiveCanonicalUrl('/')}#website` }
+      },
+      {
+        '@type': 'ItemList',
+        '@id': `${canonicalUrl}#guides`,
+        name: 'Dini Konu Rehberleri',
+        numberOfItems: articles.length,
+        itemListElement: articles.map((article, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: article.title,
+          url: publicArchiveCanonicalUrl(publicTopicArticlePath(article))
+        }))
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: publicArchiveCanonicalUrl('/') },
+          { '@type': 'ListItem', position: 2, name: 'Konu Rehberleri', item: canonicalUrl }
+        ]
+      }
+    ]
+  };
+}
+
+function renderTopicGuideIndex() {
+  const articles = topicGuideArticles();
+  const description = 'Dini sorular ve cevaplar arşivindeki temel kavramları; bağlantılı sorular, cevaplar ve ayet atıflarıyla konu konu inceleyin.';
+  return renderShell({
+    active: 'archive',
+    title: 'Konu Rehberleri',
+    description,
+    canonicalPath: '/konu-rehberleri',
+    structuredData: topicGuideIndexStructuredData(articles),
+    searchSeedEntries: publicArchiveFixtures.qa,
+    searchSeedCategories: publicCategories(),
+    content: `
+      <main class="pa-main pa-guide-index-main">
+        ${breadcrumb([{ label: 'Konu Rehberleri' }])}
+        <section class="pa-guide-index-hero">
+          <div>
+            <p class="pa-kicker">Arşiv belgesi</p>
+            <h1>Konu Rehberleri</h1>
+            <p>${escapeHtml(description)}</p>
+          </div>
+          <dl>
+            <div><dt>Rehber</dt><dd>${archiveCountLabel(articles.length)}</dd></div>
+            <div><dt>Bağlantılı soru</dt><dd>${archiveCountLabel(articles.reduce((sum, article) => sum + Number(article.questionCount || 0), 0))}</dd></div>
+          </dl>
+        </section>
+        <section class="pa-guide-directory" aria-labelledby="pa-guide-directory-title">
+          <div class="pa-section-head">
+            <div>
+              <p class="pa-kicker">Kavram rotaları</p>
+              <h2 id="pa-guide-directory-title">Okumaya bir konudan başlayın.</h2>
+            </div>
+          </div>
+          <ol class="pa-guide-directory-list">
+            ${articles.map(article => `
+              <li>
+                <a href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(article)}`)}">
+                  <span class="pa-guide-directory-index">${String(article.order).padStart(2, '0')}</span>
+                  <span class="pa-guide-directory-copy">
+                    <strong>${escapeHtml(article.title)}</strong>
+                    <span>${escapeHtml(article.description || article.shortText || '')}</span>
+                  </span>
+                  <span class="pa-guide-directory-meta">${archiveCountLabel(article.questionCount)} ilgili soru ${iconSvg('arrow-right', 'pa-button-icon')}</span>
+                </a>
+              </li>
+            `).join('')}
+          </ol>
+        </section>
+      </main>
+    `
+  });
 }
 
 function renderCategoriesIndex() {
@@ -5201,6 +5310,7 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     if (pathname === `${PREVIEW_BASE}/arama`) return renderSearch(query.q || '');
     if (pathname === `${PREVIEW_BASE}/konular`) return renderTopicsIndex();
     if (pathname === `${PREVIEW_BASE}/kategoriler`) return renderCategoriesIndex();
+    if (pathname === `${PREVIEW_BASE}/konu-rehberleri`) return renderTopicGuideIndex();
     if (pathname === `${PREVIEW_BASE}/hesabim`) return renderAccount();
     if (pathname === `${PREVIEW_BASE}/soru-sor`) return renderAsk();
     if (pathname === `${PREVIEW_BASE}/hakkimizda`) return renderInfoPage('hakkimizda');
@@ -5304,6 +5414,7 @@ function createPublicArchivePreviewRouter(options = {}) {
   }));
   router.get('/konular', (req, res, next) => sendRoute(req, res, next, 'konular'));
   router.get('/kategoriler', (req, res, next) => sendRoute(req, res, next, 'kategoriler'));
+  router.get('/konu-rehberleri', (req, res, next) => sendRoute(req, res, next, 'konu-rehberleri'));
   router.get('/hesabim', (req, res, next) => sendRoute(req, res, next, 'hesabim'));
   router.get('/soru-sor', (req, res, next) => sendRoute(req, res, next, 'soru-sor'));
   router.get('/hakkimizda', (req, res, next) => sendRoute(req, res, next, 'hakkimizda'));

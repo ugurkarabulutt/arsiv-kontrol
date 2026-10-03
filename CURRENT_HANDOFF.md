@@ -1,5 +1,26 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-03 Ana Sayfa Konu Keşfi Preview
+
+- Çalışma canlıdan ayrılmış
+  `C:\Users\ugur\Desktop\arsiv-kontrol\.tmp-homepage-discovery-preview`
+  worktree'sinde, `codex/homepage-discovery-preview` dalında yürütüldü.
+- Ana sayfadaki eski yatay konu rehberi kartları yerine arşive özgü `Kavram
+  rotaları` alanı hazırlandı. Özgün arşiv görseli, beş bağlantılı konu rotası ve
+  tüm rehberleri açan belirgin geçiş aynı bantta birleştirildi.
+- Yeni `/konu-rehberleri` dizini rehberleri yalnız başlık, özet, kavram akışı ve
+  soru sayısıyla listeliyor. Rehberlerin tam metni kendi URL'lerinde kalıyor;
+  ana sayfaya veya dizine ağır içerik taşınmıyor.
+- Özgün görsel iki responsive WebP varyantıyla eklendi:
+  `topic-routes-archive-1280.webp` 118.654 bayt ve
+  `topic-routes-archive-720.webp` 78.134 bayt. Görsel lazy-load edildi; yeni
+  istemci JavaScript'i veya açılış API isteği eklenmedi.
+- Rehber dizini sitemap ve `llms.txt` üretimine eklendi. Bu değişiklikler yalnız
+  preview dalındadır; production deploy veya canlı alias değişikliği yapılmadı.
+- Yerel doğrulama: `npm.cmd run check` 201/201 başarılı, `git diff --check`
+  whitespace hatası vermedi. Chromium ile 390 px ve 1440 px kontrollerinde yatay
+  taşma ve konsol hatası yok; iki WebP varyantının doğru yüklendiği doğrulandı.
+
 ## 2026-10-03 Kategori SEO Envanteri
 
 - Search Console'un 21 Eylül tarihli raporundaki 1.848 `Keşfedildi - şu anda
