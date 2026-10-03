@@ -2,6 +2,17 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 ikinci turda kullanıcı ekran görüntüsündeki okunurluk sorunu için
+  `Arşivin tamamını açın` şeridi tema değişkeninden bağımsız koyu yeşil zemine
+  alındı. Başlık krem, açıklama açık mint; `Arşive Git` CTA'sı krem zemin/koyu
+  yeşil metin kullanır. Daire biçimli ikon/CTA yerine 8 px köşeli, arşiv
+  karakteri daha belirgin bir şerit düzeni kuruldu.
+- Mürşid, Rüya ve Kıyâmet soru bannerları alt sıralardan çıkarılıp hero ve arşiv
+  şeridinin hemen sonrasına, `Öne Çıkan Sorular`dan önce taşındı. Yerel
+  `npm.cmd run check` 201/201 başarılı. Chromium 390 px ve 1440 px kontrollerinde
+  bölüm sırası, sabit koyu yeşil zemin, açık metin, krem CTA, üç banner, konsol
+  hatasızlığı ve yatay taşmasız yerleşim doğrulandı. Bu düzeltme henüz yalnız
+  yerel preview worktree'sindedir; production değiştirilmedi.
 - 2026-10-04 turunda `Konu vitrini` bir blok yukarı, `Son Yayınlanan Sorular`
   ile `Çok Okunan Cevaplar` arasına taşındı. Belirsiz `Arşivin temel
   konularına görsel kapılar açın` başlığı yerine `Seçili konu rehberlerini

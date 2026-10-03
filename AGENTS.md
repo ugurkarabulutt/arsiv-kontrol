@@ -664,6 +664,14 @@ tespit edilir).
   `dpl_AXEVbYhwQxUm3aBBJLTNJmWoFKEC` `READY`; sayfa `200` ve
   `noindex, nofollow`, altı yeni asset `image/webp`. Canlı ana sayfada soru
   bannerı işareti yok ve production alias değiştirilmemiştir.
+- 2026-10-04 ikinci turda `Arşivin tamamını açın` şeridi açık tema değişkenleri
+  nedeniyle koyu modda oluşan düşük kontrasttan çıkarıldı. Şerit sabit koyu
+  yeşil, metin krem/açık mint ve CTA krem zemin-koyu yeşil olarak yeniden
+  düzenlendi. Mürşid, Rüya ve Kıyâmet soru bannerları hero/arşiv şeridinin hemen
+  altına, `Öne Çıkan Sorular`dan önce taşındı. Yerel `npm.cmd run check` 201/201
+  başarılı; 390 px/1440 px Chromium kontrollerinde sıra, renkler, üç banner,
+  konsol hatasızlığı ve taşmasız yerleşim doğrulandı. Düzeltme preview-only'dir;
+  production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

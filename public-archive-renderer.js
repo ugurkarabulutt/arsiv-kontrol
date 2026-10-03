@@ -2153,6 +2153,8 @@ function renderHome() {
 
         ${archiveShortcutBand()}
 
+        ${!dataUnavailable ? homeQuestionBannersSection() : ''}
+
         ${!dataUnavailable && featured.length ? `<section class="pa-section">
           ${sectionHeader('Öne Çıkan Sorular', 'Öne çıkanları gör', `${PREVIEW_BASE}/one-cikan-sorular`)}
           <div class="pa-question-grid">${featured.map(entry => questionCard(entry, { showMeta: false, strongCta: true })).join('')}</div>
@@ -2172,7 +2174,6 @@ function renderHome() {
           <div class="pa-question-grid">${popularList.slice(0, 5).map(entry => questionCard(entry, { compact: true })).join('')}</div>
         </section>` : ''}
 
-        ${!dataUnavailable ? homeQuestionBannersSection() : ''}
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
         ${ctaBand()}
         ${trustBand()}

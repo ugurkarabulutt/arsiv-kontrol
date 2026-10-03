@@ -1137,7 +1137,7 @@ assert(!publicRendererSource.includes('hero-bookshelf'), 'Eski kitaplik hero gor
 assert(!publicRendererSource.includes('function readingPath'), 'Public home eski Arsiv ana kapilari bolumu kaldirilmis olmali.');
 assert(!publicCss.includes('.pa-reading-path') && !publicCss.includes('.pa-path-step'), 'Public CSS eski Arsiv ana kapilari kart grid stillerini icermemeli.');
 assert(publicRendererSource.includes('<a class="pa-archive-shortcut"') && publicRendererSource.includes('pa-archive-shortcut-link'), 'Public home arsiv yonlendirme bandi tek parca tiklanabilir olmali.');
-assert(publicCss.includes('.pa-archive-shortcut::after') && publicCss.includes('radial-gradient(circle at 92% 50%') && publicCss.includes('grid-template-columns: 34px minmax(0, 1fr) auto'), 'Public home arsiv banner modern ince serit stilleri eksik.');
+assert(publicCss.includes('.pa-archive-shortcut::after') && publicCss.includes('background: #0F4930;') && publicCss.includes('background: #FFFDF7;') && publicCss.includes('color: #0F4930;') && publicCss.includes('grid-template-columns: 38px minmax(0, 1fr) auto'), 'Public home arsiv banner yuksek kontrastli arsiv seridi stilleri eksik.');
 assert(
   publicCss.includes('.pa-hero > .pa-still-life') &&
     publicCss.includes('object-position: 56% 72%') &&
