@@ -623,7 +623,13 @@ tespit edilir).
   noindex preview hattındadır. `npm.cmd run check` 201/201 başarılı. Yerel 390x844
   kontrolde otomatik hareket 23,22px/sn ölçüldü; 181,72px sola ve 179,29px sağa
   sürükleme, 500ms duraklama, otomatik devam, kart üzerinde 844px dikey kaydırma
-  ve sıfır konsol hatası doğrulandı. Production'a alınmadı.
+  ve sıfır konsol hatası doğrulandı. Runtime commit `f990076` preview dalına push
+  edildi. Vercel preview `dpl_9wA4qPj92EFKLAbv258bQ2vp18iZ` `READY`:
+  `https://arsiv-kontrol-419ipuso4-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 23,01px/sn otomatik hareket, 181,50px sola ve
+  179,31px sağa sürükleme, 500ms duraklama ve otomatik devam doğrulandı; konsol
+  hatası yok. Preview `200`, `noindex, nofollow` ve yeni cache anahtarını taşıyor;
+  canlı ana sayfa yeni cache anahtarını taşımıyor. Production'a alınmadı.
 - 2026-10-04 gerçek iPhone/iç tarayıcı bildiriminde konu vitrininin yatay
   sürüklenmediği görüldü. `pointer` desteğine ek olarak dokunma kimliği izleyen
   `touchstart`, pasif olmayan `touchmove`, `touchend` ve `touchcancel` akışı
