@@ -616,6 +616,30 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 kullanıcı tarafından sağlanan `Tasavvuf Nedir?` metni, öğreti
+  ayrımları ve Türkçe karakterleri korunarak dokuzuncu konu rehberi olarak
+  eklendi. Rehber 15 bölümlü içindekiler, 13 âyet referansı, dört âyet kutusu,
+  yedi safhalı tablo ve `tasavvuf` kategorisindeki ilgili soruları içerir. URL
+  `/konu-rehberi/tasavvuf-nedir`; ana sayfa kartı `Tasavvuf nedir?` başlığını
+  taşır. Yerleşik ImageGen ile yedi safhayı taş basamaklar ve dört teslimi dört
+  pirinç su kâsesiyle anlatan kişisiz/yazısız özgün görsel üretildi; 480px WebP
+  49.872 bayt, 720px WebP 98.902 bayt. Dokuz kartlı masaüstü vitrin 3x3
+  yerleşir. `npm.cmd run check` başarılı, 205/205 test geçti. Yerel 390x844 ve
+  1440x900 kontrollerinde 15 içindekiler, dört âyet kutusu, bir tablo, ilgili
+  sorular, dokuz rehber kartı, responsive görsel, sıfır yatay taşma ve sıfır
+  konsol hatası doğrulandı. Runtime commit `992afe3` GitHub'a push edildi.
+  Dış noindex preview deployment `dpl_7ewqyQNCGJKir6KA2bryn4Q6Eh6d`
+  `READY`:
+  `https://arsiv-kontrol-o9gmmnfya-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/tasavvuf-nedir`.
+  Dış preview ana sayfa, rehber dizini, rehber ve 480/720px görseller `200`;
+  `X-Robots-Tag` ile meta robots `noindex, nofollow`, production hedefli OG URL
+  doğru. Dış 390px kontrolde 15 içindekiler, dört âyet kutusu, bir tablo, 8
+  ilgili soru; 1440px kontrolde 9 kartlık 3x3 vitrin ve yüklenen 720px görsel
+  doğrulandı. Her iki görünümde yatay taşma ve konsol hatası yok. Canlı
+  production ana sayfasında yeni kart yok ve `/konu-rehberi/tasavvuf-nedir`
+  `404`; kullanıcı onayı olmadan production'a alınmayacak ve Google dizine
+  ekleme isteği yalnız canlı URL `200`, canonical ve `index,follow`
+  doğrulandıktan sonra gönderilecek.
 - 2026-10-04 kullanıcı tarafından sağlanan `Kur’ân’a Göre Mutluluk Nedir?`
   metni, öğreti ayrımları değiştirilmeden sekizinci konu rehberi olarak eklendi.
   Rehber 12 bölümlü içindekiler, 11 âyet atfı, üç delil kutusu ve `mutluluk`
