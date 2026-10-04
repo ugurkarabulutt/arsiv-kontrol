@@ -643,6 +643,18 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+
+- **Rüya sorusu geri alınabilir biçimde çöpe taşındı:** Kullanıcı talebiyle
+  `/soru/ayrica-ruyalarimizda-yaptigimiz-yanlislardan-derece-kaybi-oluyor-mu`
+  adresindeki tekil canlı kayıt yayından kaldırıldı. Kaynak history
+  `552175da-7339-4168-a8c6-0dfca6aac6ba`, proje içindeki atomik
+  `review_history_change(..., 'trash', ...)` akışıyla `onaylandi` durumundan
+  `copte` durumuna; bağlı `public_qa` kaydı `published` durumundan
+  `trash_hidden` durumuna taşındı. Önceki durum, gerekçe, işlemi yapan yönetici
+  ve zaman `workflow_meta` içinde korundu; `admin_action_log` kaydında
+  `review.trash / Çöpe taşıdı` denetim izi oluştu. İşlem kalıcı silme değildir
+  ve restore akışıyla geri alınabilir. Canlı URL `404` döndü. Kod değişikliği
+  ve deploy gerekmedi.
 - 2026-10-04 kullanıcı tarafından sağlanan `Tasavvuf Nedir?` metni, öğreti
   ayrımları ve Türkçe karakterleri korunarak dokuzuncu konu rehberi olarak
   eklendi. Rehber 15 bölümlü içindekiler, 13 âyet referansı, dört âyet kutusu,

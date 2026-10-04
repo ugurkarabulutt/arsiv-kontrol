@@ -2,6 +2,14 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 kullanıcı talebiyle
+  `/soru/ayrica-ruyalarimizda-yaptigimiz-yanlislardan-derece-kaybi-oluyor-mu`
+  yayından kaldırıldı ve geri alınabilir çöp akışına taşındı. Kaynak history
+  `552175da-7339-4168-a8c6-0dfca6aac6ba` için durum `onaylandi -> copte`, sürüm
+  `0 -> 1`; bağlı public kayıt `published -> trash_hidden`. `workflow_meta`
+  eski durumu, gerekçeyi, işlem zamanını ve yöneticiyi koruyor;
+  `admin_action_log` içinde `review.trash / Çöpe taşıdı` kaydı doğrulandı.
+  Canlı URL `404`. Kalıcı silme, kod değişikliği veya deploy yapılmadı.
 - 2026-10-04 kullanıcı tarafından sağlanan `Tövbe ve Günahlardan Kurtuluş`
   metni, öğreti ayrımları ve Türkçe karakterleri korunarak onuncu konu rehberi
   olarak eklendi. Rehber 15 bölümlü içindekiler, 11 âyet atfı, Zumer 53, Âli
