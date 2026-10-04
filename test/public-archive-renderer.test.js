@@ -99,8 +99,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261004-modern-motion-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261004-modern-motion-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261004-topic-flow-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261004-topic-flow-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -148,7 +148,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261004-modern-motion-v1/);
+  assert.match(home, /app-icon-128\.webp\?v=20261004-topic-flow-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -967,6 +967,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set/);
   assert.doesNotMatch(home, /pa-reading-index/);
   assert.match(home, /pa-topic-showcase/);
+  assert.match(home, /data-topic-showcase-slider/);
+  assert.match(home, /data-topic-showcase-rail/);
+  assert.match(home, /data-topic-showcase-set/);
   assert.match(home, /Konu rehberleri/);
   assert.match(home, /Seçili konu rehberlerini inceleyin./);
   assert.match(home, /Nefs ve ruh/);

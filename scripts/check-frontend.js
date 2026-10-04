@@ -1426,7 +1426,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261004-modern-motion-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261004-topic-flow-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1478,7 +1478,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261004-modern-motion-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261004-topic-flow-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
@@ -1902,6 +1902,9 @@ assert(publicRendererSource.includes('data-card-href') && publicRendererSource.i
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {
   assert(publicRendererSource.includes(marker), `Kategori slider davranis marker eksik: ${marker}`);
 }
+for (const marker of ['bindTopicShowcaseMarquees', 'data-topic-showcase-slider', 'data-topic-showcase-rail', 'data-topic-showcase-set', 'data-topic-showcase-bound', 'var speed = 18', "window.matchMedia('(max-width: 430px)')", "threshold: 0.16", "rootMargin: '8% 0px 8% 0px'"]) {
+  assert(publicRendererSource.includes(marker), `Konu vitrini sabit hizli akis marker eksik: ${marker}`);
+}
 for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-count-up', 'data-count-target', 'duration = 2400', 'data-counted']) {
   assert(publicRendererSource.includes(marker), `Aktif arsiv sayac animasyon marker eksik: ${marker}`);
 }
@@ -1941,7 +1944,7 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
 for (const marker of ['--pa-answer-cta-text: #FFFFFF;', '--pa-answer-cta-text: #0F4930;', '--pa-answer-cta-shine: rgb(255 253 247 / 0.28);', 'color: var(--pa-answer-cta-text);', 'var(--pa-answer-cta-shine)']) {
   assert(publicCss.includes(marker), `Public cevap CTA kontrast standardi eksik: ${marker}`);
 }
-assert(publicRendererSource.includes("20261004-modern-motion-v1"), 'Public arsiv CSS cache anahtari tipografi ve hareket icin yenilenmeli.');
+assert(publicRendererSource.includes("20261004-topic-flow-v1"), 'Public arsiv CSS cache anahtari konu vitrini akisi icin yenilenmeli.');
 for (const marker of ['.pa-cta-visual', '.pa-cta-content', '.pa-cta-kicker', '.pa-cta-button-icon', 'object-position: 66% center', 'min-height: 420px']) {
   assert(publicCss.includes(marker), `Public soru CTA gorsel CSS marker eksik: ${marker}`);
 }
@@ -1957,7 +1960,10 @@ for (const marker of ['.pa-question-card::after', '.pa-question-card:focus-withi
   assert(publicCss.includes(marker), `Public modern soru karti marker eksik: ${marker}`);
 }
 const questionTitleCss = publicCss.match(/(?:^|\n)\.pa-question-title\s*\{([\s\S]*?)\}/)?.[1] || '';
-assert(questionTitleCss.includes('font-family: var(--pa-font-sans)') && questionTitleCss.includes('font-weight: 700') && questionTitleCss.includes('line-height: 1.36'), 'Public soru karti basliklari temiz ve okunakli sans tipografiyi kullanmali.');
+assert(questionTitleCss.includes('font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif') && questionTitleCss.includes('font-weight: 600') && questionTitleCss.includes('line-height: 1.42'), 'Public soru karti basliklari hafif ve okunakli sistem tipografisini kullanmali.');
+for (const marker of ['.pa-topic-showcase-rail', '.pa-topic-showcase-set', 'touch-action: pan-y', 'width: min(82vw, 324px)', '@media (max-width: 430px) and (prefers-reduced-motion: reduce)']) {
+  assert(publicCss.includes(marker), `Konu vitrini kesintisiz mobil akis CSS marker eksik: ${marker}`);
+}
 for (const marker of ['.pa-scroll-reveal', 'translate: 0 24px', '.pa-scroll-reveal.is-visible', 'cubic-bezier(.16, 1, .3, 1)', '@media (prefers-reduced-motion: reduce)']) {
   assert(publicCss.includes(marker), `Public scroll reveal CSS marker eksik: ${marker}`);
 }

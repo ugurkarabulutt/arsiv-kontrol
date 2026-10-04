@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-modern-motion-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-topic-flow-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -1934,6 +1934,20 @@ function homeTopicShowcaseSection() {
   ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
     .filter(item => Boolean(item.article));
   if (!items.length) return '';
+  const renderShowcaseCards = (duplicate = false) => items.map(item => `
+    <a class="pa-topic-showcase-card" href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(item.article)}`)}" data-topic-article-link="true"${duplicate ? ' tabindex="-1" data-pa-reveal-skip="true"' : ''}>
+      <picture class="pa-topic-showcase-art" aria-hidden="true">
+        <source media="(max-width: 520px)" type="image/webp" srcset="${publicArchiveAssetHref(item.image.replace('-720.webp', '-480.webp'))}">
+        <img src="${publicArchiveAssetHref(item.image)}" alt="" width="720" height="720" loading="lazy" decoding="async">
+      </picture>
+      <span class="pa-topic-showcase-copy">
+        <small>${escapeHtml(item.kicker)}</small>
+        <strong>${escapeHtml(item.title)}</strong>
+        <span>${escapeHtml(item.text)}</span>
+        <b>Konuyu keşfet ${iconSvg('arrow-right', 'pa-button-icon')}</b>
+      </span>
+    </a>
+  `).join('');
   return `
     <section class="pa-section pa-topic-showcase" aria-labelledby="pa-topic-showcase-title">
       <div class="pa-topic-showcase-head">
@@ -1946,21 +1960,11 @@ function homeTopicShowcaseSection() {
           <a href="${PREVIEW_BASE}/konu-rehberleri">Tüm rehberleri gör ${iconSvg('arrow-right', 'pa-button-icon')}</a>
         </div>
       </div>
-      <div class="pa-topic-showcase-grid">
-        ${items.map(item => `
-          <a class="pa-topic-showcase-card" href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(item.article)}`)}" data-topic-article-link="true">
-            <picture class="pa-topic-showcase-art" aria-hidden="true">
-              <source media="(max-width: 520px)" type="image/webp" srcset="${publicArchiveAssetHref(item.image.replace('-720.webp', '-480.webp'))}">
-              <img src="${publicArchiveAssetHref(item.image)}" alt="" width="720" height="720" loading="lazy" decoding="async">
-            </picture>
-            <span class="pa-topic-showcase-copy">
-              <small>${escapeHtml(item.kicker)}</small>
-              <strong>${escapeHtml(item.title)}</strong>
-              <span>${escapeHtml(item.text)}</span>
-              <b>Konuyu keşfet ${iconSvg('arrow-right', 'pa-button-icon')}</b>
-            </span>
-          </a>
-        `).join('')}
+      <div class="pa-topic-showcase-grid" data-topic-showcase-slider>
+        <div class="pa-topic-showcase-rail" data-topic-showcase-rail>
+          <div class="pa-topic-showcase-set" data-topic-showcase-set>${renderShowcaseCards(false)}</div>
+          <div class="pa-topic-showcase-set" aria-hidden="true">${renderShowcaseCards(true)}</div>
+        </div>
       </div>
     </section>
   `;
@@ -3701,6 +3705,111 @@ function renderShell({ title, description, active, content, status = 200, questi
           });
         });
       }
+      function bindTopicShowcaseMarquees() {
+        document.querySelectorAll('[data-topic-showcase-slider]').forEach(function(slider){
+          if (slider.getAttribute('data-topic-showcase-bound') === 'true') return;
+          slider.setAttribute('data-topic-showcase-bound', 'true');
+          var rail = slider.querySelector('[data-topic-showcase-rail]');
+          var firstSet = slider.querySelector('[data-topic-showcase-set]');
+          if (!rail || !firstSet) return;
+          var mobileQuery = window.matchMedia ? window.matchMedia('(max-width: 430px)') : null;
+          var reducedQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+          var observer = null;
+          var rafId = 0;
+          var resizeTimer = 0;
+          var lastFrame = 0;
+          var offset = 0;
+          var cycleWidth = 0;
+          var inView = false;
+          var running = true;
+          var speed = 18;
+          function railGap() {
+            var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
+            return styles ? (parseFloat(styles.columnGap || styles.gap || '0') || 0) : 0;
+          }
+          function shouldMove() {
+            return running && inView && (!mobileQuery || mobileQuery.matches) &&
+              (!reducedQuery || !reducedQuery.matches) && !document.hidden;
+          }
+          function measure() {
+            cycleWidth = firstSet.getBoundingClientRect().width + railGap();
+            if (cycleWidth > 0) offset = ((offset % cycleWidth) + cycleWidth) % cycleWidth;
+          }
+          function paint() {
+            if (!mobileQuery || !mobileQuery.matches) {
+              rail.style.transform = '';
+              return;
+            }
+            rail.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px, 0, 0)';
+          }
+          function start() {
+            measure();
+            paint();
+            if (shouldMove() && !rafId) {
+              lastFrame = 0;
+              rafId = window.requestAnimationFrame(loop);
+            }
+          }
+          function loop(time) {
+            rafId = 0;
+            if (!shouldMove()) return;
+            if (!lastFrame) lastFrame = time;
+            var delta = Math.min(time - lastFrame, 50);
+            lastFrame = time;
+            offset += (delta * speed) / 1000;
+            if (cycleWidth > 0 && offset >= cycleWidth) offset -= cycleWidth;
+            paint();
+            rafId = window.requestAnimationFrame(loop);
+          }
+          function scheduleMeasure() {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(function(){
+              if (!mobileQuery || !mobileQuery.matches) offset = 0;
+              start();
+            }, 120);
+          }
+          function onVisibilityChange() {
+            if (document.hidden && rafId) {
+              window.cancelAnimationFrame(rafId);
+              rafId = 0;
+            } else start();
+          }
+          function onMediaChange() {
+            lastFrame = 0;
+            scheduleMeasure();
+          }
+          if ('IntersectionObserver' in window) {
+            observer = new IntersectionObserver(function(entries){
+              entries.forEach(function(entry){
+                inView = entry.isIntersecting;
+                if (!inView && rafId) {
+                  window.cancelAnimationFrame(rafId);
+                  rafId = 0;
+                }
+                if (inView) start();
+              });
+            }, { threshold: 0.16, rootMargin: '8% 0px 8% 0px' });
+            observer.observe(slider);
+          } else {
+            inView = true;
+            start();
+          }
+          window.addEventListener('resize', scheduleMeasure, { passive: true });
+          document.addEventListener('visibilitychange', onVisibilityChange);
+          if (mobileQuery && mobileQuery.addEventListener) mobileQuery.addEventListener('change', onMediaChange);
+          if (reducedQuery && reducedQuery.addEventListener) reducedQuery.addEventListener('change', onMediaChange);
+          addPageCleanup(function(){
+            running = false;
+            window.clearTimeout(resizeTimer);
+            if (rafId) window.cancelAnimationFrame(rafId);
+            if (observer) observer.disconnect();
+            window.removeEventListener('resize', scheduleMeasure);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            if (mobileQuery && mobileQuery.removeEventListener) mobileQuery.removeEventListener('change', onMediaChange);
+            if (reducedQuery && reducedQuery.removeEventListener) reducedQuery.removeEventListener('change', onMediaChange);
+          });
+        });
+      }
       var liveSearchSeed = ${liveSearchSeedJson};
       function normalizeClientSearch(value) {
         return String(value || '')
@@ -4212,7 +4321,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           '.pa-question-banner',
           '.pa-question-card',
           '.pa-active-stats',
-          '.pa-topic-showcase-card',
+          '.pa-topic-showcase',
           '.pa-cta-band',
           '.pa-newsletter',
           '.pa-index-category',
@@ -4224,7 +4333,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           '.pa-answer'
         ].join(',');
         var nodes = Array.from(root.querySelectorAll(selector)).filter(function(node){
-          return node.getAttribute('data-pa-reveal-bound') !== 'true';
+          return node.getAttribute('data-pa-reveal-bound') !== 'true' &&
+            node.getAttribute('data-pa-reveal-skip') !== 'true';
         });
         if (!nodes.length) return;
         var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -5457,6 +5567,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         trackPublicVisit();
         bindArchiveAlphaIndexes();
         bindConceptSliders();
+        bindTopicShowcaseMarquees();
         bindLiveSearchControls();
         bindActiveStatsCounters();
         bindScrollReveals();

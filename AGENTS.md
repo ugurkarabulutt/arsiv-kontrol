@@ -616,6 +616,19 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 mobil konu vitrininin dokunmada aşağı-yukarı oynayan `scroll-snap`
+  düzeni kaldırıldı. Vitrin görünür alana girdiğinde üç kart, kopyalanmış ikinci
+  set üzerinde `requestAnimationFrame` ile saniyede 18px sabit hızla ve kesintisiz
+  sola akar. `touch-action: pan-y` dikey sayfa kaydırmasını korur; kartlar ayrı
+  düşey reveal almaz. `prefers-reduced-motion` otomatik hareketi kapatıp manuel
+  yatay erişimi açar; masaüstü üç sütunlu görünüm sabit kalır. Soru başlıklarında
+  Inter yerine Apple/Segoe UI sistem yazısı, 600 ağırlık, masaüstünde 19px ve
+  mobilde 17px kullanıldı. Cache anahtarı `20261004-topic-flow-v1` oldu.
+  `npm.cmd run check` 201/201 başarılı. Yerel Chromium 390x844 kontrolünde
+  1,2 saniyelik örneklemde yaklaşık 18px yatay ilerleme ve değişmeyen kart `Y`
+  konumu ölçüldü; kart üstünde dikey kaydırma çalıştı. 1440x900 görünümde üç kart
+  sabit, kopya set gizli. Taşma ve konsol hatası yok. Preview-only'dir;
+  production'a alınmamıştır.
 - 2026-10-04 soru kartı başlıklarında okunurluk için yalnız bu metin yüzeyi
   yerleşik `Inter` yazı tipine geçirildi; logo ve bölüm başlıklarındaki marka
   serifi korundu. İlk ekranı geciktirmeyen, aşağıdaki bölümleri görünür alana

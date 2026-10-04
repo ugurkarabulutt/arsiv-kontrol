@@ -2,6 +2,21 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 konu vitrininin mobil `scroll-snap` düzeni kaldırıldı. Üç kart,
+  bölüm görünür alana girdiğinde `IntersectionObserver` ve
+  `requestAnimationFrame` ile saniyede 18px sabit hızla sola akan, kopyalanmış
+  ikinci set sayesinde kesintisiz devam eden bir raya dönüştürüldü. Rayda
+  `touch-action: pan-y` kullanıldığı için kart üzerindeki dikey dokunma sayfayı
+  normal kaydırır; kartlar ayrı ayrı düşey reveal almaz ve aşağı-yukarı oynamaz.
+  Hareket azaltma tercihinde otomatik akış kapanır, manuel yatay erişim korunur;
+  masaüstündeki üç sütunlu sabit vitrin değişmedi. Soru başlıklarında Inter
+  kaldırıldı; Apple/Segoe UI sistem yazısı, masaüstünde 19px/600 ve mobilde
+  17px/600 kullanıldı. CSS cache anahtarı `20261004-topic-flow-v1` oldu.
+  `npm.cmd run check` 201/201 başarılı. Yerel Chromium 390x844 kontrolünde ray
+  1,2 saniyede yaklaşık 18px sola ilerlerken kart `Y` konumu sabit kaldı;
+  kart üstünde dikey kaydırma 844px ilerledi, yatay taşma ve konsol hatası yok.
+  1440x900 görünümde ikinci set gizli, üç kart sabit ve soru başlığı 19px/600.
+  Değişiklik yalnız preview dalındadır; production'a alınmadı.
 - 2026-10-04 uzun soru başlıklarının okunurluğu için yalnız soru kartı başlıkları
   marka serifinden yerleşik `Inter` yazı tipine geçirildi; masaüstünde 20px/700,
   mobilde 18px/700 ve ferah satır aralığı kullanıldı. Logo ile bölüm başlıklarının
