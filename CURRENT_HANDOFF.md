@@ -2,6 +2,16 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 public soru `939781a2-ee92-4a5f-a632-b138ea5e5bba`, video
+  açıklaması biçiminden doğrudan `Muhterem Hocam` sorusuna çevrildi; kesilmiş
+  başlık tamamlandı. Eski `bu-videoda...` URL, konu odaklı
+  `/soru/hicbir-insan-seytanin-telkinlerinden-kurtulamaz-mi` adresine taşındı
+  ve `301` yönlendirme doğrulandı. Dört okunma, `mursid` ile
+  `seytanin-insana-tesiri` bağları ve üç arama belgesi yeni slug'a taşındı;
+  arama belgeleri yeniden indekslendi. Geri alınabilir history paketi
+  `cp-20261004-video-wrapper-seytan-mursid-question`, yönetim izi
+  `public_archive.question_correction`. Yeni URL `200`, canonical doğru; kod
+  değişikliği ve deploy yapılmadı.
 - 2026-10-04 public soru `86369129-5e74-45fb-b42a-440d2e6401fc` içindeki
   `Muhterem Efendimiz` hitabı `Muhterem Hocam` olarak düzeltildi; kesilmiş
   başlık tam soru metniyle tamamlandı. Eski kesik URL, konu odaklı

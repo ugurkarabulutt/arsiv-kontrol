@@ -644,6 +644,19 @@ tespit edilir).
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- **Şeytanın telkinleri kaydı video açıklamasından doğrudan soruya
+  dönüştürüldü:** Public soru `939781a2-ee92-4a5f-a632-b138ea5e5bba` için
+  `Bu videoda Dr. Abdulcabbar Boran... açıklıyor.` kalıbı kaldırıldı; soru
+  `Muhterem Hocam, mürşid konusunda şeytan onlara da yaklaşıyor...` biçiminde
+  doğrudan soru olarak yayımlandı ve kesilmiş başlık tamamlandı. Eski
+  `bu-videoda-dr-abdulcabbar-boran-mursid-konusunda-seytan-onlara-da-yaklasiyor-seytan-hicbir-zaman`
+  slug'ı `hicbir-insan-seytanin-telkinlerinden-kurtulamaz-mi` slug'ına taşındı;
+  eski URL `301` verir. Dört okunma, `mursid` ile
+  `seytanin-insana-tesiri` konu bağları ve üç arama belgesi yeni slug'da
+  korundu; arama belgeleri yeni soruyla yeniden üretildi. History düzeltmesi
+  `cp-20261004-video-wrapper-seytan-mursid-question` paketiyle geri alınabilir
+  olarak kaydedildi; yönetim izi `public_archive.question_correction`. Canlı
+  yeni URL `200`, canonical doğru; kod değişikliği ve deploy gerekmedi.
 - **Mürşid sorusunun hitabı, kesilmiş başlığı ve URL'si düzeltildi:** Canlı
   public soru `86369129-5e74-45fb-b42a-440d2e6401fc` için `Muhterem
   Efendimiz` hitabı `Muhterem Hocam` olarak değiştirildi ve kesilmiş public
