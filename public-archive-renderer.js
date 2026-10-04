@@ -1610,15 +1610,37 @@ function topicArticleTocHtml(blocks = []) {
   `;
 }
 
-function topicArticleGuideLinksHtml(article = {}) {
+const TOPIC_GUIDE_PRIORITY_LINKS = Object.freeze({
+  'allaha-ulasmayi-dilemek': ['hidayet', 'murside-tabiiyet', 'teslimiyet', 'tasavvuf-nedir'],
+  hidayet: ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'teslimiyet', 'ruh-nefs-fizik-vucut'],
+  'murside-tabiiyet': ['allaha-ulasmayi-dilemek', 'hidayet', 'tovbe-ve-gunahlardan-kurtulus', 'nefs-tezkiyesi'],
+  'zikir-ve-daimi-zikir': ['nefs-tezkiyesi', 'teslimiyet', 'tasavvuf-nedir', 'ruh-nefs-fizik-vucut'],
+  'nefs-tezkiyesi': ['zikir-ve-daimi-zikir', 'ruh-nefs-fizik-vucut', 'teslimiyet', 'kurana-gore-mutluluk'],
+  teslimiyet: ['ruh-nefs-fizik-vucut', 'tasavvuf-nedir', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
+  'ruh-nefs-fizik-vucut': ['nefs-tezkiyesi', 'teslimiyet', 'zikir-ve-daimi-zikir', 'hidayet'],
+  'kurana-gore-mutluluk': ['nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
+  'tasavvuf-nedir': ['teslimiyet', 'allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
+  'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir']
+});
+
+function relatedTopicGuideArticles(article = {}) {
   const currentSlug = String(article.slug || '').trim();
-  const articles = Object.values(publicArchiveTopicArticles || {})
-    .filter(item => item?.slug && item?.path && item.slug !== currentSlug)
-    .slice(0, 5);
+  const availableArticles = Object.values(publicArchiveTopicArticles || {})
+    .filter(item => item?.slug && item?.path && item.slug !== currentSlug);
+  const bySlug = new Map(availableArticles.map(item => [item.slug, item]));
+  const prioritySlugs = TOPIC_GUIDE_PRIORITY_LINKS[currentSlug] || [];
+  return [
+    ...prioritySlugs.map(slug => bySlug.get(slug)).filter(Boolean),
+    ...availableArticles.filter(item => !prioritySlugs.includes(item.slug))
+  ];
+}
+
+function topicArticleGuideLinksHtml(article = {}) {
+  const articles = relatedTopicGuideArticles(article);
   if (!articles.length) return '';
   return `
         <section class="pa-topic-next-card">
-          <strong class="pa-topic-next-title">Okumaya Devam Edin</strong>
+          <strong class="pa-topic-next-title">İlgili Konu Rehberleri</strong>
           <ul class="pa-topic-next-list">
             ${articles.map(item => `
               <li>

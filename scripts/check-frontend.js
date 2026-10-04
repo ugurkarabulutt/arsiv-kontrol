@@ -1526,17 +1526,17 @@ for (const marker of ['<title>Konu Rehberleri | Dini Sorular ve Cevaplar Arşivi
   assert(topicGuideIndexPreview.includes(marker), `Public konu rehberleri dizini marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
-for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'Okumaya Devam Edin', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'pa-topic-evidence', 'Allah’a Ulaşmayı Dilemek ile ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
+for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topic-article-support', 'Bu yazıda geçen ayetler', 'İlgili Konu Rehberleri', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'pa-topic-evidence', 'Allah’a Ulaşmayı Dilemek ile ilgili sorular', 'RÛM 31', '"@type":"BlogPosting"', '#related-questions']) {
   assert(topicArticlePreview.includes(marker), `Public konu rehberi makale marker eksik: ${marker}`);
 }
 assert(!topicArticlePreview.includes('Bu konudaki sorular'), 'Public konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
 const zikirArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/zikir-ve-daimi-zikir').html;
-for (const marker of ['Zikir Nedir?', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'Okumaya Devam Edin', 'Allah’a Ulaşmayı Dilemek', 'Mürşide Tâbiiyet', '"@type":"BlogPosting"']) {
+for (const marker of ['Zikir Nedir?', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'İlgili Konu Rehberleri', 'Allah’a Ulaşmayı Dilemek', 'Mürşide Tâbiiyet', '"@type":"BlogPosting"']) {
   assert(zikirArticlePreview.includes(marker), `Public zikir konu rehberi marker eksik: ${marker}`);
 }
 assert(!zikirArticlePreview.includes('Bu konudaki sorular'), 'Public zikir konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
 const nefsArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/nefs-tezkiyesi').html;
-for (const marker of ['Nefs Tezkiyesi', 'Kalbin temizlenmesi ve ruhun Allah’a ulaşması', 'ŞEMS 9', 'NÛR 21', 'FÂTIR 18', 'Okumaya Devam Edin', 'Allah’a Ulaşmayı Dilemek', 'Zikir Nedir?', '"@type":"BlogPosting"']) {
+for (const marker of ['Nefs Tezkiyesi', 'Kalbin temizlenmesi ve ruhun Allah’a ulaşması', 'ŞEMS 9', 'NÛR 21', 'FÂTIR 18', 'İlgili Konu Rehberleri', 'Allah’a Ulaşmayı Dilemek', 'Zikir Nedir?', '"@type":"BlogPosting"']) {
   assert(nefsArticlePreview.includes(marker), `Public nefs konu rehberi marker eksik: ${marker}`);
 }
 assert(!nefsArticlePreview.includes('Bu konudaki sorular'), 'Public nefs konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
@@ -1559,6 +1559,17 @@ for (const marker of ['Tasavvuf Nedir?', 'Kur’ân’daki İslâm’ın hayata 
 const tovbeArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/tovbe-ve-gunahlardan-kurtulus').html;
 for (const marker of ['Tövbe ve Günahlardan Kurtuluş', 'Pişmanlıktan arınmaya ve Allah’a dönüşe', 'pa-topic-article-table', 'ZUMER 53', 'ÂLİ İMRÂN 135', 'FURKÂN 70', 'TAHRÎM 8', 'Tövbe ve Günahlardan Kurtuluş ile ilgili sorular', '"@type":"BlogPosting"']) {
   assert(tovbeArticlePreview.includes(marker), `Public tovbe konu rehberi marker eksik: ${marker}`);
+}
+const topicGuideSlugs = ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus'];
+for (const currentSlug of topicGuideSlugs) {
+  const articlePreview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${currentSlug}`).html;
+  const relatedStart = articlePreview.indexOf('<section class="pa-topic-next-card">');
+  const relatedEnd = articlePreview.indexOf('</section>', relatedStart);
+  const relatedGuideHtml = articlePreview.slice(relatedStart, relatedEnd);
+  assert(relatedGuideHtml.includes('İlgili Konu Rehberleri'), `Public ${currentSlug} rehberi ilgili rehber başlığını içermeli.`);
+  for (const relatedSlug of topicGuideSlugs.filter(slug => slug !== currentSlug)) {
+    assert(relatedGuideHtml.includes(`/public-preview/konu-rehberi/${relatedSlug}`), `Public ${currentSlug} rehberi ${relatedSlug} iç bağlantısını içermeli.`);
+  }
 }
 const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');
 const topicArticleSupportIndex = topicArticlePreview.indexOf('pa-topic-article-support');

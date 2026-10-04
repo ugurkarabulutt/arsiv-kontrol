@@ -1079,7 +1079,7 @@ test('topic guide article renders Allah’a ulaşmayı dilemek blog with schema 
   assert.match(preview.html, /pa-topic-article-body/);
   assert.match(preview.html, /pa-topic-article-support/);
   assert.match(preview.html, /Bu yazıda geçen ayetler/);
-  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /İlgili Konu Rehberleri/);
   assert.match(preview.html, /Hidayet Nedir\?/);
   assert.match(preview.html, /Mürşide Tâbiiyet/);
   assert.match(preview.html, /RÛM 31/);
@@ -1131,7 +1131,7 @@ test('topic guide article renders Hidayet blog without source artifacts', () => 
   assert.match(preview.html, /ÂL-İ İMRÂN 73/);
   assert.match(preview.html, /ZÜMER 54/);
   assert.match(preview.html, /Hidayet ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /İlgili Konu Rehberleri/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
@@ -1163,7 +1163,7 @@ test('topic guide article renders Mürşide Tâbiiyet blog with its own related 
   assert.match(preview.html, /BAKARA 45/);
   assert.match(preview.html, /FURKÂN 70/);
   assert.match(preview.html, /Tâbiiyet ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /İlgili Konu Rehberleri/);
   assert.match(preview.html, /Zikir Nedir\?/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
@@ -1194,7 +1194,7 @@ test('topic guide article renders Zikir blog and cross-links other guides', () =
   assert.match(preview.html, /ANKEBÛT 45/);
   assert.match(preview.html, /BAKARA 152/);
   assert.match(preview.html, /Zikir ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /İlgili Konu Rehberleri/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.match(preview.html, /Mürşide Tâbiiyet/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
@@ -1225,7 +1225,7 @@ test('topic guide article renders Nefs Tezkiyesi blog and cross-links other guid
   assert.match(preview.html, /NÛR 21/);
   assert.match(preview.html, /FÂTIR 18/);
   assert.match(preview.html, /Nefs ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /İlgili Konu Rehberleri/);
   assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
   assert.match(preview.html, /Zikir Nedir\?/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
@@ -1256,7 +1256,7 @@ test('topic guide article renders Teslimiyet guide with ordered stages and relat
   assert.match(preview.html, /<li>İradeyi Allah’a teslim etmek\.<\/li>/);
   assert.match(preview.html, /BAKARA 131/);
   assert.match(preview.html, /Teslimiyet ile ilgili sorular/);
-  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /İlgili Konu Rehberleri/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/teslimiyet#article"/);
   assert.doesNotMatch(preview.html, /Teslimiyet Nedir\? Nedir\?/);
@@ -1332,6 +1332,36 @@ test('topic guide article renders Tövbe guide with levels table and four eviden
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/tovbe-ve-gunahlardan-kurtulus#article"/);
   assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
   assertOnlyPublicPreviewApi(preview.html);
+});
+
+test('every topic guide links all other guides with topic-aware priorities', () => {
+  const guideSlugs = [
+    'allaha-ulasmayi-dilemek',
+    'hidayet',
+    'murside-tabiiyet',
+    'zikir-ve-daimi-zikir',
+    'nefs-tezkiyesi',
+    'teslimiyet',
+    'ruh-nefs-fizik-vucut',
+    'kurana-gore-mutluluk',
+    'tasavvuf-nedir',
+    'tovbe-ve-gunahlardan-kurtulus'
+  ];
+  for (const currentSlug of guideSlugs) {
+    const preview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${currentSlug}`);
+    const start = preview.html.indexOf('<section class="pa-topic-next-card">');
+    const end = preview.html.indexOf('</section>', start);
+    const guideLinks = preview.html.slice(start, end);
+    assert.match(guideLinks, /İlgili Konu Rehberleri/);
+    for (const relatedSlug of guideSlugs.filter(slug => slug !== currentSlug)) {
+      assert.match(guideLinks, new RegExp(`/public-preview/konu-rehberi/${relatedSlug}`));
+    }
+    assert.doesNotMatch(guideLinks, new RegExp(`/public-preview/konu-rehberi/${currentSlug}["#]`));
+  }
+
+  const hidayet = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/hidayet').html;
+  const hidayetLinks = hidayet.slice(hidayet.indexOf('<section class="pa-topic-next-card">'));
+  assert.ok(hidayetLinks.indexOf('/konu-rehberi/allaha-ulasmayi-dilemek') < hidayetLinks.indexOf('/konu-rehberi/tovbe-ve-gunahlardan-kurtulus'));
 });
 
 test('home page question selection deduplicates repeated question text', () => {
