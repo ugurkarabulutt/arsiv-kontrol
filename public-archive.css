@@ -4103,6 +4103,73 @@ a.pa-chip:hover,
   font-weight: 850;
 }
 
+.pa-topic-article-table-wrap {
+  max-width: 100%;
+  margin: 10px 0 32px;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--pa-green) 22%, var(--pa-border));
+  border-radius: var(--pa-radius-md);
+  scrollbar-color: color-mix(in srgb, var(--pa-primary) 58%, transparent) transparent;
+}
+
+.pa-topic-article-table-wrap:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--pa-primary) 70%, #FFFFFF);
+  outline-offset: 3px;
+}
+
+.pa-topic-article-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  color: var(--pa-text);
+  background: color-mix(in srgb, var(--pa-surface) 96%, var(--pa-bg));
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pa-topic-article-table caption {
+  padding: 16px 18px;
+  color: var(--pa-text);
+  background: color-mix(in srgb, var(--pa-mint) 20%, var(--pa-surface));
+  font-family: var(--pa-font-serif);
+  font-size: 19px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.pa-topic-article-table th,
+.pa-topic-article-table td {
+  padding: 14px 16px;
+  border-top: 1px solid color-mix(in srgb, var(--pa-border) 80%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--pa-border) 70%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+.pa-topic-article-table th:last-child,
+.pa-topic-article-table td:last-child {
+  border-right: 0;
+}
+
+.pa-topic-article-table thead th {
+  color: var(--pa-green);
+  background: color-mix(in srgb, var(--pa-mint) 17%, var(--pa-surface));
+  font-weight: 850;
+}
+
+.pa-topic-article-table tbody th {
+  width: 150px;
+  color: var(--pa-text);
+  background: color-mix(in srgb, var(--pa-beige) 22%, var(--pa-surface));
+  font-weight: 780;
+}
+
+@media (min-width: 900px) {
+  .pa-topic-showcase-set > .pa-topic-showcase-card:last-child:nth-child(3n + 1) {
+    grid-column: 2;
+  }
+}
+
 .pa-topic-article-body > h2 {
   scroll-margin-top: calc(var(--pa-header-compact-total-height) + 20px);
   margin: 42px 0 16px;
@@ -6385,6 +6452,20 @@ a.pa-chip:hover,
     padding-left: 24px;
     font-size: 16px;
     line-height: 1.7;
+  }
+
+  .pa-topic-article-table {
+    min-width: 700px;
+    font-size: 13px;
+  }
+
+  .pa-topic-article-table caption {
+    font-size: 17px;
+  }
+
+  .pa-topic-article-table th,
+  .pa-topic-article-table td {
+    padding: 12px 13px;
   }
 
   .pa-topic-article-body > h2 {

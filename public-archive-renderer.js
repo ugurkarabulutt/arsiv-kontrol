@@ -731,7 +731,7 @@ const HOME_READING_PATHS = [
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
   { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', articleSlug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
-  { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', text: 'Ruhun teslimi ve Allah’a yöneliş merhaleleri.' },
+  { title: 'Ruh Nedir?', slug: 'ruh', articleSlug: 'ruh-nefs-fizik-vucut', text: 'Ruhun nefs ve fizik vücuttan farklarını okuyun.' },
   { title: 'Teslimiyet Nedir?', slug: 'teslimiyet', articleSlug: 'teslimiyet', text: 'Dört teslimi ve yedi safhayı birlikte okuyun.' },
   { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
   { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', query: 'Tövbe günahlardan kurtuluş', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
@@ -1407,6 +1407,13 @@ function topicArticleBodyText(article = {}) {
           .filter(Boolean)
           .join('\n');
       }
+      if (block.type === 'table') {
+        const header = (block.headers || []).map(cleanTopicArticleText).filter(Boolean).join(' | ');
+        const rows = (block.rows || [])
+          .map(row => (row || []).map(cleanTopicArticleText).filter(Boolean).join(' | '))
+          .filter(Boolean);
+        return [cleanTopicArticleText(block.caption), header, ...rows].filter(Boolean).join('\n');
+      }
       if (block.type === 'evidence') return cleanTopicArticleText(`${block.reference} - ${block.note}\n${block.text}`);
       return cleanTopicArticleText(block.text);
     })
@@ -1555,6 +1562,24 @@ function renderTopicArticleBlock(block = {}, article = {}) {
       .map(item => `<li>${topicArticleInlineHtml(item, article)}</li>`)
       .join('');
     return items ? `<ol class="pa-topic-article-list">${items}</ol>` : '';
+  }
+  if (block.type === 'table') {
+    const headers = (block.headers || []).map(header => `<th scope="col">${escapeHtml(header)}</th>`).join('');
+    const rows = (block.rows || []).map(row => `
+      <tr>${(row || []).map((cell, index) => index === 0
+        ? `<th scope="row">${escapeHtml(cell)}</th>`
+        : `<td>${topicArticleInlineHtml(cell, article)}</td>`).join('')}</tr>
+    `).join('');
+    if (!headers || !rows) return '';
+    return `
+      <div class="pa-topic-article-table-wrap" role="region" aria-label="${escapeHtml(block.caption || 'Karşılaştırma tablosu')}" tabindex="0">
+        <table class="pa-topic-article-table">
+          ${block.caption ? `<caption>${escapeHtml(block.caption)}</caption>` : ''}
+          <thead><tr>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
   }
   if (block.type === 'evidence') {
     return `
@@ -1952,8 +1977,8 @@ function homeTopicShowcaseSection() {
     },
     {
       kicker: 'İç dünya',
-      title: 'Nefs ve ruh',
-      text: 'Nefsin terbiyesi, ruhun teslimi ve insanın manevi yapısıyla ilgili cevapları birlikte okuyun.',
+      title: 'Nefs tezkiyesi',
+      text: 'Nefsin kalbindeki afetlerin zikirle azalmasını ve arınmanın kademelerini birlikte okuyun.',
       image: 'topic-showcase-nefs-720.webp',
       articleSlug: 'nefs-tezkiyesi'
     },
@@ -1963,6 +1988,13 @@ function homeTopicShowcaseSection() {
       text: 'Ruhun, fizik vücudun, nefsin ve iradenin Allah’a teslim oluşunu yedi safhada okuyun.',
       image: 'topic-showcase-teslimiyet-720.webp',
       articleSlug: 'teslimiyet'
+    },
+    {
+      kicker: 'İnsanın yapısı',
+      title: 'Ruh, nefs ve fizik vücut',
+      text: 'Üç ayrı yapının özelliklerini, vazifelerini ve teslim yollarını karşılaştırın.',
+      image: 'topic-showcase-ruh-nefs-720.webp',
+      articleSlug: 'ruh-nefs-fizik-vucut'
     }
   ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
     .filter(item => Boolean(item.article));

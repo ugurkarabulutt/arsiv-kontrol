@@ -2181,5 +2181,322 @@
       }
     ],
     "sources": []
+  },
+  "ruh-nefs-fizik-vucut": {
+    "slug": "ruh-nefs-fizik-vucut",
+    "path": "/konu-rehberi/ruh-nefs-fizik-vucut",
+    "series": "İnsanın Yapısı / Blog Serisi 07",
+    "title": "Ruh Nedir? Nefs ve Fizik Vücuttan Farkı Nedir?",
+    "subtitle": "Üç ayrı yapı, üç farklı vazife",
+    "description": "Ruh nedir; ruhun nefs ve fizik vücuttan farkı, vazifesi, teslimi ve nefs tezkiyesiyle ilişkisi nasıl açıklanır?",
+    "summary": "İnsanın ruhu, nefsi ve fizik vücudu birlikte bulunur; ancak başlangıçları, özellikleri, vazifeleri ve teslimleri birbirinden farklıdır.",
+    "categorySlug": "ruh",
+    "publishedAt": "2026-10-04T20:00:00+03:00",
+    "updatedAt": "2026-10-04T20:00:00+03:00",
+    "readTime": 16,
+    "keywords": [
+      "ruh nedir",
+      "nefs nedir",
+      "fizik vücut",
+      "ruh ve nefs farkı",
+      "ruhun teslimi",
+      "nefs tezkiyesi",
+      "nefs tasfiyesi",
+      "vech",
+      "emanet",
+      "Allah’a ulaşmak",
+      "daimî zikir"
+    ],
+    "relatedTerms": [
+      "ruh",
+      "nefs",
+      "fizik vücut",
+      "vech",
+      "ruhun hasletleri",
+      "nefsin afetleri",
+      "ruhun Allah’a ulaşması",
+      "nefs tezkiyesi",
+      "nefs tasfiyesi",
+      "berzah âlemi",
+      "zahirî âlem",
+      "emanet",
+      "rehine"
+    ],
+    "quranReferences": [
+      { "label": "Hicr-26" },
+      { "label": "Şems-7-9" },
+      { "label": "Secde-9" },
+      { "label": "Nisâ-58" },
+      { "label": "İsrâ-85" },
+      { "label": "Yûsuf-53" },
+      { "label": "Hicr-23" },
+      { "label": "Ra’d-21" },
+      { "label": "Şûrâ-13" },
+      { "label": "Fâtır-18" },
+      { "label": "Kıyâme-2" },
+      { "label": "Fecr-27-28" },
+      { "label": "Âli İmrân-191" },
+      { "label": "Nisâ-125" },
+      { "label": "Muddessir-38-40" }
+    ],
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "İnsanın bir ruhu, bir nefsi ve bir fizik vücudu vardır. Bu üçü, insanın yapısında birlikte bulunmakla beraber birbirinden ayrı özelliklere ve vazifelere sahiptir. Ruhun ne olduğunu anlayabilmek için nefsi ve fizik vücudu da tanımak gerekir. Çünkü Allah’a ulaşacak olan ruh, tezkiye ve tasfiye edilecek olan nefs, dünya hayatındaki davranışları gerçekleştiren ise fizik vücuttur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruh, Allahû Tealâ’nın insana üfürdüğü ve Kendisine geri dönmesini istediği emanettir. Nefs, Allahû Tealâ’nın sevva ettiği, başlangıçta afetlerle dolu olan ve ahsene ulaşabilecek özellikte düzenlenen varlığımızdır. Fizik vücut ise içinde yaşadığımız zahirî âleme ait bedenimizdir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu farklılık, Kur’ân-ı Kerim’de kullanılan ifadelerde de yer alır. Fizik vücut için halk edilme, nefs için sevva edilme, ruh için ise üfürülme açıklaması yapılır. Hicr Suresinin 26. âyet-i kerimesinde insanın yaratılması, Şems Suresinin 7. âyet-i kerimesinde nefsin sevva edilmesi, Secde Suresinin 9. âyet-i kerimesinde ise insanın içine Allah’ın ruhundan üfürülmesi anlatılır. (Hicr, 15/26; Şems, 91/7; Secde, 32/9)"
+      },
+      {
+        "type": "heading",
+        "text": "Ruh nedir?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruh, insandaki Allah’a ait emanettir. Secde Suresinin 9. âyet-i kerimesinde Allahû Tealâ’nın, düzenlediği insanın içine ruhundan üfürdüğü bildirilir. Bu sebeple ‘ruhumuz’ dediğimiz zaman, bize verilmiş olan bir emanetten bahsetmiş oluruz. Emanetin sahibi Allah’tır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun insana verilmesi, onun Allah ile olan ilişkisini ortadan kaldırmaz. Allah’tan gelen ruhun tekrar Allah’a dönmesi gerekir. İnsanın sorumluluğu, bu emaneti dünya hayatını yaşarken sahibine teslim etmektir. Nisâ Suresinin 58. âyet-i kerimesindeki emanetlerin sahibine teslim edilmesi emri, ruhun Allah’a teslimiyle de ilişkilidir. (Nisâ, 4/58)"
+      },
+      {
+        "type": "paragraph",
+        "text": "İsrâ Suresinin 85. âyet-i kerimesinde şöyle buyrulur:"
+      },
+      {
+        "type": "evidence",
+        "reference": "İSRÂ 85",
+        "note": "Âyet metni",
+        "text": "Ve sana ruhtan sorarlar. De ki: ‘Ruh, Rabbimin emrindendir.’ Ve size, (ruha ait) ilimden sadece az bir şey verildi."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun Allah’ın emrinden olması, Allah’tan gelişi ve tekrar O’na dönüşüyle açıklanır. Onun insan üzerindeki vazifesi ve Allah’a dönüşü, nefsin tezkiyesiyle bağlantılıdır. Ruh, insanın içinde bulunmakla beraber fizik vücudun bir organı değildir; nefsin başka bir adı da değildir."
+      },
+      {
+        "type": "heading",
+        "text": "Ruhun hasletleri"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun muhtevasında hasletler vardır. Ruh, ahsendir; Allah’ın emirlerine uygun olanı ister ve yasak ettiği fiillere yönelmez. Onun yapısında nefsin afetleri bulunmaz. Ruhun tekâmül ederek kötülükten iyiliğe dönüşmesi söz konusu değildir. Tekâmül etmesi, arınması ve ahsene ulaşması gereken nefstir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun on dokuz hasleti, nefsin on dokuz grup afetinin karşısında yer alır. Nefsin isyanına karşı ruhun itaati, inkârına karşı îmânı, öfkesine karşı sükûneti, düşmanlığına karşı dostluğu vardır. Ruh hayrı ister; nefsin başlangıçtaki afetleri ise buna karşı çıkar."
+      },
+      {
+        "type": "paragraph",
+        "text": "İnsanın yanlış davranışları, ruhun kötüleştiği anlamına gelmez. Ruhun hasletleri değişerek afete dönüşmez. Bu sebeple insanın kötülüklerini ‘kötü bir ruh’ ile açıklamak, ruh ile nefs arasındaki farkı ortadan kaldırır. Kötülüğe yönelen talepler nefsin afetleriyle; Allah’ın emirlerine uygun talepler ruhun hasletleriyle ilişkilidir."
+      },
+      {
+        "type": "heading",
+        "text": "Nefs nedir?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs, ruhun başka bir hâli değildir. Bir insanın iyi olduğu zaman ruh, kötü olduğu zaman nefs taşıması söz konusu değildir. Ruh ve nefs, aynı varlığa farklı durumlarda verilen iki isim değildir. Başlangıçları, özellikleri, vazifeleri ve varacakları hedefler birbirinden farklıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs, fizik vücutla beraber bulunan, sevva edilmiş bir varlıktır. Şems Suresinin 7. âyet-i kerimesinde onun ahsene ulaşabilecek biçimde düzenlenmesi; devamındaki âyetlerde fücuru ve takvası, ardından da tezkiyesi anlatılır. (Şems, 91/7-9)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsin başlangıçtaki kalbinde afetler vardır. Öfke, kin, haset, kıskançlık ve isyan gibi afetler, insanı Allah’ın emirlerinden uzaklaştıran ve yasaklarına yönelten talepler meydana getirir. Yûsuf Suresinin 53. âyet-i kerimesinde nefsin kötülüğü emreden özelliği açıklanırken, Allah’ın Rahîm esmasıyla tecelli ettiği nefsler bunun dışında tutulur. (Yûsuf, 12/53)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu istisna, nefsin değişebileceğini gösterir. Nefs başlangıçtaki karanlık yapısıyla kalmak zorunda değildir. Allah’ın yardımıyla tezkiye olur, ardından tasfiye edilerek afetlerinden tamamen temizlenir. İnsan için hedef, nefsini Allah’ın emirlerine itaat eden bir hüviyete ulaştırmaktır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Şems Suresinin 9. âyet-i kerimesinde bu hedefin kurtuluşla ilişkisi açıklanır:"
+      },
+      {
+        "type": "evidence",
+        "reference": "ŞEMS 9",
+        "note": "Âyet metni",
+        "text": "Kim onu (nefsini) tezkiye etmişse felâha (kurtuluşa) ermiştir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs arındığında ruhun hasletlerine uygun faziletlerle donanır. Ancak nefsin bu özelliklere kavuşması, onun ruh hâline gelmesi demek değildir. Nefs yine nefstir; değişen, kalbindeki muhteva ve talepleridir."
+      },
+      {
+        "type": "heading",
+        "text": "Fizik vücut nedir?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Fizik vücut, dünya hayatını yaşadığımız bedenimizdir. Kur’ân açıklamalarında vech kelimesiyle de ifade edilen fizik vücut, zahirî âleme aittir. Görünen bedenimiz, bu âlemin şartları içinde yaşar. Ruh ve nefs, insanın dünya hayatında bu bedenle birlikte bulunur."
+      },
+      {
+        "type": "paragraph",
+        "text": "İbadetlerimizi ve davranışlarımızı fizik vücudumuzla gerçekleştiririz. Namaz kılan, oruç tutan, zikreden, başkalarına yardım eden veya yanlış bir davranışı fiile dönüştüren bedenimizdir. Bu sebeple fizik vücut, insanın Allah’a karşı sorumluluğunun yaşandığı ve davranışa dönüştüğü alandır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruh ve nefsin talepleriyle davranışın meydana gelmesi arasında aklın kararı vardır. Akıl, karar merciidir; beyni kullanarak fizik vücuda kumanda eder. Ruh hayrı talep ederken, nefsin afetleri aksi yönde talepte bulunabilir. Fizik vücudun hangi davranışı gerçekleştireceği, bu talepler karşısında verilen kararla ilişkilidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "İnsanın iç dünyasındaki çatışma da burada ortaya çıkar. Bir tarafta Allah’ın emrine uymayı isteyen hasletler, diğer tarafta bu emre karşı çıkan afetler vardır. Nefs tezkiyesi ilerledikçe bu karşı koyuş azalır. Kalpte faziletler arttıkça Allah’ın emirlerine uygun davranmak, insan için daha kolay ve daha huzurlu hâle gelir."
+      },
+      {
+        "type": "heading",
+        "text": "Ruh, nefs ve fizik vücudun temel farkları"
+      },
+      {
+        "type": "table",
+        "caption": "Üç vücudun temel farkları",
+        "headers": ["Özellik", "Ruh", "Nefs", "Fizik vücut"],
+        "rows": [
+          ["İnsana gelişi", "Allahû Tealâ tarafından üfürülür.", "Sevva edilir; ahsene ulaşabilecek biçimde düzenlenir.", "Halk edilir; dünya hayatına uygun olarak yaratılır."],
+          ["İlişkili olduğu âlem", "Emr âlemi.", "Berzah âlemi.", "Zahirî âlem."],
+          ["Temel özelliği", "Hasletlerle doludur; ahsendir.", "Başlangıçta afetlerle doludur; arınması gerekir.", "Fiilleri ve ibadetleri gerçekleştirir."],
+          ["Tekâmülle ilişkisi", "Afetlerden temizlenmeye ihtiyacı yoktur.", "Tezkiye ve tasfiye edilerek ahsene ulaşır.", "Allah’ın emir ve yasaklarına tam uyuma ulaşır."],
+          ["Allah’a teslimi", "Hayattayken Allah’ın Zat’ına ulaşmasıyla gerçekleşir.", "Daimî zikirle afetlerinden tamamen temizlenmesiyle gerçekleşir.", "Allah’ın emirlerini yerine getirip yasaklarını işlememesiyle gerçekleşir."]
+        ]
+      },
+      {
+        "type": "heading",
+        "text": "Ruhun Allah’a ulaşması ölüm değildir"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun Allah’a ulaşması, insanın ölmesi değildir. Hayat veren ve hayatı alan Allahû Tealâ’dır. Hicr Suresinin 23. âyet-i kerimesinde hayat verme ve öldürme fiilleri Allah’a ait olarak bildirilir. Ruhun vücuttan ayrılışını her durumda ölümle aynı kabul etmek, dünya hayatında ruhun Allah’a ulaşmasını anlamaya engel olur. (Hicr, 15/23)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Allahû Tealâ, insanın ruhunu hayattayken Kendisine ulaştırmasını ister. Ra’d Suresinin 21. âyet-i kerimesinde, Allah’ın ulaştırılmasını emrettiği şeyi O’na ulaştıranlar anlatılır. Burada Allah’a ulaştırılan ruhtur. (Ra’d, 13/21)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun hidayeti, insan dünya hayatını yaşamaya devam ederken ruhunun Allah’a ulaşmasıdır. Ruhunu Allah’a ulaştıran insanın dünya hayatı ve sorumlulukları devam eder. Ruhun tesliminden sonra fizik vücudun, nefsin ve iradenin teslimi hedefleri vardır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu yolun başlangıcı Allah’a ulaşmayı dilemektir. Ardından mürşide tâbiiyet ve ruhun Allah’a doğru yolculuğu gelir. Şûrâ Suresinin 13. âyet-i kerimesinde, Allah’a yönelen kişinin Allah tarafından Kendisine ulaştırılması açıklanır. (Şûrâ, 42/13)"
+      },
+      {
+        "type": "heading",
+        "text": "Ruhun yolculuğu ve nefsin arınması"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun yolculuğu ile nefsin arınması birlikte ilerler. Nefs tezkiyesi, ruhun Allah’a ulaşmasından ayrı ve ilgisiz bir çalışma değildir. Nefsin kalbinde gerçekleşen arınma, ruhun Allah’a doğru yükselmesiyle bağlantılıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Fâtır Suresinin 18. âyet-i kerimesinde kişinin kendi nefsi için tezkiye olması ve dönüşün Allah’a oluşu birlikte yer alır. Nefs tezkiye edilirken Allah’a ulaşan ruhtur. Bu iki olayın aynı süreçte gerçekleşmesi, ruh ile nefsin aynı varlık olduğu anlamına gelmez. (Fâtır, 35/18)"
+      },
+      {
+        "type": "heading",
+        "text": "Nefs tezkiyesinin yedi kademesi"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs tezkiyesinde yedi kademe vardır: Emmare, Levvame, Mülhime, Mutmainne, Radiye, Mardiyye ve Tezkiye. Bu kademeler boyunca nefsin kalbindeki nurlar artar; ruh da gök katlarında ilerler."
+      },
+      {
+        "type": "paragraph",
+        "text": "Emmare, nefs tezkiyesinin ilk kademesidir. Levvame’de insan, yanlışları sebebiyle nefsini kınar. Mülhime’de ilham söz konusudur. Mutmainne’de Allah’ın verdikleriyle tatmine ulaşılır. Radiye ve Mardiyye kademelerinde Allah’tan razı olma ve Allah’ın rızasını kazanma yer alır. Tezkiye kademesinde nefsin kalbindeki aydınlanma, ruhun Allah’a ulaşmasıyla birlikte değerlendirilir. (Yûsuf, 12/53; Kıyâme, 75/2; Şems, 91/8; Fecr, 89/27-28; Fâtır, 35/18)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu arınmanın gerçekleşmesinde zikir temel bir vazife görür. Allah’a ulaşmayı dilemek ve tâbiiyetle başlayan süreçte kişi zikrettikçe Allah’ın nurları nefsin kalbine ulaşır. Kalpte fazıllar yerleştikçe afetlerin kapladığı alan azalır. Yûsuf Suresinin 53. âyetinin açıklamasında bu değişim, Allah’ın Rahîm esmasıyla tecellisi ve nefs tezkiyesiyle birlikte ele alınır. (Yûsuf, 12/53)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tezkiye sonunda nefsin kalbinde yüzde iki rahmet ve yüzde kırk dokuz fazl olmak üzere yüzde elli bir nur birikimi açıklanır. Bu nokta, nefsin bütün afetlerinden temizlendiği son nokta değildir. Ruh Allah’a ulaşmıştır; fakat nefsin tasfiyesine ve sonraki teslimlere doğru ilerleyiş devam eder."
+      },
+      {
+        "type": "heading",
+        "text": "Tezkiye ile tasfiye arasındaki fark"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tezkiye ile tasfiye arasındaki fark burada önem kazanır. Tezkiyede nefsin kalbindeki karanlıklar azalır ve ruhun Allah’a ulaşmasına paralel bir arınma gerçekleşir. Tasfiyede ise nefsin kalbindeki afetlerin tamamen temizlenmesi söz konusudur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Daimî zikre ulaşan kişinin nefsinde afet kalmaz. Âli İmrân Suresinin 191. âyet-i kerimesinde ulûl’elbabın ayaktayken, otururken ve yan üstü yatarken Allah’ı zikrettikleri bildirilir. Bu devamlılık, nefsin teslimiyle ilişkilidir. (Âli İmrân, 3/191)"
+      },
+      {
+        "type": "heading",
+        "text": "Ruhun, nefsin ve fizik vücudun teslimleri"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun teslimiyle nefsin tesliminin farklı zamanlarda gerçekleşmesi, ikisinin ayrı oluşunun bir başka açıklamasıdır. Ruh Allah’a ulaştığında nefs henüz tam olarak arınmış değildir. Nefsin teslimi, daha ileri bir safhada gerçekleşir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Fizik vücudun teslimi de ruhun tesliminden farklıdır. Fizik vücut, ruh gibi Allah’ın Zat’ına doğru yolculuk yapmaz. Onun teslimi, Allah’ın emirlerini tam olarak yerine getiren ve yasak ettiği fiilleri işlemeyen bir hâle ulaşmasıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nisâ Suresinin 125. âyet-i kerimesinde vechini Allah’a teslim ederek muhsin olan kişiden bahsedilir. Fizik vücudun tesliminde kişi, nefsinde henüz afetler bulunsa da onların Allah’ın emrine aykırı taleplerine uymaz. (Nisâ, 4/125)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu noktada nefsin itirazı olabilir; fakat fizik vücut bu itirazı fiile dönüştürmez. Nefsin tesliminde ise itirazı meydana getiren afetler de temizlenmiştir. Böylece davranışların itaatiyle, nefsin iç yapısının Allah’ın emirlerine uygun hâle gelmesi birbirinden ayrılır."
+      },
+      {
+        "type": "heading",
+        "text": "Emanet ve rehine ayrımı"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs için kullanılan rehine ifadesi de ruhla arasındaki farkı gösterir. Muddessir Suresinin 38. âyet-i kerimesinde nefslerin kazandıklarıyla ilişkili olarak rehine oluşu anlatılır. Ruh emanet, nefs ise başlangıçta fizik vücudun içinde rehine olarak açıklanır. (Muddessir, 74/38-40)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Teslimler ilerledikçe emanet vasfı da sırasıyla ele alınır. Ruh teslim edildiğinde fizik vücudun teslimi; fizik vücut teslim edildiğinde nefsin teslimi öne çıkar. Bu sebeple başlangıçta ruhun emanet, nefsin rehine olarak tanımlanmasıyla bütün teslimlerden söz edilirken emanetler ifadesinin kullanılması, farklı safhalara aittir."
+      },
+      {
+        "type": "heading",
+        "text": "Rüya hayatında ruh ve nefs"
+      },
+      {
+        "type": "paragraph",
+        "text": "Rüya hayatıyla ilişkilendirilen varlık nefstir. Fizik vücut zahirî âleme, nefs berzah âlemine aittir. Nefs, kendi âleminde fizik özellikler taşır. Rüyada insanın kendisini bir bedenle görmesi ve o bedenle yaşaması, nefsle açıklanır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Uyku sırasında aklın nefs üzerindeki kumandası ve nefsin fizik vücuttan ayrılması anlatılır. Bu sebeple rüyada görülen kişinin kendi vücudu, ruhuyla aynı kabul edilmez. Ruh ve nefs görüntü bakımından fizik vücuda benzeseler de bu benzerlik, onların aynı varlık olduklarını göstermez."
+      },
+      {
+        "type": "heading",
+        "text": "Ölümden sonraki durumları"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ölümden sonraki durumları da farklıdır. Ruhun dönüşü Allah’adır. Dünya hayatında Allah’a ulaştırılmamış olan ruh, ölümden sonra Allah’a döndürülür. Nefs ise berzah âlemindeki hayatıyla açıklanır; kıyâmet sonrasında fizik vücutla birlikte hesaba ve âhiret hayatına muhatap olur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Böylece ruhun Allah’a dönüşüyle, nefsin ve fizik vücudun âhiretteki durumu birbirinden ayrılır. Ruhun hedefi sahibine dönmektir. Nefs, fizik vücutla birlikte insanın yaptıklarının neticesini yaşar."
+      },
+      {
+        "type": "heading",
+        "text": "İnsanın kendisini tanıması"
+      },
+      {
+        "type": "paragraph",
+        "text": "İnsanın kendisini tanıması, bu farklı vazifeleri tanımasıyla bağlantılıdır. Ruhun hasletlerini nefsin afetleriyle karıştırmamak; arınması gerekenin nefs olduğunu, Allah’a ulaşacak olanın ruh olduğunu ve kulluğun davranışlarla fizik vücutta yaşandığını bilmek gerekir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’a ulaşmayı dileyen insan, ruhunu sahibine teslim etmeye yönelir. Nefsini tezkiye ve tasfiye ederek afetlerinden arındırır; fizik vücudunu Allah’ın emir ve yasaklarına uygun bir yaşantıya ulaştırır. Ruhun, fizik vücudun ve nefsin tesliminden sonra iradesini de Allah’a teslim ederek dört teslimi tamamlar. İnsanın Allah’a kulluğu, bu teslimlerle derinleşir; nefsindeki karanlıklar temizlendikçe iç dünyasında sulh ve sükûn yerleşir."
+      }
+    ],
+    "sources": []
   }
 }
