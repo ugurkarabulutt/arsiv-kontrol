@@ -974,6 +974,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /Seçili konu rehberlerini inceleyin./);
   assert.match(home, /Nefs tezkiyesi/);
   assert.match(home, /Ruh, nefs ve fizik vücut/);
+  assert.match(home, /Kur’ân’a göre mutluluk/);
   assert.match(home, /Allah’a ulaşmayı dilemek/);
   assert.match(home, /Hidayet yolculuğu/);
   assert.match(home, /Mürşide tâbiiyet/);
@@ -983,6 +984,8 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /topic-showcase-teslimiyet-480\.webp/);
   assert.match(home, /topic-showcase-ruh-nefs-720\.webp/);
   assert.match(home, /topic-showcase-ruh-nefs-480\.webp/);
+  assert.match(home, /topic-showcase-mutluluk-720\.webp/);
+  assert.match(home, /topic-showcase-mutluluk-480\.webp/);
   assert.match(home, /topic-showcase-dilemek-720\.webp/);
   assert.match(home, /topic-showcase-tabiiyet-720\.webp/);
   assert.match(home, /topic-showcase-nefs-720\.webp/);
@@ -1054,7 +1057,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut']) {
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1273,6 +1276,22 @@ test('topic guide article renders Ruh guide with a semantic comparison table', (
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/ruh-nefs-fizik-vucut#article"/);
   assert.doesNotMatch(preview.html, /Ruh Nedir\? Nefs ve Fizik Vücuttan Farkı Nedir\? Nedir\?/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
+test('topic guide article renders Kur’ân’a göre Mutluluk guide with three evidence passages', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/kurana-gore-mutluluk');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Kur’ân’a Göre Mutluluk Nedir\?/);
+  assert.match(preview.html, /İç dünyada, insanlarla ve Allah ile sulh/);
+  assert.match(preview.html, /YÛNUS 64/);
+  assert.match(preview.html, /ŞEMS 9/);
+  assert.match(preview.html, /RA’D 28/);
+  assert.match(preview.html, /Mutluluk ile ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/kurana-gore-mutluluk#article"/);
+  assert.doesNotMatch(preview.html, /Kur’ân’a Göre Mutluluk Nedir\? Nedir\?/);
   assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
   assertOnlyPublicPreviewApi(preview.html);
 });

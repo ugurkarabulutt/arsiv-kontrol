@@ -616,6 +616,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 kullanıcı tarafından sağlanan `Kur’ân’a Göre Mutluluk Nedir?`
+  metni, öğreti ayrımları değiştirilmeden sekizinci konu rehberi olarak eklendi.
+  Rehber 12 bölümlü içindekiler, 11 âyet atfı, üç delil kutusu ve `mutluluk`
+  kategorisindeki ilgili soruları içerir. URL
+  `/konu-rehberi/kurana-gore-mutluluk`; ana sayfa kartı `Kur’ân’a göre
+  mutluluk` başlığını taşır. Yerleşik ImageGen ile iç dünya, insanlarla ilişki
+  ve Allah’a yönelişi üç bağlı halka üzerinden anlatan kişisiz/yazısız özgün
+  görsel üretildi; 480px WebP 53.768 bayt, 720px WebP 92.688 bayt. Sekiz kartlı
+  masaüstü vitrinde son iki kart alt sırada merkezlendi. `npm.cmd run check`
+  204/204 başarılı. Yerel 390x844 ve 1440x900 tarayıcı kontrolünde 12
+  içindekiler bağlantısı, üç delil kutusu, ilgili sorular, sekiz ana sayfa
+  rehberi, responsive 480/720 görseller, sıfır yatay taşma ve sıfır konsol
+  hatası doğrulandı. Henüz preview deployment yapılmadı ve production
+  değiştirilmedi.
 - 2026-10-04 kullanıcı tarafından sağlanan `Ruh Nedir? Nefs ve Fizik Vücuttan
   Farkı Nedir?` metni, öğreti ayrımları değiştirilmeden yedinci konu rehberi
   olarak eklendi. Rehber 14 bölümlü içindekiler, 15 âyet atfı, iki delil kutusu,

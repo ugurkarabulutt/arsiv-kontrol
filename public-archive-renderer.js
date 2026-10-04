@@ -733,6 +733,7 @@ const HOME_READING_PATHS = [
   { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', articleSlug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
   { title: 'Ruh Nedir?', slug: 'ruh', articleSlug: 'ruh-nefs-fizik-vucut', text: 'Ruhun nefs ve fizik vücuttan farklarını okuyun.' },
   { title: 'Teslimiyet Nedir?', slug: 'teslimiyet', articleSlug: 'teslimiyet', text: 'Dört teslimi ve yedi safhayı birlikte okuyun.' },
+  { title: 'Kur’ân’a Göre Mutluluk Nedir?', slug: 'mutluluk', articleSlug: 'kurana-gore-mutluluk', text: 'İç dünyada, insanlarla ve Allah ile sulh ve sükûn.' },
   { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
   { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', query: 'Tövbe günahlardan kurtuluş', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
   { title: 'Dua ve Tevekkül', slug: 'dua', query: 'Dua tevekkül', text: 'Talep, teslim ve sonucu Allah’a bırakma dengesi.' },
@@ -1995,6 +1996,13 @@ function homeTopicShowcaseSection() {
       text: 'Üç ayrı yapının özelliklerini, vazifelerini ve teslim yollarını karşılaştırın.',
       image: 'topic-showcase-ruh-nefs-720.webp',
       articleSlug: 'ruh-nefs-fizik-vucut'
+    },
+    {
+      kicker: 'Üç cephede huzur',
+      title: 'Kur’ân’a göre mutluluk',
+      text: 'İç dünyada, insanlarla ve Allah ile ilişkilerde kalıcı sulh ve sükûnun yolunu okuyun.',
+      image: 'topic-showcase-mutluluk-720.webp',
+      articleSlug: 'kurana-gore-mutluluk'
     }
   ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
     .filter(item => Boolean(item.article));

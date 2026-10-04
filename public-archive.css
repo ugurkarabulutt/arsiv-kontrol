@@ -4164,9 +4164,25 @@ a.pa-chip:hover,
   font-weight: 780;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1025px) {
+  .pa-topic-showcase-set {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .pa-topic-showcase-set > .pa-topic-showcase-card {
+    grid-column: span 2;
+  }
+
   .pa-topic-showcase-set > .pa-topic-showcase-card:last-child:nth-child(3n + 1) {
-    grid-column: 2;
+    grid-column: 3 / span 2;
+  }
+
+  .pa-topic-showcase-set > .pa-topic-showcase-card:nth-last-child(2):nth-child(3n + 1) {
+    grid-column: 2 / span 2;
+  }
+
+  .pa-topic-showcase-set > .pa-topic-showcase-card:last-child:nth-child(3n + 2) {
+    grid-column: 4 / span 2;
   }
 }
 
