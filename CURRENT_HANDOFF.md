@@ -10,8 +10,13 @@
   CSS cache anahtarı `20261004-mobile-nav-autohide-v2` oldu. `npm.cmd run check`
   201/201 başarılı. 390x844 Chromium'da buton alt boşluğu menü gizliyken 24px,
   görünürken 92px; yatay taşma ve konsol hatası yok. 1440x900 masaüstünde mobil
-  durum niteliği uygulanmadı ve buton alt boşluğu 24px kaldı. Production'a
-  alınmadı.
+  durum niteliği uygulanmadı ve buton alt boşluğu 24px kaldı. Runtime commit
+  `7e70815` preview dalına push edildi. Vercel preview
+  `dpl_9BmsZCf96HNef2kvFBjhp8C5GwCG` `READY`:
+  `https://arsiv-kontrol-bycpe6uy1-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 ön izlemede de alt boşluklar 24px/92px; yatay taşma ve
+  konsol hatası yok. Preview `200` ve `noindex, nofollow`; canlı ana sayfa yeni
+  `v2` cache anahtarını taşımıyor. Production'a alınmadı.
 - 2026-10-04 dördüncü turda mobil alt gezinme kaydırma yönüne bağlandı. Sayfa
   120 px'den aşağıdayken toplam 52 px aşağı kaydırma menüyü ekranın dışına
   indirir; 18 px yukarı hareket menüyü geri getirir. İlk 80 px'de, arama/input

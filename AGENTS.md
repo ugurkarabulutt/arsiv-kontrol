@@ -717,7 +717,13 @@ tespit edilir).
   201/201 başarılı. 390x844 Chromium doğrulamasında menü gizliyken butonun alt
   boşluğu 24px, menü görünürken 92px; yatay taşma ve konsol hatası yok. 1440x900
   masaüstünde alt boşluk 24px kaldı ve mobil durum niteliği uygulanmadı.
-  Değişiklik preview-only durumundadır.
+  Runtime commit `7e70815` preview dalına push edildi. Vercel preview
+  `dpl_9BmsZCf96HNef2kvFBjhp8C5GwCG` `READY`:
+  `https://arsiv-kontrol-bycpe6uy1-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 ön izlemede de alt boşluklar 24px/92px olarak ölçüldü;
+  yatay taşma ve konsol hatası yok. Preview `200` ve `noindex, nofollow`; canlı
+  ana sayfa yeni `v2` cache anahtarını taşımıyor, production alias
+  değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
