@@ -758,7 +758,13 @@ tespit edilir).
   CSS cache anahtarı `20261004-question-cards-v1` oldu. `npm.cmd run check`
   201/201 başarılı. 390x844 ve 1440x900 Chromium kontrollerinde kart etiketi
   sayısı sıfır, yatay taşma ve konsol hatası yoktur. Değişiklik yalnız izole
-  public preview dalındadır; production'a alınmamıştır.
+  public preview dalındadır. Runtime commit `6ebafed` preview dalına push edildi.
+  Vercel preview `dpl_BY9kLNLfC9nQnsAGWKQW1ugnNs2y` `READY`:
+  `https://arsiv-kontrol-niahg7nhr-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş gerçek veride 390x844 mobilde 30 kartın etiket sayısı sıfır,
+  yatay taşma ve konsol hatası yok; 1440x900 masaüstünde 920px kart genişliği,
+  8px köşe ve geçişler doğrulandı. Preview `200` ve `noindex, nofollow`; canlı
+  site yeni cache anahtarını taşımıyor, production'a alınmamıştır.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

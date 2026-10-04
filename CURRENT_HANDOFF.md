@@ -10,7 +10,13 @@
   başarılı. Chromium kontrolünde 390x844 mobilde 6 kartın etiket sayısı sıfır,
   okunma bloğu 112-125px, yatay taşma ve konsol hatası yok; 1440x900 masaüstünde
   etiket sayısı sıfır, geçiş özellikleri ve alt ayraç etkin. Değişiklik yalnız
-  preview dalındadır; production'a alınmadı.
+  preview dalındadır. Runtime commit `6ebafed` push edildi. Vercel preview
+  `dpl_BY9kLNLfC9nQnsAGWKQW1ugnNs2y` `READY`:
+  `https://arsiv-kontrol-niahg7nhr-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş gerçek veride 390x844 mobilde 30 kartın etiket sayısı sıfır,
+  yatay taşma ve konsol hatası yok; 1440x900 masaüstünde kart 920px genişlikte,
+  8px köşeli ve geçişleri etkin. Preview `200` ve `noindex, nofollow`; canlı site
+  yeni cache anahtarını taşımıyor, production'a alınmadı.
 - 2026-10-04 soru sorma CTA açıklaması kullanıcı yönlendirmesiyle
   `Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.` olarak
   değiştirildi. `npm.cmd run check` 201/201 başarılı; 390x844 Chromium'da metin
