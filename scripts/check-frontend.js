@@ -1509,6 +1509,9 @@ assert(homePreview.includes('ilgili sorular, cevaplar ve delillerle birlikte oku
 for (const marker of ['Arşivin tamamını açın.', 'Tüm soru ve cevaplara hızlıca ulaşın.', 'pa-archive-shortcut-link', 'Öne Çıkan Sorular', 'Öne çıkanları gör', '/public-preview/one-cikan-sorular', 'Son yayınlananları gör', '/public-preview/son-yayinlanan-sorular', 'Çok Okunan Cevaplar', '/public-preview/cok-okunan-cevaplar', 'pa-topic-showcase', 'Konu rehberleri', 'Seçili konu rehberlerini inceleyin.', 'Allah’a ulaşmayı dilemek', 'Hidayet yolculuğu', 'Mürşide tâbiiyet', 'Zikir ve teslimiyet', 'Nefs tezkiyesi', 'Dört teslim', 'Teslimiyet', 'İnsanın yapısı', 'Ruh, nefs ve fizik vücut', 'Üç cephede huzur', 'Kur’ân’a göre mutluluk', 'Yaşanan teslimiyet', 'Tasavvuf nedir?', 'Tüm rehberleri gör', '/public-preview/konu-rehberleri', 'topic-showcase-dilemek-480.webp', 'topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-480.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-480.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-480.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-480.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-480.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-480.webp', 'topic-showcase-tasavvuf-720.webp', 'pa-question-banners', 'Merak edilen sorulara doğrudan ulaşın.', 'Doğru mürşid nasıl tanınır?', 'Rüyaların dinimizdeki yeri nedir?', 'Kıyâmetten sonra ne olacak?', '/public-preview/kategori/mursid', '/public-preview/kategori/ruya', '/public-preview/kategori/kiyamet', 'question-banner-mursid-1280.webp', 'question-banner-ruya-720.webp', 'question-banner-kiyamet-1280.webp', 'loading="lazy"', 'Aktif arşiv', 'Yayındaki soru ve cevaplar', 'aktif soru', 'aktif cevap', 'pa-active-stats', 'pa-live-dot', 'data-count-up', 'data-count-target', 'Aklınızda bir soru mu var?', 'Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.', 'pa-cta-symbol', 'pa-cta-visual', 'pa-cta-content', 'pa-cta-button', 'Soru sormak için', 'Sorunu yaz', 'ask-cta-editorial-480.webp', 'ask-cta-editorial-720.webp', 'ask-cta-editorial-1280.webp', 'Cevapları nasıl keşfedebilirsiniz?', 'Sorularınız Dr. Abdulcabbar Boran tarafından Kur’an ve Hadis-i Şerif ışığında cevaplandırılır', 'aynı kategori altındaki diğer sorulara']) {
   assert(homePreview.includes(marker), `Public home bolumu eksik: ${marker}`);
 }
+for (const marker of ['Arınma ve dönüş', 'Tövbe ve günahlardan kurtuluş', 'topic-showcase-tovbe-480.webp', 'topic-showcase-tovbe-720.webp']) {
+  assert(homePreview.includes(marker), `Public tovbe vitrini marker eksik: ${marker}`);
+}
 for (const marker of ['background: rgb(255 253 247 / 0.13);', 'border-radius: 999px;', 'color: #17201C;', 'outline: 3px solid #D7B35D;']) {
   assert(publicCss.includes(marker), `Public soru CTA kontrast marker eksik: ${marker}`);
 }
@@ -1553,6 +1556,10 @@ const tasavvufArticlePreview = renderPublicArchivePreviewRoute('/public-preview/
 for (const marker of ['Tasavvuf Nedir?', 'Kur’ân’daki İslâm’ın hayata geçirilmesi', 'pa-topic-article-table', 'ZUMER 54', 'MÂİDE 35', 'ŞEMS 9', 'MUZZEMMİL 8', 'Tasavvuf ile ilgili sorular', '"@type":"BlogPosting"']) {
   assert(tasavvufArticlePreview.includes(marker), `Public tasavvuf konu rehberi marker eksik: ${marker}`);
 }
+const tovbeArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/tovbe-ve-gunahlardan-kurtulus').html;
+for (const marker of ['Tövbe ve Günahlardan Kurtuluş', 'Pişmanlıktan arınmaya ve Allah’a dönüşe', 'pa-topic-article-table', 'ZUMER 53', 'ÂLİ İMRÂN 135', 'FURKÂN 70', 'TAHRÎM 8', 'Tövbe ve Günahlardan Kurtuluş ile ilgili sorular', '"@type":"BlogPosting"']) {
+  assert(tovbeArticlePreview.includes(marker), `Public tovbe konu rehberi marker eksik: ${marker}`);
+}
 const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');
 const topicArticleSupportIndex = topicArticlePreview.indexOf('pa-topic-article-support');
 const topicArticleRelatedIndex = topicArticlePreview.indexOf('pa-topic-article-related');
@@ -1575,6 +1582,7 @@ assert(!disallowedTopicArticleSourcePattern.test(topicArticlePreview), 'Public k
 assert(!disallowedTopicArticleSourcePattern.test(nefsArticlePreview), 'Public nefs konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
 assert(!disallowedTopicArticleSourcePattern.test(mutlulukArticlePreview), 'Public mutluluk konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
 assert(!disallowedTopicArticleSourcePattern.test(tasavvufArticlePreview), 'Public tasavvuf konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
+assert(!disallowedTopicArticleSourcePattern.test(tovbeArticlePreview), 'Public tovbe konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
 for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-toc-block', '.pa-topic-article-body', '.pa-topic-article-list', '.pa-topic-article-table-wrap', '.pa-topic-article-table', '.pa-topic-evidence', '.pa-topic-article-support']) {
   assert(publicCss.includes(marker), `Public konu rehberi makale CSS marker eksik: ${marker}`);
 }
@@ -1592,12 +1600,12 @@ for (const fileName of ['topic-routes-archive-720.webp', 'topic-routes-archive-1
   assert(fs.existsSync(assetPath), `Public konu rotasi gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 125 * 1024, `Public konu rotasi gorseli hiz butcesini asmamali: ${fileName}`);
 }
-for (const fileName of ['topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-720.webp']) {
+for (const fileName of ['topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-720.webp', 'topic-showcase-tovbe-720.webp']) {
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public konu vitrini gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 110 * 1024, `Public konu vitrini gorseli hiz butcesini asmamali: ${fileName}`);
 }
-for (const fileName of ['topic-showcase-dilemek-480.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-tabiiyet-480.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-nefs-480.webp', 'topic-showcase-teslimiyet-480.webp', 'topic-showcase-ruh-nefs-480.webp', 'topic-showcase-mutluluk-480.webp', 'topic-showcase-tasavvuf-480.webp']) {
+for (const fileName of ['topic-showcase-dilemek-480.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-tabiiyet-480.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-nefs-480.webp', 'topic-showcase-teslimiyet-480.webp', 'topic-showcase-ruh-nefs-480.webp', 'topic-showcase-mutluluk-480.webp', 'topic-showcase-tasavvuf-480.webp', 'topic-showcase-tovbe-480.webp']) {
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public konu vitrini mobil gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 60 * 1024, `Public konu vitrini mobil gorseli hiz butcesini asmamali: ${fileName}`);

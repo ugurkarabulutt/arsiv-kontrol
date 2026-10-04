@@ -1060,7 +1060,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir']) {
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1313,6 +1313,23 @@ test('topic guide article renders Tasavvuf guide with stages table and four evid
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/tasavvuf-nedir#article"/);
   assert.doesNotMatch(preview.html, /Tasavvuf Nedir\? Nedir\?/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
+test('topic guide article renders Tövbe guide with levels table and four evidence passages', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/tovbe-ve-gunahlardan-kurtulus');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Tövbe ve Günahlardan Kurtuluş/);
+  assert.match(preview.html, /Pişmanlıktan arınmaya ve Allah’a dönüşe/);
+  assert.match(preview.html, /Tövbenin üç seviyesi/);
+  assert.match(preview.html, /ZUMER 53/);
+  assert.match(preview.html, /ÂLİ İMRÂN 135/);
+  assert.match(preview.html, /FURKÂN 70/);
+  assert.match(preview.html, /TAHRÎM 8/);
+  assert.match(preview.html, /Tövbe ve Günahlardan Kurtuluş ile ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/tovbe-ve-gunahlardan-kurtulus#article"/);
   assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
   assertOnlyPublicPreviewApi(preview.html);
 });
