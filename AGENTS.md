@@ -629,7 +629,13 @@ tespit edilir).
   Deploy edilmiş 390x844 görünümde 23,01px/sn otomatik hareket, 181,50px sola ve
   179,31px sağa sürükleme, 500ms duraklama ve otomatik devam doğrulandı; konsol
   hatası yok. Preview `200`, `noindex, nofollow` ve yeni cache anahtarını taşıyor;
-  canlı ana sayfa yeni cache anahtarını taşımıyor. Production'a alınmadı.
+  canlıya alma öncesinde ana sayfa yeni cache anahtarını taşımıyordu. Kullanıcı
+  onayıyla production deploy `dpl_TTJhRmhZAoC1mQzkeU6c6Ryz9Guh` `READY` oldu:
+  `https://arsiv-kontrol-fs430p7wl-ugurkarabulutts-projects.vercel.app`; alias
+  `https://arsiv.ibrahimlive.ai`. Canlı root ve `/health` `200`; root yeni cache
+  anahtarını ve `var speed = 22` kodunu taşıyor. Canlı 390x844 kontrolde otomatik
+  hareket 23,88px/sn, 181,70px sola ve 179,32px sağa sürükleme, 500ms duraklama,
+  otomatik devam ve sıfır konsol hatası doğrulandı.
 - 2026-10-04 gerçek iPhone/iç tarayıcı bildiriminde konu vitrininin yatay
   sürüklenmediği görüldü. `pointer` desteğine ek olarak dokunma kimliği izleyen
   `touchstart`, pasif olmayan `touchmove`, `touchend` ve `touchcancel` akışı
