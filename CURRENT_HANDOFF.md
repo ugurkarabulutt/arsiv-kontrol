@@ -23,9 +23,26 @@
   `X-Robots-Tag` ile meta robots `noindex, nofollow`. Dış 390px ve 1440px
   kontrollerinde 15 içindekiler, dört delil kutusu, üç tablo satırı, 8 ilgili
   soru, 10 benzersiz rehber kartı ve responsive 480/720px görseller doğrulandı;
-  yatay taşma ve konsol hatası yok. Production ana sayfada yeni slug bulunmuyor
-  ve canlı rehber URL'si `404`; kullanıcı onayı olmadan production promote ve
-  Search Console dizin isteği yapılmamalıdır.
+  yatay taşma ve konsol hatası yok. Daha sonra tüm konu rehberlerinin makale sonu
+  bağlantıları merkezi ve konu öncelikli hale getirildi: her rehber kendi sayfası
+  hariç diğer dokuz rehbere bağlanır; böylece eski rehberler de Teslimiyet, Ruh,
+  Mutluluk, Tasavvuf ve Tövbe rehberlerine doğrudan bağlantı verir. Runtime
+  commit `62c153c` GitHub'a push edildi; `npm.cmd run check` 207/207 başarılı.
+  Son noindex preview `dpl_A2RMzhUqtrbUuxwDSMHYgLKdGZGQ` `READY`:
+  `https://arsiv-kontrol-8v5ot3bit-ugurkarabulutts-projects.vercel.app`.
+  Dış HTTP kontrolünde on rehberin her biri `200`, `noindex, nofollow` ve dokuz
+  benzersiz iç bağlantı verdi; Tövbe dışındaki dokuz rehber Tövbe'ye bağlandı.
+  390px ve 1440px kontrollerinde mevcut rehbere öz bağlantı yok, yatay taşma ve
+  konsol hatası yok. Kullanıcı onayıyla doğrulanmış preview production'a promote
+  edildi. Production deployment `dpl_3H3CqbE1rQ8txHpniKVUC91Cfv2w` `READY`:
+  `https://arsiv-kontrol-6idgvt5pq-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa, Tövbe
+  rehberi, 480/720px WebP varlıkları ve sitemap `200`; canonical URL,
+  `index,follow` ve sitemap kaydı doğru. Canlı on rehberin her birinde dokuz iç
+  bağlantı doğrulandı. Canlı 390px Tövbe kontrolünde görseller eksiksiz, yatay
+  taşma ve konsol hatası yok. Google Search Console'da Tövbe rehberi için
+  `Dizine eklenmesi istendi` sonucu alındı; URL'nin öncelikli tarama sırasına
+  eklendiği doğrulandı. Nihai tarama ve indeksleme zamanı Google'a aittir.
 - 2026-10-04 kullanıcı tarafından sağlanan `Tasavvuf Nedir?` metni, öğreti
   ayrımları ve Türkçe karakterleri korunarak dokuzuncu konu rehberi olarak
   eklendi. Rehber 15 bölümlü içindekiler, 13 âyet referansı, dört âyet kutusu,

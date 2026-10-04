@@ -5,7 +5,7 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-03
 
-- **Tövbe rehberi noindex preview'e eklendi:** Kullanıcının sağladığı `Tövbe ve
+- **Tövbe rehberi canlıya alındı ve rehber iç bağlantıları güçlendirildi:** Kullanıcının sağladığı `Tövbe ve
   Günahlardan Kurtuluş` metni, öğreti ayrımları ve Türkçe karakterleri korunarak
   onuncu konu rehberi olarak yapılandırıldı. Rehber 15 bölümlü içindekiler, 11
   âyet atfı, dört delil kutusu, tövbenin üç seviyesini gösteren semantik tablo ve
@@ -17,9 +17,20 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `https://arsiv-kontrol-g4eq92umc-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/tovbe-ve-gunahlardan-kurtulus`.
   Dış 390x844 ve 1440x900 kontrollerinde rehber yapısı, 10 benzersiz vitrin
   kartı, responsive görseller, sıfır yatay taşma ve sıfır konsol hatası
-  doğrulandı. Preview `noindex, nofollow`; production ana sayfa değişmedi ve
-  canlı rehber URL'si `404`. Kullanıcı onayı olmadan production'a promote veya
-  Google dizin isteği yapılmamalıdır.
+  doğrulandı. Ardından her konu rehberindeki sabit ilk beş bağlantı kaldırıldı;
+  her rehber diğer dokuz rehbere, konuya göre önceliklendirilmiş sırayla bağlandı
+  ve kendi sayfasına bağlantı vermemesi test edildi. Runtime commit `62c153c`;
+  `npm.cmd run check` 207/207 başarılı. Son preview
+  `dpl_A2RMzhUqtrbUuxwDSMHYgLKdGZGQ` üzerinde 10 rehberin her birinde dokuz
+  benzersiz iç bağlantı, mobil/masaüstü taşmasız görünüm ve sıfır konsol hatası
+  doğrulandı. Kullanıcı onayıyla production deployment
+  `dpl_3H3CqbE1rQ8txHpniKVUC91Cfv2w` `READY` durumunda
+  `https://arsiv.ibrahimlive.ai` aliasına alındı. Canlı `/health`, ana sayfa,
+  Tövbe rehberi, 480/720px görseller ve sitemap `200`; canonical ve
+  `index,follow` doğru, sitemap Tövbe rehberini içeriyor. On canlı rehberin her
+  birinde dokuz iç bağlantı doğrulandı. Google Search Console'da Tövbe rehberi
+  için `Dizine eklenmesi istendi` sonucu alındı ve URL'nin öncelikli tarama
+  sırasına eklendiği doğrulandı; dizine alınma zamanı Google'a aittir.
 
 - **Kategori indeks politikası tekleştirildi:** Search Console'un 21 Eylül
   raporunda 1.848 kategori URL'si `Keşfedildi - şu anda dizine eklenmiş değil`
