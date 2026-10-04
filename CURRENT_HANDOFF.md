@@ -17,8 +17,17 @@
   test geçti; `git diff --check` temiz. Yerel 390x844 ve 1440x900 tarayıcı
   kontrollerinde 13 içindekiler, altı delil kutusu, altı ilgili soru, on iç
   rehber bağlantısı, 11 ana sayfa rehber kartı, sıfır yatay taşma ve sıfır
-  konsol hatası doğrulandı. Production değişmedi; dış preview deploy ve kullanıcı
-  onayı bekleniyor.
+  konsol hatası doğrulandı. Runtime commit `37e8815` preview dalına push edildi.
+  Dış noindex preview deployment `dpl_GMx5uEBY57KqbdWDXtak5rNp7oKm`
+  `READY`:
+  `https://arsiv-kontrol-lt9l6ovcs-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/dua-ve-tevekkul`.
+  Dış preview ana sayfa, rehber ve gerçek 480/720px WebP yolları `200`;
+  `X-Robots-Tag` ile meta robots `noindex, nofollow`, production hedefli
+  canonical doğru. Dış 390x844 ve 1440x900 Chromium kontrollerinde 13
+  içindekiler, altı delil kutusu, sekiz ilgili soru, on iç rehber bağlantısı,
+  11 ana sayfa rehber kartı, responsive 480/720px varlık işaretleri, sıfır
+  yatay taşma ve sıfır konsol hatası doğrulandı. Production rehber URL’si `404`
+  ve yeni içerik canlıda yok; kullanıcı onayı olmadan production’a alınmayacak.
 - 2026-10-04 public soru `939781a2-ee92-4a5f-a632-b138ea5e5bba`, video
   açıklaması biçiminden doğrudan `Muhterem Hocam` sorusuna çevrildi; kesilmiş
   başlık tamamlandı. Eski `bu-videoda...` URL, konu odaklı
