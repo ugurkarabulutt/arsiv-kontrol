@@ -629,7 +629,14 @@ tespit edilir).
   edildi. Vercel preview `dpl_52bt881i2ev9SzZAD2uSbXWLMB9U` `READY`:
   `https://arsiv-kontrol-l23gj1s2y-ugurkarabulutts-projects.vercel.app/public-preview`.
   Ana sayfa ve `/konu-rehberi/teslimiyet` `200`, `noindex, nofollow`; canlı ana
-  sayfada Teslimiyet görseli ve rehber bağlantısı yok. Production'a alınmadı.
+  sayfada Teslimiyet görseli ve rehber bağlantısı yoktu. Kullanıcı onayıyla aynı
+  doğrulanmış preview production'a terfi ettirildi. Production deployment
+  `dpl_61ajshLBwzqcr26XGvKY4Ldn73dg` `READY`:
+  `https://arsiv-kontrol-hly46ytty-ugurkarabulutts-projects.vercel.app`; alias
+  `https://arsiv.ibrahimlive.ai`. Canlı `/health`, root, rehber, 720px WebP ve
+  sitemap `200`; rehber canonical URL ile `index,follow`. Canlı 390x844
+  kontrolde 7 safha, 11 içindekiler, 8 ilgili soru, altı ana sayfa rehber kartı,
+  doğru bölüm sırası, sıfır yatay taşma ve sıfır konsol hatası doğrulandı.
 - 2026-10-04 kullanıcı isteğiyle ana sayfadaki `Çok Okunan Cevaplar` ve
   `Son Yayınlanan Sorular` bölümlerinin yerleri değiştirildi. Yeni sıra `Aktif
   Arşiv → Çok Okunan Cevaplar → Konu Rehberleri → Son Yayınlanan Sorular`;
