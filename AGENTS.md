@@ -628,7 +628,13 @@ tespit edilir).
   1,2 saniyelik örneklemde yaklaşık 18px yatay ilerleme ve değişmeyen kart `Y`
   konumu ölçüldü; kart üstünde dikey kaydırma çalıştı. 1440x900 görünümde üç kart
   sabit, kopya set gizli. Taşma ve konsol hatası yok. Preview-only'dir;
-  production'a alınmamıştır.
+  production'a alınmamıştır. Runtime commit `35dfe4c` preview dalına push edildi.
+  Vercel preview `dpl_DKxkpggPEdh9Le1RugiPxkD6eXYW` `READY`:
+  `https://arsiv-kontrol-7gbvh95mk-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde ray 1,2 saniyede 18px ilerledi, kart `Y`
+  konumu sabit kaldı ve kart üstünde 844px dikey kaydırma çalıştı. 1440x900
+  görünümde üç kart sabit, kopya set gizli. Taşma/konsol hatası yok; preview
+  `200` ve `noindex, nofollow`, canlı site yeni cache anahtarını taşımıyor.
 - 2026-10-04 soru kartı başlıklarında okunurluk için yalnız bu metin yüzeyi
   yerleşik `Inter` yazı tipine geçirildi; logo ve bölüm başlıklarındaki marka
   serifi korundu. İlk ekranı geciktirmeyen, aşağıdaki bölümleri görünür alana

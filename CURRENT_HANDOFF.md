@@ -16,7 +16,15 @@
   1,2 saniyede yaklaşık 18px sola ilerlerken kart `Y` konumu sabit kaldı;
   kart üstünde dikey kaydırma 844px ilerledi, yatay taşma ve konsol hatası yok.
   1440x900 görünümde ikinci set gizli, üç kart sabit ve soru başlığı 19px/600.
-  Değişiklik yalnız preview dalındadır; production'a alınmadı.
+  Runtime commit `35dfe4c` preview dalına push edildi. Vercel preview
+  `dpl_DKxkpggPEdh9Le1RugiPxkD6eXYW` `READY`:
+  `https://arsiv-kontrol-7gbvh95mk-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde ray 1,2 saniyede tam 18px ilerledi, kart
+  `Y` konumu değişmedi, kart üstü dikey kaydırma 844px çalıştı; soru başlığı
+  17px/600 ve `touch-action: pan-y`. 1440x900 görünümde üç kart sabit, ikinci
+  set gizli ve başlık 19px/600. Her iki görünümde taşma ve konsol hatası yok.
+  Preview `200` ve `noindex, nofollow`; canlı ana sayfa yeni cache anahtarını
+  taşımıyor. Production'a alınmadı.
 - 2026-10-04 uzun soru başlıklarının okunurluğu için yalnız soru kartı başlıkları
   marka serifinden yerleşik `Inter` yazı tipine geçirildi; masaüstünde 20px/700,
   mobilde 18px/700 ve ferah satır aralığı kullanıldı. Logo ile bölüm başlıklarının
