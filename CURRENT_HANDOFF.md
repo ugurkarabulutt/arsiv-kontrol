@@ -2,6 +2,30 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 kullanıcı tarafından sağlanan `Tövbe ve Günahlardan Kurtuluş`
+  metni, öğreti ayrımları ve Türkçe karakterleri korunarak onuncu konu rehberi
+  olarak eklendi. Rehber 15 bölümlü içindekiler, 11 âyet atfı, Zumer 53, Âli
+  İmrân 135, Furkân 70 ve Tahrîm 8 için dört delil kutusu, tövbenin üç
+  seviyesini gösteren üç satırlı semantik tablo ve `tovbe` kategorisindeki
+  ilgili soruları içerir. URL
+  `/konu-rehberi/tovbe-ve-gunahlardan-kurtulus`; ana sayfa kartı `Tövbe ve
+  günahlardan kurtuluş` başlığını taşır. Yerleşik ImageGen ile karanlık taş
+  avludan aydınlığa ilerleyen su yolu, zeytin dalı ve kapı metaforlarını kullanan
+  kişisiz/yazısız özgün görsel üretildi; 480px WebP 57.138 bayt, 720px WebP
+  102.516 bayt. On rehber kartı sürekli kayan vitrinde korunur. `npm.cmd run
+  check` başarılı, 206/206 test geçti; `git diff --check` temiz. Yerel 390x844
+  ve 1440x900 kontrollerinde 15 içindekiler, dört delil kutusu, bir tablo,
+  ilgili sorular, responsive görseller, sıfır yatay taşma ve sıfır konsol hatası
+  doğrulandı. Runtime commit `87db1cd` GitHub'a push edildi. Dış noindex preview
+  deployment `dpl_2169BN6ecXvNzv9yRRm4Gjhuy8Hm` `READY`:
+  `https://arsiv-kontrol-g4eq92umc-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/tovbe-ve-gunahlardan-kurtulus`.
+  Dış preview ana sayfa, rehber dizini, rehber ve 480/720px görseller `200`;
+  `X-Robots-Tag` ile meta robots `noindex, nofollow`. Dış 390px ve 1440px
+  kontrollerinde 15 içindekiler, dört delil kutusu, üç tablo satırı, 8 ilgili
+  soru, 10 benzersiz rehber kartı ve responsive 480/720px görseller doğrulandı;
+  yatay taşma ve konsol hatası yok. Production ana sayfada yeni slug bulunmuyor
+  ve canlı rehber URL'si `404`; kullanıcı onayı olmadan production promote ve
+  Search Console dizin isteği yapılmamalıdır.
 - 2026-10-04 kullanıcı tarafından sağlanan `Tasavvuf Nedir?` metni, öğreti
   ayrımları ve Türkçe karakterleri korunarak dokuzuncu konu rehberi olarak
   eklendi. Rehber 15 bölümlü içindekiler, 13 âyet referansı, dört âyet kutusu,

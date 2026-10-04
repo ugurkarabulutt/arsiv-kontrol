@@ -5,6 +5,22 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-03
 
+- **Tövbe rehberi noindex preview'e eklendi:** Kullanıcının sağladığı `Tövbe ve
+  Günahlardan Kurtuluş` metni, öğreti ayrımları ve Türkçe karakterleri korunarak
+  onuncu konu rehberi olarak yapılandırıldı. Rehber 15 bölümlü içindekiler, 11
+  âyet atfı, dört delil kutusu, tövbenin üç seviyesini gösteren semantik tablo ve
+  `tovbe` kategorisindeki ilgili soruları içerir. URL
+  `/konu-rehberi/tovbe-ve-gunahlardan-kurtulus`; ana sayfa vitrinine özgün
+  480/720px WebP görsel eklendi. `npm.cmd run check` 206/206 başarılı. Runtime
+  commit `87db1cd`; noindex preview deployment
+  `dpl_2169BN6ecXvNzv9yRRm4Gjhuy8Hm` `READY`:
+  `https://arsiv-kontrol-g4eq92umc-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/tovbe-ve-gunahlardan-kurtulus`.
+  Dış 390x844 ve 1440x900 kontrollerinde rehber yapısı, 10 benzersiz vitrin
+  kartı, responsive görseller, sıfır yatay taşma ve sıfır konsol hatası
+  doğrulandı. Preview `noindex, nofollow`; production ana sayfa değişmedi ve
+  canlı rehber URL'si `404`. Kullanıcı onayı olmadan production'a promote veya
+  Google dizin isteği yapılmamalıdır.
+
 - **Kategori indeks politikası tekleştirildi:** Search Console'un 21 Eylül
   raporunda 1.848 kategori URL'si `Keşfedildi - şu anda dizine eklenmiş değil`
   görünürken güncel canlı sitemap'in yalnız 295 kategori URL'si sunduğu
