@@ -4,7 +4,13 @@
 
 - 2026-10-04 soru sorma CTA açıklaması kullanıcı yönlendirmesiyle
   `Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.` olarak
-  değiştirildi. Değişiklik yalnız preview dalındadır; production'a alınmadı.
+  değiştirildi. `npm.cmd run check` 201/201 başarılı; 390x844 Chromium'da metin
+  297px alana taşmadan yerleşti, yatay taşma ve konsol hatası yok. Runtime commit
+  `c98113a` preview dalına push edildi. Vercel preview
+  `dpl_FERCHdcKBq7Cs7kyRub2hTsr1Yy1` `READY`:
+  `https://arsiv-kontrol-osaeh15w7-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview `200` ve `noindex, nofollow`; canlı ana sayfa yeni metni taşımıyor,
+  production'a alınmadı.
 - 2026-10-04 altıncı turda ana sayfadaki soru sorma CTA'sı özgün editoryal
   görselle yeniden tasarlandı. Metinsiz koyu zümrüt masa, boş defter, kalem ve
   pirinç ayrıntılı görselin `480/720/1280` WebP varyantları responsive ve

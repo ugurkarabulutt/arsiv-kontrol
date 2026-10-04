@@ -745,7 +745,11 @@ tespit edilir).
 - 2026-10-04 soru sorma CTA alt metni kullanıcı yönlendirmesine göre
   `Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.` olarak
   değiştirildi. Değişiklik yalnız izole public preview dalındadır; production'a
-  alınmamıştır.
+  alınmamıştır. `npm.cmd run check` 201/201 başarılı; 390x844 Chromium
+  kontrolünde yatay taşma ve konsol hatası yok. Runtime commit `c98113a` preview
+  dalına push edildi. Vercel preview `dpl_FERCHdcKBq7Cs7kyRub2hTsr1Yy1`
+  `READY`: `https://arsiv-kontrol-osaeh15w7-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview `200` ve `noindex, nofollow`; canlı ana sayfa yeni metni taşımıyor.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
