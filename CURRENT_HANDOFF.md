@@ -2,6 +2,16 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 public soru `86369129-5e74-45fb-b42a-440d2e6401fc` içindeki
+  `Muhterem Efendimiz` hitabı `Muhterem Hocam` olarak düzeltildi; kesilmiş
+  başlık tam soru metniyle tamamlandı. Eski kesik URL, konu odaklı
+  `/soru/mursid-kavrami-herkese-gore-degisir-mi` adresine taşındı ve eski
+  adresten `301` yönlendirme doğrulandı. Dört okunma, `mursid` konu bağı ve
+  beş arama belgesi yeni slug'a taşındı; arama belgeleri yeni metinle yeniden
+  indekslendi. Geri alınabilir history kaydı
+  `cp-20261004-muhterem-efendimiz-mursid-question`, yönetim izi
+  `public_archive.question_correction`. Canlı yeni URL `200`, canonical doğru;
+  kod değişikliği ve deploy yapılmadı.
 - 2026-10-04 kullanıcı talebiyle
   `/soru/ayrica-ruyalarimizda-yaptigimiz-yanlislardan-derece-kaybi-oluyor-mu`
   yayından kaldırıldı ve geri alınabilir çöp akışına taşındı. Kaynak history

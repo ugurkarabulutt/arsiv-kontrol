@@ -644,6 +644,20 @@ tespit edilir).
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- **Mürşid sorusunun hitabı, kesilmiş başlığı ve URL'si düzeltildi:** Canlı
+  public soru `86369129-5e74-45fb-b42a-440d2e6401fc` için `Muhterem
+  Efendimiz` hitabı `Muhterem Hocam` olarak değiştirildi ve kesilmiş public
+  başlık tam soru metniyle tamamlandı. Eski kesik slug
+  `muhterem-efendimiz-bir-misafirimiz-mursid-kime-gore-mursid-biz-mursid-de-goremedik-bize-gore-mur`,
+  konu odaklı `mursid-kavrami-herkese-gore-degisir-mi` slug'ına taşındı;
+  eski URL yeni URL'ye `301` yönlendirme verir. Okunma sayısı `4`, `mursid`
+  konu bağı ve beş arama belgesi yeni slug'da korundu; arama belgeleri yeni
+  hitapla yeniden üretildi. History değişikliği
+  `cp-20261004-muhterem-efendimiz-mursid-question` paketiyle
+  `content_correction_log` içine geri alınabilir biçimde kaydedildi; işlem
+  ayrıca `public_archive.question_correction` yönetim günlüğüne yazıldı.
+  Canlı yeni URL `200`, canonical doğru; eski URL `301`. Kod değişikliği ve
+  deploy gerekmedi.
 - **Rüya sorusu geri alınabilir biçimde çöpe taşındı:** Kullanıcı talebiyle
   `/soru/ayrica-ruyalarimizda-yaptigimiz-yanlislardan-derece-kaybi-oluyor-mu`
   adresindeki tekil canlı kayıt yayından kaldırıldı. Kaynak history
