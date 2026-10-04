@@ -6443,7 +6443,14 @@ a.pa-chip:hover,
     display: flex;
     width: max-content;
     gap: 12px;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
     will-change: transform;
+  }
+
+  .pa-topic-showcase-rail[data-dragging="true"] {
+    cursor: grabbing;
   }
 
   .pa-topic-showcase-set,
@@ -6456,6 +6463,11 @@ a.pa-chip:hover,
   .pa-topic-showcase-grid .pa-topic-showcase-card {
     flex: 0 0 min(82vw, 324px);
     width: min(82vw, 324px);
+    -webkit-user-drag: none;
+  }
+
+  .pa-topic-showcase-grid .pa-topic-showcase-art img {
+    -webkit-user-drag: none;
   }
 
   .pa-topic-showcase-art {

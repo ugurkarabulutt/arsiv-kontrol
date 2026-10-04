@@ -616,6 +616,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 konu vitrini hazır durumdaki beş rehberin tamamını içerir:
+  `Allah'a ulaşmayı dilemek`, `Hidayet yolculuğu`, `Mürşide tâbiiyet`,
+  `Zikir ve teslimiyet`, `Nefs ve ruh`. İlk yöneliş ve mürşide tâbiiyet için
+  ImageGen ile iki özgün görsel üretilip 480/720 WebP varyantlarında eklendi.
+  Mobil kesintisiz ray kullanıcı tarafından sola ve sağa sürüklenebilir; yatay
+  niyet eşiği dikey sayfa kaydırmasını korur, sürükleme sonrası yanlış link
+  açılması engellenir ve 1,4 saniye sonra aynı 18px/sn hızla otomatik sola akış
+  sürer. Masaüstünde beş kart normal grid, kopya set gizli kalır. Cache anahtarı
+  `20261004-complete-guides-v1` oldu. `npm.cmd run check` 201/201 başarılı.
+  Yerel Chromium 390x844 kontrolde iki yönlü sürükleme, 500ms duraklama,
+  1,4 saniye sonrası otomatik devam ve kart üstünde 844px dikey kaydırma;
+  1440x900 kontrolde beş kart, gizli kopya set, `transform: none` ve 720px
+  görseller doğrulandı. Her iki görünümde yatay taşma yok. Preview-only'dir;
+  production'a alınmamıştır.
 - 2026-10-04 mobil konu vitrininin dokunmada aşağı-yukarı oynayan `scroll-snap`
   düzeni kaldırıldı. Vitrin görünür alana girdiğinde üç kart, kopyalanmış ikinci
   set üzerinde `requestAnimationFrame` ile saniyede 18px sabit hızla ve kesintisiz

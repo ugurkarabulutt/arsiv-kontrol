@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-topic-flow-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-complete-guides-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -1911,11 +1911,11 @@ function homeQuranEvidenceSection(items = []) {
 function homeTopicShowcaseSection() {
   const items = [
     {
-      kicker: 'İç dünya',
-      title: 'Nefs ve ruh',
-      text: 'Nefsin terbiyesi, ruhun teslimi ve insanın manevi yapısıyla ilgili cevapları birlikte okuyun.',
-      image: 'topic-showcase-nefs-720.webp',
-      articleSlug: 'nefs-tezkiyesi'
+      kicker: 'İlk yöneliş',
+      title: 'Allah’a ulaşmayı dilemek',
+      text: 'Kalbin Allah’a yönelişini, samimi talebi ve yolculuğun başlangıcını birlikte okuyun.',
+      image: 'topic-showcase-dilemek-720.webp',
+      articleSlug: 'allaha-ulasmayi-dilemek'
     },
     {
       kicker: 'Yolun yönü',
@@ -1925,11 +1925,25 @@ function homeTopicShowcaseSection() {
       articleSlug: 'hidayet'
     },
     {
+      kicker: 'İrşad bağı',
+      title: 'Mürşide tâbiiyet',
+      text: 'Mürşidin Allah’tan istenmesini, tâbiiyetin anlamını ve yolculuktaki yerini keşfedin.',
+      image: 'topic-showcase-tabiiyet-720.webp',
+      articleSlug: 'murside-tabiiyet'
+    },
+    {
       kicker: 'Kalbin sürekliliği',
       title: 'Zikir ve teslimiyet',
       text: 'Zikrin kalpteki etkisini, teslim ve tevekkül konularıyla aynı okuma yolunda keşfedin.',
       image: 'topic-showcase-zikir-720.webp',
       articleSlug: 'zikir-ve-daimi-zikir'
+    },
+    {
+      kicker: 'İç dünya',
+      title: 'Nefs ve ruh',
+      text: 'Nefsin terbiyesi, ruhun teslimi ve insanın manevi yapısıyla ilgili cevapları birlikte okuyun.',
+      image: 'topic-showcase-nefs-720.webp',
+      articleSlug: 'nefs-tezkiyesi'
     }
   ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
     .filter(item => Boolean(item.article));
@@ -3717,11 +3731,20 @@ function renderShell({ title, description, active, content, status = 200, questi
           var observer = null;
           var rafId = 0;
           var resizeTimer = 0;
+          var resumeTimer = 0;
+          var dragClickTimer = 0;
           var lastFrame = 0;
           var offset = 0;
           var cycleWidth = 0;
           var inView = false;
           var running = true;
+          var userPaused = false;
+          var dragging = false;
+          var dragAxis = '';
+          var didDrag = false;
+          var dragStartX = 0;
+          var dragStartY = 0;
+          var dragStartOffset = 0;
           var speed = 18;
           function railGap() {
             var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
@@ -3729,11 +3752,16 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           function shouldMove() {
             return running && inView && (!mobileQuery || mobileQuery.matches) &&
-              (!reducedQuery || !reducedQuery.matches) && !document.hidden;
+              (!reducedQuery || !reducedQuery.matches) && !document.hidden &&
+              !userPaused && !dragging;
+          }
+          function normalizeOffset() {
+            if (!cycleWidth) return;
+            offset = ((offset % cycleWidth) + cycleWidth) % cycleWidth;
           }
           function measure() {
             cycleWidth = firstSet.getBoundingClientRect().width + railGap();
-            if (cycleWidth > 0) offset = ((offset % cycleWidth) + cycleWidth) % cycleWidth;
+            normalizeOffset();
           }
           function paint() {
             if (!mobileQuery || !mobileQuery.matches) {
@@ -3761,6 +3789,33 @@ function renderShell({ title, description, active, content, status = 200, questi
             paint();
             rafId = window.requestAnimationFrame(loop);
           }
+          function resumeAfterInteraction() {
+            userPaused = true;
+            window.clearTimeout(resumeTimer);
+            resumeTimer = window.setTimeout(function(){
+              userPaused = false;
+              lastFrame = 0;
+              start();
+            }, 1400);
+          }
+          function stopAnimationFrame() {
+            if (!rafId) return;
+            window.cancelAnimationFrame(rafId);
+            rafId = 0;
+          }
+          function endDrag(event) {
+            if (!dragging) return;
+            dragging = false;
+            rail.removeAttribute('data-dragging');
+            if (event && event.pointerId !== undefined && rail.releasePointerCapture && rail.hasPointerCapture && rail.hasPointerCapture(event.pointerId)) {
+              try { rail.releasePointerCapture(event.pointerId); } catch (error) {}
+            }
+            if (didDrag) {
+              resumeAfterInteraction();
+              window.clearTimeout(dragClickTimer);
+              dragClickTimer = window.setTimeout(function(){ didDrag = false; }, 350);
+            } else start();
+          }
           function scheduleMeasure() {
             window.clearTimeout(resizeTimer);
             resizeTimer = window.setTimeout(function(){
@@ -3770,8 +3825,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           function onVisibilityChange() {
             if (document.hidden && rafId) {
-              window.cancelAnimationFrame(rafId);
-              rafId = 0;
+              stopAnimationFrame();
             } else start();
           }
           function onMediaChange() {
@@ -3783,8 +3837,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               entries.forEach(function(entry){
                 inView = entry.isIntersecting;
                 if (!inView && rafId) {
-                  window.cancelAnimationFrame(rafId);
-                  rafId = 0;
+                  stopAnimationFrame();
                 }
                 if (inView) start();
               });
@@ -3794,6 +3847,49 @@ function renderShell({ title, description, active, content, status = 200, questi
             inView = true;
             start();
           }
+          rail.addEventListener('pointerdown', function(event){
+            if (!mobileQuery || !mobileQuery.matches) return;
+            if (event.button && event.button !== 0) return;
+            dragging = true;
+            dragAxis = '';
+            didDrag = false;
+            dragStartX = event.clientX;
+            dragStartY = event.clientY;
+            dragStartOffset = offset;
+            userPaused = true;
+            window.clearTimeout(dragClickTimer);
+            window.clearTimeout(resumeTimer);
+            stopAnimationFrame();
+          });
+          rail.addEventListener('pointermove', function(event){
+            if (!dragging) return;
+            var dx = event.clientX - dragStartX;
+            var dy = event.clientY - dragStartY;
+            if (!dragAxis && Math.max(Math.abs(dx), Math.abs(dy)) > 5) {
+              dragAxis = Math.abs(dx) > Math.abs(dy) * 1.08 ? 'horizontal' : 'vertical';
+              if (dragAxis === 'horizontal') {
+                rail.setAttribute('data-dragging', 'true');
+                if (event.pointerId !== undefined && rail.setPointerCapture) {
+                  try { rail.setPointerCapture(event.pointerId); } catch (error) {}
+                }
+              }
+            }
+            if (dragAxis !== 'horizontal') return;
+            event.preventDefault();
+            didDrag = true;
+            offset = dragStartOffset - dx;
+            normalizeOffset();
+            paint();
+          }, { passive: false });
+          rail.addEventListener('pointerup', endDrag);
+          rail.addEventListener('pointercancel', endDrag);
+          rail.addEventListener('lostpointercapture', endDrag);
+          slider.addEventListener('click', function(event){
+            if (!didDrag) return;
+            event.preventDefault();
+            event.stopPropagation();
+            didDrag = false;
+          }, true);
           window.addEventListener('resize', scheduleMeasure, { passive: true });
           document.addEventListener('visibilitychange', onVisibilityChange);
           if (mobileQuery && mobileQuery.addEventListener) mobileQuery.addEventListener('change', onMediaChange);
@@ -3801,6 +3897,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           addPageCleanup(function(){
             running = false;
             window.clearTimeout(resizeTimer);
+            window.clearTimeout(resumeTimer);
+            window.clearTimeout(dragClickTimer);
             if (rafId) window.cancelAnimationFrame(rafId);
             if (observer) observer.disconnect();
             window.removeEventListener('resize', scheduleMeasure);
