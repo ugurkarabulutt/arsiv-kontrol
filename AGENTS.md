@@ -676,6 +676,16 @@ tespit edilir).
   `noindex, nofollow`. Dış kontrolde arşiv şeridi → üç banner → `Öne Çıkan
   Sorular` sırası doğru; canlı ana sayfada soru bannerı yok ve production alias
   değiştirilmemiştir.
+- 2026-10-04 üçüncü turda tüm public arşivdeki `Cevabı oku` CTA kontrastı ortak
+  tema değişkenleriyle güçlendirildi. Açık temadaki koyu yeşil zemin/beyaz metin
+  korunurken koyu temadaki mint gradyan üzerinde metin ve ok `#0F4930` oldu.
+  Mevcut `pa-cta-shine` parıltı animasyonu kaldırılmadı; koyu temada metni
+  örtmemesi için daha düşük opaklıklı krem parıltı kullanıldı. Aynı standart
+  ana/liste kartları ile soru detayındaki ilgili soru kartlarına uygulanır. CSS
+  cache anahtarı `20261004-answer-cta-contrast-v1` olarak yenilendi. 390 px
+  Chromium doğrulamasında koyu tema başlangıç kontrastı `5.29:1`, yatay taşma
+  `0` ve konsol hatası `0`; açık/koyu tema ve iki CTA türü ayrı ayrı doğrulandı.
+  Bu kayıt preview-only durumundadır; production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

@@ -48,6 +48,8 @@
   --pa-primary-hover: #0F4930;
   --pa-green: #145A3A;
   --pa-accent: #B68A2A;
+  --pa-answer-cta-text: #FFFFFF;
+  --pa-answer-cta-shine: rgb(255 255 255 / 0.55);
   --pa-font-serif: "Playfair Display", Georgia, serif;
   --pa-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --pa-radius-lg: 18px;
@@ -87,6 +89,8 @@
   --pa-primary-hover: #9ADDB8;
   --pa-green: #79C99E;
   --pa-accent: #D7B35D;
+  --pa-answer-cta-text: #0F4930;
+  --pa-answer-cta-shine: rgb(255 253 247 / 0.28);
   --pa-shadow-soft: 0 22px 54px rgb(0 0 0 / 0.28);
   --pa-shadow-card: 0 12px 32px rgb(0 0 0 / 0.22);
 }
@@ -2467,7 +2471,7 @@ a.pa-chip:hover,
   min-height: 34px;
   padding: 0 12px;
   overflow: hidden;
-  color: #FFFFFF;
+  color: var(--pa-answer-cta-text);
   background: linear-gradient(135deg, var(--pa-primary) 0%, var(--pa-primary-hover) 100%);
   border: 1px solid color-mix(in srgb, var(--pa-primary) 64%, transparent);
   border-radius: 999px;
@@ -2487,7 +2491,7 @@ a.pa-chip:hover,
   width: 44%;
   content: "";
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  background: linear-gradient(90deg, transparent, var(--pa-answer-cta-shine), transparent);
   transform: skewX(-22deg) translateX(0);
   animation: pa-cta-shine 3.2s ease-in-out infinite;
 }
@@ -4324,7 +4328,7 @@ a.pa-chip:hover,
   min-height: 38px;
   padding: 0 15px;
   overflow: hidden;
-  color: #FFFFFF;
+  color: var(--pa-answer-cta-text);
   background: linear-gradient(135deg, var(--pa-primary) 0%, var(--pa-primary-hover) 100%);
   border: 1px solid color-mix(in srgb, var(--pa-primary) 62%, transparent);
   border-radius: 999px;
@@ -4343,7 +4347,7 @@ a.pa-chip:hover,
   width: 44%;
   content: "";
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  background: linear-gradient(90deg, transparent, var(--pa-answer-cta-shine), transparent);
   transform: skewX(-22deg) translateX(0);
   animation: pa-cta-shine 3.2s ease-in-out infinite;
 }

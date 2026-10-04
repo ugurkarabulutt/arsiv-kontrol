@@ -2,6 +2,16 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 üçüncü turda tüm public arşivdeki `Cevabı oku` CTA kontrastı ortak
+  tema değişkenleriyle düzeltildi. Açık tema koyu yeşil/beyaz görünümünü korur;
+  koyu tema mint gradyan üzerinde `#0F4930` metin ve ok kullanır. Mevcut
+  `pa-cta-shine` parıltı animasyonu korundu, koyu temadaki parıltı opaklığı
+  metni yıkamayacak şekilde azaltıldı. Aynı standart ana/liste kartlarındaki
+  `.pa-card-cta` ile soru detayındaki `.pa-side-question-cta` bileşenlerine
+  uygulanır. CSS cache anahtarı `20261004-answer-cta-contrast-v1` olarak
+  yenilendi. 390 px yerel Chromium kontrolünde 12 ana kart CTA'sının tamamı
+  koyu yeşil, kontrast `5.29:1`, yatay taşma `0`, konsol hatası `0`; açık tema
+  ve soru detayındaki iki yan CTA ayrıca doğrulandı. Production'a alınmadı.
 - 2026-10-04 ikinci turda kullanıcı ekran görüntüsündeki okunurluk sorunu için
   `Arşivin tamamını açın` şeridi tema değişkeninden bağımsız koyu yeşil zemine
   alındı. Başlık krem, açıklama açık mint; `Arşive Git` CTA'sı krem zemin/koyu
