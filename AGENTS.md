@@ -624,7 +624,14 @@ tespit edilir).
   `20261004-touch-drag-v2` oldu. `npm.cmd run check` 201/201 başarılı. Yerel
   390x844 kontrolde iki yönlü sürükleme, 500ms duraklama, otomatik devam,
   touch listener'ları, `touch-action: pan-y` ve kart üstünde 844px dikey kaydırma
-  doğrulandı. Preview-only'dir; production'a alınmamıştır.
+  doğrulandı. Runtime commit `5812964` preview dalına push edildi. Vercel preview
+  `dpl_B7mf1mVdtAvpe7dDmEe8wKDhhz4s` `READY`:
+  `https://arsiv-kontrol-6inzceb14-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 166,37px sürükleme, 500ms duraklama ve otomatik
+  devam ölçüldü; görseller yüklü, taşma/konsol hatası yok. Dış HTML touch
+  listener'larını ve yeni cache anahtarını taşıyor. Preview `200` ve
+  `noindex, nofollow`; canlı ana sayfa yeni anahtarı taşımıyor. Production'a
+  alınmadı.
 - 2026-10-04 konu vitrini hazır durumdaki beş rehberin tamamını içerir:
   `Allah'a ulaşmayı dilemek`, `Hidayet yolculuğu`, `Mürşide tâbiiyet`,
   `Zikir ve teslimiyet`, `Nefs ve ruh`. İlk yöneliş ve mürşide tâbiiyet için

@@ -12,7 +12,14 @@
   başarılı. Yerel 390x844 Chromium kontrolünde 166,55px sola ve 164,45px sağa
   sürükleme, 500ms sıfır hareket, otomatik devam, rayda `touch-action: pan-y`,
   iki gerçek touch listener'ı ve kart üzerinde 844px dikey kaydırma doğrulandı.
-  Düzeltme preview-only'dir; production'a alınmamıştır.
+  Runtime commit `5812964` preview dalına push edildi. Vercel preview
+  `dpl_B7mf1mVdtAvpe7dDmEe8wKDhhz4s` `READY`:
+  `https://arsiv-kontrol-6inzceb14-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 166,37px sola sürükleme, 500ms sıfır hareket
+  ve otomatik devam ölçüldü; tüm görseller yüklü, yatay taşma ve konsol hatası
+  yok. Dış HTML `touchstart/touchmove/touchend`, pasif olmayan hareket listener'ı
+  ve yeni cache anahtarını taşıyor. Preview `200`, `noindex, nofollow`; canlı ana
+  sayfa yeni cache anahtarını taşımıyor. Production'a alınmadı.
 - 2026-10-04 konu vitrini, hazır durumdaki beş konu rehberinin tamamını gösterecek
   şekilde genişletildi: `Allah'a ulaşmayı dilemek`, `Hidayet yolculuğu`,
   `Mürşide tâbiiyet`, `Zikir ve teslimiyet`, `Nefs ve ruh`. İlk yöneliş ve
