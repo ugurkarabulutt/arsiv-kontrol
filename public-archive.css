@@ -2604,62 +2604,98 @@ a.pa-chip:hover,
 
 .pa-cta-band {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  isolation: isolate;
+  display: flex;
   align-items: center;
-  gap: 22px;
+  min-height: 344px;
   margin-top: 38px;
-  padding: 25px 26px;
+  padding: 38px 42px;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--pa-primary) 92%, #000000) 0%, color-mix(in srgb, var(--pa-primary) 72%, var(--pa-accent)) 100%);
+  background: #0D1412;
   border: 1px solid color-mix(in srgb, var(--pa-primary) 56%, var(--pa-border));
   border-radius: 22px;
   box-shadow: 0 22px 48px color-mix(in srgb, var(--pa-primary) 18%, transparent);
 }
 
-:root[data-theme="dark"] .pa-cta-band {
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--pa-primary-hover) 38%, var(--pa-surface)) 0%, color-mix(in srgb, var(--pa-primary) 24%, var(--pa-surface)) 100%);
-  box-shadow: 0 22px 52px rgb(0 0 0 / 0.28);
+.pa-cta-band::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(5 23 16 / 0.98) 0%, rgb(5 23 16 / 0.91) 35%, rgb(5 23 16 / 0.38) 66%, rgb(5 23 16 / 0.08) 100%);
+  pointer-events: none;
 }
 
-.pa-cta-copy {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  gap: 0 14px;
+.pa-cta-visual {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  display: block;
+}
+
+.pa-cta-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.pa-cta-content {
+  width: min(100%, 590px);
+}
+
+.pa-cta-kicker {
+  display: flex;
   align-items: center;
-  min-width: 0;
+  gap: 10px;
+  margin: 0 0 18px;
+  color: #9ADDB8;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .pa-cta-symbol {
-  grid-row: 1 / span 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
   color: #FFFDF7;
   background: rgb(255 253 247 / 0.13);
-  border: 1px solid rgb(255 253 247 / 0.18);
+  border: 1px solid rgb(255 253 247 / 0.24);
   border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .pa-cta-band h2 {
-  margin: 0 0 4px;
+  max-width: 520px;
+  margin: 0;
   color: #FFFDF7;
   font-family: var(--pa-font-serif);
-  font-size: 24px;
-  line-height: 1.2;
+  font-size: 46px;
+  line-height: 1.02;
+  text-wrap: balance;
 }
 
-.pa-cta-band p {
-  margin: 0;
-  color: color-mix(in srgb, #FFFDF7 78%, var(--pa-accent));
-  font-size: 15px;
+.pa-cta-band .pa-cta-description {
+  max-width: 500px;
+  margin: 17px 0 24px;
+  color: rgb(255 253 247 / 0.78);
+  font-size: 17px;
+  line-height: 1.55;
 }
 
-.pa-cta-band .pa-button {
+.pa-cta-band .pa-cta-button {
+  position: relative;
+  justify-content: flex-start;
+  min-width: 218px;
+  min-height: 56px;
+  padding: 0 18px 0 10px;
+  overflow: hidden;
   color: #17201C;
   background: #FFFDF7;
   border-color: rgb(255 253 247 / 0.52);
@@ -2667,14 +2703,50 @@ a.pa-chip:hover,
   box-shadow: 0 14px 30px rgb(0 0 0 / 0.16);
 }
 
-.pa-cta-band .pa-button:hover {
+.pa-cta-band .pa-cta-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 18%, rgb(255 255 255 / 0.42) 46%, transparent 72%);
+  opacity: 0;
+  transform: translateX(-55%);
+  transition: opacity 180ms ease, transform 520ms cubic-bezier(.2, .75, .2, 1);
+  pointer-events: none;
+}
+
+.pa-cta-button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #FFFDF7;
+  background: #145A3A;
+  border-radius: 10px;
+}
+
+.pa-cta-button-arrow {
+  margin-left: auto;
+}
+
+.pa-cta-band .pa-cta-button:hover {
   color: #0D1412;
   background: color-mix(in srgb, #FFFFFF 90%, var(--pa-mint));
 }
 
-.pa-cta-band .pa-button:focus-visible {
+.pa-cta-band .pa-cta-button:hover::after {
+  opacity: 1;
+  transform: translateX(55%);
+}
+
+.pa-cta-band .pa-cta-button:focus-visible {
   outline: 3px solid #D7B35D;
   outline-offset: 3px;
+}
+
+:root[data-theme="dark"] .pa-cta-band {
+  border-color: color-mix(in srgb, var(--pa-primary-hover) 42%, var(--pa-border));
+  box-shadow: 0 22px 52px rgb(0 0 0 / 0.3);
 }
 
 .pa-button {
@@ -5796,12 +5868,40 @@ a.pa-chip:hover,
   }
 
   .pa-cta-band {
-    grid-template-columns: 1fr;
-    padding: 20px;
+    align-items: flex-end;
+    min-height: 420px;
+    padding: 174px 22px 24px;
   }
 
-  .pa-cta-band .pa-button {
-    justify-self: stretch;
+  .pa-cta-band::before {
+    background: linear-gradient(180deg, rgb(5 23 16 / 0.08) 0%, rgb(5 23 16 / 0.34) 31%, rgb(5 23 16 / 0.92) 58%, rgb(5 23 16 / 0.99) 100%);
+  }
+
+  .pa-cta-visual img {
+    object-position: 66% center;
+  }
+
+  .pa-cta-content {
+    width: 100%;
+  }
+
+  .pa-cta-kicker {
+    margin-bottom: 14px;
+  }
+
+  .pa-cta-band h2 {
+    max-width: 360px;
+    font-size: 36px;
+  }
+
+  .pa-cta-band .pa-cta-description {
+    margin: 12px 0 18px;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .pa-cta-band .pa-cta-button {
+    width: 100%;
   }
 
   .pa-context-band,
@@ -6019,6 +6119,16 @@ a.pa-chip:hover,
 }
 
 @media (max-width: 430px) {
+  .pa-cta-band {
+    min-height: 408px;
+    padding: 158px 20px 20px;
+    border-radius: 18px;
+  }
+
+  .pa-cta-band h2 {
+    font-size: 32px;
+  }
+
   .pa-tool-row {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr);
     gap: 9px;

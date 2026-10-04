@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-mobile-nav-autohide-v2';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-ask-cta-visual-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -2075,13 +2075,21 @@ function breadcrumb(items) {
 
 function ctaBand() {
   return `
-    <section class="pa-cta-band">
-      <div class="pa-cta-copy">
-        <span class="pa-cta-symbol">${iconSvg('ask-question')}</span>
-        <h2>Aklınızda bir soru mu var?</h2>
-        <p>Sorunuzu kısa ve açık şekilde yazabilirsiniz.</p>
+    <section class="pa-cta-band" aria-labelledby="pa-ask-cta-title">
+      <picture class="pa-cta-visual" aria-hidden="true">
+        <source type="image/webp" srcset="${publicArchiveAssetHref('ask-cta-editorial-480.webp')} 480w, ${publicArchiveAssetHref('ask-cta-editorial-720.webp')} 720w, ${publicArchiveAssetHref('ask-cta-editorial-1280.webp')} 1280w" sizes="(max-width: 899px) calc(100vw - 36px), 1184px">
+        <img src="${publicArchiveAssetHref('ask-cta-editorial-1280.webp')}" alt="" width="1280" height="853" loading="lazy" fetchpriority="low" decoding="async">
+      </picture>
+      <div class="pa-cta-content">
+        <p class="pa-cta-kicker"><span class="pa-cta-symbol">${iconSvg('ask-question')}</span><span>Soru sormak için</span></p>
+        <h2 id="pa-ask-cta-title">Aklınızda bir soru mu var?</h2>
+        <p class="pa-cta-description">Sorunuzu kısa, açık ve tek konuya odaklanarak yazın.</p>
+        <a class="pa-button pa-cta-button" href="${PREVIEW_BASE}/soru-sor">
+          <span class="pa-cta-button-icon">${iconSvg('edit')}</span>
+          <span>Sorunu yaz</span>
+          ${iconSvg('arrow-right', 'pa-button-icon pa-cta-button-arrow')}
+        </a>
       </div>
-      <a class="pa-button" href="${PREVIEW_BASE}/soru-sor">Soru Sor ${iconSvg('arrow-right', 'pa-button-icon')}</a>
     </section>
   `;
 }

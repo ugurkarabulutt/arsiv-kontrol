@@ -99,8 +99,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261004-mobile-nav-autohide-v2"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261004-mobile-nav-autohide-v2"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261004-ask-cta-visual-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261004-ask-cta-visual-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -148,7 +148,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261004-mobile-nav-autohide-v2/);
+  assert.match(home, /app-icon-128\.webp\?v=20261004-ask-cta-visual-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -281,6 +281,12 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /data-scroll-top/);
   assert.match(home, /pa-scroll-top-icon/);
   assert.match(home, /aria-label="Yukarı çık"/);
+  assert.match(home, /class="pa-cta-visual"/);
+  assert.match(home, /ask-cta-editorial-480\.webp/);
+  assert.match(home, /ask-cta-editorial-720\.webp/);
+  assert.match(home, /ask-cta-editorial-1280\.webp/);
+  assert.match(home, /Soru sormak için/);
+  assert.match(home, /Sorunu yaz/);
   assert.match(home, /<a class="pa-archive-shortcut" href="\/public-preview\/arsiv"/);
   assert.match(home, /Arşivin tamamını açın\./);
   assert.match(home, /Tüm soru ve cevaplara hızlıca ulaşın\./);

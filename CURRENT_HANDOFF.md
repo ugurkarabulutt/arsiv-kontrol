@@ -2,6 +2,16 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 altıncı turda ana sayfadaki soru sorma CTA'sı özgün editoryal
+  görselle yeniden tasarlandı. Metinsiz koyu zümrüt masa, boş defter, kalem ve
+  pirinç ayrıntılı görselin `480/720/1280` WebP varyantları responsive ve
+  lazy-load çalışır. Masaüstünde metin sakin sol alanda; mobilde görsel üstte,
+  başlık ve tam genişlikteki `Sorunu yaz` aksiyonu altta kalır. CSS cache anahtarı
+  `20261004-ask-cta-visual-v1` oldu. `npm.cmd run check` 201/201 başarılı.
+  Chromium doğrulamasında 390x844 mobilde bölüm 425px, buton 297px ve görsel
+  yüklü; 1440x900 masaüstünde bölüm 347px, buton 218px ve 1184px kaynak seçili.
+  Açık/koyu tema, yatay taşma ve konsol hatası kontrolleri temiz. Production'a
+  alınmadı.
 - 2026-10-04 beşinci turda mobil `Yukarı çık` butonu alt gezinmenin durumuna
   bağlandı. Menü görünürken buton `92px + safe-area` yüksekliğinde kalır; menü
   gizlendiğinde `--pa-scroll-top-nav-offset: 68px` ile yaklaşık

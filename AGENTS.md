@@ -724,6 +724,17 @@ tespit edilir).
   yatay taşma ve konsol hatası yok. Preview `200` ve `noindex, nofollow`; canlı
   ana sayfa yeni `v2` cache anahtarını taşımıyor, production alias
   değiştirilmemiştir.
+- 2026-10-04 altıncı turda ana sayfadaki soru sorma CTA'sı özgün editoryal
+  görselle yeniden tasarlandı. Koyu zümrüt masa, boş defter, kalem ve pirinç
+  ayrıntılardan oluşan görsel metin içermeden üretildi; `480/720/1280` WebP
+  varyantlarıyla responsive ve lazy-load kullanılır. Masaüstünde sakin sol alan
+  metne ayrılır; mobilde görsel üstte, okunaklı başlık ve tam genişlikteki
+  `Sorunu yaz` aksiyonu altta kalır. CSS cache anahtarı
+  `20261004-ask-cta-visual-v1` olarak yenilendi. `npm.cmd run check` 201/201
+  başarılı. Chromium doğrulamasında 390x844 mobilde bölüm 425px, buton 297px ve
+  görsel yüklü; 1440x900 masaüstünde bölüm 347px, buton 218px ve 1184px kaynak
+  seçili. Açık/koyu tema, yatay taşma ve konsol hatası kontrolleri temiz.
+  Değişiklik preview-only durumundadır.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
