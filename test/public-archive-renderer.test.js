@@ -1018,7 +1018,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(featuredSection, /class="pa-chip"/);
   assert(home.indexOf('Arşivin tamamını açın.') < home.indexOf('Merak edilen sorulara doğrudan ulaşın.'));
   assert(home.indexOf('Merak edilen sorulara doğrudan ulaşın.') < home.indexOf('Öne Çıkan Sorular'));
-  assert(home.indexOf('Seçili konu rehberlerini inceleyin.') < home.indexOf('Çok Okunan Cevaplar'));
+  assert(home.indexOf('Aktif arşiv') < home.indexOf('Çok Okunan Cevaplar'));
+  assert(home.indexOf('Çok Okunan Cevaplar') < home.indexOf('Seçili konu rehberlerini inceleyin.'));
+  assert(home.indexOf('Seçili konu rehberlerini inceleyin.') < home.indexOf('Son Yayınlanan Sorular'));
   const activeStatsStart = home.indexOf('class="pa-active-stats"');
   const activeStatsEnd = home.indexOf('</section>', activeStatsStart) + '</section>'.length;
   const activeStatsSection = home.slice(activeStatsStart, activeStatsEnd);

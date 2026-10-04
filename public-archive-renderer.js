@@ -2184,16 +2184,16 @@ function renderHome() {
 
         ${!dataUnavailable ? activeArchiveStatsBand(publicArchiveFixtures.qa) : ''}
 
-        ${!dataUnavailable && latestList.length ? `<section class="pa-section">
-          ${sectionHeader('Son Yayınlanan Sorular', 'Son yayınlananları gör', `${PREVIEW_BASE}/son-yayinlanan-sorular`)}
-          <div class="pa-list">${latestList.slice(0, 4).map(entry => questionCard(entry, true)).join('')}</div>
+        ${!dataUnavailable && popularList.length ? `<section class="pa-section pa-home-popular">
+          ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/cok-okunan-cevaplar`)}
+          <div class="pa-question-grid">${popularList.slice(0, 5).map(entry => questionCard(entry, { compact: true })).join('')}</div>
         </section>` : ''}
 
         ${!dataUnavailable ? homeTopicShowcaseSection() : ''}
 
-        ${!dataUnavailable && popularList.length ? `<section class="pa-section pa-home-popular">
-          ${sectionHeader('Çok Okunan Cevaplar', 'Arşivde devam et', `${PREVIEW_BASE}/cok-okunan-cevaplar`)}
-          <div class="pa-question-grid">${popularList.slice(0, 5).map(entry => questionCard(entry, { compact: true })).join('')}</div>
+        ${!dataUnavailable && latestList.length ? `<section class="pa-section">
+          ${sectionHeader('Son Yayınlanan Sorular', 'Son yayınlananları gör', `${PREVIEW_BASE}/son-yayinlanan-sorular`)}
+          <div class="pa-list">${latestList.slice(0, 4).map(entry => questionCard(entry, true)).join('')}</div>
         </section>` : ''}
 
         ${!dataUnavailable ? homeQuranEvidenceSection(quranEvidenceList) : ''}
