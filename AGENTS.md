@@ -616,6 +616,20 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 kullanıcı tarafından sağlanan `Teslimiyet Nedir?` metni, öğreti
+  muhtevası değiştirilmeden altıncı konu rehberi olarak eklendi. Rehber dört
+  teslimi ve yedi safhayı 11 bölümlü içindekiler, gerçek numaralı liste, 20 âyet
+  atfı, ilgili sorular ve diğer rehber iç bağlantılarıyla sunar. Yerleşik
+  ImageGen ile kişisiz/yazısız, dört teslimi sembolize eden özgün görsel üretildi;
+  `topic-showcase-teslimiyet-480.webp` (55.484 bayt) ve 720px varyantı (105.632
+  bayt) vitrine eklendi. `npm.cmd run check` 202/202 başarılı. Yerel ve deploy
+  edilmiş 390x844/1440x900 Chromium kontrollerinde 7 liste maddesi, 11 içindekiler
+  bağlantısı, ilgili sorular, responsive 480/720 görseller, sıfır yatay taşma ve
+  sıfır konsol hatası doğrulandı. Runtime commit `1a5ed84` preview dalına push
+  edildi. Vercel preview `dpl_52bt881i2ev9SzZAD2uSbXWLMB9U` `READY`:
+  `https://arsiv-kontrol-l23gj1s2y-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Ana sayfa ve `/konu-rehberi/teslimiyet` `200`, `noindex, nofollow`; canlı ana
+  sayfada Teslimiyet görseli ve rehber bağlantısı yok. Production'a alınmadı.
 - 2026-10-04 kullanıcı isteğiyle ana sayfadaki `Çok Okunan Cevaplar` ve
   `Son Yayınlanan Sorular` bölümlerinin yerleri değiştirildi. Yeni sıra `Aktif
   Arşiv → Çok Okunan Cevaplar → Konu Rehberleri → Son Yayınlanan Sorular`;
