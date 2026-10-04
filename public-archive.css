@@ -5246,6 +5246,7 @@ a.pa-chip:hover,
 }
 
 .pa-scroll-top {
+  --pa-scroll-top-nav-offset: 0px;
   position: fixed;
   right: max(20px, env(safe-area-inset-right));
   bottom: calc(24px + env(safe-area-inset-bottom));
@@ -5267,7 +5268,7 @@ a.pa-chip:hover,
     inset 0 1px 0 rgb(255 255 255 / 0.7),
     0 16px 38px rgb(32 24 14 / 0.18);
   opacity: 0;
-  transform: translate3d(0, 12px, 0) scale(0.96);
+  transform: translate3d(0, calc(12px + var(--pa-scroll-top-nav-offset)), 0) scale(0.96);
   transition: opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   backdrop-filter: blur(24px) saturate(1.35);
   -webkit-backdrop-filter: blur(24px) saturate(1.35);
@@ -5276,7 +5277,7 @@ a.pa-chip:hover,
 .pa-scroll-top[data-visible="true"] {
   pointer-events: auto;
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: translate3d(0, var(--pa-scroll-top-nav-offset), 0) scale(1);
 }
 
 .pa-scroll-top:hover {
@@ -6005,6 +6006,10 @@ a.pa-chip:hover,
     width: 50px;
     height: 50px;
     border-radius: 18px;
+  }
+
+  :root[data-pa-mobile-nav-hidden="true"] .pa-scroll-top {
+    --pa-scroll-top-nav-offset: 68px;
   }
 
   .pa-toast {

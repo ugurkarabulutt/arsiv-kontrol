@@ -2,6 +2,16 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 beşinci turda mobil `Yukarı çık` butonu alt gezinmenin durumuna
+  bağlandı. Menü görünürken buton `92px + safe-area` yüksekliğinde kalır; menü
+  gizlendiğinde `--pa-scroll-top-nav-offset: 68px` ile yaklaşık
+  `24px + safe-area` seviyesine iner ve menü geri geldiğinde eski yerine döner.
+  Hareket yalnız `transform` üzerinden yapıldığı için yerleşim kayması üretmez.
+  CSS cache anahtarı `20261004-mobile-nav-autohide-v2` oldu. `npm.cmd run check`
+  201/201 başarılı. 390x844 Chromium'da buton alt boşluğu menü gizliyken 24px,
+  görünürken 92px; yatay taşma ve konsol hatası yok. 1440x900 masaüstünde mobil
+  durum niteliği uygulanmadı ve buton alt boşluğu 24px kaldı. Production'a
+  alınmadı.
 - 2026-10-04 dördüncü turda mobil alt gezinme kaydırma yönüne bağlandı. Sayfa
   120 px'den aşağıdayken toplam 52 px aşağı kaydırma menüyü ekranın dışına
   indirir; 18 px yukarı hareket menüyü geri getirir. İlk 80 px'de, arama/input

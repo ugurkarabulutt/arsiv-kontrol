@@ -707,6 +707,17 @@ tespit edilir).
   40 px yukarı hareketle geri geldi; yatay taşma ve konsol hatası yok. Preview
   `200` ve `noindex, nofollow`; canlı ana sayfa yeni cache anahtarını taşımıyor,
   production alias değiştirilmemiştir.
+- 2026-10-04 beşinci turda mobil `Yukarı çık` butonu alt gezinmenin görünürlük
+  durumuna bağlandı. Alt menü görünürken buton mevcut `92px + safe-area`
+  yüksekliğini korur; menü aşağı kaydırmada gizlendiğinde `transform` ile 68px
+  aşağı inerek yaklaşık `24px + safe-area` seviyesine yerleşir. Alt menü geri
+  geldiğinde buton da eski yerine döner. Yerleşim kayması oluşturmamak için
+  `bottom` değeri animasyona alınmadı. CSS cache anahtarı
+  `20261004-mobile-nav-autohide-v2` olarak yenilendi. `npm.cmd run check`
+  201/201 başarılı. 390x844 Chromium doğrulamasında menü gizliyken butonun alt
+  boşluğu 24px, menü görünürken 92px; yatay taşma ve konsol hatası yok. 1440x900
+  masaüstünde alt boşluk 24px kaldı ve mobil durum niteliği uygulanmadı.
+  Değişiklik preview-only durumundadır.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
