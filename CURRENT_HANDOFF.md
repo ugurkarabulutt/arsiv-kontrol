@@ -10,8 +10,13 @@
   `20261004-ask-cta-visual-v1` oldu. `npm.cmd run check` 201/201 başarılı.
   Chromium doğrulamasında 390x844 mobilde bölüm 425px, buton 297px ve görsel
   yüklü; 1440x900 masaüstünde bölüm 347px, buton 218px ve 1184px kaynak seçili.
-  Açık/koyu tema, yatay taşma ve konsol hatası kontrolleri temiz. Production'a
-  alınmadı.
+  Açık/koyu tema, yatay taşma ve konsol hatası kontrolleri temiz. Runtime commit
+  `7d4be32` preview dalına push edildi. Vercel preview
+  `dpl_Hu7xHermY4sNdCBWdTaRFzBSeQo4` `READY`:
+  `https://arsiv-kontrol-912yn3y5e-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş mobil/masaüstü ön izlemede responsive görsel ve CTA hedefi
+  tekrar doğrulandı; preview `200` ve `noindex, nofollow`. Canlı ana sayfa yeni
+  görseli ve cache anahtarını taşımıyor. Production'a alınmadı.
 - 2026-10-04 beşinci turda mobil `Yukarı çık` butonu alt gezinmenin durumuna
   bağlandı. Menü görünürken buton `92px + safe-area` yüksekliğinde kalır; menü
   gizlendiğinde `--pa-scroll-top-nav-offset: 68px` ile yaklaşık

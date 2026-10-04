@@ -734,7 +734,13 @@ tespit edilir).
   başarılı. Chromium doğrulamasında 390x844 mobilde bölüm 425px, buton 297px ve
   görsel yüklü; 1440x900 masaüstünde bölüm 347px, buton 218px ve 1184px kaynak
   seçili. Açık/koyu tema, yatay taşma ve konsol hatası kontrolleri temiz.
-  Değişiklik preview-only durumundadır.
+  Runtime commit `7d4be32` preview dalına push edildi. Vercel preview
+  `dpl_Hu7xHermY4sNdCBWdTaRFzBSeQo4` `READY`:
+  `https://arsiv-kontrol-912yn3y5e-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş mobil/masaüstü ön izlemede responsive görsel, CTA hedefi ve
+  boyutlar tekrar doğrulandı; yatay taşma ve konsol hatası yok. Preview `200` ve
+  `noindex, nofollow`; canlı ana sayfa yeni görseli ve cache anahtarını taşımıyor,
+  production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
