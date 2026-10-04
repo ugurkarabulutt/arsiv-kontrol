@@ -685,7 +685,12 @@ tespit edilir).
   cache anahtarı `20261004-answer-cta-contrast-v1` olarak yenilendi. 390 px
   Chromium doğrulamasında koyu tema başlangıç kontrastı `5.29:1`, yatay taşma
   `0` ve konsol hatası `0`; açık/koyu tema ve iki CTA türü ayrı ayrı doğrulandı.
-  Bu kayıt preview-only durumundadır; production alias değiştirilmemiştir.
+  `npm.cmd run check` 201/201 başarılı. Runtime commit `76632e5` preview dalına
+  push edildi. Vercel preview `dpl_EXLTCNchmV8fxvb84Ck8hbpHpxKJ` `READY`:
+  `https://arsiv-kontrol-26ixmrird-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview `200` ve `noindex, nofollow`; deploy edilmiş CSS'te iki tema rengi ile
+  parıltı mevcut. Canlı ana sayfa `200` ve yeni cache anahtarını taşımıyor;
+  production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

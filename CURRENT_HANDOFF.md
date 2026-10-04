@@ -11,7 +11,14 @@
   uygulanır. CSS cache anahtarı `20261004-answer-cta-contrast-v1` olarak
   yenilendi. 390 px yerel Chromium kontrolünde 12 ana kart CTA'sının tamamı
   koyu yeşil, kontrast `5.29:1`, yatay taşma `0`, konsol hatası `0`; açık tema
-  ve soru detayındaki iki yan CTA ayrıca doğrulandı. Production'a alınmadı.
+  ve soru detayındaki iki yan CTA ayrıca doğrulandı. `npm.cmd run check` 201/201
+  başarılı. Runtime commit `76632e5` preview dalına push edildi. Vercel preview
+  `dpl_EXLTCNchmV8fxvb84Ck8hbpHpxKJ` `READY`:
+  `https://arsiv-kontrol-26ixmrird-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Preview `200` ve `noindex, nofollow`; deploy edilmiş 390 px koyu tema
+  kontrolünde 12 CTA'nın tamamı koyu yeşil, parıltı aktif, yatay taşma ve konsol
+  hatası yok. Canlı ana sayfa `200`, yeni cache anahtarı yok; production'a
+  alınmadı.
 - 2026-10-04 ikinci turda kullanıcı ekran görüntüsündeki okunurluk sorunu için
   `Arşivin tamamını açın` şeridi tema değişkeninden bağımsız koyu yeşil zemine
   alındı. Başlık krem, açıklama açık mint; `Arşive Git` CTA'sı krem zemin/koyu
