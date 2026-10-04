@@ -977,6 +977,9 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /Hidayet yolculuğu/);
   assert.match(home, /Mürşide tâbiiyet/);
   assert.match(home, /Zikir ve teslimiyet/);
+  assert.match(home, /Dört teslim/);
+  assert.match(home, /topic-showcase-teslimiyet-720\.webp/);
+  assert.match(home, /topic-showcase-teslimiyet-480\.webp/);
   assert.match(home, /topic-showcase-dilemek-720\.webp/);
   assert.match(home, /topic-showcase-tabiiyet-720\.webp/);
   assert.match(home, /topic-showcase-nefs-720\.webp/);
@@ -1048,7 +1051,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi']) {
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1232,6 +1235,24 @@ test('topic guide article renders Nefs Tezkiyesi blog and cross-links other guid
     '\\[\\d+\\]'
   ].join('|'), 'i');
   assert.doesNotMatch(preview.html, disallowedSourcePattern);
+});
+
+test('topic guide article renders Teslimiyet guide with ordered stages and related questions', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/teslimiyet');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Teslimiyet Nedir\?/);
+  assert.match(preview.html, /Dört teslim, yedi safha/);
+  assert.match(preview.html, /pa-topic-article-list/);
+  assert.match(preview.html, /<li>Allah’a ulaşmayı dilemek\.<\/li>/);
+  assert.match(preview.html, /<li>İradeyi Allah’a teslim etmek\.<\/li>/);
+  assert.match(preview.html, /BAKARA 131/);
+  assert.match(preview.html, /Teslimiyet ile ilgili sorular/);
+  assert.match(preview.html, /Okumaya Devam Edin/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/teslimiyet#article"/);
+  assert.doesNotMatch(preview.html, /Teslimiyet Nedir\? Nedir\?/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
 });
 
 test('home page question selection deduplicates repeated question text', () => {

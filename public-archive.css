@@ -4082,6 +4082,27 @@ a.pa-chip:hover,
   line-height: 1.88;
 }
 
+.pa-topic-article-list {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 28px;
+  padding-left: 30px;
+  color: var(--pa-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.78;
+}
+
+.pa-topic-article-list li {
+  padding-left: 8px;
+}
+
+.pa-topic-article-list li::marker {
+  color: var(--pa-green);
+  font-family: var(--pa-font-sans);
+  font-weight: 850;
+}
+
 .pa-topic-article-body > h2 {
   scroll-margin-top: calc(var(--pa-header-compact-total-height) + 20px);
   margin: 42px 0 16px;
@@ -6084,6 +6105,11 @@ a.pa-chip:hover,
     line-height: 1.82;
   }
 
+  .pa-topic-article-list {
+    font-size: 17px;
+    line-height: 1.72;
+  }
+
   .pa-topic-article-body > h2 {
     font-size: 27px;
   }
@@ -6352,6 +6378,13 @@ a.pa-chip:hover,
   .pa-topic-evidence p {
     font-size: 16px;
     line-height: 1.78;
+  }
+
+  .pa-topic-article-list {
+    gap: 10px;
+    padding-left: 24px;
+    font-size: 16px;
+    line-height: 1.7;
   }
 
   .pa-topic-article-body > h2 {

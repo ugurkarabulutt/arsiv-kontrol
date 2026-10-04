@@ -732,7 +732,7 @@ const HOME_READING_PATHS = [
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
   { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', articleSlug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
   { title: 'Ruhun Allah’a Ulaşması', slug: 'ruh', text: 'Ruhun teslimi ve Allah’a yöneliş merhaleleri.' },
-  { title: 'Teslimiyet', slug: 'teslimiyet', text: 'Teslim, tevekkül ve irade başlıklarının birlikte okunması.' },
+  { title: 'Teslimiyet Nedir?', slug: 'teslimiyet', articleSlug: 'teslimiyet', text: 'Dört teslimi ve yedi safhayı birlikte okuyun.' },
   { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
   { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', query: 'Tövbe günahlardan kurtuluş', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
   { title: 'Dua ve Tevekkül', slug: 'dua', query: 'Dua tevekkül', text: 'Talep, teslim ve sonucu Allah’a bırakma dengesi.' },
@@ -1401,6 +1401,12 @@ function topicArticleBodyText(article = {}) {
   return readableStructuredText(annotatedTopicArticleBlocks(article)
     .map(block => {
       if (block.type === 'heading') return cleanTopicArticleText(block.text);
+      if (block.type === 'list') {
+        return (block.items || [])
+          .map((item, index) => `${index + 1}. ${cleanTopicArticleText(item)}`)
+          .filter(Boolean)
+          .join('\n');
+      }
       if (block.type === 'evidence') return cleanTopicArticleText(`${block.reference} - ${block.note}\n${block.text}`);
       return cleanTopicArticleText(block.text);
     })
@@ -1543,6 +1549,12 @@ function questionTopicGuideHtml(entry = {}) {
 function renderTopicArticleBlock(block = {}, article = {}) {
   if (block.type === 'heading') {
     return `<h2 id="${escapeHtml(block.id || '')}">${escapeHtml(block.text)}</h2>`;
+  }
+  if (block.type === 'list') {
+    const items = (block.items || [])
+      .map(item => `<li>${topicArticleInlineHtml(item, article)}</li>`)
+      .join('');
+    return items ? `<ol class="pa-topic-article-list">${items}</ol>` : '';
   }
   if (block.type === 'evidence') {
     return `
@@ -1944,6 +1956,13 @@ function homeTopicShowcaseSection() {
       text: 'Nefsin terbiyesi, ruhun teslimi ve insanın manevi yapısıyla ilgili cevapları birlikte okuyun.',
       image: 'topic-showcase-nefs-720.webp',
       articleSlug: 'nefs-tezkiyesi'
+    },
+    {
+      kicker: 'Dört teslim',
+      title: 'Teslimiyet',
+      text: 'Ruhun, fizik vücudun, nefsin ve iradenin Allah’a teslim oluşunu yedi safhada okuyun.',
+      image: 'topic-showcase-teslimiyet-720.webp',
+      articleSlug: 'teslimiyet'
     }
   ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
     .filter(item => Boolean(item.article));
