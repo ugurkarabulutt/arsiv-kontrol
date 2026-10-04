@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-complete-guides-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-touch-drag-v2';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -3741,10 +3741,12 @@ function renderShell({ title, description, active, content, status = 200, questi
           var userPaused = false;
           var dragging = false;
           var dragAxis = '';
+          var dragInput = '';
           var didDrag = false;
           var dragStartX = 0;
           var dragStartY = 0;
           var dragStartOffset = 0;
+          var touchIdentifier = null;
           var speed = 18;
           function railGap() {
             var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
@@ -3803,9 +3805,52 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.cancelAnimationFrame(rafId);
             rafId = 0;
           }
+          function beginDrag(clientX, clientY, input) {
+            if (!mobileQuery || !mobileQuery.matches) return;
+            dragging = true;
+            dragAxis = '';
+            dragInput = input;
+            didDrag = false;
+            dragStartX = clientX;
+            dragStartY = clientY;
+            dragStartOffset = offset;
+            userPaused = true;
+            window.clearTimeout(dragClickTimer);
+            window.clearTimeout(resumeTimer);
+            stopAnimationFrame();
+          }
+          function moveDrag(clientX, clientY, event, pointerId) {
+            if (!dragging) return;
+            var dx = clientX - dragStartX;
+            var dy = clientY - dragStartY;
+            if (!dragAxis && Math.max(Math.abs(dx), Math.abs(dy)) > 5) {
+              dragAxis = Math.abs(dx) > Math.abs(dy) * 1.08 ? 'horizontal' : 'vertical';
+              if (dragAxis === 'horizontal') {
+                rail.setAttribute('data-dragging', 'true');
+                if (pointerId !== undefined && rail.setPointerCapture) {
+                  try { rail.setPointerCapture(pointerId); } catch (error) {}
+                }
+              }
+            }
+            if (dragAxis !== 'horizontal') return;
+            if (event && event.cancelable) event.preventDefault();
+            didDrag = true;
+            offset = dragStartOffset - dx;
+            normalizeOffset();
+            paint();
+          }
+          function matchingTouch(list) {
+            if (!list) return null;
+            for (var index = 0; index < list.length; index += 1) {
+              if (touchIdentifier === null || list[index].identifier === touchIdentifier) return list[index];
+            }
+            return null;
+          }
           function endDrag(event) {
             if (!dragging) return;
             dragging = false;
+            dragInput = '';
+            touchIdentifier = null;
             rail.removeAttribute('data-dragging');
             if (event && event.pointerId !== undefined && rail.releasePointerCapture && rail.hasPointerCapture && rail.hasPointerCapture(event.pointerId)) {
               try { rail.releasePointerCapture(event.pointerId); } catch (error) {}
@@ -3848,42 +3893,34 @@ function renderShell({ title, description, active, content, status = 200, questi
             start();
           }
           rail.addEventListener('pointerdown', function(event){
-            if (!mobileQuery || !mobileQuery.matches) return;
             if (event.button && event.button !== 0) return;
-            dragging = true;
-            dragAxis = '';
-            didDrag = false;
-            dragStartX = event.clientX;
-            dragStartY = event.clientY;
-            dragStartOffset = offset;
-            userPaused = true;
-            window.clearTimeout(dragClickTimer);
-            window.clearTimeout(resumeTimer);
-            stopAnimationFrame();
+            beginDrag(event.clientX, event.clientY, 'pointer');
           });
           rail.addEventListener('pointermove', function(event){
-            if (!dragging) return;
-            var dx = event.clientX - dragStartX;
-            var dy = event.clientY - dragStartY;
-            if (!dragAxis && Math.max(Math.abs(dx), Math.abs(dy)) > 5) {
-              dragAxis = Math.abs(dx) > Math.abs(dy) * 1.08 ? 'horizontal' : 'vertical';
-              if (dragAxis === 'horizontal') {
-                rail.setAttribute('data-dragging', 'true');
-                if (event.pointerId !== undefined && rail.setPointerCapture) {
-                  try { rail.setPointerCapture(event.pointerId); } catch (error) {}
-                }
-              }
-            }
-            if (dragAxis !== 'horizontal') return;
-            event.preventDefault();
-            didDrag = true;
-            offset = dragStartOffset - dx;
-            normalizeOffset();
-            paint();
+            if (dragInput !== 'pointer') return;
+            moveDrag(event.clientX, event.clientY, event, event.pointerId);
           }, { passive: false });
-          rail.addEventListener('pointerup', endDrag);
-          rail.addEventListener('pointercancel', endDrag);
-          rail.addEventListener('lostpointercapture', endDrag);
+          rail.addEventListener('pointerup', function(event){ if (dragInput === 'pointer') endDrag(event); });
+          rail.addEventListener('pointercancel', function(event){ if (dragInput === 'pointer') endDrag(event); });
+          rail.addEventListener('lostpointercapture', function(event){ if (dragInput === 'pointer') endDrag(event); });
+          rail.addEventListener('touchstart', function(event){
+            if (!event.touches || event.touches.length !== 1) return;
+            var touch = matchingTouch(event.touches);
+            if (!touch) return;
+            touchIdentifier = touch.identifier;
+            beginDrag(touch.clientX, touch.clientY, 'touch');
+          }, { passive: true });
+          rail.addEventListener('touchmove', function(event){
+            if (dragInput !== 'touch') return;
+            var touch = matchingTouch(event.touches);
+            if (!touch) return;
+            moveDrag(touch.clientX, touch.clientY, event);
+          }, { passive: false });
+          rail.addEventListener('touchend', function(event){
+            if (dragInput !== 'touch') return;
+            if (!event.touches || !event.touches.length || matchingTouch(event.changedTouches)) endDrag();
+          });
+          rail.addEventListener('touchcancel', function(){ if (dragInput === 'touch') endDrag(); });
           slider.addEventListener('click', function(event){
             if (!didDrag) return;
             event.preventDefault();

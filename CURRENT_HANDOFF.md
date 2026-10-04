@@ -2,6 +2,17 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 kullanıcı gerçek telefonda konu vitrininin sağa/sola kaymadığını
+  bildirdi. Önceki yalnız `pointer` tabanlı sürükleme korunurken iPhone ve iç
+  tarayıcılar için doğrudan `touchstart`, pasif olmayan `touchmove`, `touchend`
+  ve `touchcancel` akışı eklendi. Dokunma kimliği takip edilir; yalnız yatay
+  niyet `preventDefault` alır, bu nedenle dikey sayfa kaydırması korunur.
+  Sürükleme sonrası 1,4 saniyelik duraklama ve 18px/sn otomatik sola akış aynıdır.
+  Cache anahtarı `20261004-touch-drag-v2` oldu. `npm.cmd run check` 201/201
+  başarılı. Yerel 390x844 Chromium kontrolünde 166,55px sola ve 164,45px sağa
+  sürükleme, 500ms sıfır hareket, otomatik devam, rayda `touch-action: pan-y`,
+  iki gerçek touch listener'ı ve kart üzerinde 844px dikey kaydırma doğrulandı.
+  Düzeltme preview-only'dir; production'a alınmamıştır.
 - 2026-10-04 konu vitrini, hazır durumdaki beş konu rehberinin tamamını gösterecek
   şekilde genişletildi: `Allah'a ulaşmayı dilemek`, `Hidayet yolculuğu`,
   `Mürşide tâbiiyet`, `Zikir ve teslimiyet`, `Nefs ve ruh`. İlk yöneliş ve

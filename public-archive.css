@@ -6444,6 +6444,7 @@ a.pa-chip:hover,
     width: max-content;
     gap: 12px;
     cursor: grab;
+    touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
     will-change: transform;

@@ -616,6 +616,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 gerçek iPhone/iç tarayıcı bildiriminde konu vitrininin yatay
+  sürüklenmediği görüldü. `pointer` desteğine ek olarak dokunma kimliği izleyen
+  `touchstart`, pasif olmayan `touchmove`, `touchend` ve `touchcancel` akışı
+  eklendi. Yalnız yatay niyet tarayıcı hareketini devralır; dikey kaydırma,
+  1,4 saniye sonrası otomatik devam ve 18px/sn hız korunur. Cache anahtarı
+  `20261004-touch-drag-v2` oldu. `npm.cmd run check` 201/201 başarılı. Yerel
+  390x844 kontrolde iki yönlü sürükleme, 500ms duraklama, otomatik devam,
+  touch listener'ları, `touch-action: pan-y` ve kart üstünde 844px dikey kaydırma
+  doğrulandı. Preview-only'dir; production'a alınmamıştır.
 - 2026-10-04 konu vitrini hazır durumdaki beş rehberin tamamını içerir:
   `Allah'a ulaşmayı dilemek`, `Hidayet yolculuğu`, `Mürşide tâbiiyet`,
   `Zikir ve teslimiyet`, `Nefs ve ruh`. İlk yöneliş ve mürşide tâbiiyet için
