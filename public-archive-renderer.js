@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-ask-cta-visual-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-question-cards-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -826,7 +826,8 @@ function readCountLabel(count) {
 
 function readCountNode(entry) {
   const count = normalizedReadCount(entry);
-  return `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" data-read-count-fallback="${count}">${iconSvg('eye', 'pa-meta-icon')}<span data-read-count-label>${escapeHtml(readCountLabel(count))}</span></span>`;
+  const formattedCount = Number(count || 0).toLocaleString('tr-TR');
+  return `<span class="pa-read-count" data-public-read-count="${escapeHtml(entry.slug)}" data-read-count-fallback="${count}" aria-label="${escapeHtml(readCountLabel(count))}"><span class="pa-read-count-icon" aria-hidden="true">${iconSvg('eye', 'pa-meta-icon')}</span><strong class="pa-read-count-number" data-read-count-value>${escapeHtml(formattedCount)}</strong><span class="pa-read-count-unit" aria-hidden="true">okunma</span></span>`;
 }
 
 function quranReferenceKey(value) {
@@ -1673,12 +1674,10 @@ function renderTopicGuideArticle(slug) {
 function questionCard(entry, options = {}) {
   const cardOptions = typeof options === 'boolean' ? { compact: options } : options;
   const compact = Boolean(cardOptions.compact);
-  const showMeta = cardOptions.showMeta !== false;
   const strongCta = Boolean(cardOptions.strongCta);
   const searchResult = Boolean(cardOptions.searchResult);
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
-  const cardCategories = categoriesFor(entry);
   const countNode = readCountNode(entry);
   const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
   return `
@@ -1691,9 +1690,6 @@ function questionCard(entry, options = {}) {
           <p>${escapeHtml(entry.searchMatchExcerpt)}</p>
         </div>
       ` : ''}
-      ${showMeta ? `<div class="pa-card-meta">
-        ${cardCategories.slice(0, 3).map(category => chip(category.name, `${PREVIEW_BASE}/kategori/${category.slug}`)).join('')}
-      </div>` : ''}
       <div class="pa-card-bottom">
         <p class="pa-card-foot">${countNode}</p>
         <span class="pa-card-cta">Cevabı oku ${iconSvg('arrow-right', 'pa-cta-icon')}</span>
@@ -4148,8 +4144,9 @@ function renderShell({ title, description, active, content, status = 200, questi
       }
       function updateReadCount(slug, count) {
         document.querySelectorAll('[data-public-read-count="' + slug + '"]').forEach(function(node){
-          var label = node.querySelector('[data-read-count-label]');
-          if (label) label.textContent = formatReadCount(count);
+          var value = node.querySelector('[data-read-count-value]');
+          if (value) value.textContent = Number(count || 0).toLocaleString('tr-TR');
+          node.setAttribute('aria-label', formatReadCount(count));
           node.hidden = false;
         });
       }

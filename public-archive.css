@@ -2285,6 +2285,7 @@ svg {
 .pa-question-card,
 .pa-question-card.is-compact {
   position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 11px;
@@ -2298,6 +2299,7 @@ svg {
   border-radius: var(--pa-radius-md);
   box-shadow: var(--pa-shadow-card);
   cursor: pointer;
+  transition: background 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease, transform 0.24s ease;
 }
 
 .pa-question-card::before {
@@ -2309,6 +2311,26 @@ svg {
   content: "";
   background: linear-gradient(90deg, var(--pa-primary), color-mix(in srgb, var(--pa-accent) 72%, var(--pa-primary)));
   opacity: 0.42;
+  z-index: 2;
+  transition: height 0.24s ease, opacity 0.24s ease;
+}
+
+.pa-question-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--pa-primary) 16%, transparent) 0%, transparent 38%),
+    linear-gradient(135deg, transparent 48%, color-mix(in srgb, var(--pa-accent) 7%, transparent) 100%);
+  opacity: 0;
+  z-index: 0;
+  transition: opacity 0.24s ease;
+}
+
+.pa-question-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 :root[data-theme="dark"] .pa-question-card,
@@ -2316,9 +2338,36 @@ svg {
   background: color-mix(in srgb, var(--pa-surface) 88%, var(--pa-bg));
 }
 
-.pa-question-card:hover {
-  border-color: color-mix(in srgb, var(--pa-primary) 36%, var(--pa-border));
-  transform: translateY(-1px);
+.pa-question-card:focus-within {
+  border-color: color-mix(in srgb, var(--pa-primary) 58%, var(--pa-border));
+  box-shadow: 0 22px 48px color-mix(in srgb, var(--pa-primary) 18%, transparent);
+  transform: translateY(-3px);
+}
+
+.pa-question-card:focus-within::before {
+  height: 4px;
+  opacity: 0.9;
+}
+
+.pa-question-card:focus-within::after {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pa-question-card:hover {
+    border-color: color-mix(in srgb, var(--pa-primary) 58%, var(--pa-border));
+    box-shadow: 0 22px 48px color-mix(in srgb, var(--pa-primary) 18%, transparent);
+    transform: translateY(-4px);
+  }
+
+  .pa-question-card:hover::before {
+    height: 4px;
+    opacity: 0.9;
+  }
+
+  .pa-question-card:hover::after {
+    opacity: 1;
+  }
 }
 
 .pa-card-icon {
@@ -2335,6 +2384,7 @@ svg {
   line-height: 1.23;
   letter-spacing: 0;
   overflow-wrap: anywhere;
+  transition: color 0.2s ease, transform 0.24s ease;
 }
 
 .pa-question-title:hover {
@@ -2381,25 +2431,6 @@ svg {
   overflow-wrap: anywhere;
 }
 
-.pa-card-meta {
-  grid-column: 1;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 7px;
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0 2px 2px 0;
-  margin-right: -2px;
-  scroll-snap-type: x proximity;
-  overscroll-behavior-inline: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  mask-image: linear-gradient(90deg, black 0, black calc(100% - 18px), transparent 100%);
-}
-
-.pa-card-meta::-webkit-scrollbar,
 .pa-chip-wrap::-webkit-scrollbar {
   display: none;
 }
@@ -2411,6 +2442,9 @@ svg {
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
+  padding-top: 12px;
+  margin-top: auto;
+  border-top: 1px solid color-mix(in srgb, var(--pa-border) 64%, transparent);
 }
 
 .pa-chip,
@@ -2444,7 +2478,7 @@ a.pa-chip:hover,
   gap: 12px;
   min-width: 0;
   margin: 0;
-  color: var(--pa-text-3);
+  color: var(--pa-text-2);
   font-size: 13px;
   line-height: 1.35;
 }
@@ -2460,6 +2494,63 @@ a.pa-chip:hover,
 
 .pa-read-count[hidden] {
   display: none !important;
+}
+
+.pa-read-count {
+  display: inline-flex !important;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px !important;
+  min-height: 34px;
+  padding: 3px 10px 3px 4px;
+  color: var(--pa-text-2);
+  background: color-mix(in srgb, var(--pa-surface-2) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pa-border) 76%, transparent);
+  border-radius: var(--pa-radius-sm);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.pa-read-count-icon {
+  display: inline-grid !important;
+  place-items: center;
+  width: 26px !important;
+  height: 26px;
+  color: var(--pa-primary);
+  background: color-mix(in srgb, var(--pa-primary) 13%, var(--pa-surface));
+  border-radius: 6px;
+}
+
+.pa-read-count-number {
+  color: var(--pa-text);
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.pa-read-count-unit {
+  color: var(--pa-text-3);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pa-question-card:focus-within .pa-read-count {
+  background: color-mix(in srgb, var(--pa-primary) 10%, var(--pa-surface));
+  border-color: color-mix(in srgb, var(--pa-primary) 32%, var(--pa-border));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pa-question-card:hover .pa-read-count {
+    background: color-mix(in srgb, var(--pa-primary) 10%, var(--pa-surface));
+    border-color: color-mix(in srgb, var(--pa-primary) 32%, var(--pa-border));
+    transform: translateY(-1px);
+  }
+
+  .pa-question-card:hover .pa-question-title {
+    color: color-mix(in srgb, var(--pa-text) 76%, var(--pa-primary));
+    transform: translateY(-1px);
+  }
 }
 
 .pa-card-cta {

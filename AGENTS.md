@@ -750,6 +750,15 @@ tespit edilir).
   dalına push edildi. Vercel preview `dpl_FERCHdcKBq7Cs7kyRub2hTsr1Yy1`
   `READY`: `https://arsiv-kontrol-osaeh15w7-ugurkarabulutts-projects.vercel.app/public-preview`.
   Preview `200` ve `noindex, nofollow`; canlı ana sayfa yeni metni taşımıyor.
+- 2026-10-04 public soru kartları kategori etiketlerinden arındırıldı; etiket
+  bağlantıları kart HTML'inden tamamen çıkarıldı. Kartlarda odak/hover sırasında
+  dört piksellik yükselme, belirginleşen yeşil-altın üst çizgi, kontrollü ışık
+  katmanı ve daha güçlü gölge kullanılır. Okunma bilgisi göz ikonu, belirgin
+  rakam ve sakin `okunma` birimiyle ayrı bir 8px köşeli bilgi bloğuna dönüştü.
+  CSS cache anahtarı `20261004-question-cards-v1` oldu. `npm.cmd run check`
+  201/201 başarılı. 390x844 ve 1440x900 Chromium kontrollerinde kart etiketi
+  sayısı sıfır, yatay taşma ve konsol hatası yoktur. Değişiklik yalnız izole
+  public preview dalındadır; production'a alınmamıştır.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

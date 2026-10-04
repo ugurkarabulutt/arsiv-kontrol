@@ -2,6 +2,15 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 soru kartları tüm public liste yüzeylerinde kategori etiketlerinden
+  arındırıldı. Kart hover/odak görünümü daha belirgin çerçeve, gölge, ışık katmanı
+  ve 4px yükselme ile modernleştirildi; okunma bilgisi göz ikonu, güçlü rakam ve
+  ikincil `okunma` biriminden oluşan ayrı bir bilgi bloğuna dönüştürüldü. CSS
+  cache anahtarı `20261004-question-cards-v1` oldu. `npm.cmd run check` 201/201
+  başarılı. Chromium kontrolünde 390x844 mobilde 6 kartın etiket sayısı sıfır,
+  okunma bloğu 112-125px, yatay taşma ve konsol hatası yok; 1440x900 masaüstünde
+  etiket sayısı sıfır, geçiş özellikleri ve alt ayraç etkin. Değişiklik yalnız
+  preview dalındadır; production'a alınmadı.
 - 2026-10-04 soru sorma CTA açıklaması kullanıcı yönlendirmesiyle
   `Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.` olarak
   değiştirildi. `npm.cmd run check` 201/201 başarılı; 390x844 Chromium'da metin

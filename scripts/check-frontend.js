@@ -1426,7 +1426,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261004-ask-cta-visual-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261004-question-cards-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1478,7 +1478,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261004-ask-cta-visual-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261004-question-cards-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
@@ -1738,12 +1738,14 @@ for (const marker of ['pa-mobile-nav', 'pa-scroll-top', 'data-scroll-top', 'Yuka
 for (const marker of ['bindScrollTopControl', 'window.scrollY > 420', "window.scrollTo({ top: 0, behavior: 'smooth' })", 'data-visible']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik davranis marker eksik: ${marker}`);
 }
-for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-strong-cta', 'data-read-count-label', 'okunma']) {
+for (const marker of ['Cevabı oku', 'pa-card-bottom', 'pa-card-cta', 'has-strong-cta', 'data-read-count-value', 'pa-read-count-number', 'pa-read-count-unit', 'okunma']) {
   assert(homePreview.includes(marker), `Public soru karti aksiyon/okunma marker eksik: ${marker}`);
 }
+assert(!homePreview.includes('class="pa-card-meta"'), 'Public ana sayfa soru kartlari kategori etiketlerini gostermemeli.');
 assert(!/<[^>]+class="[^"]*pa-question-excerpt/.test(homePreview), 'Public soru kartlarinda kisa aciklama paragraflari geri gelmemeli.');
 const archivePreview = renderPublicArchivePreviewRoute('/public-preview/arsiv').html;
 assert(archivePreview.includes('Merak ettiğiniz konunun cevaplarına ulaşın.') && archivePreview.includes('Soru ve cevapları kategorilerine göre inceleyebilir, aradığınız konuyu alfabetik olarak kolayca bulabilirsiniz.') && archivePreview.includes('Tüm Sorular'), 'Public arsiv sayfasi yeni metin ve browse/list yapiyla gorunmeli.');
+assert(!archivePreview.includes('class="pa-card-meta"'), 'Public arsiv soru kartlari kategori etiketlerini gostermemeli.');
 assert(archivePreview.includes('soru cevap') && !/<span>\d+ soru<\/span>\s*<span>\d+ cevap<\/span>/.test(archivePreview), 'Public arsiv sayacinda soru/cevap ayrimi tek ifadeye inmeli.');
 assert(!/for \(const row of uniquePublicArchiveRecords\(qaRows \|\| \[\]\)\)\s*{\s*const slugs = Array\.isArray\(row\.topic_slugs\)/.test(server), 'Public arsiv kategori dizini yalniz slug/topic alanlariyla dedupe edilmemeli; bu harflerde kategorileri eksiltir.');
 assert(/for \(const row of qaRows \|\| \[\]\)\s*{\s*const slugs = Array\.isArray\(row\.topic_slugs\)/.test(server), 'Public arsiv kategori dizini aktif published topic_slugs havuzunu dogrudan saymali.');
@@ -1936,7 +1938,7 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
 for (const marker of ['--pa-answer-cta-text: #FFFFFF;', '--pa-answer-cta-text: #0F4930;', '--pa-answer-cta-shine: rgb(255 253 247 / 0.28);', 'color: var(--pa-answer-cta-text);', 'var(--pa-answer-cta-shine)']) {
   assert(publicCss.includes(marker), `Public cevap CTA kontrast standardi eksik: ${marker}`);
 }
-assert(publicRendererSource.includes("20261004-ask-cta-visual-v1"), 'Public arsiv CSS cache anahtari soru CTA gorseli icin yenilenmeli.');
+assert(publicRendererSource.includes("20261004-question-cards-v1"), 'Public arsiv CSS cache anahtari soru kartlari icin yenilenmeli.');
 for (const marker of ['.pa-cta-visual', '.pa-cta-content', '.pa-cta-kicker', '.pa-cta-button-icon', 'object-position: 66% center', 'min-height: 420px']) {
   assert(publicCss.includes(marker), `Public soru CTA gorsel CSS marker eksik: ${marker}`);
 }
@@ -1944,16 +1946,13 @@ for (const marker of ['--pa-scroll-top-nav-offset: 0px', 'calc(12px + var(--pa-s
   assert(publicCss.includes(marker), `Public yukari cik butonu mobil menu konum marker eksik: ${marker}`);
 }
 assert(!publicCss.includes('.pa-question-card.has-strong-cta .pa-card-cta'), 'Public soru karti CTA stili yalniz featured kartlara bagli olmamali.');
-const cardMetaCss = publicCss.match(/\.pa-card-meta\s*\{([\s\S]*?)\}/)?.[1] || '';
 const chipWrapCss = publicCss.match(/\.pa-chip-wrap\s*\{([\s\S]*?)\}/)?.[1] || '';
-for (const [name, source] of [['pa-card-meta', cardMetaCss], ['pa-chip-wrap', chipWrapCss]]) {
-  assert(source.includes('flex-wrap: nowrap'), `${name} tek satir yatay etiket rail olmali.`);
-  assert(source.includes('overflow-x: auto'), `${name} yatay kaydirilabilir olmali.`);
-  assert(source.includes('scroll-snap-type: x proximity'), `${name} scroll snap davranisi olmali.`);
-  assert(source.includes('overscroll-behavior-inline: contain'), `${name} yatay tasma davranisi izole olmali.`);
-  assert(!source.includes('flex-wrap: wrap'), `${name} etiketleri iki satira dusurmemeli.`);
+assert(chipWrapCss.includes('flex-wrap: nowrap') && chipWrapCss.includes('overflow-x: auto'), 'Public genel etiket rail tek satir ve yatay kaydirilabilir olmali.');
+assert(chipWrapCss.includes('scroll-snap-type: x proximity') && chipWrapCss.includes('overscroll-behavior-inline: contain'), 'Public genel etiket rail kontrollu yatay kaydirma kullanmali.');
+assert(!publicCss.includes('.pa-card-meta'), 'Public soru karti kategori etiketi CSS i geri gelmemeli.');
+for (const marker of ['.pa-question-card::after', '.pa-question-card:focus-within', '@media (hover: hover) and (pointer: fine)', 'transform: translateY(-4px)', '.pa-read-count-icon', '.pa-read-count-number', '.pa-read-count-unit', 'font-variant-numeric: tabular-nums']) {
+  assert(publicCss.includes(marker), `Public modern soru karti marker eksik: ${marker}`);
 }
-assert(publicCss.includes('white-space: nowrap;') && publicCss.includes('.pa-card-meta::-webkit-scrollbar'), 'Public etiket chipleri tek satir ve gizli scrollbar olmali.');
 for (const marker of ['.pa-mobile-nav::before', '.pa-mobile-nav::after', '-webkit-backdrop-filter: blur(30px) saturate(1.65)', 'data-active-index', '--pa-mobile-active-index', '--pa-mobile-glide-scale', 'transform: translateX(calc(var(--pa-mobile-active-index) * 100%)) scaleX(var(--pa-mobile-glide-scale))', '.pa-mobile-nav.is-gliding', '@keyframes pa-bottom-glide-sheen', 'background-position: 190% 0, 0 0', 'transition: transform 640ms cubic-bezier(.16, 1.18, .18, 1)', 'Math.max(0, 260 - elapsed)', 'setPending(anchor, new URL(anchor.href, window.location.href))', 'inset 0 1px 0', '.pa-bottom-link.is-active', '.pa-bottom-link.is-pending', 'data-pa-navigating="true"', '@keyframes pa-fast-nav-progress', '.pa-scroll-top', '.pa-scroll-top[data-visible="true"]', '.pa-scroll-top-icon']) {
   assert(publicCss.includes(marker) || publicRendererSource.includes(marker), `Public Apple glass nav/scroll marker eksik: ${marker}`);
 }
