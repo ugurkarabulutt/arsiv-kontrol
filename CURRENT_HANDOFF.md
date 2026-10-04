@@ -8,8 +8,12 @@
   kart tasarımları, soru seçimleri ve bağlantılar değişmedi. `npm.cmd run check`
   201/201 başarılı. Yerel 390x844 ve 1440x900 kontrollerinde bölüm sırası,
   responsive kart yerleşimi, sıfır yatay taşma ve sıfır konsol hatası doğrulandı.
-  Değişiklik önce noindex preview hattında gösterilecek; kullanıcı onayı olmadan
-  production'a alınmayacak.
+  Runtime commit `7154769` preview dalına push edildi. Vercel preview
+  `dpl_6HQugaYgvqsUP3SuJwiqjcJtrZSw` `READY`:
+  `https://arsiv-kontrol-cszyl6fiz-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Dış preview `200`, `noindex, nofollow`; yeni sıra, sıfır yatay taşma ve sıfır
+  konsol hatası tekrar doğrulandı. Canlı ana sayfa eski sırayı koruyor; kullanıcı
+  onayı olmadan production'a alınmayacak.
 - 2026-10-04 kullanıcı geri bildirimiyle mobil konu vitrininin otomatik sola
   akış hızı 18px/sn'den 22px/sn'ye çıkarıldı. İki yönlü dokunmatik sürükleme,
   dikey sayfa kaydırması ve etkileşimden 1,4 saniye sonra otomatik devam davranışı
