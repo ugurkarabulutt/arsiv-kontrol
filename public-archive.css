@@ -5061,6 +5061,24 @@ a.pa-chip:hover,
   backdrop-filter: blur(30px) saturate(1.65);
   -webkit-backdrop-filter: blur(30px) saturate(1.65);
   isolation: isolate;
+  transform: translate3d(0, 0, 0);
+  transition: transform 280ms cubic-bezier(.22, .8, .22, 1), opacity 220ms ease, visibility 0s linear 0s;
+  will-change: transform, opacity;
+}
+
+:root[data-pa-mobile-nav-hidden="true"] .pa-mobile-nav {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, calc(100% + 28px + env(safe-area-inset-bottom)), 0);
+  transition: transform 280ms cubic-bezier(.4, 0, .7, .2), opacity 180ms ease, visibility 0s linear 280ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-mobile-nav,
+  :root[data-pa-mobile-nav-hidden="true"] .pa-mobile-nav {
+    transition: none;
+  }
 }
 
 .pa-mobile-nav[data-active-index="1"] {

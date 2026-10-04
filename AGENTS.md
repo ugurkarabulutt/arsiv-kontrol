@@ -691,6 +691,16 @@ tespit edilir).
   Preview `200` ve `noindex, nofollow`; deploy edilmiş CSS'te iki tema rengi ile
   parıltı mevcut. Canlı ana sayfa `200` ve yeni cache anahtarını taşımıyor;
   production alias değiştirilmemiştir.
+- 2026-10-04 dördüncü turda mobil alt gezinme kaydırma yönüne duyarlı hale
+  getirildi. 120 px'den aşağıda toplam 52 px aşağı kaydırma menüyü ekranın
+  altına taşır; 18 px yukarı hareket menüyü yeniden gösterir. Sayfanın üst 80
+  px'inde, arama/input odağında ve masaüstü görünümünde menü gizlenmez. Hareket
+  yalnız `transform` ve `opacity` kullanır; güvenli alan payı korunur ve azaltılmış
+  hareket tercihinde geçiş kapatılır. CSS cache anahtarı
+  `20261004-mobile-nav-autohide-v1` olarak yenilendi. `npm.cmd run check` 201/201
+  başarılı. 390 px Chromium testinde başlangıç görünür, 844 px aşağı kaydırmada
+  gizli, 40 px yukarı kaydırmada tekrar görünür; 1440 px masaüstünde etkisiz,
+  yatay taşma ve konsol hatası yok. Değişiklik preview-only durumundadır.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

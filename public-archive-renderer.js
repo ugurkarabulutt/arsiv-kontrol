@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-answer-cta-contrast-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-mobile-nav-autohide-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -4636,6 +4636,79 @@ function renderShell({ title, description, active, content, status = 200, questi
           window.removeEventListener('scroll', requestUpdate);
         });
       }
+      function bindMobileNavAutoHide() {
+        var root = document.documentElement;
+        var nav = document.querySelector('.pa-mobile-nav');
+        if (!nav) return;
+        var mobileQuery = window.matchMedia('(max-width: 899px)');
+        var lastY = Math.max(0, window.scrollY || 0);
+        var direction = 0;
+        var distance = 0;
+        var ticking = false;
+        function setHidden(hidden) {
+          if (hidden && mobileQuery.matches) root.setAttribute('data-pa-mobile-nav-hidden', 'true');
+          else root.removeAttribute('data-pa-mobile-nav-hidden');
+        }
+        function reset(nextY) {
+          lastY = Math.max(0, nextY === undefined ? (window.scrollY || 0) : nextY);
+          direction = 0;
+          distance = 0;
+        }
+        function update() {
+          var currentY = Math.max(0, window.scrollY || 0);
+          var delta = currentY - lastY;
+          if (!mobileQuery.matches || currentY <= 80 || root.getAttribute('data-pa-search-keyboard') === 'true') {
+            setHidden(false);
+            reset(currentY);
+            ticking = false;
+            return;
+          }
+          if (Math.abs(delta) >= 2) {
+            var nextDirection = delta > 0 ? 1 : -1;
+            if (nextDirection !== direction) distance = 0;
+            direction = nextDirection;
+            distance += Math.abs(delta);
+            if (direction > 0 && currentY > 120 && distance >= 52) {
+              setHidden(true);
+              distance = 0;
+            } else if (direction < 0 && distance >= 18) {
+              setHidden(false);
+              distance = 0;
+            }
+          }
+          lastY = currentY;
+          ticking = false;
+        }
+        function requestUpdate() {
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(update);
+        }
+        function onFocusIn(event) {
+          var target = event.target;
+          if (!target || !target.matches || !target.matches('input, textarea, select, [contenteditable="true"]')) return;
+          setHidden(false);
+          reset();
+        }
+        function onViewportChange() {
+          if (!mobileQuery.matches) setHidden(false);
+          reset();
+        }
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', onViewportChange, { passive: true });
+        document.addEventListener('focusin', onFocusIn);
+        if (mobileQuery.addEventListener) mobileQuery.addEventListener('change', onViewportChange);
+        else if (mobileQuery.addListener) mobileQuery.addListener(onViewportChange);
+        setHidden(false);
+        addPageCleanup(function(){
+          window.removeEventListener('scroll', requestUpdate);
+          window.removeEventListener('resize', onViewportChange);
+          document.removeEventListener('focusin', onFocusIn);
+          if (mobileQuery.removeEventListener) mobileQuery.removeEventListener('change', onViewportChange);
+          else if (mobileQuery.removeListener) mobileQuery.removeListener(onViewportChange);
+          root.removeAttribute('data-pa-mobile-nav-hidden');
+        });
+      }
       function bindAddToHomeBanner() {
         var root = document.documentElement;
         var banner = document.querySelector('[data-install-banner]');
@@ -5328,6 +5401,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindActiveStatsCounters();
         bindScrollTopControl();
         bindShrinkingHeader();
+        bindMobileNavAutoHide();
         bindAddToHomeBanner();
         bindPublicAuthTabs();
         bindPublicEmailAuth();

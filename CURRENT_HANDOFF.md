@@ -2,6 +2,16 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 dördüncü turda mobil alt gezinme kaydırma yönüne bağlandı. Sayfa
+  120 px'den aşağıdayken toplam 52 px aşağı kaydırma menüyü ekranın dışına
+  indirir; 18 px yukarı hareket menüyü geri getirir. İlk 80 px'de, arama/input
+  odağında ve masaüstünde gizleme yapılmaz. Animasyon `transform` ve `opacity`
+  tabanlıdır, iOS safe-area korunur ve `prefers-reduced-motion` geçişi kapatır.
+  CSS cache anahtarı `20261004-mobile-nav-autohide-v1` oldu. Yerel
+  `npm.cmd run check` 201/201 başarılı. 390 px Chromium'da başlangıç görünür,
+  844 px aşağı kaydırmada gizli, 40 px yukarı kaydırmada yeniden görünür;
+  1440 px masaüstünde menü `display:none`, yatay taşma ve konsol hatası yok.
+  Production'a alınmadı.
 - 2026-10-04 üçüncü turda tüm public arşivdeki `Cevabı oku` CTA kontrastı ortak
   tema değişkenleriyle düzeltildi. Açık tema koyu yeşil/beyaz görünümünü korur;
   koyu tema mint gradyan üzerinde `#0F4930` metin ve ok kullanır. Mevcut
