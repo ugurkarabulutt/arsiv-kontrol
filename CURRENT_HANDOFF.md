@@ -21,11 +21,20 @@
   `X-Robots-Tag` ile meta robots `noindex, nofollow`, production hedefli OG URL
   doğru. Dış 390px kontrolde 15 içindekiler, dört âyet kutusu, bir tablo, 8
   ilgili soru; 1440px kontrolde 9 kartlık 3x3 vitrin ve yüklenen 720px görsel
-  doğrulandı. Her iki görünümde yatay taşma ve konsol hatası yok. Canlı
-  production ana sayfasında yeni kart yok ve `/konu-rehberi/tasavvuf-nedir`
-  `404`; kullanıcı onayı olmadan production'a alınmayacak ve Google dizine
-  ekleme isteği yalnız canlı URL `200`, canonical ve `index,follow`
-  doğrulandıktan sonra gönderilecek.
+  doğrulandı. Her iki görünümde yatay taşma ve konsol hatası yok. Kullanıcı
+  onayıyla aynı doğrulanmış preview production'a promote edildi. Production
+  deployment `dpl_BphxQJLqAX6fFMGgD8BXfoogXXz2` `READY`:
+  `https://arsiv-kontrol-r4mz9xkur-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa, rehber,
+  480/720px WebP varlıkları ve sitemap `200`; canonical URL ile
+  `index,follow` doğru ve rehber sitemap'te mevcut. Canlı 390px kontrolde 15
+  içindekiler, dört âyet kutusu, bir tablo, 8 ilgili soru, sıfır yatay taşma ve
+  sıfır konsol hatası doğrulandı. Google Search Console'da `teslimiyet`,
+  `ruh-nefs-fizik-vucut`, `kurana-gore-mutluluk` ve `tasavvuf-nedir` canlı
+  rehber URL'leri için dizine ekleme istekleri ayrı ayrı gönderildi; her dört
+  URL için de `Dizine eklenmesi istendi` sonucu ve öncelikli tarama sırasına
+  eklendiği doğrulandı. Bu işlem anında dizine alınma garantisi vermez; nihai
+  tarama ve indeksleme zamanı Google'a aittir.
 - 2026-10-04 kullanıcı tarafından sağlanan `Kur’ân’a Göre Mutluluk Nedir?`
   metni, öğreti ayrımları değiştirilmeden sekizinci konu rehberi olarak eklendi.
   Rehber 12 bölümlü içindekiler, 11 âyet atfı, üç delil kutusu ve `mutluluk`
