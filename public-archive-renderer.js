@@ -2083,7 +2083,7 @@ function ctaBand() {
       <div class="pa-cta-content">
         <p class="pa-cta-kicker"><span class="pa-cta-symbol">${iconSvg('ask-question')}</span><span>Soru sormak için</span></p>
         <h2 id="pa-ask-cta-title">Aklınızda bir soru mu var?</h2>
-        <p class="pa-cta-description">Sorunuzu kısa, açık ve tek konuya odaklanarak yazın.</p>
+        <p class="pa-cta-description">Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.</p>
         <a class="pa-button pa-cta-button" href="${PREVIEW_BASE}/soru-sor">
           <span class="pa-cta-button-icon">${iconSvg('edit')}</span>
           <span>Sorunu yaz</span>

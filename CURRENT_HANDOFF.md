@@ -2,6 +2,9 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 soru sorma CTA açıklaması kullanıcı yönlendirmesiyle
+  `Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.` olarak
+  değiştirildi. Değişiklik yalnız preview dalındadır; production'a alınmadı.
 - 2026-10-04 altıncı turda ana sayfadaki soru sorma CTA'sı özgün editoryal
   görselle yeniden tasarlandı. Metinsiz koyu zümrüt masa, boş defter, kalem ve
   pirinç ayrıntılı görselin `480/720/1280` WebP varyantları responsive ve

@@ -742,6 +742,11 @@ tespit edilir).
   `noindex, nofollow`; canlı ana sayfa yeni görseli ve cache anahtarını taşımıyor,
   production alias değiştirilmemiştir.
 
+- 2026-10-04 soru sorma CTA alt metni kullanıcı yönlendirmesine göre
+  `Merak ettiklerinizi sorun, Dr. Abdulcabbar Boran yanıtlasın.` olarak
+  değiştirildi. Değişiklik yalnız izole public preview dalındadır; production'a
+  alınmamıştır.
+
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`
   bölümündeki kendi/atanmış kayıtlarında ekip üyesi artık `Düzenlemeye Al` veya
