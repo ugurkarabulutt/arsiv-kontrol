@@ -737,7 +737,7 @@ const HOME_READING_PATHS = [
   { title: 'Tasavvuf Nedir?', slug: 'tasavvuf', articleSlug: 'tasavvuf-nedir', text: 'Kur’ân’daki İslâm’ın yaşanan teslimiyet, âdap ve hizmet bütünü.' },
   { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
   { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', articleSlug: 'tovbe-ve-gunahlardan-kurtulus', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
-  { title: 'Dua ve Tevekkül', slug: 'dua', query: 'Dua tevekkül', text: 'Talep, teslim ve sonucu Allah’a bırakma dengesi.' },
+  { title: 'Dua ve Tevekkül', slug: 'dua', articleSlug: 'dua-ve-tevekkul', query: 'Dua tevekkül', text: 'Kalbin talebi, tedbir ve Allah’a güvenin birlikteliği.' },
   { title: 'Namaz ve İbadet Bilinci', slug: 'namaz', query: 'Namaz ibadet bilinci', text: 'İbadetin şuuruyla ilgili soru ve cevaplar.' },
   { title: 'Kur’ân’da Hidayet Ayetleri', slug: 'hidayet', query: 'Kur’ân hidayet ayetleri', text: 'Hidayet konusunun ayet atıflarıyla takip edilmesi.' }
 ];
@@ -1620,7 +1620,8 @@ const TOPIC_GUIDE_PRIORITY_LINKS = Object.freeze({
   'ruh-nefs-fizik-vucut': ['nefs-tezkiyesi', 'teslimiyet', 'zikir-ve-daimi-zikir', 'hidayet'],
   'kurana-gore-mutluluk': ['nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
   'tasavvuf-nedir': ['teslimiyet', 'allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
-  'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir']
+  'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
+  'dua-ve-tevekkul': ['allaha-ulasmayi-dilemek', 'teslimiyet', 'zikir-ve-daimi-zikir', 'kurana-gore-mutluluk']
 });
 
 function relatedTopicGuideArticles(article = {}) {
@@ -2040,6 +2041,13 @@ function homeTopicShowcaseSection() {
       text: 'Pişmanlıktan istiğfara, tâbiiyet tövbesinden Tövbe-i Nasuh’a uzanan yolu okuyun.',
       image: 'topic-showcase-tovbe-720.webp',
       articleSlug: 'tovbe-ve-gunahlardan-kurtulus'
+    },
+    {
+      kicker: 'Talep ve güven',
+      title: 'Dua ve tevekkül',
+      text: 'Kulun Rabbine yönelişini, tedbir ve azimden sonra Allah’a güvenmesini birlikte okuyun.',
+      image: 'topic-showcase-dua-tevekkul-720.webp',
+      articleSlug: 'dua-ve-tevekkul'
     }
   ].map(item => ({ ...item, article: publicTopicArticleBySlug(item.articleSlug) }))
     .filter(item => Boolean(item.article));

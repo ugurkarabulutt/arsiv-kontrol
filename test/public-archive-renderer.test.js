@@ -1060,7 +1060,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus']) {
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1334,6 +1334,25 @@ test('topic guide article renders Tövbe guide with levels table and four eviden
   assertOnlyPublicPreviewApi(preview.html);
 });
 
+test('topic guide article renders Dua ve Tevekkül guide with six evidence passages', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/dua-ve-tevekkul');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Dua ve Tevekkül/);
+  assert.match(preview.html, /Kalbin talebinden Allah’a güvene/);
+  assert.match(preview.html, /MU’MİN 60/);
+  assert.match(preview.html, /A’RÂF 55/);
+  assert.match(preview.html, /AHZÂB 3/);
+  assert.match(preview.html, /ÂLİ İMRÂN 159/);
+  assert.match(preview.html, /TALÂK 3/);
+  assert.match(preview.html, /KALPTEN DİLEK/);
+  assert.match(preview.html, /Samimi dua ile ihlâs makamı aynı değildir/);
+  assert.match(preview.html, /Dua ve Tevekkül ile ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/dua-ve-tevekkul#article"/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
 test('every topic guide links all other guides with topic-aware priorities', () => {
   const guideSlugs = [
     'allaha-ulasmayi-dilemek',
@@ -1345,7 +1364,8 @@ test('every topic guide links all other guides with topic-aware priorities', () 
     'ruh-nefs-fizik-vucut',
     'kurana-gore-mutluluk',
     'tasavvuf-nedir',
-    'tovbe-ve-gunahlardan-kurtulus'
+    'tovbe-ve-gunahlardan-kurtulus',
+    'dua-ve-tevekkul'
   ];
   for (const currentSlug of guideSlugs) {
     const preview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${currentSlug}`);

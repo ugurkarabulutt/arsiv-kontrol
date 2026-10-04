@@ -1560,7 +1560,11 @@ const tovbeArticlePreview = renderPublicArchivePreviewRoute('/public-preview/kon
 for (const marker of ['Tövbe ve Günahlardan Kurtuluş', 'Pişmanlıktan arınmaya ve Allah’a dönüşe', 'pa-topic-article-table', 'ZUMER 53', 'ÂLİ İMRÂN 135', 'FURKÂN 70', 'TAHRÎM 8', 'Tövbe ve Günahlardan Kurtuluş ile ilgili sorular', '"@type":"BlogPosting"']) {
   assert(tovbeArticlePreview.includes(marker), `Public tovbe konu rehberi marker eksik: ${marker}`);
 }
-const topicGuideSlugs = ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus'];
+const duaArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/dua-ve-tevekkul').html;
+for (const marker of ['Dua ve Tevekkül', 'Kalbin talebinden Allah’a güvene', 'MU’MİN 60', 'A’RÂF 55', 'AHZÂB 3', 'ÂLİ İMRÂN 159', 'TALÂK 3', 'KALPTEN DİLEK', 'Samimi dua ile ihlâs makamı aynı değildir', 'Dua ve Tevekkül ile ilgili sorular', '"@type":"BlogPosting"']) {
+  assert(duaArticlePreview.includes(marker), `Public dua ve tevekkul konu rehberi marker eksik: ${marker}`);
+}
+const topicGuideSlugs = ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul'];
 for (const currentSlug of topicGuideSlugs) {
   const articlePreview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${currentSlug}`).html;
   const relatedStart = articlePreview.indexOf('<section class="pa-topic-next-card">');

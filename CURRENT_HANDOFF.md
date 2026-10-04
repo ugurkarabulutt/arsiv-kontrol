@@ -2,6 +2,23 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 kullanıcı tarafından sağlanan `Dua ve Tevekkül` metni, öğreti
+  ayrımları ve Türkçe karakterleri korunarak on birinci konu rehberi olarak
+  yalnız noindex preview hattına eklendi. Rehber 13 bölümlü içindekiler, 15
+  âyet atfı, Mu’min 60, A’râf 55, Ahzâb 3, Âli İmrân 159, Talâk 3 ve kalpten
+  dilek için altı delil kutusu; `dua` kategorisindeki ilgili sorular ve diğer
+  on rehbere doğrudan iç bağlantılar içerir. URL
+  `/konu-rehberi/dua-ve-tevekkul`; ana sayfa kartı `Dua ve tevekkül` başlığını
+  taşır. Yerleşik ImageGen ile dua için su kabı ve damla, tevekkül için pusula
+  ve sağlam taş metaforlarını taşıyan, kişisiz ve yazısız özgün görsel
+  üretildi. Kaynak üretim dosyası Codex görsel klasöründe korunur;
+  `public-archive-assets/assets/topic-showcase-dua-tevekkul-480.webp` 47.124
+  bayt, 720px varyantı 98.902 bayttır. `npm.cmd run check` başarılı, 208/208
+  test geçti; `git diff --check` temiz. Yerel 390x844 ve 1440x900 tarayıcı
+  kontrollerinde 13 içindekiler, altı delil kutusu, altı ilgili soru, on iç
+  rehber bağlantısı, 11 ana sayfa rehber kartı, sıfır yatay taşma ve sıfır
+  konsol hatası doğrulandı. Production değişmedi; dış preview deploy ve kullanıcı
+  onayı bekleniyor.
 - 2026-10-04 public soru `939781a2-ee92-4a5f-a632-b138ea5e5bba`, video
   açıklaması biçiminden doğrudan `Muhterem Hocam` sorusuna çevrildi; kesilmiş
   başlık tamamlandı. Eski `bu-videoda...` URL, konu odaklı
