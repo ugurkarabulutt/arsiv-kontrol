@@ -14,8 +14,16 @@
   204/204 başarılı. Yerel 390x844 ve 1440x900 tarayıcı kontrolünde 12
   içindekiler bağlantısı, üç delil kutusu, ilgili sorular, sekiz ana sayfa
   rehberi, responsive 480/720 görseller, sıfır yatay taşma ve sıfır konsol
-  hatası doğrulandı. Henüz preview deployment yapılmadı ve production
-  değiştirilmedi.
+  hatası doğrulandı. Runtime commit `0b33000` preview dalına push edildi.
+  Vercel preview `dpl_E7Bicu7FC9KLDNf6nsninFznggk4` `READY`:
+  `https://arsiv-kontrol-k6v5rdp7e-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Dış preview ana sayfa, rehber ve 480/720 WebP görseller `200`; rehber
+  `noindex, nofollow`, production hedefli OG URL doğru. Dış 390x844, 768x900 ve
+  1440x900 kontrollerinde 12 içindekiler, üç delil kutusu, 8 ilgili soru, sekiz
+  rehber kartı, merkezlenmiş son iki kart, responsive görseller, sıfır yatay
+  taşma ve sıfır konsol hatası doğrulandı. Canlı production ana sayfasında yeni
+  kart yok ve `/konu-rehberi/kurana-gore-mutluluk` `404`; kullanıcı onayı
+  olmadan production'a alınmayacak.
 - 2026-10-04 kullanıcı tarafından sağlanan `Ruh Nedir? Nefs ve Fizik Vücuttan
   Farkı Nedir?` metni, öğreti ayrımları değiştirilmeden yedinci konu rehberi
   olarak eklendi. Rehber 14 bölümlü içindekiler, 15 âyet atfı, iki delil kutusu,
