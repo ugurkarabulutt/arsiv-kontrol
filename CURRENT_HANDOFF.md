@@ -26,8 +26,18 @@
   canonical doğru. Dış 390x844 ve 1440x900 Chromium kontrollerinde 13
   içindekiler, altı delil kutusu, sekiz ilgili soru, on iç rehber bağlantısı,
   11 ana sayfa rehber kartı, responsive 480/720px varlık işaretleri, sıfır
-  yatay taşma ve sıfır konsol hatası doğrulandı. Production rehber URL’si `404`
-  ve yeni içerik canlıda yok; kullanıcı onayı olmadan production’a alınmayacak.
+  yatay taşma ve sıfır konsol hatası doğrulandı. Kullanıcı onayıyla aynı preview
+  production’a promote edildi. Production deployment
+  `dpl_GPFhdVFqk1nvN7cp53171RizkRCb` `READY`:
+  `https://arsiv-kontrol-4jsd0zjzp-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa, rehber,
+  480/720px WebP varlıkları ve sitemap `200`; canonical URL, `index,follow` ve
+  sitemap kaydı doğru. Canlı 390x844 ve 1440x900 Chromium kontrollerinde 13
+  içindekiler, altı delil kutusu, sekiz ilgili soru, on iç rehber bağlantısı,
+  11 ana sayfa rehber kartı, sıfır yatay taşma ve sıfır konsol hatası
+  doğrulandı. Google Search Console’da canlı rehber URL’si için
+  `Dizine eklenmesi istendi` sonucu alındı ve URL’nin öncelikli tarama sırasına
+  eklendiği doğrulandı; nihai tarama ve indeksleme zamanı Google’a aittir.
 - 2026-10-04 public soru `939781a2-ee92-4a5f-a632-b138ea5e5bba`, video
   açıklaması biçiminden doğrudan `Muhterem Hocam` sorusuna çevrildi; kesilmiş
   başlık tamamlandı. Eski `bu-videoda...` URL, konu odaklı
