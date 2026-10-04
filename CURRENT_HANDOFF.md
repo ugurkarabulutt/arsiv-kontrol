@@ -16,6 +16,14 @@
   500ms duraklama, 1,4 saniye sonrası otomatik devam ve kart üstünde 844px dikey
   kaydırma doğrulandı; yatay taşma yok. 1440x900 görünümde beş kart, gizli kopya
   set, `transform: none`, 720px görsel kaynakları ve sıfır yatay taşma doğrulandı.
+  Runtime commit `d567226` preview dalına push edildi. Vercel preview
+  `dpl_HqNxVVqobavub9D4orG6z1by1Yfk` `READY`:
+  `https://arsiv-kontrol-29fyqs8i5-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 165,84px sola sürükleme, 500ms boyunca sıfır
+  hareket ve sonrasında otomatik sola devam ölçüldü; beş 480px görsel yüklendi.
+  1440x900 görünümde beş kart, gizli kopya set, `transform: none` ve beş 720px
+  görsel doğrulandı. Her iki görünümde yatay taşma ve konsol hatası yok. Preview
+  `200` ve `noindex, nofollow`; canlı ana sayfa yeni cache anahtarını taşımıyor.
   Değişiklik preview-only'dir; production'a alınmamıştır.
 - 2026-10-04 konu vitrininin mobil `scroll-snap` düzeni kaldırıldı. Üç kart,
   bölüm görünür alana girdiğinde `IntersectionObserver` ve

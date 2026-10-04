@@ -628,8 +628,15 @@ tespit edilir).
   Yerel Chromium 390x844 kontrolde iki yönlü sürükleme, 500ms duraklama,
   1,4 saniye sonrası otomatik devam ve kart üstünde 844px dikey kaydırma;
   1440x900 kontrolde beş kart, gizli kopya set, `transform: none` ve 720px
-  görseller doğrulandı. Her iki görünümde yatay taşma yok. Preview-only'dir;
-  production'a alınmamıştır.
+  görseller doğrulandı. Her iki görünümde yatay taşma yok. Runtime commit
+  `d567226` preview dalına push edildi. Vercel preview
+  `dpl_HqNxVVqobavub9D4orG6z1by1Yfk` `READY`:
+  `https://arsiv-kontrol-29fyqs8i5-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 165,84px sola sürükleme, 500ms duraklama,
+  otomatik devam ve beş 480px görsel; 1440x900 görünümde beş kart, gizli kopya
+  set, `transform: none` ve beş 720px görsel doğrulandı. Taşma/konsol hatası yok;
+  preview `200` ve `noindex, nofollow`. Canlı ana sayfa yeni cache anahtarını
+  taşımıyor. Preview-only'dir; production'a alınmamıştır.
 - 2026-10-04 mobil konu vitrininin dokunmada aşağı-yukarı oynayan `scroll-snap`
   düzeni kaldırıldı. Vitrin görünür alana girdiğinde üç kart, kopyalanmış ikinci
   set üzerinde `requestAnimationFrame` ile saniyede 18px sabit hızla ve kesintisiz
