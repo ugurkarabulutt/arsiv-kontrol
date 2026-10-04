@@ -15,7 +15,14 @@
   mobilde başlangıçta yalnız ilk ekran anlık görünür, 844px kaydırma sonrasında
   görünür alandaki üç yeni öğe açılır; 1440x900 masaüstünde kart başlığı Inter,
   20px/700 ve hover geçişleri etkin. Her iki görünümde yatay taşma ve konsol
-  hatası yok. Değişiklik yalnız preview dalındadır; production'a alınmadı.
+  hatası yok. Runtime commit `36e564f` preview dalına push edildi. Vercel preview
+  `dpl_5og7iNHQyU39gf3JNBNqfNueBTYP` `READY`:
+  `https://arsiv-kontrol-9jyq0i4a1-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 12 kart başlığı Inter 18px/700, bir ekran
+  aşağı kaydırıldığında görünür alandaki 3/3 hareket hedefi açık; 1440x900
+  görünümde başlık 20px/700 ve kart geçişleri etkin. Her iki görünümde taşma ve
+  konsol hatası yok. Preview `200` ve `noindex, nofollow`; canlı ana sayfa yeni
+  cache anahtarını taşımıyor. Production'a alınmadı.
 - 2026-10-04 soru kartları tüm public liste yüzeylerinde kategori etiketlerinden
   arındırıldı. Kart hover/odak görünümü daha belirgin çerçeve, gölge, ışık katmanı
   ve 4px yükselme ile modernleştirildi; okunma bilgisi göz ikonu, güçlü rakam ve

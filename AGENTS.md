@@ -626,7 +626,13 @@ tespit edilir).
   `20261004-modern-motion-v1` oldu. `npm.cmd run check` 201/201 başarılı. Yerel
   Chromium 390x844 ve 1440x900 kontrollerinde görünür alandaki hedefler doğru
   açıldı; yatay taşma ve konsol hatası yok. Değişiklik preview-only'dir,
-  production'a alınmamıştır.
+  production'a alınmamıştır. Runtime commit `36e564f` preview dalına push edildi.
+  Vercel preview `dpl_5og7iNHQyU39gf3JNBNqfNueBTYP` `READY`:
+  `https://arsiv-kontrol-9jyq0i4a1-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390x844 görünümde 12 başlık Inter 18px/700, kaydırma sonrasında
+  görünür alandaki 3/3 hedef açık; 1440x900 görünümde başlık 20px/700 ve geçişler
+  etkin. Her iki görünümde taşma ve konsol hatası yok. Preview `200` ve
+  `noindex, nofollow`; canlı ana sayfa yeni cache anahtarını taşımıyor.
 - Canlıdan ayrılmış `codex/homepage-discovery-preview` dalında ana sayfanın konu
   keşif bölümü yeniden tasarlandı. Eski yatay konu kartlarının yerine arşive özgü
   `Kavram rotaları` bandı, beş bağlantılı konu rotası ve özgün responsive WebP
