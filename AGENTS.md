@@ -700,7 +700,13 @@ tespit edilir).
   `20261004-mobile-nav-autohide-v1` olarak yenilendi. `npm.cmd run check` 201/201
   başarılı. 390 px Chromium testinde başlangıç görünür, 844 px aşağı kaydırmada
   gizli, 40 px yukarı kaydırmada tekrar görünür; 1440 px masaüstünde etkisiz,
-  yatay taşma ve konsol hatası yok. Değişiklik preview-only durumundadır.
+  yatay taşma ve konsol hatası yok. Runtime commit `6f633a3` preview dalına push
+  edildi. Vercel preview `dpl_EXmK6mNTeboM9sadwX7xZ9Ec7UCf` `READY`:
+  `https://arsiv-kontrol-dbaw96vj6-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390 px ön izlemede 844 px aşağı kaydırmada menü gizlendi ve
+  40 px yukarı hareketle geri geldi; yatay taşma ve konsol hatası yok. Preview
+  `200` ve `noindex, nofollow`; canlı ana sayfa yeni cache anahtarını taşımıyor,
+  production alias değiştirilmemiştir.
 
 ### 2026-09-24
 - **Ekip üyesi reddedilen kayıt işlemleri eklendi:** `Tamamlananlar > Reddedilenler`

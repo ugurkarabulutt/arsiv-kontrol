@@ -11,6 +11,12 @@
   `npm.cmd run check` 201/201 başarılı. 390 px Chromium'da başlangıç görünür,
   844 px aşağı kaydırmada gizli, 40 px yukarı kaydırmada yeniden görünür;
   1440 px masaüstünde menü `display:none`, yatay taşma ve konsol hatası yok.
+  Runtime commit `6f633a3` preview dalına push edildi. Vercel preview
+  `dpl_EXmK6mNTeboM9sadwX7xZ9Ec7UCf` `READY`:
+  `https://arsiv-kontrol-dbaw96vj6-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Deploy edilmiş 390 px ön izlemede de aşağı kaydırmada gizlenme ve 40 px yukarı
+  harekette geri gelme doğrulandı; yatay taşma ve konsol hatası yok. Preview
+  `200` ve `noindex, nofollow`; canlı ana sayfa yeni cache anahtarını taşımıyor.
   Production'a alınmadı.
 - 2026-10-04 üçüncü turda tüm public arşivdeki `Cevabı oku` CTA kontrastı ortak
   tema değişkenleriyle düzeltildi. Açık tema koyu yeşil/beyaz görünümünü korur;
