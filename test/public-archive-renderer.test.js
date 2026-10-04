@@ -975,6 +975,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /Nefs tezkiyesi/);
   assert.match(home, /Ruh, nefs ve fizik vücut/);
   assert.match(home, /Kur’ân’a göre mutluluk/);
+  assert.match(home, /Tasavvuf nedir\?/);
   assert.match(home, /Allah’a ulaşmayı dilemek/);
   assert.match(home, /Hidayet yolculuğu/);
   assert.match(home, /Mürşide tâbiiyet/);
@@ -986,6 +987,8 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /topic-showcase-ruh-nefs-480\.webp/);
   assert.match(home, /topic-showcase-mutluluk-720\.webp/);
   assert.match(home, /topic-showcase-mutluluk-480\.webp/);
+  assert.match(home, /topic-showcase-tasavvuf-720\.webp/);
+  assert.match(home, /topic-showcase-tasavvuf-480\.webp/);
   assert.match(home, /topic-showcase-dilemek-720\.webp/);
   assert.match(home, /topic-showcase-tabiiyet-720\.webp/);
   assert.match(home, /topic-showcase-nefs-720\.webp/);
@@ -1057,7 +1060,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk']) {
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1292,6 +1295,24 @@ test('topic guide article renders Kur’ân’a göre Mutluluk guide with three 
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/kurana-gore-mutluluk#article"/);
   assert.doesNotMatch(preview.html, /Kur’ân’a Göre Mutluluk Nedir\? Nedir\?/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
+test('topic guide article renders Tasavvuf guide with stages table and four evidence passages', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/tasavvuf-nedir');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Tasavvuf Nedir\?/);
+  assert.match(preview.html, /Kur’ân’daki İslâm’ın hayata geçirilmesi/);
+  assert.match(preview.html, /Tasavvuf yolunda yedi safha/);
+  assert.match(preview.html, /ZUMER 54/);
+  assert.match(preview.html, /MÂİDE 35/);
+  assert.match(preview.html, /ŞEMS 9/);
+  assert.match(preview.html, /MUZZEMMİL 8/);
+  assert.match(preview.html, /Tasavvuf ile ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/tasavvuf-nedir#article"/);
+  assert.doesNotMatch(preview.html, /Tasavvuf Nedir\? Nedir\?/);
   assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
   assertOnlyPublicPreviewApi(preview.html);
 });

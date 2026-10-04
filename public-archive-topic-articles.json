@@ -2801,5 +2801,395 @@
       }
     ],
     "sources": []
+  },
+  "tasavvuf-nedir": {
+    "slug": "tasavvuf-nedir",
+    "path": "/konu-rehberi/tasavvuf-nedir",
+    "series": "Tasavvuf / Blog Serisi 09",
+    "title": "Tasavvuf Nedir?",
+    "subtitle": "Kur’ân’daki İslâm’ın hayata geçirilmesi",
+    "description": "Tasavvuf nedir; Allah’a ulaşmayı dilemek, mürşide tâbiiyet, nefs tezkiyesi, zikir, dört teslim, âdap ve hizmetle nasıl yaşanır?",
+    "summary": "Tasavvuf, Kur’ân’daki İslâm’ın; Allah’a yöneliş, teslimiyet, nefsin arınması, ibadet, sevgi, âdap ve hizmet bütünlüğü içinde hayata geçirilmesidir.",
+    "categorySlug": "tasavvuf",
+    "publishedAt": "2026-10-04T23:30:00+03:00",
+    "updatedAt": "2026-10-04T23:30:00+03:00",
+    "readTime": 17,
+    "keywords": [
+      "tasavvuf nedir",
+      "Kur’ân’da tasavvuf",
+      "İslâm ve tasavvuf",
+      "Allah’a teslimiyet",
+      "yedi safha dört teslim",
+      "mürşide tâbiiyet",
+      "seyr-i sülûk",
+      "nefs tezkiyesi",
+      "daimî zikir",
+      "tasavvuf âdabı",
+      "Allah için hizmet"
+    ],
+    "relatedTerms": [
+      "tasavvuf",
+      "İslâm",
+      "hanif dîni",
+      "Allah’a ulaşmayı dilemek",
+      "mürşid",
+      "tâbiiyet",
+      "seyr-i sülûk",
+      "nefs tezkiyesi",
+      "nefs tasfiyesi",
+      "zikir",
+      "teslimiyet",
+      "âdap",
+      "hizmet",
+      "diğergâmlık"
+    ],
+    "quranReferences": [
+      { "label": "Şûrâ-13" },
+      { "label": "Rûm-30-31" },
+      { "label": "Zumer-17-18,54" },
+      { "label": "Mâide-35" },
+      { "label": "Bakara-45-46,139" },
+      { "label": "Şems-9" },
+      { "label": "Nisâ-103,125" },
+      { "label": "Muzzemmil-8" },
+      { "label": "Ahzâb-41" },
+      { "label": "Ankebût-45" },
+      { "label": "Fetih-10" },
+      { "label": "Âli İmrân-20,103" },
+      { "label": "Tevbe-100" }
+    ],
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Tasavvuf, Kur’ân’daki İslâm’ın hayata geçirilmesidir. Peygamber Efendimiz Hz. Muhammed Mustafa (S.A.V) ve sahâbenin yaşadığı hayatın, Allah’a yönelişin ve Allah’a teslim olmanın adıdır. İnsanın Allah ile ilişkilerini, nefsinin arınmasını, ibadetlerini ve diğer insanlara karşı davranışlarını içine alan bir hayat tarzıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufun başlangıcında Allah’a ulaşmayı dilemek vardır. Bu dileği, mürşide tâbiiyet ve ruhun Allah’a ulaşması takip eder. Ardından fizik vücudun, nefsin ve iradenin Allah’a teslimi gelir. Böylece insan, Allah’ın emirlerini hayatına tatbik ederek manevî tekâmülünü sürdürür."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu sebeple tasavvufu anlamak, Allah’a teslim olmanın ne anlama geldiğini anlamayı gerektirir. İslâm’ın teslimiyet hedefleri, tasavvufun yaşanan muhtevasını meydana getirir. İlim öğrenilir, ibadetler yerine getirilir, nefs tezkiye edilir ve öğrenilen hakikatler davranışlara yansır."
+      },
+      {
+        "type": "heading",
+        "text": "Tasavvufun esası: Allah’ın dînini yaşamak"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufun esası, Allah’ın dînini yaşamaktır. Allahû Tealâ’nın insan için belirlediği hedefler, insanın hayatında gerçekleşmek içindir. Kur’ân’ı okumak ve öğrenmek, onun emirlerinin tatbikatıyla tamamlanır. Tasavvuf bu tatbikatı; îmân, ibadet, teslimiyet, sevgi ve hizmet bütünlüğü içerisinde ele alır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’ın emirlerine itaat etmek, yasaklarından sakınmak, nefsin afetlerinden kurtulmak ve insanlara güzellikle davranmak aynı hayatın parçalarıdır. Kişinin Allah’a olan sevgisi, zikrinde ve ibadetlerinde olduğu kadar, başka insanlara karşı davranışlarında da kendisini gösterir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufun hedefi, insanın Allah’a yaklaşması, Allah’ın rızasını kazanması ve hem dünya saadetine hem de cennet saadetine ulaşmasıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Hanif dîni ve bütün peygamberlerin yolu"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu yaşantının temelinde hanif dîni vardır. Hanif dîninin muhtevası; Allah’ın tekliğine inanmayı, Allah yolunda birlik oluşturmayı ve Allah’a teslim olmayı kapsar. Ruhun, vechin, nefsin ve iradenin teslimi bu bütünün içindedir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Şûrâ Suresinin 13. âyetinde, Hz. Nuh’a, Hz. İbrâhîm’e, Hz. Musa’ya ve Hz. İsa’ya vasiyet edilen dînin Peygamber Efendimiz’e de vahyedildiği; dînin ayakta tutulması ve onda ayrılığa düşülmemesi emredilir. Rûm Suresinin 30. âyeti de insanın hanif fıtratıyla yaratılmasını açıklar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufun muhtevası, bütün peygamberlerin yaşadığı Allah’a teslim olma esasına dayanır. Peygamber Efendimiz ve sahâbenin hayatı, bu teslimiyetin Kur’ân’daki örneğidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvuf kelimesinin kökeni açıklanırken “sof”, yani yün ile “suffa” bağlantıları üzerinde durulur. Bu açıklamalarda sahâbenin yaşayışı hatırlatılır. Kelimenin ifade ettiği asıl muhteva ise Allah’ın dîninin insan hayatında yaşanmasıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Tasavvufta hedefler ve vasıtalar"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufta hedeflerle vasıtalar birlikte değerlendirilir. Namaz, oruç, zekât, hac ve diğer ibadetler Allah’ın emirleridir. Bu ibadetler, insanın Allah’a kulluğunun ve manevî gelişiminin içindedir. Teslimiyet ise bu gelişimin ulaşacağı hedefleri ifade eder."
+      },
+      {
+        "type": "paragraph",
+        "text": "İbadetlerin yerine getirilmesiyle birlikte insanın nefsinin arınması, Allah’a bağlılığının artması ve davranışlarının güzelleşmesi söz konusudur. Tasavvuf, ibadetleri bu hedeflerle beraber yaşar. Namazın, zikrin ve hizmetin insanın hayatında meydana getirdiği değişiklik, teslimiyet yolunun bir parçasıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allahû Tealâ, Zumer Suresinin 54. âyetinde şöyle buyurur:"
+      },
+      {
+        "type": "evidence",
+        "reference": "ZUMER 54",
+        "note": "Âyet metni",
+        "text": "Ve Rabbinize (Allah’a) yönelin (ruhunuzu Allah’a ulaştırmayı dileyin)!"
+      },
+      {
+        "type": "paragraph",
+        "text": "Âyetin devamında Allah’a teslim olmak emredilir. Böylece Allah’a yöneliş ile teslimiyet arasındaki bağ ortaya konulur. Bu yönelişle başlayan yol, birbirini takip eden teslimleri içine alır."
+      },
+      {
+        "type": "heading",
+        "text": "İlk adım: Allah’a ulaşmayı dilemek"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufun ilk adımı, kalpten Allah’a ulaşmayı dilemektir. Bu dilek, kişinin dünya hayatını yaşarken ruhunu Allah’a ulaştırmayı istemesidir. Allah’a yönelmek, O’na münîb olmak ve Allah’a mülâki olmayı dilemek bu başlangıcı anlatır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Şûrâ Suresinin 13. âyetinde Allah’ın Kendisine yöneleni Kendisine ulaştıracağı bildirilir. Burada kulun talebi ile Allah’ın yardımı birlikte yer alır. Kul Allah’a ulaşmayı diler; Allahû Tealâ onun manevî yolunu açar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’ın yardımı, kişinin ibadetlerle olan ilişkisinde de kendisini gösterir. Namaz, oruç ve zikir ona sevdirilir. İnsan, Allah’a yönelişinin ardından, Allah’ın emirlerini yerine getirmeye karşı istek duymaya başlar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Rûm Suresinin 31. âyetinde Allah’a yönelmekle takva sahibi olmak birlikte zikredilir. Tasavvuf yolundaki ilk takva, bu yönelişle başlar. Takva, teslimiyetler ilerledikçe gelişen bir muhteva taşır."
+      },
+      {
+        "type": "heading",
+        "text": "Yedi safha ve dört teslim"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu yol, yedi safha ve dört teslimden oluşur."
+      },
+      {
+        "type": "table",
+        "caption": "Tasavvuf yolunda yedi safha",
+        "headers": ["Safha", "Yaşanan gelişme"],
+        "rows": [
+          ["1. Allah’a ulaşmayı dilemek", "Kalpten Allah’a yönelmek ve ruhu Allah’a ulaştırmayı istemek."],
+          ["2. Mürşide tâbiiyet", "Allah’ın gösterdiği mürşide ulaşarak tâbiiyeti gerçekleştirmek."],
+          ["3. Ruhun teslimi", "Ruhun Allah’a ulaşması ve teslim olması."],
+          ["4. Fizik vücudun teslimi", "Vechin, Allah’ın emirlerini yerine getiren ve yasaklarından sakınan bir hüviyete ulaşması."],
+          ["5. Nefsin teslimi", "Daimî zikirle nefsin afetlerden tamamen arınması."],
+          ["6. Muhlis olmak", "İhlâs makamına ulaşılması."],
+          ["7. İradenin teslimi", "İradenin Allah’a teslim edilmesi ve irşadla görevlendirilme."]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Dört teslim; ruhun, fizik vücudun, nefsin ve iradenin teslimidir. Bu safhaların her biri, insanın Allah ile ilişkilerinde ayrı bir gelişmeyi ifade eder. Yolun başlangıcıyla tamamlanması arasında, Allah’ın yardımıyla yaşanan bir tekâmül vardır."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşid ve tâbiiyet"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşid, Allah’a ulaşma yolunda irşadın ve tâbiiyetin yerini ifade eder. Mâide Suresinin 35. âyetinde Allahû Tealâ şöyle buyurur:"
+      },
+      {
+        "type": "evidence",
+        "reference": "MÂİDE 35",
+        "note": "Âyet metni",
+        "text": "Allah’a karşı takva sahibi olun ve O’na ulaştıracak vesileyi isteyin."
+      },
+      {
+        "type": "paragraph",
+        "text": "Buradaki vesile, kişiyi Allah’a ulaştırmaya vesile olacak mürşid olarak açıklanır. Allah’a ulaşmayı dileyen insan, mürşidini Allah’tan ister."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bakara Suresinin 45 ve 46. âyetleri, sabırla ve namazla Allah’tan yardım istemeyi, huşûyu ve Allah’a mülâki olmaya duyulan yakîn derecesindeki inancı birlikte ele alır. Hacet namazıyla mürşidin Allah’tan sorulması bu çerçevede açıklanır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tâbiiyetle birlikte kişinin nefs tezkiyesi ve ruhunun Allah’a doğru yolculuğu yeni bir safhaya girer. Mürşidin görevi, insanın Allah’a yönelmesine ve teslimiyet yolunda ilerlemesine hizmet etmektir. Yolun hedefi Allah’tır; hidayete ulaştıran Allahû Tealâ’dır."
+      },
+      {
+        "type": "heading",
+        "text": "Seyr-i sülûk ve ruhun teslimi"
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun Allah’a ulaşması, seyr-i sülûkun tamamlanmasıdır. Mürşide tâbiiyetin ardından başlayan bu yolculuk, nefs tezkiyesiyle birlikte ilerler. Nefsin kalbindeki nur arttıkça ruh, Allah’a doğru olan yolunda yükselir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs tezkiyesinin yedi kademesi; Emmare, Levvame, Mülhime, Mutmainne, Radiye, Mardiyye ve Tezkiye olarak ifade edilir. Bu kademeler boyunca nefsin arınması ile ruhun yükselmesi arasında bir beraberlik vardır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ruhun Allah’a ulaşması ilk teslimdir. Bu noktada nefsin kalbindeki nurların oranı yüzde 51’e ulaşır. Dolayısıyla ruhun teslimi, nefsin bütün afetlerinin sona erdiği aşama değildir. Kişinin zikrini artırarak devam edeceği başka teslimler vardır."
+      },
+      {
+        "type": "heading",
+        "text": "Nefs tezkiyesi ve tasfiyesi"
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs tezkiyesi, insanın iç dünyasının arınmasıdır. Nefsin afetleri, insanın Allah’ın emirlerine karşı çıkmasına ve başka insanlara yanlış davranmasına sebep olur. Öfke, kin, haset ve intikam gibi afetler, iç dünyadaki huzursuzlukta ve insanlar arasındaki anlaşmazlıklarda etkili olur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allahû Tealâ, Şems Suresinin 9. âyetinde şöyle buyurur:"
+      },
+      {
+        "type": "evidence",
+        "reference": "ŞEMS 9",
+        "note": "Âyet metni",
+        "text": "Kim onu (nefsini) tezkiye etmişse felâha (kurtuluşa) ermiştir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tezkiye ile başlayan arınma, tasfiye ile tamamlanır. Tasfiye, nefsin kalbindeki afetlerin bütünüyle temizlenmesidir. Daimî zikirle kalp nurlarla dolar ve nefs, Allah’ın emirlerine uygun taleplerde bulunan bir hüviyete ulaşır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Böylece kişinin manevî gelişimi davranışlarına da yansır. Nefsin afetleri azaldıkça, bu afetlerin insanın kararları ve ilişkileri üzerindeki tesiri azalır."
+      },
+      {
+        "type": "heading",
+        "text": "Fizik vücudun ve nefsin teslimi"
+      },
+      {
+        "type": "paragraph",
+        "text": "Fizik vücudun teslimi, emirlerin ve yasakların davranışlarda bütünüyle yaşanmasıdır. Fizik vücut, yani vech, Allah’ın emrettiği fiilleri yerine getirir; yasak ettiği fiilleri işlemez. Nisâ Suresinin 125. âyetinde, vechini Allah’a teslim ederek muhsin olan kişiden söz edilir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu aşamada nefsin afetlerinin bir kısmı henüz mevcut olabilir. Ancak fizik vücut bu afetlerin taleplerine uymaz. Nefste öfke doğsa bile kişi öfkesinin gerektirdiği yanlış davranışı gerçekleştirmez."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsin tesliminde ise arınma daha ileri bir noktaya ulaşır. Daimî zikirle nefsin afetleri de sona erer. Fizik vücudun teslimiyle nefsin teslimi arasındaki fark, bu iki safhanın ayrı ayrı anlaşılmasını gerektirir."
+      },
+      {
+        "type": "heading",
+        "text": "Zikir, çok zikir ve daimî zikir"
+      },
+      {
+        "type": "paragraph",
+        "text": "Zikir, nefs tezkiyesinin ve tasfiyesinin temel vasıtasıdır. Zikrullah, Allah’ın İsmi’nin “Allah, Allah…” diye tekrar edilmesidir. Zikir, çok zikir ve daimî zikir, manevî gelişimin ilerleyen tatbikatını oluşturur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Muzzemmil Suresinin 8. âyetinde şöyle buyrulur:"
+      },
+      {
+        "type": "evidence",
+        "reference": "MUZZEMMİL 8",
+        "note": "Âyet metni",
+        "text": "Ve Rabbinin İsmi’ni zikret ve herşeyden kesilerek O’na ulaş."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ahzâb Suresinin 41. âyetinde çok zikir emredilir. Nisâ Suresinin 103. âyetinde ise ayaktayken, otururken ve yan üstü yatarken Allah’ı zikretmek açıklanır. İnsanın bu üç hâlinin tamamında zikretmesi, daimî zikrin muhtevasını gösterir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ankebût Suresinin 45. âyetinde Kur’ân tilâveti ve namazla birlikte zikrullahın büyüklüğü belirtilir. Allah’ın İsmi’nin zikredilmesi, nefsin kalbinin nurlanmasıyla ilişkilidir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’a ulaşmayı dileme ve tâbiiyetle gelişen kalp şartları içerisinde zikir, nefsin arınmasını sağlar. Zikir arttıkça teslimiyet yolunda ilerlenir; daimî zikirde nefsin tasfiyesi gerçekleşir."
+      },
+      {
+        "type": "heading",
+        "text": "Sahâbenin yaşadığı tasavvuf"
+      },
+      {
+        "type": "paragraph",
+        "text": "Sahâbenin hayatı, bu safhaların yaşanmış örneğidir. Kur’ân’daki açıklamalar, onların Allah’a yönelişlerini, tâbiiyetlerini ve teslimiyetlerini birlikte ortaya koyar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zumer Suresinin 17. âyetinde Allah’a yönelenlerden söz edilir. Fetih Suresinin 10. âyetinde Peygamber Efendimiz’e tâbiiyet açıklanır. Âli İmrân Suresinin 20. âyetinde, Peygamber Efendimiz ve O’na tâbî olanların vechlerini Allah’a teslim ettikleri bildirilir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Zumer Suresinin 18. âyetinde hidayete eren ve ulûl’elbab olanlar; Bakara Suresinin 139. âyetinde Allah’a muhlis olanlar anlatılır. Tevbe Suresinin 100. âyetinde ise ensar, muhacirîn ve onlara ihsanla tâbî olanlar birlikte zikredilir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu âyetler, sahâbenin Allah’a yönelmekten başlayan ve irşada kadar ulaşan manevî hayatının açıklanmasında esas alınır. Tasavvuf, bu hayatın yaşanmasını hedefler."
+      },
+      {
+        "type": "heading",
+        "text": "Günlük hayatta tasavvuf âdabı"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvuf, günlük hayatta âdapla görünür hâle gelir. İnsanın konuşması, dinlemesi, öfkesine karşı tutumu ve başkalarının haklarına riayeti, nefs terbiyesinin tatbikat alanıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Başkalarını rahatsız etmeden konuşmak, insanlara eza vermemek ve kul hakkını gözetmek bu âdabın içindedir. Bir arada bulunulan yerde kişinin yalnızca kendi rahatını düşünmemesi; davranışının başkaları üzerindeki tesirini de dikkate alması gerekir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Kur’ân ahlâkıyla ahlâklanmak, insanın davranışlarında Allah’ın emirlerine uygun bir güzellik meydana getirir. Sevgi, saygı ve incelik, birlikte yaşamanın içinde tatbik edilir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Âli İmrân Suresinin 103. âyetinde Allah’ın ipine birlikte sarılmak ve ayrılmamak emredilir; Allah’ın kalpleri birleştirerek insanları kardeş kılması hatırlatılır. Kalplerin arınması, insanlar arasındaki düşmanlığın azalması ve kardeşliğin kuvvetlenmesiyle beraber ele alınır."
+      },
+      {
+        "type": "heading",
+        "text": "Hizmet, sorumluluk ve tahakküm ayrımı"
+      },
+      {
+        "type": "paragraph",
+        "text": "Hizmet, tasavvuf hayatının temel unsurlarındandır. Allah için hizmet etmek, kişinin gayretini ve imkânlarını hayra yöneltmesidir. Hizmete duyulan istek arttıkça insan, başkalarının ihtiyaçlarını ve mutluluğunu daha fazla düşünür."
+      },
+      {
+        "type": "paragraph",
+        "text": "Hizmette sorumluluk taşıyan kişinin de nefsini gözetmesi gerekir. Kendi hükmetme arzusunu Allah’ın emri gibi sunmak, hizmetin maksadına aykırıdır. Başkalarına görev veren insan, nefsinin talepleriyle Allah’ın emirlerini birbirine karıştırmamalıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tahakküm, kişinin nefsânî arzularıyla başkaları üzerinde hâkimiyet kurmaya çalışmasıdır. Allah için hizmette ise esas olan, Allah’ın rızasıdır. Sorumluluk, insanlara nefsin arzuları doğrultusunda davranma hakkı vermez."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu sebeple tasavvufta hizmet kadar, hizmetin hangi niyetle ve hangi davranışlarla gerçekleştirildiği de önem taşır."
+      },
+      {
+        "type": "heading",
+        "text": "Başkalarının mutluluğu için yaşamak"
+      },
+      {
+        "type": "paragraph",
+        "text": "Başkalarının mutluluğu için yaşamak, bu ahlâkın hayat içindeki karşılığıdır. İnsan, çevresindekilerin ihtiyaçlarına ilgi gösterir; onları aldatmaktan, haklarını çiğnemekten ve huzursuz etmekten sakınır. Kendisine verilen imkânları başkalarına faydalı olmak için de kullanır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Diğergâmlık, başka insanların iyiliğini düşünmektir. Kişi hayatından ne kadar büyük bir payı başkalarının mutluluğuna ayırırsa, o güzelliğin kendi iç dünyasına yansımasını da o ölçüde yaşar."
+      },
+      {
+        "type": "paragraph",
+        "text": "İbadetler ve insanlara karşı sorumluluklar aynı hayatın içinde bulunur. Allah’ı zikreden insanın çevresine karşı davranışlarının da güzelleşmesi beklenir. Böylece tasavvuf, insanın bütün ilişkilerine yayılan bir yaşantı olur."
+      },
+      {
+        "type": "heading",
+        "text": "Tasavvufun mutluluk hedefi"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvufun mutluluk hedefi, sulh ve sükûna ulaşmaktır. Bu huzur üç alanda gerçekleşir: insanın iç dünyasında, başka insanlarla ilişkilerinde ve Allah ile ilişkilerinde."
+      },
+      {
+        "type": "paragraph",
+        "text": "İç dünyadaki huzur, nefsin afetlerinin temizlenmesiyle gelişir. İnsanlar arasındaki ilişkilerde huzur, kişinin hayrı isteyen ve güzellikle davranan bir hüviyete ulaşmasıyla kuvvetlenir. Allah ile ilişkilerde ise emirleri yerine getirmenin ve yasaklardan sakınmanın huzuru yaşanır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefs tezkiyesiyle başlayan bu gelişim, nefsin tasfiyesiyle tamamlanır. Daimî zikir, iç dünyadaki çatışmanın sona ermesinde temel bir yere sahiptir. Nefsin talepleri de hayra yöneldiğinde insanın içinde sulh ve sükûn oluşur."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tasavvuf, Allah’a ulaşmayı dileyen insanın, Allah’ın yardımıyla teslimiyetlerini gerçekleştirmesini ve bu güzellikleri yaşamasını hedefler. Ruh Allah’a ulaşır; vech Allah’ın emirlerine teslim olur; nefs arınır; irade Allah’a teslim edilir. Sevgi, ibadet, âdap ve hizmet, bu yolun insan hayatındaki tatbikatını meydana getirir."
+      }
+    ],
+    "sources": []
   }
 }
