@@ -2,6 +2,20 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 uzun soru başlıklarının okunurluğu için yalnız soru kartı başlıkları
+  marka serifinden yerleşik `Inter` yazı tipine geçirildi; masaüstünde 20px/700,
+  mobilde 18px/700 ve ferah satır aralığı kullanıldı. Logo ile bölüm başlıklarının
+  editoryal serif karakteri korundu. İlk ekran hazır görünür; aşağıdaki bölüm ve
+  kartlar `IntersectionObserver` ile görünür alana girdikçe 24px aşağıdan, kademeli
+  biçimde yükselir. Sonradan yüklenen arama/kart sonuçları da aynı akışa bağlanır;
+  `prefers-reduced-motion` etkinse hareket uygulanmaz. Masaüstü soru kartı hover
+  durumu daha güçlü çerçeve, gölge ve `translateY(-7px) scale(1.01)` ile öne çıkar;
+  CTA da 2px sağa ilerler. CSS cache anahtarı `20261004-modern-motion-v1` oldu.
+  `npm.cmd run check` 201/201 başarılı. Yerel Chromium kontrolünde 390x844
+  mobilde başlangıçta yalnız ilk ekran anlık görünür, 844px kaydırma sonrasında
+  görünür alandaki üç yeni öğe açılır; 1440x900 masaüstünde kart başlığı Inter,
+  20px/700 ve hover geçişleri etkin. Her iki görünümde yatay taşma ve konsol
+  hatası yok. Değişiklik yalnız preview dalındadır; production'a alınmadı.
 - 2026-10-04 soru kartları tüm public liste yüzeylerinde kategori etiketlerinden
   arındırıldı. Kart hover/odak görünümü daha belirgin çerçeve, gölge, ışık katmanı
   ve 4px yükselme ile modernleştirildi; okunma bilgisi göz ikonu, güçlü rakam ve

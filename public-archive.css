@@ -2282,6 +2282,38 @@ svg {
   border: 1px solid color-mix(in srgb, var(--pa-border) 82%, transparent);
 }
 
+.pa-scroll-reveal {
+  opacity: 0;
+  translate: 0 24px;
+  transition:
+    opacity 0.62s cubic-bezier(.16, 1, .3, 1),
+    translate 0.62s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: var(--pa-reveal-delay, 0ms);
+  will-change: opacity, translate;
+}
+
+.pa-scroll-reveal.is-visible,
+.pa-scroll-reveal[data-pa-reveal-instant="true"] {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.pa-scroll-reveal[data-pa-reveal-instant="true"] {
+  transition: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-scroll-reveal,
+  .pa-scroll-reveal.is-visible,
+  .pa-scroll-reveal[data-pa-reveal-instant="true"] {
+    opacity: 1;
+    translate: none;
+    transition: none;
+    will-change: auto;
+  }
+}
+
 .pa-question-card,
 .pa-question-card.is-compact {
   position: relative;
@@ -2299,7 +2331,13 @@ svg {
   border-radius: var(--pa-radius-md);
   box-shadow: var(--pa-shadow-card);
   cursor: pointer;
-  transition: background 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease, transform 0.24s ease;
+  transition:
+    background 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    transform 0.24s ease,
+    opacity 0.62s cubic-bezier(.16, 1, .3, 1) var(--pa-reveal-delay, 0ms),
+    translate 0.62s cubic-bezier(.16, 1, .3, 1) var(--pa-reveal-delay, 0ms);
 }
 
 .pa-question-card::before {
@@ -2355,9 +2393,12 @@ svg {
 
 @media (hover: hover) and (pointer: fine) {
   .pa-question-card:hover {
-    border-color: color-mix(in srgb, var(--pa-primary) 58%, var(--pa-border));
-    box-shadow: 0 22px 48px color-mix(in srgb, var(--pa-primary) 18%, transparent);
-    transform: translateY(-4px);
+    z-index: 3;
+    border-color: color-mix(in srgb, var(--pa-primary) 74%, var(--pa-accent));
+    box-shadow:
+      0 30px 68px color-mix(in srgb, var(--pa-primary) 24%, transparent),
+      0 10px 24px rgb(0 0 0 / 0.14);
+    transform: translateY(-7px) scale(1.01);
   }
 
   .pa-question-card:hover::before {
@@ -2368,6 +2409,7 @@ svg {
   .pa-question-card:hover::after {
     opacity: 1;
   }
+
 }
 
 .pa-card-icon {
@@ -2378,10 +2420,10 @@ svg {
   grid-column: 1;
   min-width: 0;
   color: var(--pa-text);
-  font-family: var(--pa-font-serif);
-  font-size: 21px;
-  font-weight: 650;
-  line-height: 1.23;
+  font-family: var(--pa-font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.36;
   letter-spacing: 0;
   overflow-wrap: anywhere;
   transition: color 0.2s ease, transform 0.24s ease;
@@ -2591,8 +2633,13 @@ a.pa-chip:hover,
   margin-top: auto;
 }
 
-.pa-question-card:hover .pa-card-cta,
-.pa-question-card:focus-visible .pa-card-cta {
+.pa-question-card:hover .pa-card-cta {
+  background: linear-gradient(135deg, var(--pa-primary-hover) 0%, var(--pa-primary) 100%);
+  box-shadow: 0 14px 28px rgb(20 90 58 / 0.24);
+  transform: translateY(-1px) translateX(2px);
+}
+
+.pa-question-card:focus-within .pa-card-cta {
   background: linear-gradient(135deg, var(--pa-primary-hover) 0%, var(--pa-primary) 100%);
   box-shadow: 0 14px 28px rgb(20 90 58 / 0.24);
   transform: translateY(-1px);
@@ -5910,8 +5957,8 @@ a.pa-chip:hover,
   }
 
   .pa-question-title {
-    font-size: 20px;
-    line-height: 1.24;
+    font-size: 19px;
+    line-height: 1.38;
   }
 
   .pa-question-excerpt,
@@ -6470,7 +6517,8 @@ a.pa-chip:hover,
   }
 
   .pa-question-title {
-    font-size: 19px;
+    font-size: 18px;
+    line-height: 1.4;
   }
 
   .pa-category-grid,

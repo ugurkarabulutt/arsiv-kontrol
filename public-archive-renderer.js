@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-question-cards-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-modern-motion-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -4204,6 +4204,59 @@ function renderShell({ title, description, active, content, status = 200, questi
           window.clearTimeout(fallbackTimer);
         });
       }
+      function bindScrollReveals(scope) {
+        var root = scope && scope.querySelectorAll ? scope : document;
+        var selector = [
+          '.pa-section-head',
+          '.pa-archive-shortcut',
+          '.pa-question-banner',
+          '.pa-question-card',
+          '.pa-active-stats',
+          '.pa-topic-showcase-card',
+          '.pa-cta-band',
+          '.pa-newsletter',
+          '.pa-index-category',
+          '.pa-topic-card',
+          '.pa-category-card',
+          '.pa-guide-item',
+          '.pa-evidence-card',
+          '.pa-detail-question',
+          '.pa-answer'
+        ].join(',');
+        var nodes = Array.from(root.querySelectorAll(selector)).filter(function(node){
+          return node.getAttribute('data-pa-reveal-bound') !== 'true';
+        });
+        if (!nodes.length) return;
+        var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 800;
+        var observer = null;
+        nodes.forEach(function(node, index){
+          node.setAttribute('data-pa-reveal-bound', 'true');
+          node.style.setProperty('--pa-reveal-delay', Math.min(index % 4, 3) * 55 + 'ms');
+          node.classList.add('pa-scroll-reveal');
+          var rect = node.getBoundingClientRect();
+          var initiallyVisible = rect.bottom >= 0 && rect.top <= viewportHeight * 0.92;
+          if (reducedMotion || initiallyVisible || !('IntersectionObserver' in window)) {
+            node.setAttribute('data-pa-reveal-instant', 'true');
+            node.classList.add('is-visible');
+          }
+        });
+        if (!reducedMotion && 'IntersectionObserver' in window) {
+          observer = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            });
+          }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+          nodes.forEach(function(node){
+            if (!node.classList.contains('is-visible')) observer.observe(node);
+          });
+        }
+        addPageCleanup(function(){
+          if (observer) observer.disconnect();
+        });
+      }
       function bindScrollTopControl() {
         var button = document.querySelector('[data-scroll-top]');
         if (!button) return;
@@ -5216,6 +5269,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             else shell.remove();
             try { pageStack().replaceState({ paFast: true }, '', url.href); } catch (error) {}
             bindCardLinks();
+            bindScrollReveals(list);
           }).catch(function(){
             window.location.href = url.href;
           }).finally(function(){
@@ -5381,6 +5435,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           if (!nextSection || !currentSection) return;
           currentSection.replaceWith(document.importNode(nextSection, true));
           bindCardLinks();
+          bindScrollReveals(document.querySelector('[data-pa-search-results]'));
         }).catch(function(error){
           if (error && error.name === 'AbortError') return;
           var method = document.querySelector('[data-pa-search-results] .pa-search-method');
@@ -5404,6 +5459,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindConceptSliders();
         bindLiveSearchControls();
         bindActiveStatsCounters();
+        bindScrollReveals();
         bindScrollTopControl();
         bindShrinkingHeader();
         bindMobileNavAutoHide();

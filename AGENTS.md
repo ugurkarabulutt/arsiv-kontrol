@@ -616,6 +616,17 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 soru kartı başlıklarında okunurluk için yalnız bu metin yüzeyi
+  yerleşik `Inter` yazı tipine geçirildi; logo ve bölüm başlıklarındaki marka
+  serifi korundu. İlk ekranı geciktirmeyen, aşağıdaki bölümleri görünür alana
+  girdikçe 24px aşağıdan kademeli yükselten `IntersectionObserver` tabanlı hareket
+  eklendi. Dinamik arama/yükleme sonuçları yeniden bağlanır ve
+  `prefers-reduced-motion` hareketi kapatır. Masaüstü soru kartı hover görünümü
+  güçlü sınır/gölge ile `translateY(-7px) scale(1.01)` kullanır. CSS cache anahtarı
+  `20261004-modern-motion-v1` oldu. `npm.cmd run check` 201/201 başarılı. Yerel
+  Chromium 390x844 ve 1440x900 kontrollerinde görünür alandaki hedefler doğru
+  açıldı; yatay taşma ve konsol hatası yok. Değişiklik preview-only'dir,
+  production'a alınmamıştır.
 - Canlıdan ayrılmış `codex/homepage-discovery-preview` dalında ana sayfanın konu
   keşif bölümü yeniden tasarlandı. Eski yatay konu kartlarının yerine arşive özgü
   `Kavram rotaları` bandı, beş bağlantılı konu rotası ve özgün responsive WebP
