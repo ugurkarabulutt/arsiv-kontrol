@@ -631,8 +631,15 @@ tespit edilir).
   `https://arsiv-kontrol-7yjo87h6r-ugurkarabulutts-projects.vercel.app/public-preview`.
   Dış 390x844/1440x900 kontrollerinde tablo, 8 ilgili soru, 480/720 görseller,
   yedi kart, doğru bağlantı, sıfır yatay sayfa taşması ve sıfır konsol hatası
-  doğrulandı. Preview `200`, `noindex, nofollow`; canlı sitede yeni kart ve rehber
-  bağlantısı yok. Production'a alınmadı.
+  doğrulandı. Preview `200`, `noindex, nofollow`. Kullanıcı onayıyla runtime
+  commit `574a896` production'a promote edildi. Production deployment
+  `dpl_4Zik4MakSaJhoGH7tGLGGuhMMKSL` `READY`:
+  `https://arsiv-kontrol-d7lgcww7t-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`; ana sayfa, rehber,
+  480/720 WebP görseller ve sitemap `200`. Rehber canonical adresi doğru ve
+  `index,follow`; canlı 390x844/1440x900 tarayıcı kontrolünde 14 içindekiler
+  bağlantısı, beş tablo satırı, 8 ilgili soru, yedi ana sayfa rehberi, mobilde
+  tablo içi kaydırma, sıfır yatay sayfa taşması ve sıfır konsol hatası doğrulandı.
 - 2026-10-04 kullanıcı tarafından sağlanan `Teslimiyet Nedir?` metni, öğreti
   muhtevası değiştirilmeden altıncı konu rehberi olarak eklendi. Rehber dört
   teslimi ve yedi safhayı 11 bölümlü içindekiler, gerçek numaralı liste, 20 âyet
