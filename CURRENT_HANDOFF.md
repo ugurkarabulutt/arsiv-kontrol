@@ -2,6 +2,23 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-04 kullanıcı tarafından sağlanan `Ruh Nedir? Nefs ve Fizik Vücuttan
+  Farkı Nedir?` metni, öğreti ayrımları değiştirilmeden yedinci konu rehberi
+  olarak eklendi. Rehber 14 bölümlü içindekiler, 15 âyet atfı, iki delil kutusu,
+  ilgili sorular ve ruh/nefs/fizik vücut farklarını gösteren erişilebilir beş
+  satırlık semantik tablo içerir. Tablo mobilde yalnız kendi alanında yatay
+  kayar. Yerleşik ImageGen ile üç yapıyı ayrı sembollerle anlatan kişisiz/yazısız
+  özgün görsel üretildi; 480px WebP 25.230 bayt, 720px WebP 47.940 bayt. Ana
+  sayfadaki eski `Nefs ve ruh` kartı bağlı rehberine uygun olarak `Nefs
+  tezkiyesi` diye netleştirildi; yeni rehber ayrı yedinci karttır ve masaüstünde
+  son kart ortalanır. `npm.cmd run check` 203/203 başarılı. Runtime commit
+  `574a896` preview dalına push edildi. Vercel preview
+  `dpl_2BSvudAo8ffNFfKgoinvXsCeNg54` `READY`:
+  `https://arsiv-kontrol-7yjo87h6r-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Dış 390x844/1440x900 kontrollerinde tablo, 8 ilgili soru, 480/720 görseller,
+  yedi kart, doğru bağlantı, sıfır yatay sayfa taşması ve sıfır konsol hatası
+  doğrulandı. Preview `200`, `noindex, nofollow`; canlı sitede yeni kart ve rehber
+  bağlantısı yok. Production'a alınmadı.
 - 2026-10-04 kullanıcı tarafından sağlanan `Teslimiyet Nedir?` metni, öğreti
   muhtevası değiştirilmeden altıncı konu rehberi olarak eklendi. Rehber dört
   teslimi ve yedi safhayı 11 bölümlü içindekiler, gerçek numaralı liste, 20 âyet
