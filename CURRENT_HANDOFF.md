@@ -21,9 +21,15 @@
   `noindex, nofollow`, production hedefli OG URL doğru. Dış 390x844, 768x900 ve
   1440x900 kontrollerinde 12 içindekiler, üç delil kutusu, 8 ilgili soru, sekiz
   rehber kartı, merkezlenmiş son iki kart, responsive görseller, sıfır yatay
-  taşma ve sıfır konsol hatası doğrulandı. Canlı production ana sayfasında yeni
-  kart yok ve `/konu-rehberi/kurana-gore-mutluluk` `404`; kullanıcı onayı
-  olmadan production'a alınmayacak.
+  taşma ve sıfır konsol hatası doğrulandı. Kullanıcı onayıyla aynı doğrulanmış
+  preview production'a promote edildi: deployment
+  `dpl_HQwZtMdxYYceVrj9oRtBdDueRHvQ`, URL
+  `https://arsiv-kontrol-h9ibdkcbq-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa, rehber,
+  480/720px WebP varlıkları ve sitemap `200`; canonical URL ile
+  `index,follow` doğru. Canlı 390px kontrolde 12 içindekiler, üç delil kutusu,
+  8 ilgili soru, sıfır yatay taşma ve sıfır konsol hatası; 1440px kontrolde
+  sekiz kart, merkezlenmiş son iki kart ve yüklenen 720px görsel doğrulandı.
 - 2026-10-04 kullanıcı tarafından sağlanan `Ruh Nedir? Nefs ve Fizik Vücuttan
   Farkı Nedir?` metni, öğreti ayrımları değiştirilmeden yedinci konu rehberi
   olarak eklendi. Rehber 14 bölümlü içindekiler, 15 âyet atfı, iki delil kutusu,
