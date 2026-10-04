@@ -616,6 +616,14 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
+- 2026-10-04 kullanıcı geri bildirimiyle mobil konu vitrininin otomatik sola
+  akış hızı 18px/sn'den 22px/sn'ye çıkarıldı. İki yönlü dokunmatik sürükleme,
+  dikey sayfa kaydırması ve etkileşimden 1,4 saniye sonra otomatik devam davranışı
+  korunur. Cache anahtarı `20261004-touch-drag-speed-v3` oldu. Değişiklik yalnız
+  noindex preview hattındadır. `npm.cmd run check` 201/201 başarılı. Yerel 390x844
+  kontrolde otomatik hareket 23,22px/sn ölçüldü; 181,72px sola ve 179,29px sağa
+  sürükleme, 500ms duraklama, otomatik devam, kart üzerinde 844px dikey kaydırma
+  ve sıfır konsol hatası doğrulandı. Production'a alınmadı.
 - 2026-10-04 gerçek iPhone/iç tarayıcı bildiriminde konu vitrininin yatay
   sürüklenmediği görüldü. `pointer` desteğine ek olarak dokunma kimliği izleyen
   `touchstart`, pasif olmayan `touchmove`, `touchend` ve `touchcancel` akışı
