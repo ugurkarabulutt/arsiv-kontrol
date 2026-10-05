@@ -2,6 +2,22 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-05 kullanıcı onayıyla `Hacet Namazı ve Mürşidi Allah’tan İstemek`
+  rehberi ve onaylanan yeni görsel production'a alındı. İlk preview terfisi
+  preview ortam değişkenlerini koruduğu için public rehber yollarını açmadı;
+  tamamlanmış sayılmadı ve aynı commit production ortamıyla yeniden build
+  edildi. Production deployment `dpl_4akK8cVqjdNkhue8cgwpMAve27wQ` `READY`:
+  `https://arsiv-kontrol-jwd27nbnf-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health`, ana sayfa, rehber,
+  480/720px WebP görseller ve sitemap `200`; görseller sırasıyla gerçek
+  `image/webp` olarak 19.682 ve 46.662 bayt döndü. Canonical ve meta robots
+  `index,follow`, sitemap rehber URL'sini içeriyor. Dış 390x844 ve 1440x900
+  Chromium kontrollerinde 12 kart, `Allah'a ulaşmayı dilemek` -> `Hacet
+  namazı` -> `Hidayet` ilk üç sırası, responsive 480/720px görseller, 13
+  içindekiler, dört delil kutusu, altı tablo satırı, sekiz ilgili soru, 11
+  rehber bağlantısı, sıfır yatay taşma ve sıfır konsol hatası doğrulandı.
+  Google Search Console'da aynı canlı URL için `Dizine eklenmesi istendi`
+  sonucu alındı; URL öncelikli tarama sırasına eklendi.
 - 2026-10-05 kullanıcı geri bildirimiyle `Hacet Namazı ve Mürşidi Allah’tan
   İstemek` kartının ilk avlu/ışık yolu görseli kaldırıldı. Yerleşik ImageGen ile
   şafak öncesi boş ibadet mekânı, koyu yeşil sade seccade, dört ışık çizgisi ve

@@ -3,6 +3,26 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-05
+
+- **Hacet Namazı rehberi onaylanan görsel ve ikinci sıra ile canlıya alındı:**
+  Kullanıcının sağladığı `Hacet Namazı ve Mürşidi Allah'tan İstemek` metni 13
+  bölümlü içindekiler, dört delil kutusu, altı satırlı namaz tablosu, sekiz
+  ilgili soru ve diğer 11 rehbere iç bağlantılarla yayımlandı. Ana sayfa konu
+  vitrininin ilk üç sırası `Allah'a ulaşmayı dilemek`, `Hacet namazı ve mürşidi
+  Allah'tan istemek`, `Hidayet yolculuğu` olarak kesinleşti. Hacet kartında
+  şafak öncesi boş ibadet mekânı, koyu yeşil sade seccade, dört ışık çizgisi ve
+  aydınlık kemer kullanan kişisiz/yazısız özgün 480/720px WebP görsel yer alır.
+  `npm.cmd run check` 209/209 başarılı. Production deployment
+  `dpl_4akK8cVqjdNkhue8cgwpMAve27wQ` `READY`; canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı rehber, iki görsel ve sitemap `200`;
+  canonical, `index,follow`, sitemap kaydı, 390x844/1440x900 responsive görünüm,
+  sıfır taşma ve sıfır konsol hatası doğrulandı. Google Search Console'da rehber
+  için `Dizine eklenmesi istendi` sonucu alındı. Preview deployment'ı doğrudan
+  terfi ettirmek preview ortam değişkenlerini koruduğu için public root/referans
+  yollarını açmadı; public arşiv production yayınında production env ile temiz
+  `vercel --prod` build alınması zorunludur.
+
 ## 2026-10-03
 
 - **Tövbe rehberi canlıya alındı ve rehber iç bağlantıları güçlendirildi:** Kullanıcının sağladığı `Tövbe ve
