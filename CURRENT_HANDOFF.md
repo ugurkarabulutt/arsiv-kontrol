@@ -2,6 +2,21 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-05 kullanıcı geri bildirimiyle `Hacet Namazı ve Mürşidi Allah’tan
+  İstemek` kartının ilk avlu/ışık yolu görseli kaldırıldı. Yerleşik ImageGen ile
+  şafak öncesi boş ibadet mekânı, koyu yeşil sade seccade, dört ışık çizgisi ve
+  tek aydınlık kemer kullanan daha minimal, simetrik, kişisiz ve yazısız yeni
+  görsel üretildi. 480px WebP 19.682 bayt, 720px WebP 46.662 bayttır. Rehber
+  hem ana sayfa konu vitrininde hem konu okuma sırasında ikinci sıraya taşındı;
+  ilk sıra `Allah’a ulaşmayı dilemek`, üçüncü sıra `Hidayet yolculuğu` olarak
+  korunur. `npm.cmd run check` başarılı, 209/209 test geçti. Yerel ve dış
+  390x844/1440x900 Chromium kontrollerinde 12 kart, doğru ilk üç sıra, gerçek
+  480/720px görseller, sıfır yatay taşma ve sıfır konsol hatası doğrulandı.
+  Runtime commit `4da193a` preview dalına push edildi. Son onay için noindex
+  deployment `dpl_B2iMBhVoVSDBcb3gsKAB9FnfzKPT` `READY`:
+  `https://arsiv-kontrol-qlyd1cb1r-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Ana sayfa, rehber ve iki görsel `200`, `X-Robots-Tag: noindex, nofollow`;
+  production yeni rehber URL’si hâlâ `404` ve canlıya alınmadı.
 - 2026-10-05 kullanıcı tarafından sağlanan `Hacet Namazı ve Mürşidi Allah’tan
   İstemek` metni, öğreti muhtevası ve Türkçe karakterleri korunarak on ikinci
   konu rehberi olarak yalnız noindex preview hattına eklendi. Rehber 13 bölümlü
