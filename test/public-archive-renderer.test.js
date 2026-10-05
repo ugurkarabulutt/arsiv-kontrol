@@ -967,6 +967,18 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /data-reading-slider|data-reading-rail|data-reading-set/);
   assert.doesNotMatch(home, /pa-reading-index/);
   assert.match(home, /pa-topic-showcase/);
+  const showcaseStart = home.indexOf('<section class="pa-section pa-topic-showcase"');
+  const showcaseHtml = home.slice(showcaseStart);
+  assert.ok(
+    showcaseHtml.indexOf('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek') <
+      showcaseHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek'),
+    'Hacet Namazı rehberi ana sayfa konu vitrininde ikinci sırada olmalı.'
+  );
+  assert.ok(
+    showcaseHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek') <
+      showcaseHtml.indexOf('/public-preview/konu-rehberi/hidayet'),
+    'Hacet Namazı rehberi Hidayet rehberinden önce gelmeli.'
+  );
   assert.match(home, /data-topic-showcase-slider/);
   assert.match(home, /data-topic-showcase-rail/);
   assert.match(home, /data-topic-showcase-set/);

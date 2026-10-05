@@ -726,8 +726,8 @@ const HERO_CONCEPT_ITEMS = [
 ];
 
 const HOME_READING_PATHS = [
-  { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
+  { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
@@ -1975,18 +1975,18 @@ function homeQuranEvidenceSection(items = []) {
 function homeTopicShowcaseSection() {
   const items = [
     {
-      kicker: 'Özel rehber',
-      title: 'Hacet namazı ve mürşidi Allah’tan istemek',
-      text: 'Dört rekâtlık hacet namazını, kalpten talebi ve mürşidi Allah’tan istemenin yolunu okuyun.',
-      image: 'topic-showcase-hacet-namazi-720.webp',
-      articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek'
-    },
-    {
       kicker: 'İlk yöneliş',
       title: 'Allah’a ulaşmayı dilemek',
       text: 'Kalbin Allah’a yönelişini, samimi talebi ve yolculuğun başlangıcını birlikte okuyun.',
       image: 'topic-showcase-dilemek-720.webp',
       articleSlug: 'allaha-ulasmayi-dilemek'
+    },
+    {
+      kicker: 'Özel rehber',
+      title: 'Hacet namazı ve mürşidi Allah’tan istemek',
+      text: 'Dört rekâtlık hacet namazını, kalpten talebi ve mürşidi Allah’tan istemenin yolunu okuyun.',
+      image: 'topic-showcase-hacet-namazi-720.webp',
+      articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek'
     },
     {
       kicker: 'Yolun yönü',
