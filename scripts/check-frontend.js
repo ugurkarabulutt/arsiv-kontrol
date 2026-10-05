@@ -1564,7 +1564,11 @@ const duaArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-
 for (const marker of ['Dua ve Tevekkül', 'Kalbin talebinden Allah’a güvene', 'MU’MİN 60', 'A’RÂF 55', 'AHZÂB 3', 'ÂLİ İMRÂN 159', 'TALÂK 3', 'KALPTEN DİLEK', 'Samimi dua ile ihlâs makamı aynı değildir', 'Dua ve Tevekkül ile ilgili sorular', '"@type":"BlogPosting"']) {
   assert(duaArticlePreview.includes(marker), `Public dua ve tevekkul konu rehberi marker eksik: ${marker}`);
 }
-const topicGuideSlugs = ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul'];
+const hacetArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek').html;
+for (const marker of ['Hacet Namazı ve Mürşidi Allah’tan İstemek', 'Kalpten yönelişten tâbiiyete', 'MÂİDE 35', 'FÂTİHA 5', 'BAKARA 45', 'HACET DUASI', 'pa-topic-article-table', 'Birinci rekât', 'Son oturuş', 'Hacet Namazı ve Mürşidi Allah’tan İstemek ile ilgili sorular', '"@type":"BlogPosting"']) {
+  assert(hacetArticlePreview.includes(marker), `Public hacet namazi konu rehberi marker eksik: ${marker}`);
+}
+const topicGuideSlugs = ['hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul'];
 for (const currentSlug of topicGuideSlugs) {
   const articlePreview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${currentSlug}`).html;
   const relatedStart = articlePreview.indexOf('<section class="pa-topic-next-card">');
@@ -1615,12 +1619,12 @@ for (const fileName of ['topic-routes-archive-720.webp', 'topic-routes-archive-1
   assert(fs.existsSync(assetPath), `Public konu rotasi gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 125 * 1024, `Public konu rotasi gorseli hiz butcesini asmamali: ${fileName}`);
 }
-for (const fileName of ['topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-720.webp', 'topic-showcase-tovbe-720.webp']) {
+for (const fileName of ['topic-showcase-hacet-namazi-720.webp', 'topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-720.webp', 'topic-showcase-tovbe-720.webp', 'topic-showcase-dua-tevekkul-720.webp']) {
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public konu vitrini gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 110 * 1024, `Public konu vitrini gorseli hiz butcesini asmamali: ${fileName}`);
 }
-for (const fileName of ['topic-showcase-dilemek-480.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-tabiiyet-480.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-nefs-480.webp', 'topic-showcase-teslimiyet-480.webp', 'topic-showcase-ruh-nefs-480.webp', 'topic-showcase-mutluluk-480.webp', 'topic-showcase-tasavvuf-480.webp', 'topic-showcase-tovbe-480.webp']) {
+for (const fileName of ['topic-showcase-hacet-namazi-480.webp', 'topic-showcase-dilemek-480.webp', 'topic-showcase-hidayet-480.webp', 'topic-showcase-tabiiyet-480.webp', 'topic-showcase-zikir-480.webp', 'topic-showcase-nefs-480.webp', 'topic-showcase-teslimiyet-480.webp', 'topic-showcase-ruh-nefs-480.webp', 'topic-showcase-mutluluk-480.webp', 'topic-showcase-tasavvuf-480.webp', 'topic-showcase-tovbe-480.webp', 'topic-showcase-dua-tevekkul-480.webp']) {
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public konu vitrini mobil gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 60 * 1024, `Public konu vitrini mobil gorseli hiz butcesini asmamali: ${fileName}`);

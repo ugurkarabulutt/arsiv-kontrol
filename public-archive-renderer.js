@@ -726,6 +726,7 @@ const HERO_CONCEPT_ITEMS = [
 ];
 
 const HOME_READING_PATHS = [
+  { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
@@ -1621,7 +1622,8 @@ const TOPIC_GUIDE_PRIORITY_LINKS = Object.freeze({
   'kurana-gore-mutluluk': ['nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
   'tasavvuf-nedir': ['teslimiyet', 'allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
   'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
-  'dua-ve-tevekkul': ['allaha-ulasmayi-dilemek', 'teslimiyet', 'zikir-ve-daimi-zikir', 'kurana-gore-mutluluk']
+  'dua-ve-tevekkul': ['allaha-ulasmayi-dilemek', 'teslimiyet', 'zikir-ve-daimi-zikir', 'kurana-gore-mutluluk'],
+  'hacet-namazi-ve-mursidi-allahtan-istemek': ['murside-tabiiyet', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'hidayet']
 });
 
 function relatedTopicGuideArticles(article = {}) {
@@ -1972,6 +1974,13 @@ function homeQuranEvidenceSection(items = []) {
 
 function homeTopicShowcaseSection() {
   const items = [
+    {
+      kicker: 'Özel rehber',
+      title: 'Hacet namazı ve mürşidi Allah’tan istemek',
+      text: 'Dört rekâtlık hacet namazını, kalpten talebi ve mürşidi Allah’tan istemenin yolunu okuyun.',
+      image: 'topic-showcase-hacet-namazi-720.webp',
+      articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek'
+    },
     {
       kicker: 'İlk yöneliş',
       title: 'Allah’a ulaşmayı dilemek',

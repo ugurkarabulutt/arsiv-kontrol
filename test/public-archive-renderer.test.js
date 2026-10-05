@@ -1060,7 +1060,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
+  for (const slug of ['hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1353,8 +1353,28 @@ test('topic guide article renders Dua ve Tevekkül guide with six evidence passa
   assertOnlyPublicPreviewApi(preview.html);
 });
 
+test('topic guide article renders Hacet Namazı guide with prayer table and four evidence passages', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Hacet Namazı ve Mürşidi Allah’tan İstemek/);
+  assert.match(preview.html, /Kalpten yönelişten tâbiiyete/);
+  assert.match(preview.html, /MÂİDE 35/);
+  assert.match(preview.html, /FÂTİHA 5/);
+  assert.match(preview.html, /BAKARA 45/);
+  assert.match(preview.html, /HACET DUASI/);
+  assert.match(preview.html, /pa-topic-article-table/);
+  assert.match(preview.html, /Birinci rekât/);
+  assert.match(preview.html, /Son oturuş/);
+  assert.match(preview.html, /Hacet Namazı ve Mürşidi Allah’tan İstemek ile ilgili sorular/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/hacet-namazi-ve-mursidi-allahtan-istemek#article"/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
 test('every topic guide links all other guides with topic-aware priorities', () => {
   const guideSlugs = [
+    'hacet-namazi-ve-mursidi-allahtan-istemek',
     'allaha-ulasmayi-dilemek',
     'hidayet',
     'murside-tabiiyet',
