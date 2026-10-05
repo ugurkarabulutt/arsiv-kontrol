@@ -2,6 +2,34 @@
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
+- 2026-10-05 kullanıcı tarafından sağlanan `Hacet Namazı ve Mürşidi Allah’tan
+  İstemek` metni, öğreti muhtevası ve Türkçe karakterleri korunarak on ikinci
+  konu rehberi olarak yalnız noindex preview hattına eklendi. Rehber 13 bölümlü
+  içindekiler, beş âyet atfı, Mâide 35, Fâtiha 5, Bakara 45 ve hacet duası için
+  dört delil kutusu; dört rekât ile iki oturuşu gösteren altı satırlı semantik
+  tablo, `mursid` kategorisindeki ilgili sorular ve diğer on bir rehbere doğrudan
+  iç bağlantılar içerir. URL
+  `/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek`; ana sayfa konu
+  vitrininin ilk kartıdır. Yerleşik ImageGen ile boy abdesti hazırlığını pirinç
+  ibrik ve suyla, talebi ışık duraklarıyla, Allah’tan doğru mürşidi istemeyi tek
+  aydınlık kapıyla anlatan kişisiz ve yazısız özgün görsel üretildi. Kaynak
+  görsel Codex görsel klasöründe korunur;
+  `topic-showcase-hacet-namazi-480.webp` 32.228 bayt, 720px varyantı 66.744
+  bayttır. `npm.cmd run check` başarılı, 209/209 test geçti; `git diff --check`
+  temiz. Yerel 390x844 ve 1440x900 Chromium kontrollerinde 12 ana sayfa rehber
+  kartı, yeni kartın ilk sırada oluşu, 13 içindekiler, dört delil kutusu, altı
+  tablo satırı, 11 rehber bağlantısı, ilgili sorular, responsive görsel, sıfır
+  yatay taşma ve sıfır konsol hatası doğrulandı. Runtime commit `1454471`
+  preview dalına push edildi. Dış noindex preview deployment
+  `dpl_D2P7SLU67YyqYXLDCxaYmtqF5aja` `READY`:
+  `https://arsiv-kontrol-h2y6t77p1-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek`.
+  Dış preview ana sayfa, rehber ve gerçek 480/720px WebP yolları `200`;
+  `X-Robots-Tag` ile meta robots `noindex, nofollow`, production hedefli OG URL
+  doğru. Dış 390x844 ve 1440x900 Chromium kontrollerinde 12 kart, ilk sıra,
+  responsive görsel, 13 içindekiler, dört delil kutusu, altı tablo satırı, sekiz
+  ilgili soru, 11 rehber bağlantısı, sıfır yatay taşma ve sıfır konsol hatası
+  doğrulandı. Production yeni rehber URL’si hâlâ `404`; kullanıcı onayı olmadan
+  production’a alınmayacak ve Google dizine ekleme isteği gönderilmeyecek.
 - 2026-10-04 kullanıcı tarafından sağlanan `Dua ve Tevekkül` metni, öğreti
   ayrımları ve Türkçe karakterleri korunarak on birinci konu rehberi olarak
   yalnız noindex preview hattına eklendi. Rehber 13 bölümlü içindekiler, 15
