@@ -12,7 +12,11 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `dpl_5fqr3o2gzrQdWBpbdXKJUdWnQzUT` `READY`;
   `https://arsiv-kontrol-17h0uf0jb-ugurkarabulutts-projects.vercel.app/public-preview`.
   Dış 390x844 kontrolde `26,2-26,3 px/sn`, iki yönlü elle kaydırma ve otomatik
-  devam doğrulandı. Production kullanıcı onayı olmadan değiştirilmedi.
+  devam doğrulandı. Kullanıcı onayıyla production deployment
+  `dpl_5itDC7rToKdoHyL1h4Qoqdgvdiru` `READY` olarak
+  `https://arsiv.ibrahimlive.ai` aliasına alındı. Canlı `/health` ve ana sayfa
+  başarılı; `26` hız değeri, `index,follow`, mobil elle kaydırma ve `25,8-26,0
+  px/sn` otomatik devam doğrulandı.
 
 ## 2026-10-05
 

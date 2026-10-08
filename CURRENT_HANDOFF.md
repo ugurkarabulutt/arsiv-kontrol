@@ -10,7 +10,12 @@
   iki yönlü elle kaydırma ve otomatik devam doğrulandı. Noindex preview
   deployment `dpl_5fqr3o2gzrQdWBpbdXKJUdWnQzUT` `READY`:
   `https://arsiv-kontrol-17h0uf0jb-ugurkarabulutts-projects.vercel.app/public-preview`.
-  Meta robots `noindex,nofollow`; production bu değişiklik için güncellenmedi.
+  Meta robots `noindex,nofollow`. Kullanıcı onayıyla production ortamında temiz
+  build alındı; deployment `dpl_5itDC7rToKdoHyL1h4Qoqdgvdiru` `READY`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, ana sayfa `200`,
+  yeni `26` hız değeri mevcut, eski `22` değeri yok ve meta robots
+  `index,follow`. Canlı 390x844 kontrolde hız `25,8-26,0 px/sn` ölçüldü; elle
+  sola kaydırma ve 1,4 saniye sonra otomatik devam doğrulandı.
 
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
