@@ -1,5 +1,17 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-08 Konu Rehberleri Akış Hızı Preview
+
+- Kullanıcı geri bildirimiyle ana sayfadaki mobil konu rehberleri vitrininin
+  otomatik akışı `22 px/sn` değerinden `26 px/sn` değerine çıkarıldı. Elle
+  sağa-sola kaydırma, etkileşimden 1,4 saniye sonra otomatik akışa dönme ve
+  `prefers-reduced-motion` davranışı korunur. `npm.cmd run check` başarılı,
+  209/209 test geçti. Dış 390x844 kontrolde akış `26,2-26,3 px/sn` ölçüldü;
+  iki yönlü elle kaydırma ve otomatik devam doğrulandı. Noindex preview
+  deployment `dpl_5fqr3o2gzrQdWBpbdXKJUdWnQzUT` `READY`:
+  `https://arsiv-kontrol-17h0uf0jb-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Meta robots `noindex,nofollow`; production bu değişiklik için güncellenmedi.
+
 ## 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
 - 2026-10-05 kullanıcı onayıyla `Hacet Namazı ve Mürşidi Allah’tan İstemek`

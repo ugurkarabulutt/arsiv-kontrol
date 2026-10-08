@@ -982,6 +982,7 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.match(home, /data-topic-showcase-slider/);
   assert.match(home, /data-topic-showcase-rail/);
   assert.match(home, /data-topic-showcase-set/);
+  assert.match(home, /var speed = 26;/);
   assert.match(home, /Konu rehberleri/);
   assert.match(home, /Seçili konu rehberlerini inceleyin./);
   assert.match(home, /Nefs tezkiyesi/);

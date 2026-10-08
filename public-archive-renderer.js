@@ -3860,7 +3860,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           var dragStartY = 0;
           var dragStartOffset = 0;
           var touchIdentifier = null;
-          var speed = 22;
+          var speed = 26;
           function railGap() {
             var styles = window.getComputedStyle ? window.getComputedStyle(rail) : null;
             return styles ? (parseFloat(styles.columnGap || styles.gap || '0') || 0) : 0;

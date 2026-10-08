@@ -1947,7 +1947,7 @@ assert(publicRendererSource.includes('data-card-href') && publicRendererSource.i
 for (const marker of ['bindConceptSliders', 'requestAnimationFrame', 'data-paused', 'setTimeout(function(){ setPaused(false); }, 2000)', 'translate3d', 'setPointerCapture', 'data-dragging']) {
   assert(publicRendererSource.includes(marker), `Kategori slider davranis marker eksik: ${marker}`);
 }
-for (const marker of ['bindTopicShowcaseMarquees', 'data-topic-showcase-slider', 'data-topic-showcase-rail', 'data-topic-showcase-set', 'data-topic-showcase-bound', 'var speed = 22', 'dragStartOffset', "dragAxis === 'horizontal'", 'beginDrag', 'moveDrag', "dragInput === 'touch'", "addEventListener('touchstart'", "addEventListener('touchmove'", 'matchingTouch(event.changedTouches)', '{ passive: false }', 'event.preventDefault()', 'resumeAfterInteraction', '}, 1400)', "window.matchMedia('(max-width: 430px)')", "threshold: 0.16", "rootMargin: '8% 0px 8% 0px'"]) {
+for (const marker of ['bindTopicShowcaseMarquees', 'data-topic-showcase-slider', 'data-topic-showcase-rail', 'data-topic-showcase-set', 'data-topic-showcase-bound', 'var speed = 26', 'dragStartOffset', "dragAxis === 'horizontal'", 'beginDrag', 'moveDrag', "dragInput === 'touch'", "addEventListener('touchstart'", "addEventListener('touchmove'", 'matchingTouch(event.changedTouches)', '{ passive: false }', 'event.preventDefault()', 'resumeAfterInteraction', '}, 1400)', "window.matchMedia('(max-width: 430px)')", "threshold: 0.16", "rootMargin: '8% 0px 8% 0px'"]) {
   assert(publicRendererSource.includes(marker), `Konu vitrini sabit hizli akis marker eksik: ${marker}`);
 }
 for (const marker of ['bindActiveStatsCounters', 'IntersectionObserver', 'data-count-up', 'data-count-target', 'duration = 2400', 'data-counted']) {

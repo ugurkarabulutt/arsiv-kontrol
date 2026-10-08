@@ -3,6 +3,17 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-08
+
+- **Mobil konu rehberleri vitrini hızlandırıldı:** Ana sayfadaki sürekli konu
+  rehberleri akışı `22 px/sn` değerinden `26 px/sn` değerine çıkarıldı. Elle
+  iki yönlü kaydırma, 1,4 saniye sonra otomatik devam ve hareket azaltma tercihi
+  korundu. `npm.cmd run check` 209/209 başarılı. Noindex preview deployment
+  `dpl_5fqr3o2gzrQdWBpbdXKJUdWnQzUT` `READY`;
+  `https://arsiv-kontrol-17h0uf0jb-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Dış 390x844 kontrolde `26,2-26,3 px/sn`, iki yönlü elle kaydırma ve otomatik
+  devam doğrulandı. Production kullanıcı onayı olmadan değiştirilmedi.
+
 ## 2026-10-05
 
 - **Hacet Namazı rehberi onaylanan görsel ve ikinci sıra ile canlıya alındı:**
