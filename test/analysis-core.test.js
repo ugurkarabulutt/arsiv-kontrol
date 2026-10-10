@@ -1170,11 +1170,11 @@ test('12 Temmuz geri bildirimleri sozluk ve baglam lehine korunur', () => {
   assert.ok(result.correctedText.includes('Ruhta 19 tane haslet içinde yer alır.'));
   assert.ok(result.correctedText.includes('afetlerine dikkat edilir.'));
   assert.ok(result.correctedText.includes('güler yüz…'));
-  assert.ok(result.correctedText.includes('Biraraya gelince hizmet tamamlanır.'));
-  assert.ok(result.correctedText.includes('biraraya yazımı sözlükte korunur.'));
+  assert.ok(result.correctedText.includes('Bir araya gelince hizmet tamamlanır.'));
+  assert.ok(result.correctedText.includes('bir araya yazımı sözlükte korunur.'));
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
     ['19 tane haslet ruhun', 'Ruhta 19 tane haslet'],
-    ['Bir araya', 'biraraya']
+    ['biraraya', 'bir araya']
   ]);
 });
 
@@ -1280,10 +1280,11 @@ test('14 Temmuz acik feedback kokleri tekrar skorlanmaz', () => {
     }
   }, source);
 
-  assert.equal(result.totalErrors, 1);
-  assert.equal(result.score, 96);
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.score, 92);
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
-    ['\u015eura', '\u015e\u00fbr\u00e2']
+    ['\u015eura', '\u015e\u00fbr\u00e2'],
+    ['l\u00e2z\u0131mgelen', 'l\u00e2z\u0131m gelen']
   ]);
   assert.ok(result.correctedText.includes('\u015e\u00fbr\u00e2 suresinde'));
   assert.ok(result.correctedText.includes('gayz(gayzi) ifadesi'));
@@ -1293,7 +1294,7 @@ test('14 Temmuz acik feedback kokleri tekrar skorlanmaz', () => {
   assert.ok(result.correctedText.includes('diyor ki;'));
   assert.ok(result.correctedText.includes('Do\u011fruyu s\u00f6yleyebilmektir.'));
   assert.ok(result.correctedText.includes('in\u015faallah iki a ile korunur.'));
-  assert.ok(result.correctedText.includes('l\u00e2z\u0131mgelen birlesik'));
+  assert.ok(result.correctedText.includes('l\u00e2z\u0131m gelen birlesik'));
   assert.ok(result.correctedText.includes('d\u00eeni ve d\u00eene halleri korunur.'));
   assert.ok(result.correctedText.includes('Hz. \u0130sa\u2019ya tefsir'));
 });
@@ -1480,7 +1481,7 @@ test('1 Agustos acik feedback kokleri korunur ve gerekli referans duzeltmeleri u
   assert.ok(result.correctedText.includes('Yâsîn-60, 61’de: Âyet açıklaması gelir.'));
   assert.ok(result.correctedText.includes('Zikirle. Sevgili kardeşlerim, devam ediyor.'));
   assert.ok(result.correctedText.includes('Öyleyse Tevrat, İncil’de de bu konular anlatılıyor.'));
-  assert.ok(result.correctedText.includes('Tabiatıyla bu böyledir. Bu istikamete ilk düşünmemiz lâzımgelen şey, gayrettir.'));
+  assert.ok(result.correctedText.includes('Tabiatıyla bu böyledir. Bu istikamete ilk düşünmemiz lâzım gelen şey, gayrettir.'));
   assert.ok(result.correctedText.includes("Hz. Musa'ya Hızır'a var dedi,"));
   assert.ok(result.correctedText.includes('\nNice aşıkların bağrını dele,'));
   assert.ok(result.correctedText.includes('\nBir kâmil mürşide varmazsan olmaz.'));
@@ -1490,7 +1491,7 @@ test('1 Agustos acik feedback kokleri korunur ve gerekli referans duzeltmeleri u
   assert.equal(result.correctedText.includes('fazl ile'), false);
   assert.equal(result.correctedText.includes('surede anlatılıyor'), false);
   assert.equal(result.correctedText.includes("Kur'ân'da da bu konular"), false);
-  assert.equal(result.totalErrors, 6);
+  assert.equal(result.totalErrors, 7);
 });
 
 test('fazillar kavrami fazilet fazlalik veya fazl olarak degistirilmez', () => {
