@@ -293,6 +293,7 @@ function isSourceDiacriticProtected(original, fixed) {
   if (/^dîn(?:ehum|ekum|ihim|ikum|ihi|ehu)$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return true;
   if (/^dîn(?:â|en)$/iu.test(from) && /^din(?:â|en)$/iu.test(to)) return true;
   if (/^dîn[\p{L}\p{N}_]*$/iu.test(from) && /^din[\p{L}\p{N}_]*$/iu.test(to)) return false;
+  if (/^hâcet[\p{L}\p{N}_]*$/iu.test(from) && /^hacet[\p{L}\p{N}_]*$/iu.test(to)) return false;
   return !!from && !!to && from !== to && hasCircumflex(from) && foldText(from) === foldText(to);
 }
 
