@@ -532,6 +532,7 @@ function isLiveFeedbackLexicalFalsePositive(original, fixed) {
   if (from === 'dehr' && to === 'insân') return true;
   if (from === 'takvim' && to === 'takvîm') return true;
   if (/^efendimiz(?:['’](?:i|in))?$/iu.test(from) && /efendimiz\s*\(s\.a\.v\)/iu.test(to)) return true;
+  if (from === 'allah resûlü (s.a.v) efendimiz' && to === 'allah resûlü efendimiz (s.a.v)') return true;
   if (/^VÜCUD$/u.test(canonicalText(original)) && /^VÜCUT$/u.test(canonicalText(fixed))) return true;
   if (/^TÖVBE\s+1$/u.test(canonicalText(original)) && /^Tevbe\s+1$/u.test(canonicalText(fixed))) return true;
   if (/^mürşid\.\s+mürşidle$/iu.test(from) && /^mürşid\s+ile$/iu.test(to)) return true;
@@ -570,8 +571,9 @@ function isAhlakiPossessiveRewrite(original, fixed) {
 
 function isArdardaSplit(original, fixed) {
   const from = foldText(original).replace(/\s+/g, ' ').trim();
-  const to = foldText(fixed).replace(/\s+/g, '').trim();
-  return from === 'art arda' && to === 'ardarda';
+  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
+  return (from === 'art arda' && to.replace(/\s+/g, '') === 'ardarda')
+    || (from === 'ardarda' && to === 'ard arda');
 }
 
 function isAcizCircumflexInsertion(original, fixed) {
@@ -612,7 +614,9 @@ function isTabiKiToTabiatiylaRewrite(original, fixed) {
 function isLazimGelenSplitInPhrase(original, fixed) {
   const from = asciiFold(original).replace(/\s+/g, ' ').trim();
   const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
-  return from.includes('lazim gelen') && to.includes('lazimgelen');
+  if (from.includes('lazim gelen') && to.includes('lazimgelen')) return true;
+  if (!from.includes('lazimgelen') || !to.includes('lazim gelen')) return false;
+  return from.replace(/lazimgelen/g, 'lazim gelen') !== to;
 }
 
 function isAllahCcToAsRewrite(original, fixed) {
