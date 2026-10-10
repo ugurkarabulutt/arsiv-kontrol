@@ -672,7 +672,7 @@ function sourceProtectsTevbeSuraReference(sourceText, original, fixed) {
   const from = foldText(original);
   const to = foldText(fixed);
   if (from !== 'tevbe' || to !== 'tovbe') return false;
-  return /\btevbe\s+\d+/u.test(asciiFold(sourceWindow(sourceText, original)));
+  return /\btevbe(?:\s+suresi(?:nin|ni|nde|nden|ne)?|\s*[-/]?\s*\d+)\b/u.test(asciiFold(sourceWindow(sourceText, original)));
 }
 
 function isBibliographySourceTitleRewrite(original, fixed) {
