@@ -176,13 +176,13 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('hâdise', 'hadîse'), true);
   assert.equal(isProtectedChange('afv-u', 'af ve'), true);
   assert.equal(isProtectedChange('vücud', 'vücût'), true);
-  assert.equal(isProtectedChange('şerr', 'şer'), false);
+  assert.equal(isProtectedChange('şerr', 'şer'), true);
   assert.equal(isProtectedChange('şerrdir', 'şerdir'), true);
   assert.equal(isProtectedChange('şerrle', 'şerle'), true);
   assert.equal(isProtectedChange('ŞERİF', 'ŞERRİF'), true);
   assert.equal(isProtectedChange('şeriat', 'şerriat'), true);
   assert.equal(isProtectedChange('şerh', 'şerrh'), true);
-  assert.equal(isProtectedChange('şer', 'şerr'), true);
+  assert.equal(isProtectedChange('şer', 'şerr'), false);
   assert.equal(isProtectedChange('şerr', 'şerrr'), true);
   assert.equal(isProtectedChange('dinde', 'dînde'), true);
   assert.equal(isProtectedChange('arif', 'ârif'), true);
@@ -215,7 +215,7 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('hidayete', 'hidayet'), true);
 });
 
-test('serr koklu eski yazim ser kokune kontrollu duzeltilir', () => {
+test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
   const source = 'Bu ifade şerrdir. Şerrle mücadele edilir.';
   const result = finalizeResult({
     correctedText: 'Bu ifade şerdir. Şerle mücadele edilir.',
@@ -229,12 +229,12 @@ test('serr koklu eski yazim ser kokune kontrollu duzeltilir', () => {
     }
   }, source);
 
-  assert.equal(result.totalErrors, 2);
-  assert.equal(result.score, 92);
-  assert.equal(result.correctedText, 'Bu ifade şerdir. Şerle mücadele edilir.');
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
 });
 
-test('ser koklu standart kelime icine girmez ve bagimsiz ser korunur', () => {
+test('ser koklu standart kelime icine girmez ama bagimsiz ser duzeltilir', () => {
   const source = [
     'HADÎS-İ ŞERİF başlığı korunur.',
     'ŞERİAT kitabı ve şerh bahsi geçer.',
@@ -258,11 +258,11 @@ test('ser koklu standart kelime icine girmez ve bagimsiz ser korunur', () => {
     }
   }, source);
 
-  assert.equal(result.totalErrors, 0);
-  assert.equal(result.score, 100);
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
   assert.ok(result.correctedText.includes('HADÎS-İ ŞERİF başlığı korunur.'));
   assert.ok(result.correctedText.includes('ŞERİAT kitabı ve şerh bahsi geçer.'));
-  assert.ok(result.correctedText.includes('Bağımsız şer kelimesi düzeltilmelidir.'));
+  assert.ok(result.correctedText.includes('Bağımsız şerr kelimesi düzeltilmelidir.'));
   assert.equal(result.correctedText.includes('ŞERRİF'), false);
   assert.equal(result.correctedText.includes('ŞERRİAT'), false);
   assert.equal(result.correctedText.includes('şerrh'), false);
@@ -1762,7 +1762,6 @@ test('10 Ekim feedback kokleri baglama gore korunur', () => {
       sozluk: { issues: [
         { original: 'Yunus', fixed: 'Yûnus', rule: 'Sure adı' },
         { original: 'takvim', fixed: 'takvîm', rule: 'Sözlük' },
-        { original: 'şer', fixed: 'şerr', rule: 'Sözlük' },
         { original: "Efendimiz'in", fixed: "Efendimiz (S.A.V)'in", rule: 'Unvan' },
         { original: 'İslâm’a', fixed: "İslâm'ı", rule: 'Ek' }
       ] },
@@ -1777,9 +1776,9 @@ test('10 Ekim feedback kokleri baglama gore korunur', () => {
     }
   }, source);
 
-  assert.equal(result.totalErrors, 0);
-  assert.equal(result.score, 100);
-  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 96);
+  assert.equal(result.correctedText, source.replace('KÖTÜLÜK (ŞER) YAPARSA', 'KÖTÜLÜK (ŞERR) YAPARSA'));
 });
 
 test('10 Ekim kesin duzeltmeleri hedefi standartlastirir', () => {
