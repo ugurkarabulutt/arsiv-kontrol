@@ -1173,8 +1173,8 @@ test('12 Temmuz geri bildirimleri sozluk ve baglam lehine korunur', () => {
   assert.ok(result.correctedText.includes('Bir araya gelince hizmet tamamlanır.'));
   assert.ok(result.correctedText.includes('bir araya yazımı sözlükte korunur.'));
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
-    ['19 tane haslet ruhun', 'Ruhta 19 tane haslet'],
-    ['biraraya', 'bir araya']
+    ['biraraya', 'bir araya'],
+    ['19 tane haslet ruhun', 'Ruhta 19 tane haslet']
   ]);
 });
 
@@ -1283,8 +1283,8 @@ test('14 Temmuz acik feedback kokleri tekrar skorlanmaz', () => {
   assert.equal(result.totalErrors, 2);
   assert.equal(result.score, 92);
   assert.deepEqual(result.categories.imla.issues.map(i => [i.original, i.fixed]), [
-    ['\u015eura', '\u015e\u00fbr\u00e2'],
-    ['l\u00e2z\u0131mgelen', 'l\u00e2z\u0131m gelen']
+    ['l\u00e2z\u0131mgelen', 'l\u00e2z\u0131m gelen'],
+    ['\u015eura', '\u015e\u00fbr\u00e2']
   ]);
   assert.ok(result.correctedText.includes('\u015e\u00fbr\u00e2 suresinde'));
   assert.ok(result.correctedText.includes('gayz(gayzi) ifadesi'));
