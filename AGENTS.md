@@ -18,7 +18,11 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   mükerrer 42 hata kaydı nedeniyle düşen toplam 168 puan, ilgili 31 geçmiş
   kayıtta kontrollü olarak geri verildi. Canlı doğrulamada açık geri bildirim
   sayısı `0`, bu grupta çözülen geri bildirim `50`, çözüm kaydı `1` ve
-  geri alınabilir değişiklik `947` olarak okundu.
+  geri alınabilir değişiklik `947` olarak okundu. İlk toplu veri işleminde kullanıcı
+  çözüm bildirimleri üretilmediği son kontrolde tespit edildi; aynı çözüm grubuna
+  bağlı olarak 12 kullanıcı için kullanıcı başına tek `feedback_resolution`
+  bildirimi oluşturuldu. Nihai doğrulama: 12 bildirim, 12 kullanıcı, 12 okunmamış,
+  mesaj formatı geçerli ve açık geri bildirim `0`.
 
 - **Aynı hataların tekrarlanmasını önleyen analiz korumaları production'a
   alındı:** `bir araya`, `lâzım gelen`, `art arda`, `içerisinde`,
