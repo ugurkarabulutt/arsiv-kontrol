@@ -8,6 +8,10 @@
   `feedback-resolution-20261010` grubunda çözüldü; açık geri bildirim sayısı
   yeniden sorguda `0`. `issue_resolution_log` kaydı `1`,
   `content_correction_log` geri alma kaydı `947`.
+- Kullanıcı bilgilendirmesi: ilk toplu işlemde eksik kaldığı tespit edilen
+  `feedback_resolution` bildirimleri aynı çözüm grubuyla tamamlandı. Canlı
+  doğrulama: 12 bildirim, 12 kullanıcı, 12 okunmamış, mesaj formatı geçerli;
+  açık geri bildirim `0`.
 - Geçmiş/public düzeltme: 452 corrected text, 185 answer text, 182 answer
   paragraphs, 20 summary/excerpt, 31 score, 31 total_errors, 30 cat_counts,
   15 history summary ve 1 rules değişikliği. 42 yanlış/mükerrer hata ve toplam
