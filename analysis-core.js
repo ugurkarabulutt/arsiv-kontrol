@@ -566,9 +566,9 @@ function isAhlakiPossessiveRewrite(original, fixed) {
 }
 
 function isArdardaSplit(original, fixed) {
-  const from = foldText(original).replace(/\s+/g, '').trim();
-  const to = foldText(fixed).replace(/\s+/g, ' ').trim();
-  return from === 'ardarda' && to === 'ard arda';
+  const from = foldText(original).replace(/\s+/g, ' ').trim();
+  const to = foldText(fixed).replace(/\s+/g, '').trim();
+  return from === 'art arda' && to === 'ardarda';
 }
 
 function isAcizCircumflexInsertion(original, fixed) {
@@ -609,7 +609,7 @@ function isTabiKiToTabiatiylaRewrite(original, fixed) {
 function isLazimGelenSplitInPhrase(original, fixed) {
   const from = asciiFold(original).replace(/\s+/g, ' ').trim();
   const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
-  return from.includes('lazimgelen') && to.includes('lazim gelen');
+  return from.includes('lazim gelen') && to.includes('lazimgelen');
 }
 
 function isAllahCcToAsRewrite(original, fixed) {
@@ -902,7 +902,6 @@ function isDecisionProtectedTransform(original, fixed) {
   if (/^ebu$/iu.test(from) && /^ebû$/iu.test(to)) return true;
   if (/^inşaallah$/iu.test(from) && /^inşallah$/iu.test(to)) return true;
   if (/^kasiyet$/iu.test(from) && /^kasvet$/iu.test(to)) return true;
-  if (/^lâzımgelen$/iu.test(from) && /^lâzım\s+gelen$/iu.test(to)) return true;
   if (/^dîn[ie]$/iu.test(from) && /^din[ie]$/iu.test(to)) return true;
   if (/^hz\.\s*isa/iu.test(from) && /^hazreti\s+isa\s*\(a\.s\.?\)/iu.test(to)) return true;
   if (/^[\p{L}'\u2019]+\([\p{L}'\u2019]+\)$/iu.test(from) && new RegExp(`^${escapeRegExp(from.replace('(', ' ('))}$`, 'iu').test(to)) return true;
@@ -926,7 +925,7 @@ function isDecisionProtectedTransform(original, fixed) {
   if (/^rahmete$/iu.test(from) && /^rahmeti$/iu.test(to)) return true;
   if (/^zur\u00fbf$/iu.test(from) && /^zumer$/iu.test(to)) return true;
   if (from.replace(/…/gu, '...') === to.replace(/…/gu, '...')) return true;
-  if (foldedFrom.startsWith('biraraya') && foldedTo.startsWith('bir araya')) return true;
+  if (foldedFrom.startsWith('bir araya') && foldedTo.startsWith('biraraya')) return true;
   if (/^la$/iu.test(foldedFrom) && foldedTo.includes('olmuyor')) return true;
   if ((foldedFrom.includes('sinifta -biz') || foldedFrom.includes('s\u0131n\u0131fta -biz'))
     && (/[\u2013\u2014]|--/.test(to) || foldedTo.includes('sinifta biz') || foldedTo.includes('s\u0131n\u0131fta biz'))) return true;
@@ -1174,6 +1173,9 @@ function deterministicFixed(original) {
   if (/^ş(?:u|û)ra\s+suresi$/iu.test(text)) return caseLike(original, 'Şûrâ Suresi');
   if (/^19 tane haslet ruhun$/iu.test(text)) return 'Ruhta 19 tane haslet';
   if (/^bir\s+araya$/iu.test(text)) return '';
+  if (/^biraraya$/iu.test(text)) return caseLike(original, 'bir araya');
+  if (/^lâzımgelen$/iu.test(text)) return caseLike(original, 'lâzım gelen');
+  if (/^ardarda$/iu.test(text)) return caseLike(original, 'art arda');
   if (isHadisSerifHeading(text)) return hadisSerifStandardFixed(original);
   if (/^nefisler[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^nefisler/iu, 'nefsler'));
   if (/^fedakarlık[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^fedakarlık/iu, 'fedakârlık'));
@@ -1242,7 +1244,7 @@ function applyDeterministicStandards(cats, sourceText) {
     });
   });
 
-  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|içersinde|veçhimizi|sekinet|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
+  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|biraraya|lâzımgelen|ardarda|içersinde|veçhimizi|sekinet|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(tokenRe)) {
     const original = match[0];
     if (/^tevbe[\p{L}\p{N}_]*$/iu.test(original) && isTevbeSuraContext(text, match.index, original.length)) continue;
