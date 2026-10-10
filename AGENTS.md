@@ -29,8 +29,8 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   kez puan kırması engellendi; `şerr` arşiv standardı korundu.
   `npm.cmd run check` sonucu 218/218 başarılıdır. Çalışma kirli ana checkout'a
   dokunmadan `codex/feedback-resolution-20261010-safe` dalında yürütüldü.
-  Production deployment `dpl_HmfwJ8jCgZ8ktGNnESqtaV4vbVho`,
-  `https://arsiv-kontrol-qk7a83bes-ugurkarabulutts-projects.vercel.app`
+  Production deployment `dpl_9Fy7ZnvrHxMkGEAD3DFCqWVCzTxf`,
+  `https://arsiv-kontrol-nwt1tss49-ugurkarabulutts-projects.vercel.app`
   ve canlı alias `https://arsiv.ibrahimlive.ai` olarak doğrulandı;
   `/health` ve root HTTP 200, `/admin` noindex/no-store döndü.
 
