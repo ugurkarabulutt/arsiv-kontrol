@@ -45,6 +45,7 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   hud: 'Hûd',
   fatir: 'Fâtır',
   hacc: 'Hacc',
+  hacet: 'hacet',
   kiyamet: 'kıyâmet',
   araf: "A'râf",
   musibet: 'musîbet',
@@ -151,6 +152,7 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\ba'?raf\b/iu, to: /\ba'?r[âa]f\b/iu },
   { from: /\bnur\b/iu, to: /\bnûr\b/iu },
   { from: /\bbirr\b/iu, to: /\bbir\b/iu },
+  { from: /(?<![\p{L}\p{N}_])hacet[\p{L}\p{N}_]*/iu, to: /(?<![\p{L}\p{N}_])hâcet[\p{L}\p{N}_]*/iu },
   { from: /\bhâdise\b/iu, to: /\bhadîse\b/iu },
   { from: /\bafv-u\b/iu, to: /\baf\s+ve\b/iu },
   { from: /\bmace\b/iu, to: /\bmâce\b/iu },
@@ -1199,6 +1201,7 @@ function deterministicFixed(original) {
   if (/^içersinde$/iu.test(text)) return caseLike(original, 'içerisinde');
   if (/^veçhimizi$/iu.test(text)) return caseLike(original, 'vechimizi');
   if (/^sekinet$/iu.test(text)) return caseLike(original, 'sekînet');
+  if (/^hâcet[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^hâcet/iu, 'hacet'));
   if (text === 'âyetTE') return 'ÂYETTE';
   return '';
 }
@@ -1244,7 +1247,7 @@ function applyDeterministicStandards(cats, sourceText) {
     });
   });
 
-  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|biraraya|lâzımgelen|ardarda|içersinde|veçhimizi|sekinet|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
+  const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|biraraya|lâzımgelen|ardarda|içersinde|veçhimizi|sekinet|hâcet[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(tokenRe)) {
     const original = match[0];
     if (/^tevbe[\p{L}\p{N}_]*$/iu.test(original) && isTevbeSuraContext(text, match.index, original.length)) continue;
