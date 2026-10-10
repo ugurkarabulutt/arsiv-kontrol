@@ -16,7 +16,7 @@ const CANONICAL_WORD_STANDARDS = Object.freeze({
   hersey: 'herşey',
   herbir: 'herbir',
   vucut: 'vücut',
-  serr: 'şer',
+  serr: 'şerr',
   derecat: 'derecat',
   afet: 'afet',
   arif: 'arif',
@@ -102,7 +102,7 @@ const FORBIDDEN_TRANSFORMS = [
   { from: /\bvücud[\p{L}\p{N}_]*/iu, to: /\bvüc(?:ûd|ût)[\p{L}\p{N}_]*/iu },
   { from: /\bhayy[\p{L}\p{N}_]*/iu, to: /\bhayat[\p{L}\p{N}_]*/iu },
   { from: /\bşerif\b/iu, to: /\bşerîf\b/iu },
-  { from: /(?<![\p{L}\p{N}_])şer(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])şerr(?![\p{L}\p{N}_])/iu },
+  { from: /(?<![\p{L}\p{N}_])şerr[\p{L}\p{N}_]*/iu, to: /(?<![\p{L}\p{N}_])şer[\p{L}\p{N}_]*/iu },
   { from: /(?<![\p{L}\p{N}_])arif(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])ârif(?![\p{L}\p{N}_])/iu },
   { from: /(?<![\p{L}\p{N}_])cahiliye(?![\p{L}\p{N}_])/iu, to: /(?<![\p{L}\p{N}_])câhiliye(?![\p{L}\p{N}_])/iu },
   { from: /\bve\s+vechini\b/iu, to: /\bvechini\b/iu },
@@ -526,7 +526,6 @@ function isLiveFeedbackLexicalFalsePositive(original, fixed) {
   if (foldedFrom === 'bir araya' && foldedTo === 'biraraya') return true;
   if (foldedFrom === 'lazim gelen' && foldedTo === 'lazimgelen') return true;
   if (from === 'ilmi' && to === 'ilmî') return true;
-  if (from === 'şer' && to === 'şerr') return true;
   if (from === 'dehr' && to === 'insân') return true;
   if (from === 'takvim' && to === 'takvîm') return true;
   if (/^efendimiz(?:['’](?:i|in))?$/iu.test(from) && /efendimiz\s*\(s\.a\.v\)/iu.test(to)) return true;
@@ -1181,7 +1180,7 @@ function deterministicFixed(original) {
   if (/^kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?$/iu.test(text)) {
     return caseLike(original, text.replace(/^kur(['’])an/iu, 'Kur$1ân'));
   }
-  if (/^şer(?:dir|le|den|de|in|i|e)?$/iu.test(text)) return '';
+  if (/^şer(?:dir|le|den|de|in|i|e)?$/iu.test(text)) return caseLike(original, text.replace(/^şer/iu, 'şerr'));
   if (/^zahit[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^zahit/iu, 'zahid'));
   if (/^musibet[\p{L}\p{N}_]*$/iu.test(text)) return caseLike(original, text.replace(/^musibet/iu, 'musîbet'));
   if (/^veli$/iu.test(text)) return caseLike(original, 'velî');
@@ -1319,6 +1318,11 @@ function applyDeterministicStandards(cats, sourceText) {
   const hacSuresiRe = /(?<![\p{L}\p{N}_])Hac(\s+Suresi(?:nin|ni|nde|nden|ne)?)(?![\p{L}\p{N}_])/gu;
   for (const match of text.matchAll(hacSuresiRe)) {
     addDeterministicIssue(cats, seen, match[0], `Hacc${match[1]}`, 'Sure adi standardi');
+  }
+
+  const serrRe = /(?<![\p{L}\p{N}_])şer(?:dir|le|den|de|in|i|e)?(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(serrRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sözlük standardı');
   }
 
   const zahidRe = /(?<![\p{L}\p{N}_])zahit[\p{L}\p{N}_]*(?![\p{L}\p{N}_])/giu;
