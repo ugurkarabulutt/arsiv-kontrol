@@ -1094,6 +1094,7 @@ function isProtectedChange(original, fixed) {
   if (isSuspiciousContentAddition(original, fixed)) return true;
   if (isSuspiciousSentenceExpansion(original, fixed)) return true;
   if (isSuspiciousWordExpansion(original, fixed)) return true;
+  if (from.toLocaleLowerCase('tr-TR') === "allah'in" && to.toLocaleLowerCase('tr-TR') === "allah'ın") return false;
   if (isApostropheFragmentVowelRewrite(original, fixed)) return true;
   if (isUnrelatedTabiRewrite(original, fixed)) return true;
   if (isMeaningChangingHerseyRewrite(original, fixed)) return true;
