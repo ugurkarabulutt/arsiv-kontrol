@@ -176,13 +176,13 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('hâdise', 'hadîse'), true);
   assert.equal(isProtectedChange('afv-u', 'af ve'), true);
   assert.equal(isProtectedChange('vücud', 'vücût'), true);
-  assert.equal(isProtectedChange('şerr', 'şer'), true);
+  assert.equal(isProtectedChange('şerr', 'şer'), false);
   assert.equal(isProtectedChange('şerrdir', 'şerdir'), true);
   assert.equal(isProtectedChange('şerrle', 'şerle'), true);
   assert.equal(isProtectedChange('ŞERİF', 'ŞERRİF'), true);
   assert.equal(isProtectedChange('şeriat', 'şerriat'), true);
   assert.equal(isProtectedChange('şerh', 'şerrh'), true);
-  assert.equal(isProtectedChange('şer', 'şerr'), false);
+  assert.equal(isProtectedChange('şer', 'şerr'), true);
   assert.equal(isProtectedChange('şerr', 'şerrr'), true);
   assert.equal(isProtectedChange('dinde', 'dînde'), true);
   assert.equal(isProtectedChange('arif', 'ârif'), true);
@@ -215,7 +215,7 @@ test('canli feedback korumalari yanlis donusumleri skor disi birakir', () => {
   assert.equal(isProtectedChange('hidayete', 'hidayet'), true);
 });
 
-test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
+test('serr koklu eski yazim ser kokune kontrollu duzeltilir', () => {
   const source = 'Bu ifade şerrdir. Şerrle mücadele edilir.';
   const result = finalizeResult({
     correctedText: 'Bu ifade şerdir. Şerle mücadele edilir.',
@@ -229,12 +229,12 @@ test('serr koklu ekli kelimeler ser kokune dusurulmez', () => {
     }
   }, source);
 
-  assert.equal(result.totalErrors, 0);
-  assert.equal(result.score, 100);
-  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.score, 92);
+  assert.equal(result.correctedText, 'Bu ifade şerdir. Şerle mücadele edilir.');
 });
 
-test('ser koklu standart kelime icine girmez ama bagimsiz ser duzeltilir', () => {
+test('ser koklu standart kelime icine girmez ve bagimsiz ser korunur', () => {
   const source = [
     'HADÎS-İ ŞERİF başlığı korunur.',
     'ŞERİAT kitabı ve şerh bahsi geçer.',
@@ -258,11 +258,11 @@ test('ser koklu standart kelime icine girmez ama bagimsiz ser duzeltilir', () =>
     }
   }, source);
 
-  assert.equal(result.totalErrors, 1);
-  assert.equal(result.score, 96);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
   assert.ok(result.correctedText.includes('HADÎS-İ ŞERİF başlığı korunur.'));
   assert.ok(result.correctedText.includes('ŞERİAT kitabı ve şerh bahsi geçer.'));
-  assert.ok(result.correctedText.includes('Bağımsız şerr kelimesi düzeltilmelidir.'));
+  assert.ok(result.correctedText.includes('Bağımsız şer kelimesi düzeltilmelidir.'));
   assert.equal(result.correctedText.includes('ŞERRİF'), false);
   assert.equal(result.correctedText.includes('ŞERRİAT'), false);
   assert.equal(result.correctedText.includes('şerrh'), false);
@@ -1741,4 +1741,122 @@ test('2 Agustos acik feedback metne ozel yanlis pozitifleri korunur', () => {
   assert.equal(result.totalErrors, 0);
   assert.equal(result.score, 100);
   assert.equal(result.correctedText, source);
+});
+
+
+test('10 Ekim feedback kokleri baglama gore korunur', () => {
+  const source = [
+    'İşte ne diyor Yunus?',
+    'Bu insanın ahseni takvim içinde yaratılışıdır.',
+    'Allah Resûlü (S.A.V) Efendimiz buyurdu.',
+    'Diyelim ki; bu konu böyledir.',
+    'Mürşid. Mürşidle konuşacağız.',
+    'Açıklaması söz konusudur.',
+    'Efendimiz\'in sohbetleri devam eder.',
+    'İslâm’a hizmet etmek gerekir.',
+    'KÖTÜLÜK (ŞER) YAPARSA'
+  ].join('\n');
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      sozluk: { issues: [
+        { original: 'Yunus', fixed: 'Yûnus', rule: 'Sure adı' },
+        { original: 'takvim', fixed: 'takvîm', rule: 'Sözlük' },
+        { original: 'şer', fixed: 'şerr', rule: 'Sözlük' },
+        { original: "Efendimiz'in", fixed: "Efendimiz (S.A.V)'in", rule: 'Unvan' },
+        { original: 'İslâm’a', fixed: "İslâm'ı", rule: 'Ek' }
+      ] },
+      noktalama: { issues: [
+        { original: 'Diyelim ki;', fixed: 'Diyelim ki,', rule: 'Noktalama' },
+        { original: 'Açıklaması söz konusudur.', fixed: 'Açıklaması söz konusudur:', rule: 'Noktalama' }
+      ] },
+      yapi: { issues: [
+        { original: 'Mürşid. Mürşidle', fixed: 'Mürşid ile', rule: 'Yapı' },
+        { original: 'Allah Resûlü (S.A.V) Efendimiz', fixed: 'Allah Resûlü Efendimiz (S.A.V)', rule: 'Yapı' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('10 Ekim kesin duzeltmeleri hedefi standartlastirir', () => {
+  const source = [
+    'İnsanların içersinde fitne olur.',
+    'Biz veçhimizi Allah’a teslim ettik.',
+    'Kalpte sekinet bulunur.',
+    'FİZİK VÜCUD',
+    'Günlük dilde fizik vücud ifadesi geçer.'
+  ].join('\n');
+  const result = finalizeResult({
+    correctedText: '',
+    categories: {
+      imla: { issues: [
+        { original: 'içersinde', fixed: 'içinde', rule: 'İmlâ' },
+        { original: 'veçhimizi', fixed: 'veçhimizi', rule: 'İmlâ' },
+        { original: 'sekinet', fixed: 'sekinnet', rule: 'İmlâ' }
+      ] }
+    }
+  }, source);
+
+  assert.ok(result.correctedText.includes('İnsanların içerisinde fitne olur.'));
+  assert.ok(result.correctedText.includes('Biz vechimizi Allah’a teslim ettik.'));
+  assert.ok(result.correctedText.includes('Kalpte sekînet bulunur.'));
+  assert.ok(result.correctedText.includes('FİZİK VÜCUD'));
+  assert.ok(result.correctedText.includes('Günlük dilde fizik vücut ifadesi geçer.'));
+  assert.equal(result.correctedText.includes('FİZİK VÜCUT'), false);
+});
+
+test('TOVBE slayt basligi sure referansi sayilmaz ama ayni satirdaki referans duzeltilir', () => {
+  const source = 'MÜRŞİD ÖNÜNDE YAPILAN TÖVBE\n1. İlk madde\nTövbe 69: Âyet açıklaması.';
+  const result = finalizeResult({ categories: {} }, source);
+
+  assert.ok(result.correctedText.includes('YAPILAN TÖVBE\n1. İlk madde'));
+  assert.ok(result.correctedText.includes('Tevbe 69: Âyet açıklaması.'));
+  assert.equal(result.totalErrors, 1);
+});
+
+test('ek almis kelime kokune ikinci kez duzeltme uygulanmaz', () => {
+  const source = 'Allah’ın Resûl’ü hadîsinde şöyle buyuruyor.';
+  const result = finalizeResult({
+    categories: {
+      sozluk: { issues: [
+        { original: 'Resûl', fixed: 'Resûl’ü', rule: 'Sözlük' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.correctedText, source);
+  assert.equal(result.correctedText.includes('Resûl’ü’ü'), false);
+});
+
+test('ayet blogundaki coklu as gosterimi kaynak bicimiyle korunur', () => {
+  const source = 'Deyin ki: İbrâhîm (as.)’a, İsmail (as.)’a ve İshak (as.)’a indirilenlere inandık.';
+  const result = finalizeResult({
+    categories: {
+      noktalama: { issues: [
+        { original: '(as.)', fixed: '(A.S)', rule: 'Unvan' },
+        { original: '(as.)', fixed: '(A.S)', rule: 'Unvan' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.correctedText, source);
+});
+
+test('ayni bulgu kategoriler arasinda kaynak adedinden fazla puan kirmaz', () => {
+  const source = 'Bir hata burada bulunur.';
+  const result = finalizeResult({
+    categories: {
+      imla: { issues: [{ original: 'hata', fixed: 'hatâ', rule: 'İmlâ' }] },
+      sozluk: { issues: [{ original: 'hata', fixed: 'hatâ', rule: 'Sözlük' }] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.categories.imla.count + result.categories.sozluk.count, 1);
 });
