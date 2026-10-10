@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-10 Geri Bildirim Çözüm Paketi — Production Tamamlandı
+
+- İzole çalışma dalı: `codex/feedback-resolution-20261010-safe`.
+  Kirli ana checkout ve diğer ajan değişiklikleri değiştirilmedi.
+- Canlı veri: kesim anındaki 12 kullanıcıya ait 50 açık geri bildirim
+  `feedback-resolution-20261010` grubunda çözüldü; açık geri bildirim sayısı
+  yeniden sorguda `0`. `issue_resolution_log` kaydı `1`,
+  `content_correction_log` geri alma kaydı `947`.
+- Geçmiş/public düzeltme: 452 corrected text, 185 answer text, 182 answer
+  paragraphs, 20 summary/excerpt, 31 score, 31 total_errors, 30 cat_counts,
+  15 history summary ve 1 rules değişikliği. 42 yanlış/mükerrer hata ve toplam
+  168 puan 31 kayıtta geri yüklendi.
+- Tekrarı önleme: bağlama duyarlı kelime, sûre, hitap, unvan, apostrof ve
+  mükerrer puan korumaları `analysis-core.js` içine alındı; tarihsel vakalar
+  regresyon testleriyle sabitlendi.
+- Zorunlu doğrulama: `npm.cmd run check` 218/218 başarılı; frontend/PWA ve
+  `server.js` syntax kontrolleri geçti.
+- Production: deployment `dpl_HmfwJ8jCgZ8ktGNnESqtaV4vbVho`, URL
+  `https://arsiv-kontrol-qk7a83bes-ugurkarabulutts-projects.vercel.app`,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Vercel durumu `READY`;
+  canlı `/health` 200/`{"status":"ok"}`, root 200 ve başlık
+  `Dini Sorular ve Cevaplar Arşivi`; `/admin` 200, noindex/no-store.
+- Eski tüm-onaylı sync çalıştırılmadı. Yeni işlem gerektiğinde aynı
+  `content_correction_log` geri alma ve kesim-anı yaklaşımı korunmalıdır.
+
 ## 2026-10-08 Konu Rehberleri Akış Hızı Preview
 
 - Kullanıcı geri bildirimiyle ana sayfadaki mobil konu rehberleri vitrininin
