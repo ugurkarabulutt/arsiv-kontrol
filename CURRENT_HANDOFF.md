@@ -17,8 +17,8 @@
   regresyon testleriyle sabitlendi.
 - Zorunlu doğrulama: `npm.cmd run check` 218/218 başarılı; frontend/PWA ve
   `server.js` syntax kontrolleri geçti.
-- Production: deployment `dpl_HmfwJ8jCgZ8ktGNnESqtaV4vbVho`, URL
-  `https://arsiv-kontrol-qk7a83bes-ugurkarabulutts-projects.vercel.app`,
+- Production: deployment `dpl_9Fy7ZnvrHxMkGEAD3DFCqWVCzTxf`, URL
+  `https://arsiv-kontrol-nwt1tss49-ugurkarabulutts-projects.vercel.app`,
   canlı alias `https://arsiv.ibrahimlive.ai`. Vercel durumu `READY`;
   canlı `/health` 200/`{"status":"ok"}`, root 200 ve başlık
   `Dini Sorular ve Cevaplar Arşivi`; `/admin` 200, noindex/no-store.
