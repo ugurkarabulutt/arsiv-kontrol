@@ -1871,3 +1871,16 @@ test('bir araya lazim gelen ve art arda ayri yazilir', () => {
   );
   assert.equal(result.totalErrors, 3);
 });
+
+
+test('hacet sapkasiz yazilir ve yanlis donusum korunur', () => {
+  const source = 'Hacet namazı için dua edilir. Hâcet namazı yazımı düzeltilir.';
+  const result = finalizeResult({
+    categories: {
+      sozluk: { issues: [{ original: 'Hacet', fixed: 'Hâcet', rule: 'Yanlış sözlük' }] }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, 'Hacet namazı için dua edilir. Hacet namazı yazımı düzeltilir.');
+  assert.equal(result.totalErrors, 1);
+});
