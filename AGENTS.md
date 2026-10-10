@@ -3,6 +3,37 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-10
+
+- **Açık geri bildirimler topluca ve geri alınabilir biçimde çözüldü:** 10 Ekim
+  2026 17:55:58 UTC kesiminde açık olan 12 kullanıcıya ait 50 geri bildirim,
+  `feedback-resolution-20261010` çözüm grubunda kapatıldı. Canlı geçmiş ve
+  public içerik taramasında 947 alan değişikliği
+  `content_correction_log` içine eski/yeni değer ve hash ile yazıldı; işlem
+  `issue_resolution_log` içinde tek çözüm kaydıyla belgelendi. Değişiklik
+  dağılımı: `history.corrected_text` 452, `public_qa.answer_text` 185,
+  `public_qa.answer_paragraphs` 182, `public_qa.summary` 10,
+  `public_qa.excerpt` 10, `score` 31, `total_errors` 31,
+  `cat_counts` 30, `summary` 15 ve `settings.rules` 1. Yanlış veya
+  mükerrer 42 hata kaydı nedeniyle düşen toplam 168 puan, ilgili 31 geçmiş
+  kayıtta kontrollü olarak geri verildi. Canlı doğrulamada açık geri bildirim
+  sayısı `0`, bu grupta çözülen geri bildirim `50`, çözüm kaydı `1` ve
+  geri alınabilir değişiklik `947` olarak okundu.
+
+- **Aynı hataların tekrarlanmasını önleyen analiz korumaları production'a
+  alındı:** `bir araya`, `lâzım gelen`, `art arda`, `içerisinde`,
+  `vechimiz`, `sekînet`, `Hacet`, metin/slayt bağlamında
+  `vücut/VÜCUD`, `Tevbe Suresi`, Resûl/S.A.V sırası, `(as.)`,
+  `Muhterem Efendimiz` ve `Allah'ın` ek düzeltmeleri deterministik ve
+  bağlama duyarlı hâle getirildi. Kaynakta olmayan/mükerrer bulguların ikinci
+  kez puan kırması engellendi; `şerr` arşiv standardı korundu.
+  `npm.cmd run check` sonucu 218/218 başarılıdır. Çalışma kirli ana checkout'a
+  dokunmadan `codex/feedback-resolution-20261010-safe` dalında yürütüldü.
+  Production deployment `dpl_HmfwJ8jCgZ8ktGNnESqtaV4vbVho`,
+  `https://arsiv-kontrol-qk7a83bes-ugurkarabulutts-projects.vercel.app`
+  ve canlı alias `https://arsiv.ibrahimlive.ai` olarak doğrulandı;
+  `/health` ve root HTTP 200, `/admin` noindex/no-store döndü.
+
 ## 2026-10-08
 
 - **Mobil konu rehberleri vitrini hızlandırıldı:** Ana sayfadaki sürekli konu
