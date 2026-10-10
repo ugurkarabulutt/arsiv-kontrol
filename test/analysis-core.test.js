@@ -1884,3 +1884,20 @@ test('hacet sapkasiz yazilir ve yanlis donusum korunur', () => {
   assert.equal(result.correctedText, 'Hacet namazı için dua edilir. Hacet namazı yazımı düzeltilir.');
   assert.equal(result.totalErrors, 1);
 });
+
+
+test('Tevbe suresi adi tovbe hatasi sayilmaz ve tekrar puan kirmaz', () => {
+  const source = 'Tevbe Suresinin 100. âyet-i kerimesi açıklanıyor.\n\nTEVBE-100: Âyet metni.';
+  const result = finalizeResult({
+    categories: {
+      imla: { issues: [
+        { original: 'tevbe', fixed: 'tövbe', rule: 'İmlâ standardı (1. geçiş)' },
+        { original: 'tevbe', fixed: 'tövbe', rule: 'İmlâ standardı (2. geçiş)' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
