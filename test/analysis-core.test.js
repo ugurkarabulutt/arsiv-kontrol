@@ -1712,7 +1712,7 @@ test('2 Agustos acik feedback metne ozel yanlis pozitifleri korunur', () => {
     'Sebîlel gayy’dadır ve Sebîlel rüşddedir.',
     'Allah’a ulaşmayı dilemek ve zikir yok.',
     'Tabi ki bu cümle böyle kalır.',
-    'ardarda gelen aciz kullar anlatılır.'
+    'art arda gelen aciz kullar anlatılır.'
   ].join('\n');
 
   const result = finalizeResult({
@@ -1726,7 +1726,7 @@ test('2 Agustos acik feedback metne ozel yanlis pozitifleri korunur', () => {
           { original: 'Sebîlel gayy’dadır', fixed: 'Sebîli gayy’dadır', rule: 'Yanlış terkip' },
           { original: 'Sebîlel rüşddedir', fixed: 'Sebîli rüşddedir', rule: 'Yanlış terkip' },
           { original: 'Tabi ki', fixed: 'Tabiatıyla', rule: 'Anlam değişikliği' },
-          { original: 'ardarda', fixed: 'ard arda', rule: 'Alan standardı' },
+          { original: 'art arda', fixed: 'ardarda', rule: 'Alan standardı' },
           { original: 'aciz', fixed: 'âciz', rule: 'Alan standardı' }
         ]
       },
@@ -1858,4 +1858,16 @@ test('ayni bulgu kategoriler arasinda kaynak adedinden fazla puan kirmaz', () =>
 
   assert.equal(result.totalErrors, 1);
   assert.equal(result.categories.imla.count + result.categories.sozluk.count, 1);
+});
+
+
+test('bir araya lazim gelen ve art arda ayri yazilir', () => {
+  const source = 'İnsanlar biraraya gelir; lâzımgelen yapılır ve ardarda ilerlenir.';
+  const result = finalizeResult({ categories: {} }, source);
+
+  assert.equal(
+    result.correctedText,
+    'İnsanlar bir araya gelir; lâzım gelen yapılır ve art arda ilerlenir.'
+  );
+  assert.equal(result.totalErrors, 3);
 });
