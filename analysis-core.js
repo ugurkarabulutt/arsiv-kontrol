@@ -1079,6 +1079,7 @@ function isProtectedChange(original, fixed) {
   if (isBareIsaSavAddition(original, fixed)) return true;
   if (isNefretToNefsRewrite(original, fixed)) return true;
   if (isVarYaDeletion(original, fixed)) return true;
+  if (/^\d+\.[\p{L}]$/u.test(from) && /^\d+\.\s+[\p{L}]$/u.test(to)) return false;
   if (isSimplePunctuationAddition(original, fixed)) return true;
   if (isFazlFamilyFalsePositive(original, fixed)) return true;
   if (isLiveFeedbackLexicalFalsePositive(original, fixed)) return true;
