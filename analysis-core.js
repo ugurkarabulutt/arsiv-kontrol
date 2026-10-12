@@ -813,6 +813,18 @@ function sourceAlreadyHasSavAfterIssue(sourceText, original, fixed) {
   return pattern.test(source);
 }
 
+function sourceAlreadyHasAsAfterIssue(sourceText, original, fixed) {
+  const foldedFrom = foldText(original).replace(/\s+/g, ' ').trim();
+  const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
+  if (!foldedFrom || !foldedTo || !foldedTo.includes('(a.s')) return false;
+  if (foldedFrom.includes('(a.s')) return false;
+  if (!foldedTo.startsWith(foldedFrom)) return false;
+
+  const source = foldText(sourceText).replace(/\s+/g, ' ');
+  const pattern = new RegExp(`${escapeRegExp(foldedFrom)}\\s*\\(\\s*a\\.s\\.?\\s*\\)`, 'u');
+  return pattern.test(source);
+}
+
 function sourceProtectsQuotedAsNotation(sourceText, original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleUpperCase('tr-TR');
@@ -824,6 +836,7 @@ function isSourceContextProtectedIssue(sourceText, original, fixed) {
   return sourceProtectsAllahArasindadir(sourceText, original, fixed)
     || sourceProtectsArabicTransliteration(sourceText, original, fixed)
     || sourceAlreadyHasSavAfterIssue(sourceText, original, fixed)
+    || sourceAlreadyHasAsAfterIssue(sourceText, original, fixed)
     || sourceProtectsBareYunusPerson(sourceText, original, fixed)
     || sourceProtectsTevbeSuraReference(sourceText, original, fixed)
     || sourceProtectsArabicDinLine(sourceText, original, fixed)
@@ -1054,6 +1067,10 @@ function isProtectedChange(original, fixed) {
   if (!from || !to || from === to) return false;
 
   if (to === `${from}:`) return true;
+  if (/^bir\s+bir$/iu.test(from) && /^birbir$/iu.test(to)) return true;
+  if (/^kutur[\p{L}\p{N}_]*$/iu.test(from) && /^kurt[\p{L}\p{N}_]*$/iu.test(to)) return true;
+  if (/peygamber\s+efendimiz\s*\(s\.a\.v\)['’]de/iu.test(from)
+      && /peygamber\s+efendimiz\s*\(s\.a\.v\)['’]in/iu.test(to)) return true;
   if (isHadisSerifStandardChange(original, fixed)) return false;
   if (isAllowedCaseNormalization(original, fixed)) return false;
   if (isAllowedReferencePunctuation(original, fixed)) return false;
@@ -1230,15 +1247,15 @@ function isBareYunusSureContext(sourceText, index, length) {
     || /^\s*(?:[-–]\s*\d+|\d+(?:\s*,\s*\d+)?(?:['’]?[a-zçğıöşü]+)?|\bSuresi(?:nin|ni|nde|nden|ne)?\b)/iu.test(after);
 }
 
-function addDeterministicIssue(cats, seen, original, fixed, rule) {
+function addDeterministicIssue(cats, seen, original, fixed, rule, categoryKey = 'imla') {
   if (!original || !fixed || original === fixed) return;
   if (/^[A-Z]\.[A-Z]$/i.test(String(original)) && /^[A-Z]\.\s+[A-Z]$/i.test(String(fixed))) return;
   if (/^(?:[A-Z]\.)+[A-Z]{1,4}$/i.test(String(original)) && /\s/u.test(String(fixed))) return;
   const key = `${canonicalText(original)}=>${canonicalText(fixed)}`;
   seen.set(key, (seen.get(key) || 0) + 1);
-  if (!cats.imla) cats.imla = {};
-  if (!Array.isArray(cats.imla.issues)) cats.imla.issues = [];
-  cats.imla.issues.push({ original, fixed, rule });
+  if (!cats[categoryKey]) cats[categoryKey] = {};
+  if (!Array.isArray(cats[categoryKey].issues)) cats[categoryKey].issues = [];
+  cats[categoryKey].issues.push({ original, fixed, rule });
 }
 
 function applyDeterministicStandards(cats, sourceText) {
@@ -1441,6 +1458,30 @@ function applyDeterministicStandards(cats, sourceText) {
   for (const match of text.matchAll(stanzaLowerLineRe)) {
     const fixedLine = match[2][0].toLocaleUpperCase('tr-TR') + match[2].slice(1);
     addDeterministicIssue(cats, seen, match[2], fixedLine, 'Dortluk satir basi standardi');
+  }
+
+  const compactNumberedListRe = /(^|\n)([ \t]*)(\d+)\.([\p{L}])/gu;
+  for (const match of text.matchAll(compactNumberedListRe)) {
+    addDeterministicIssue(
+      cats,
+      seen,
+      `${match[3]}.${match[4]}`,
+      `${match[3]}. ${match[4]}`,
+      'Numaralı liste noktalama standardı',
+      'noktalama'
+    );
+  }
+
+  const hadisAttributionRe = /Peygamber\s+Efendimiz\s*\(S\.A\.V\)['’]de\s+hadîs-i\s+şerifinde;/giu;
+  for (const match of text.matchAll(hadisAttributionRe)) {
+    addDeterministicIssue(
+      cats,
+      seen,
+      match[0],
+      match[0].replace(/\(S\.A\.V\)['’]de\s+hadîs-i\s+şerifinde;$/iu, '(S.A.V) de hadîs-i şerifinde buyurmuştur ki;'),
+      'Hadîs atfı yapı standardı',
+      'yapi'
+    );
   }
 
   const standardSentenceSpaceRe = /([\p{L}\p{N}_][\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db])/gu;
