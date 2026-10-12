@@ -1902,3 +1902,67 @@ test('Tevbe suresi adi tovbe hatasi sayilmaz ve tekrar puan kirmaz', () => {
   assert.equal(result.score, 100);
   assert.equal(result.correctedText, source);
 });
+
+
+test('13 Ekim feedback kokleri korunur ve eksik liste duzeni tamamlanir', () => {
+  const source = [
+    'Tezkiye kademelerini bir bir geçerek ilerler.',
+    'Bir sultan olmadan kimse kuturları aşamaz.',
+    'Hz. Musa (A.S) ruhunu Allah’a ulaştırmış.',
+    "Peygamber Efendimiz (S.A.V)'de hadîs-i şerifinde;",
+    '1.Hüsnüzan var.',
+    '2.Sûizan var.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    categories: {
+      imla: { issues: [
+        { original: 'bir bir', fixed: 'birbir', rule: 'Yanlış birleştirme' },
+        { original: 'kuturları', fixed: 'kurtları', rule: 'Yanlış sözlük dönüşümü' },
+        { original: 'Hz. Musa', fixed: 'Hz. Musa (A.S)', rule: 'Mükerrer unvan' }
+      ] },
+      yapi: { issues: [
+        {
+          original: "Peygamber Efendimiz (S.A.V)'de hadîs-i şerifinde;",
+          fixed: "Peygamber Efendimiz (S.A.V)'in hadîs-i şerifinde;",
+          rule: 'Yanlış ek dönüşümü'
+        }
+      ] },
+      noktalama: { issues: [
+        { original: '1.H', fixed: '1. H', rule: 'İlk madde boşluğu' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(
+    result.correctedText,
+    [
+      'Tezkiye kademelerini bir bir geçerek ilerler.',
+      'Bir sultan olmadan kimse kuturları aşamaz.',
+      'Hz. Musa (A.S) ruhunu Allah’a ulaştırmış.',
+      'Peygamber Efendimiz (S.A.V) de hadîs-i şerifinde buyurmuştur ki;',
+      '1. Hüsnüzan var.',
+      '2. Sûizan var.'
+    ].join('\n')
+  );
+  assert.equal(result.categories.imla.count, 0);
+  assert.equal(result.categories.yapi.count, 1);
+  assert.equal(result.categories.noktalama.count, 2);
+  assert.equal(result.totalErrors, 3);
+  assert.equal(result.score, 90);
+});
+
+test('A.S unvani kaynakta zaten varsa ikinci kez eklenmez', () => {
+  const source = 'Hz. Musa (A.S) ruhunu Allah’a ulaştırmış.';
+  const result = finalizeResult({
+    categories: {
+      imla: { issues: [
+        { original: 'Hz. Musa', fixed: 'Hz. Musa (A.S)', rule: 'Unvan standardı' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
