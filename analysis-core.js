@@ -1079,7 +1079,7 @@ function isProtectedChange(original, fixed) {
   if (isBareIsaSavAddition(original, fixed)) return true;
   if (isNefretToNefsRewrite(original, fixed)) return true;
   if (isVarYaDeletion(original, fixed)) return true;
-  if (/^\d+\.[\p{L}]$/u.test(from) && /^\d+\.\s+[\p{L}]$/u.test(to)) return false;
+  if (/^\d+\.[\p{L}][^\s]*$/u.test(from) && /^\d+\.\s+[\p{L}][^\s]*$/u.test(to)) return false;
   if (isSimplePunctuationAddition(original, fixed)) return true;
   if (isFazlFamilyFalsePositive(original, fixed)) return true;
   if (isLiveFeedbackLexicalFalsePositive(original, fixed)) return true;
@@ -1461,7 +1461,7 @@ function applyDeterministicStandards(cats, sourceText) {
     addDeterministicIssue(cats, seen, match[2], fixedLine, 'Dortluk satir basi standardi');
   }
 
-  const compactNumberedListRe = /(^|\n)([ \t]*)(\d+)\.([\p{L}])/gu;
+  const compactNumberedListRe = /(^|\n)([ \t]*)(\d+)\.([\p{L}][\p{L}\p{N}_'’]*)/gu;
   for (const match of text.matchAll(compactNumberedListRe)) {
     addDeterministicIssue(
       cats,
