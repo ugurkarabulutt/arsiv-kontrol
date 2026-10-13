@@ -1,5 +1,33 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-13 Açık Geri Bildirimler — Production Tamamlandı
+
+- İzole dal: `codex/feedback-resolution-20261010-safe`; kirli ana checkout ve
+  diğer ajan değişiklikleri korunarak çalışıldı.
+- Canlı veri: 3 kullanıcıya ait 10 açık geri bildirim, 6 geçmiş kayıt üzerinde
+  `feedback-resolution-20261013` grubunda çözüldü. Açık geri bildirim `0`;
+  çözüm kaydı `1`, geri alınabilir alan kaydı `28`.
+- Kullanıcı bilgilendirmesi: kullanıcı başına tek olmak üzere 3
+  `feedback_resolution` bildirimi oluşturuldu. Üçü de okunmamış, kullanıcı ve
+  `Gönderen: Arşiv Kontrol AI` alanları doğrulandı.
+- Public etki: altı geçmiş kaydın `public_qa` eşleşmesi `0`; public arşivde
+  değişiklik gerekmedi.
+- Tekrarı önleme: doğru kelime ve transliterasyon kökleri, mevcut A.S unvanı,
+  Kur'ân alıntısı, hadîs atfı/noktalaması ve numaralı liste düzeni için bağlama
+  duyarlı korumalar ile üç yeni regresyon testi eklendi. Eski `2.Gay yolu`
+  standardıyla çakışan mükerrer hata sayımı ayrıca engellendi.
+- Zorunlu doğrulama: `npm.cmd run check` 221/221 başarılı; frontend/PWA ve
+  `server.js` syntax kontrolleri geçti.
+- Runtime commit `b17120f`. Production deployment
+  `dpl_DF3ysBb2WcLUndEt69cypmnEbpxg`, URL
+  `https://arsiv-kontrol-mq0hj992x-ugurkarabulutts-projects.vercel.app`,
+  alias `https://arsiv.ibrahimlive.ai`. Vercel `READY`; canlı `/health`,
+  root, `/admin` ve `/admin/smoke-test` 200; `/admin` noindex/no-store;
+  oturumsuz oturum kontrolü `loggedIn:false`.
+- Güvenli bir canlı test hesabı tanımlı olmadığı için parola yoklaması yapılmadı.
+  Analiz ve Türkçe PDF üretimi tam test paketinde doğrulandı; sonraki çalışma
+  başlamadan önce `git status -sb` ve bu kayıt okunmalıdır.
+
 ## 2026-10-10 Geri Bildirim Çözüm Paketi — Production Tamamlandı
 
 - İzole çalışma dalı: `codex/feedback-resolution-20261010-safe`.
