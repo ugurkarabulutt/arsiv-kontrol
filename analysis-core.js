@@ -813,6 +813,13 @@ function sourceAlreadyHasSavAfterIssue(sourceText, original, fixed) {
   return pattern.test(source);
 }
 
+function sourceProtectsQuotedQuranSpelling(sourceText, original, fixed) {
+  const from = canonicalText(original).replace(/[’]/gu, "'").toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).replace(/[’]/gu, "'").toLocaleLowerCase('tr-TR');
+  if (from !== "kur'an'ı" || to !== "kur'ân'ı") return false;
+  return /sizin\s+en\s+hayırlınız\s+kur['’]an['’]ı\s+öğrenen\s+ve\s+öğretendir/iu.test(String(sourceText || ''));
+}
+
 function sourceAlreadyHasAsAfterIssue(sourceText, original, fixed) {
   const foldedFrom = foldText(original).replace(/\s+/g, ' ').trim();
   const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
@@ -837,6 +844,7 @@ function isSourceContextProtectedIssue(sourceText, original, fixed) {
     || sourceProtectsArabicTransliteration(sourceText, original, fixed)
     || sourceAlreadyHasSavAfterIssue(sourceText, original, fixed)
     || sourceAlreadyHasAsAfterIssue(sourceText, original, fixed)
+    || sourceProtectsQuotedQuranSpelling(sourceText, original, fixed)
     || sourceProtectsBareYunusPerson(sourceText, original, fixed)
     || sourceProtectsTevbeSuraReference(sourceText, original, fixed)
     || sourceProtectsArabicDinLine(sourceText, original, fixed)
@@ -1071,6 +1079,11 @@ function isProtectedChange(original, fixed) {
   if (/^kutur[\p{L}\p{N}_]*$/iu.test(from) && /^kurt[\p{L}\p{N}_]*$/iu.test(to)) return true;
   if (/peygamber\s+efendimiz\s*\(s\.a\.v\)['’]de/iu.test(from)
       && /peygamber\s+efendimiz\s*\(s\.a\.v\)['’]in/iu.test(to)) return true;
+  if (/^elkur['’]âne$/iu.test(from) && /^el-kur['’]âne$/iu.test(to)) return true;
+  if (/^mür(?:ş)?id[\p{L}\p{N}_]*$/iu.test(from) && /^mür(?:ş)?îd[\p{L}\p{N}_]*$/iu.test(to)) return true;
+  if (/^allah\s+resûl['’]ü\s+bir\s+hadîsinde;$/iu.test(from)
+      && /^allah\s+resûl['’]ü\s+bir\s+hadîsinde,$/iu.test(to)) return true;
+  if (/^âmenûzkûrullâhe$/iu.test(from) && /^âmenû\s+zkûrullâhe$/iu.test(to)) return true;
   if (isHadisSerifStandardChange(original, fixed)) return false;
   if (isAllowedCaseNormalization(original, fixed)) return false;
   if (isAllowedReferencePunctuation(original, fixed)) return false;
