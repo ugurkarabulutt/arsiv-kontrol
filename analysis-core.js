@@ -1476,6 +1476,9 @@ function applyDeterministicStandards(cats, sourceText) {
 
   const compactNumberedListRe = /(^|\n)([ \t]*)(\d+)\.([\p{L}][\p{L}\p{N}_'’]*)/gu;
   for (const match of text.matchAll(compactNumberedListRe)) {
+    // “2.Gay yolu” has its own Gayy normalization below; count the overlapping
+    // punctuation and spelling change as one deterministic issue.
+    if (/^Gay$/iu.test(match[4])) continue;
     addDeterministicIssue(
       cats,
       seen,
