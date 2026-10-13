@@ -3,6 +3,36 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-13
+
+- **Açık geri bildirimler tam kapsamla ve geri alınabilir biçimde çözüldü:** Canlıda
+  açık olan 3 kullanıcıya ait 10 geri bildirim, ilişkili 6 geçmiş kayıtla birlikte
+  incelendi ve `feedback-resolution-20261013` grubunda kapatıldı. `bir bir`,
+  `kuturları`, mükerrer `(A.S)`, hadîs atfı, `2. Sûizan`, Kur'ân alıntısı,
+  Arapça/transliterasyon, `mürid/mürşid` ve kaynak noktalaması ilgili kayıtlarda
+  düzeltildi; skorlar ve kategori sayıları gerçek bulgulara göre yeniden hesaplandı.
+  Altı kaydın hiçbirinin `public_qa` eşleşmesi olmadığı doğrulandığından public
+  içerikte gereksiz değişiklik yapılmadı. 28 alan değişikliği
+  `content_correction_log` içine yazıldı; tek `issue_resolution_log` kaydı
+  oluşturuldu. Nihai canlı doğrulama: açık geri bildirim `0`, çözülen `10`,
+  bildirim `3`, bildirim kullanıcısı `3`, okunmamış bildirim `3` ve gönderen
+  bilgisi eksiksizdir.
+
+- **Aynı hataların tekrarlanmasını önleyen analiz korumaları production'a alındı:**
+  Kaynaktaki doğru `bir bir`, `kutur`, `elkur'âne`, `mürid/mürşid`,
+  `âmenûzkûrullâhe`, Kur'ân alıntısı ve hadîs noktalaması korunur; mevcut
+  `(A.S)` unvanı ikinci kez eklenmez. Bitişik numaralı liste öğeleri düzeltilir,
+  fakat `2.Gay yolu` için mevcut Gayy standardıyla mükerrer hata üretilmez.
+  `npm.cmd run check` sonucu 221/221 başarılıdır. Çalışma kirli ana checkout'a
+  dokunmadan `codex/feedback-resolution-20261010-safe` dalında yürütüldü.
+  Runtime commit `b17120f`; production deployment
+  `dpl_DF3ysBb2WcLUndEt69cypmnEbpxg`,
+  `https://arsiv-kontrol-mq0hj992x-ugurkarabulutts-projects.vercel.app` ve canlı
+  alias `https://arsiv.ibrahimlive.ai` olarak doğrulandı. Vercel durumu
+  `READY`; canlı `/health`, root, `/admin` ve `/admin/smoke-test` HTTP 200,
+  `/admin` noindex/no-store ve oturumsuz `/api/auth/me` `loggedIn:false`
+  döndürür.
+
 ## 2026-10-10
 
 - **Açık geri bildirimler topluca ve geri alınabilir biçimde çözüldü:** 10 Ekim
