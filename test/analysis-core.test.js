@@ -1966,3 +1966,36 @@ test('A.S unvani kaynakta zaten varsa ikinci kez eklenmez', () => {
   assert.equal(result.totalErrors, 0);
   assert.equal(result.score, 100);
 });
+
+
+test('13 Ekim yeni transliterasyon feedback kokleri kaynakta korunur', () => {
+  const source = [
+    "Hayrukum men teâlleme elkur'âne ve âllemehu",
+    "“Sizin en hayırlınız Kur'an'ı öğrenen ve öğretendir.”",
+    "Allah Resûl'ü bir hadîsinde;",
+    'Mürşid, git, müridini bul.',
+    'Allahû Tealâ “Mürşidini bul.” diyor.',
+    'Yâ eyyuhâllezîne âmenûzkûrullâhe zikren kesîrâ.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    categories: {
+      imla: { issues: [
+        { original: "elkur'âne", fixed: "el-Kur'âne", rule: 'Yanlış transliterasyon biçimi' },
+        { original: "Kur'an'ı", fixed: "Kur'ân'ı", rule: 'Alıntı kaynak biçimi' },
+        { original: 'müridini', fixed: 'mürîdini', rule: 'Yanlış şapka' },
+        { original: 'Mürşidini', fixed: 'Mürşîdini', rule: 'Yanlış şapka' }
+      ] },
+      yapi: { issues: [
+        { original: "Allah Resûl'ü bir hadîsinde;", fixed: "Allah Resûl'ü bir hadîsinde,", rule: 'Kaynak noktalaması' }
+      ] },
+      noktalama: { issues: [
+        { original: 'âmenûzkûrullâhe', fixed: 'âmenû zkûrullâhe', rule: 'Yanlış ayırma' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.correctedText, source);
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+});
