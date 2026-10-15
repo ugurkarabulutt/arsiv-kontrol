@@ -4349,3 +4349,7 @@ tespit edilir).
   adresler `200`, son dry-run adayi `0`. `npm.cmd run check` 199/199 basarili. Runtime
   commitleri `7df81fc`, `4a94553`; final production `dpl_D6gJZ19qbiqo1zVUgk6Bh9sLy1oF`
   `READY` ve `https://arsiv.ibrahimlive.ai` aliasina bagli.
+
+
+### 2026-10-15
+- **Açık geri bildirimlerin kök ve geçmiş etkileri çözüldü:** 15 Ekim kontrolündeki 7 açık bildirim (3 kullanıcı) için Şûrâ 13 açıklamasındaki `dînde` yazımı, Peygamber bağlamı olmayan `Efendimiz` kullanımına yanlış `(S.A.V)` eklenmesi, `Mehdi (A.S)'dır` eki, `Zikre tesir almamaları için.` noktası, Kasas âyeti transliterasyonundaki `subhânallâhi` ve parantez içi `münezzehtir` ifadesi kaynak lehine korumaya alındı. Açık kayıtlarla birlikte geçmiş etki taraması yapıldı: 49 `history` kaydı, 63 `public_qa` cevabı ve 36 türetilmiş arama belgesi kontrollü düzeltildi. Toplam 390 alan değişikliği `content_correction_log` içinde `feedback-resolution-20261015` paketiyle geri alınabilir kaydedildi; `issue_resolution_log` yazıldı, 7 bildirim kapatıldı ve Büşra Karslıoğlu, Bihter Oksak, İremsu Çakmak için ayrı kullanıcı bildirimleri oluşturuldu. Son bağımsız kontrolde açık feedback sayısı 0, yanlış Şûrâ yazımı history/public/search katmanlarında 0 oldu. `analysis-core.js` kaynak bağlamı korumaları ve iki regresyon testi eklendi; açık Peygamber bağlamındaki gerçek `(S.A.V)` eklemesinin çalışmaya devam ettiği ayrıca test edildi. Yerel zorunlu doğrulama `npm.cmd run check` başarılı, 223/223 test geçti. Kod commitleri: `47ebe92`, `83d328d`, `25335b6`.
