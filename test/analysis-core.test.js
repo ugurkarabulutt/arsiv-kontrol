@@ -1999,3 +1999,73 @@ test('13 Ekim yeni transliterasyon feedback kokleri kaynakta korunur', () => {
   assert.equal(result.totalErrors, 0);
   assert.equal(result.score, 100);
 });
+
+
+test('15 ekim geri bildirim kokleri kaynak baglaminda korunur', () => {
+  const source = [
+    "(Allah) dînde, onunla Hz. Nuh’a vasiyet etti; Dîni ikame edin ve onda (dînde) fırkalara ayrılmayın.",
+    'Sevgili kardeşlerim, Efendimiz şöyle buyuruyor: Söz.',
+    "Ümmetimin en hayırlısı Mehdi (A.S)'dır.",
+    'Zikre tesir almamaları için.',
+    '28/KASAS-68 ... subhânallâhi ve teâlâ ...',
+    'Allah Sübhan’dır (münezzehtir).',
+    'Veli resûller de var.'
+  ].join('\n');
+
+  const result = finalizeResult({
+    correctedText: [
+      "(Allah) dinde, onunla Hz. Nuh’a vasiyet etti; Dîni ikame edin ve onda (dinde) fırkalara ayrılmayın.",
+      'Sevgili kardeşlerim, Efendimiz (S.A.V) şöyle buyuruyor: Söz.',
+      "Ümmetimin en hayırlısı Mehdi (A.S)'dir.",
+      'Zikre tesir almamaları için...',
+      '28/KASAS-68 ... Sübhan’dır ve teâlâ ...',
+      'Allah Sübhan’dır (Sübhan’dır).',
+      'Velî resûller de var.'
+    ].join('\n'),
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'dînde', fixed: 'dinde', rule: 'Yanlış sadeleştirme' },
+          { original: 'Efendimiz şöyle buyuruyor', fixed: 'Efendimiz (S.A.V) şöyle buyuruyor', rule: 'Yanlış bağlam' },
+          { original: "Mehdi (A.S)'dır", fixed: "Mehdi (A.S)'dir", rule: 'Yanlış ek' },
+          { original: 'subhânallâhi', fixed: 'Sübhan’dır', rule: 'Âyet metni korunmalı' },
+          { original: 'münezzehtir', fixed: 'Sübhan’dır', rule: 'Anlam dönüşümü' },
+          { original: 'Veli', fixed: 'Velî', rule: 'Sözlük standardı' }
+        ]
+      },
+      yapi: {
+        issues: [
+          { original: 'Zikre tesir almamaları için.', fixed: 'Zikre tesir almamaları için...', rule: 'Kaynak noktalaması korunmalı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 95);
+  assert.equal(result.categories.sozluk.count, 1);
+  assert.equal(result.categories.yapi.count, 0);
+  assert.equal(result.correctedText, source.replace('Veli resûller', 'Velî resûller'));
+});
+
+test('15 ekim Efendimiz korumasi acik Peygamber baglamini engellemez', () => {
+  const source = 'Peygamber Efendimiz şöyle buyuruyor: Hadîs.';
+  const result = finalizeResult({
+    correctedText: 'Peygamber Efendimiz (S.A.V) şöyle buyuruyor: Hadîs.',
+    categories: {
+      noktalama: {
+        issues: [
+          {
+            original: 'Peygamber Efendimiz şöyle buyuruyor',
+            fixed: 'Peygamber Efendimiz (S.A.V) şöyle buyuruyor',
+            rule: 'Peygamber hitabı'
+          }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 1);
+  assert.equal(result.score, 97);
+  assert.equal(result.correctedText, 'Peygamber Efendimiz (S.A.V) şöyle buyuruyor: Hadîs.');
+});
