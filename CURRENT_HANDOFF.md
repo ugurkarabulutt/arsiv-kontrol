@@ -5877,3 +5877,4 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Production deployment: `dpl_G543XtvgQJY1EenNtLwkGp2yxLfh` / `https://arsiv-kontrol-mrgb24nbx-ugurkarabulutts-projects.vercel.app`; durum `READY`, alias `https://arsiv.ibrahimlive.ai`.
 - Canlı smoke: `/health=ok`; root, admin rotaları, auth, manifest, service worker ve favicon `200`; admin `noindex/no-store`; oturumsuz auth `loggedIn:false`.
 - Son DB kanıtı: açık feedback 0, çözülen 7, bildirilen kullanıcı 3, çözüm günlüğü 1, geri alınabilir alan günlüğü 390, hedeflenen yanlış history/public/search eşleşmeleri 0.
+- Arama senkronu: değişen 36 published slug yeniden indekslendi; `content_hash` uyumsuzluğu 0, eksik embedding 0, yanlış ifade eşleşmesi 0.
