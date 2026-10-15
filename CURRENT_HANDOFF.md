@@ -5870,3 +5870,10 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Feedback: açık 0; çözülen 7; kullanıcı bildirimi 3; `issue_resolution_log` 1.
 - Etki kontrolü: hedeflenen yanlış `dinde` biçimi history, public cevap ve arama belgesinde 0; açık kayıtlardaki yanlış `Efendimiz (S.A.V)`, `Mehdi ... 'dir`, üç nokta, Kasas transliterasyonu ve `Sübhan’dır` karşılıkları kaldırıldı.
 - Sonraki adım: bu temiz branch production Vercel dağıtımına alınacak; ardından deployment URL, canlı `/health` ve route smoke sonuçları buraya eklenecek.
+
+### Production tamamlandı
+
+- Runtime commit: `58d09d9782632010cc7338e83a925922a3083ed4`.
+- Production deployment: `dpl_G543XtvgQJY1EenNtLwkGp2yxLfh` / `https://arsiv-kontrol-mrgb24nbx-ugurkarabulutts-projects.vercel.app`; durum `READY`, alias `https://arsiv.ibrahimlive.ai`.
+- Canlı smoke: `/health=ok`; root, admin rotaları, auth, manifest, service worker ve favicon `200`; admin `noindex/no-store`; oturumsuz auth `loggedIn:false`.
+- Son DB kanıtı: açık feedback 0, çözülen 7, bildirilen kullanıcı 3, çözüm günlüğü 1, geri alınabilir alan günlüğü 390, hedeflenen yanlış history/public/search eşleşmeleri 0.
