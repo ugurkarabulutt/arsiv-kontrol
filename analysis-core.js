@@ -1115,6 +1115,7 @@ function isProtectedChange(original, fixed) {
   if (/^zikre\s+tesir\s+almamaları\s+için\.$/iu.test(from)
       && /^zikre\s+tesir\s+almamaları\s+için(?:\.{3}|…)$/iu.test(to)) return true;
   if (/^subhânallâhi$/iu.test(from) && /^s[üû]bhan['’]dır$/iu.test(to)) return true;
+  if (/^münezzehtir$/iu.test(from) && /^s[üû]bh?[aâ]n['’]dır$/iu.test(to)) return true;
   if (isHadisSerifStandardChange(original, fixed)) return false;
   if (isAllowedCaseNormalization(original, fixed)) return false;
   if (isAllowedReferencePunctuation(original, fixed)) return false;
