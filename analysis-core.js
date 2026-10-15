@@ -820,6 +820,30 @@ function sourceProtectsQuotedQuranSpelling(sourceText, original, fixed) {
   return /sizin\s+en\s+hayırlınız\s+kur['’]an['’]ı\s+öğrenen\s+ve\s+öğretendir/iu.test(String(sourceText || ''));
 }
 
+function sourceProtectsQuotedDindeSpelling(sourceText, original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  if (from !== 'dînde' || to !== 'dinde') return false;
+
+  const source = String(sourceText || '');
+  return /\(Allah\)\s+dînde,\s+onunla\s+Hz\.\s*Nuh['’]?a/iu.test(source)
+    && /onda\s+\(dînde\)\s+fırkalara\s+ayrılmayın/iu.test(source);
+}
+
+function sourceProtectsUnqualifiedEfendimiz(sourceText, original, fixed) {
+  const from = canonicalText(original).replace(/\s+/gu, ' ').trim();
+  const to = canonicalText(fixed).replace(/\s+/gu, ' ').trim();
+  if (!/^Efendimiz\s+şöyle\s+buyuruyor$/iu.test(from)
+      || !/^Efendimiz\s*\(S\.A\.V\)\s+şöyle\s+buyuruyor$/iu.test(to)) return false;
+
+  const source = String(sourceText || '');
+  for (const match of source.matchAll(/Efendimiz\s+şöyle\s+buyuruyor/giu)) {
+    const before = source.slice(Math.max(0, match.index - 48), match.index);
+    if (!/(?:Peygamber|Allah\s+Resûlü|Nebîler?\s+Sultanı)\s*$/iu.test(before)) return true;
+  }
+  return false;
+}
+
 function sourceAlreadyHasAsAfterIssue(sourceText, original, fixed) {
   const foldedFrom = foldText(original).replace(/\s+/g, ' ').trim();
   const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
@@ -845,6 +869,8 @@ function isSourceContextProtectedIssue(sourceText, original, fixed) {
     || sourceAlreadyHasSavAfterIssue(sourceText, original, fixed)
     || sourceAlreadyHasAsAfterIssue(sourceText, original, fixed)
     || sourceProtectsQuotedQuranSpelling(sourceText, original, fixed)
+    || sourceProtectsQuotedDindeSpelling(sourceText, original, fixed)
+    || sourceProtectsUnqualifiedEfendimiz(sourceText, original, fixed)
     || sourceProtectsBareYunusPerson(sourceText, original, fixed)
     || sourceProtectsTevbeSuraReference(sourceText, original, fixed)
     || sourceProtectsArabicDinLine(sourceText, original, fixed)
@@ -1084,6 +1110,11 @@ function isProtectedChange(original, fixed) {
   if (/^allah\s+resûl['’]ü\s+bir\s+hadîsinde;$/iu.test(from)
       && /^allah\s+resûl['’]ü\s+bir\s+hadîsinde,$/iu.test(to)) return true;
   if (/^âmenûzkûrullâhe$/iu.test(from) && /^âmenû\s+zkûrullâhe$/iu.test(to)) return true;
+  if (/^mehdi\s*\(a\.s\.?\)['’]dır$/iu.test(from)
+      && /^mehdi\s*\(a\.s\.?\)['’]dir$/iu.test(to)) return true;
+  if (/^zikre\s+tesir\s+almamaları\s+için\.$/iu.test(from)
+      && /^zikre\s+tesir\s+almamaları\s+için(?:\.{3}|…)$/iu.test(to)) return true;
+  if (/^subhânallâhi$/iu.test(from) && /^s[üû]bhan['’]dır$/iu.test(to)) return true;
   if (isHadisSerifStandardChange(original, fixed)) return false;
   if (isAllowedCaseNormalization(original, fixed)) return false;
   if (isAllowedReferencePunctuation(original, fixed)) return false;
