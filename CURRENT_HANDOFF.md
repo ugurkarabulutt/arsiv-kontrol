@@ -5859,3 +5859,14 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
   migration adayi `0`. `npm.cmd run check` 199/199 basarili; `git diff --check` basarili.
   Runtime commitleri `7df81fc` ve `4a94553`; final production deployment
   `dpl_D6gJZ19qbiqo1zVUgk6Bh9sLy1oF` `READY` ve canli aliasa bagli.
+
+
+## 2026-10-15 - Feedback çözümü ve yayın adayı
+
+- Dal: `codex/feedback-resolution-20261010-safe`.
+- Kod: 15 Ekim tarihli 7 açık feedback için kaynak bağlamı korumaları `analysis-core.js` içinde tamamlandı; `test/analysis-core.test.js` iki kapsayıcı regresyon testi içeriyor.
+- Doğrulama: `npm.cmd run check` başarılı, 223/223 test geçti.
+- Canlı veri: 49 `history`, 63 `public_qa`, 36 `public_qa_search_documents` kaydı kontrollü düzeltildi. `content_correction_log.package_id=feedback-resolution-20261015` altında 390 geri alınabilir alan kaydı var.
+- Feedback: açık 0; çözülen 7; kullanıcı bildirimi 3; `issue_resolution_log` 1.
+- Etki kontrolü: hedeflenen yanlış `dinde` biçimi history, public cevap ve arama belgesinde 0; açık kayıtlardaki yanlış `Efendimiz (S.A.V)`, `Mehdi ... 'dir`, üç nokta, Kasas transliterasyonu ve `Sübhan’dır` karşılıkları kaldırıldı.
+- Sonraki adım: bu temiz branch production Vercel dağıtımına alınacak; ardından deployment URL, canlı `/health` ve route smoke sonuçları buraya eklenecek.
