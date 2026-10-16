@@ -1,5 +1,20 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-16 Zorunlu Yönetici İşlem Notu
+
+- Aktif çalışma ağacı: `.tmp-admin-workspaces-v2`, branch
+  `codex/live-analytics-panel`. Değişiklik yerelde; commit/push/deploy yapılmadı.
+- Onaylama hariç yetkili durum değiştiren admin ve süper admin işlemlerinde açıklama
+  backend tarafından zorunlu tutuluyor. Eksik not `400`, denetim kaydı yazılamaması
+  `503` ile işlemi mutasyondan önce durduruyor.
+- Ön işlem logu aktör, rol, hedef, yol/yöntem, açıklama, IP, user-agent ve zamanı;
+  ayrıntılı işlem logu ayrıca önce/sonra değerlerini saklıyor. Frontend açıklamayı
+  topluyor ve Sistem Logları ekranında görünür biçimde gösteriyor. Parçalı etiket
+  dosyası aktarımında açıklama yalnız bir kez sorulup bütün yükleme zincirinde taşınıyor.
+- Yeni admin mutasyonlarının koruma dışında kalmasını önleyen rota envanteri testi
+  eklendi. `npm.cmd run check` başarılı; 166/166 test geçti. İlgisiz `output/`
+  klasörüne dokunulmadı.
+
 ## 2026-09-21 Elçin Akay Kayıt Akışı
 
 - Canlı incelemede Elçin Akay hesabının `İncelemede` bölümünde 329 kayıt vardı.

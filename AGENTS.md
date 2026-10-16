@@ -418,6 +418,32 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-16 Zorunlu Yönetici İşlem Notu ve Hata Güvenli Denetim İzi
+
+- Admin ve süper admin yetkili durum değiştiren işlemler için backend seviyesinde
+  zorunlu kullanıcı açıklaması getirildi. Onaylama işlemi açık istisnadır; görüntüleme,
+  dışa aktarma, okundu işaretleme, favori, oturum ve analiz gibi karar oluşturmayan
+  işlemler not istemez. Reddetme, geri gönderme, bekletme, arşivleme, silme/geri
+  yükleme, kullanıcı ve kural yönetimi, public arşiv işlemleri, düzeltme paketleri,
+  etiket içe aktarma ve Arşiv Operasyon Merkezi değişiklikleri açıklamasız çalışmaz.
+- Zorunluluk yalnız frontend'e bırakılmadı. Sunucu, yetkili işlem başlamadan önce
+  `admin_action_log` içine kullanıcı adı/kimliği/rolü, hedef, HTTP yöntemi ve yolu,
+  açıklama, IP, user-agent ve zaman bilgisini içeren bir ön işlem kaydı yazar. Not
+  eksikse `400 ADMIN_ACTION_NOTE_REQUIRED`; log kaydı oluşturulamıyorsa işlem hiç
+  başlamadan `503 ADMIN_ACTION_LOG_UNAVAILABLE` döner. Ayrıntılı işlem kaydı aynı
+  log satırını önce/sonra değerleriyle tamamlar; rota özel kayıt üretmezse sonuç
+  tamamlandı/başarısız olarak yine işaretlenir.
+- Frontend genel API katmanı, mevcut işlem notu yoksa zorunlu açıklama penceresi açar;
+  girilen not log ekranında belirgin biçimde gösterilir. JSON ve dosya yükleme
+  akışlarında not ayrıca `X-Admin-Action-Note` başlığında taşınır; parçalı Excel/etiket
+  aktarımında açıklama bir kez alınır ve aynı işlem zincirinin bütün parçalarında korunur.
+  Yeni admin mutasyonlarının koruma dışında kalmaması için rota envanterini tarayan
+  regresyon testi eklendi.
+- Değişen dosyalar: `admin-action-policy.js`, `server.js`, `index.html`,
+  `scripts/check-frontend.js`, `test/admin-action-policy.test.js`, `AGENTS.md` ve
+  `CURRENT_HANDOFF.md`. Yerel `npm.cmd run check` başarılı; 166/166 test geçti.
+  Değişiklik henüz commit, push veya production deploy edilmedi.
+
 ### 2026-09-14 Public Konu Rehberi Blog Yayını
 
 - Kullanıcının gönderdiği `Allah_a_Ulasmayi_Dilemek_Blog.pdf` metni public konu

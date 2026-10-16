@@ -815,6 +815,7 @@ canvas{width:100%!important;}
 .action-log-title strong{font-size:14px;line-height:1.35;color:var(--ink);overflow-wrap:anywhere;}
 .action-log-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);white-space:nowrap;}
 .action-log-summary-text{font-size:13px;line-height:1.55;color:var(--ink2);white-space:pre-line;overflow-wrap:anywhere;}
+.action-log-user-note{margin-top:10px;border-left:3px solid var(--gold);background:var(--gold-bg);color:var(--ink);padding:9px 11px;font-size:12px;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere;}
 .action-log-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
 .action-log-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:10px;padding:5px 8px;max-width:100%;overflow-wrap:anywhere;}
 .action-log-status{display:inline-flex;align-items:center;gap:5px;color:var(--gold);}
@@ -6036,6 +6037,7 @@ function actionLogEntryHtml(row){
   const actor=row.actorName||row.actorUsername||'Sistem';
   const target=row.targetLabel||row.targetId||'—';
   const status=actionLogStatusText(row);
+  const actionNote=String(row.metadata?.actionNote||'').trim();
   const metadata=actionLogMetadataHtml(row.metadata);
   return `<article class="action-log-card">
     <div class="action-log-card-head">
@@ -6046,6 +6048,7 @@ function actionLogEntryHtml(row){
       <div class="action-log-time">${esc(formatActionLogDate(row.createdAt))}</div>
     </div>
     ${row.summary?`<div class="action-log-summary-text">${esc(row.summary)}</div>`:''}
+    ${actionNote?`<div class="action-log-user-note"><strong>İşlem açıklaması:</strong> ${esc(actionNote)}</div>`:''}
     <div class="action-log-meta">
       <span class="action-log-chip">Kişi: ${esc(actor)}</span>
       ${row.actorRole?`<span class="action-log-chip">Rol: ${esc(row.actorRole)}</span>`:''}
@@ -9476,11 +9479,14 @@ async function uploadHistoryTagImportFile(file){
   setHistoryTagImportStatus('Excel güvenli şekilde hazırlanıyor...','');
   try{
     const totalChunks=Math.max(1,Math.ceil(file.size/HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES));
-    const start=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/start',{
+    const startPayload=await ensureAdminActionNote('POST','/api/history-tags/import/upload/start',{
       fileName:file.name,
       fileSize:file.size,
       totalChunks
     });
+    if(startPayload===null)throw new Error('İşlem açıklaması girilmediği için etiket aktarımı başlatılmadı.');
+    const actionNote=startPayload.adminActionNote||'';
+    const start=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/start',startPayload);
     const buffer=await file.arrayBuffer();
     for(let index=0;index<totalChunks;index++){
       const begin=index*HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES;
@@ -9491,11 +9497,15 @@ async function uploadHistoryTagImportFile(file){
         uploadId:start.uploadId,
         index,
         totalChunks,
-        chunk
+        chunk,
+        adminActionNote:actionNote
       });
     }
     setHistoryTagImportStatus('Dosya alındı. Etiketler denetim geçmişiyle eşleştiriliyor...','');
-    const data=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/complete',{uploadId:start.uploadId});
+    const data=await postHistoryTagImportUploadJson('/api/history-tags/import/upload/complete',{
+      uploadId:start.uploadId,
+      adminActionNote:actionNote
+    });
     historyTagImportState.activeBatch=data.batch||null;
     historyTagImportState.matches=data.matches||[];
     historyTagImportState.status='ready';
@@ -11418,8 +11428,63 @@ async function sendArchiveImportToSourceForm(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+function adminActionNoteFromBody(body){
+  if(!body||typeof body!=='object'||Array.isArray(body))return '';
+  for(const key of ['adminActionNote','actionNote','adminNote','note']){
+    if(!Object.prototype.hasOwnProperty.call(body,key))continue;
+    const note=String(body[key]||'').replace(/\s+/g,' ').trim().slice(0,1200);
+    if(note)return note;
+  }
+  return '';
+}
+function adminActionNeedsNote(methodValue,urlValue,body={}){
+  const method=String(methodValue||'').toUpperCase();
+  const path=String(urlValue||'').split('?')[0].replace(/\/+$/,'')||'/';
+  if(!['POST','PUT','PATCH','DELETE'].includes(method))return false;
+  if(method==='POST'&&/^\/api\/history\/[0-9a-f-]{36}\/approve$/i.test(path))return false;
+  if(method==='POST'&&/^\/api\/review\/[0-9a-f-]{36}\/action$/i.test(path)&&String(body?.action||'')==='approve')return false;
+  if(/^\/api\/users(?:\/|$)/.test(path)||/^\/api\/rules(?:\/|$)/.test(path))return true;
+  if(method==='POST'&&path==='/api/standards')return true;
+  if(/^\/api\/(?:public-archive|archive-ops|correction-packages|history-tags)(?:\/|$)/.test(path))return true;
+  if(/^\/api\/review\/[0-9a-f-]{36}\/(?:action|reanalyze)$/i.test(path))return true;
+  if(path==='/api/history/merged-draft'||path==='/api/history/submit-merged')return true;
+  if(/^\/api\/history\/[0-9a-f-]{36}\/(?:content|submit|withdraw|reject|review|dergah|conference|pending|return|archive|tags)$/i.test(path))return true;
+  if(/^\/api\/alerts\/(?:[^/]+\/respond|resolve-bulk)$/.test(path))return true;
+  return method==='POST'&&path==='/api/ai/reports/generate';
+}
+function validAdminActionNoteUi(note){
+  const clean=String(note||'').replace(/\s+/g,' ').trim();
+  return clean.length>=3&&/[\p{L}\p{N}]/u.test(clean);
+}
+async function ensureAdminActionNote(method,url,body){
+  if(!hasAdminRole(me?.role)||!adminActionNeedsNote(method,url,body))return body;
+  const existing=adminActionNoteFromBody(body);
+  if(existing)return {...(body||{}),adminActionNote:existing};
+  const note=await openSystemPrompt({
+    title:'İşlem açıklaması',
+    badge:'Zorunlu kayıt',
+    message:'Bu yönetici işleminin nedenini yazın.',
+    detail:'Açıklama; işlemi yapan kişi, tarih ve hedef kayıtla birlikte Sistem Kayıtları içinde saklanır.',
+    inputPlaceholder:'Örn: Kullanıcı geri bildirimi doğrulandı; kayıt yeniden düzenlenmek üzere geri gönderiliyor.',
+    inputMaxLength:1200,
+    confirmText:'Notu Kaydet ve Devam Et',
+    cancelText:'İptal'
+  });
+  if(note===null)return null;
+  const clean=String(note||'').replace(/\s+/g,' ').trim();
+  if(!validAdminActionNoteUi(clean)){
+    await showSystemAlert('Açıklama gerekli','İşlem yapılmadı. En az 3 karakterlik anlamlı bir açıklama yazmalısınız.','danger');
+    return null;
+  }
+  return {...(body&&typeof body==='object'&&!Array.isArray(body)?body:{}),adminActionNote:clean};
+}
 async function api(method,url,body){
+  const notedBody=await ensureAdminActionNote(method,url,body);
+  if(notedBody===null)return {error:'İşlem açıklaması girilmediği için işlem yapılmadı.',code:'ADMIN_ACTION_NOTE_REQUIRED',cancelled:true};
+  body=notedBody;
   const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store'};
+  const actionNote=adminActionNoteFromBody(body);
+  if(actionNote)opts.headers['X-Admin-Action-Note']=actionNote;
   if(me?.reviewWorkspacesEnabled){
     opts.headers['X-Review-Workspace']=ReviewWorkspace.workspace();
     const mutation=url.match(/^\/api\/history\/([0-9a-f-]{36})\/(?:content|submit|withdraw|approve|reject|review|pending|return|archive|tags)$/i);
