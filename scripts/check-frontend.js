@@ -212,6 +212,13 @@ for (const marker of [
 assert(server.includes('async function syncSessionUserFromDb'), 'Oturum rolü DBden yeniden senkronize edilmeli.');
 assert(server.includes('await syncSessionUserFromDb(req)'), 'Auth/me ve korumali API akislari guncel DB rolunu okumali.');
 assert(!server.includes('normalizeSessionRole(req);'), 'Eski session-only rol normalizasyonu kullanilmamali.');
+assert(server.includes('requirePrivilegedAdminActionNote'), 'Yonetici mutasyonlari merkezi zorunlu not middleware ine bagli olmali.');
+assert(server.includes('ADMIN_ACTION_NOTE_REQUIRED'), 'Notsuz yonetici islemi backend tarafinda reddedilmeli.');
+assert(server.includes('ADMIN_ACTION_LOG_UNAVAILABLE'), 'Sistem kaydi yazilamazsa yonetici islemi durdurulmali.');
+assert(server.includes("req.get('x-admin-action-note')"), 'Dosya yukleme gibi erken denetlenen isteklerde yonetici notu basliktan da alinabilmeli.');
+assert(html.includes("opts.headers['X-Admin-Action-Note']=actionNote"), 'Frontend zorunlu yonetici notunu istek basliginda da tasimali.');
+assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
+assert(html.includes('İşlem açıklaması:</strong>'), 'Zorunlu aciklama Sistem Kayitlari ekraninda gorunmeli.');
 assert(server.includes('const ADMIN_PARALLEL_ROUTE_ENABLED'), 'ADMIN_PARALLEL_ROUTE_ENABLED flag okunmali.');
 assert(server.includes('function sendAdminIndex'), 'Admin index helper bulunmali.');
 assert(server.includes("res.set('X-Robots-Tag', 'noindex, nofollow')"), '/admin HTML response noindex header almali.');

@@ -43,6 +43,11 @@ const {
   renderNewsletterText,
   newsletterEventEmail
 } = require('./newsletter-core');
+const {
+  cleanRequiredActionNote,
+  requiresAdminActionNote,
+  validAdminActionNote
+} = require('./admin-action-policy');
 
 const app    = express();
 app.disable('x-powered-by');
@@ -749,8 +754,12 @@ async function ensureAdminActionLogReady(force = false) {
   return HAS_ADMIN_ACTION_LOG;
 }
 
-async function recordAdminAction(req, entry = {}) {
-  if (!(await ensureAdminActionLogReady())) return false;
+async function recordAdminAction(req, entry = {}, options = {}) {
+  const required = options.required === true;
+  if (!(await ensureAdminActionLogReady())) {
+    if (required) throw new Error('Sistem işlem kaydı hazır değil. Değişiklik güvenlik amacıyla durduruldu.');
+    return false;
+  }
   try {
     const action = cleanAdminActionText(entry.action || 'system.action', 120).replace(/\s+/g, '_') || 'system.action';
     const customActor = entry.actor && typeof entry.actor === 'object' ? {
@@ -759,6 +768,9 @@ async function recordAdminAction(req, entry = {}) {
       actor_name: cleanAdminActionText(entry.actor.name || entry.actor.email || '', 160),
       actor_role: cleanAdminActionText(entry.actor.role || '', 40)
     } : null;
+    const metadata = safeAdminActionJson(entry.metadata || {});
+    const actionNote = cleanAdminActionText(req.adminActionNote || cleanRequiredActionNote(req.body), 1200);
+    if (actionNote) metadata.actionNote = actionNote;
     const row = {
       ...(customActor || adminActionActor(req)),
       action,
@@ -769,17 +781,24 @@ async function recordAdminAction(req, entry = {}) {
       target_status_before: cleanAdminActionText(entry.targetStatusBefore || '', 80) || null,
       target_status_after: cleanAdminActionText(entry.targetStatusAfter || '', 80) || null,
       summary: cleanAdminActionText(entry.summary || '', 900) || null,
-      metadata: safeAdminActionJson(entry.metadata || {}),
+      metadata,
       ip_address: cleanAdminActionText(adminActionClientIp(req), 120) || null,
       user_agent: cleanAdminActionText(req.headers?.['user-agent'] || '', 700) || null
     };
-    const { error } = await supabase.from('admin_action_log').insert(row);
+    const guardedId = cleanAdminActionId(req.adminActionGuardLogId || '', 80);
+    const query = guardedId && options.forceInsert !== true
+      ? supabase.from('admin_action_log').update(row).eq('id', guardedId).select('id').maybeSingle()
+      : supabase.from('admin_action_log').insert(row).select('id').single();
+    const { data, error } = await query;
     if (error) {
+      if (required) throw new Error(error.message);
       console.warn('Sistem kaydı yazılamadı:', error.message);
       return false;
     }
-    return true;
+    if (guardedId && options.forceInsert !== true && data?.id) req.adminActionGuardFinalized = true;
+    return data?.id || guardedId || true;
   } catch (error) {
+    if (required) throw error;
     console.warn('Sistem kaydı yazılamadı:', error.message);
     return false;
   }
@@ -5363,6 +5382,66 @@ const admin = (req, res, next) => isAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
 const superAdmin = (req, res, next) => isSuperAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Süper admin yetkisi gerekli.' });
+
+async function requirePrivilegedAdminActionNote(req, res, next) {
+  if (!requiresAdminActionNote(req.method, req.path, req.body)) return next();
+  if (!req.session?.userId) return next();
+  try {
+    await startupReady;
+    const currentUser = await syncSessionUserFromDb(req);
+    if (!currentUser || !isAdminRole(currentUser.role)) return next();
+    const note = cleanRequiredActionNote(req.body)
+      || cleanRequiredActionNote({ adminActionNote: req.get('x-admin-action-note') });
+    if (!validAdminActionNote(note)) {
+      return res.status(400).json({
+        error: 'İşlem açıklaması zorunludur. Ne yaptığınızı ve nedenini en az 3 karakterle yazın.',
+        code: 'ADMIN_ACTION_NOTE_REQUIRED'
+      });
+    }
+    req.adminActionNote = note;
+    req.adminActionGuardLogId = await recordAdminAction(req, {
+      action: 'admin.action_authorized',
+      actionLabel: 'Notlu yönetici işlemi başlatıldı',
+      targetType: 'api_operation',
+      targetLabel: `${req.method} ${req.path}`,
+      targetStatusAfter: 'başlatıldı',
+      summary: 'Yönetici işlemi zorunlu açıklama ve kimlik bilgisiyle başlatıldı.',
+      metadata: {
+        method: req.method,
+        path: req.path,
+        requestedAction: String(req.body?.action || '').trim() || null
+      }
+    }, { required: true, forceInsert: true });
+    res.once('finish', () => {
+      if (!req.adminActionGuardLogId || req.adminActionGuardFinalized) return;
+      const completed = res.statusCode < 400;
+      supabase.from('admin_action_log').update({
+        target_status_after: completed ? 'tamamlandı' : 'başarısız',
+        summary: completed
+          ? 'Yönetici işlemi zorunlu açıklamayla tamamlandı; ayrıntılı işlem kaydı üretilemedi.'
+          : 'Yönetici işlemi zorunlu açıklamayla denendi fakat tamamlanmadı.',
+        metadata: {
+          actionNote: req.adminActionNote,
+          method: req.method,
+          path: req.path,
+          requestedAction: String(req.body?.action || '').trim() || null,
+          httpStatus: res.statusCode
+        }
+      }).eq('id', req.adminActionGuardLogId).then(({ error: guardError }) => {
+        if (guardError) console.warn('Yönetici işlem sonucu kaydı güncellenemedi:', guardError.message);
+      });
+    });
+    return next();
+  } catch (error) {
+    console.error('Zorunlu yönetici işlem kaydı oluşturulamadı:', error.message);
+    return res.status(503).json({
+      error: 'İşlem kaydı güvenle oluşturulamadığı için değişiklik yapılmadı. Lütfen tekrar deneyin.',
+      code: 'ADMIN_ACTION_LOG_UNAVAILABLE'
+    });
+  }
+}
+
+app.use(requirePrivilegedAdminActionNote);
 
 function publicGoogleAuthConfigured() {
   return Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
