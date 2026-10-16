@@ -219,6 +219,8 @@ assert(server.includes("req.get('x-admin-action-note')"), 'Dosya yukleme gibi er
 assert(html.includes("opts.headers['X-Admin-Action-Note']=actionNote"), 'Frontend zorunlu yonetici notunu istek basliginda da tasimali.');
 assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
 assert(html.includes('İşlem açıklaması:</strong>'), 'Zorunlu aciklama Sistem Kayitlari ekraninda gorunmeli.');
+assert(html.includes('label for="loginUser"') && html.includes('label for="loginPass"'), 'Admin giris alanlari programatik label iliskisine sahip olmali.');
+assert(html.includes('aria-label="Yönetim paneli girişi"') && html.includes('id="loginErr" role="alert" aria-live="polite"'), 'Admin giris formu ve hata mesaji yardimci teknolojilere acik olmali.');
 assert(server.includes('const ADMIN_PARALLEL_ROUTE_ENABLED'), 'ADMIN_PARALLEL_ROUTE_ENABLED flag okunmali.');
 assert(server.includes('function sendAdminIndex'), 'Admin index helper bulunmali.');
 assert(server.includes("res.set('X-Robots-Tag', 'noindex, nofollow')"), '/admin HTML response noindex header almali.');

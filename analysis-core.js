@@ -502,6 +502,24 @@ function isSimplePunctuationAddition(original, fixed) {
   return lowered === 'şeriat kitabı' && to === `${from},`;
 }
 
+function isDilekCircumflexInsertion(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  return /^dilek[\p{L}\p{N}_]*$/u.test(from) && /^dîlek[\p{L}\p{N}_]*$/u.test(to);
+}
+
+function isIstiyakSplitRewrite(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+  return from === 'iştiyakle' && to === 'iştiyak ile';
+}
+
+function isSeriatiCommaDeletion(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR').trim();
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR').trim();
+  return from === 'şeriatı,' && to === 'şeriatı';
+}
+
 function isFazlFamilyFalsePositive(original, fixed) {
   const from = asciiFold(original).replace(/\s+/g, ' ').trim();
   const to = asciiFold(fixed).replace(/\s+/g, ' ').trim();
@@ -1126,6 +1144,9 @@ function isProtectedChange(original, fixed) {
   if (isVarYaDeletion(original, fixed)) return true;
   if (/^\d+\.[\p{L}][^\s]*$/u.test(from) && /^\d+\.\s+[\p{L}][^\s]*$/u.test(to)) return false;
   if (isSimplePunctuationAddition(original, fixed)) return true;
+  if (isDilekCircumflexInsertion(original, fixed)) return true;
+  if (isIstiyakSplitRewrite(original, fixed)) return true;
+  if (isSeriatiCommaDeletion(original, fixed)) return true;
   if (isFazlFamilyFalsePositive(original, fixed)) return true;
   if (isLiveFeedbackLexicalFalsePositive(original, fixed)) return true;
   if (isLiveFeedbackPunctuationFalsePositive(original, fixed)) return true;
@@ -1222,6 +1243,7 @@ function deterministicFixed(original) {
     return caseLike(original, text.replace(/^dîn/iu, 'din'));
   }
   if (/^inşallah$/iu.test(text)) return caseLike(original, 'inşaallah');
+  if (/^iştiyakle$/iu.test(text)) return caseLike(original, 'iştiyakla');
   if (/^her\s+şey[\p{L}\p{N}_]*$/iu.test(text)) {
     return caseLike(original, text.replace(/^her\s+şey/iu, 'herşey'));
   }
@@ -1321,6 +1343,11 @@ function applyDeterministicStandards(cats, sourceText) {
     const original = match[0];
     if (/^tevbe[\p{L}\p{N}_]*$/iu.test(original) && isTevbeSuraContext(text, match.index, original.length)) continue;
     addDeterministicIssue(cats, seen, original, deterministicFixed(original), 'Kesin arşiv standardı');
+  }
+
+  const istiyakLeRe = /(?<![\p{L}\p{N}_])iştiyakle(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(istiyakLeRe)) {
+    addDeterministicIssue(cats, seen, match[0], deterministicFixed(match[0]), 'Sözlük standardı');
   }
 
   const kadirRe = /(?<![\p{L}\p{N}_])kadirdir(?![\p{L}\p{N}_])/giu;

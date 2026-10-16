@@ -1392,6 +1392,34 @@ test('29 Temmuz acik feedback kokleri kelime siniri ve baglamla korunur', () => 
   assert.equal(result.correctedText.includes('nefs ettirmeyiniz'), false);
 });
 
+test('16 Ekim acik feedback dilek istiyak ve seriat virgullerini dogru uygular', () => {
+  const source = 'Allahû Tealâ bir dilek istiyor. Zikirle iştiyakle hizmet edilir. Nuh (A.S)’ın şeriatı, İbrahim (A.S)’ın şeriatı, Musa (A.S)’ın şeriatı, Peygamber Efendimiz (S.A.V)’in şeriatı aynı şeriat.';
+  const result = finalizeResult({
+    correctedText: 'Allahû Tealâ bir dîlek istiyor. Zikirle iştiyak ile hizmet edilir. Nuh (A.S)’ın şeriatı İbrahim (A.S)’ın şeriatı Musa (A.S)’ın şeriatı Peygamber Efendimiz (S.A.V)’in şeriatı aynı şeriat.',
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'dilek', fixed: 'dîlek', rule: 'Sözlük standardı' },
+          { original: 'iştiyakle', fixed: 'iştiyak ile', rule: 'Sözlük standardı' }
+        ]
+      },
+      noktalama: {
+        issues: [
+          { original: 'şeriatı,', fixed: 'şeriatı', rule: 'Noktalama standardı' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.ok(result.correctedText.includes('bir dilek istiyor'));
+  assert.ok(result.correctedText.includes('iştiyakla hizmet edilir'));
+  assert.ok(result.correctedText.includes('şeriatı, İbrahim'));
+  assert.ok(result.correctedText.includes('şeriatı, Musa'));
+  assert.ok(result.correctedText.includes('şeriatı, Peygamber'));
+  assert.equal(result.correctedText.includes('dîlek'), false);
+  assert.equal(result.correctedText.includes('iştiyak ile'), false);
+});
+
 test('Adem A.S zurriyet kalibi duzeltilir ama nefret nefs yapilmaz', () => {
   const source = [
     "Kin ve nefret kalpte kalmamali.",

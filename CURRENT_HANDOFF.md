@@ -1132,6 +1132,25 @@
   Console'da `dini sorular`, `dini sorular ve cevaplar` sorgularının gösterim,
   ortalama konum, tıklama ve CTR gelişimi üzerinden yapılmalıdır.
 
+## 2026-10-16 Yönetici İşlem Notu ve Açık Denetim Düzeltmeleri
+
+- Admin ve süper admin için onay dışındaki ayrıcalıklı değişikliklerde işlem notu
+  backend tarafından zorunlu tutuldu; notlar `admin_action_log` içine kaydediliyor.
+- Üç açık geri bildirim canlıda düzeltildi, tekrarını engelleyen analiz kuralları
+  eklendi, kayıtlar kapatıldı ve üç ayrı kullanıcıya sistem bildirimi gönderildi.
+- Bozuk Tasavvuf kategori/konu ilişkisi düzeltildi. Dört eski soru URL'sindeki
+  toplam 213 okuma yeni URL'lere taşındı; yeni URL'lerdeki mevcut 3 okumayla
+  doğrulanan toplam 216 oldu.
+- Yönetici giriş formundaki etiketler input alanlarıyla programatik olarak
+  ilişkilendirildi ve hata alanına canlı bölge semantiği eklendi.
+- `npm.cmd run check` başarılı; 167/167 test geçti.
+- Canlıda 12 başarılı soru-cevap e-posta bildirimi kaydı bulundu; transactional
+  e-posta çalışıyor. Sensitive `RESEND_API_KEY` değeri CLI tarafından açılmaz.
+  Dış sağlayıcı kişi senkronu ayrı bülten yönetim hattında ele alınmalıdır.
+- Kategori envanteri geniş bir içerik konsolidasyonu gerektiriyor. Zayıf kategori
+  sayfalarının noindex koruması sürüyor; toplu silme veya birleştirme semantik
+  eşleme yapılmadan uygulanmamalıdır.
+
 ## 2026-09-17 Public Soru Cevaplandı Maili
 
 - Admin panelinde public soru talebine cevap yazıldığında oturum açmış ve

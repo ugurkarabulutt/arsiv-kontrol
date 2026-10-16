@@ -1177,12 +1177,12 @@ canvas{width:100%!important;}
       <div class="login-logo">Arşiv<span>.</span>Kontrol <span class="ai-tag">AI</span></div>
       <div class="login-sub">Arşiv Denetim Sistemi</div>
     </div>
-    <div class="login-body">
-      <div class="field"><label>Kullanıcı Adı</label><input type="text" id="loginUser" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="field"><label>Şifre</label><input type="password" id="loginPass" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <button class="btn-login" onclick="doLogin()">Giriş Yap</button>
-      <div class="login-err" id="loginErr"></div>
-    </div>
+    <form class="login-body" aria-label="Yönetim paneli girişi" onsubmit="event.preventDefault();doLogin()">
+      <div class="field"><label for="loginUser">Kullanıcı Adı</label><input type="text" id="loginUser" name="username" autocomplete="username" required></div>
+      <div class="field"><label for="loginPass">Şifre</label><input type="password" id="loginPass" name="password" autocomplete="current-password" required></div>
+      <button class="btn-login" type="submit">Giriş Yap</button>
+      <div class="login-err" id="loginErr" role="alert" aria-live="polite"></div>
+    </form>
   </div>
 </div>
 
