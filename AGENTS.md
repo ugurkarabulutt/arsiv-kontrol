@@ -3,6 +3,47 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-16
+
+- **Yönetici işlem notu zorunluluğu en güncel production hattına alındı:** Admin
+  ve süper admin tarafından yapılan ayrıcalıklı değişikliklerde yalnız normal
+  onay işlemi nottan muaftır. Kullanıcı, kural, standart, public arşiv, arşiv
+  operasyonu, düzeltme paketi, geçmiş/inceleme, feedback, AI raporu ve bülten
+  abone/senkron/kampanya mutation işlemleri backend seviyesinde en az 3
+  karakterlik anlamlı not olmadan çalışmaz. Not frontend'den body veya
+  `X-Admin-Action-Note` ile taşınır; başlangıç ve sonuç
+  `admin_action_log` içinde aktör ve hedef bilgileriyle tutulur. Yönetici giriş
+  formunun label, autocomplete ve canlı hata alanı semantiği de düzeltildi.
+- **Üç yeni geri bildirim veri ve kural seviyesinde kapatıldı:** Yanlış
+  `dîlek`, `iştiyak ile` ve silinen şeriat sıralama virgülleri ilgili
+  `history` kayıtlarında düzeltildi. Üç feedback `resolved` oldu ve üç
+  kullanıcıya `feedback_resolution` bildirimi yazıldı. Aynı hataların tekrarını
+  önleyen `analysis-core.js` kuralları ve regresyon testi eklendi. Paket
+  `feedback-remediation-20261016T162308179Z`, grup
+  `feedback-resolution-20261016T162308179Z`, denetim kaydı
+  `bd9f7a5c-4cd4-4219-ad35-8d69e6709556`.
+- **Public veri tutarsızlıkları geri alınabilir biçimde düzeltildi:** Bozuk
+  `tasavvufa-her-devirde-ilgisiz-kalinmasinin-sebebi-nedir` kaydı
+  `tasavvuf` kategori ve konusuna bağlandı. Dört eski URL'deki 213 okuma yeni
+  URL'lere aktarıldı; hedeflerdeki mevcut 3 okumayla toplam 216 doğrulandı.
+  Paket `audit-remediation-20261016T20261016T162148269Z`, denetim kaydı
+  `b2912a0f-8428-4e64-a47c-ed7e5b01ecbe`.
+- **Production dalı düzeltildi:** İlk yönetici notu deployment'ı güncel kod
+  hattının gerisindeki `codex/live-analytics-panel` dalından çıktığı için
+  yayın en güncel `codex/feedback-resolution-20261010` hattında yeniden
+  birleştirildi. Bülten, semantik arama, PageSpeed, ana sayfa ve konu rehberleri
+  korunarak 228/228 test geçti. Runtime commit'leri `e721c64`, `876cdcf`,
+  `735c9fb`; production deployment
+  `dpl_DmnDGin2SL8mmVyvQQevvVZyq4Jg`, canlı alias
+  `https://arsiv.ibrahimlive.ai`.
+- **Açık kontrollü başlıklar:** Canlıda 34 aktif bülten abonesinin 26'sı
+  `This API key is restricted to only send emails` nedeniyle `failed`, 8'i
+  `pending`. Transactional e-posta çalışıyor ve 12 başarılı kullanıcı bildirimi
+  kaydı var; bülten kişi/broadcast yönetimi için tam yetkili Resend anahtarı ile
+  `RESEND_WEBHOOK_SECRET` kurulmalıdır. Taksonomide 3604 kategorinin 2289'u
+  boş, 961'i tek soruludur; zayıf sayfalar noindex kalır ve semantik eşleme
+  olmadan toplu silme/birleştirme yapılmaz.
+
 ## 2026-10-13
 
 - **Açık geri bildirimler tam kapsamla ve geri alınabilir biçimde çözüldü:** Canlıda

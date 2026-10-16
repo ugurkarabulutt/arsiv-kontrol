@@ -1143,13 +1143,21 @@
   doğrulanan toplam 216 oldu.
 - Yönetici giriş formundaki etiketler input alanlarıyla programatik olarak
   ilişkilendirildi ve hata alanına canlı bölge semantiği eklendi.
-- `npm.cmd run check` başarılı; 167/167 test geçti.
+- En güncel production kod hattında `npm.cmd run check` başarılı; 228/228 test
+  geçti. Bülten abone, senkron ve kampanya mutation rotaları da zorunlu not
+  politikasına dahil edildi.
 - Canlıda 12 başarılı soru-cevap e-posta bildirimi kaydı bulundu; transactional
-  e-posta çalışıyor. Sensitive `RESEND_API_KEY` değeri CLI tarafından açılmaz.
-  Dış sağlayıcı kişi senkronu ayrı bülten yönetim hattında ele alınmalıdır.
+  e-posta çalışıyor. Bülten tarafında 34 aktif abonenin 26'sı send-only Resend
+  anahtarı nedeniyle `failed`, 8'i `pending`. Tam yetkili Resend yönetim
+  anahtarı ve webhook secret kurulmadan sağlayıcı senkronu tamamlanmış değildir.
 - Kategori envanteri geniş bir içerik konsolidasyonu gerektiriyor. Zayıf kategori
   sayfalarının noindex koruması sürüyor; toplu silme veya birleştirme semantik
   eşleme yapılmadan uygulanmamalıdır.
+- İlk yönetici notu deployment'ı eski daldan çıktığı için en güncel bülten,
+  performans ve ana sayfa kod hattıyla yeniden birleştirildi. Doğru production
+  deployment `dpl_DmnDGin2SL8mmVyvQQevvVZyq4Jg`; canlı alias
+  `https://arsiv.ibrahimlive.ai`. `/health`, root, admin, bülten yönetim
+  marker'ları, Hacet Namazı rehberi ve yetkisiz API sınırları canlıda doğrulandı.
 
 ## 2026-09-17 Public Soru Cevaplandı Maili
 
