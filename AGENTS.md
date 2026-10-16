@@ -442,7 +442,10 @@ tespit edilir).
 - Değişen dosyalar: `admin-action-policy.js`, `server.js`, `index.html`,
   `scripts/check-frontend.js`, `test/admin-action-policy.test.js`, `AGENTS.md` ve
   `CURRENT_HANDOFF.md`. Yerel `npm.cmd run check` başarılı; 166/166 test geçti.
-  Değişiklik henüz commit, push veya production deploy edilmedi.
+  Runtime commit `180216b` GitHub'a push edildi. Production deployment
+  `dpl_46sN2AnaBxT26FDWeCnc1pyKW7H3`, canlı alias `https://arsiv.ibrahimlive.ai`.
+  Canlı `/health`, root ve `/admin` başarılı; admin `noindex, nofollow`, zorunlu
+  not arayüzü ve log görünümü mevcut, oturumsuz yönetici mutasyonu `401` döndü.
 
 ### 2026-09-14 Public Konu Rehberi Blog Yayını
 

@@ -3,7 +3,8 @@
 ## 2026-10-16 Zorunlu Yönetici İşlem Notu
 
 - Aktif çalışma ağacı: `.tmp-admin-workspaces-v2`, branch
-  `codex/live-analytics-panel`. Değişiklik yerelde; commit/push/deploy yapılmadı.
+  `codex/live-analytics-panel`. Runtime commit `180216b` GitHub'a push edildi ve
+  production deployment `dpl_46sN2AnaBxT26FDWeCnc1pyKW7H3` canlıya alındı.
 - Onaylama hariç yetkili durum değiştiren admin ve süper admin işlemlerinde açıklama
   backend tarafından zorunlu tutuluyor. Eksik not `400`, denetim kaydı yazılamaması
   `503` ile işlemi mutasyondan önce durduruyor.
@@ -13,7 +14,9 @@
   dosyası aktarımında açıklama yalnız bir kez sorulup bütün yükleme zincirinde taşınıyor.
 - Yeni admin mutasyonlarının koruma dışında kalmasını önleyen rota envanteri testi
   eklendi. `npm.cmd run check` başarılı; 166/166 test geçti. İlgisiz `output/`
-  klasörüne dokunulmadı.
+  klasörüne dokunulmadı. Canlı `https://arsiv.ibrahimlive.ai` için `/health`,
+  root, `/admin`, admin noindex, zorunlu not işaretleri ve oturumsuz mutasyon `401`
+  sınırı doğrulandı.
 
 ## 2026-09-21 Elçin Akay Kayıt Akışı
 
