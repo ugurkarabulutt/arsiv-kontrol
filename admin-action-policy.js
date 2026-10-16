@@ -32,6 +32,7 @@ function requiresAdminActionNote(methodValue, pathValue, body = {}) {
   if (method === 'POST' && path === '/api/standards') return true;
   if (/^\/api\/public-archive(?:\/|$)/.test(path)) return true;
   if (/^\/api\/archive-ops(?:\/|$)/.test(path)) return true;
+  if (/^\/api\/newsletter\/admin(?:\/|$)/.test(path)) return true;
   if (/^\/api\/correction-packages(?:\/|$)/.test(path)) return true;
   if (/^\/api\/history-tags(?:\/|$)/.test(path)) return true;
   if (new RegExp(`^/api/review/${UUID_PART}/(?:action|reanalyze)$`, 'i').test(path)) return true;

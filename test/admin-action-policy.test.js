@@ -26,6 +26,8 @@ test('privileged mutations require a note while passive actions do not', () => {
     ['POST', '/api/standards'],
     ['POST', '/api/public-archive/sync-approved'],
     ['DELETE', '/api/archive-ops/work-items/item-1'],
+    ['POST', '/api/newsletter/admin/sync'],
+    ['POST', '/api/newsletter/admin/campaigns/campaign-1/send'],
     ['POST', '/api/correction-packages/pkg-1/apply'],
     ['POST', `/api/history/${id}/reject`],
     ['POST', '/api/history-tags/import/upload/start'],
