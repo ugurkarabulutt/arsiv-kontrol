@@ -1,5 +1,33 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-17 Geri Gönderme ve Düzeltme Özeti — Production Tamamlandı
+
+- Ekip üyesinin onaya gönderirken yazdığı eski `Kontrol notu` ifadesi
+  başlangıçta `Ekip üyesi notu`, geri gönderilmiş kayıtta `Yapılan
+  düzeltmeler` olarak ayrıştırıldı. Yönetici ekranında bu alan salt okunurdur;
+  yönetici geri gönderme gerekçesiyle karıştırılmaz.
+- Yönetim İş Panosu kayıt detayına `Geri gönderme ve düzeltme özeti` eklendi.
+  Son geri gönderme gerekçesi, geri gönderen yönetici ve tarih; yeniden
+  gönderen ekip üyesi ve tarih; ekip üyesinin açıklaması ve soru/cevap/etiket/
+  açıklama alanlarındaki gerçek önce-sonra farkları birlikte gösterilir.
+  Yeniden gönderilen kayıtta gerçek değişiklik yoksa açık uyarı verilir.
+- Mevcut `history_revisions` kayıtları kullanıldı; DB migration yapılmadı.
+  Ayrıntılı `Kaynak ve işlem geçmişi` görünümünde geri gönderme gerekçesi ile
+  ekip üyesi açıklaması da doğru adlarla görünür.
+- Zorunlu `npm.cmd run check` başarılı, 231/231 test geçti. Sentetik veriyle
+  yönetici geri gönderme -> ekip üyesi düzeltme -> yeniden gönderme senaryosu
+  doğrulandı. Playwright 1440x1000 ve 390x844 kontrollerinde modal/özet yatay
+  taşma üretmedi.
+- Runtime commit `af669bd`, push hedefi
+  `origin/codex/feedback-resolution-20261010-safe`. Production deployment
+  `dpl_HFN78uPHq4pUN9ZHuvT9rmHUrfom`, URL
+  `https://arsiv-kontrol-4oinb58fx-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`; Vercel durumu `READY`.
+- Canlı smoke: `/health` `ok`, root ve `/admin` `200`, admin
+  `noindex/no-store`; yeni JS/CSS sürümü ve özet markerları canlıda. Oturumsuz
+  `change-summary` isteği `401`. Güvenli canlı test hesabı olmadığı için gerçek
+  kullanıcı kaydında yazma işlemi yapılmadı.
+
 ## 2026-10-17 Ekip Üyesi Gönderim Notu Düzeltmesi — Production Tamamlandı
 
 - Çalışma dalı: `codex/feedback-resolution-20261010`; değişiklikler güncel

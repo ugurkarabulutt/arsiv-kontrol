@@ -806,6 +806,25 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-17
+
+- **Geri gönderme ve ekip üyesi düzeltmeleri görünür biçimde ayrıldı:** Ekip
+  üyesinin gönderim alanı `Ekip üyesi notu`, geri gelen kayıtta `Yapılan
+  düzeltmeler` adını taşır. Yönetim İş Panosu detayında son geri gönderme
+  gerekçesi, yönetici ve işlem tarihi; yeniden gönderen ekip üyesi ve tarihi;
+  ekip üyesi açıklaması ile soru, cevap, etiket ve açıklamadaki gerçek sürüm
+  farkları tek özet panelinde gösterilir. Değişiklik yoksa yönetici açıkça
+  uyarılır; tam revision geçmişi korunur. Yeni DB migration gerekmedi. Değişen
+  dosyalar: `review-workflow.js`, `review-workspace.js`,
+  `review-workspace.css`, `index.html`, `scripts/check-frontend.js`,
+  `test/review-workflow-http.test.js`. `npm.cmd run check` 231/231 başarılı;
+  1440x1000 ve 390x844 Playwright kontrollerinde yatay taşma yok. Runtime
+  commit `af669bd` production'a alındı. Deployment
+  `dpl_HFN78uPHq4pUN9ZHuvT9rmHUrfom`, URL
+  `https://arsiv-kontrol-4oinb58fx-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`; canlı health/root/admin ve yeni asset
+  markerları başarılı, oturumsuz özet endpoint'i `401`.
+
 ### 2026-10-03 Ana Sayfa Konu Keşfi Preview
 
 - **Şeytanın telkinleri kaydı video açıklamasından doğrudan soruya
