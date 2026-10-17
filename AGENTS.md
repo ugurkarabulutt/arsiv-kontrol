@@ -3,6 +3,21 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-17
+
+- **Yönetici işlem notu ekip çalışmasından ayrıldı:** Admin veya süper admin
+  yetkisine sahip bir ekip üyesi `Ekip Üyesi` çalışma alanında kendi kaydını
+  kaydederken, onaya gönderirken, geri çekerken ya da diğer ekip üyesi
+  adımlarını uygularken artık 3 karakterlik yönetici işlem açıklaması istenmez.
+  Kendi kaydına ait `submit`, `withdraw`, birleşik taslak/gönderim uçları da
+  yönetim kararı sayılmaz. `Yönetim` çalışma alanındaki düzenleme, reddetme,
+  geri gönderme, teyide alma, özel bölüme taşıma, arşivleme, çöpe taşıma ve geri
+  alma işlemlerinde zorunlu not ve merkezi işlem logu korunur; normal onay yine
+  muaftır. Backend kararında güvenilir çalışma alanı başlığı ve feature flag
+  birlikte kullanılır; aynı ayrım frontend ön kontrolünde de uygulanır.
+  Regresyon testleri ekip/yönetim bağlamını ayrı doğrular; `npm.cmd run check`
+  ve açık 12 test dosyası koşusu 230/230 başarılıdır.
+
 ## 2026-10-16
 
 - **Yönetici işlem notu zorunluluğu en güncel production hattına alındı:** Admin

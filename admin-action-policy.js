@@ -22,10 +22,28 @@ function isApprovalAction(method, path, body = {}) {
     && String(body?.action || '').trim() === 'approve';
 }
 
-function requiresAdminActionNote(methodValue, pathValue, body = {}) {
+function isMemberWorkflowAction(method, path, body = {}, context = {}) {
+  if (method !== 'POST') return false;
+
+  // These endpoints can only create, submit or withdraw the signed-in
+  // person's own work. An admin account using the member workflow must not be
+  // treated as if it were making a management decision.
+  if (path === '/api/history/merged-draft' || path === '/api/history/submit-merged') return true;
+  if (new RegExp(`^/api/history/${UUID_PART}/(?:submit|withdraw)$`, 'i').test(path)) return true;
+
+  const memberWorkspace = context.reviewWorkspacesEnabled === true
+    && String(context.workspace || '').trim() === 'member';
+  if (!memberWorkspace) return false;
+  if (new RegExp(`^/api/history/${UUID_PART}/content$`, 'i').test(path)) return true;
+  return new RegExp(`^/api/review/${UUID_PART}/(?:action|reanalyze)$`, 'i').test(path);
+}
+
+function requiresAdminActionNote(methodValue, pathValue, body = {}, context = {}) {
   const method = String(methodValue || '').toUpperCase();
   const path = normalizedApiPath(pathValue);
-  if (!MUTATING_METHODS.has(method) || isApprovalAction(method, path, body)) return false;
+  if (!MUTATING_METHODS.has(method)
+    || isApprovalAction(method, path, body)
+    || isMemberWorkflowAction(method, path, body, context)) return false;
 
   if (/^\/api\/users(?:\/|$)/.test(path)) return true;
   if (/^\/api\/rules(?:\/|$)/.test(path)) return true;
@@ -36,8 +54,7 @@ function requiresAdminActionNote(methodValue, pathValue, body = {}) {
   if (/^\/api\/correction-packages(?:\/|$)/.test(path)) return true;
   if (/^\/api\/history-tags(?:\/|$)/.test(path)) return true;
   if (new RegExp(`^/api/review/${UUID_PART}/(?:action|reanalyze)$`, 'i').test(path)) return true;
-  if (path === '/api/history/merged-draft' || path === '/api/history/submit-merged') return true;
-  if (new RegExp(`^/api/history/${UUID_PART}/(?:content|submit|withdraw|reject|review|dergah|conference|pending|return|archive|tags)$`, 'i').test(path)) return true;
+  if (new RegExp(`^/api/history/${UUID_PART}/(?:content|reject|review|dergah|conference|pending|return|archive|tags)$`, 'i').test(path)) return true;
   if (/^\/api\/alerts\/(?:[^/]+\/respond|resolve-bulk)$/.test(path)) return true;
   if (method === 'POST' && path === '/api/ai/reports/generate') return true;
   return false;
@@ -51,6 +68,7 @@ function validAdminActionNote(note) {
 module.exports = {
   cleanRequiredActionNote,
   isApprovalAction,
+  isMemberWorkflowAction,
   normalizedApiPath,
   requiresAdminActionNote,
   validAdminActionNote

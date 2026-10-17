@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {
   cleanRequiredActionNote,
+  isMemberWorkflowAction,
   requiresAdminActionNote,
   validAdminActionNote
 } = require('../admin-action-policy');
@@ -16,6 +17,38 @@ test('approval is the only review decision exempt from a required admin note', (
   for (const action of ['save', 'reject', 'review', 'pending', 'return', 'archive', 'trash', 'restore']) {
     assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/action`, { action }), true, action);
   }
+});
+
+test('member workflow stays exempt even when the team member also has an admin role', () => {
+  const memberContext = { workspace: 'member', reviewWorkspacesEnabled: true };
+  const memberReviewActions = ['save', 'submit', 'withdraw', 'reanalyze', 'revise_rejected', 'delete_draft', 'close_duplicate', 'dispute'];
+  for (const action of memberReviewActions) {
+    assert.equal(
+      requiresAdminActionNote('POST', `/api/review/${id}/action`, { action }, memberContext),
+      false,
+      action
+    );
+  }
+  assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/reanalyze`, {}, memberContext), false);
+  assert.equal(requiresAdminActionNote('POST', `/api/history/${id}/content`, {}, memberContext), false);
+  assert.equal(requiresAdminActionNote('POST', `/api/history/${id}/submit`, {}), false);
+  assert.equal(requiresAdminActionNote('POST', `/api/history/${id}/withdraw`, {}), false);
+  assert.equal(requiresAdminActionNote('POST', '/api/history/merged-draft', {}), false);
+  assert.equal(requiresAdminActionNote('POST', '/api/history/submit-merged', {}), false);
+  assert.equal(isMemberWorkflowAction('POST', `/api/review/${id}/action`, { action: 'submit' }, memberContext), true);
+});
+
+test('management decisions still require notes while approval stays exempt', () => {
+  const managementContext = { workspace: 'management', reviewWorkspacesEnabled: true };
+  for (const action of ['save', 'reject', 'return', 'review', 'dergah', 'conference', 'pending', 'archive', 'trash', 'restore', 'resolve_dispute']) {
+    assert.equal(
+      requiresAdminActionNote('POST', `/api/review/${id}/action`, { action }, managementContext),
+      true,
+      action
+    );
+  }
+  assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/action`, { action: 'approve' }, managementContext), false);
+  assert.equal(requiresAdminActionNote('POST', `/api/history/${id}/content`, {}, managementContext), true);
 });
 
 test('privileged mutations require a note while passive actions do not', () => {

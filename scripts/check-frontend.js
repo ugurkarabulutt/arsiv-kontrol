@@ -218,6 +218,8 @@ assert(server.includes('ADMIN_ACTION_LOG_UNAVAILABLE'), 'Sistem kaydi yazilamazs
 assert(server.includes("req.get('x-admin-action-note')"), 'Dosya yukleme gibi erken denetlenen isteklerde yonetici notu basliktan da alinabilmeli.');
 assert(html.includes("opts.headers['X-Admin-Action-Note']=actionNote"), 'Frontend zorunlu yonetici notunu istek basliginda da tasimali.');
 assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
+assert(html.includes('function adminActionRunsAsMemberWorkflow') && html.includes("ReviewWorkspace.workspace()==='member'"), 'Admin rolu olan ekip uyesinin normal calisma akisi zorunlu yonetim notundan ayrilmali.');
+assert(server.includes("workspace: req.get('X-Review-Workspace')") && server.includes('reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED'), 'Backend zorunlu not karari ekip uyesi ve yonetim calisma alanini ayirmali.');
 assert(html.includes('İşlem açıklaması:</strong>'), 'Zorunlu aciklama Sistem Kayitlari ekraninda gorunmeli.');
 assert(html.includes('label for="loginUser"') && html.includes('label for="loginPass"'), 'Admin giris alanlari programatik label iliskisine sahip olmali.');
 assert(html.includes('aria-label="Yönetim paneli girişi"') && html.includes('id="loginErr" role="alert" aria-live="polite"'), 'Admin giris formu ve hata mesaji yardimci teknolojilere acik olmali.');

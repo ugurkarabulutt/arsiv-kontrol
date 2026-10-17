@@ -5384,7 +5384,10 @@ const superAdmin = (req, res, next) => isSuperAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Süper admin yetkisi gerekli.' });
 
 async function requirePrivilegedAdminActionNote(req, res, next) {
-  if (!requiresAdminActionNote(req.method, req.path, req.body)) return next();
+  if (!requiresAdminActionNote(req.method, req.path, req.body, {
+    workspace: req.get('X-Review-Workspace'),
+    reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED
+  })) return next();
   if (!req.session?.userId) return next();
   try {
     await startupReady;

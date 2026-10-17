@@ -1,5 +1,24 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-17 Ekip Üyesi Gönderim Notu Düzeltmesi — Yerel Tamamlandı
+
+- Çalışma dalı: `codex/feedback-resolution-20261010`; değişiklikler güncel
+  production hattındaki `1b8db55` tabanında hazırlandı.
+- Hata: Admin rolü de bulunan ekip üyesinin kendi sorusunu onaya gönderme
+  işlemi, yönetim kararı gibi değerlendirilerek 3 karakterlik zorunlu açıklama
+  istiyordu. Aynı geniş eşleşme kendi taslağını kaydetme/geri çekme ve yeni
+  çalışma alanı eylemlerini de etkiliyordu.
+- Düzeltme: Ekip Üyesi çalışma alanındaki eylemler ile yalnız sahibine ait
+  submit/withdraw/birleşik gönderim uçları zorunlu yönetici notundan ayrıldı.
+  Yönetim alanındaki reddetme, geri gönderme, arşivleme, çöpe taşıma, geri alma
+  ve diğer kararlar zorunlu notlu kalır; onay muafiyeti korunur. İşlem logları
+  kaldırılmadı.
+- Doğrulama: hedefli politika testleri 6/6, `node --check server.js`, frontend
+  kontrolü ve zorunlu `npm.cmd run check` başarılıdır. Tüm 12 test dosyasının
+  açık koşusunda 230/230 test geçti.
+- Sonraki adım: runtime commit/push ve production deployment; ardından canlı
+  `/health`, admin noindex/no-store ve oturumsuz güvenlik smoke kontrolleri.
+
 ## 2026-10-13 Açık Geri Bildirimler — Production Tamamlandı
 
 - İzole dal: `codex/feedback-resolution-20261010-safe`; kirli ana checkout ve

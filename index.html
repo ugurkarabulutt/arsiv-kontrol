@@ -11910,18 +11910,29 @@ function adminActionNoteFromBody(body){
   }
   return '';
 }
+function adminActionRunsAsMemberWorkflow(method,path){
+  if(method!=='POST')return false;
+  if(path==='/api/history/merged-draft'||path==='/api/history/submit-merged')return true;
+  if(/^\/api\/history\/[0-9a-f-]{36}\/(?:submit|withdraw)$/i.test(path))return true;
+  const memberWorkspace=me?.reviewWorkspacesEnabled
+    && typeof ReviewWorkspace!=='undefined'
+    && ReviewWorkspace.workspace()==='member';
+  if(!memberWorkspace)return false;
+  if(/^\/api\/history\/[0-9a-f-]{36}\/content$/i.test(path))return true;
+  return /^\/api\/review\/[0-9a-f-]{36}\/(?:action|reanalyze)$/i.test(path);
+}
 function adminActionNeedsNote(methodValue,urlValue,body={}){
   const method=String(methodValue||'').toUpperCase();
   const path=String(urlValue||'').split('?')[0].replace(/\/+$/,'')||'/';
   if(!['POST','PUT','PATCH','DELETE'].includes(method))return false;
   if(method==='POST'&&/^\/api\/history\/[0-9a-f-]{36}\/approve$/i.test(path))return false;
   if(method==='POST'&&/^\/api\/review\/[0-9a-f-]{36}\/action$/i.test(path)&&String(body?.action||'')==='approve')return false;
+  if(adminActionRunsAsMemberWorkflow(method,path))return false;
   if(/^\/api\/users(?:\/|$)/.test(path)||/^\/api\/rules(?:\/|$)/.test(path))return true;
   if(method==='POST'&&path==='/api/standards')return true;
   if(/^\/api\/(?:public-archive|archive-ops|correction-packages|history-tags)(?:\/|$)/.test(path))return true;
   if(/^\/api\/review\/[0-9a-f-]{36}\/(?:action|reanalyze)$/i.test(path))return true;
-  if(path==='/api/history/merged-draft'||path==='/api/history/submit-merged')return true;
-  if(/^\/api\/history\/[0-9a-f-]{36}\/(?:content|submit|withdraw|reject|review|dergah|conference|pending|return|archive|tags)$/i.test(path))return true;
+  if(/^\/api\/history\/[0-9a-f-]{36}\/(?:content|reject|review|dergah|conference|pending|return|archive|tags)$/i.test(path))return true;
   if(/^\/api\/alerts\/(?:[^/]+\/respond|resolve-bulk)$/.test(path))return true;
   return method==='POST'&&path==='/api/ai/reports/generate';
 }
