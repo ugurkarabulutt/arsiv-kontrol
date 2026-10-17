@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-17 Ekip Üyesi Gönderim Notu Düzeltmesi — Yerel Tamamlandı
+## 2026-10-17 Ekip Üyesi Gönderim Notu Düzeltmesi — Production Tamamlandı
 
 - Çalışma dalı: `codex/feedback-resolution-20261010`; değişiklikler güncel
   production hattındaki `1b8db55` tabanında hazırlandı.
@@ -16,8 +16,15 @@
 - Doğrulama: hedefli politika testleri 6/6, `node --check server.js`, frontend
   kontrolü ve zorunlu `npm.cmd run check` başarılıdır. Tüm 12 test dosyasının
   açık koşusunda 230/230 test geçti.
-- Sonraki adım: runtime commit/push ve production deployment; ardından canlı
-  `/health`, admin noindex/no-store ve oturumsuz güvenlik smoke kontrolleri.
+- Runtime commit `85881f9`, push hedefi
+  `origin/codex/feedback-resolution-20261010-safe`. Production deployment
+  `dpl_3vAB13MUTDKf79FH2Y3a7F9HLGix`, URL
+  `https://arsiv-kontrol-2ubl38xp9-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`; Vercel durumu `READY`.
+- Canlı smoke: `/health` `ok`, root ve `/admin` `200`, admin `noindex/no-store`,
+  ekip üyesi frontend markerları mevcut; oturumsuz submit/reject denemeleri
+  `401`. Güvenli ekip üyesi test hesabı olmadığı için kullanıcı verisi
+  değiştiren canlı oturum testi yapılmadı.
 
 ## 2026-10-13 Açık Geri Bildirimler — Production Tamamlandı
 

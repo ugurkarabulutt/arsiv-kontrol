@@ -16,7 +16,15 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   muaftır. Backend kararında güvenilir çalışma alanı başlığı ve feature flag
   birlikte kullanılır; aynı ayrım frontend ön kontrolünde de uygulanır.
   Regresyon testleri ekip/yönetim bağlamını ayrı doğrular; `npm.cmd run check`
-  ve açık 12 test dosyası koşusu 230/230 başarılıdır.
+  ve açık 12 test dosyası koşusu 230/230 başarılıdır. Runtime commit
+  `85881f9` güvenli uzak dala push edildi ve production'a alındı. Deployment
+  `dpl_3vAB13MUTDKf79FH2Y3a7F9HLGix`, URL
+  `https://arsiv-kontrol-2ubl38xp9-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health` `ok`, root ve `/admin`
+  `200`, admin `noindex/no-store`, yeni ekip üyesi frontend markerları mevcut;
+  oturumsuz gönderim ve yönetim karar rotaları `401` döndürür. Güvenli test
+  hesabı bulunmadığı için gerçek ekip üyesi oturumunda veri değiştiren canlı
+  uçtan uca test yapılmadı.
 
 ## 2026-10-16
 
