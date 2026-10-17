@@ -31,6 +31,50 @@ const LIST_COLUMNS = 'id,user_id,assignee_id,username,name,filename,score,total_
 const PREVIEW_COLUMNS = 'id,user_id,username,name,filename,score,total_errors,status,created_at,updated_at,question_text,tags,submission_note';
 const QUEUE_COLUMNS = LIST_COLUMNS + ',submitted_at,submitted_by,status_changed_at,status_changed_by,queue_sort_at';
 const SUBMITTED_APPROVAL_STATUSES = new Set(['bekliyor','teyit_bekliyor','dergah_sorulari','konferanslar','arsivlendi','onaylandi','reddedildi']);
+const CHANGE_SUMMARY_FIELDS = [
+  ['question_text', 'Soru'],
+  ['corrected_text', 'Cevap'],
+  ['tags', 'Etiketler'],
+  ['submission_note', 'Ekip üyesi açıklaması']
+];
+
+function comparableReviewValue(value) {
+  if (Array.isArray(value)) return JSON.stringify(value.map(item => String(item || '').trim()));
+  return String(value || '').replace(/\r\n?/g, '\n').trim();
+}
+
+function reviewChangeSummary(current, returnedRevision, submittedRevision, actorNames = new Map()) {
+  if (!returnedRevision) return { hasReturn: false, changes: [] };
+  const returnedSnapshot = returnedRevision.after_data || {};
+  const returnMeta = returnedSnapshot.workflow_meta || {};
+  const currentMeta = current.workflow_meta || {};
+  const resubmitted = Boolean(submittedRevision && submittedRevision.version > returnedRevision.version);
+  const comparedSnapshot = resubmitted ? (submittedRevision.after_data || current) : current;
+  const changes = CHANGE_SUMMARY_FIELDS.flatMap(([key, label]) => {
+    const before = returnedSnapshot[key] ?? (key === 'tags' ? [] : '');
+    const after = comparedSnapshot[key] ?? (key === 'tags' ? [] : '');
+    return comparableReviewValue(before) === comparableReviewValue(after)
+      ? []
+      : [{ key, label, before, after }];
+  });
+  return {
+    hasReturn: true,
+    resubmitted,
+    return: {
+      note: returnMeta.returnNote || currentMeta.lastReturnNote || currentMeta.returnNote || '',
+      actorName: actorNames.get(returnedRevision.actor_id) || returnMeta.returnedBy || 'Yönetici',
+      at: returnedRevision.created_at,
+      version: returnedRevision.version
+    },
+    submission: resubmitted ? {
+      actorName: actorNames.get(submittedRevision.actor_id) || 'Ekip üyesi',
+      at: submittedRevision.created_at,
+      version: submittedRevision.version
+    } : null,
+    memberNote: comparedSnapshot.submission_note || '',
+    changes
+  };
+}
 
 function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
   const router = express.Router();
@@ -173,6 +217,22 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const names = new Map((actors.data || []).map(user => [user.id, user.name]));
     res.json({ items: (data || []).map(row => ({ ...row, actorName: names.get(row.actor_id) || 'Sistem' })), nextVersion: data?.length === 20 ? data.at(-1).version : null });
   }));
+  router.get('/:id/change-summary', handler(async (req, res) => {
+    const current = await read(req, req.params.id);
+    if (readOnly) return res.json({ hasReturn: false, changes: [], preview: true });
+    const revisionFields = 'version,actor_id,created_at,before_data,after_data';
+    const [returnedResult, submittedResult] = await Promise.all([
+      supabase.from('history_revisions').select(revisionFields).eq('history_id', current.id).eq('action', 'return').order('version', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('history_revisions').select(revisionFields).eq('history_id', current.id).eq('action', 'submit').order('version', { ascending: false }).limit(1).maybeSingle()
+    ]);
+    if (returnedResult.error) throw returnedResult.error;
+    if (submittedResult.error) throw submittedResult.error;
+    const actorIds = [...new Set([returnedResult.data?.actor_id, submittedResult.data?.actor_id].filter(Boolean))];
+    const actors = actorIds.length ? await supabase.from('users').select('id,name').in('id', actorIds) : { data: [] };
+    if (actors.error) throw actors.error;
+    const names = new Map((actors.data || []).map(user => [user.id, user.name]));
+    res.json(reviewChangeSummary(current, returnedResult.data, submittedResult.data, names));
+  }));
   router.get('/:id/duplicates', handler(async (req, res) => {
     if (spaceFor(req) !== 'management') throw new Error('FORBIDDEN');
     await read(req, req.params.id);
@@ -223,4 +283,4 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
   return { router, legacy, change };
 }
 
-module.exports = { createReviewWorkflow };
+module.exports = { createReviewWorkflow, reviewChangeSummary };

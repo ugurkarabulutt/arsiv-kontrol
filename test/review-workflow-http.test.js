@@ -23,6 +23,35 @@ test('detail and legacy APIs refuse other owner in member workspace',async()=>{
   assert.equal((await request('/api/history/'+h.id)).status,404);
   assert.equal((await request('/api/review/'+h.id,'admin','management')).status,200);
 });
+test('management change summary links the return reason to the member resubmission and actual edits',async()=>{
+  const owner=fixture.users[0];
+  const manager=fixture.users[1];
+  const h=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags,submission_note)
+    values($1,'Düzeltme Özeti','bekliyor','İlk soru?','İlk cevap.','Kaynak','["Takva"]','İlk gönderim notu.') returning *`,[owner.id])).rows[0];
+  try{
+    const returned=await request(`/api/review/${h.id}/action`,'admin','management',{action:'return',version:0,note:'Cevabı tamamlayıp etiketi kontrol edin.'});
+    assert.equal(returned.status,200);
+    const saved=await request(`/api/review/${h.id}/action`,'user','member',{
+      action:'save',version:returned.data.history.version,questionText:'Düzeltilmiş soru?',correctedText:'Tamamlanmış cevap.',tags:['Takva','Teslimiyet'],submissionNote:'Cevap tamamlandı ve etiket eklendi.'
+    });
+    assert.equal(saved.status,200);
+    const submitted=await request(`/api/review/${h.id}/action`,'user','member',{action:'submit',version:saved.data.history.version,
+      questionText:'Düzeltilmiş soru?',correctedText:'Tamamlanmış cevap.',tags:['Takva','Teslimiyet'],submissionNote:'Cevap tamamlandı ve etiket eklendi.'});
+    assert.equal(submitted.status,200);
+    const summary=await request(`/api/review/${h.id}/change-summary`,'admin','management');
+    assert.equal(summary.status,200);
+    assert.equal(summary.data.hasReturn,true);
+    assert.equal(summary.data.resubmitted,true);
+    assert.equal(summary.data.return.note,'Cevabı tamamlayıp etiketi kontrol edin.');
+    assert.equal(summary.data.return.actorName,manager.name);
+    assert.equal(summary.data.submission.actorName,owner.name);
+    assert.equal(summary.data.memberNote,'Cevap tamamlandı ve etiket eklendi.');
+    assert.deepEqual(summary.data.changes.map(change=>change.key),['question_text','corrected_text','tags','submission_note']);
+  }finally{
+    await fixture.db.query('delete from history_revisions where history_id=$1',[h.id]);
+    await fixture.db.query('delete from history where id=$1',[h.id]);
+  }
+});
 test('legacy split chunk drafts never appear as editable member drafts',async()=>{
   const chunk=(await fixture.db.query(`insert into history(user_id,name,status,filename,question_text,corrected_text,original_text,tags)
     values($1,'Parça Testi','taslak','Metin Girişi - Parça 1/2','','Ara parça cevabı.','Ara parça kaynak.','["Takva"]') returning *`,[fixture.users[0].id])).rows[0];

@@ -249,16 +249,25 @@ const ReviewWorkspace = (() => {
   }
   function renderDetail() {
     const editable=can('save'), meta=item.workflow||{};
+    const noteEditable=editable&&!management();
+    const returned=item.status==='geri_gonderildi';
+    const memberNoteLabel=returned?'Yapılan düzeltmeler':'Ekip üyesi notu';
+    const memberNoteHelp=management()
+      ?'Bu açıklama ekip üyesine aittir; yöneticinin geri gönderme gerekçesinden ayrıdır.'
+      :returned
+        ?'Yaptığınız değişiklikleri yöneticinin görebilmesi için kısaca yazın.'
+        :'Onaya gönderirken yöneticinin görmesini istediğiniz kısa açıklamayı yazabilirsiniz.';
     const primary=can('submit')?'submit':can('approve')?'approve':can('revise_rejected')?'revise_rejected':'';
     const others=(item.allowedActions||[]).filter(action=>!['save','delete_draft',primary].includes(action));
     node('detailBody').innerHTML=`<div class="rw-detail"><div class="rw-record-meta"><strong>${safe(item.name)}</strong><span>${safe(statusText(item))}</span><span>No: ${safe(item.id.slice(0,8))} · Sürüm ${item.version}</span><span>${date(item.updatedAt||item.createdAt)}</span><span>${item.publication?.status==='published'?'Yayında':'Yayında değil'}</span>${item.userId===me.id?'<span>Kendi kaydınız</span>':''}${item.assigneeId?`<span>Düzeltme sorumlusu: ${safe(item.assigneeName||item.assigneeId.slice(0,8))}</span>`:''}</div>
-      ${item.returnNote?`<p class="rw-return">${safe(item.returnNote)}</p>`:''}
+      ${item.returnNote&&!management()?`<section class="rw-return"><strong>Yönetici geri gönderme gerekçesi</strong><p>${safe(item.returnNote)}</p></section>`:''}
       ${meta.disputed?`<p class="rw-warning">Sahiplik itirazı: ${safe(meta.disputeNote)}</p>`:''}
       ${meta.trashNote&&item.status==='copte'?`<p class="rw-warning">Çöpe taşıma gerekçesi: ${safe(meta.trashNote)}</p>`:''}
+      ${management()?'<section id="rwChangeSummary" class="rw-change-summary" hidden aria-live="polite"></section>':''}
       <label class="rw-field"><span>Soru</span><textarea id="rwQuestion" ${editable?'':'readonly'} rows="3">${safe(item.questionText||'')}</textarea></label>
       <label class="rw-field"><span>Etiketler</span><textarea id="rwTags" ${editable?'':'readonly'} rows="2">${safe((item.tags||[]).join(', '))}</textarea></label>
       <label class="rw-field"><span>Cevap (düzeltilmiş metin)</span><textarea id="rwAnswer" ${editable?'':'readonly'} rows="12" dir="auto">${safe(item.correctedText||'')}</textarea></label>
-      <label class="rw-field"><span>Kontrol notu</span><textarea id="rwNote" ${editable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea></label>
+      <label class="rw-field rw-member-note"><span>${memberNoteLabel}</span><textarea id="rwNote" ${noteEditable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea><small>${memberNoteHelp}</small></label>
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
       <div class="rw-actions">${can('save')?'<button class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button class="btn-primary" data-rw-write onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
@@ -278,7 +287,40 @@ const ReviewWorkspace = (() => {
       node('detailBody').querySelector('.rw-record-meta').append(favorite);
     }
     node('rwQuestion').focus({preventScroll:true});
+    if(management())loadChangeSummary(item.id);
     if(me.reviewReadOnly)document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=true);
+  }
+  function changeSummaryValue(value) {
+    if(Array.isArray(value))return value.join(', ')||'—';
+    return String(value||'').trim()||'—';
+  }
+  function changeSummaryItem(change) {
+    return `<details class="rw-change-item"><summary>${safe(change.label)}</summary><div class="rw-change-grid"><div><strong>Geri gönderildiğinde</strong><pre dir="auto">${safe(changeSummaryValue(change.before))}</pre></div><div><strong>Ekip üyesinin gönderdiği</strong><pre dir="auto">${safe(changeSummaryValue(change.after))}</pre></div></div></details>`;
+  }
+  async function loadChangeSummary(id) {
+    const host=node('rwChangeSummary');
+    if(!host)return;
+    const result=await request('/'+id+'/change-summary');
+    if(item?.id!==id||!host.isConnected)return;
+    if(result.error){host.hidden=false;host.innerHTML=`<p class="rw-error">Düzeltme özeti yüklenemedi: ${safe(result.error)}</p>`;return;}
+    if(!result.hasReturn){host.hidden=true;return;}
+    const count=Array.isArray(result.changes)?result.changes.length:0;
+    const badge=result.resubmitted?(count?`${count} alan değişti`:'Değişiklik yok'):'Yeniden gönderilmedi';
+    const status=!result.resubmitted
+      ?'<p class="rw-change-status">Kayıt henüz ekip üyesi tarafından yeniden onaya gönderilmedi.</p>'
+      :count===0
+        ?'<p class="rw-change-status warning">Ekip üyesi kaydı yeniden gönderdi ancak soru, cevap, etiket veya açıklamada bir değişiklik görünmüyor.</p>'
+        :`<div class="rw-change-list">${result.changes.map(changeSummaryItem).join('')}</div>`;
+    const submission=result.submission
+      ?`<div class="rw-change-meta"><strong>Yeniden gönderen:</strong> ${safe(result.submission.actorName)} <span>${date(result.submission.at)}</span></div>`
+      :'';
+    host.hidden=false;
+    host.innerHTML=`<div class="rw-change-head"><h4>Geri gönderme ve düzeltme özeti</h4><span class="rw-change-badge">${badge}</span></div>
+      <div class="rw-change-meta"><strong>Geri gönderen:</strong> ${safe(result.return.actorName)} <span>${date(result.return.at)}</span></div>
+      <div class="rw-change-note"><strong>Yönetici gerekçesi</strong><p>${safe(result.return.note||'Gerekçe kaydı bulunamadı.')}</p></div>
+      ${submission}
+      <div class="rw-change-note"><strong>Ekip üyesinin açıklaması</strong><p>${safe(result.memberNote||'Açıklama girilmedi.')}</p></div>
+      ${status}`;
   }
   async function close(force=false) {
     if (!force && busy) return;
@@ -339,7 +381,7 @@ const ReviewWorkspace = (() => {
       const result=await request('/'+item.id+(action==='reanalyze'?'/reanalyze':'/action'),'POST',payload);
       if(result.error){
         const errorMessage = result.error === 'DUPLICATE_NOTE_REQUIRED'
-          ? 'Bu kaydı mükerrer olarak kapatmak için kontrol notuna MÜKERRER yazmanız gerekiyor.'
+          ? 'Bu kaydı mükerrer olarak kapatmak için ekip üyesi notuna veya işlem gerekçesine MÜKERRER yazmanız gerekiyor.'
           : result.error;
         message(errorMessage,true);
         if(result.duplicate?.id&&/^[0-9a-f-]{36}$/i.test(result.duplicate.id)){
@@ -439,9 +481,9 @@ const ReviewWorkspace = (() => {
     const result=await request('/'+id+'/revisions'+(beforeVersion?'?beforeVersion='+beforeVersion:''));
     if(item?.id!==id)return;
     if(result.error){message(result.error,true);return;}
-    const fields=[['question_text','Soru'],['corrected_text','Cevap'],['tags','Etiketler'],['submission_note','Kontrol notu']];
+    const fields=[['question_text','Soru'],['corrected_text','Cevap'],['tags','Etiketler'],['submission_note','Ekip üyesi açıklaması']];
     const snapshot=data=>fields.map(([field,label])=>`<h5>${label}</h5><pre dir="auto">${safe(Array.isArray(data[field])?data[field].join(', '):data[field]||'')}</pre>`).join('');
-    const html=result.items.map(row=>`<details class="rw-revision"><summary>Sürüm ${row.version} · ${safe(actions[row.action]||row.action)} · ${safe(row.actorName)} · ${date(row.created_at)}</summary><h4>Önceki sürüm</h4>${snapshot(row.before_data)}<h4>Yeni sürüm</h4>${snapshot(row.after_data)}</details>`).join('');
+    const html=result.items.map(row=>{const reason=row.action==='return'?row.after_data?.workflow_meta?.returnNote:'';return `<details class="rw-revision"><summary>Sürüm ${row.version} · ${safe(actions[row.action]||row.action)} · ${safe(row.actorName)} · ${date(row.created_at)}</summary>${reason?`<p class="rw-revision-reason"><strong>Geri gönderme gerekçesi:</strong> ${safe(reason)}</p>`:''}<h4>Önceki sürüm</h4>${snapshot(row.before_data)}<h4>Yeni sürüm</h4>${snapshot(row.after_data)}</details>`;}).join('');
     node('rwRevisionMore')?.remove();
     if(beforeVersion)node('rwRevisions').insertAdjacentHTML('beforeend',html);
     else node('rwRevisions').innerHTML=html||'<p>Bu kayıt için henüz sürüm değişikliği yok.</p>';

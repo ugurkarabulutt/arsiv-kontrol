@@ -2717,9 +2717,9 @@ canvas{width:100%!important;}
         <div class="history-tags-preview" id="submitApprovalTagsPreview"></div>
       </div>
       <div class="history-note-field">
-        <label for="submitApprovalNote">Kontrol notu (isteğe bağlı)</label>
+        <label id="submitApprovalNoteLabel" for="submitApprovalNote">Ekip üyesi notu (isteğe bağlı)</label>
         <textarea class="history-note-input" id="submitApprovalNote" maxlength="1200" placeholder="Örn. Soru, cevap ve etiket uyumlu."></textarea>
-        <div class="history-tags-help">Bu not sadece admin ve süper admin onay ekranında görünür.</div>
+        <div class="history-tags-help" id="submitApprovalNoteHelp">Bu açıklama onay ekranında yöneticiye gösterilir.</div>
       </div>
       <div class="form-err" id="submitApprovalErr"></div>
       <div class="modal-foot"><button class="btn-sec" onclick="closeSubmitApprovalModal()">Vazgeç</button><button class="btn-primary" id="submitApprovalBtn" onclick="confirmSubmitApproval()">Onaya Gönder</button></div>
@@ -2748,8 +2748,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=20260924-rejected-revise-only">
-<script src="/review-workspace.js?v=20260924-rejected-revise-only"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20261017-return-change-summary">
+<script src="/review-workspace.js?v=20261017-return-change-summary"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -3640,7 +3640,7 @@ function normalizeSubmissionNoteUi(value){
 }
 function approvalSubmissionNoteHtml(h){
   const note=normalizeSubmissionNoteUi(h?.submissionNote||'');
-  return note?`<div class="history-submission-note"><strong>Gönderim notu:</strong> ${esc(note)}</div>`:'';
+  return note?`<div class="history-submission-note"><strong>Ekip üyesi açıklaması:</strong> ${esc(note)}</div>`:'';
 }
 function renderSubmitTagsPreview(target='modal'){
   const box=el(target==='main'?'submitApprovalTagsPreviewMain':'submitApprovalTagsPreview');
@@ -3693,6 +3693,8 @@ function renderApprovalSubmitPanel(d){
   const questionValue=normalizeHistoryQuestionUi(d.questionText||'');
   const tagsValue=historyTagsText(d.tags||[]);
   const noteValue=normalizeSubmissionNoteUi(d.submissionNote||'');
+  const noteLabel=returned?'Yapılan düzeltmeler (isteğe bağlı)':'Ekip üyesi notu (isteğe bağlı)';
+  const noteHelp=returned?'Yaptığınız değişiklikleri yöneticinin görebilmesi için kısaca yazın.':'Bu açıklama onay ekranında yöneticiye gösterilir.';
   const questionField=sent
     ? `<div class="history-question-field"><label>Soru</label>${questionValue?`<div class="history-question-display">${esc(questionValue)}</div>`:`<div class="history-tags-help">Soru eklenmedi.</div>`}</div>`
     : `<div class="history-question-field"><label for="submitApprovalQuestionMain">Soru (zorunlu)</label><textarea class="history-question-input" id="submitApprovalQuestionMain" placeholder="Bu cevabın bağlı olduğu soruyu yazın.">${esc(questionValue)}</textarea><div class="history-tags-help">Bu alan denetlenmez; onay ve yayın hazırlığı için zorunlu olarak saklanır.</div></div>`;
@@ -3701,7 +3703,7 @@ function renderApprovalSubmitPanel(d){
     : `<div class="history-tags-field"><label for="submitApprovalTagsMain">Etiketler (zorunlu)</label><textarea class="history-tags-input" id="submitApprovalTagsMain" placeholder="Hidayet, Tevhid, Allah’a Ulaşmayı Dilemek" oninput="renderSubmitTagsPreview('main')">${esc(tagsValue)}</textarea><div class="history-tags-help">En az bir etiket girin. Etiketleri virgülle ayırın; Türkçe karakter kullanabilirsiniz.</div><div class="history-tags-preview" id="submitApprovalTagsPreviewMain">${historyTagsChipItems(tagsValue)}</div></div>`;
   const noteField=sent
     ? approvalSubmissionNoteHtml(d)
-    : `<div class="history-note-field" style="grid-column:1/-1"><label for="submitApprovalNoteMain">Kontrol notu (isteğe bağlı)</label><textarea class="history-note-input" id="submitApprovalNoteMain" maxlength="1200" placeholder="Örn. Soru, cevap ve etiket uyumlu.">${esc(noteValue)}</textarea><div class="history-tags-help">Bu not sadece admin ve süper admin onay ekranında görünür.</div></div>`;
+    : `<div class="history-note-field" style="grid-column:1/-1"><label for="submitApprovalNoteMain">${noteLabel}</label><textarea class="history-note-input" id="submitApprovalNoteMain" maxlength="1200" placeholder="${returned?'Örn. Cevabı tamamladım ve etiketleri güncelledim.':'Örn. Soru, cevap ve etiket uyumlu.'}">${esc(noteValue)}</textarea><div class="history-tags-help">${noteHelp}</div></div>`;
   return `<div class="approval-submit-panel ${sent?'done':''}">
     <div class="approval-submit-content"><div class="approval-submit-title">${title}</div><div class="approval-submit-text">${text}</div>${returned?approvalReturnInfoHtml(d):''}<div class="approval-submit-fields">${questionField}${tagsField}${noteField}</div></div>
     ${renderApprovalActionButton(d,'panel')}
@@ -3738,6 +3740,9 @@ async function openSubmitApprovalModal(){
   const questionText=questionMain?normalizeHistoryQuestionUi(questionMain.value):normalizeHistoryQuestionUi(d.questionText||'');
   const tagsText=tagsMain?tagsMain.value:historyTagsText(d.tags||[]);
   const submissionNote=noteMain?normalizeSubmissionNoteUi(noteMain.value):normalizeSubmissionNoteUi(d.submissionNote||'');
+  const returned=String(d.status||'')===APPROVAL_RETURNED_STATUS;
+  if(el('submitApprovalNoteLabel'))el('submitApprovalNoteLabel').textContent=returned?'Yapılan düzeltmeler (isteğe bağlı)':'Ekip üyesi notu (isteğe bağlı)';
+  if(el('submitApprovalNoteHelp'))el('submitApprovalNoteHelp').textContent=returned?'Yaptığınız değişiklikleri yöneticinin görebilmesi için kısaca yazın.':'Bu açıklama onay ekranında yöneticiye gösterilir.';
   if(el('submitApprovalQuestion'))el('submitApprovalQuestion').value=questionText;
   if(el('submitApprovalTags'))el('submitApprovalTags').value=tagsText;
   if(el('submitApprovalNote'))el('submitApprovalNote').value=submissionNote;

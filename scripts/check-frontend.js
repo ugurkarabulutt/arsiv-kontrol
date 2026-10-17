@@ -434,7 +434,7 @@ if (
 if (
   !workspaceScript.includes("close_duplicate: 'Mükerrer Olarak Kapat'") ||
   !policy.includes("'close_duplicate'") ||
-  !workspaceScript.includes('Bu kaydı mükerrer olarak kapatmak için kontrol notuna MÜKERRER yazmanız gerekiyor.') ||
+  !workspaceScript.includes('Bu kaydı mükerrer olarak kapatmak için ekip üyesi notuna veya işlem gerekçesine MÜKERRER yazmanız gerekiyor.') ||
   !fs.readFileSync(path.join(root, 'supabase/migrations/20260912162000_member_duplicate_cleanup.sql'), 'utf8').includes("p_action='close_duplicate'")
 ) {
   throw new Error('Ekip uyesi mukerrer kapatma butonunu gormeli; not yoksa acik uyariyla korunmali.');
@@ -473,7 +473,11 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20260924-rejected-revise-only') && html.includes('/review-workspace.css?v=20260924-rejected-revise-only'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20261017-return-change-summary') && html.includes('/review-workspace.css?v=20261017-return-change-summary'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+for (const marker of ['/change-summary', 'Geri gönderme ve düzeltme özeti', 'Yapılan düzeltmeler', 'Ekip üyesi notu', 'Ekip üyesi açıklaması']) {
+  assert(workspaceScript.includes(marker) || html.includes(marker), `Geri gonderme ve duzeltme ayrimi marker eksik: ${marker}`);
+}
+assert(workspaceCss.includes('.rw-change-summary') && workspaceCss.includes('.rw-change-grid'), 'Geri gonderme ve surum farki ozeti okunabilir panel stiline sahip olmali.');
 assert(html.includes('Canlıdaki Soru') && html.includes('t.publicPublished'), 'Dashboard canli yayinlanan soru sayisini gostermeli.');
 assert(html.includes('dashRefreshTimer') && html.includes('syncDashAutoRefresh(name)'), 'Dashboard aktifken otomatik yenileme mekanizmasi bulunmali.');
 assert(server.includes("public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')"), 'Stats API public yayindaki soru sayisini public_qa slug anahtariyla saymali.');
@@ -600,7 +604,7 @@ if (
   !html.includes('id="submitApprovalQuestion"') ||
   !html.includes('id="submitApprovalTags"') ||
   !html.includes('id="submitApprovalNote"') ||
-  !html.includes('Kontrol notu (isteğe bağlı)') ||
+  !html.includes('Ekip üyesi notu (isteğe bağlı)') ||
   !html.includes('approvalSubmissionNoteHtml') ||
   !html.includes('Soru (zorunlu)') ||
   !html.includes('Etiketler (zorunlu)') ||
