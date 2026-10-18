@@ -10,8 +10,14 @@
 - `npm.cmd run check` 234/234 başarılı. Playwright 390x844, 768x1024 ve
   1440x900 kontrollerinde yatay/metin taşması, grup çakışması ve konsol hatası
   yok; iki grup, beş konu ve dört yasal aksiyon eksiksizdir.
-- Sıradaki adım preview commit/push, noindex Vercel preview deploy ve dış URL
-  smoke kontrolüdür. Kullanıcı onayı olmadan production'a alınmamalıdır.
+- Preview commit `e0d30a1`, push hedefi
+  `origin/codex/footer-discovery-preview`. Vercel deployment
+  `dpl_9YLdzbEZNMFqejvfbPZJofRjUbMo` `READY`; kullanıcı onay URL'si:
+  `https://arsiv-kontrol-63xsfyw1m-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Dış URL `200` ve `noindex,nofollow`; yeni iki grup, konu rehberleri, beş ana
+  konu ve yasal bağlantılar mevcut. Production root `200`, eski footer asset
+  sürümünde ve yeni marker olmadan kaldı. Kullanıcı onayı olmadan production'a
+  alınmamalıdır.
 
 ## 2026-10-18 Yönetici İşlem Güvenilirliği — Production Tamamlandı
 

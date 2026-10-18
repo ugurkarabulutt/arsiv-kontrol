@@ -17,6 +17,13 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `npm.cmd run check` 234/234 başarılıdır. Yerel Playwright kontrolünde 390,
   768 ve 1440 px genişliklerde iki navigasyon grubu, beş ana konu ve dört yasal
   aksiyon doğrulandı; yatay/metin taşması, kolon çakışması ve konsol hatası yok.
+  Preview commit `e0d30a1`, push hedefi
+  `origin/codex/footer-discovery-preview`. Noindex Vercel preview deployment
+  `dpl_9YLdzbEZNMFqejvfbPZJofRjUbMo` `READY`:
+  `https://arsiv-kontrol-63xsfyw1m-ugurkarabulutts-projects.vercel.app/public-preview`.
+  Dış smoke kontrolünde preview `200`, `noindex,nofollow`, iki grup, rehber,
+  ana konu ve yasal bağlantı markerları doğru. Aynı kontrolde canlı root `200`,
+  eski asset sürümünde ve yeni footer markerı olmadan kaldı.
 - **Yönetici geri gönderme ve özel bölüm işlemleri kalıcı olarak düzeltildi:**
   Yönetim alanında bir adminin kendisine atanmış veya kendi kaydı olan bekleyen
   içeriği `Düzeltmeye Gönder` ile geri çevirmesi, hem uygulama politikasındaki
