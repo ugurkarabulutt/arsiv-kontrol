@@ -99,8 +99,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261004-touch-drag-speed-v3"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261004-touch-drag-speed-v3"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261018-mursid-guide-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261018-mursid-guide-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -148,7 +148,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261004-touch-drag-speed-v3/);
+  assert.match(home, /app-icon-128\.webp\?v=20261018-mursid-guide-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -1073,7 +1073,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
+  for (const slug of ['mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1177,7 +1177,7 @@ test('topic guide article renders Mürşide Tâbiiyet blog with its own related 
   assert.match(preview.html, /FURKÂN 70/);
   assert.match(preview.html, /Tâbiiyet ile ilgili sorular/);
   assert.match(preview.html, /İlgili Konu Rehberleri/);
-  assert.match(preview.html, /Zikir Nedir\?/);
+  assert.match(preview.html, /Mürşid Nedir\? Kur’ân’a Göre Mürşidin Görevi Nedir\?/);
   assert.doesNotMatch(preview.html, /Allah’a ulaşmayı dilemekle ilgili sorular/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
@@ -1208,8 +1208,9 @@ test('topic guide article renders Zikir blog and cross-links other guides', () =
   assert.match(preview.html, /BAKARA 152/);
   assert.match(preview.html, /Zikir ile ilgili sorular/);
   assert.match(preview.html, /İlgili Konu Rehberleri/);
-  assert.match(preview.html, /Allah’a Ulaşmayı Dilemek/);
-  assert.match(preview.html, /Mürşide Tâbiiyet/);
+  assert.match(preview.html, /Nefs Tezkiyesi/);
+  assert.match(preview.html, /Teslimiyet Nedir\?/);
+  assert.match(preview.html, /Tasavvuf Nedir\?/);
   assert.doesNotMatch(preview.html, /Bu konudaki sorular/);
   assert.match(preview.html, /"@type":"BlogPosting"/);
   assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/zikir-ve-daimi-zikir#article"/);
@@ -1385,8 +1386,29 @@ test('topic guide article renders Hacet Namazı guide with prayer table and four
   assertOnlyPublicPreviewApi(preview.html);
 });
 
-test('every topic guide links all other guides with topic-aware priorities', () => {
+test('topic guide article renders Mürşid guide with its unique visual and primary evidence', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Mürşid Nedir\? Kur’ân’a Göre Mürşidin Görevi Nedir\?/);
+  assert.match(preview.html, /İrşadın kaynağı, görevi ve hedefi/);
+  assert.match(preview.html, /KEHF 17/);
+  assert.match(preview.html, /KASAS 56/);
+  assert.match(preview.html, /SECDE 24/);
+  assert.match(preview.html, /Mürşid, devrin imamı ve vekil aynı mıdır\?/);
+  assert.match(preview.html, /Mürşidin gösterdiği hedef Allah’tır/);
+  assert.match(preview.html, /pa-topic-article-visual/);
+  assert.match(preview.html, /topic-guide-mursid-480\.webp/);
+  assert.match(preview.html, /topic-guide-mursid-720\.webp/);
+  assert.match(preview.html, /topic-guide-mursid-1280\.webp/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/mursid-nedir-kurana-gore-gorevi#article"/);
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
+test('every topic guide links 4-6 semantically related guides and preserves Mürşid reciprocity', () => {
   const guideSlugs = [
+    'mursid-nedir-kurana-gore-gorevi',
     'hacet-namazi-ve-mursidi-allahtan-istemek',
     'allaha-ulasmayi-dilemek',
     'hidayet',
@@ -1406,15 +1428,19 @@ test('every topic guide links all other guides with topic-aware priorities', () 
     const end = preview.html.indexOf('</section>', start);
     const guideLinks = preview.html.slice(start, end);
     assert.match(guideLinks, /İlgili Konu Rehberleri/);
-    for (const relatedSlug of guideSlugs.filter(slug => slug !== currentSlug)) {
-      assert.match(guideLinks, new RegExp(`/public-preview/konu-rehberi/${relatedSlug}`));
-    }
+    const relatedLinks = guideLinks.match(/\/public-preview\/konu-rehberi\/[a-z0-9-]+/g) || [];
+    assert.ok(relatedLinks.length >= 4 && relatedLinks.length <= 6, `${currentSlug} should expose 4-6 related guide links.`);
     assert.doesNotMatch(guideLinks, new RegExp(`/public-preview/konu-rehberi/${currentSlug}["#]`));
+  }
+
+  for (const reciprocalSlug of ['hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'tasavvuf-nedir']) {
+    const preview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${reciprocalSlug}`);
+    assert.match(preview.html, /\/public-preview\/konu-rehberi\/mursid-nedir-kurana-gore-gorevi/);
   }
 
   const hidayet = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/hidayet').html;
   const hidayetLinks = hidayet.slice(hidayet.indexOf('<section class="pa-topic-next-card">'));
-  assert.ok(hidayetLinks.indexOf('/konu-rehberi/allaha-ulasmayi-dilemek') < hidayetLinks.indexOf('/konu-rehberi/tovbe-ve-gunahlardan-kurtulus'));
+  assert.ok(hidayetLinks.indexOf('/konu-rehberi/allaha-ulasmayi-dilemek') < hidayetLinks.indexOf('/konu-rehberi/mursid-nedir-kurana-gore-gorevi'));
 });
 
 test('home page question selection deduplicates repeated question text', () => {

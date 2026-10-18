@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261004-touch-drag-speed-v3';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261018-mursid-guide-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -726,6 +726,7 @@ const HERO_CONCEPT_ITEMS = [
 ];
 
 const HOME_READING_PATHS = [
+  { title: 'Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', slug: 'mursid', articleSlug: 'mursid-nedir-kurana-gore-gorevi', text: 'Mürşidin kim olduğunu, vazifesini, tayinini ve irşadın hedefini Kur’ân âyetleriyle okuyun.' },
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
   { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
@@ -742,6 +743,44 @@ const HOME_READING_PATHS = [
   { title: 'Namaz ve İbadet Bilinci', slug: 'namaz', query: 'Namaz ibadet bilinci', text: 'İbadetin şuuruyla ilgili soru ve cevaplar.' },
   { title: 'Kur’ân’da Hidayet Ayetleri', slug: 'hidayet', query: 'Kur’ân hidayet ayetleri', text: 'Hidayet konusunun ayet atıflarıyla takip edilmesi.' }
 ];
+
+const TOPIC_GUIDE_VISUALS = Object.freeze({
+  'mursid-nedir-kurana-gore-gorevi': { mobile: 'topic-guide-mursid-480.webp', tablet: 'topic-guide-mursid-720.webp', desktop: 'topic-guide-mursid-1280.webp', width: 1280, height: 853, position: '50% 50%' },
+  'hacet-namazi-ve-mursidi-allahtan-istemek': { mobile: 'topic-showcase-hacet-namazi-480.webp', desktop: 'topic-showcase-hacet-namazi-720.webp', width: 720, height: 720 },
+  'allaha-ulasmayi-dilemek': { mobile: 'topic-showcase-dilemek-480.webp', desktop: 'topic-showcase-dilemek-720.webp', width: 720, height: 720 },
+  hidayet: { mobile: 'topic-showcase-hidayet-480.webp', desktop: 'topic-showcase-hidayet-720.webp', width: 720, height: 720 },
+  'murside-tabiiyet': { mobile: 'topic-showcase-tabiiyet-480.webp', desktop: 'topic-showcase-tabiiyet-720.webp', width: 720, height: 720 },
+  'zikir-ve-daimi-zikir': { mobile: 'topic-showcase-zikir-480.webp', desktop: 'topic-showcase-zikir-720.webp', width: 720, height: 720 },
+  'nefs-tezkiyesi': { mobile: 'topic-showcase-nefs-480.webp', desktop: 'topic-showcase-nefs-720.webp', width: 720, height: 720 },
+  teslimiyet: { mobile: 'topic-showcase-teslimiyet-480.webp', desktop: 'topic-showcase-teslimiyet-720.webp', width: 720, height: 720 },
+  'ruh-nefs-fizik-vucut': { mobile: 'topic-showcase-ruh-nefs-480.webp', desktop: 'topic-showcase-ruh-nefs-720.webp', width: 720, height: 720 },
+  'kurana-gore-mutluluk': { mobile: 'topic-showcase-mutluluk-480.webp', desktop: 'topic-showcase-mutluluk-720.webp', width: 720, height: 720 },
+  'tasavvuf-nedir': { mobile: 'topic-showcase-tasavvuf-480.webp', desktop: 'topic-showcase-tasavvuf-720.webp', width: 720, height: 720 },
+  'tovbe-ve-gunahlardan-kurtulus': { mobile: 'topic-showcase-tovbe-480.webp', desktop: 'topic-showcase-tovbe-720.webp', width: 720, height: 720 },
+  'dua-ve-tevekkul': { mobile: 'topic-showcase-dua-tevekkul-480.webp', desktop: 'topic-showcase-dua-tevekkul-720.webp', width: 720, height: 720 }
+});
+
+function topicGuideVisual(article = {}) {
+  return TOPIC_GUIDE_VISUALS[String(article.slug || '').trim()] || null;
+}
+
+function topicGuideImageObject(article = {}) {
+  const visual = topicGuideVisual(article);
+  if (!visual) {
+    return {
+      '@type': 'ImageObject',
+      url: publicArchiveShareImageUrl(),
+      width: 1200,
+      height: 630
+    };
+  }
+  return {
+    '@type': 'ImageObject',
+    url: `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/assets/${visual.desktop}?v=${PUBLIC_ARCHIVE_ASSET_VERSION}`,
+    width: visual.width,
+    height: visual.height
+  };
+}
 
 function conceptSliderItems(isClone = false) {
   const disabled = publicArchiveFixtures.dataUnavailable === true;
@@ -1432,6 +1471,7 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
   const articleId = `${canonicalUrl}#article`;
   const pageId = `${canonicalUrl}#webpage`;
   const breadcrumbId = `${canonicalUrl}#breadcrumb`;
+  const articleImage = topicGuideImageObject(article);
   const quranMentions = (article.quranReferences || []).map(reference => {
     return publicArchiveReferenceStructuredData(reference.label);
   });
@@ -1457,12 +1497,7 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
       mainEntity: { '@id': articleId },
       datePublished: article.publishedAt,
       dateModified: article.updatedAt || article.publishedAt,
-      primaryImageOfPage: {
-        '@type': 'ImageObject',
-        url: publicArchiveShareImageUrl(),
-        width: 1200,
-        height: 630
-      }
+      primaryImageOfPage: articleImage
     },
     {
       '@type': 'BlogPosting',
@@ -1478,6 +1513,7 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
       keywords: (article.keywords || []).join(', '),
       about: (article.keywords || []).slice(0, 8).map(name => ({ '@type': 'Thing', name })),
       mentions: quranMentions,
+      image: articleImage,
       author: publicArchiveAnswerAuthor(),
       publisher: { '@id': `${publicArchiveCanonicalUrl('/')}#organization` },
       datePublished: article.publishedAt,
@@ -1535,9 +1571,10 @@ function topicArticleRelatedQuestions(article = {}, limit = 8) {
 function topicArticleForEntry(entry = {}) {
   const entryCategorySlugs = new Set(categorySlugsFor(entry));
   if (!entryCategorySlugs.size) return null;
-  return Object.values(publicArchiveTopicArticles || {}).find(article => {
+  const matches = Object.values(publicArchiveTopicArticles || {}).filter(article => {
     return article?.slug && article?.path && entryCategorySlugs.has(String(article.categorySlug || '').trim());
-  }) || null;
+  });
+  return matches.find(article => article.primaryForCategory === true) || matches[0] || null;
 }
 
 function questionTopicGuideHtml(entry = {}) {
@@ -1612,18 +1649,19 @@ function topicArticleTocHtml(blocks = []) {
 }
 
 const TOPIC_GUIDE_PRIORITY_LINKS = Object.freeze({
-  'allaha-ulasmayi-dilemek': ['hidayet', 'murside-tabiiyet', 'teslimiyet', 'tasavvuf-nedir'],
-  hidayet: ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'teslimiyet', 'ruh-nefs-fizik-vucut'],
-  'murside-tabiiyet': ['allaha-ulasmayi-dilemek', 'hidayet', 'tovbe-ve-gunahlardan-kurtulus', 'nefs-tezkiyesi'],
+  'mursid-nedir-kurana-gore-gorevi': ['murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'hidayet', 'allaha-ulasmayi-dilemek', 'tasavvuf-nedir'],
+  'allaha-ulasmayi-dilemek': ['hidayet', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'tasavvuf-nedir'],
+  hidayet: ['allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'ruh-nefs-fizik-vucut'],
+  'murside-tabiiyet': ['mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'nefs-tezkiyesi'],
   'zikir-ve-daimi-zikir': ['nefs-tezkiyesi', 'teslimiyet', 'tasavvuf-nedir', 'ruh-nefs-fizik-vucut'],
   'nefs-tezkiyesi': ['zikir-ve-daimi-zikir', 'ruh-nefs-fizik-vucut', 'teslimiyet', 'kurana-gore-mutluluk'],
   teslimiyet: ['ruh-nefs-fizik-vucut', 'tasavvuf-nedir', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
   'ruh-nefs-fizik-vucut': ['nefs-tezkiyesi', 'teslimiyet', 'zikir-ve-daimi-zikir', 'hidayet'],
   'kurana-gore-mutluluk': ['nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
-  'tasavvuf-nedir': ['teslimiyet', 'allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
+  'tasavvuf-nedir': ['teslimiyet', 'allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
   'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
   'dua-ve-tevekkul': ['allaha-ulasmayi-dilemek', 'teslimiyet', 'zikir-ve-daimi-zikir', 'kurana-gore-mutluluk'],
-  'hacet-namazi-ve-mursidi-allahtan-istemek': ['murside-tabiiyet', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'hidayet']
+  'hacet-namazi-ve-mursidi-allahtan-istemek': ['mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'hidayet']
 });
 
 function relatedTopicGuideArticles(article = {}) {
@@ -1632,10 +1670,8 @@ function relatedTopicGuideArticles(article = {}) {
     .filter(item => item?.slug && item?.path && item.slug !== currentSlug);
   const bySlug = new Map(availableArticles.map(item => [item.slug, item]));
   const prioritySlugs = TOPIC_GUIDE_PRIORITY_LINKS[currentSlug] || [];
-  return [
-    ...prioritySlugs.map(slug => bySlug.get(slug)).filter(Boolean),
-    ...availableArticles.filter(item => !prioritySlugs.includes(item.slug))
-  ];
+  const related = prioritySlugs.map(slug => bySlug.get(slug)).filter(Boolean);
+  return related.length ? related.slice(0, 6) : availableArticles.slice(0, 4);
 }
 
 function topicArticleGuideLinksHtml(article = {}) {
@@ -1689,6 +1725,7 @@ function renderTopicGuideArticle(slug) {
   const articleSeoTitle = /[?？]\s*$/.test(String(article.title || ''))
     ? article.title
     : `${article.title} Nedir?`;
+  const visual = topicGuideVisual(article);
   return renderShell({
     active: 'archive',
     title: articleSeoTitle,
@@ -1708,14 +1745,23 @@ function renderTopicGuideArticle(slug) {
     content: `
       <main class="pa-main pa-topic-article-main">
         ${breadcrumb([{ label: 'Konu Rehberleri', href: `${PREVIEW_BASE}/#konu-rehberleri` }, { label: article.title }])}
-        <header class="pa-topic-article-hero">
-          <p class="pa-kicker">${escapeHtml(article.series || 'Konu Rehberi')}</p>
-          <h1>${escapeHtml(article.title)}</h1>
-          <p class="pa-topic-article-subtitle">${escapeHtml(article.subtitle || article.description || '')}</p>
-          <div class="pa-collection-meta">
-            ${article.readTime ? `<span>${escapeHtml(article.readTime)} dk okuma</span>` : ''}
-            <span>${escapeHtml(String((article.quranReferences || []).length))} ayet atfı</span>
+        <header class="pa-topic-article-hero${visual ? ' has-visual' : ''}">
+          <div class="pa-topic-article-hero-copy">
+            <p class="pa-kicker">${escapeHtml(article.series || 'Konu Rehberi')}</p>
+            <h1>${escapeHtml(article.title)}</h1>
+            <p class="pa-topic-article-subtitle">${escapeHtml(article.subtitle || article.description || '')}</p>
+            <div class="pa-collection-meta">
+              ${article.readTime ? `<span>${escapeHtml(article.readTime)} dk okuma</span>` : ''}
+              <span>${escapeHtml(String((article.quranReferences || []).length))} ayet atfı</span>
+            </div>
           </div>
+          ${visual ? `
+            <picture class="pa-topic-article-visual" aria-hidden="true">
+              <source media="(max-width: 720px)" type="image/webp" srcset="${publicArchiveAssetHref(visual.mobile)}">
+              ${visual.tablet ? `<source media="(max-width: 1024px)" type="image/webp" srcset="${publicArchiveAssetHref(visual.tablet)}">` : ''}
+              <img src="${publicArchiveAssetHref(visual.desktop)}" alt="" width="${visual.width}" height="${visual.height}" fetchpriority="high" decoding="async" style="--pa-topic-visual-position:${escapeHtml(visual.position || '50% 50%')}">
+            </picture>
+          ` : ''}
         </header>
         ${topicArticleTocHtml(annotatedBlocks)}
         <div class="pa-topic-article-layout">
@@ -1928,7 +1974,8 @@ function topicGuideArticles() {
     ...article,
     shortText: item.text,
     order: index + 1,
-    questionCount: topicGuideQuestionCount(article)
+    questionCount: topicGuideQuestionCount(article),
+    visual: topicGuideVisual(article)
   }));
 }
 
@@ -2777,6 +2824,13 @@ function renderTopicGuideIndex() {
             ${articles.map(article => `
               <li>
                 <a href="${escapeHtml(`${PREVIEW_BASE}${publicTopicArticlePath(article)}`)}">
+                  ${article.visual ? `
+                    <picture class="pa-guide-directory-art" aria-hidden="true">
+                      <source media="(max-width: 720px)" type="image/webp" srcset="${publicArchiveAssetHref(article.visual.mobile)}">
+                      ${article.visual.tablet ? `<source media="(max-width: 1024px)" type="image/webp" srcset="${publicArchiveAssetHref(article.visual.tablet)}">` : ''}
+                      <img src="${publicArchiveAssetHref(article.visual.desktop)}" alt="" width="${article.visual.width}" height="${article.visual.height}" loading="${article.order <= 2 ? 'eager' : 'lazy'}" decoding="async" style="--pa-guide-art-position:${escapeHtml(article.visual.position || '50% 50%')}">
+                    </picture>
+                  ` : ''}
                   <span class="pa-guide-directory-index">${String(article.order).padStart(2, '0')}</span>
                   <span class="pa-guide-directory-copy">
                     <strong>${escapeHtml(article.title)}</strong>

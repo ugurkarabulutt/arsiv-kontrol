@@ -4343,5 +4343,436 @@
       }
     ],
     "sources": []
+  },
+  "mursid-nedir-kurana-gore-gorevi": {
+    "slug": "mursid-nedir-kurana-gore-gorevi",
+    "path": "/konu-rehberi/mursid-nedir-kurana-gore-gorevi",
+    "series": "Mürşid ve İrşad / Blog Serisi 13",
+    "title": "Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?",
+    "subtitle": "İrşadın kaynağı, görevi ve hedefi",
+    "description": "Mürşid nedir, Kur’ân’da mürşid kelimesi nasıl geçer, mürşidi kim tayin eder, mürşidin görevleri nelerdir ve insan mürşidini nasıl bulur?",
+    "summary": "Mürşid, insanı Allah’a davet eden, Allah’a ulaşma ve teslim olma yolunda irşadla vazifelendirilmiş kişidir; hidayete erdiren Allah, mürşid ise O’nun tayin ettiği vesiledir.",
+    "categorySlug": "mursid",
+    "primaryForCategory": true,
+    "publishedAt": "2026-10-18T14:00:00+03:00",
+    "updatedAt": "2026-10-18T14:00:00+03:00",
+    "readTime": 13,
+    "keywords": ["mürşid nedir", "mürşid kimdir", "Kur’ân’a göre mürşid", "mürşidin görevi", "gerçek mürşidin özellikleri", "irşad", "hidayet", "mürşide tâbiiyet", "nefs tezkiyesi", "dört teslim", "hacet namazı", "vesile"],
+    "relatedTerms": ["mürşid", "mürşid nedir", "mürşid kimdir", "irşad", "irşad makamı", "mürşide tâbiiyet", "vesile", "hacet namazı", "hidayet", "nefs tezkiyesi", "devir imamı", "vekil", "dört teslim"],
+    "quranReferences": [
+      { "label": "Kehf-17" },
+      { "label": "Kasas-56" },
+      { "label": "Şûrâ-13" },
+      { "label": "Nahl-9" },
+      { "label": "Secde-24" },
+      { "label": "Âli İmrân-164" },
+      { "label": "Cuma-2" },
+      { "label": "Nahl-43" },
+      { "label": "Nûr-21" },
+      { "label": "Muzzemmil-8" },
+      { "label": "Zumer-23" },
+      { "label": "Fetih-10" },
+      { "label": "Nebe-39" },
+      { "label": "Nisâ-64" },
+      { "label": "Furkân-70" },
+      { "label": "Mucâdele-22" },
+      { "label": "Fussilet-33" },
+      { "label": "Fâtiha-5" },
+      { "label": "Bakara-45-46" },
+      { "label": "Mâide-35" },
+      { "label": "Âli İmrân-104" },
+      { "label": "Nahl-125" },
+      { "label": "A’râf-181" },
+      { "label": "Yâsîn-21" },
+      { "label": "Ahzâb-40" },
+      { "label": "İsrâ-15" }
+    ],
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Mürşid, insanı Allah’a davet eden, Allah’a ulaşma ve teslim olma yolunda irşad eden kişidir. Onun vazifesi yalnızca dinî bilgiler anlatmak değildir. Anlattıklarını kendi hayatında yaşamış, ruhunu, fizik vücudunu, nefsini ve iradesini Allah’a teslim etmiş, Allah tarafından irşadla vazifelendirilmiştir. Kendisine tâbî olanlara da nefslerinin kalbindeki afetlerin temizlenmesi ve teslimlerin gerçekleşmesi için rehberlik eder."
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşidi tanımak için önce bu hedefi görmek gerekir: İnsan nereye davet edilmektedir? Davet Allah’adır. Yolun başlangıcında Allah’a ulaşmayı dilemek, devamında mürşide tâbiiyet ve ruhun Allah’a ulaşması vardır. Sonra fizik vücudun, nefsin ve iradenin teslimi gelir. Mürşidin hizmeti, insanın bu yolu öğrenmesine ve yaşamasına yöneliktir."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşid kelimesi Kur’ân’da geçiyor mu?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Kur’ân, Kehf Suresinin 17. âyetinde velî mürşidden söz eder. Âyette hidayete ermek, Allah’ın kişiyi Kendisine ulaştırmasıyla birlikte açıklanır. Allah’a ulaşmayı dilemeyen kişinin ise kendisi için bir velî mürşid bulamayacağı bildirilir. Böylece mürşid ile hidayet arasındaki bağ, doğrudan Allah’a ulaşma hedefi üzerinde kurulur."
+      },
+      {
+        "type": "evidence",
+        "reference": "KEHF 17",
+        "note": "İlgili bölüm",
+        "text": "Ve kimi dalâlette bırakırsa (kim Allah’a ulaşmayı dilemezse) artık onun için velî mürşid (irşad eden evliya) bulunmaz."
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşid ve irşad, rüşd ile aynı köktendir. İrşad, insanın Allah yolunda olgunlaşmasını, nefs tezkiyesini ve daha ileri teslimleri yaşamasını ifade eder. Mürşid bu gelişmeye rehberlik edendir. Mürid ise murat eden, isteyen kişidir; onun muradı Allah’a ulaşmak ve Allah’a teslim olmaktır. Dolayısıyla mürşid ile mürid arasındaki bağın başında bir isim veya unvan değil, Allah’a yönelen bir dilek vardır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu dileğin bulunmadığı yerde yalnızca bir kişinin yanında bulunmak, onu dinlemek veya sevmek, tâbiiyetin bütün neticelerini meydana getirmez. Allah’a ulaşmayı dileyen insanda ise Allah’ın yardımları başlar; kişi irşadın ne olduğunu idrak etmeye, mürşidine ihtiyaç duymaya ve ona ulaşmayı istemeye başlar. Mürşid arayışı, bu kalpten dileğin devamıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Hidayete erdiren Allah’tır; mürşid vesiledir"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşidin vazifesini anlamanın temel ölçülerinden biri, Allah’ın yaptığı ile kulun vazifesini birbirine karıştırmamaktır. Hidayetin sahibi Allah’tır. Bir insan, başka bir insanın ruhunu kendi kudretiyle Allah’a ulaştıramaz. Kasas Suresinin 56. âyeti bunu açıkça ortaya koyar."
+      },
+      {
+        "type": "evidence",
+        "reference": "KASAS 56",
+        "note": "Âyet metni",
+        "text": "Muhakkak ki sen, sevdiğin kişiyi hidayete erdiremezsin (onun ruhunu Allah’a ulaştıramazsın). Fakat Allah, dilediğini hidayete erdirir. Ve O, muhtedileri (hidayete erenleri) daha iyi bilir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu hüküm, mürşidin görevini ortadan kaldırmaz. Mürşid, Allah’ın Kendisine ulaştırmak üzere vazifelendirdiği bir vesiledir. Davet eder, âyetleri açıklar, tâbiiyete ve nefs tezkiyesine rehberlik eder. Kalbe nurları gönderen, nefsin temizlenmesini sağlayan ve ruhu Kendisine ulaştıran ise Allah’tır. Vesilenin varlığı Allah’ın kudretine ortaklık değil, Allah’ın emrinin yerine getirilmesidir."
+      },
+      {
+        "type": "evidence",
+        "reference": "ŞÛRÂ 13",
+        "note": "İlgili bölüm",
+        "text": "Allah, dilediğini Kendisine seçer ve O’na yöneleni, Kendisine ulaştırır (ruhunu hayatta iken Kendisine ulaştırır)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Öyleyse kulun yapacağı şey, Allah’a ulaşmayı kalpten dilemektir. Allah bu dileği işitir, bilir ve görür. Mürşide ulaşma ve ruhun Allah’a ulaşması, bu yönelişin devamında gerçekleşir. Mürşid Allah’ın yerine konulmaz; onun rehberliğiyle Allah’ın davetine uyulur."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşidi kim tayin eder?"
+      },
+      {
+        "type": "paragraph",
+        "text": "İrşad makamı, insanın kendisine verdiği bir unvan değildir. Çok kitap okumak, güzel konuşmak veya çevresinde çok insan bulunması, tek başına bir kişiyi bu makama ulaştırmaz. Mürşidlik, Allah’a teslimlerin tamamlanmasına ve Allah’ın vazifelendirmesine bağlıdır. Nahl Suresinin 9. âyetinde, Allah’a ulaştıran yolların tayininin Allah’a ait olduğu bildirilir."
+      },
+      {
+        "type": "evidence",
+        "reference": "NAHL 9",
+        "note": "İlgili bölüm",
+        "text": "Ve sebîllerin (dergâhlardan Sıratı Mustakîm’e ulaşan bütün yolların yani mürşidlerin) tayini, Allah’ın üzerinedir."
+      },
+      {
+        "type": "paragraph",
+        "text": "İrşadla vazifelendirilen kişi, dört teslimi tamamlamıştır. Ruhun tesliminden sonra fizik vücudun teslimini, daimî zikirle nefsin teslimini ve daha sonra iradenin teslimini yaşamıştır. İrşada memur ve mezun kılınmak, Allah’ın verdiği bu görevi ve izni ifade eder. Memur olmak vazifelendirilmek, mezun olmak izin verilmek demektir. Vazifenin sahibi de ona izin veren de Allah’tır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Daimî zikre ulaşmak çok ileri bir mertebedir; fakat tek başına irşad makamına tayin edilmiş olmak anlamına gelmez. Ulûl’elbab makamı, ardından ihlâs ve salâhın ilgili kademeleri vardır. İradenin Allah’a teslimi ve irşadla vazifelendirilme bunların ötesindedir. Kalp gözünün veya kalp kulağının açılması da kendi başına mürşidlik ölçüsü değildir."
+      },
+      {
+        "type": "evidence",
+        "reference": "SECDE 24",
+        "note": "Âyet metni",
+        "text": "Ve onlardan, emrimizle hidayete erdiren imamlar kıldık, sabır sahibi oldukları ve âyetlerimize (Hakk’ul yakîn seviyesinde) yakîn hasıl etmiş oldukları için."
+      },
+      {
+        "type": "paragraph",
+        "text": "Secde Suresinin bu âyetinde imamların tayini, Allah’ın emriyle hidayete erdirmeleri, sabır ve âyetlere yakîn birlikte anılır. İrşad görevinin arkasında yalnızca edinilmiş bilgiler değil, Allah’ın yaşattığı teslimler vardır. Devrin imamına ait görev ile bütün gerçek mürşidlerin ortak vasıfları da bu çerçevede birbirinden ayrılır."
+      },
+      {
+        "type": "heading",
+        "text": "Âyetleri açıklamak, Kitap’ı ve hikmeti öğretmek"
+      },
+      {
+        "type": "paragraph",
+        "text": "Kur’ân’da resûllerin görevleri anlatılırken âyetleri tilâvet etmek, nefsleri tezkiye etmek, Kitap’ı ve hikmeti öğretmek birlikte zikredilir. Bu görevlerin yan yana bulunması önemlidir. İnsanın yalnızca bilgisi çoğalmayacak; nefsinin kalbindeki afetler de temizlenecek, öğrendikleri hayatında karşılığını bulacaktır."
+      },
+      {
+        "type": "evidence",
+        "reference": "ÂLİ İMRÂN 164",
+        "note": "İlgili bölüm",
+        "text": "Onlara O’nun (Allah’ın) âyetlerini tilâvet eder, onları tezkiye eder ve onlara kitap ve hikmeti öğretir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Âyetlerin tilâveti, Allah’ın davetinin insana duyurulmasıdır. Kişi neye davet edildiğini, Allah’a ulaşmayı dilemenin ne demek olduğunu ve teslimlerin hangi sırayla gerçekleştiğini öğrenir. Kur’ân’ın emirlerini bilmek ile onları yaşamak arasındaki mesafe, nefs tezkiyesiyle adım adım kapanır. Mürşidin rehberliği, bilgiyi bu yaşantıdan ayırmaz."
+      },
+      {
+        "type": "evidence",
+        "reference": "CUMA 2",
+        "note": "İlgili bölüm",
+        "text": "Onlara, O’nun (Allah’ın) âyetlerini okur, onları tezkiye eder (nefslerini temizler), onlara Kitab’ı (Kur’ân-ı Kerim’i) ve hikmeti öğretir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Kitap’ı öğretmek, Kur’ân’ın lâfzıyla birlikte ruhuna açılan bir gelişmeyi de ihtiva eder. Hikmet ise yalnızca çok şey bilmek değildir. Daimî zikir, nefsin kalbinde afet kalmaması, kalp gözünün ve kalp kulağının açılması; bunlarla birlikte hayır, hüküm ve tezekkür ehli olmak, hikmetin muhtevasındadır. Âyetler arasındaki bağlar, Allah’a teslimlerin basamakları içinde anlaşılır."
+      },
+      {
+        "type": "evidence",
+        "reference": "NAHL 43",
+        "note": "İlgili bölüm",
+        "text": "Eğer bilmiyorsanız, o taktirde zikir ehline (daimi zikir sahiplerine) sorun!"
+      },
+      {
+        "type": "paragraph",
+        "text": "Zikir ehline sormak, bu sebeple yalnızca ezberlenmiş bilgileri öğrenmek değildir. Allah ile tezekkür edebilen, O’nun bildirdikleriyle cevap veren hikmet sahiplerine yönelmektir. Bununla beraber her makamın vazifesi aynıdır denilemez. Bakara Suresinin 151. âyetinde hikmetin ötesini öğretme görevi de yer alır. Bu ilâve görev, bütün mürşidlere ayrım gözetmeden mal edilemez. (Bakara, 2/151)."
+      },
+      {
+        "type": "heading",
+        "text": "Nefsin kalbindeki afetlerin temizlenmesine rehberlik etmek"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşidin hizmetinin insanın iç dünyasındaki karşılığı, nefs tezkiyesidir. Nefsin afetlerini yalnızca tanımak, onların kalpten temizlenmesi için yeterli değildir. Allah’ın rahmeti ve fazlı kalbe ulaşmalı, fazıllar nefsin kalbinde yerleşmelidir. Kur’ân, nefs tezkiyesinin Allah’ın rahmeti ve fazlı olmadan gerçekleşmeyeceğini bildirir."
+      },
+      {
+        "type": "evidence",
+        "reference": "NÛR 21",
+        "note": "İlgili bölüm",
+        "text": "Ve eğer Allah’ın rahmeti ve fazlı sizin üzerinize olmasaydı (nefsinizin kalbine yerleşmeseydi), içinizden hiçbiri ebediyyen nefsini tezkiye edemezdi."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu noktada zikir, irşadın vazgeçilmez ibadetidir. Allah’ın ismi zikredilir. Zikirle gelen rahmet, fazl ve salâvât nurları, nefsin kalbinde temizlenmenin gerçekleşmesine vesile olur. Mürşid, kişiyi yalnızca kusurları üzerinde düşündürmekle bırakmaz; nefsinin afetlerinin temizlenmesini sağlayan zikri ve bunun Allah’a ulaşmakla bağını öğretir."
+      },
+      {
+        "type": "evidence",
+        "reference": "MUZZEMMİL 8",
+        "note": "Âyet metni",
+        "text": "Ve Rabbinin İsmi’ni zikret ve herşeyden kesilerek O’na ulaş."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsin kalbinde fazıllar yerleştikçe afetlerin hâkimiyeti azalır. Öfke, kin, kıskançlık ve sabırsızlık gibi afetlerin insanı sevk ettiği davranışlar da bu temizlenmeyle değişir. Hedef, yalnızca kendini tutmak değil, Allah’ın emirlerine karşı çıkan nefsin yapısının değişmesidir. Kalbin Allah’ın zikriyle yumuşaması ve sükûnet bulması, bu değişimin Kur’ân’daki anlatımıdır."
+      },
+      {
+        "type": "evidence",
+        "reference": "ZUMER 23",
+        "note": "İlgili bölüm",
+        "text": "Sonra onların ciltleri ve kalpleri Allah’ın zikriyle yumuşar, sükûnet bulur (yatışır). İşte bu, Allah’ın hidayetidir, dilediğini onunla hidayete erdirir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşid nurların kaynağı değildir; onları gönderen Allah’tır. Mürşidin görevi, Allah’ın bu ihsanlarının yaşanacağı yolda kişiye rehberlik etmektir. Bu yüzden nefs tezkiyesi anlatılırken mürşide tâbiiyet, zikir ve ruhun Allah’a ulaşması birbirinden ayrı konular gibi ele alınmaz. Aynı gelişmenin birbirine bağlı safhalarıdır."
+      },
+      {
+        "type": "heading",
+        "text": "Tâbiiyete ve Allah’a ulaşma yoluna vesile olmak"
+      },
+      {
+        "type": "paragraph",
+        "text": "Allah’a ulaşmayı dileyen kişi, Allah’ın kendisine gösterdiği mürşide ulaşıp tâbî olur. Bu tâbiiyet bir tanışma veya yalnızca sözlü bir yakınlık değildir. Allah’a ulaşmak üzere yapılan tövbeyle birlikte, ruhun Allah’a doğru yolculuğunun başladığı bir dönüm noktasıdır. Fetih Suresinin 10. âyeti, Hz. Muhammed’e tâbiiyetin Allah’a tâbiiyet olduğunu bildirir."
+      },
+      {
+        "type": "evidence",
+        "reference": "FETİH 10",
+        "note": "İlgili bölüm",
+        "text": "Muhakkak ki onlar, sana tâbî oldukları zaman Allah’a tâbî olurlar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Burada tâbiiyetin yönü bellidir: Allah’a ulaşmak ve Allah’ın emirlerine uymak. Mürşidin eli, Hakk’a ulaşmak üzere öpülür. Nebe Suresinin 39. âyetinde bu günün Hakk günü olduğu, Allah’a ulaşmayı dileyen kişinin Rabbine ulaştıran yolu edindiği açıklanır."
+      },
+      {
+        "type": "evidence",
+        "reference": "NEBE 39",
+        "note": "İlgili bölüm",
+        "text": "Dileyen (Allah’a ulaşmayı dileyen) kişi, kendisine Rabbine ulaştıran (yolu, Sıratı Mustakîm’i) yol ittihaz eder."
+      },
+      {
+        "type": "paragraph",
+        "text": "Tâbiiyetin ardından nefs tezkiyesiyle ruhun seyr-i sülûku birlikte ilerler. Zikirle nefsin kalbinde fazl birikimi arttıkça ruh, Allah’a doğru yolculuğunun kademelerini aşar. Mürşide ulaşmış olmak yolun tamamlandığı anlamına gelmez; ruhun Allah’a ulaşmasına ve sonraki teslimlere uzanan yaşantının içinde, kişiye yeni vazifeler düşer."
+      },
+      {
+        "type": "heading",
+        "text": "Tövbe ve mağfirette mürşidin görevi"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tâbiiyet sırasında yapılan tövbede kul Allah’tan mağfiret diler. İrşad makamındaki kişi de onun için mağfiret talebinde bulunur. Nisâ Suresinin 64. âyetinde, nefslerine zulmedenlerin Resûl’e gelmeleri, Allah’tan mağfiret dilemeleri ve Resûl’ün de onlar için mağfiret dilemesi birlikte anlatılır. Tövbeyi kabul edenin Allah olduğu da aynı âyette bildirilir. (Nisâ, 4/64)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Furkân Suresinin 70. âyeti ise mürşid önünde tövbe etmeyi, îmânı artan mü’min olmayı ve salih ameli, yani nefs tezkiyesini, günahların sevaba çevrilmesiyle birlikte açıklar. Günahları sevaba çeviren Allah’tır. Mürşid bu ilâhî kabulün vesilesidir; kendi adına günah bağışlayan bir makam değildir. (Furkân, 25/70)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu ayrım, tâbiiyetin değerini azaltmaz; tersine, o anda gerçekleşen nimetin kimden geldiğini gösterir. Kul tövbe eder, Allah’a yönelir ve nefs tezkiyesine başlar. Mağfiret talebi Allah’adır, kabul Allah’tandır. Mürşidin duası ve rehberliği de bu kulluğun içindedir."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşid, devrin imamı ve vekil aynı mıdır?"
+      },
+      {
+        "type": "paragraph",
+        "text": "İrşad hizmeti içinde farklı vazifeler vardır. Allah’ın irşadla vazifelendirdiği mürşid ile onun tâbiiyete vesile olmak üzere yetki verdiği vekili, aynı makamın sahibi saymak doğru değildir. Bir vekilin tövbe verilmesine vesile olması, onun mutlaka dört teslimi tamamlayıp Allah tarafından irşad makamına tayin edildiği anlamına gelmez."
+      },
+      {
+        "type": "paragraph",
+        "text": "Devrin imamının görevi de her mürşide ait bir özellik gibi anlatılamaz. Tâbiiyetle kişinin başının üzerine gelen ruh, devrin imamının ruhudur. Mü’min Suresinin 15. âyetinde, Allah’ın emrinden gönderdiği ruhun, kişinin ruhuna Allah’a ulaşma gününün geldiğini bildirmesi anlatılır. Mucâdele Suresinin 22. âyetinde de Allah’ın bir ruh ile desteklemesi yer alır. (Mü’min, 40/15)."
+      },
+      {
+        "type": "evidence",
+        "reference": "MUCÂDELE 22",
+        "note": "İlgili bölüm",
+        "text": "Ve onları, Kendinden bir ruh ile destekledi (orada eğitilmiş olan, devrin imamının ruhu onların başlarının üzerine yerleşir)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Dolayısıyla tâbiiyet sırasında hangi mürşidin veya yetkili vekilin yanında bulunulursa bulunulsun, bu destek her birinin kendi ruhunun gönderilmesi şeklinde anlaşılmaz. İmamın ruhuna ait vazife ayrıdır; kişiye bulunduğu yerde rehberlik eden mürşidin veya tâbiiyete vesile olan vekilin vazifesi ayrıdır. Hepsi Allah’ın hidayete ulaştırma düzeni içindeki yerleriyle değerlendirilir."
+      },
+      {
+        "type": "heading",
+        "text": "İrşadın hedefi: Dört teslim"
+      },
+      {
+        "type": "paragraph",
+        "text": "İrşadın hedefi, ruhun Allah’a ulaşmasıyla sınırlı değildir. Ruhun hayattayken Allah’a ulaşması ilk teslimdir. Nefs tezkiyesi bu teslimin gerçekleşmesiyle yakından bağlantılıdır. Ancak bu noktada nefsin bütün afetleri temizlenmiş değildir. Ruhun tesliminden sonra fizik vücudun, nefsin ve iradenin teslimi vardır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Fizik vücudun tesliminde insanın vücudu, Allah’ın emirlerini yerine getiren ve yasaklarını işlemeyen bir hüviyete ulaşır. Nefsin teslimi ise daimî zikirle, nefsin kalbindeki bütün afetlerin temizlenmesiyle gerçekleşir. Ulûl’elbabın ayaktayken, otururken ve yatarken Allah’ı zikretmesi, bu daimî zikri ifade eder. (Âli İmrân, 3/191)."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nefsin tesliminin ötesinde ihlâs, salâh ve iradenin teslimine uzanan mertebeler bulunur. İrşadla vazifelendirilen mürşid, bu teslimleri yaşamış olduğu için, kişiyi yalnız ilk hedefe değil, sonraki teslimlere de davet eder. Tâbiiyetle başlayan bağlılık, Allah’a kulluğun ve teslimiyetin gelişmesi için bir rehberliktir."
+      },
+      {
+        "type": "evidence",
+        "reference": "FUSSİLET 33",
+        "note": "Âyet metni",
+        "text": "Allah’a davet eden ve salih amel (nefs tasfiyesi) yapan ve: “Muhakkak ki ben teslim olanlardanım.” diyenden daha güzel sözlü kim vardır?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu âyette davet, salih amel ve teslimiyet birbirinden ayrılmaz. Mürşid, başkalarına yalnızca tarif ettiği bir hayatı anlatmaz; Allah’a teslim olmayı kendisi de yaşamıştır. Davetinin güzelliği, insanı Allah’a yöneltmesinde ve nefsin kalbinin temizlenmesine hizmet etmesindedir."
+      },
+      {
+        "type": "heading",
+        "text": "İnsan mürşidini nasıl bulur?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşid arayışının ilk adımı, Allah’a ulaşmayı dilemektir. Bu dileğin ardından kişi Allah’tan kendisini mürşidine ulaştırmasını ister. Mürşidin tayini Allah’a ait olduğu gibi, kişinin kendisi için olan mürşidi öğrenmesinde de Allah’a yönelmesi esastır. Fâtiha Suresinin 5. âyeti, istiânenin kimden isteneceğini bildirir."
+      },
+      {
+        "type": "evidence",
+        "reference": "FÂTİHA 5",
+        "note": "Âyet metni",
+        "text": "(Allah’ım!) Yalnız Sana kul oluruz ve yalnız Senden İSTİANE (mürşidimizi) isteriz."
+      },
+      {
+        "type": "paragraph",
+        "text": "İstiâne, Allah’tan istenen özel yardımdır. Mürşidini öğrenmek isteyen kişi, sabırla ve hacet namazıyla Allah’a müracaat eder. Bakara Suresinin 45. âyetinde bu talebin huşû sahipleriyle bağlantısı açıklanır."
+      },
+      {
+        "type": "evidence",
+        "reference": "BAKARA 45-46",
+        "note": "İlgili bölüm",
+        "text": "Ve muhakkak ki o (hacet namazı ile Allah’a ulaştıracak mürşidini sormak), huşû sahibi olanlardan başkasına elbette ağır gelir. Onlar, Rab’lerine (dünya hayatında) muhakkak mülâki olacaklarına ve (sonunda ölümle) O’na döneceklerine yakîn derecesinde inanırlar."
+      },
+      {
+        "type": "paragraph",
+        "text": "Hacet namazı, Allah’a ulaşmayı dilemenin yerine geçen bir işlem değildir. Önce kalbin yönelişi vardır. Allah bu kişide mürşid sevgisini oluşturur, onu mürşidini istemeye yöneltir ve mürşidini gösterir. Kişi kendi beğenisini veya başkalarının övgüsünü Allah’ın tayininin yerine koymaz; kendisini Kendisine ulaştıracak vesileyi Allah’tan ister."
+      },
+      {
+        "type": "evidence",
+        "reference": "MÂİDE 35",
+        "note": "İlgili bölüm",
+        "text": "Ey âmenû olanlar (Allah’a ulaşmayı, teslim olmayı dileyenler); Allah’a karşı takva sahibi olun ve O’na ulaştıracak vesileyi isteyin."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşidin daveti ve insanlara karşı davranışı"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşidin vazifesi yalnızca ne anlattığıyla değil, nasıl davet ettiğiyle de ilgilidir. Allah’a davet eden kişi, hayra çağırır; mârufu emreder, münkerden men eder. Âli İmrân Suresinin 104. âyetinde bu daveti yerine getiren bir topluluğun bulunması istenir."
+      },
+      {
+        "type": "evidence",
+        "reference": "ÂLİ İMRÂN 104",
+        "note": "Âyet metni",
+        "text": "Sizin içinizden hayra davet eden (mürşidlerden) bir cemaat olsun ve mârufla emretsin, ve münkerden nehyetsin (men etsin). İşte onlar, onlar felâha erenlerdir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu davetin dili de Kur’ân’da açıklanır. İnsanları Allah’ın yoluna çağırırken hikmet ve güzel öğüt esastır. Mürşid, nefsinin öfkesiyle değil, Allah’ın emrinin ve hikmetin gerektirdiği şekilde hareket eder. Nefsin kalbinde sabırsızlık afetinin kalmaması, sabrın yalnızca dışarıdan gösterilen bir tahammül olarak kalmamasını sağlar."
+      },
+      {
+        "type": "evidence",
+        "reference": "NAHL 125",
+        "note": "İlgili bölüm",
+        "text": "Rabbinin yoluna (Allah’a ulaştıran yola, Sıratı Mustakîm’e) hikmetle ve güzel (pozitif dereceler kazandıracak) öğütle davet et. Onlarla en güzel şekilde mücâdele et."
+      },
+      {
+        "type": "paragraph",
+        "text": "Adalet de bu vazifenin içindedir. Hakk’a ulaştıran ve adaletle hükmedenlerin birlikte anılması, irşadın nefsin tarafgirliğinden uzak bir hizmet olduğunu gösterir. Davet edilen insanın Allah’a ulaşması ve teslim olması hedeflenir; hüküm verirken de Allah’ın adaleti esas alınır."
+      },
+      {
+        "type": "evidence",
+        "reference": "A’RÂF 181",
+        "note": "Âyet metni",
+        "text": "Ve yarattıklarımızdan bir ümmet vardır ki, Hakk’a (Allah’a) ulaştırırlar ve onunla adaletle hükmederler."
+      },
+      {
+        "type": "paragraph",
+        "text": "İrşad daveti karşılığında insanlardan ücret istenmemesi de Kur’ân’ın ortaya koyduğu bir ölçüdür. Yâsîn Suresinin 21. âyetinde, tebliğlerine karşılık ücret istemeyen ve hidayete ermiş olanlara tâbî olunması bildirilir. Bu hizmetin karşılığı, insanların Allah’a yönelmesinde ve Allah’ın rızasındadır."
+      },
+      {
+        "type": "evidence",
+        "reference": "YÂSÎN 21",
+        "note": "Âyet metni",
+        "text": "(Tebliğlerine karşılık) sizden ücret istemeyen (bu) kişilere tâbî olun. Ve onlar, mehdilerdir (hidayete ermiş ve hidayete erdirenlerdir)."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşidlik peygamberlik midir?"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşidlik ile peygamberlik aynı şey değildir. Hz. Muhammed, nebîlerin sonuncusudur. İrşadın devam etmesi, yeni bir peygamber gelmesi veya yeni bir şeriat getirilmesi anlamına gelmez. Mürşidin vazifesi, Kur’ân’ın hidayet ve teslim emirlerini açıklamak ve yaşanmasına rehberlik etmektir."
+      },
+      {
+        "type": "evidence",
+        "reference": "AHZÂB 40",
+        "note": "Âyet metni",
+        "text": "Muhammed (A.S), sizin erkeklerinizden hiçbirinin babası olmamıştır (değildir). Fakat Allah’ın Resûl’ü ve Nebîler’in (Peygamberler’in) Hatemi’dir (Sonuncusudur). Allah, herşeyi en iyi bilendir."
+      },
+      {
+        "type": "paragraph",
+        "text": "Sahâbenin irşad görevi ve onlara ihsanla tâbî olanlar, Tevbe Suresinin 100. âyetinde birlikte anlatılır. Muhacirler, ensar ve onlara tâbî olanlar arasındaki bu bağ, irşadın yalnızca ilk tâbiiyetle sınırlı kalmadığını gösterir. Allah’a teslimlerini tamamlayanların, kendilerinden sonra gelenlere rehberlik etmesi söz konusudur. (Tevbe, 9/100)."
+      },
+      {
+        "type": "heading",
+        "text": "Tâbiiyet, kişinin sorumluluğunu kaldırmaz"
+      },
+      {
+        "type": "paragraph",
+        "text": "Bir mürşide tâbî olmak, kişinin yerine onun ibadet edeceği veya kişinin günahlarını yükleneceği anlamına gelmez. Allah’a ulaşmayı dileyecek olan kişinin kendisidir. Namazını kılacak, zikrini yapacak, nefs tezkiyesini yaşayacak olan da kendisidir. Mürşid rehberlik eder; tâbî olan insan bu rehberliğin gereğini hayatında yerine getirir."
+      },
+      {
+        "type": "evidence",
+        "reference": "İSRÂ 15",
+        "note": "İlgili bölüm",
+        "text": "Yük taşıyan (günahı yüklenen) bir kimse, bir başkasının yükünü (günahını) yüklenmez."
+      },
+      {
+        "type": "paragraph",
+        "text": "Bu sebeple mürşide yakınlık, kişinin kendi gayretini terk etmesine gerekçe olamaz. Tâbiiyetin kıymeti, zikirden ve Allah’ın emirlerini yerine getirmekten ayrıldığında yaşanmış olmaz. İrşad, kişiyi sorumluluktan uzaklaştıran değil, Allah’a kulluğu öğrenip yaşamasına yardım eden bir hizmettir. Nefsin kalbinin temizlenmesi de bu yaşantının içinde gerçekleşir."
+      },
+      {
+        "type": "heading",
+        "text": "Mürşidin gösterdiği hedef Allah’tır"
+      },
+      {
+        "type": "paragraph",
+        "text": "Mürşid, Allah’ın kendisine verdiği irşad görevini yerine getirir. Âyetleri açıklar, Allah’a ulaşmayı dilemeye davet eder, tâbiiyete vesile olur; zikir, nefs tezkiyesi ve teslimler yolunda rehberlik eder. Bütün bu hizmetlerin ortak hedefi, insanın Allah’a ulaşması ve Allah’a teslim olmasıdır."
+      },
+      {
+        "type": "paragraph",
+        "text": "Kalbe rahmet ve fazlı gönderen Allah’tır. Tövbeyi kabul eden, günahları sevaba çeviren ve ruhu Kendisine ulaştıran Allah’tır. Mürşidin daveti de kulun dileği de O’na yönelir. Başlangıçta Allah’a ulaşmayı dileyen bir kalp vardır; irşadın bütün safhaları, bu kalbin Allah’ın emirlerini yaşayarak teslimlere ulaşmasına hizmet eder."
+      }
+    ],
+    "sources": [{ "type": "pdf", "title": "Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?" }]
   }
 }

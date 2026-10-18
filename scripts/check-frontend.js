@@ -1441,7 +1441,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261004-touch-drag-speed-v3', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261018-mursid-guide-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1493,7 +1493,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261004-touch-drag-speed-v3"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261018-mursid-guide-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
@@ -1537,7 +1537,7 @@ for (const marker of ['pa-topic-atlas', 'pa-topic-route', 'pa-discovery-map', 'p
   assert(!homePreview.includes(marker), `Public ana sayfada tekrar eden konu/kavram bolumu kalmamali: ${marker}`);
 }
 const topicGuideIndexPreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberleri').html;
-for (const marker of ['<title>Konu Rehberleri | Dini Sorular ve Cevaplar Arşivi</title>', 'pa-guide-index-hero', 'pa-guide-index-art', 'topic-routes-archive-720.webp', 'topic-routes-archive-1280.webp', 'pa-guide-directory-list', 'Okumaya bir konudan başlayın.', 'Allah’a Ulaşmayı Dilemek', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'Zikir Nedir?', 'Nefs Tezkiyesi', 'Teslimiyet Nedir?', 'Ruh Nedir?', 'Kur’ân’a Göre Mutluluk Nedir?', 'Tasavvuf Nedir?', '"@type":"CollectionPage"', '"@type":"ItemList"']) {
+for (const marker of ['<title>Konu Rehberleri | Dini Sorular ve Cevaplar Arşivi</title>', 'pa-guide-index-hero', 'pa-guide-index-art', 'topic-routes-archive-720.webp', 'topic-routes-archive-1280.webp', 'pa-guide-directory-list', 'pa-guide-directory-art', 'Okumaya bir konudan başlayın.', 'Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', 'topic-guide-mursid-480.webp', 'topic-guide-mursid-720.webp', 'topic-guide-mursid-1280.webp', 'Allah’a Ulaşmayı Dilemek', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'Zikir Nedir?', 'Nefs Tezkiyesi', 'Teslimiyet Nedir?', 'Ruh Nedir?', 'Kur’ân’a Göre Mutluluk Nedir?', 'Tasavvuf Nedir?', '"@type":"CollectionPage"', '"@type":"ItemList"']) {
   assert(topicGuideIndexPreview.includes(marker), `Public konu rehberleri dizini marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
@@ -1546,7 +1546,7 @@ for (const marker of ['pa-topic-article-hero', 'pa-topic-article-body', 'pa-topi
 }
 assert(!topicArticlePreview.includes('Bu konudaki sorular'), 'Public konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
 const zikirArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/zikir-ve-daimi-zikir').html;
-for (const marker of ['Zikir Nedir?', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'İlgili Konu Rehberleri', 'Allah’a Ulaşmayı Dilemek', 'Mürşide Tâbiiyet', '"@type":"BlogPosting"']) {
+for (const marker of ['Zikir Nedir?', 'Kalbin nurlanması, nefsin tezkiyesi ve Allah’a teslimiyet', 'MÜZZEMMİL 8', 'ANKEBÛT 45', 'BAKARA 152', 'İlgili Konu Rehberleri', 'Nefs Tezkiyesi', 'Teslimiyet Nedir?', 'Tasavvuf Nedir?', '"@type":"BlogPosting"']) {
   assert(zikirArticlePreview.includes(marker), `Public zikir konu rehberi marker eksik: ${marker}`);
 }
 assert(!zikirArticlePreview.includes('Bu konudaki sorular'), 'Public zikir konu rehberi eski Bu konudaki sorular kartini gostermemeli.');
@@ -1583,16 +1583,24 @@ const hacetArticlePreview = renderPublicArchivePreviewRoute('/public-preview/kon
 for (const marker of ['Hacet Namazı ve Mürşidi Allah’tan İstemek', 'Kalpten yönelişten tâbiiyete', 'MÂİDE 35', 'FÂTİHA 5', 'BAKARA 45', 'HACET DUASI', 'pa-topic-article-table', 'Birinci rekât', 'Son oturuş', 'Hacet Namazı ve Mürşidi Allah’tan İstemek ile ilgili sorular', '"@type":"BlogPosting"']) {
   assert(hacetArticlePreview.includes(marker), `Public hacet namazi konu rehberi marker eksik: ${marker}`);
 }
-const topicGuideSlugs = ['hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul'];
+const mursidArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi').html;
+for (const marker of ['Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', 'İrşadın kaynağı, görevi ve hedefi', 'KEHF 17', 'KASAS 56', 'SECDE 24', 'Mürşid, devrin imamı ve vekil aynı mıdır?', 'Mürşidin gösterdiği hedef Allah’tır', 'topic-guide-mursid-480.webp', 'topic-guide-mursid-1280.webp', 'pa-topic-article-visual', '"@type":"BlogPosting"']) {
+  assert(mursidArticlePreview.includes(marker), `Public mursid konu rehberi marker eksik: ${marker}`);
+}
+const topicGuideSlugs = ['mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul'];
 for (const currentSlug of topicGuideSlugs) {
   const articlePreview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${currentSlug}`).html;
   const relatedStart = articlePreview.indexOf('<section class="pa-topic-next-card">');
   const relatedEnd = articlePreview.indexOf('</section>', relatedStart);
   const relatedGuideHtml = articlePreview.slice(relatedStart, relatedEnd);
   assert(relatedGuideHtml.includes('İlgili Konu Rehberleri'), `Public ${currentSlug} rehberi ilgili rehber başlığını içermeli.`);
-  for (const relatedSlug of topicGuideSlugs.filter(slug => slug !== currentSlug)) {
-    assert(relatedGuideHtml.includes(`/public-preview/konu-rehberi/${relatedSlug}`), `Public ${currentSlug} rehberi ${relatedSlug} iç bağlantısını içermeli.`);
-  }
+  const relatedLinks = relatedGuideHtml.match(/\/public-preview\/konu-rehberi\/[a-z0-9-]+/g) || [];
+  assert(relatedLinks.length >= 4 && relatedLinks.length <= 6, `Public ${currentSlug} rehberi 4-6 anlamli konu rehberi baglantisi icermeli.`);
+  assert(!relatedGuideHtml.includes(`/public-preview/konu-rehberi/${currentSlug}"`), `Public ${currentSlug} rehberi kendisine baglanmamali.`);
+}
+for (const reciprocalSlug of ['hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'tasavvuf-nedir']) {
+  const reciprocalPreview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${reciprocalSlug}`).html;
+  assert(reciprocalPreview.includes('/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi'), `Public ${reciprocalSlug} rehberi yeni mursid rehberine baglanmali.`);
 }
 const topicArticleBodyIndex = topicArticlePreview.indexOf('pa-topic-article-body');
 const topicArticleSupportIndex = topicArticlePreview.indexOf('pa-topic-article-support');
@@ -1617,13 +1625,13 @@ assert(!disallowedTopicArticleSourcePattern.test(nefsArticlePreview), 'Public ne
 assert(!disallowedTopicArticleSourcePattern.test(mutlulukArticlePreview), 'Public mutluluk konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
 assert(!disallowedTopicArticleSourcePattern.test(tasavvufArticlePreview), 'Public tasavvuf konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
 assert(!disallowedTopicArticleSourcePattern.test(tovbeArticlePreview), 'Public tovbe konu rehberi makalesi kaynakca, surec notu veya koseli atif numarasi tasimamali.');
-for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-layout', '.pa-topic-article-toc-block', '.pa-topic-article-body', '.pa-topic-article-list', '.pa-topic-article-table-wrap', '.pa-topic-article-table', '.pa-topic-evidence', '.pa-topic-article-support']) {
+for (const marker of ['.pa-topic-article-hero', '.pa-topic-article-visual', '.pa-topic-article-layout', '.pa-topic-article-toc-block', '.pa-topic-article-body', '.pa-topic-article-list', '.pa-topic-article-table-wrap', '.pa-topic-article-table', '.pa-topic-evidence', '.pa-topic-article-support']) {
   assert(publicCss.includes(marker), `Public konu rehberi makale CSS marker eksik: ${marker}`);
 }
 for (const marker of ['bindReadingPathSliders', 'data-reading-slider', 'data-reading-rail', 'data-reading-set']) {
   assert(!publicRendererSource.includes(marker) && !homePreview.includes(marker), `Public konu rehberi slider marker kalmamali: ${marker}`);
 }
-for (const marker of ['.pa-topic-showcase', '.pa-topic-showcase-card', '.pa-question-banners', '.pa-question-banner', '.pa-question-banner-copy', '.pa-guide-index-hero', '.pa-guide-index-art', '.pa-guide-directory-list']) {
+for (const marker of ['.pa-topic-showcase', '.pa-topic-showcase-card', '.pa-question-banners', '.pa-question-banner', '.pa-question-banner-copy', '.pa-guide-index-hero', '.pa-guide-index-art', '.pa-guide-directory-list', '.pa-guide-directory-art']) {
   assert(publicCss.includes(marker), `Public konu rotasi CSS marker eksik: ${marker}`);
 }
 for (const marker of ['.pa-topic-atlas', '.pa-topic-route', '.pa-discovery-map', '.pa-concept-map', '.pa-concept-node']) {
@@ -1633,6 +1641,11 @@ for (const fileName of ['topic-routes-archive-720.webp', 'topic-routes-archive-1
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public konu rotasi gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < 125 * 1024, `Public konu rotasi gorseli hiz butcesini asmamali: ${fileName}`);
+}
+for (const [fileName, maxKiB] of [['topic-guide-mursid-480.webp', 60], ['topic-guide-mursid-720.webp', 120], ['topic-guide-mursid-1280.webp', 300]]) {
+  const assetPath = path.join(publicAssetRoot, 'assets', fileName);
+  assert(fs.existsSync(assetPath), `Public mursid rehberi gorseli eksik: ${fileName}`);
+  assert(fs.statSync(assetPath).size < maxKiB * 1024, `Public mursid rehberi gorseli hiz butcesini asmamali: ${fileName}`);
 }
 for (const fileName of ['topic-showcase-hacet-namazi-720.webp', 'topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-720.webp', 'topic-showcase-tovbe-720.webp', 'topic-showcase-dua-tevekkul-720.webp']) {
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
@@ -2004,7 +2017,7 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
 for (const marker of ['--pa-answer-cta-text: #FFFFFF;', '--pa-answer-cta-text: #0F4930;', '--pa-answer-cta-shine: rgb(255 253 247 / 0.28);', 'color: var(--pa-answer-cta-text);', 'var(--pa-answer-cta-shine)']) {
   assert(publicCss.includes(marker), `Public cevap CTA kontrast standardi eksik: ${marker}`);
 }
-assert(publicRendererSource.includes("20261004-touch-drag-speed-v3"), 'Public arsiv CSS cache anahtari dokunmatik konu vitrini icin yenilenmeli.');
+assert(publicRendererSource.includes("20261018-mursid-guide-v1"), 'Public arsiv CSS cache anahtari yeni Mursid rehberi icin yenilenmeli.');
 for (const marker of ['.pa-cta-visual', '.pa-cta-content', '.pa-cta-kicker', '.pa-cta-button-icon', 'object-position: 66% center', 'min-height: 420px']) {
   assert(publicCss.includes(marker), `Public soru CTA gorsel CSS marker eksik: ${marker}`);
 }
