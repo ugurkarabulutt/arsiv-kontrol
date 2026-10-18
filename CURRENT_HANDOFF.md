@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-18 Yönetici İşlem Güvenilirliği — Release Hazır
+
+- Yeni adminlerin bekleyen kayıtlarda `Düzeltmeye Gönder` ve özel bölüm
+  kararlarında gördüğü sahte internet hatası üç katmanda ele alındı. Yönetim
+  politikası adminin kendisine atanmış/kendi kaydını geri göndermesine izin
+  verir; canlı RPC'den yalnız `SELF_RETURN_FORBIDDEN` kaldırıldı ve
+  `SELF_APPROVAL_FORBIDDEN` korundu.
+- Yönetim karar düğmeleri form gönderimini tetiklememesi için `type="button"`;
+  belirsiz istek sonucu ise sunucudan kayıt sürümü/durumu okunarak doğrulanır.
+  Uygulanmış işlem başarı kabul edilir, değişmemiş işlem yalnız bir kez yeniden
+  denenir, hâlâ belirsizse kullanıcıya tekrar işlem yaptırmayan doğru mesaj
+  gösterilir. Tekli ve toplu işlemler aynı yardımcıyı kullanır; başarılı karar
+  mesajı liste yenileme hatasıyla ezilmez.
+- Migration canlı `arsiv-kontrol` Supabase projesine başarıyla uygulandı.
+  Doğrulama: `self_return_guard_removed=true`,
+  `self_approval_guard_present=true`, `security_invoker=true`.
+- `npm.cmd run check` 233/233 başarılı; `git diff --check` yalnız mevcut CRLF
+  dönüşüm uyarılarını verdi. Gerçek kullanıcı kaydında yazma yapılmadı. Sıradaki
+  adım commit/push, Vercel production deploy ve canlı salt-okunur smoke testidir.
+
 ## 2026-10-18 Mürşid Konu Rehberi — Production Tamamlandı
 
 - Kullanıcı PDF'inden `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`

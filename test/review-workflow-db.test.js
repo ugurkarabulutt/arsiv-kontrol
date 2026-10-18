@@ -48,6 +48,9 @@ before(async () => {
   const rejectedReviseOnlyMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20260924103000_remove_member_rejected_dismiss.sql'),'utf8');
   await db.exec(rejectedReviseOnlyMigration);
   await db.exec(rejectedReviseOnlyMigration);
+  const allowAdminReturnOwnMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261018202757_allow_admin_return_own_records.sql'),'utf8');
+  await db.exec(allowAdminReturnOwnMigration);
+  await db.exec(allowAdminReturnOwnMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -99,14 +102,15 @@ test('submit validates all fields; incomplete draft can still be saved', async (
   await assert.rejects(change(h,'user','member','save',{questionText:'Gizli değişiklik?'}),/INVALID_STATUS/);
   h=await change(h,'user','member','withdraw');assert.equal(h.status,'geri_gonderildi');
 });
-test('both admin roles submit own work as members and cannot approve themselves', async () => {
+test('both admin roles cannot approve themselves but can return their own work for correction', async () => {
   for (const owner of ['admin','super']) {
     let h=await seed(owner,'taslak',owner+'?');
     await assert.rejects(change(h,owner,'management','submit'),/MEMBER_WORKSPACE_REQUIRED/);
     h=await change(h,owner,'member','submit');
     await assert.rejects(change(h,owner,'management','approve'),/SELF_APPROVAL_FORBIDDEN/);
-    await assert.rejects(change(h,owner,'management','return',{note:'Not'}),/SELF_RETURN_FORBIDDEN/);
-    h=await change(h,owner==='admin'?'super':'admin','management','approve');assert.equal(h.status,'onaylandi');
+    assert.ok(recordActions({id:ids[owner],role:owner==='super'?'super_admin':'admin'},h,'management').includes('return'));
+    h=await change(h,owner,'management','return',{note:'Cevap düzeltilmek üzere ekip üyesine geri gönderildi.'});
+    assert.equal(h.status,'geri_gonderildi');
   }
 });
 test('approve saves edited question, answer and tags in the same atomic revision', async () => {

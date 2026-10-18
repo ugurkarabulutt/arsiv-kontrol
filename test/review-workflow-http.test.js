@@ -100,6 +100,10 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   assert.match(workspaceScript,/Kayıt yönetime iletildi ve Düzenlenecekler listenizden kaldırıldı\./);
   assert.match(workspaceScript,/dergah_sorulari: 'Dergah Soruları'/);
   assert.match(workspaceScript,/conference: 'Konferanslara Al'/);
+  assert.match(workspaceScript,/REQUEST_OUTCOME_UNKNOWN/);
+  assert.match(workspaceScript,/performAction/);
+  assert.match(workspaceScript,/İşlem tamamlandı; sonuç sunucudan doğrulandı\./);
+  assert.doesNotMatch(html,/İnternet bağlantınızı kontrol edip tekrar deneyin/);
   assert.match(workspaceScript,/: \['todo','in_review','done'\]/);
   assert.doesNotMatch(workspaceScript,/: \['all','taslak','geri_gonderildi','bekliyor','onaylandi','reddedildi','teyit_bekliyor','arsivlendi'\]/);
   const source=fs.readFileSync(path.join(root,'server.js'),'utf8');
@@ -263,4 +267,42 @@ test('management can filter and act on special holding sections',async()=>{
   assert.equal(list.status,200);assert.equal(list.data.count,1);assert.equal(list.data.items[0].id,h.id);
   assert.ok(list.data.items[0].allowedActions.includes('pending'));
   assert.ok(!list.data.items[0].allowedActions.includes('dergah'));
+});
+
+test('admins can return or classify their own pending records but still cannot self-approve',async()=>{
+  const admin=fixture.users.find(user=>user.role==='admin');
+  const ids=[];
+  try {
+    for(const question of ['Kendi kayıt düzeltme testi?','Kendi kayıt konferans testi?']){
+      const row=(await fixture.db.query(`insert into history(user_id,name,status,question_text,original_text,corrected_text,tags)
+        values($1,'Yönetici Kendi Kaydı','bekliyor',$2,'Kaynak','Cevap','["Takva"]') returning *`,[admin.id,question])).rows[0];
+      ids.push(row.id);
+    }
+    const first=await request(`/api/review/${ids[0]}`,'admin','management');
+    assert.equal(first.status,200);
+    assert.ok(first.data.allowedActions.includes('return'));
+    assert.ok(!first.data.allowedActions.includes('approve'));
+    const returned=await request(`/api/review/${ids[0]}/action`,'admin','management',{
+      action:'return',version:first.data.version,note:'Cevabın kaynakla yeniden karşılaştırılması gerekiyor.'
+    });
+    assert.equal(returned.status,200);
+    assert.equal(returned.data.history.status,'geri_gonderildi');
+
+    const second=await request(`/api/review/${ids[1]}`,'admin','management');
+    assert.ok(second.data.allowedActions.includes('conference'));
+    const conference=await request(`/api/review/${ids[1]}/action`,'admin','management',{
+      action:'conference',version:second.data.version,note:'Konferans içeriğinde değerlendirilmesi uygun bulundu.'
+    });
+    assert.equal(conference.status,200);
+    assert.equal(conference.data.history.status,'konferanslar');
+    const selfApproval=await request(`/api/review/${ids[1]}/action`,'admin','management',{
+      action:'approve',version:conference.data.history.version
+    });
+    assert.equal(selfApproval.status,403);
+  } finally {
+    await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[ids]);
+    await fixture.db.query('delete from alerts where history_id=any($1::uuid[])',[ids]);
+    await fixture.db.query('delete from admin_action_log where target_id=any($1::text[])',[ids]);
+    await fixture.db.query('delete from history where id=any($1::uuid[])',[ids]);
+  }
 });

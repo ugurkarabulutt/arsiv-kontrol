@@ -5,6 +5,24 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-18
 
+- **Yönetici geri gönderme ve özel bölüm işlemleri kalıcı olarak düzeltildi:**
+  Yönetim alanında bir adminin kendisine atanmış veya kendi kaydı olan bekleyen
+  içeriği `Düzeltmeye Gönder` ile geri çevirmesi, hem uygulama politikasındaki
+  hem de `review_history_change` RPC'sindeki `SELF_RETURN_FORBIDDEN` kontrolüne
+  takılıyordu. Bu yasak kaldırıldı; yalnız kendi kaydını **onaylama** yasağı
+  (`SELF_APPROVAL_FORBIDDEN`) aynen korundu. İdempotent
+  `20261018202757_allow_admin_return_own_records.sql` migration'ı canlı Supabase
+  projesine uygulandı ve fonksiyonda dönüş yasağının kalktığı, kendi kendini
+  onaylama yasağının ve security-invoker davranışının korunduğu sorguyla
+  doğrulandı. `Konferanslara Al` dahil yönetim karar düğmeleri açıkça
+  `type="button"` oldu. İstek sonucu belirsiz kaldığında arayüz artık gerçeğe
+  aykırı biçimde kullanıcı internetini suçlamaz; kaydı sunucudan okuyup işlemin
+  uygulanıp uygulanmadığını doğrular, değişmediyse yalnız bir kez güvenli tekrar
+  dener ve sonuç hâlâ doğrulanamıyorsa yeni bir işlem yaptırmadan açık durum
+  mesajı verir. Tekli ve toplu işlemler aynı güvenli akışı kullanır. Gerçek HTTP
+  testinde adminin kendi bekleyen kaydını geri göndermesi ve konferansa alması
+  başarılı, kendi kaydını onaylaması `403`; zorunlu `npm.cmd run check` 233/233
+  başarılıdır.
 - **Mürşid konu rehberi production'a alındı:** Kullanıcı
   PDF'i esas alınarak `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`
   başlıklı, 14 bölümlü, 26 âyet atıflı rehber eklendi. URL

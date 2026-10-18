@@ -144,7 +144,7 @@ const ReviewWorkspace = (() => {
   function selectorHTML() {
     return '<label class="rw-workspace"><span>Çalışma alanı</span><select data-review-selector aria-label="Çalışma alanı" onchange="ReviewWorkspace.switchSpace(this.value)"><option value="member">Ekip Üyesi</option><option value="management">Yönetim</option></select></label>';
   }
-  async function load() {
+  async function load({silent=false}={}) {
     const container = node(management() ? 'onayContent' : 'histContent');
     if (!container) return;
     const currentSpace = space, currentRequest = ++requestNumber;
@@ -167,8 +167,8 @@ const ReviewWorkspace = (() => {
     const result = await request('/records?' + params);
     if (currentRequest !== requestNumber || currentSpace !== space) return;
     node('rwRows').setAttribute('aria-busy','false');
-    if (result.error) { message(result.error, true); return; }
-    if (!result.items.length && s.page > 1) { state().page--; return load(); }
+    if (result.error) { if(!silent)message(result.error, true); return false; }
+    if (!result.items.length && s.page > 1) { state().page--; return load({silent}); }
     bulkRows = result.items || [];
     for (const [id, row] of selectedRows) if (!row || row.status !== s.status) selectedRows.delete(id);
     node('rwListMessage').textContent = '';
@@ -177,6 +177,7 @@ const ReviewWorkspace = (() => {
     node('rwRows').innerHTML = result.items.length ? `<div class="rw-table" role="list">${result.items.map(row => `<article class="rw-row" role="listitem" data-rw-row-id="${row.id}">${bulkSelectHtml(row)}<div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText || 'Soru eklenmemiş')}</button><div class="rw-meta"><span>${safe(row.name)}</span>${row.submittedBy && row.submittedBy !== row.userId ? `<span>Gönderen: ${safe(row.submittedByName || 'Kayıtlı ekip üyesi')}</span>` : ''}<span>${safe(listDate(row))}</span><span>${safe(statusText(row))}</span>${row.workflow?.disputed?'<span class="rw-warning">Sahiplik itirazı</span>':''}${row.publication?.status==='published'?'<span class="rw-published">Yayında</span>':''}</div><div class="rw-tags">${(row.tags||[]).map(tag=>`<span>${safe(tag)}</span>`).join('')}</div>${row.returnNote?`<p class="rw-return">${safe(row.returnNote)}</p>`:''}</div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">${management()?'İncele':row.allowedActions.includes('save')?'Düzenle':row.allowedActions.includes('revise_rejected')?'Düzenlemeye Al':'Gör'}</button></article>`).join('')}</div>` : '<p class="rw-empty">Bu filtrede kayıt bulunamadı.</p>';
     node('rwPages').innerHTML = `<button class="btn-sec" ${s.page<=1?'disabled':''} onclick="ReviewWorkspace.page(-1)">Önceki</button><span>${s.page} / ${totalPages}</span><button class="btn-sec" ${s.page>=totalPages?'disabled':''} onclick="ReviewWorkspace.page(1)">Sonraki</button>`;
     renderBulkBar();
+    return true;
   }
   function bulkAllowed(row, action) { return management() && !me.reviewReadOnly && (row.allowedActions || []).includes(action); }
   function bulkActionsFor(row) { return bulkActionOrder.filter(action => bulkAllowed(row, action)); }
@@ -270,9 +271,9 @@ const ReviewWorkspace = (() => {
       <label class="rw-field rw-member-note"><span>${memberNoteLabel}</span><textarea id="rwNote" ${noteEditable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea><small>${memberNoteHelp}</small></label>
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
-      <div class="rw-actions">${can('save')?'<button class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button class="btn-primary" data-rw-write onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
+      <div class="rw-actions">${can('save')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button type="button" class="btn-primary" data-rw-write onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
       ${can('delete_draft')?'<button type="button" class="btn-danger" data-rw-write onclick="ReviewWorkspace.decide(\'delete_draft\')">Taslağı Sil</button>':''}
-      ${others.length?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${others.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]||safe(action)}</button>`).join('')}</div></details>`:''}<button class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
+      ${others.length?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${others.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]||safe(action)}</button>`).join('')}</div></details>`:''}<button type="button" class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
     baseline=JSON.stringify(values());
     const footer=node('detailModal').querySelector('.modal-foot');
     footer.replaceChildren(node('rwDetailMessage'),node('detailBody').querySelector('.rw-detail > .rw-actions'));
@@ -353,7 +354,7 @@ const ReviewWorkspace = (() => {
     host.dataset.action=action;
     document.querySelector('.rw-more')?.removeAttribute('open');
     const needsNote=!['withdraw','pending','reanalyze'].includes(action);
-    host.innerHTML=`<section class="rw-decision"><h4>${actions[action]}</h4>${needsNote?'<label class="rw-field"><span>Gerekçe</span><textarea id="rwReason" maxlength="1200" rows="3"></textarea></label>':''}<div id="rwDecisionOptions"></div><p id="rwDecisionHelp">${action==='trash'?'Kayıt çöp kutusuna taşınır ve yayından kaldırılır. Daha sonra geri alınabilir.':action==='restore'?'Kayıt düzenleme için geri alınır; otomatik yayımlanmaz.':action==='reanalyze'?'Cevap yeniden denetlenecek ve aynı kaydın yeni sürümü olarak saklanacak. Önceki sürüm korunur.':''}</p><div class="rw-actions"><button class="btn-primary" data-rw-write onclick="ReviewWorkspace.act('${action}')">${actions[action]}</button><button class="btn-sec" onclick="document.getElementById('rwDecision').replaceChildren()">Vazgeç</button></div></section>`;
+    host.innerHTML=`<section class="rw-decision"><h4>${actions[action]}</h4>${needsNote?'<label class="rw-field"><span>Gerekçe</span><textarea id="rwReason" maxlength="1200" rows="3"></textarea></label>':''}<div id="rwDecisionOptions"></div><p id="rwDecisionHelp">${action==='trash'?'Kayıt çöp kutusuna taşınır ve yayından kaldırılır. Daha sonra geri alınabilir.':action==='restore'?'Kayıt düzenleme için geri alınır; otomatik yayımlanmaz.':action==='reanalyze'?'Cevap yeniden denetlenecek ve aynı kaydın yeni sürümü olarak saklanacak. Önceki sürüm korunur.':''}</p><div class="rw-actions"><button type="button" class="btn-primary" data-rw-write onclick="ReviewWorkspace.act('${action}')">${actions[action]}</button><button type="button" class="btn-sec" onclick="document.getElementById('rwDecision').replaceChildren()">Vazgeç</button></div></section>`;
     node('rwReason')?.focus();
     if(!node('rwReason'))host.scrollIntoView({block:'end'});
     if(action==='resolve_dispute') {
@@ -369,6 +370,42 @@ const ReviewWorkspace = (() => {
       if(result.items.length)node('rwDecisionOptions').innerHTML=`<label class="rw-field"><span>Birebir kopya için yönlendirme</span><select id="rwDuplicate"><option value="">Yönlendirme yok</option>${result.items.map(row=>`<option value="${row.id}">${safe(row.name)} · ${safe(row.id.slice(0,8))}</option>`).join('')}</select></label>`;
     }
   }
+  const actionFinalStatuses = {
+    submit:['bekliyor'], approve:['onaylandi'], return:['geri_gonderildi'], reject:['reddedildi'],
+    review:['teyit_bekliyor'], dergah:['dergah_sorulari'], conference:['konferanslar'],
+    pending:['bekliyor'], archive:['arsivlendi'], trash:['copte'], restore:['taslak','geri_gonderildi'],
+    withdraw:['taslak','geri_gonderildi'], revise_rejected:['geri_gonderildi'],
+    delete_draft:['copte'], close_duplicate:['copte']
+  };
+  function actionApplied(record, action, before) {
+    if(!record || record.error || !Number.isInteger(record.version) || record.version<=before.version)return false;
+    if(action==='save'||action==='reanalyze')return record.status===before.status;
+    if(action==='dispute')return record.workflow?.disputed===true;
+    if(action==='resolve_dispute')return record.workflow?.disputed===false;
+    return (actionFinalStatuses[action]||[]).includes(record.status);
+  }
+  async function performAction(record, action, payload, endpointSuffix='/action') {
+    const endpoint='/'+record.id+endpointSuffix;
+    let result=await request(endpoint,'POST',payload);
+    if(result.code!=='REQUEST_OUTCOME_UNKNOWN')return result;
+
+    let current=await request('/'+record.id);
+    if(actionApplied(current,action,record))return {history:current,outcomeVerified:true};
+    if(current.error){
+      return {error:'İşlemin sonucu sunucudan doğrulanamadı. Kayıt üzerinde tekrar işlem yapmadan sayfayı yenileyin.',code:'ACTION_OUTCOME_UNVERIFIED'};
+    }
+    if(current.version!==record.version){
+      return {error:'Kayıt bu sırada başka bir işlemle değişti. Güncel durumu yeniden açın.',code:'ACTION_OUTCOME_CHANGED',history:current};
+    }
+
+    result=await request(endpoint,'POST',{...payload,version:current.version});
+    if(result.code!=='REQUEST_OUTCOME_UNKNOWN'&&result.code!=='VERSION_CONFLICT')return result;
+    current=await request('/'+record.id);
+    if(actionApplied(current,action,record))return {history:current,outcomeVerified:true};
+    return result.code==='VERSION_CONFLICT'
+      ? result
+      : {error:'İşlemin sonucu sunucudan doğrulanamadı. Kayıt üzerinde tekrar işlem yapmadan sayfayı yenileyin.',code:'ACTION_OUTCOME_UNVERIFIED'};
+  }
   async function act(action) {
     if (busy||!can(action)) return;
     const payload={action,version:item.version,...(['save','submit','approve','reanalyze'].includes(action)?values():{}),note:node('rwReason')?.value||''};
@@ -378,7 +415,8 @@ const ReviewWorkspace = (() => {
     document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=true);
     message(action==='reanalyze'?'Denetleniyor…':'İşlem sürüyor…');
     try {
-      const result=await request('/'+item.id+(action==='reanalyze'?'/reanalyze':'/action'),'POST',payload);
+      const actionItem={id:item.id,status:item.status,version:item.version,workflow:item.workflow};
+      const result=await performAction(actionItem,action,payload,action==='reanalyze'?'/reanalyze':'/action');
       if(result.error){
         const errorMessage = result.error === 'DUPLICATE_NOTE_REQUIRED'
           ? 'Bu kaydı mükerrer olarak kapatmak için ekip üyesi notuna veya işlem gerekçesine MÜKERRER yazmanız gerekiyor.'
@@ -395,7 +433,7 @@ const ReviewWorkspace = (() => {
         return;
       }
       if(action==='delete_draft'||action==='close_duplicate'||action==='dispute'){
-        await close(true);await load();
+        await close(true);await load({silent:true});
         message(action==='close_duplicate'
           ? 'Mükerrer kayıt aktif listenizden kaldırıldı.'
           : action==='dispute'
@@ -403,8 +441,9 @@ const ReviewWorkspace = (() => {
             : 'Taslak çöp kutusuna taşındı.');
         return;
       }
-      item=result.history; renderDetail(); message('İşlem tamamlandı.');
-      await load();
+      item=result.history; renderDetail();
+      message(result.outcomeVerified?'İşlem tamamlandı; sonuç sunucudan doğrulandı.':'İşlem tamamlandı.');
+      await load({silent:true});
     } finally {
       busy=false; node('detailModal').removeAttribute('aria-busy');
       document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=false);
@@ -461,7 +500,7 @@ const ReviewWorkspace = (() => {
     const failures = [];
     for (const row of selected) {
       message(`${ok + failed + 1}/${selected.length} kayıt işleniyor…`);
-      const result = await request('/' + row.id + '/action', 'POST', { action, version: row.version, note });
+      const result = await performAction(row, action, { action, version: row.version, note });
       if (result.error) {
         failed += 1;
         failures.push(`${row.questionText || row.id}: ${result.error}`);
@@ -472,7 +511,7 @@ const ReviewWorkspace = (() => {
     }
     busy = false;
     bulkActionChoice = '';
-    await load();
+    await load({silent:true});
     const summary = `${ok} kayıt ${bulkActionDoneText(action)}${failed ? `, ${failed} kayıt işlenemedi.` : '.'}`;
     message(failures.length ? `${summary}\n${failures.slice(0, 3).join('\n')}` : summary, Boolean(failed));
   }

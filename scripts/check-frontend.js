@@ -473,7 +473,9 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20261017-return-change-summary') && html.includes('/review-workspace.css?v=20261017-return-change-summary'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20261018-admin-action-recovery') && html.includes('/review-workspace.css?v=20261018-admin-action-recovery'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(workspaceScript.includes('REQUEST_OUTCOME_UNKNOWN') && workspaceScript.includes('performAction') && workspaceScript.includes('outcomeVerified'), 'Yonetim islemleri belirsiz ag sonucunu sunucudan dogrulamali.');
+assert(!html.includes('İnternet bağlantınızı kontrol edip tekrar deneyin'), 'Genel API hatasi kullanici internetini gercege aykiri sekilde suclamamali.');
 for (const marker of ['/change-summary', 'Geri gönderme ve düzeltme özeti', 'Yapılan düzeltmeler', 'Ekip üyesi notu', 'Ekip üyesi açıklaması']) {
   assert(workspaceScript.includes(marker) || html.includes(marker), `Geri gonderme ve duzeltme ayrimi marker eksik: ${marker}`);
 }

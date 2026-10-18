@@ -2748,8 +2748,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=20261017-return-change-summary">
-<script src="/review-workspace.js?v=20261017-return-change-summary"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20261018-admin-action-recovery">
+<script src="/review-workspace.js?v=20261018-admin-action-recovery"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -10696,7 +10696,7 @@ async function backfillHistoryTagImportQuestions(){
     if(maybeJob?.status==='running'||maybeJob?.status==='completed')return;
     historyTagImportState.applying=false;
     renderHistoryTagImport();
-    if(String(data.error||'').includes('Bağlantı tamamlanamadı')){
+    if(data.code==='REQUEST_OUTCOME_UNKNOWN'){
       setHistoryTagImportStatus('Soru aktarımı isteği kayıt altında kontrol edilecek. Sayfaya döndüğünüzde sistem otomatik devam etmeyi dener.','');
       return;
     }
@@ -11995,7 +11995,11 @@ async function api(method,url,body){
     if(me?.reviewWorkspacesEnabled&&Number.isInteger(data.version)&&currentResult?.id===data.id)currentResult.version=data.version;
     return data;
   }catch(e){
-    return {error:'Bağlantı tamamlanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.'};
+    return {
+      error:'İstek sunucuya ulaştırılamadı veya yanıt alınamadı. İşlem durumu kontrol ediliyor.',
+      code:'REQUEST_OUTCOME_UNKNOWN',
+      retryable:true
+    };
   }
 }
 const el=id=>document.getElementById(id);
