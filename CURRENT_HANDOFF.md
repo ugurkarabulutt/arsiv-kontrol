@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-19 Footer Keşif Mimarisi — Production Tamamlandı
+
+- Kullanıcının görsel onayıyla `codex/footer-discovery-preview` dalındaki footer
+  production'a alındı. Canlı footer navigasyonu `Keşfet` ve `Arşiv ve İlkeler`
+  olmak üzere iki gruptur; `Konu Rehberleri`, güçlü koleksiyon sayfaları, beş
+  ana konu bağlantısı ve ayrı yasal bağlantı satırı canlıdır.
+- Production öncesi `npm.cmd run check` başarılı, 234/234 test geçti. Dağıtılan
+  HEAD `2b8afe75443eb552f3ebf3b691c19ee93669f196`; footer runtime commit'i
+  `e0d30a1`.
+- Alan adına bağlanmadan test edilen production deployment
+  `dpl_9532y8ricbzd2ft4Hix4Gx8wgfEr` /
+  `https://arsiv-kontrol-osc9cohcm-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+- Canlı smoke: `/health` `ok`, root ve `/admin` `200`; root yeni
+  `20261018-footer-discovery-v1` asset markerını taşıyor ve production'a özgü
+  `noindex` başlığı yok. Admin `noindex, nofollow` ve `no-store` korumasını
+  sürdürüyor. İki footer grubu, Konu Rehberleri, kategori dizini, ana konu ve
+  yasal bağlantı markerları canlıda doğrulandı; eski footer markerı yok. Son bir
+  saatlik error log sorgusunda yeni deployment için hata bulunmadı.
+
 ## 2026-10-18 Footer Keşif Mimarisi — Preview Hazır
 
 - Dal `codex/footer-discovery-preview`; production footer değiştirilmedi.

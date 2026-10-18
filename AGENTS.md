@@ -3,6 +3,28 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-19
+
+- **Public footer keşif mimarisi production'a alındı:** Kullanıcının görsel
+  onayıyla preview'da doğrulanan iki gruplu footer canlıya taşındı. `Keşfet`
+  grubunda `Konu Rehberleri`, kategori dizini, öne çıkan, son yayımlanan, çok
+  okunan, arama ve soru sorma yolları; `Arşiv ve İlkeler` grubunda kurumsal ve
+  yayın ilkesi sayfaları bulunur. Allah'a Ulaşmayı Dilemek, Hidayet, Mürşid,
+  Zikir ve Teslimiyet, ayrı `En çok merak edilen konular` şeridinde site
+  genelinden iç bağlantı alır. Gizlilik, çerez, kullanım koşulları ve çerez
+  tercihleri ayrı yasal satırdadır. Production öncesi `npm.cmd run check`
+  234/234 başarılıdır. Dağıtılan HEAD
+  `2b8afe75443eb552f3ebf3b691c19ee93669f196`, runtime commit `e0d30a1`.
+  Alan adına bağlanmadan doğrulanan production deployment
+  `dpl_9532y8ricbzd2ft4Hix4Gx8wgfEr` /
+  `https://arsiv-kontrol-osc9cohcm-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health` `ok`; root ve `/admin` `200`. Public root yeni
+  `20261018-footer-discovery-v1` markerını taşıyor ve `noindex` başlığı yok;
+  admin `noindex, nofollow` ile `no-store` korumasını sürdürüyor. İki footer
+  grubu, rehber, kategori, ana konu ve yasal bağlantılar canlıda doğrulandı;
+  eski marker yok ve son bir saatlik error log sorgusunda hata bulunmadı.
+
 ## 2026-10-18
 
 - **Public footer keşif mimarisi preview olarak yenilendi:** Footer ana
