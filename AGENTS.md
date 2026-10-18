@@ -5,7 +5,7 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-18
 
-- **Mürşid konu rehberi yalnız noindex preview hattında hazırlandı:** Kullanıcı
+- **Mürşid konu rehberi production'a alındı:** Kullanıcı
   PDF'i esas alınarak `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`
   başlıklı, 14 bölümlü, 26 âyet atıflı rehber eklendi. URL
   `/konu-rehberi/mursid-nedir-kurana-gore-gorevi`; `mursid` kategorisinde
@@ -27,10 +27,16 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `origin/codex/feedback-resolution-20261010-safe`. Noindex preview deployment
   `dpl_AfGUTS68v1aH579wpsDZWu4xdLow` `READY`:
   `https://arsiv-kontrol-a5cfjiocp-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi`.
-  Dış kontrolde rehber dizini, makale ve üç WebP `200`; header ve meta robots
-  `noindex,nofollow`; dış 390/1440 px tarayıcı kontrolleri hatasızdır. Production
-  yeni rehber URL'si `404`; kullanıcı görsel onayı olmadan canlıya alınmayacak
-  ve Google dizine ekleme isteği gönderilmeyecektir.
+  Kullanıcı onayından sonra production deployment
+  `dpl_HyNYicgVbMnJ6FqEfQgB25ATdZgx` /
+  `https://arsiv-kontrol-9obc6pmr0-ugurkarabulutts-projects.vercel.app`
+  `READY` oldu ve `https://arsiv.ibrahimlive.ai` aliasına bağlandı. Canlı makale,
+  rehber dizini, sitemap ve üç WebP `200`; makale `index,follow`, canonical doğru,
+  sitemap yeni URL'yi içeriyor ve ana sayfada rehber kartı bulunmuyor. Dış 390 ve
+  1440 px kontrollerinde doğru responsive görseller, sıfır yatay taşma, sıfır
+  konsol hatası, beş ilgili rehber bağlantısı ve kaydırma sonrası 13/13 sağlam
+  rehber görseli doğrulandı. Search Console dizine ekleme isteği bu production
+  dağıtımında gönderilmedi.
 
 ## 2026-10-17
 

@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-18 Mürşid Konu Rehberi — Noindex Preview Hazır
+## 2026-10-18 Mürşid Konu Rehberi — Production Tamamlandı
 
 - Kullanıcı PDF'inden `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`
   rehberi hazırlandı. 14 bölüm, 26 âyet atfı ve PDF'teki öğreti ayrımları
@@ -19,9 +19,16 @@
   `origin/codex/feedback-resolution-20261010-safe`. Noindex Vercel preview
   `dpl_AfGUTS68v1aH579wpsDZWu4xdLow` `READY`:
   `https://arsiv-kontrol-a5cfjiocp-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi`.
-  Dış sayfa ve üç WebP `200`, `noindex,nofollow`; production rehber URL'si
-  `404`. Sonraki adım kullanıcı görsel/onay kontrolüdür. Açık onay olmadan
-  production deploy ve Search Console dizine ekleme yapılmayacaktır.
+  Kullanıcı onayından sonra production deployment
+  `dpl_HyNYicgVbMnJ6FqEfQgB25ATdZgx` /
+  `https://arsiv-kontrol-9obc6pmr0-ugurkarabulutts-projects.vercel.app`
+  `READY` oldu ve `https://arsiv.ibrahimlive.ai` aliasına bağlandı. Canlı rehber,
+  rehber dizini, sitemap ve üç WebP `200`; makale `index,follow`, canonical doğru,
+  sitemap yeni URL'yi içeriyor ve ana sayfada rehber kartı bulunmuyor. Dış 390 ve
+  1440 px Playwright kontrollerinde doğru 480/1280 görseller, sıfır yatay taşma,
+  sıfır konsol hatası, beş ilgili rehber bağlantısı ve kaydırma sonrası 13/13
+  sağlam rehber görseli doğrulandı. Search Console dizine ekleme isteği bu
+  production dağıtımının parçası olarak gönderilmedi.
 
 ## 2026-10-17 Geri Gönderme ve Düzeltme Özeti — Production Tamamlandı
 
