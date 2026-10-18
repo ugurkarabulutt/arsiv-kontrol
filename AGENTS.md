@@ -22,7 +22,16 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   mesajı verir. Tekli ve toplu işlemler aynı güvenli akışı kullanır. Gerçek HTTP
   testinde adminin kendi bekleyen kaydını geri göndermesi ve konferansa alması
   başarılı, kendi kaydını onaylaması `403`; zorunlu `npm.cmd run check` 233/233
-  başarılıdır.
+  başarılıdır. Runtime commit `f85683e`, push hedefi
+  `origin/codex/admin-review-actions-fix`. Test edilen production deployment
+  `dpl_89qG6yBcPLrtkkKbLjW4ZJE2QsPa` /
+  `https://arsiv-kontrol-n4gb8n05h-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health` ve `/admin` `200`; admin `noindex/no-store`, yeni cache
+  sürümü ve belirsiz sonuç doğrulama kodu mevcut, eski yanlış internet mesajı
+  yok, oturumsuz yönetim listesi `401`. Canlıda gerçek kullanıcı kaydını
+  değiştiren test yapılmadı; production DB kuralı salt-okunur fonksiyon
+  incelemesi ve gerçek HTTP entegrasyon testiyle doğrulandı.
 - **Mürşid konu rehberi production'a alındı:** Kullanıcı
   PDF'i esas alınarak `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`
   başlıklı, 14 bölümlü, 26 âyet atıflı rehber eklendi. URL

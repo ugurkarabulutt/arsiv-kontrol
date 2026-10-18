@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-18 Yönetici İşlem Güvenilirliği — Release Hazır
+## 2026-10-18 Yönetici İşlem Güvenilirliği — Production Tamamlandı
 
 - Yeni adminlerin bekleyen kayıtlarda `Düzeltmeye Gönder` ve özel bölüm
   kararlarında gördüğü sahte internet hatası üç katmanda ele alındı. Yönetim
@@ -17,8 +17,16 @@
   Doğrulama: `self_return_guard_removed=true`,
   `self_approval_guard_present=true`, `security_invoker=true`.
 - `npm.cmd run check` 233/233 başarılı; `git diff --check` yalnız mevcut CRLF
-  dönüşüm uyarılarını verdi. Gerçek kullanıcı kaydında yazma yapılmadı. Sıradaki
-  adım commit/push, Vercel production deploy ve canlı salt-okunur smoke testidir.
+  dönüşüm uyarılarını verdi. Runtime commit `f85683e`, push hedefi
+  `origin/codex/admin-review-actions-fix`. Production deployment
+  `dpl_89qG6yBcPLrtkkKbLjW4ZJE2QsPa`, URL
+  `https://arsiv-kontrol-n4gb8n05h-ugurkarabulutts-projects.vercel.app`, canlı
+  alias `https://arsiv.ibrahimlive.ai`; Vercel durumu `READY`.
+- Canlı smoke: `/health` ve `/admin` `200`, admin `noindex/no-store`, yeni
+  `20261018-admin-action-recovery` cache sürümü ve sonuç doğrulama kodu canlıda,
+  eski yanlış internet mesajı yok; oturumsuz yönetim API'si `401`. Son bir
+  saatlik error log taramasında yeni deployment için hata bulunmadı. Güvenli
+  admin test hesabı olmadığı için gerçek kullanıcı kaydında yazma yapılmadı.
 
 ## 2026-10-18 Mürşid Konu Rehberi — Production Tamamlandı
 
