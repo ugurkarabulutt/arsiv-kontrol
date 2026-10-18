@@ -1443,7 +1443,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261018-mursid-guide-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261018-footer-discovery-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1495,7 +1495,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261018-mursid-guide-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261018-footer-discovery-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
@@ -1513,7 +1513,7 @@ for (const marker of ['data-newsletter-form', 'data-newsletter-endpoint="/public
 for (const marker of ['data-cookie-banner hidden', 'data-cookie-reject', 'data-cookie-preferences', 'data-cookie-accept', 'data-cookie-modal hidden', 'dsca-cookie-consent:v1', 'bindCookieConsent', 'analyticsConsentGranted', 'clearAnalyticsStorage', 'X-Analytics-Consent', 'consentVersion: cookieConsentVersion']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public cerez tercihi marker eksik: ${marker}`);
 }
-for (const marker of ['.pa-cookie-banner', '.pa-cookie-actions', '.pa-cookie-modal', '.pa-cookie-dialog', '.pa-newsletter', '.pa-newsletter-kicker', '.pa-newsletter-form-heading', '.pa-newsletter-input-row', '.pa-footer-preferences', 'font-size: 16px']) {
+for (const marker of ['.pa-cookie-banner', '.pa-cookie-actions', '.pa-cookie-modal', '.pa-cookie-dialog', '.pa-newsletter', '.pa-newsletter-kicker', '.pa-newsletter-form-heading', '.pa-newsletter-input-row', '.pa-footer-topics', '.pa-footer-topic-links', '.pa-footer-link-list', '.pa-footer-legal', '.pa-footer-preferences', 'font-size: 16px']) {
   assert(publicCss.includes(marker), `Public cerez/abonelik CSS marker eksik: ${marker}`);
 }
 for (const marker of ['--pa-install-banner-height', ':root[data-pa-install-visible="true"]:not([data-pa-scrolled="true"])', ':root[data-pa-scrolled="true"] .pa-install-banner', '.pa-install-banner[hidden]', '.pa-install-action', '.pa-install-help']) {
@@ -1784,7 +1784,10 @@ const activeStatsSection = homePreview.slice(activeStatsStart, activeStatsEnd);
 assert(!activeStatsSection.includes('href=') && !activeStatsSection.includes('Arşive Git') && !activeStatsSection.includes('pa-active-stats-link'), 'Public home aktif arsiv sayacinda arsiv yonlendirme olmamali.');
 assert(!homePreview.includes('Kavram Haritası'), 'Public home Kavram Haritasi bolumu geri gelmemeli.');
 assert(!homePreview.includes('Ana Kategoriler'), 'Public home ana kategori vitrini geri gelmemeli.');
-assert(!homePreview.includes('>Konular</a>') && !homePreview.includes('>Kategoriler</a>') && !homePreview.includes('>Konular</span>'), 'Public ana gezinmede Konular/Kategoriler gorunmemeli.');
+const publicHeaderStart = homePreview.indexOf('<header class="pa-header"');
+const publicHeaderEnd = homePreview.indexOf('</header>', publicHeaderStart) + '</header>'.length;
+const publicHeader = homePreview.slice(publicHeaderStart, publicHeaderEnd);
+assert(!publicHeader.includes('>Konular</a>') && !publicHeader.includes('>Kategoriler</a>') && !publicHeader.includes('>Konular</span>'), 'Public ana gezinmede Konular/Kategoriler gorunmemeli.');
 assert(homePreview.includes('href="/public-preview/arama#arama"'), 'Public ana gezinmede arama kapisi gorunmeli.');
 assert(!homePreview.includes('Arşivin tamamına buradan ulaşabilirsiniz.'), 'Public home eski hacimli arsiv banner metnini icermemeli.');
 assert(!homePreview.includes('Tüm soru ve cevapları tek sayfada görmek için Arşiv bölümüne geçin.'), 'Public home eski hacimli arsiv banner aciklamasini icermemeli.');
@@ -2019,7 +2022,7 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
 for (const marker of ['--pa-answer-cta-text: #FFFFFF;', '--pa-answer-cta-text: #0F4930;', '--pa-answer-cta-shine: rgb(255 253 247 / 0.28);', 'color: var(--pa-answer-cta-text);', 'var(--pa-answer-cta-shine)']) {
   assert(publicCss.includes(marker), `Public cevap CTA kontrast standardi eksik: ${marker}`);
 }
-assert(publicRendererSource.includes("20261018-mursid-guide-v1"), 'Public arsiv CSS cache anahtari yeni Mursid rehberi icin yenilenmeli.');
+assert(publicRendererSource.includes("20261018-footer-discovery-v1"), 'Public arsiv CSS cache anahtari yeni footer tasarimi icin yenilenmeli.');
 for (const marker of ['.pa-cta-visual', '.pa-cta-content', '.pa-cta-kicker', '.pa-cta-button-icon', 'object-position: 66% center', 'min-height: 420px']) {
   assert(publicCss.includes(marker), `Public soru CTA gorsel CSS marker eksik: ${marker}`);
 }

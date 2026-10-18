@@ -5,6 +5,18 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-18
 
+- **Public footer keşif mimarisi preview olarak yenilendi:** Footer ana
+  navigasyonu yalnız `Keşfet` ve `Arşiv ve İlkeler` başlıklarında toplandı.
+  `Konu Rehberleri`, kategori dizini, öne çıkan, son yayımlanan ve çok okunan
+  koleksiyonları `Keşfet` grubuna eklendi; gizlilik, çerez ve kullanım
+  bağlantıları ayrı küçük yasal satıra taşındı. SEO için bütün kategori
+  envanteri footer'a yığılmadı; indexlenebilir ana omurgadan Allah'a Ulaşmayı
+  Dilemek, Hidayet, Mürşid, Zikir ve Teslimiyet ayrı `En çok merak edilen
+  konular` şeridinde site genelinden bağlantı alır. Değişiklik production'a
+  alınmadı; kullanıcı görsel onayı için noindex preview akışındadır. Zorunlu
+  `npm.cmd run check` 234/234 başarılıdır. Yerel Playwright kontrolünde 390,
+  768 ve 1440 px genişliklerde iki navigasyon grubu, beş ana konu ve dört yasal
+  aksiyon doğrulandı; yatay/metin taşması, kolon çakışması ve konsol hatası yok.
 - **Yönetici geri gönderme ve özel bölüm işlemleri kalıcı olarak düzeltildi:**
   Yönetim alanında bir adminin kendisine atanmış veya kendi kaydı olan bekleyen
   içeriği `Düzeltmeye Gönder` ile geri çevirmesi, hem uygulama politikasındaki

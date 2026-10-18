@@ -18,7 +18,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261018-mursid-guide-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261018-footer-discovery-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -586,34 +586,62 @@ function footer() {
           <p class="pa-newsletter-status" data-newsletter-status aria-live="polite"></p>
         </form>
       </section>
+      <section class="pa-footer-topics" aria-labelledby="pa-footer-topics-title">
+        <div class="pa-footer-topics-heading">
+          <span class="pa-footer-topics-icon" aria-hidden="true">${iconSvg('topics')}</span>
+          <div>
+            <small>Arşivde öne çıkan başlıklar</small>
+            <strong id="pa-footer-topics-title">En çok merak edilen konular</strong>
+          </div>
+        </div>
+        <nav class="pa-footer-topic-links" aria-label="Öne çıkan konular">
+          <a href="${PREVIEW_BASE}/kategori/allaha-ulasmayi-dilemek">Allah’a Ulaşmayı Dilemek</a>
+          <a href="${PREVIEW_BASE}/kategori/hidayet">Hidayet</a>
+          <a href="${PREVIEW_BASE}/kategori/mursid">Mürşid</a>
+          <a href="${PREVIEW_BASE}/kategori/zikir">Zikir</a>
+          <a href="${PREVIEW_BASE}/kategori/teslimiyet">Teslimiyet</a>
+        </nav>
+        <a class="pa-footer-topics-all" href="${PREVIEW_BASE}/kategoriler">Tüm kategoriler ${iconSvg('arrow-right', 'pa-button-icon')}</a>
+      </section>
       <div class="pa-footer-main">
         <div class="pa-footer-brand">
           <a class="pa-logo" href="${publicArchiveHomeHref()}">${brandLogo()}</a>
           <p>${escapeHtml(publicArchiveFixtures.brand.sentence)}</p>
         </div>
         <div class="pa-footer-groups">
-          <nav class="pa-footer-links" aria-label="Arşiv bağlantıları">
-            <strong>Arşiv</strong>
-            <a href="${PREVIEW_BASE}/arsiv">Tüm Sorular</a>
-            <a href="${PREVIEW_BASE}/arama#arama">Arama</a>
-            <a href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+          <nav class="pa-footer-links" aria-label="Keşfet">
+            <strong>Keşfet</strong>
+            <div class="pa-footer-link-list">
+              <a href="${PREVIEW_BASE}/arsiv">Tüm Sorular</a>
+              <a href="${PREVIEW_BASE}/konu-rehberleri">Konu Rehberleri</a>
+              <a href="${PREVIEW_BASE}/kategoriler">Kategoriler</a>
+              <a href="${PREVIEW_BASE}/one-cikan-sorular">Öne Çıkan Sorular</a>
+              <a href="${PREVIEW_BASE}/son-yayinlanan-sorular">Son Yayınlananlar</a>
+              <a href="${PREVIEW_BASE}/cok-okunan-cevaplar">Çok Okunan Cevaplar</a>
+              <a href="${PREVIEW_BASE}/arama#arama">Arama</a>
+              <a href="${PREVIEW_BASE}/soru-sor">Soru Sor</a>
+            </div>
           </nav>
-          <nav class="pa-footer-links" aria-label="Bilgilendirme">
-            <strong>Bilgi</strong>
-            <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
-            <a href="${PREVIEW_BASE}/nasil-kullanilir">Nasıl Kullanılır</a>
-            <a href="${PREVIEW_BASE}/yayin-ilkeleri">Yayın İlkeleri</a>
-            <a href="${PREVIEW_BASE}/kaynak-ve-duzeltme-politikasi">Kaynak ve Düzeltme</a>
-            <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
-            <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
-            <a href="${PREVIEW_BASE}/cerez-politikasi">Çerez Politikası</a>
-            <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
+          <nav class="pa-footer-links" aria-label="Arşiv ve ilkeler">
+            <strong>Arşiv ve İlkeler</strong>
+            <div class="pa-footer-link-list">
+              <a href="${PREVIEW_BASE}/hakkimizda">Hakkımızda</a>
+              <a href="${PREVIEW_BASE}/nasil-kullanilir">Nasıl Kullanılır</a>
+              <a href="${PREVIEW_BASE}/yayin-ilkeleri">Yayın İlkeleri</a>
+              <a href="${PREVIEW_BASE}/kaynak-ve-duzeltme-politikasi">Kaynak ve Düzeltme</a>
+              <a href="${PREVIEW_BASE}/iletisim">İletişim</a>
+            </div>
           </nav>
         </div>
       </div>
       <div class="pa-footer-bottom">
         <p class="pa-copyright">© 2026 Dini Sorular ve Cevaplar Arşivi. Tüm hakları saklıdır.</p>
-        <button type="button" class="pa-footer-preferences" data-cookie-preferences-open>Çerez tercihleri</button>
+        <nav class="pa-footer-legal" aria-label="Yasal bağlantılar">
+          <a href="${PREVIEW_BASE}/gizlilik">Gizlilik</a>
+          <a href="${PREVIEW_BASE}/cerez-politikasi">Çerez Politikası</a>
+          <a href="${PREVIEW_BASE}/kullanim-kosullari">Kullanım Koşulları</a>
+          <button type="button" class="pa-footer-preferences" data-cookie-preferences-open>Çerez tercihleri</button>
+        </nav>
       </div>
     </footer>
   `;

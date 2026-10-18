@@ -99,8 +99,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261018-mursid-guide-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261018-mursid-guide-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261018-footer-discovery-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261018-footer-discovery-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -148,7 +148,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261018-mursid-guide-v1/);
+  assert.match(home, /app-icon-128\.webp\?v=20261018-footer-discovery-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -261,6 +261,11 @@ test('public preview output avoids internal and fake feature language', () => {
 
 test('public preview uses final handoff assets and icon system', () => {
   const home = renderPublicArchivePreviewRoute('/public-preview').html;
+  const headerStart = home.indexOf('<header class="pa-header"');
+  const headerEnd = home.indexOf('</header>', headerStart) + '</header>'.length;
+  const mobileNavStart = home.indexOf('<nav class="pa-mobile-nav"');
+  const mobileNavEnd = home.indexOf('</nav>', mobileNavStart) + '</nav>'.length;
+  const navigationHtml = home.slice(headerStart, headerEnd) + home.slice(mobileNavStart, mobileNavEnd);
   assert.match(home, /\/public-preview\/assets\/arsiv-logo-mark-80\.webp/);
   assert.match(home, /class="pa-logo-mark"/);
   assert.match(home, /class="pa-logo-text"/);
@@ -272,7 +277,7 @@ test('public preview uses final handoff assets and icon system', () => {
   assert.match(home, /href="\/public-preview\/hesabim"/);
   assert.match(home, />Ar\u015fiv<\/span>/);
   assert.match(home, />Ara<\/span>/);
-  assert.doesNotMatch(home, />Konular<\/span>|>Konular<\/a>|>Kategoriler<\/a>/);
+  assert.doesNotMatch(navigationHtml, />Konular<\/span>|>Konular<\/a>|>Kategoriler<\/a>/);
   assert.doesNotMatch(home, /<strong>Ana Başlıklar<\/strong>|<strong>Kavramlar<\/strong>/);
   assert.match(home, /class="pa-mobile-nav"/);
   assert.match(home, /data-active-index="0"/);
@@ -630,6 +635,7 @@ test('archive selected category shows its questions immediately', () => {
 
 test('public unavailable mode keeps site shell without fixture questions', () => {
   const result = renderPublicArchiveUnavailableRoute('/', {}, { basePath: '' });
+  const mainHtml = result.html.slice(0, result.html.indexOf('<footer class="pa-footer">'));
 
   assert.equal(result.status, 200);
   assert.match(result.html, /Dini Sorular ve Cevaplar Arşivi/);
@@ -637,7 +643,7 @@ test('public unavailable mode keeps site shell without fixture questions', () =>
   assert.match(result.html, /<meta name="robots" content="noindex,nofollow">/);
   assert.doesNotMatch(result.html, /Hidayet yolu nasıl başlar\?/);
   assert.doesNotMatch(result.html, /Arşiv geçici olarak hazırlanıyor/);
-  assert.doesNotMatch(result.html, /Öne Çıkan Sorular/);
+  assert.doesNotMatch(mainHtml, /Öne Çıkan Sorular/);
   assert.doesNotMatch(result.html, /<link rel="canonical"/);
 
   const archive = renderPublicArchiveUnavailableRoute('/arsiv', {}, { basePath: '' });
@@ -1061,6 +1067,27 @@ test('question cards are whole-card navigable without helpful voting', () => {
   assert.doesNotMatch(home, /<[^>]+class="[^"]*pa-question-excerpt/);
   assert.doesNotMatch(home, /Kalbin Allah’a yönelme talebi; dua, tercih ve istikametle canlı tutulur\./);
   assert.doesNotMatch(home, /Faydalı oldu mu|helpful voting/);
+});
+
+test('footer keeps all navigation in two clear groups and promotes strong discovery paths', () => {
+  const html = renderPublicArchivePreviewRoute('/public-preview').html;
+  const footerHtml = html.slice(html.indexOf('<footer class="pa-footer">'));
+  assert.match(footerHtml, /aria-label="Keşfet"/);
+  assert.match(footerHtml, /aria-label="Arşiv ve ilkeler"/);
+  assert.equal((footerHtml.match(/class="pa-footer-links"/g) || []).length, 2);
+  assert.match(footerHtml, /href="\/public-preview\/konu-rehberleri">Konu Rehberleri/);
+  assert.match(footerHtml, /href="\/public-preview\/kategoriler">Kategoriler/);
+  assert.match(footerHtml, /href="\/public-preview\/one-cikan-sorular">Öne Çıkan Sorular/);
+  assert.match(footerHtml, /href="\/public-preview\/son-yayinlanan-sorular">Son Yayınlananlar/);
+  assert.match(footerHtml, /href="\/public-preview\/cok-okunan-cevaplar">Çok Okunan Cevaplar/);
+  assert.match(footerHtml, /aria-label="Öne çıkan konular"/);
+  for (const slug of ['allaha-ulasmayi-dilemek', 'hidayet', 'mursid', 'zikir', 'teslimiyet']) {
+    assert.match(footerHtml, new RegExp(`/public-preview/kategori/${slug}`));
+  }
+  assert.match(footerHtml, /aria-label="Yasal bağlantılar"/);
+  assert.match(footerHtml, /Gizlilik/);
+  assert.match(footerHtml, /Çerez Politikası/);
+  assert.match(footerHtml, /Kullanım Koşulları/);
 });
 
 test('topic guide index exposes every guide as a crawlable route without loading guide bodies', () => {

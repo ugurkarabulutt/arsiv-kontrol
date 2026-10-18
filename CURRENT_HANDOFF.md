@@ -1,5 +1,18 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-18 Footer Keşif Mimarisi — Preview Hazır
+
+- Dal `codex/footer-discovery-preview`; production footer değiştirilmedi.
+- Footer navigasyonu iki başlığa indirildi: `Keşfet` ve `Arşiv ve İlkeler`.
+  Konu Rehberleri ile önemli koleksiyon sayfaları Keşfet grubunda; yasal
+  bağlantılar alt satırda. Beş indexlenebilir ana kategori ayrı, sade bir
+  `En çok merak edilen konular` şeridinde iç bağlantı alır.
+- `npm.cmd run check` 234/234 başarılı. Playwright 390x844, 768x1024 ve
+  1440x900 kontrollerinde yatay/metin taşması, grup çakışması ve konsol hatası
+  yok; iki grup, beş konu ve dört yasal aksiyon eksiksizdir.
+- Sıradaki adım preview commit/push, noindex Vercel preview deploy ve dış URL
+  smoke kontrolüdür. Kullanıcı onayı olmadan production'a alınmamalıdır.
+
 ## 2026-10-18 Yönetici İşlem Güvenilirliği — Production Tamamlandı
 
 - Yeni adminlerin bekleyen kayıtlarda `Düzeltmeye Gönder` ve özel bölüm
