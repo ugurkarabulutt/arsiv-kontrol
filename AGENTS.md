@@ -3,6 +3,35 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-18
+
+- **Mürşid konu rehberi yalnız noindex preview hattında hazırlandı:** Kullanıcı
+  PDF'i esas alınarak `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`
+  başlıklı, 14 bölümlü, 26 âyet atıflı rehber eklendi. URL
+  `/konu-rehberi/mursid-nedir-kurana-gore-gorevi`; `mursid` kategorisinde
+  birincil rehberdir. Ana sayfa konu vitrinine eklenmedi; 13 rehberin tamamını
+  gösteren `/konu-rehberleri` dizininde ilk sıradadır. Her rehberde tüm yazıları
+  tekrarlamak yerine 4-6 semantik ilgili rehber gösterilir; Mürşid, Hacet Namazı,
+  Allah'a Ulaşmayı Dilemek, Hidayet, Mürşide Tâbiiyet ve Tasavvuf rehberleri
+  arasında karşılıklı iç bağlantılar kuruldu.
+- **Yüzü görünmeyen özgün rehber görseli üretildi:** Mürşid arkadan, yüzü tamamen
+  görünmeden; rehberlik vurgusu kişiden değil aydınlık yol ve ufuktan gelecek
+  biçimde tasvir edildi. 480/720/1280 px WebP dosyaları sırasıyla 49.582,
+  101.220 ve 250.014 bayttır; mobil, tablet ve masaüstünde ayrı kaynak yüklenir.
+  Konu rehberleri dizini tüm rehberler için görsel listeye dönüştürüldü; makale
+  üst alanları responsive görselle zenginleştirildi. `npm.cmd run check` 232/232
+  başarılıdır. Playwright 390x844, 768x1024 ve 1440x900 kontrollerinde doğru
+  görsel varyantı, 13 eksiksiz rehber görseli, 5 ilgili bağlantı, sıfır yatay
+  taşma ve sıfır konsol hatası doğrulandı.
+- Runtime commit `94674d1`, push hedefi
+  `origin/codex/feedback-resolution-20261010-safe`. Noindex preview deployment
+  `dpl_AfGUTS68v1aH579wpsDZWu4xdLow` `READY`:
+  `https://arsiv-kontrol-a5cfjiocp-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi`.
+  Dış kontrolde rehber dizini, makale ve üç WebP `200`; header ve meta robots
+  `noindex,nofollow`; dış 390/1440 px tarayıcı kontrolleri hatasızdır. Production
+  yeni rehber URL'si `404`; kullanıcı görsel onayı olmadan canlıya alınmayacak
+  ve Google dizine ekleme isteği gönderilmeyecektir.
+
 ## 2026-10-17
 
 - **Yönetici işlem notu ekip çalışmasından ayrıldı:** Admin veya süper admin

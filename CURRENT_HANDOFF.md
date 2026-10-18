@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-18 Mürşid Konu Rehberi — Noindex Preview Hazır
+
+- Kullanıcı PDF'inden `Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?`
+  rehberi hazırlandı. 14 bölüm, 26 âyet atfı ve PDF'teki öğreti ayrımları
+  korunur. Rehber `mursid` kategorisinin birincil rehberidir.
+- Yeni rehber ana sayfa konu vitrinine eklenmedi. `/konu-rehberleri` 13 rehberi
+  özgün görsellerle listeler; yeni rehber ilk sıradadır. Makale sonlarında tüm
+  rehberleri tekrarlamak yerine 4-6 semantik bağlantı gösterilir ve ilgili beş
+  eski rehberden yeni Mürşid rehberine karşılıklı bağlantı vardır.
+- Yüzü görünmeyen, arkadan tasvir edilmiş mürşid ve aydınlık yol kompozisyonu
+  480/720/1280 px WebP olarak responsive kullanılır. Dosya boyutları 49.582,
+  101.220 ve 250.014 bayttır.
+- `npm.cmd run check` 232/232 başarılı. Yerel 390x844, 768x1024 ve 1440x900
+  Playwright kontrollerinde doğru görsel varyantları, 13/13 sağlam dizin görseli,
+  sıfır taşma ve sıfır konsol hatası doğrulandı.
+- Runtime commit `94674d1`, push hedefi
+  `origin/codex/feedback-resolution-20261010-safe`. Noindex Vercel preview
+  `dpl_AfGUTS68v1aH579wpsDZWu4xdLow` `READY`:
+  `https://arsiv-kontrol-a5cfjiocp-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/mursid-nedir-kurana-gore-gorevi`.
+  Dış sayfa ve üç WebP `200`, `noindex,nofollow`; production rehber URL'si
+  `404`. Sonraki adım kullanıcı görsel/onay kontrolüdür. Açık onay olmadan
+  production deploy ve Search Console dizine ekleme yapılmayacaktır.
+
 ## 2026-10-17 Geri Gönderme ve Düzeltme Özeti — Production Tamamlandı
 
 - Ekip üyesinin onaya gönderirken yazdığı eski `Kontrol notu` ifadesi
