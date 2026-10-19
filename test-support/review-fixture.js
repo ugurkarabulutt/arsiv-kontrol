@@ -7,7 +7,8 @@ const { createReviewWorkflow } = require('../review-workflow');
 const root = path.join(__dirname,'..');
 const users = ['user','admin','super_admin'].map((role,i)=>({id:`10000000-0000-4000-8000-00000000000${i+1}`,role,username:role,name:`${role==='user'?'Ekip':role==='admin'?'Yönetici':'Süper Yönetici'} Örnek`,reviewWorkspacesEnabled:true}));
 const mapHistory=h=>({id:h.id,userId:h.user_id,name:h.name,filename:h.filename,status:h.status,questionText:h.question_text,
-  correctedText:h.corrected_text,originalText:h.original_text,tags:h.tags,submissionNote:h.submission_note,createdAt:h.created_at});
+  correctedText:h.corrected_text,originalText:h.original_text,tags:h.tags,submissionNote:h.submission_note,
+  approvedBy:h.approved_by,approvedAt:h.approved_at,createdAt:h.created_at});
 
 async function createFixture() {
   const db = new PGlite();
@@ -26,6 +27,7 @@ async function createFixture() {
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260924090000_member_rejected_record_actions.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260924103000_remove_member_rejected_dismiss.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018202757_allow_admin_return_own_records.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261019045303_allow_admin_self_approval.sql'),'utf8'));
   for(const user of users)await db.query('insert into users(id,role,username,name,password) values($1,$2,$3,$4,$5)',[user.id,user.role,user.username,user.name,'test-only']);
   const rows=[];
   for(let i=0;i<65;i++){

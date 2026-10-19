@@ -60,11 +60,12 @@ test('legacy split chunk drafts never appear as editable member drafts',async()=
   assert.equal(list.data.count,0);
   assert.equal((await request('/api/review/'+chunk.id,'user','member')).status,404);
 });
-test('old mutation endpoint requires version and cannot bypass role/approval safeguards',async()=>{
+test('old mutation endpoint requires version and follows current role and approval safeguards',async()=>{
   const h=fixture.rows.find(row=>row.user_id===fixture.users[1].id&&row.status==='geri_gonderildi');
   assert.equal((await request(`/api/history/${h.id}/submit`,'admin','member',{})).status,409);
   const saved=await request(`/api/history/${h.id}/submit`,'admin','member',{version:0});assert.equal(saved.status,200);assert.equal(saved.data.version,1);
-  assert.equal((await request(`/api/history/${h.id}/approve`,'admin','management',{version:1})).status,403);
+  const approved=await request(`/api/history/${h.id}/approve`,'admin','management',{version:1});
+  assert.equal(approved.status,200);assert.equal(approved.data.status,'onaylandi');
   assert.equal((await request('/api/history/submit-merged','admin','member',{sourceIds:[h.id]})).status,409);
 });
 test('old submit endpoint is idempotent for records already past draft',async()=>{
@@ -269,7 +270,7 @@ test('management can filter and act on special holding sections',async()=>{
   assert.ok(!list.data.items[0].allowedActions.includes('dergah'));
 });
 
-test('admins can return or classify their own pending records but still cannot self-approve',async()=>{
+test('admins can return, classify and approve their own pending records with audit history',async()=>{
   const admin=fixture.users.find(user=>user.role==='admin');
   const ids=[];
   try {
@@ -281,7 +282,7 @@ test('admins can return or classify their own pending records but still cannot s
     const first=await request(`/api/review/${ids[0]}`,'admin','management');
     assert.equal(first.status,200);
     assert.ok(first.data.allowedActions.includes('return'));
-    assert.ok(!first.data.allowedActions.includes('approve'));
+    assert.ok(first.data.allowedActions.includes('approve'));
     const returned=await request(`/api/review/${ids[0]}/action`,'admin','management',{
       action:'return',version:first.data.version,note:'Cevabın kaynakla yeniden karşılaştırılması gerekiyor.'
     });
@@ -295,10 +296,17 @@ test('admins can return or classify their own pending records but still cannot s
     });
     assert.equal(conference.status,200);
     assert.equal(conference.data.history.status,'konferanslar');
+    assert.ok(conference.data.history.allowedActions.includes('approve'));
     const selfApproval=await request(`/api/review/${ids[1]}/action`,'admin','management',{
       action:'approve',version:conference.data.history.version
     });
-    assert.equal(selfApproval.status,403);
+    assert.equal(selfApproval.status,200);
+    assert.equal(selfApproval.data.history.status,'onaylandi');
+    assert.equal(selfApproval.data.history.approvedBy,admin.name);
+    const revision=(await fixture.db.query("select actor_id from history_revisions where history_id=$1 and action='approve'",[ids[1]])).rows[0];
+    assert.equal(revision.actor_id,admin.id);
+    const log=(await fixture.db.query("select actor_user_id,target_status_after from admin_action_log where target_id=$1 and action='review.approve'",[ids[1]])).rows[0];
+    assert.deepEqual(log,{actor_user_id:admin.id,target_status_after:'onaylandi'});
   } finally {
     await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[ids]);
     await fixture.db.query('delete from alerts where history_id=any($1::uuid[])',[ids]);

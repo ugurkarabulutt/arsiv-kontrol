@@ -30,7 +30,7 @@ function recordActions(user, row, workspace) {
     const actions = ['trash'];
     if (status === 'taslak') return actions;
     if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && !disputed) actions.push('save');
-    if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && user.id !== row.user_id && user.id !== row.assignee_id && !disputed) actions.push('approve');
+    if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && !disputed) actions.push('approve');
     if (['bekliyor', 'teyit_bekliyor', 'dergah_sorulari', 'konferanslar', 'onaylandi'].includes(status)) actions.push('return');
     if (disputed) return ['trash','resolve_dispute'];
     actions.push('reject', 'review', 'dergah', 'conference', 'pending', 'archive');

@@ -51,6 +51,9 @@ before(async () => {
   const allowAdminReturnOwnMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261018202757_allow_admin_return_own_records.sql'),'utf8');
   await db.exec(allowAdminReturnOwnMigration);
   await db.exec(allowAdminReturnOwnMigration);
+  const allowAdminSelfApprovalMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261019045303_allow_admin_self_approval.sql'),'utf8');
+  await db.exec(allowAdminSelfApprovalMigration);
+  await db.exec(allowAdminSelfApprovalMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -102,15 +105,20 @@ test('submit validates all fields; incomplete draft can still be saved', async (
   await assert.rejects(change(h,'user','member','save',{questionText:'Gizli değişiklik?'}),/INVALID_STATUS/);
   h=await change(h,'user','member','withdraw');assert.equal(h.status,'geri_gonderildi');
 });
-test('both admin roles cannot approve themselves but can return their own work for correction', async () => {
+test('both admin roles can approve their own work with complete audit records', async () => {
   for (const owner of ['admin','super']) {
     let h=await seed(owner,'taslak',owner+'?');
     await assert.rejects(change(h,owner,'management','submit'),/MEMBER_WORKSPACE_REQUIRED/);
     h=await change(h,owner,'member','submit');
-    await assert.rejects(change(h,owner,'management','approve'),/SELF_APPROVAL_FORBIDDEN/);
-    assert.ok(recordActions({id:ids[owner],role:owner==='super'?'super_admin':'admin'},h,'management').includes('return'));
-    h=await change(h,owner,'management','return',{note:'Cevap düzeltilmek üzere ekip üyesine geri gönderildi.'});
-    assert.equal(h.status,'geri_gonderildi');
+    const actor={id:ids[owner],role:owner==='super'?'super_admin':'admin'};
+    assert.ok(recordActions(actor,h,'management').includes('approve'));
+    h=await change(h,owner,'management','approve');
+    assert.equal(h.status,'onaylandi');
+    assert.equal(h.approved_by,owner==='admin'?'Elçin Test':'super');
+    const revision=(await db.query("select actor_id from history_revisions where history_id=$1 and action='approve'",[h.id])).rows[0];
+    assert.equal(revision.actor_id,ids[owner]);
+    const log=(await db.query("select actor_user_id,target_status_after from admin_action_log where target_id=$1 and action='review.approve'",[h.id])).rows[0];
+    assert.deepEqual(log,{actor_user_id:ids[owner],target_status_after:'onaylandi'});
   }
 });
 test('approve saves edited question, answer and tags in the same atomic revision', async () => {
