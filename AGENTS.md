@@ -5,6 +5,28 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-19
 
+- **Adminlerin kendi kayıtlarını onaylama yasağı kaldırıldı:** Kullanıcı kararı
+  doğrultusunda admin ve süper adminler, sahibi veya atanmış kişisi oldukları
+  kayıtları Yönetim alanından onaylayabilir. `review-policy.js` kendi kaydı için
+  de `approve` aksiyonunu üretir. Supabase CLI ile oluşturulan idempotent
+  `20261019045303_allow_admin_self_approval.sql` migrationı, merkezi
+  `review_history_change` fonksiyonundan yalnız `SELF_APPROVAL_FORBIDDEN`
+  kontrolünü kaldırır ve mevcut satırları değiştirmez. Uygun durum, sürüm
+  çakışması, yönetim alanı ve sahiplik itirazı korumaları sürer. Normal onayın
+  işlem notu istisnası korunurken onaylayan kişi `history.approved_by`, tam
+  önce/sonra değişiklik `history_revisions` ve işlem `admin_action_log` içinde
+  kaydedilmeye devam eder. Admin ve süper admin için DB/HTTP regresyonları
+  eklendi; hedefli 49/49 ve zorunlu `npm.cmd run check` 234/234 başarılıdır.
+  Runtime commit `9901432`, dal `codex/allow-admin-self-approval`. Migration
+  canlı `arsiv-kontrol` Supabase projesine uygulandı; iki eski self guardın
+  bulunmadığı ve fonksiyonun `security invoker` kaldığı sorguyla doğrulandı.
+  Production deployment `dpl_83bXusp4DcTX6iRvtuPm8yKEBpCT` /
+  `https://arsiv-kontrol-d9xgedkll-ugurkarabulutts-projects.vercel.app`
+  `READY` olarak `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi. Canlı
+  smoke kontrolleri geçti. Ayrıca canlı DB'de sentetik kendi-kaydını-onaylama
+  işlemi; durum, `approved_by`, revision ve admin logu birlikte doğrulanarak
+  tamamen `ROLLBACK` edildi (`rollback_clean=true`).
+
 - **Public footer keşif mimarisi production'a alındı:** Kullanıcının görsel
   onayıyla preview'da doğrulanan iki gruplu footer canlıya taşındı. `Keşfet`
   grubunda `Konu Rehberleri`, kategori dizini, öne çıkan, son yayımlanan, çok

@@ -1,5 +1,35 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-19 Admin Kendi Kaydını Onaylama — Production Tamamlandı
+
+- Kullanıcı kararıyla admin ve süper adminlerin sahibi veya atanmış kişisi
+  oldukları kayıtları Yönetim alanından onaylamasını engelleyen kural kaldırıldı.
+  Onay işlemi yine yalnız yönetim alanında, uygun durum ve güncel kayıt sürümüyle
+  yapılır; normal onay için işlem notu istisnası korunur.
+- `recordActions` artık kendi kaydında da `approve` aksiyonunu gösterir. Yeni
+  idempotent Supabase migrationı
+  `20261019045303_allow_admin_self_approval.sql`, merkezi
+  `review_history_change` fonksiyonundaki `SELF_APPROVAL_FORBIDDEN` kontrolünü
+  kaldırır; satır/veri değiştirmez.
+- Denetim izi zayıflatılmadı: onaylayan kişi `history.approved_by` alanına,
+  değişiklik `history_revisions` tablosuna ve yönetim işlemi
+  `admin_action_log` tablosuna yazılır. Admin ve süper admin için veritabanı ve
+  HTTP regresyon testleri eklendi. Hedefli 49/49, zorunlu `npm.cmd run check`
+  234/234 başarılıdır.
+- Runtime commit `9901432`, dal `codex/allow-admin-self-approval` ve push hedefi
+  `origin/codex/allow-admin-self-approval`. Migration canlı `arsiv-kontrol`
+  Supabase projesine uygulandı. Salt-okunur doğrulamada self-approval ve
+  self-return guardları yok, fonksiyon `security invoker` durumunda.
+- Production deployment `dpl_83bXusp4DcTX6iRvtuPm8yKEBpCT` /
+  `https://arsiv-kontrol-d9xgedkll-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health`, root ve `/admin` `200`; admin `noindex/no-store`, yetkisiz
+  review API `401`.
+- Canlı veritabanında sentetik admin ve kayıt aynı transaction içinde
+  oluşturulup kendi kaydını onaylama, `approved_by`, revision ve admin işlem
+  logu birlikte doğrulandı; işlem `ROLLBACK` edildi ve geçici kayıtların
+  kalmadığı `rollback_clean=true` ile teyit edildi.
+
 ## 2026-10-19 Footer Keşif Mimarisi — Production Tamamlandı
 
 - Kullanıcının görsel onayıyla `codex/footer-discovery-preview` dalındaki footer
