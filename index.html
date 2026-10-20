@@ -2693,7 +2693,7 @@ canvas{width:100%!important;}
       <div class="feedback-count" id="feedbackModalCount">0 / 2000</div>
       <div class="feedback-help">Bu not admin tarafındaki çözüm paketine düşer. Doğru kabul edilmesi gereken yazımı ve kısa sebebini yazmanız yeterlidir.</div>
       <div class="form-err" id="feedbackModalErr"></div>
-      <div class="modal-foot"><button class="btn-sec" onclick="closeFeedbackModal()">Vazgeç</button><button class="btn-primary" id="feedbackSubmitBtn" onclick="submitFeedbackModal()">Gönder</button></div>
+      <div class="modal-foot"><button type="button" class="btn-sec" onclick="closeFeedbackModal()">Vazgeç</button><button type="button" class="btn-primary" id="feedbackSubmitBtn" onclick="submitFeedbackModal()">Gönder</button></div>
     </div>
   </div>
 </div>
@@ -11921,6 +11921,11 @@ function adminActionNoteHeaderValue(note){
   for(const byte of bytes)binary+=String.fromCharCode(byte);
   return 'b64:'+btoa(binary);
 }
+function adminActionHeaderFromRequest(method,url,body){
+  if(!hasAdminRole(me?.role)||!adminActionNeedsNote(method,url,body))return '';
+  const note=adminActionNoteFromBody(body);
+  return note?adminActionNoteHeaderValue(note):'';
+}
 function adminActionRunsAsMemberWorkflow(method,path){
   if(method!=='POST')return false;
   if(path==='/api/history/merged-draft'||path==='/api/history/submit-merged')return true;
@@ -11978,7 +11983,7 @@ async function api(method,url,body){
   if(notedBody===null)return {error:'İşlem açıklaması girilmediği için işlem yapılmadı.',code:'ADMIN_ACTION_NOTE_REQUIRED',cancelled:true};
   body=notedBody;
   const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store'};
-  const actionNote=adminActionNoteFromBody(body);
+  const actionNote=adminActionHeaderFromRequest(method,url,body);
   if(actionNote)opts.headers['X-Admin-Action-Note']=adminActionNoteHeaderValue(actionNote);
   if(me?.reviewWorkspacesEnabled){
     opts.headers['X-Review-Workspace']=ReviewWorkspace.workspace();
@@ -12002,7 +12007,9 @@ async function api(method,url,body){
     return data;
   }catch(e){
     return {
-      error:'İstek sunucuya ulaştırılamadı veya yanıt alınamadı. İşlem durumu kontrol ediliyor.',
+      error:navigator.onLine===false
+        ?'Cihaz çevrimdışı görünüyor. Bağlantı sağlandıktan sonra yeniden deneyin.'
+        :'İstek tarayıcı tarafından gönderilemedi. Sayfayı yenileyip yeniden deneyin.',
       code:'REQUEST_OUTCOME_UNKNOWN',
       retryable:true
     };

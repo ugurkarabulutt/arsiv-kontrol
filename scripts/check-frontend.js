@@ -218,6 +218,9 @@ assert(server.includes('ADMIN_ACTION_LOG_UNAVAILABLE'), 'Sistem kaydi yazilamazs
 assert(server.includes("decodeAdminActionNoteHeader(req.get('x-admin-action-note'))"), 'Yonetici notu basligi UTF-8 guvenli bicimden cozulmeli.');
 assert(html.includes("opts.headers['X-Admin-Action-Note']=adminActionNoteHeaderValue(actionNote)"), 'Frontend yonetici notunu UTF-8 guvenli baslik degeriyle tasimali.');
 assert(html.includes("return 'b64:'+btoa(binary)"), 'Turkce yonetici notlari da HTTP basligina guvenle kodlanmali.');
+assert(html.includes("if(!hasAdminRole(me?.role)||!adminActionNeedsNote(method,url,body))return '';"), 'Normal ekip uyesi notlari yonetici HTTP basligina eklenmemeli.');
+assert(html.includes('İstek tarayıcı tarafından gönderilemedi. Sayfayı yenileyip yeniden deneyin.'), 'Tarayici kaynakli istek hatasi uydurma internet mesaji vermemeli.');
+assert(html.includes('<button type="button" class="btn-primary" id="feedbackSubmitBtn"'), 'Geri bildirim gonder dugmesi form submit tetiklememeli.');
 assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
 assert(html.includes('function adminActionRunsAsMemberWorkflow') && html.includes("ReviewWorkspace.workspace()==='member'"), 'Admin rolu olan ekip uyesinin normal calisma akisi zorunlu yonetim notundan ayrilmali.');
 assert(server.includes("workspace: req.get('X-Review-Workspace')") && server.includes('reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED'), 'Backend zorunlu not karari ekip uyesi ve yonetim calisma alanini ayirmali.');
