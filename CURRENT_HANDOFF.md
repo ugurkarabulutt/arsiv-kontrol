@@ -1,5 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-20 Ekip Üyesi Geri Bildirimi — Production Tamamlandı
+
+- `Bu bulgu neden yanlış?` modalındaki ekip üyesi notu sunucuya ulaşmıyordu.
+  Canlı DB'de eşleşen feedback ve Vercel'de ilgili `/feedback` isteği yoktu.
+  Kök neden ortak `api()` fonksiyonunun her `note` alanını, endpoint yönetim
+  işlemi olmasa bile `X-Admin-Action-Note` başlığına eklemesiydi. Eski açık
+  sekmeler Türkçe notu ham başlığa yazdığı için tarayıcı isteği göndermeden
+  reddediyordu.
+- Yönetici başlığı artık yalnız `adminActionNeedsNote()` ile gerçekten zorunlu
+  tutulan yönetim endpoint'lerinde oluşturulur. Ekip geri bildirimi ve diğer
+  normal kullanıcı notları bu başlıktan tamamen ayrıdır. Feedback modalındaki
+  butonlar `type="button"`; istemci hatası çevrimdışı kanıtı yoksa sahte
+  bağlantı mesajı göstermez.
+- `npm.cmd run check` başarılı, 239/239 test geçti. Runtime commit
+  `db23431`, production deployment `dpl_DrEHezFdLZhm69e4eWbsAzv3cDXy` /
+  `https://arsiv-kontrol-r4pibgjcn-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health`, `/admin`, no-store, feedback header ayrımı ve buton
+  markerı doğrulandı; eski mavi mesaj canlı HTML'de yoktur.
+- Hata ekranındaki not kaydedilmediği için kullanıcı sayfayı bir kez yenileyip
+  notu yeniden göndermelidir. Açık sekmedeki eski JavaScript uzaktan
+  değiştirilemez; yenileme sonrası yeni kod yüklenir.
+
 ## 2026-10-20 Türkçe Yönetici İşlem Notları — Production Tamamlandı
 
 - Adminlerin `Düzeltmeye Gönder`, `Konferanslara Al` ve diğer notlu yönetim

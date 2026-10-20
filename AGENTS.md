@@ -933,6 +933,22 @@ tespit edilir).
 
 ### 2026-10-20
 
+- **Ekip üyesi feedback notu yönetici başlığından ayrıldı:** `Bu bulgu neden
+  yanlış?` akışındaki normal `note` alanı ortak `api()` tarafından gereksiz
+  şekilde `X-Admin-Action-Note` başlığına da yazılıyordu. Eski açık sekmeler
+  Türkçe karakterli notta tarayıcı seviyesinde `fetch` hatası üretiyor;
+  sunucuya istek ve DB feedback kaydı hiç ulaşmıyordu. Başlık artık yalnız
+  `adminActionNeedsNote()` kapsamındaki gerçek yönetim mutasyonlarında
+  oluşturulur; ekip geri bildirimi, kullanıcı notları ve normal çalışma akışları
+  bu başlıktan ayrıdır. Feedback butonları `type="button"` oldu. İstemci
+  hatası mesajı, `navigator.onLine===false` kanıtı yoksa internet bağlantısı
+  sorunu iddia etmez. `npm.cmd run check` 239/239 başarılı; runtime commit
+  `db23431`. Production deployment `dpl_DrEHezFdLZhm69e4eWbsAzv3cDXy`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health`, `/admin`, no-store ve yeni markerlar başarılı; eski mavi
+  mesaj canlı HTML'de yoktur. Raporlanan not DB'ye yazılmadığı için sayfa
+  yenilenip bir kez yeniden gönderilmelidir.
+
 - **Türkçe yönetici işlem notlarının tarayıcı isteğini engellemesi
   düzeltildi:** Notlu yönetim kararlarında `İ/ı/ş` gibi Latin-1 dışı
   karakterler ham `X-Admin-Action-Note` başlığına yazıldığı için tarayıcı
