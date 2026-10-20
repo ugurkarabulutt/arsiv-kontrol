@@ -1,5 +1,29 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-20 Türkçe Yönetici İşlem Notları — Production Tamamlandı
+
+- Adminlerin `Düzeltmeye Gönder`, `Konferanslara Al` ve diğer notlu yönetim
+  kararlarında gördüğü `ACTION_OUTCOME_UNVERIFIED` hatasının kök nedeni
+  bulundu: Türkçe `İ/ı/ş` karakterleri ham `X-Admin-Action-Note` HTTP
+  başlığına yazıldığı için tarayıcı isteği ağa çıkmadan reddediyordu.
+- Ortak API katmanı yönetici notunu UTF-8 Base64 ile ASCII güvenli başlığa
+  çevirir; sunucu başlığı çözüp denetim günlüğüne özgün Türkçe notu yazar.
+  JSON gövdesindeki zorunlu not ve onay istisnası korunur. Düzeltme geri
+  gönderme, red, teyit, dergâh, konferans, arşiv, çöp ve diğer notlu yönetim
+  işlemlerinin tamamına uygulanır. DB migration yoktur.
+- `npm.cmd run check` başarılı, 239/239 test geçti. Runtime commit
+  `f1a9a88`, dal `codex/allow-admin-self-approval` ve GitHub'a push edildi.
+  Production deployment `dpl_6pC8z4MxoRT9nxoNGEgav1oe92Sn` /
+  `https://arsiv-kontrol-fttutgnn4-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health` ve `/admin` başarılı; admin no-store ve yeni kodlama
+  markerı canlıdır.
+- Ekran görüntüsündeki `f9eddcd3-48cf-4e0d-9c44-35349e38a5e6` kaydı hâlâ
+  `bekliyor`; başarısız denemeler veritabanına veya denetim izine yazılmadı.
+  RPC aynı aktör/not ile gerçek transaction içinde `geri_gonderildi` sonucuna
+  ulaştı ve `ROLLBACK` edildi. Admin sayfayı yenileyip işlemi yeniden
+  yapmalıdır; aktör izi korunması için kayıt onun adına değiştirilmedi.
+
 ## 2026-10-20 Onaylı Fakat Gizli Kalan Sorular — Kısmi Production Tamamlandı
 
 - Kök neden düzeltildi: normal yönetici onayı artık mevcut public satır gizli

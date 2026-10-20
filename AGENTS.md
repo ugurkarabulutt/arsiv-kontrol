@@ -933,6 +933,23 @@ tespit edilir).
 
 ### 2026-10-20
 
+- **Türkçe yönetici işlem notlarının tarayıcı isteğini engellemesi
+  düzeltildi:** Notlu yönetim kararlarında `İ/ı/ş` gibi Latin-1 dışı
+  karakterler ham `X-Admin-Action-Note` başlığına yazıldığı için tarayıcı
+  `fetch` isteğini sunucuya göndermeden reddediyor, sonuç doğrulama katmanı da
+  `ACTION_OUTCOME_UNVERIFIED` gösteriyordu. Ortak frontend API katmanı notu
+  UTF-8 Base64 ile ASCII güvenli başlığa çevirir; backend başlığı çözüp özgün
+  Türkçe notu zorunlu denetim kaydına taşır. JSON gövdesi ve onay istisnası
+  değişmedi; geri gönderme, red, teyit, dergâh, konferans, arşiv ve çöp dahil
+  tüm notlu yönetim işlemleri aynı düzeltmeden yararlanır. Yeni regresyon
+  testiyle Türkçe not round-trip'i sabitlendi. `npm.cmd run check` 239/239
+  başarılı; runtime commit `f1a9a88`. Production deployment
+  `dpl_6pC8z4MxoRT9nxoNGEgav1oe92Sn` `READY` durumunda
+  `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi. Canlı
+  `/health` ve `/admin` başarılı; admin no-store ve yeni kodlama markerı
+  canlıdır. Hata raporundaki kayıt veri kaybı olmadan `bekliyor` kaldı;
+  başarısız denemeler işlem günlüğü üretmedi.
+
 - **Onaylı kaydın gizli kalması engellendi ve 112 kayıt kontrollü yayımlandı:**
   Tekil yönetici onayı artık daha önce `content_review_hidden` durumuna alınmış
   public satırı gizli ve eski metinde bırakmaz; URL/ilk yayın tarihi/okunma
