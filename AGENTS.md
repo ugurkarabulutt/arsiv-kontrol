@@ -931,6 +931,28 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-20
+
+- **Onaylı kaydın gizli kalması engellendi ve 112 kayıt kontrollü yayımlandı:**
+  Tekil yönetici onayı artık daha önce `content_review_hidden` durumuna alınmış
+  public satırı gizli ve eski metinde bırakmaz; URL/ilk yayın tarihi/okunma
+  korunurken soru, cevap, paragraf, özet ve konu bağları güncel onaydan yenilenir
+  ve durum `published` olur. Eski tüm-onaylı toplu senkron davranışı ayrıdır ve
+  kullanılmamalıdır. Yeni politika modülü dört regresyon testiyle sabitlendi;
+  `npm.cmd run check` 238/238 başarılıdır. Runtime commit `80be302`,
+  production deployment `dpl_AF7oV2VYn4M3MjsxW1h9mxeqgzRN`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. Canlı veri işleminde önceki 43 riskli kayıt
+  hariç tutuldu; ham kaynağı doğrulanan 112 kayıt
+  `publication-hidden-approval-recovery-20261019T050837Z` ile önce
+  `ROLLBACK`, sonra `COMMIT` uygulanarak yayımlandı. 112/112 içerik ve konu
+  bağı birebir, URL 200, canonical doğru ve sitemap içinde. Dört kaynak/parça
+  riski gizli bırakıldı. Denetim sırasında eski kodla onaylanan ek 42 kayıt
+  kaynakla doğrulandı ve dry-run geçti; iki kısa cevap ve bir “dergâh” kelimesi
+  sinyali nedeniyle kalıcı uygulama açık kullanıcı onayı bekler. İkinci batch
+  uygulanmadı, geçici plan anahtarı temizlendi. Kanıt klasörleri:
+  `.tmp-publication-recovery-20261019/` ve
+  `.tmp-publication-recovery-20261020/` (özel içerik; Git'e eklenmez).
+
 ### 2026-10-17
 
 - **Geri gönderme ve ekip üyesi düzeltmeleri görünür biçimde ayrıldı:** Ekip

@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-20 Onaylı Fakat Gizli Kalan Sorular — Kısmi Production Tamamlandı
+
+- Kök neden düzeltildi: normal yönetici onayı artık mevcut public satır gizli
+  olsa bile güncel onaylı soru/cevap/özetle yeniden yayımlar. Mevcut URL, ilk
+  yayın tarihi, okunma ve öne çıkarma bilgisi korunur. Eski tüm-onaylı toplu
+  senkronun mevcut içerik koruma davranışı değiştirilmedi.
+- Yeni saf politika modülü ve dört regresyon testi eklendi. Zorunlu
+  `npm.cmd run check` başarılı, 238/238 test geçti. Runtime commit
+  `80be302`, dal `codex/allow-admin-self-approval` ve GitHub'a push edildi.
+- Production deployment `dpl_AF7oV2VYn4M3MjsxW1h9mxeqgzRN` /
+  `https://arsiv-kontrol-gsas145hb-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı `/health`, root, `/admin` ve sitemap başarılı; admin noindex/no-store.
+- Canlı veri denetiminde önceki 43 riskli kayıt dışarıda tutuldu. Yeni dönemde
+  gizli kalmış 116 kaydın 112'si ham kaynakla doğrulandı ve
+  `publication-hidden-approval-recovery-20261019T050837Z` batch'iyle önce
+  gerçek `ROLLBACK`, sonra `COMMIT` uygulanarak güncel onay metniyle
+  yayımlandı. 112/112 içerik, paragraf, konu bağı, URL 200, canonical ve sitemap
+  doğrulandı. Dört kaynak/parça riski taşıyan kayıt gizli bırakıldı.
+- Denetim sırasında eski kodla onaylanan ek 42 kaydın tamamı ham kaynakla
+  doğrulandı ve dry-run geçti. Bunların 39'u işaretsiz; ikisi kısa cevap
+  sinyali, biri meşru “dergâh” ifadesi sinyali taşıyor. Kalıcı uygulama açık
+  kullanıcı onayı bekliyor; ikinci batch uygulanmadı ve geçici settings planı
+  silindi. Kalan onaylı-gizli dağılımı son kontrolde: 43 eski riskli + 4 yeni
+  inceleme kaydı + 42 onay bekleyen ikinci paket.
+
 ## 2026-10-19 Admin Kendi Kaydını Onaylama — Production Tamamlandı
 
 - Kullanıcı kararıyla admin ve süper adminlerin sahibi veya atanmış kişisi
