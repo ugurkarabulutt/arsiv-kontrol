@@ -15,6 +15,16 @@ function cleanRequiredActionNote(body = {}) {
   return '';
 }
 
+function decodeAdminActionNoteHeader(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw.startsWith('b64:')) return raw;
+  try {
+    return Buffer.from(raw.slice(4), 'base64').toString('utf8');
+  } catch {
+    return '';
+  }
+}
+
 function isApprovalAction(method, path, body = {}) {
   if (method !== 'POST') return false;
   if (new RegExp(`^/api/history/${UUID_PART}/approve$`, 'i').test(path)) return true;
@@ -67,6 +77,7 @@ function validAdminActionNote(note) {
 
 module.exports = {
   cleanRequiredActionNote,
+  decodeAdminActionNoteHeader,
   isApprovalAction,
   isMemberWorkflowAction,
   normalizedApiPath,

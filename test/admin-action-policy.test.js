@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {
   cleanRequiredActionNote,
+  decodeAdminActionNoteHeader,
   isMemberWorkflowAction,
   requiresAdminActionNote,
   validAdminActionNote
@@ -87,6 +88,13 @@ test('note extraction accepts explicit note fields and rejects meaningless input
   assert.equal(validAdminActionNote('Düzeltme gerekli.'), true);
   assert.equal(validAdminActionNote('..'), false);
   assert.equal(validAdminActionNote('a'), false);
+});
+
+test('encoded admin action headers preserve Turkish notes', () => {
+  const note = 'İkinci suali ibaresi silinip cümle soruya çevrilsin.';
+  const encoded = `b64:${Buffer.from(note, 'utf8').toString('base64')}`;
+  assert.equal(decodeAdminActionNoteHeader(encoded), note);
+  assert.equal(decodeAdminActionNoteHeader('ASCII not'), 'ASCII not');
 });
 
 test('every privileged mutation route is guarded or intentionally passive', () => {

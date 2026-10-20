@@ -45,6 +45,7 @@ const {
 } = require('./newsletter-core');
 const {
   cleanRequiredActionNote,
+  decodeAdminActionNoteHeader,
   requiresAdminActionNote,
   validAdminActionNote
 } = require('./admin-action-policy');
@@ -5395,7 +5396,7 @@ async function requirePrivilegedAdminActionNote(req, res, next) {
     const currentUser = await syncSessionUserFromDb(req);
     if (!currentUser || !isAdminRole(currentUser.role)) return next();
     const note = cleanRequiredActionNote(req.body)
-      || cleanRequiredActionNote({ adminActionNote: req.get('x-admin-action-note') });
+      || cleanRequiredActionNote({ adminActionNote: decodeAdminActionNoteHeader(req.get('x-admin-action-note')) });
     if (!validAdminActionNote(note)) {
       return res.status(400).json({
         error: 'İşlem açıklaması zorunludur. Ne yaptığınızı ve nedenini en az 3 karakterle yazın.',

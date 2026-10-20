@@ -215,8 +215,9 @@ assert(!server.includes('normalizeSessionRole(req);'), 'Eski session-only rol no
 assert(server.includes('requirePrivilegedAdminActionNote'), 'Yonetici mutasyonlari merkezi zorunlu not middleware ine bagli olmali.');
 assert(server.includes('ADMIN_ACTION_NOTE_REQUIRED'), 'Notsuz yonetici islemi backend tarafinda reddedilmeli.');
 assert(server.includes('ADMIN_ACTION_LOG_UNAVAILABLE'), 'Sistem kaydi yazilamazsa yonetici islemi durdurulmali.');
-assert(server.includes("req.get('x-admin-action-note')"), 'Dosya yukleme gibi erken denetlenen isteklerde yonetici notu basliktan da alinabilmeli.');
-assert(html.includes("opts.headers['X-Admin-Action-Note']=actionNote"), 'Frontend zorunlu yonetici notunu istek basliginda da tasimali.');
+assert(server.includes("decodeAdminActionNoteHeader(req.get('x-admin-action-note'))"), 'Yonetici notu basligi UTF-8 guvenli bicimden cozulmeli.');
+assert(html.includes("opts.headers['X-Admin-Action-Note']=adminActionNoteHeaderValue(actionNote)"), 'Frontend yonetici notunu UTF-8 guvenli baslik degeriyle tasimali.');
+assert(html.includes("return 'b64:'+btoa(binary)"), 'Turkce yonetici notlari da HTTP basligina guvenle kodlanmali.');
 assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
 assert(html.includes('function adminActionRunsAsMemberWorkflow') && html.includes("ReviewWorkspace.workspace()==='member'"), 'Admin rolu olan ekip uyesinin normal calisma akisi zorunlu yonetim notundan ayrilmali.');
 assert(server.includes("workspace: req.get('X-Review-Workspace')") && server.includes('reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED'), 'Backend zorunlu not karari ekip uyesi ve yonetim calisma alanini ayirmali.');

@@ -11915,6 +11915,12 @@ function adminActionNoteFromBody(body){
   }
   return '';
 }
+function adminActionNoteHeaderValue(note){
+  const bytes=new TextEncoder().encode(String(note||''));
+  let binary='';
+  for(const byte of bytes)binary+=String.fromCharCode(byte);
+  return 'b64:'+btoa(binary);
+}
 function adminActionRunsAsMemberWorkflow(method,path){
   if(method!=='POST')return false;
   if(path==='/api/history/merged-draft'||path==='/api/history/submit-merged')return true;
@@ -11973,7 +11979,7 @@ async function api(method,url,body){
   body=notedBody;
   const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store'};
   const actionNote=adminActionNoteFromBody(body);
-  if(actionNote)opts.headers['X-Admin-Action-Note']=actionNote;
+  if(actionNote)opts.headers['X-Admin-Action-Note']=adminActionNoteHeaderValue(actionNote);
   if(me?.reviewWorkspacesEnabled){
     opts.headers['X-Review-Workspace']=ReviewWorkspace.workspace();
     const mutation=url.match(/^\/api\/history\/([0-9a-f-]{36})\/(?:content|submit|withdraw|approve|reject|review|pending|return|archive|tags)$/i);
