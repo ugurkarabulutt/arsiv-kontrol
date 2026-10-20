@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-20 Eski Admin Sekmesi Sürüm Koruması — Production Tamamlandı
+
+- Son geri bildirim ekranındaki eski mavi hata metni canlı HTML'de artık
+  bulunmadığı hâlde açık sekmede görünüyordu. Bu, sekmenin deployment öncesi
+  inline JavaScript'i çalıştırmaya devam ettiğini doğruladı. Son raporlanan
+  `ihtilane / istiane` notu sunucuya ve DB'ye ulaşmadı; mükerrer kayıt yoktur.
+- Admin paneli artık her yazma işleminden önce önbelleksiz
+  `/api/admin-client-version` kontrolü yapar ve isteğe
+  `X-Admin-Client-Build` ekler. Production sunucusu eski veya başlıksız
+  `/api/history/*` ve `/api/review/*` yazma isteklerini `409` /
+  `ADMIN_CLIENT_UPDATE_REQUIRED` ile reddeder. Böylece eski istemci sessizce
+  işlem yapamaz.
+- Sürüm farkında feedback metni ve bağlamı `sessionStorage` içinde en fazla
+  15 dakika korunur, sayfa yenilenir ve modal yeni sürümde aynı notla yeniden
+  açılır. Sekme odaklandığında ve görünür olduğunda da sürüm denetlenir;
+  service worker kaydı yüklemede güncelleme kontrolü yapar.
+- `npm.cmd run check` başarılı, 239/239 test geçti. Runtime commit
+  `7cb7306`, production deployment `dpl_BwtjDVVnCSL2hKSU4rAjU2onJDWN` /
+  `https://arsiv-kontrol-ghnsk14wf-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+  Canlı health, sürüm endpoint'i, no-store, istemci guardı, build başlığı,
+  taslak geri yükleme ve sürüm eşleşmesi doğrulandı; eski hata metni yoktur.
+- Bu koruma eklenmeden önce açılmış sekme yeni kodu bilmediği için yalnız bu
+  geçişte bir kez manuel yenileme gerekir. Yenilemeden sonraki deploymentlarda
+  eski sürüm işlem öncesinde otomatik yakalanır ve not korunarak yenilenir.
+
 ## 2026-10-20 Ekip Üyesi Geri Bildirimi — Production Tamamlandı
 
 - `Bu bulgu neden yanlış?` modalındaki ekip üyesi notu sunucuya ulaşmıyordu.

@@ -933,6 +933,25 @@ tespit edilir).
 
 ### 2026-10-20
 
+- **Eski admin sekmelerine zorunlu istemci sürüm koruması eklendi:** Canlı
+  HTML'den kaldırılmış eski hata metninin açık sekmelerde görünmeye devam
+  etmesi, deployment öncesi inline JavaScript'in sekme yenilenene kadar
+  çalıştığını gösterdi. Yeni önbelleksiz `/api/admin-client-version` endpoint'i,
+  her frontend yazma işlemindeki sürüm kontrolü ve `X-Admin-Client-Build`
+  başlığı birlikte eklendi. Production backend eski/başlıksız
+  `/api/history/*` ve `/api/review/*` yazma isteklerini `409` ve
+  `ADMIN_CLIENT_UPDATE_REQUIRED` ile reddeder. Feedback metni, bağlamı ve
+  hedefi sürüm farkında `sessionStorage` içinde 15 dakika korunur; sayfa
+  yenilendikten sonra modal aynı notla geri açılır. Odak/görünürlük ve service
+  worker güncelleme kontrolleri de eklendi. Son `ihtilane / istiane` notu DB'ye
+  ulaşmadı ve mükerrer feedback yoktur. `npm.cmd run check` 239/239 başarılı;
+  runtime commit `7cb7306`. Production deployment
+  `dpl_BwtjDVVnCSL2hKSU4rAjU2onJDWN` `READY` durumunda
+  `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi. Canlı health, sürüm
+  endpoint'i, no-store, build eşleşmesi, istemci guardı ve taslak geri yükleme
+  markerları doğrulandı; eski hata metni canlı HTML'de yoktur. Bu özellikten
+  önce açık kalmış sekmeler için yalnız ilk geçişte manuel yenileme gerekir.
+
 - **Ekip üyesi feedback notu yönetici başlığından ayrıldı:** `Bu bulgu neden
   yanlış?` akışındaki normal `note` alanı ortak `api()` tarafından gereksiz
   şekilde `X-Admin-Action-Note` başlığına da yazılıyordu. Eski açık sekmeler
