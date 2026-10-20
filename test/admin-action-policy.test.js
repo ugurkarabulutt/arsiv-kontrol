@@ -15,7 +15,7 @@ const id = '11111111-1111-4111-8111-111111111111';
 test('approval is the only review decision exempt from a required admin note', () => {
   assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/action`, { action: 'approve' }), false);
   assert.equal(requiresAdminActionNote('POST', `/api/history/${id}/approve`, {}), false);
-  for (const action of ['save', 'reject', 'review', 'pending', 'return', 'archive', 'trash', 'restore']) {
+  for (const action of ['save', 'reject', 'review', 'pending', 'return', 'archive', 'trash', 'restore', 'confirm_duplicate', 'duplicate_clear']) {
     assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/action`, { action }), true, action);
   }
 });
@@ -41,7 +41,7 @@ test('member workflow stays exempt even when the team member also has an admin r
 
 test('management decisions still require notes while approval stays exempt', () => {
   const managementContext = { workspace: 'management', reviewWorkspacesEnabled: true };
-  for (const action of ['save', 'reject', 'return', 'review', 'dergah', 'conference', 'pending', 'archive', 'trash', 'restore', 'resolve_dispute']) {
+  for (const action of ['save', 'reject', 'return', 'review', 'dergah', 'conference', 'pending', 'archive', 'trash', 'restore', 'resolve_dispute', 'confirm_duplicate', 'duplicate_clear']) {
     assert.equal(
       requiresAdminActionNote('POST', `/api/review/${id}/action`, { action }, managementContext),
       true,

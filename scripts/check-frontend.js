@@ -483,13 +483,15 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20261018-admin-action-recovery') && html.includes('/review-workspace.css?v=20261018-admin-action-recovery'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20261020-duplicate-review-v1') && html.includes('/review-workspace.css?v=20261020-duplicate-review-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
 assert(workspaceScript.includes('REQUEST_OUTCOME_UNKNOWN') && workspaceScript.includes('performAction') && workspaceScript.includes('outcomeVerified'), 'Yonetim islemleri belirsiz ag sonucunu sunucudan dogrulamali.');
 assert(!html.includes('İnternet bağlantınızı kontrol edip tekrar deneyin'), 'Genel API hatasi kullanici internetini gercege aykiri sekilde suclamamali.');
 for (const marker of ['/change-summary', 'Geri gönderme ve düzeltme özeti', 'Yapılan düzeltmeler', 'Ekip üyesi notu', 'Ekip üyesi açıklaması']) {
   assert(workspaceScript.includes(marker) || html.includes(marker), `Geri gonderme ve duzeltme ayrimi marker eksik: ${marker}`);
 }
 assert(workspaceCss.includes('.rw-change-summary') && workspaceCss.includes('.rw-change-grid'), 'Geri gonderme ve surum farki ozeti okunabilir panel stiline sahip olmali.');
+assert(workspaceScript.includes("mukerrer_inceleme: 'Mükerrer İnceleme'") && workspaceScript.includes('confirm_duplicate') && workspaceScript.includes('duplicate_clear') && workspaceScript.includes('duplicateDecisions.map'), 'Yonetim paneli mukerrer inceleme kuyrugu ve iki gorunur karar aksiyonunu gostermeli.');
+assert(workspaceScript.includes('rwDuplicateReview') && workspaceScript.includes('rw-duplicate-grid') && workspaceCss.includes('.rw-duplicate-review') && workspaceCss.includes('.rw-trash-reason'), 'Mukerrer kayitlar yan yana karsilastirilmali ve cop sebebi okunabilir gosterilmeli.');
 assert(html.includes('Canlıdaki Soru') && html.includes('t.publicPublished'), 'Dashboard canli yayinlanan soru sayisini gostermeli.');
 assert(html.includes('dashRefreshTimer') && html.includes('syncDashAutoRefresh(name)'), 'Dashboard aktifken otomatik yenileme mekanizmasi bulunmali.');
 assert(server.includes("public_qa').select('slug', { count: 'exact', head: true }).eq('status', 'published')"), 'Stats API public yayindaki soru sayisini public_qa slug anahtariyla saymali.');

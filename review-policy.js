@@ -1,10 +1,10 @@
 const { isAdminRole } = require('./authorization');
 
-const STATUSES = ['taslak', 'bekliyor', 'geri_gonderildi', 'teyit_bekliyor', 'dergah_sorulari', 'konferanslar', 'onaylandi', 'reddedildi', 'arsivlendi', 'copte'];
+const STATUSES = ['taslak', 'bekliyor', 'mukerrer_inceleme', 'geri_gonderildi', 'teyit_bekliyor', 'dergah_sorulari', 'konferanslar', 'onaylandi', 'reddedildi', 'arsivlendi', 'copte'];
 const duplicateNotePattern = /m[üu]kerrer/i;
 const MEMBER_BUCKETS = {
   todo: ['taslak', 'geri_gonderildi'],
-  in_review: ['bekliyor', 'teyit_bekliyor'],
+  in_review: ['bekliyor', 'teyit_bekliyor', 'mukerrer_inceleme'],
   done: ['dergah_sorulari', 'konferanslar', 'onaylandi', 'reddedildi', 'arsivlendi'],
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -27,6 +27,7 @@ function recordActions(user, row, workspace) {
   const worker = (row.assignee_id || row.user_id) === user.id;
   if (manager) {
     if (status === 'copte') return ['restore'];
+    if (status === 'mukerrer_inceleme') return ['confirm_duplicate', 'duplicate_clear'];
     const actions = ['trash'];
     if (status === 'taslak') return actions;
     if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && !disputed) actions.push('save');
@@ -73,6 +74,7 @@ function memberDisplayStatus(status) {
   if (status === 'taslak') return 'Taslak';
   if (status === 'geri_gonderildi') return 'Geri gönderildi';
   if (status === 'bekliyor') return 'Onaya gönderildi';
+  if (status === 'mukerrer_inceleme') return 'Mükerrer incelemede';
   if (status === 'teyit_bekliyor') return 'Teyit bekliyor';
   if (status === 'dergah_sorulari') return 'Dergah soruları';
   if (status === 'konferanslar') return 'Konferanslar';

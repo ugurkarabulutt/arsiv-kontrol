@@ -101,6 +101,10 @@ test('all inline and external admin scripts parse, feature routing cannot fall t
   assert.match(workspaceScript,/Kayıt yönetime iletildi ve Düzenlenecekler listenizden kaldırıldı\./);
   assert.match(workspaceScript,/dergah_sorulari: 'Dergah Soruları'/);
   assert.match(workspaceScript,/conference: 'Konferanslara Al'/);
+  assert.match(workspaceScript,/mukerrer_inceleme: 'Mükerrer İnceleme'/);
+  assert.match(workspaceScript,/confirm_duplicate: 'Mükerrer Olarak Çöpe Taşı'/);
+  assert.match(workspaceScript,/duplicate_clear: 'Mükerrer Değil, Onayla'/);
+  assert.match(workspaceScript,/Mükerrer karşılaştırması/);
   assert.match(workspaceScript,/REQUEST_OUTCOME_UNKNOWN/);
   assert.match(workspaceScript,/performAction/);
   assert.match(workspaceScript,/İşlem tamamlandı; sonuç sunucudan doğrulandı\./);
@@ -219,6 +223,92 @@ test('duplicate response links only a readable record and leaves submitted edits
   const hidden=await request(`/api/review/${privateCopy.id}/action`,'user','member',{action:'submit',version:0});
   assert.equal(hidden.status,409);assert.equal(hidden.data.duplicate,undefined);
   assert.ok(!JSON.stringify(hidden.data).includes(privateExisting.id));
+});
+
+test('approval-time live duplicate detection uses a dedicated queue and explicit admin decisions',async()=>{
+  const owner=fixture.users[0],manager=fixture.users[1],created=[];
+  const insert=async question=>(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
+    values($1,'Canlı Mükerrer Testi','bekliyor',$2,'Tam cevap: Şûrâ 13.','Kaynak','["Takva"]') returning *`,[owner.id,question])).rows[0];
+  try{
+    const target=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
+      values($1,'Canlı Asıl Kayıt','onaylandi','Allah''ın yolu nedir?','Tam cevap: Şûrâ 13.','Kaynak','["Takva"]') returning *`,[manager.id])).rows[0];
+    created.push(target.id);
+    await fixture.db.query(`insert into public_qa(slug,source_history_id,title,question,answer_text)
+      values('canli-asil-kayit',$1,'Allah''ın yolu nedir?','Allah''ın yolu nedir?','Tam cevap: Şûrâ 13.')`,[target.id]);
+
+    const pending=await insert('Allahın yolu nedir!');created.push(pending.id);
+    const approval=await request(`/api/review/${pending.id}/action`,'admin','management',{action:'approve',version:0});
+    assert.equal(approval.status,200);
+    assert.equal(approval.data.history.status,'mukerrer_inceleme');
+    assert.ok(!fixture.publishedRecords.includes(pending.id));
+    assert.deepEqual(approval.data.history.allowedActions,['confirm_duplicate','duplicate_clear']);
+    const queue=await request('/api/review/records?status=mukerrer_inceleme&q=Canlı%20Mükerrer','admin','management');
+    assert.equal(queue.status,200);assert.equal(queue.data.count,1);assert.equal(queue.data.items[0].id,pending.id);
+    const matches=await request(`/api/review/${pending.id}/duplicates`,'admin','management');
+    assert.equal(matches.status,200);assert.equal(matches.data.items.length,1);
+    assert.equal(matches.data.items[0].slug,'canli-asil-kayit');
+    assert.equal(matches.data.items[0].question,"Allah'ın yolu nedir?");
+    assert.equal(matches.data.items[0].answer_text,'Tam cevap: Şûrâ 13.');
+
+    const cleared=await request(`/api/review/${pending.id}/action`,'admin','management',{action:'duplicate_clear',version:approval.data.history.version,note:'Kaynak bağlamı farklı olduğu için ayrı soru olarak onaylandı.'});
+    assert.equal(cleared.status,200);assert.equal(cleared.data.history.status,'onaylandi');
+    assert.ok(fixture.publishedRecords.includes(pending.id));
+
+    const copy=await insert('Allahın yolu nedir!');created.push(copy.id);
+    const queued=await request(`/api/review/${copy.id}/action`,'admin','management',{action:'approve',version:0});
+    const trashed=await request(`/api/review/${copy.id}/action`,'admin','management',{action:'confirm_duplicate',version:queued.data.history.version,note:'Soru ve cevap canlıdaki kayıtla aynıdır.',duplicateId:target.id});
+    assert.equal(trashed.status,200);assert.equal(trashed.data.history.status,'copte');
+    assert.equal(trashed.data.history.workflow.trashReasonLabel,'Mükerrer');
+    assert.equal(trashed.data.history.workflow.duplicateSlug,'canli-asil-kayit');
+  }finally{
+    await fixture.db.query('delete from history_revisions where history_id=any($1::uuid[])',[created]);
+    await fixture.db.query('delete from admin_action_log where target_id=any($1::text[])',[created]);
+    await fixture.db.query('delete from public_qa where source_history_id=any($1::uuid[])',[created]);
+    await fixture.db.query('delete from history where id=any($1::uuid[])',[created]);
+  }
+});
+
+test('failed publication restores duplicate review context and can be retried after refresh',async()=>{
+  let failPublication=true;
+  const isolated=await createFixture({publishApprovedHistoryRecord:async()=>{
+    if(failPublication)throw new Error('synthetic publication failure');
+  }});
+  const isolatedServer=isolated.app.listen(0,'127.0.0.1');
+  await new Promise(resolve=>isolatedServer.once('listening',resolve));
+  const isolatedBase=`http://127.0.0.1:${isolatedServer.address().port}`;
+  const call=async(path,body)=>{
+    const response=await fetch(isolatedBase+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','X-Demo-Role':'admin','X-Review-Workspace':'management'},body:body?JSON.stringify(body):undefined});
+    return {status:response.status,data:await response.json()};
+  };
+  const created=[];
+  try{
+    const target=(await isolated.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
+      values($1,'Yayın Hatası Asıl','onaylandi','Sabır nedir?','Sabır güzel bir haslettir.','Kaynak','["Sabır"]') returning *`,[isolated.users[1].id])).rows[0];
+    created.push(target.id);
+    await isolated.db.query(`insert into public_qa(slug,source_history_id,title,question,answer_text)
+      values('sabir-nedir',$1,'Sabır nedir?','Sabır nedir?','Sabır güzel bir haslettir.')`,[target.id]);
+    const pending=(await isolated.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
+      values($1,'Yayın Hatası Adayı','bekliyor','Sabır nedir!','Sabır güzel bir haslettir.','Kaynak','["Sabır"]') returning *`,[isolated.users[0].id])).rows[0];
+    created.push(pending.id);
+    const queued=await call(`/api/review/${pending.id}/action`,{action:'approve',version:0});
+    assert.equal(queued.status,200);assert.equal(queued.data.history.status,'mukerrer_inceleme');
+    const candidateId=queued.data.history.workflow.duplicateCandidateId;
+
+    const failed=await call(`/api/review/${pending.id}/action`,{action:'duplicate_clear',version:queued.data.history.version,note:'Kaynak bağlamı farklı; ayrı kayıt olarak yayımlanmalı.'});
+    assert.equal(failed.status,500);
+    const restored=await call(`/api/review/${pending.id}`);
+    assert.equal(restored.status,200);assert.equal(restored.data.status,'mukerrer_inceleme');
+    assert.equal(restored.data.workflow.duplicateCandidateId,candidateId);
+    assert.deepEqual(restored.data.allowedActions,['confirm_duplicate','duplicate_clear']);
+    assert.ok(restored.data.version>queued.data.history.version);
+
+    failPublication=false;
+    const retried=await call(`/api/review/${pending.id}/action`,{action:'duplicate_clear',version:restored.data.version,note:'Kaynak bağlamı farklı; ayrı kayıt olarak yayımlanmalı.'});
+    assert.equal(retried.status,200);assert.equal(retried.data.history.status,'onaylandi');
+  }finally{
+    await new Promise(resolve=>isolatedServer.close(resolve));
+    await isolated.db.close();
+  }
 });
 
 test('draft deletion is available in list and detail; repeat calls make only one transition',async()=>{

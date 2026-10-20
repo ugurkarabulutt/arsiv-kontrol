@@ -18,6 +18,7 @@ const ERRORS = {
   EXACT_DUPLICATE: [409, 'Bu soru ve cevap için incelemede veya sonuçlanmış bir kayıt var. Yazdığınız değişiklikler bu ekranda korunuyor.'],
   NOT_EXACT_DUPLICATE: [400, 'Yönlendirme için soru ve cevapların ikisi de birebir aynı olmalı.'],
   DUPLICATE_NOT_PUBLISHED: [400, 'Yönlendirilecek asıl kayıt yayında olmalı.'],
+  DUPLICATE_SELECTION_REQUIRED: [400, 'Mükerrer kararı için karşılaştırılan canlı kaydı seçin.'],
   DUPLICATE_NOTE_REQUIRED: [400, 'Mükerrer olarak kapatmak için kontrol notunda veya gerekçede MÜKERRER yazmalı.'],
   INVALID_ASSIGNEE: [400, 'Aktif bir ekip üyesi seçin.'],
   INVALID_CONTENT: [400, 'Gönderilen alanları kontrol edin.'],
@@ -139,12 +140,12 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     if (readOnly) throw new Error('READ_ONLY');
     if (!UUID.test(id || '')) throw new Error('NOT_FOUND');
     if (!Number.isInteger(version) || version < 0) throw new Error('VERSION_CONFLICT');
-    const previous = action === 'approve' ? await read(req, id) : null;
+    const previous = ['approve','duplicate_clear'].includes(action) ? await read(req, id) : null;
     const { data, error } = await supabase.rpc('review_history_change', {
       p_id: id, p_actor: req.session.userId, p_version: version, p_workspace: spaceFor(req), p_action: action, p_payload: payload
     });
     if (error) throw error;
-    if (action === 'approve') {
+    if (['approve','duplicate_clear'].includes(action) && data.status === 'onaylandi') {
       try {
         await publishApprovedHistoryRecord(data);
       } catch (publishError) {
@@ -152,7 +153,8 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
           await supabase.from('history').update({
             status: previous.status,
             approved_at: previous.approved_at,
-            approved_by: previous.approved_by
+            approved_by: previous.approved_by,
+            workflow_meta: previous.workflow_meta
           }).eq('id', data.id);
         }
         clearPublicArchiveCaches();

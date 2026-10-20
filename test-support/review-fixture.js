@@ -10,8 +10,9 @@ const mapHistory=h=>({id:h.id,userId:h.user_id,name:h.name,filename:h.filename,s
   correctedText:h.corrected_text,originalText:h.original_text,tags:h.tags,submissionNote:h.submission_note,
   approvedBy:h.approved_by,approvedAt:h.approved_at,createdAt:h.created_at});
 
-async function createFixture() {
+async function createFixture({ publishApprovedHistoryRecord } = {}) {
   const db = new PGlite();
+  const publishedRecords=[];
   const schema=fs.readFileSync(path.join(root,'schema.sql'),'utf8');
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
   for(const name of ['users','history','alerts','admin_action_log','public_categories','public_qa'])
@@ -28,6 +29,7 @@ async function createFixture() {
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20260924103000_remove_member_rejected_dismiss.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018202757_allow_admin_return_own_records.sql'),'utf8'));
   await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261019045303_allow_admin_self_approval.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261020143000_duplicate_review_queue.sql'),'utf8'));
   for(const user of users)await db.query('insert into users(id,role,username,name,password) values($1,$2,$3,$4,$5)',[user.id,user.role,user.username,user.name,'test-only']);
   const rows=[];
   for(let i=0;i<65;i++){
@@ -49,12 +51,21 @@ async function createFixture() {
   const value=(row,key)=>key.includes('->')?row[key.split(/->>?/)[0]]?.[key.split(/->>?/)[1]]:row[key];
   const supabase={from(table){
     if(!['users','history','public_qa','history_revisions','review_history_queue'].includes(table))throw Error('Unexpected fixture table');
-    const filters=[],orders=[];let start=0,end=Infinity,single=false,columns=['*'];
-    const b={select(fields='*'){columns=fields.split(',');return b;},eq(k,v){filters.push(r=>String(value(r,k))===String(v));return b;},neq(k,v){filters.push(r=>r[k]!==v);return b;},
+    const filters=[],orders=[];let start=0,end=Infinity,single=false,columns=['*'],updateValues=null;
+    const b={select(fields='*'){columns=fields.split(',');return b;},update(values){updateValues=values;return b;},eq(k,v){filters.push(r=>String(value(r,k))===String(v));return b;},neq(k,v){filters.push(r=>r[k]!==v);return b;},
       in(k,vs){filters.push(r=>vs.includes(r[k]));return b;},lt(k,v){filters.push(r=>r[k]<v);return b;},not(k,op,v){if(op!=='in')throw Error('Fixture operator');filters.push(r=>!v.slice(1,-1).split(',').includes(r[k]));return b;},
       or(expression){const rules=expression.split(',').map(part=>{const [field,op,...v]=part.split('.');const term=v.join('.');return r=>{const current=value(r,field);return op==='eq'?String(current)===term:op==='neq'?String(current)!==term:op==='is'&&term==='null'?current==null:op==='ilike'?String(current||'').toLocaleLowerCase('tr-TR').includes(term.replaceAll('%','').toLocaleLowerCase('tr-TR')):false;};});filters.push(r=>rules.some(fn=>fn(r)));return b;},
       order(k,{ascending=true}={}){orders.push([k,ascending]);return b;},range(a,z){start=a;end=z+1;return b;},limit(n){end=n;return b;},maybeSingle(){single=true;return b;},
       async then(resolve,reject){try{let items=(await db.query(`select * from public.${table}`)).rows.filter(row=>filters.every(fn=>fn(row)));const count=items.length;
+        if(updateValues){
+          const keys=Object.keys(updateValues);
+          for(const row of items){
+            const values=keys.map(key=>typeof updateValues[key]==='object'&&updateValues[key]!==null?JSON.stringify(updateValues[key]):updateValues[key]);
+            const set=keys.map((key,index)=>`${key}=$${index+1}${key==='workflow_meta'?'::jsonb':''}`).join(',');
+            await db.query(`update public.${table} set ${set} where id=$${keys.length+1}`,[...values,row.id]);
+          }
+          return resolve({data:null,count});
+        }
         items.sort((a,c)=>{for(const[k,ascending]of orders){const result=a[k] instanceof Date && c[k] instanceof Date ? a[k]-c[k] : String(a[k]||'').localeCompare(String(c[k]||''));if(result)return ascending?result:-result;}return 0;});
         items=items.slice(start,end);
         if(!columns.includes('*'))items=items.map(row=>Object.fromEntries(columns.map(field=>{const [alias,key]=field.split(':');return [alias,value(row,key||alias)];})));
@@ -75,7 +86,8 @@ async function createFixture() {
   });
   app.get('/api/auth/me',(req,res)=>res.json({...req.demoUser,loggedIn:true}));
   const review=createReviewWorkflow({supabase,mapHistory,loadApprovalReturnNotes:async()=>({}),attachApprovalReturnMeta:h=>h,
-    clearPublicArchiveCaches:()=>{},analyzeText:async text=>({correctedText:text,score:100,totalErrors:0,categories:{},summary:'Yerel test, AI çağrısı yapılmadı.'}),analysisRateLimiter:(_req,_res,next)=>next()});
+    clearPublicArchiveCaches:()=>{},publishApprovedHistoryRecord:publishApprovedHistoryRecord||(async record=>{publishedRecords.push(record.id);}),
+    analyzeText:async text=>({correctedText:text,score:100,totalErrors:0,categories:{},summary:'Yerel test, AI çağrısı yapılmadı.'}),analysisRateLimiter:(_req,_res,next)=>next()});
   app.use('/api/review',review.router);app.use('/api/history',review.legacy);
   app.get('/api/history/approval-board',(_req,res)=>res.json({groups:{}}));
   app.get('/api/stats',(_req,res)=>res.json({totals:{allTime:65,last30:65,activeUsers:3,avgScore:90,unreadAlerts:0,pendingApproval:17,feedbackOpen:0},
@@ -87,7 +99,7 @@ async function createFixture() {
   app.get('/sw.js',(_req,res)=>res.type('js').send('self.addEventListener("install",()=>self.skipWaiting());'));
   for(const file of ['review-workspace.js','review-workspace.css'])app.get('/'+file,(_req,res)=>res.sendFile(path.join(root,file)));
   app.use('/icons',express.static(path.join(root,'icons')));
-  return {app,db,rows,users,supabase};
+  return {app,db,rows,users,supabase,publishedRecords};
 }
 module.exports={createFixture};
 if(require.main===module){

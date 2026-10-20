@@ -54,6 +54,9 @@ before(async () => {
   const allowAdminSelfApprovalMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261019045303_allow_admin_self_approval.sql'),'utf8');
   await db.exec(allowAdminSelfApprovalMigration);
   await db.exec(allowAdminSelfApprovalMigration);
+  const duplicateReviewMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261020143000_duplicate_review_queue.sql'),'utf8');
+  await db.exec(duplicateReviewMigration);
+  await db.exec(duplicateReviewMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -142,6 +145,69 @@ test('duplicate requires BOTH exact Q and A across users, never only similar que
   assert.equal((await change(otherAnswer,'user','member','submit')).status,'bekliyor');
   const otherQuestion=await seed('user','taslak','Farklı soru?','Aynı cevap.');
   assert.equal((await change(otherQuestion,'user','member','submit')).status,'bekliyor');
+});
+test('approval routes normalized full question and answer matches to human duplicate review', async () => {
+  const target=await seed('other','onaylandi',"Allah'ın yolu nedir?",'Şûrâ sûresinde açıklanan cevap.');
+  await publish(target,'allahin-yolu');
+  let copy=await seed('user','bekliyor','Allahın   yolu nedir!','Sura suresinde açıklanan cevap…');
+  copy=await change(copy,'admin','management','approve');
+  assert.equal(copy.status,'mukerrer_inceleme');
+  assert.equal(copy.approved_at,null);
+  assert.equal(copy.workflow_meta.duplicateCandidateId,target.id);
+  assert.equal(copy.workflow_meta.duplicateCandidateSlug,'allahin-yolu');
+  assert.deepEqual(recordActions({id:ids.admin,role:'admin'},copy,'management'),['confirm_duplicate','duplicate_clear']);
+  const candidates=(await db.query('select * from review_duplicate_candidates($1)',[copy.id])).rows;
+  assert.equal(candidates.length,1);
+  assert.equal(candidates[0].id,target.id);
+  assert.equal(candidates[0].slug,'allahin-yolu');
+  assert.equal(candidates[0].question,target.question_text);
+  assert.equal(candidates[0].answer_text,target.corrected_text);
+  const revision=(await db.query('select action,after_data from history_revisions where history_id=$1',[copy.id])).rows[0];
+  assert.equal(revision.action,'approve');
+  assert.equal(revision.after_data.status,'mukerrer_inceleme');
+  const log=(await db.query('select action_label,target_status_after from admin_action_log where target_id=$1',[copy.id])).rows[0];
+  assert.deepEqual(log,{action_label:'Mükerrer incelemeye aldı',target_status_after:'mukerrer_inceleme'});
+});
+test('duplicate review requires an explicit reason and stores Mükerrer as the trash reason', async () => {
+  const target=await seed('other','onaylandi','Aynı yayın sorusu?','Aynı yayın cevabı.');
+  await publish(target,'asil-yayin');
+  let copy=await seed('user','bekliyor','Aynı yayın sorusu!','Aynı yayın cevabı…');
+  copy=await change(copy,'admin','management','approve');
+  await assert.rejects(change(copy,'admin','management','confirm_duplicate',{duplicateId:target.id}),/NOTE_REQUIRED/);
+  copy=await change(copy,'admin','management','confirm_duplicate',{note:'Soru ve cevabın tamamı canlı kayıtla aynıdır.',duplicateId:target.id});
+  assert.equal(copy.status,'copte');
+  assert.equal(copy.workflow_meta.trashReason,'duplicate');
+  assert.equal(copy.workflow_meta.trashReasonLabel,'Mükerrer');
+  assert.equal(copy.workflow_meta.duplicateId,target.id);
+  assert.equal(copy.workflow_meta.duplicateSlug,'asil-yayin');
+  assert.equal((await db.query("select action_label from admin_action_log where target_id=$1 and action='review.confirm_duplicate'",[copy.id])).rows[0].action_label,'Mükerrer olarak çöpe taşıdı');
+  copy=await change(copy,'super','management','restore',{note:'Mükerrer kararı yeniden incelenecek.'});
+  assert.equal(copy.status,'mukerrer_inceleme');
+});
+test('admin can explicitly clear a duplicate candidate and approve only that reviewed record', async () => {
+  const target=await seed('other','onaylandi','Karşılaştırılan soru?','Karşılaştırılan cevap.');
+  await publish(target,'karsilastirilan');
+  let copy=await seed('user','bekliyor','Karşılaştırılan soru!','Karşılaştırılan cevap…');
+  copy=await change(copy,'admin','management','approve');
+  await assert.rejects(change(copy,'admin','management','duplicate_clear'),/NOTE_REQUIRED/);
+  copy=await change(copy,'admin','management','duplicate_clear',{note:'Kaynak bağlamları farklı olduğu için ayrı kayıt olarak onaylandı.'});
+  assert.equal(copy.status,'onaylandi');
+  assert.equal(copy.approved_by,'Elçin Test');
+  assert.equal(copy.workflow_meta.duplicateClearedCandidateId,target.id);
+  assert.equal(copy.workflow_meta.duplicateClearedReason,'Kaynak bağlamları farklı olduğu için ayrı kayıt olarak onaylandı.');
+  assert.equal(copy.workflow_meta.duplicateCandidateId,undefined);
+  const log=(await db.query("select action_label,target_status_after from admin_action_log where target_id=$1 and action='review.duplicate_clear'",[copy.id])).rows[0];
+  assert.deepEqual(log,{action_label:'Mükerrer olmadığını doğruladı',target_status_after:'onaylandi'});
+});
+test('approval never treats only the question or only the answer as a duplicate', async () => {
+  const target=await seed('other','onaylandi','Tek başına aynı soru?','Asıl cevap.');
+  await publish(target,'tek-alan');
+  let differentAnswer=await seed('user','bekliyor','Tek başına aynı soru!','Tamamen farklı cevap.');
+  differentAnswer=await change(differentAnswer,'admin','management','approve');
+  assert.equal(differentAnswer.status,'onaylandi');
+  let differentQuestion=await seed('user','bekliyor','Tamamen farklı soru?','Asıl cevap…');
+  differentQuestion=await change(differentQuestion,'admin','management','approve');
+  assert.equal(differentQuestion.status,'onaylandi');
 });
 test('ownership dispute freezes edits, original ownership never moves, assigned worker receives task', async () => {
   let h=await seed('admin');h=await change(h,'admin','member','dispute',{note:'Bu denetim dosyamda bulunmuyor.'});

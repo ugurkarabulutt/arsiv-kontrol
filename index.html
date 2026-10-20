@@ -2748,8 +2748,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=20261018-admin-action-recovery">
-<script src="/review-workspace.js?v=20261018-admin-action-recovery"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20261020-duplicate-review-v1">
+<script src="/review-workspace.js?v=20261020-duplicate-review-v1"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -2777,7 +2777,7 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const ADMIN_CLIENT_BUILD='20261020-admin-client-version-v1';
+const ADMIN_CLIENT_BUILD='20261020-duplicate-review-v2';
 const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
 const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
@@ -4719,9 +4719,10 @@ async function setApprovalAction(id,action,btn,body=null){
     const r=await api('POST',`/api/history/${id}/${action}`,body||undefined);
     if(r.error)throw new Error(r.error);
     if(r.history)mergeHistoryItemLocal(r.history);
-    setApprovalStatus(approvalActionMessage(action),'ok');
+    const duplicateReview=action==='approve'&&(r.history?.status||r.status)==='mukerrer_inceleme';
+    setApprovalStatus(duplicateReview?'Tam soru ve cevapla eşleşen canlı kayıt bulundu. Kayıt yayımlanmadı; Mükerrer İnceleme kuyruğuna alındı.':approvalActionMessage(action),'ok');
     await refreshApprovalSurfacesAfterAction();
-    return true;
+    return r;
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent=oldText;}
     setApprovalStatus(`İşlem tamamlanamadı: ${e.message||'Lütfen tekrar deneyin.'}`,'err');
@@ -4893,10 +4894,11 @@ async function approveDetailFromModal(btn){
   }
   if(btn){btn.disabled=false;btn.textContent=oldText||'Onayla';}
   const payload=detailContentPayload();
-  const ok=await setApprovalAction(id,'approve',btn,{questionText:payload.questionText,tags:payload.tags});
-  if(ok){
-    window._detailHistoryStatus='onaylandi';
-    if(btn){btn.disabled=true;btn.textContent='Onaylandı';}
+  const result=await setApprovalAction(id,'approve',btn,{questionText:payload.questionText,tags:payload.tags});
+  if(result){
+    const nextStatus=result.history?.status||result.status||'onaylandi';
+    window._detailHistoryStatus=nextStatus;
+    if(btn){btn.disabled=true;btn.textContent=nextStatus==='mukerrer_inceleme'?'Mükerrer İncelemede':'Onaylandı';}
     window.setTimeout(()=>closeModal('detailModal'),450);
   }
 }
