@@ -48,6 +48,7 @@ const {
   requiresAdminActionNote,
   validAdminActionNote
 } = require('./admin-action-policy');
+const { approvedPublicUpdatePolicy } = require('./public-archive-publish-policy');
 
 const app    = express();
 app.disable('x-powered-by');
@@ -9344,7 +9345,7 @@ function publicArchiveReadTime(answerText = '', fallback = 1) {
   return Math.max(1, Math.ceil((count || Number(fallback || 1) * 180) / 180));
 }
 
-async function publishApprovedHistoryRecords(records = []) {
+async function publishApprovedHistoryRecords(records = [], options = {}) {
   if (!HAS_PUBLIC_ARCHIVE_CONTENT_TABLES) {
     return {
       available: false,
@@ -9371,6 +9372,7 @@ async function publishApprovedHistoryRecords(records = []) {
   const usedSlugs = await loadPublicArchiveUsedSlugs(cleanRecords.map(row => row.id));
   const now = new Date().toISOString();
   let preservedExistingContent = 0;
+  let refreshedExistingContent = 0;
   let insertedNewContent = 0;
   const categories = (dataset.categories || []).map((item, index) => ({
     slug: item.slug,
@@ -9393,22 +9395,24 @@ async function publishApprovedHistoryRecords(records = []) {
   }));
   const qaRows = (dataset.qa || []).map(item => {
     const existing = item.sourceHistoryId ? existingByHistoryId.get(item.sourceHistoryId) : null;
+    const policy = approvedPublicUpdatePolicy(existing, options);
     const existingAnswerText = publicArchiveSubmittedText(existing?.answer_text || '', 120000);
     const generatedAnswerText = publicArchiveSubmittedText(item.answerText || (item.answer || []).join('\n\n'), 120000);
-    const answerText = existingAnswerText || generatedAnswerText;
-    const answerParagraphs = existingAnswerText ? publicArchiveParagraphs(existingAnswerText) : (item.answer || []);
-    if (existingAnswerText) preservedExistingContent += 1;
-    else insertedNewContent += 1;
+    const answerText = policy.useExistingContent ? existingAnswerText : generatedAnswerText;
+    const answerParagraphs = policy.useExistingContent ? publicArchiveParagraphs(existingAnswerText) : (item.answer || []);
+    if (!existing) insertedNewContent += 1;
+    else if (policy.refreshedExistingContent) refreshedExistingContent += 1;
+    else preservedExistingContent += 1;
     const slug = existing?.slug || uniquePublicQuestionSlug(item.slug || item.question || item.sourceHistoryId, usedSlugs, 'soru');
     return {
       slug,
       source_history_id: item.sourceHistoryId || null,
-      title: existing?.title || item.title || item.question || 'Soru',
-      question: existing?.question || item.question || item.title || 'Soru',
+      title: policy.useExistingContent ? (existing?.title || item.title || item.question || 'Soru') : (item.title || item.question || 'Soru'),
+      question: policy.useExistingContent ? (existing?.question || item.question || item.title || 'Soru') : (item.question || item.title || 'Soru'),
       answer_text: answerText,
       answer_paragraphs: answerParagraphs,
-      summary: existing?.summary || item.summary || publicArchiveSummaryFromAnswer(answerText, item.question),
-      excerpt: existing?.excerpt || item.excerpt || item.summary || '',
+      summary: policy.useExistingContent ? (existing?.summary || item.summary || publicArchiveSummaryFromAnswer(answerText, item.question)) : (item.summary || publicArchiveSummaryFromAnswer(answerText, item.question)),
+      excerpt: policy.useExistingContent ? (existing?.excerpt || item.excerpt || item.summary || '') : (item.excerpt || item.summary || ''),
       category_slug: item.categorySlug || null,
       topic_slugs: item.topicSlugs || [],
       related_slugs: item.relatedSlugs || [],
@@ -9418,7 +9422,7 @@ async function publishApprovedHistoryRecords(records = []) {
       updated_at: now,
       read_time: publicArchiveReadTime(answerText, item.readTime),
       is_featured: existing?.is_featured === true || item.isFeatured === true,
-      status: existing?.status && existing.status !== 'published' ? existing.status : 'published'
+      status: policy.status
     };
   });
   const qaTopicRows = qaRows.flatMap(row => (Array.isArray(row.topic_slugs) ? row.topic_slugs : [])
@@ -9492,6 +9496,7 @@ async function publishApprovedHistoryRecords(records = []) {
     approvedRecords: cleanRecords.length,
     publishedRecords: qaRows.length,
     preservedExistingContent,
+    refreshedExistingContent,
     insertedNewContent,
     categories: categories.length,
     topics: topics.length,
@@ -16248,7 +16253,7 @@ async function publishApprovedHistoryRecord(recordOrId) {
   if (!record || record.status !== 'onaylandi') {
     throw new Error('Yayınlanacak onaylı kayıt bulunamadı.');
   }
-  const result = await publishApprovedHistoryRecords([record]);
+  const result = await publishApprovedHistoryRecords([record], { republishExisting: true });
   if (result.available === false) throw new Error(result.error || 'Kayıt canlı yayına aktarılamadı.');
   return result;
 }
