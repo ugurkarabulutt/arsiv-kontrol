@@ -74,6 +74,7 @@ const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
 const NEWSLETTER_FOOTER_CONSENT_VERSION = 'newsletter-consent-20260920-v1';
 const NEWSLETTER_QUESTION_CONSENT_VERSION = 'question-newsletter-consent-20260923-v1';
+const ADMIN_CLIENT_BUILD = '20261020-admin-client-version-v1';
 const PROMPT_VERSION    = '2026-06-30.4';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -279,6 +280,26 @@ app.get('/sw.js', (req, res) => res.sendFile(path.join(__dirname, 'sw.js')));
 
 // Render/UptimeRobot için oturum ve veritabanı gerektirmeyen canlılık kontrolü.
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/api/admin-client-version', (_req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.status(200).json({ version: ADMIN_CLIENT_BUILD });
+});
+
+function requiresCurrentAdminClient(req) {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return false;
+  return /^\/api\/(?:history|review)(?:\/|$)/.test(req.path);
+}
+
+app.use((req, res, next) => {
+  const enforce = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
+  if (!enforce || !req.session?.userId || !requiresCurrentAdminClient(req)) return next();
+  if (String(req.get('X-Admin-Client-Build') || '') === ADMIN_CLIENT_BUILD) return next();
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  return res.status(409).json({
+    error: 'Yönetim panelinin yeni sürümü yayımlandı. Yazdığınız içerik korunarak sayfa yenilenecek.',
+    code: 'ADMIN_CLIENT_UPDATE_REQUIRED'
+  });
+});
 
 const SURE_STANDARD_LIST = `001. FÂTİHA
 002. BAKARA

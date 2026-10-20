@@ -221,6 +221,12 @@ assert(html.includes("return 'b64:'+btoa(binary)"), 'Turkce yonetici notlari da 
 assert(html.includes("if(!hasAdminRole(me?.role)||!adminActionNeedsNote(method,url,body))return '';"), 'Normal ekip uyesi notlari yonetici HTTP basligina eklenmemeli.');
 assert(html.includes('İstek tarayıcı tarafından gönderilemedi. Sayfayı yenileyip yeniden deneyin.'), 'Tarayici kaynakli istek hatasi uydurma internet mesaji vermemeli.');
 assert(html.includes('<button type="button" class="btn-primary" id="feedbackSubmitBtn"'), 'Geri bildirim gonder dugmesi form submit tetiklememeli.');
+const adminClientBuildHtml = html.match(/const ADMIN_CLIENT_BUILD='([^']+)'/)?.[1];
+const adminClientBuildServer = server.match(/const ADMIN_CLIENT_BUILD = '([^']+)'/)?.[1];
+assert(adminClientBuildHtml && adminClientBuildHtml === adminClientBuildServer, 'Admin istemci surumu frontend ve backend arasinda ayni olmali.');
+assert(server.includes("app.get('/api/admin-client-version'") && server.includes("code: 'ADMIN_CLIENT_UPDATE_REQUIRED'"), 'Sunucu admin istemci surumunu yayinlamali ve eski istemci yazma isteklerini reddetmeli.');
+assert(html.includes('ensureAdminClientCurrent({force:true,reload:true})') && html.includes("'X-Admin-Client-Build':ADMIN_CLIENT_BUILD"), 'Her yonetim yazma istegi guncel istemci surumunu dogrulamali.');
+assert(html.includes('preserveFeedbackDraftForClientReload') && html.includes('restoreFeedbackDraftAfterClientReload'), 'Geri bildirim taslagi istemci surumu yenilenirken korunmali.');
 assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
 assert(html.includes('function adminActionRunsAsMemberWorkflow') && html.includes("ReviewWorkspace.workspace()==='member'"), 'Admin rolu olan ekip uyesinin normal calisma akisi zorunlu yonetim notundan ayrilmali.');
 assert(server.includes("workspace: req.get('X-Review-Workspace')") && server.includes('reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED'), 'Backend zorunlu not karari ekip uyesi ve yonetim calisma alanini ayirmali.');

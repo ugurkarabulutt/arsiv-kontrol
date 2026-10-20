@@ -2752,7 +2752,7 @@ canvas{width:100%!important;}
 <script src="/review-workspace.js?v=20261018-admin-action-recovery"></script>
 <script>
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Service worker kaydedilemedi:',err)));
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(err=>console.warn('Service worker kaydedilemedi:',err)));
 }
 let me=null,selectedFile=null,batchFiles=[],activeInner='text',correctedText='',currentHistoryId=null,currentResult=null,currentOriginalText='',currentAiReport=null,alertFilter='all',historyFilter='all',historySearch='',historyRows=[],isAnalyzing=false,selectedFeedbackIds=new Set(),pendingFeedbackPayload=null,pendingApprovalPayload=null,pendingReturnApprovalId=null,submitApprovalInFlight=false,systemConfirmResolver=null,reportPeriodFilter='',reportDateFilter='',reportMonthFilter='',feedbackFilter='open',feedbackWorkFilter='all',feedbackRows=[],msgLogFilter='all',scrollLockEnabled=true,approvalReviewOpen=false,approvalArchiveOpen=false,approvalSearchTimer=null,approvalGroupSearches={bekliyor:'',onaylandi:'',reddedildi:'',teyit_bekliyor:'',arsivlendi:''},correctionPackagesState={logReady:false,packages:[]},archiveOpsState={sources:[],counts:null,activeSource:null,query:'',type:'',status:'',fileQuery:'',fileType:'',fileStatus:'',textQuery:'',textType:'',textStatus:'',sourceSubmitInFlight:false,view:'overview',menuOpen:false,liveSiteMenuOpen:false},archiveWorkState={items:[],counts:null,activeItem:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archivePublishState={tasks:[],counts:null,activeTask:null,query:'',status:'',priority:'',submitInFlight:false,loading:false},archiveWorkAuditContext=null,archiveImportState={batches:[],activeBatchId:null,activeBatch:null,items:[],selectedId:null,processing:false,loading:false,pendingSourceItemId:null};
 let archiveCandidateState={items:[],counts:null,activeItem:null,query:'',kind:'',status:'',loading:false,decisionLoading:false};
@@ -2777,6 +2777,9 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
+const ADMIN_CLIENT_BUILD='20261020-admin-client-version-v1';
+const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
+const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
 const APPROVAL_ARCHIVED_STATUS='arsivlendi';
 const SUBMITTED_APPROVAL_STATUSES=new Set(['bekliyor','teyit_bekliyor','dergah_sorulari','konferanslar','arsivlendi','onaylandi','reddedildi']);
@@ -2791,6 +2794,11 @@ const APPROVAL_RETURN_REASON_LABELS={
 };
 const FONT_SCALE={small:.94,medium:1,large:1.14};
 let isRestoringDraft=false;
+let adminClientVersionCheckedAt=0;
+let adminClientVersionValue='';
+let adminClientVersionPromise=null;
+let adminClientUpdateRequired=false;
+let adminClientReloading=false;
 
 function applyTheme(theme){
   const next=theme==='dark'?'dark':'light';
@@ -3024,7 +3032,9 @@ function syncDashAutoRefresh(activeTab){
 }
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden&&el('tabContent-dash')?.classList.contains('active'))loadDash();
+  if(!document.hidden)void ensureAdminClientCurrent({force:true,reload:false});
 });
+window.addEventListener('focus',()=>void ensureAdminClientCurrent({force:true,reload:false}));
 
 (async()=>{
   try{
@@ -3066,6 +3076,7 @@ function enterApp(user){
   if(me.reviewWorkspacesEnabled)ReviewWorkspace.start();
   else showTab('analiz');
   restoreWorkDraft();
+  restoreFeedbackDraftAfterClientReload();
   if(hasAdminRole(user.role))refreshBadges();
   refreshNoticeBadge();
   refreshStandardsBadge();
@@ -4372,7 +4383,40 @@ function openFeedbackModal({title,label,context,defaultNote,payload}){
 }
 function closeFeedbackModal(){
   pendingFeedbackPayload=null;
+  try{sessionStorage.removeItem(ADMIN_FEEDBACK_DRAFT_KEY);}catch(_){}
   closeModal('feedbackModal');
+}
+function preserveFeedbackDraftForClientReload(){
+  if(!pendingFeedbackPayload)return;
+  const note=String(el('feedbackModalText')?.value||'').slice(0,2000);
+  try{
+    sessionStorage.setItem(ADMIN_FEEDBACK_DRAFT_KEY,JSON.stringify({
+      savedAt:Date.now(),
+      title:el('feedbackModalTitle')?.textContent||'Geri bildirim gönder',
+      label:el('feedbackModalLabel')?.textContent||'Ne oldu?',
+      context:el('feedbackModalContext')?.textContent||'',
+      note,
+      payload:pendingFeedbackPayload
+    }));
+  }catch(_){}
+}
+function restoreFeedbackDraftAfterClientReload(){
+  let draft=null;
+  try{
+    const raw=sessionStorage.getItem(ADMIN_FEEDBACK_DRAFT_KEY);
+    sessionStorage.removeItem(ADMIN_FEEDBACK_DRAFT_KEY);
+    if(raw)draft=JSON.parse(raw);
+  }catch(_){draft=null;}
+  const historyId=String(draft?.payload?.historyId||'');
+  if(!draft||Date.now()-Number(draft.savedAt||0)>15*60*1000||!/^[0-9a-f-]{36}$/i.test(historyId))return;
+  openFeedbackModal({
+    title:String(draft.title||'Geri bildirim gönder').slice(0,160),
+    label:String(draft.label||'Ne oldu?').slice(0,160),
+    context:String(draft.context||'').slice(0,500),
+    defaultNote:String(draft.note||'').slice(0,2000),
+    payload:draft.payload
+  });
+  el('feedbackModalErr').textContent='Yönetim paneli güncellendi. Yazdığınız not korundu; şimdi gönderebilirsiniz.';
 }
 function resizeFeedbackTextarea(){
   const txt=el('feedbackModalText');
@@ -11956,6 +12000,41 @@ function validAdminActionNoteUi(note){
   const clean=String(note||'').replace(/\s+/g,' ').trim();
   return clean.length>=3&&/[\p{L}\p{N}]/u.test(clean);
 }
+function isMutationRequest(method){return ['POST','PUT','PATCH','DELETE'].includes(String(method||'').toUpperCase());}
+async function fetchAdminClientVersion(force=false){
+  const now=Date.now();
+  if(!force&&adminClientVersionValue&&now-adminClientVersionCheckedAt<ADMIN_CLIENT_VERSION_TTL_MS)return adminClientVersionValue;
+  if(adminClientVersionPromise)return adminClientVersionPromise;
+  adminClientVersionPromise=(async()=>{
+    try{
+      const response=await fetch('/api/admin-client-version',{method:'GET',cache:'no-store',headers:{'Accept':'application/json'}});
+      if(!response.ok)return '';
+      const data=await response.json();
+      const version=String(data?.version||'');
+      if(version){adminClientVersionValue=version;adminClientVersionCheckedAt=Date.now();}
+      return version;
+    }catch(_){return '';}
+    finally{adminClientVersionPromise=null;}
+  })();
+  return adminClientVersionPromise;
+}
+function reloadForCurrentAdminClient(){
+  if(adminClientReloading)return;
+  preserveFeedbackDraftForClientReload();
+  adminClientReloading=true;
+  const feedbackErr=el('feedbackModalErr');
+  if(feedbackErr)feedbackErr.textContent='Yönetim paneli güncelleniyor. Yazdığınız not korunuyor...';
+  window.setTimeout(()=>window.location.reload(),80);
+}
+async function ensureAdminClientCurrent({force=false,reload=true}={}){
+  if(adminClientReloading)return false;
+  const current=await fetchAdminClientVersion(force);
+  if(!current)return true;
+  adminClientUpdateRequired=current!==ADMIN_CLIENT_BUILD;
+  if(!adminClientUpdateRequired)return true;
+  if(reload)reloadForCurrentAdminClient();
+  return false;
+}
 async function ensureAdminActionNote(method,url,body){
   if(!hasAdminRole(me?.role)||!adminActionNeedsNote(method,url,body))return body;
   const existing=adminActionNoteFromBody(body);
@@ -11979,10 +12058,14 @@ async function ensureAdminActionNote(method,url,body){
   return {...(body&&typeof body==='object'&&!Array.isArray(body)?body:{}),adminActionNote:clean};
 }
 async function api(method,url,body){
+  if(isMutationRequest(method)&&url!=='/api/auth/logout'){
+    const current=await ensureAdminClientCurrent({force:true,reload:true});
+    if(!current)return {error:'Yönetim panelinin yeni sürümü yükleniyor. Yazdığınız içerik korunuyor.',code:'ADMIN_CLIENT_UPDATE_REQUIRED',cancelled:true};
+  }
   const notedBody=await ensureAdminActionNote(method,url,body);
   if(notedBody===null)return {error:'İşlem açıklaması girilmediği için işlem yapılmadı.',code:'ADMIN_ACTION_NOTE_REQUIRED',cancelled:true};
   body=notedBody;
-  const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store'};
+  const opts={method,headers:{'Content-Type':'application/json','X-Admin-Client-Build':ADMIN_CLIENT_BUILD},cache:'no-store'};
   const actionNote=adminActionHeaderFromRequest(method,url,body);
   if(actionNote)opts.headers['X-Admin-Action-Note']=adminActionNoteHeaderValue(actionNote);
   if(me?.reviewWorkspacesEnabled){
@@ -12001,6 +12084,10 @@ async function api(method,url,body){
     if(text){
       try{data=JSON.parse(text);}
       catch{data={error:'Sunucu beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin.'};}
+    }
+    if(data.code==='ADMIN_CLIENT_UPDATE_REQUIRED'){
+      reloadForCurrentAdminClient();
+      return {...data,error:data.error||'Yönetim panelinin yeni sürümü yükleniyor.'};
     }
     if(!r.ok)return {...data,error:data.error||'İşlem tamamlanamadı. Lütfen tekrar deneyin.'};
     if(me?.reviewWorkspacesEnabled&&Number.isInteger(data.version)&&currentResult?.id===data.id)currentResult.version=data.version;
