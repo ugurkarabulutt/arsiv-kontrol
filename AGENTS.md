@@ -5,6 +5,22 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-21
 
+- **Yönetici soru-cevap denetimi sadeleştirildi:** Yönetim alanındaki
+  `Soru ve Cevabı Denetle` teknik kalite kontrolü artık genel zorunlu
+  `İşlem açıklaması` penceresini açmaz. Onay zaten muaf kalır; geri
+  gönderme, reddetme, arşivleme, çöpe taşıma ve diğer yönetim kararlarında
+  anlamlı gerekçe zorunluluğu korunur. Frontend ve backend politika testleri
+  aynı istisnayı doğrular. Admin istemci sürümü
+  `20261021-admin-reanalysis-v2` olarak yükseltildiği için eski açık sekmeler
+  yeni sürümü otomatik alır. Runtime commit `953835e`, production deployment
+  `dpl_C8Ut2bhVmztLCvQzqQYMoHvZ9R1x` /
+  `https://arsiv-kontrol-qcnoha20q-ugurkarabulutts-projects.vercel.app`
+  `https://arsiv.ibrahimlive.ai` alanında etkindir. `npm.cmd run check`
+  255/255 geçti. Ayrı Chromium E2E testi hem sentetik ortamda hem canlıda
+  admin girişi, Yönetim çalışma alanı, gerçek buton tıklaması, 200 API yanıtı,
+  açıklama penceresinin hiç açılmaması ve `reanalyze` DB revizyonunu doğruladı.
+  Canlı geçici kullanıcı/kayıt/log verileri test sonunda tamamen temizlendi.
+
 - **Soru ve cevap denetim kapısı production'a alındı:** Düşük puan düzeltme
   taslağını artık silmez. Onay ve gönderim için soru ile cevabın birlikte
   denetlenmiş son hâli, iki alan puanı ve hashleri DB'de doğrulanır. Eski

@@ -1,5 +1,31 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-21 Yönetici Denetim Butonu — Production Tamamlandı
+
+- Yönetim alanındaki `Soru ve Cevabı Denetle` işlemi teknik kontrol olarak
+  ayrıldı; artık `İşlem açıklaması` istemez. Onay muafiyeti korunurken geri
+  gönderme, reddetme, arşivleme, çöpe taşıma ve diğer yönetim kararlarında
+  zorunlu gerekçe devam eder.
+- Frontend ve backend aynı politika kuralını kullanacak şekilde testlendi.
+  Admin istemci build'i `20261021-admin-reanalysis-v2`; eski açık sekmeler
+  sürüm kontrolüyle yenilenir.
+- Runtime commit `953835e978b152445dde6aeca2cf295b1e726620` branch'e push
+  edildi. Production deployment `dpl_C8Ut2bhVmztLCvQzqQYMoHvZ9R1x` /
+  `https://arsiv-kontrol-qcnoha20q-ugurkarabulutts-projects.vercel.app`
+  `READY` olarak `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+- `npm.cmd run check` 255/255 başarılı. Yeni
+  `scripts/verify-admin-reanalysis-ui.js` gerçek Chromium ile admin Yönetim
+  alanında butona basar; modalın açılmadığını, action-note header'ı
+  gönderilmediğini, API'nin 200 verdiğini ve DB'de tek denetim revizyonu
+  oluştuğunu doğrular.
+- Canlı E2E'de geçici admin ile gerçek giriş yapıldı; sentetik kayıt ekip
+  akışından onaya gönderildi, Yönetim alanında butona basıldı ve kayıt
+  `bekliyor` durumunda korunarak ikinci `reanalyze` revizyonu görüldü.
+  Test kullanıcısı, history kaydı ve admin logları temizlendi:
+  `leftover_users=0`, `leftover_history=0`, `leftover_logs=0`.
+- Canlı admin/API/public smoke rotaları geçti; `/health=ok`, admin build
+  sürümü doğru ve son 30 dakika production error filtresinde hata yok.
+
 ## 2026-10-21 Soru ve Cevap Denetimi — Production Tamamlandı
 
 - Dal `codex/review-analysis-quality-gate`; çalışma ağacı
