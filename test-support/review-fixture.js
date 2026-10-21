@@ -10,7 +10,7 @@ const mapHistory=h=>({id:h.id,userId:h.user_id,name:h.name,filename:h.filename,s
   correctedText:h.corrected_text,originalText:h.original_text,tags:h.tags,submissionNote:h.submission_note,
   approvedBy:h.approved_by,approvedAt:h.approved_at,createdAt:h.created_at});
 
-async function createFixture({ publishApprovedHistoryRecord } = {}) {
+async function createFixture({ publishApprovedHistoryRecord, qualityGate = false, analyzeText } = {}) {
   const db = new PGlite();
   const publishedRecords=[];
   const schema=fs.readFileSync(path.join(root,'schema.sql'),'utf8');
@@ -48,7 +48,8 @@ async function createFixture({ publishApprovedHistoryRecord } = {}) {
     values($1::uuid,$2,'Ekip Örnek','taslak',$3,$4,'Taslak test kaynağı '||($1::uuid)::text,'["Takva"]',$5)`,
     ['50000000-0000-4000-8000-00000000000'+suffix,users[0].id,question,answer,meta]);
   // Supabase read adapter for fixtures. Writes always execute the actual migration RPC.
-  const value=(row,key)=>key.includes('->')?row[key.split(/->>?/)[0]]?.[key.split(/->>?/)[1]]:row[key];
+  if(qualityGate)await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261021084720_review_analysis_quality_gate.sql'),'utf8'));
+  const value=(row,key)=>key.split(/->>?/).reduce((value,part)=>value?.[part],row);
   const supabase={from(table){
     if(!['users','history','public_qa','history_revisions','review_history_queue'].includes(table))throw Error('Unexpected fixture table');
     const filters=[],orders=[];let start=0,end=Infinity,single=false,columns=['*'],updateValues=null;
@@ -85,9 +86,10 @@ async function createFixture({ publishApprovedHistoryRecord } = {}) {
     const user=users.find(u=>u.role===role)||users[1];req.demoUser=user;req.session={userId:user.id,role:user.role};next();
   });
   app.get('/api/auth/me',(req,res)=>res.json({...req.demoUser,loggedIn:true}));
+  app.get('/api/admin-client-version',(_req,res)=>res.json({version:fs.readFileSync(path.join(root,'server.js'),'utf8').match(/const ADMIN_CLIENT_BUILD = '([^']+)'/)[1]}));
   const review=createReviewWorkflow({supabase,mapHistory,loadApprovalReturnNotes:async()=>({}),attachApprovalReturnMeta:h=>h,
     clearPublicArchiveCaches:()=>{},publishApprovedHistoryRecord:publishApprovedHistoryRecord||(async record=>{publishedRecords.push(record.id);}),
-    analyzeText:async text=>({correctedText:text,score:100,totalErrors:0,categories:{},summary:'Yerel test, AI çağrısı yapılmadı.'}),analysisRateLimiter:(_req,_res,next)=>next()});
+    analyzeText:analyzeText||(async text=>({correctedText:text,score:100,totalErrors:0,categories:{},summary:'Yerel test, AI çağrısı yapılmadı.'})),analysisRateLimiter:(_req,_res,next)=>next()});
   app.use('/api/review',review.router);app.use('/api/history',review.legacy);
   app.get('/api/history/approval-board',(_req,res)=>res.json({groups:{}}));
   app.get('/api/stats',(_req,res)=>res.json({totals:{allTime:65,last30:65,activeUsers:3,avgScore:90,unreadAlerts:0,pendingApproval:17,feedbackOpen:0},
@@ -103,7 +105,7 @@ async function createFixture({ publishApprovedHistoryRecord } = {}) {
 }
 module.exports={createFixture};
 if(require.main===module){
-  createFixture().then(({app,db})=>{
+  createFixture({qualityGate:process.env.REVIEW_QUALITY_DEMO==='1'}).then(({app,db})=>{
     const server=app.listen(Number(process.env.PORT||4317),'127.0.0.1',()=>console.log('SYNTHETIC REVIEW DEMO http://127.0.0.1:'+server.address().port+'/admin'));
     for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>server.close(async()=>{await db.close();process.exit(0);}));
   }).catch(error=>{console.error(error);process.exit(1);});

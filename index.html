@@ -2748,8 +2748,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=20261020-duplicate-review-v1">
-<script src="/review-workspace.js?v=20261020-duplicate-review-v1"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20261021-analysis-quality-v1">
+<script src="/review-workspace.js?v=20261021-analysis-quality-v1"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -2777,7 +2777,7 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const ADMIN_CLIENT_BUILD='20261020-duplicate-review-v2';
+const ADMIN_CLIENT_BUILD='20261021-analysis-quality-v1';
 const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
 const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
@@ -3693,6 +3693,7 @@ function renderApprovalActionButton(d, placement='main'){
 }
 function renderApprovalSubmitPanel(d){
   if(!d?.id||!d.correctedText)return '';
+  if(me?.reviewWorkspacesEnabled&&!approvalSubmitted(d))return `<div class="approval-submit-panel"><div><strong>Düzeltme taslağı hazır</strong><p>Soruyu ve etiketleri tamamlayın; soru ve cevabı birlikte denetleyerek onaya gönderin.</p></div><button type="button" class="btn-submit-approval" onclick="ReviewWorkspace.open('${d.id}')">Soru ve Cevabı Tamamla</button></div>`;
   const sent=approvalSubmitted(d);
   const returned=String(d.status||'')===APPROVAL_RETURNED_STATUS;
   const title=sent?'Onay sürecinde':returned?'Düzeltme bekliyor':'Sonuç hazırlandı';
@@ -3730,6 +3731,7 @@ function submitCategoryCounts(categories){
 }
 async function openSubmitApprovalModal(){
   const d=currentResult;
+  if(me?.reviewWorkspacesEnabled&&d?.id)return ReviewWorkspace.open(d.id);
   if(!d?.id||!d.correctedText){setStatus('Onaya gönderilecek düzeltilmiş metin bulunamadı.','err');return;}
   if(approvalSubmitted(d)){setStatus('Bu kayıt zaten onay sürecine gönderilmiş.','ok');return;}
   const synced=await syncLiveSubmittedApprovalStatus(d.id,{render:true,statusMessage:true});
@@ -4151,7 +4153,7 @@ function renderResults(d,container){
     ${d.correctedText&&currentOriginalText?renderComparePanel(currentOriginalText,d.correctedText):''}
     ${d.correctedText?`<div class="corrected-panel">
       <div class="corrected-head">
-        <h3>Düzeltilmiş Metin</h3>
+        <h3>${sc<60?'Düzeltme Taslağı — Yeniden Denetim Gerekli':'Düzeltilmiş Metin'}</h3>
       </div>
       <div class="corrected-body-wrap">
         <button class="btn-copy corrected-copy-btn" id="copyBtn" onclick="copyFixed()">Kopyala</button>
@@ -4171,7 +4173,7 @@ function copyAnalysisReport(){
     'Arşiv AI Denetim Özeti',
     `Skor: ${d.score||0}/100`,
     `Toplam sorun: ${d.totalErrors||0}`,
-    `Durum: ${(d.score||0)<60?'Düşük skor - düzeltilmiş metin verilmedi':'Düzeltilmiş metin üretildi'}`,
+    `Durum: ${(d.score||0)<60?'Düzeltme taslağı hazır - yeniden denetim gerekli':'Düzeltilmiş metin üretildi'}`,
     ''
   ];
   const catLabels={sozluk:'Sözlük',imla:'İmla',noktalama:'Noktalama',etiket:'Etiket',yapi:'Yapı'};

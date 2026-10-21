@@ -1,6 +1,6 @@
 /* Shared member/management workspace. Capabilities come from the server. */
 const ReviewWorkspace = (() => {
-  const labels = { all: 'Tümü', taslak: 'Taslaklar', bekliyor: 'Onay bekleyenler', mukerrer_inceleme: 'Mükerrer İnceleme', geri_gonderildi: 'Geri dönenler',
+  const labels = { all: 'Tümü', analysis_required: 'Yeniden Denetim Gerekli', taslak: 'Taslaklar', bekliyor: 'Onay bekleyenler', mukerrer_inceleme: 'Mükerrer İnceleme', geri_gonderildi: 'Geri dönenler',
     teyit_bekliyor: 'Teyit bekleyenler', dergah_sorulari: 'Dergah Soruları', konferanslar: 'Konferanslar',
     onaylandi: 'Onaylananlar', reddedildi: 'Reddedilenler',
     arsivlendi: 'Arşivlenenler', copte: 'Çöp kutusu', disputed: 'Sahiplik itirazları',
@@ -11,7 +11,7 @@ const ReviewWorkspace = (() => {
     restore: 'Geri Al', dispute: 'Bu Kayıt Bana Ait Değil', resolve_dispute: 'İtirazı Sonuçlandır',
     close_duplicate: 'Mükerrer Olarak Kapat', confirm_duplicate: 'Mükerrer Olarak Çöpe Taşı',
     duplicate_clear: 'Mükerrer Değil, Onayla',
-    reanalyze: 'Yeniden Denetle', withdraw: 'Geri Çek', delete_draft: 'Taslağı Sil',
+    reanalyze: 'Soru ve Cevabı Denetle', withdraw: 'Geri Çek', delete_draft: 'Taslağı Sil',
     revise_rejected: 'Düzenlemeye Al' };
   const memberTabs = new Set(['analiz', 'gecmis', 'bildirim', 'standartlar', 'profil', 'ayarlar']);
   const states = { member: { status: 'todo', q: '', page: 1 }, management: { status: 'bekliyor', q: '', page: 1 } };
@@ -36,6 +36,22 @@ const ReviewWorkspace = (() => {
     tags: (node('rwTags')?.value ?? (item?.tags || []).join(', ')).split(',').map(tag => tag.trim()).filter(Boolean),
     submissionNote: node('rwNote')?.value ?? item?.submissionNote ?? '' });
   const dirty = () => !!item && !!node('rwQuestion') && JSON.stringify(values()) !== baseline;
+  function refreshQualityControls() {
+    if(!item)return;
+    const current=values();
+    const changed=current.questionText!==item.questionText||current.correctedText!==item.correctedText;
+    const ready=item.quality?.state==='ready'&&!changed;
+    const status=node('rwQualityStatus');
+    if(status)status.textContent=changed?'Metin değişti; yeniden denetim gerekli':item.quality?.label||'Soru ve cevap birlikte denetlenmeli';
+    node('rwQuality')?.classList.toggle('rw-quality-ready',ready);
+    document.querySelectorAll('[data-rw-publish]').forEach(button=>button.disabled=busy||!ready);
+  }
+  function qualityHtml() {
+    const receipt=item.workflow?.analysisReceipt;
+    const fields=[['question','Soru'],['answer','Cevap']];
+    const findings=fields.map(([key,label])=>receipt?.[key]?`<details><summary>${label}: ${safe(receipt[key].score)} / 100 · ${safe(receipt[key].totalErrors||0)} bulgu</summary>${Object.values(receipt[key].categories||{}).flatMap(category=>(category.issues||[]).map(issue=>`<div class="rw-finding"><del>${safe(issue.original)}</del><span>→ ${safe(issue.fixed)}</span><small>${safe(issue.rule||'')}</small></div>`)).join('')||'<p>Bulgu yok.</p>'}</details>`:'').join('');
+    return `<section id="rwQuality" class="rw-quality" aria-live="polite"><strong id="rwQualityStatus"></strong>${receipt?.checkedAt?`<p>Son denetim: ${date(receipt.checkedAt)}</p>`:''}${findings}${!item.correctedText&&item.originalText?'<p>Bu eski kayıtta düzeltme çıktısı boş. İlk kaynak metin denetlenerek cevap taslağı hazırlanabilir.</p><label><input type="checkbox" id="rwUseSource"> İlk kaynak metinden cevap taslağı hazırla</label>':''}</section>`;
+  }
   function message(text, error = false) {
     const target = node('rwDetailMessage') || node('rwListMessage') || node('reviewToast');
     if (target) { target.textContent = text; target.classList.toggle('rw-error', error); }
@@ -154,7 +170,7 @@ const ReviewWorkspace = (() => {
     const holder = node('histStatusFilter')?.closest('.history-toolbar');
     if (holder) holder.hidden = true;
     if (node('scoreChartBox')) node('scoreChartBox').style.display='none';
-    const options = management() ? ['bekliyor','mukerrer_inceleme','dergah_sorulari','konferanslar','onaylandi','reddedildi','geri_gonderildi','disputed','teyit_bekliyor','arsivlendi','copte','all']
+    const options = management() ? ['bekliyor','analysis_required','mukerrer_inceleme','dergah_sorulari','konferanslar','onaylandi','reddedildi','geri_gonderildi','disputed','teyit_bekliyor','arsivlendi','copte','all']
       : ['todo','in_review','done'];
     const inactive = node(management() ? 'histContent' : 'onayContent');
     if (inactive?.querySelector('.rw-list')) inactive.replaceChildren();
@@ -264,27 +280,29 @@ const ReviewWorkspace = (() => {
     const duplicateDecisions=item.status==='mukerrer_inceleme'
       ?(item.allowedActions||[]).filter(action=>['confirm_duplicate','duplicate_clear'].includes(action))
       :[];
-    const others=(item.allowedActions||[]).filter(action=>!['save','delete_draft',primary,...duplicateDecisions].includes(action));
+    const others=(item.allowedActions||[]).filter(action=>!['save','reanalyze','delete_draft',primary,...duplicateDecisions].includes(action));
     node('detailBody').innerHTML=`<div class="rw-detail"><div class="rw-record-meta"><strong>${safe(item.name)}</strong><span>${safe(statusText(item))}</span><span>No: ${safe(item.id.slice(0,8))} · Sürüm ${item.version}</span><span>${date(item.updatedAt||item.createdAt)}</span><span>${item.publication?.status==='published'?'Yayında':'Yayında değil'}</span>${item.userId===me.id?'<span>Kendi kaydınız</span>':''}${item.assigneeId?`<span>Düzeltme sorumlusu: ${safe(item.assigneeName||item.assigneeId.slice(0,8))}</span>`:''}</div>
       ${item.returnNote&&!management()?`<section class="rw-return"><strong>Yönetici geri gönderme gerekçesi</strong><p>${safe(item.returnNote)}</p></section>`:''}
       ${meta.disputed?`<p class="rw-warning">Sahiplik itirazı: ${safe(meta.disputeNote)}</p>`:''}
       ${meta.trashNote&&item.status==='copte'?`<section class="rw-trash-reason"><strong>Atılma sebebi: ${safe(meta.trashReasonLabel||'Diğer')}</strong><p>${safe(meta.trashNote)}</p>${meta.duplicateSlug?`<a href="/soru/${encodeURIComponent(meta.duplicateSlug)}" target="_blank" rel="noopener">Yayındaki asıl soruyu aç</a>`:''}</section>`:''}
       ${management()&&item.status==='mukerrer_inceleme'?'<section id="rwDuplicateReview" class="rw-duplicate-review" aria-live="polite"><p>Mükerrer karşılaştırması yükleniyor…</p></section>':''}
       ${management()?'<section id="rwChangeSummary" class="rw-change-summary" hidden aria-live="polite"></section>':''}
-      <label class="rw-field"><span>Soru</span><textarea id="rwQuestion" ${editable?'':'readonly'} rows="3">${safe(item.questionText||'')}</textarea></label>
+      ${qualityHtml()}
+      <label class="rw-field"><span>Soru</span><textarea id="rwQuestion" oninput="ReviewWorkspace.refreshQualityControls()" ${editable?'':'readonly'} rows="3">${safe(item.questionText||'')}</textarea></label>
       <label class="rw-field"><span>Etiketler</span><textarea id="rwTags" ${editable?'':'readonly'} rows="2">${safe((item.tags||[]).join(', '))}</textarea></label>
-      <label class="rw-field"><span>Cevap (düzeltilmiş metin)</span><textarea id="rwAnswer" ${editable?'':'readonly'} rows="12" dir="auto">${safe(item.correctedText||'')}</textarea></label>
+      <label class="rw-field"><span>Cevap taslağı</span><textarea id="rwAnswer" oninput="ReviewWorkspace.refreshQualityControls()" ${editable?'':'readonly'} rows="12" dir="auto">${safe(item.correctedText||'')}</textarea></label>
       <label class="rw-field rw-member-note"><span>${memberNoteLabel}</span><textarea id="rwNote" ${noteEditable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea><small>${memberNoteHelp}</small></label>
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
-      <div class="rw-actions">${can('save')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${primary?`<button type="button" class="btn-primary" data-rw-write onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
-      ${duplicateDecisions.map(action=>`<button type="button" class="${action==='confirm_duplicate'?'btn-danger':'btn-primary'}" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]}</button>`).join('')}
+      <div class="rw-actions">${can('save')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${can('reanalyze')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'reanalyze\')">Soru ve Cevabı Denetle</button>':''}${primary?`<button type="button" class="btn-primary" data-rw-write ${['submit','approve'].includes(primary)?'data-rw-publish':''} onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
+      ${duplicateDecisions.map(action=>`<button type="button" class="${action==='confirm_duplicate'?'btn-danger':'btn-primary'}" data-rw-write ${action==='duplicate_clear'?'data-rw-publish':''} onclick="ReviewWorkspace.decide('${action}')">${actions[action]}</button>`).join('')}
       ${can('delete_draft')?'<button type="button" class="btn-danger" data-rw-write onclick="ReviewWorkspace.decide(\'delete_draft\')">Taslağı Sil</button>':''}
       ${others.length?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${others.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]||safe(action)}</button>`).join('')}</div></details>`:''}<button type="button" class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
     baseline=JSON.stringify(values());
     const footer=node('detailModal').querySelector('.modal-foot');
     footer.replaceChildren(node('rwDetailMessage'),node('detailBody').querySelector('.rw-detail > .rw-actions'));
     footer.style.display='block';
+    refreshQualityControls();
     if(management()&&item.status!=='copte'){
       const favorite=document.createElement('button');
       favorite.type='button';favorite.id='rwFavorite';favorite.className='work-star';
@@ -428,9 +446,10 @@ const ReviewWorkspace = (() => {
     withdraw:['taslak','geri_gonderildi'], revise_rejected:['geri_gonderildi'],
     delete_draft:['copte'], close_duplicate:['copte'], confirm_duplicate:['copte'], duplicate_clear:['onaylandi']
   };
-  function actionApplied(record, action, before) {
+  function actionApplied(record, action, before, payload) {
     if(!record || record.error || !Number.isInteger(record.version) || record.version<=before.version)return false;
-    if(action==='save'||action==='reanalyze')return record.status===before.status;
+    if(action==='reanalyze')return record.status===before.status && record.workflow?.analysisReceipt?.requestId===payload.analysisRequestId;
+    if(action==='save')return record.status===before.status;
     if(action==='dispute')return record.workflow?.disputed===true;
     if(action==='resolve_dispute')return record.workflow?.disputed===false;
     return (actionFinalStatuses[action]||[]).includes(record.status);
@@ -441,7 +460,7 @@ const ReviewWorkspace = (() => {
     if(result.code!=='REQUEST_OUTCOME_UNKNOWN')return result;
 
     let current=await request('/'+record.id);
-    if(actionApplied(current,action,record))return {history:current,outcomeVerified:true};
+    if(actionApplied(current,action,record,payload))return {history:current,outcomeVerified:true};
     if(current.error){
       return {error:'İşlemin sonucu sunucudan doğrulanamadı. Kayıt üzerinde tekrar işlem yapmadan sayfayı yenileyin.',code:'ACTION_OUTCOME_UNVERIFIED'};
     }
@@ -452,7 +471,7 @@ const ReviewWorkspace = (() => {
     result=await request(endpoint,'POST',{...payload,version:current.version});
     if(result.code!=='REQUEST_OUTCOME_UNKNOWN'&&result.code!=='VERSION_CONFLICT')return result;
     current=await request('/'+record.id);
-    if(actionApplied(current,action,record))return {history:current,outcomeVerified:true};
+    if(actionApplied(current,action,record,payload))return {history:current,outcomeVerified:true};
     return result.code==='VERSION_CONFLICT'
       ? result
       : {error:'İşlemin sonucu sunucudan doğrulanamadı. Kayıt üzerinde tekrar işlem yapmadan sayfayı yenileyin.',code:'ACTION_OUTCOME_UNVERIFIED'};
@@ -460,6 +479,10 @@ const ReviewWorkspace = (() => {
   async function act(action) {
     if (busy||!can(action)) return;
     const payload={action,version:item.version,...(['save','submit','approve','reanalyze'].includes(action)?values():{}),note:node('rwReason')?.value||''};
+    if(action==='reanalyze'){
+      payload.useOriginalAnswer=node('rwUseSource')?.checked===true;
+      payload.analysisRequestId=crypto.randomUUID();
+    }
     if(node('rwAssignee'))payload.assigneeId=node('rwAssignee').value;
     if(node('rwDuplicate')?.value)payload.duplicateId=node('rwDuplicate').value;
     busy=true; node('detailModal').setAttribute('aria-busy','true');
@@ -505,6 +528,7 @@ const ReviewWorkspace = (() => {
     } finally {
       busy=false; node('detailModal').removeAttribute('aria-busy');
       document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=false);
+      refreshQualityControls();
     }
   }
   function bulkActionSummary(action, count) {
@@ -626,7 +650,7 @@ const ReviewWorkspace = (() => {
     window.addEventListener('resize', updateBulkStickiness);
     refreshNav();
   });
-  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,showDuplicate,
+  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,showDuplicate,refreshQualityControls,
     toggleSelect,selectPage,clearSelection,setBulkAction,bulkAction,
     workspace:()=>space, isDetailOpen:()=>!!item, dirty};
 })();

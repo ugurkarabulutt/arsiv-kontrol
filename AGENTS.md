@@ -3,6 +3,15 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-21
+
+- **Soru ve cevap denetim kapısı yerelde hazırlandı:** Düşük puan düzeltme
+  taslağını artık silmez. Onay ve gönderim için soru ile cevabın birlikte
+  denetlenmiş son hâli, iki alan puanı ve hashleri DB'de doğrulanır. Eski
+  kayıtlar ve değişen metinler yeni kontrol gerektirir. UI denetim durumunu,
+  bulguları ve yeniden denetim filtresini gösterir. Bu değişiklik production'a
+  alınmadı; migration ve geçiş sırası `CURRENT_HANDOFF.md` içindedir.
+
 ## 2026-10-19
 
 - **Adminlerin kendi kayıtlarını onaylama yasağı kaldırıldı:** Kullanıcı kararı
@@ -918,8 +927,17 @@ bir kez Supabase SQL Editor'de çalıştır.
 Skor sunucu tarafında **yetkili** olarak hesaplanır (`finalizeResult`), AI'ın döndürdüğü
 skor kullanılmaz. Formül: `100 - Σ(hata sayısı × ağırlık)`, min 0.
 Ağırlıklar: sözlük −5, imlâ −4, noktalama −3, etiket −2, yapı −4.
-Skor < 60 ise düzeltilmiş metin üretilmez (`correctedText=''`), özet alanına standart
-uyarı mesajı yazılır; hatalar yine listelenir.
+Skor < 60 ise geçerli düzeltmeleri içeren tam metin taslak olarak korunur;
+`requiresReanalysis=true` ve yeniden denetim uyarısı döner. Onaya gönderme ve
+onaylama için soru ile cevabın birlikte denetlenmiş son hâline ait sunucu
+kaydı gerekir. İki alanın da puanı en az 60 olmalıdır. Soru veya cevap
+değişirse bu denetim geçersizleşir; etiket ve ekip notu değişikliği denetimi
+geçersizleştirmez. `workflow_meta.analysisReceipt` alan puanlarını, bulguları,
+tarihi ve iki metnin parmak izini; `analysisInput` son denetimin birebir soru
+ve cevap girdisini tutar. İlk cevap analizi `answer_only` kapsamındadır ve
+tek başına onaya yeterli değildir. Eski kayıtlar doğrulanmış sayılmaz.
+Bu politika `20261021084720_review_analysis_quality_gate.sql` migrationı ve
+eşleşen uygulama sürümü birlikte yayımlandığında production'da etkinleşir.
 
 ## Tekrar-Gönderim Kontrolü
 

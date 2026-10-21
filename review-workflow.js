@@ -1,7 +1,11 @@
 const express = require('express');
+const { randomUUID } = require('node:crypto');
+const { analysisState, analyzeReviewPair } = require('./review-analysis');
 const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 
 const ERRORS = {
+  ANALYSIS_REQUIRED: [422, 'Soru ve cevabın son hâli denetlenmedi. Soru ve Cevabı Denetle düğmesini kullanın.'],
+  ANALYSIS_OUTPUT_EMPTY: [422, 'Denetim kullanılabilir metin üretmedi. Yazdığınız içerik korundu; yeniden deneyin.'],
   VERSION_CONFLICT: [409, 'Kayıt başka bir işlemle değişti. Metninizi koruyun; güncel kaydı açıp karşılaştırın.'],
   FORBIDDEN: [403, 'Bu kayıt için işlem yetkiniz yok.'],
   DRAFT_ONLY: [409, 'Yalnız taslak durumundaki kendi kaydınızı silebilirsiniz.'],
@@ -28,7 +32,7 @@ const ERRORS = {
   INVALID_ACTION: [400, 'Geçersiz işlem.'],
   READ_ONLY: [403, 'Bu önizlemede kayıt değişiklikleri kapalı. Canlı kayıtlar korunuyor.'],
 };
-const LIST_COLUMNS = 'id,user_id,assignee_id,username,name,filename,score,total_errors,status,created_at,updated_at,version,question_text,tags,submission_note,disputed:workflow_meta->disputed,return_note:workflow_meta->>returnNote';
+const LIST_COLUMNS = 'id,user_id,assignee_id,username,name,filename,score,total_errors,status,created_at,updated_at,version,question_text,tags,submission_note,disputed:workflow_meta->disputed,return_note:workflow_meta->>returnNote,analysis_status:workflow_meta->analysisReceipt->>state';
 const PREVIEW_COLUMNS = 'id,user_id,username,name,filename,score,total_errors,status,created_at,updated_at,question_text,tags,submission_note';
 const QUEUE_COLUMNS = LIST_COLUMNS + ',submitted_at,submitted_by,status_changed_at,status_changed_by,queue_sort_at';
 const SUBMITTED_APPROVAL_STATUSES = new Set(['bekliyor','teyit_bekliyor','dergah_sorulari','konferanslar','arsivlendi','onaylandi','reddedildi']);
@@ -128,7 +132,8 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     return rows.map(row => {
       const result = attachApprovalReturnMeta(mapHistory(row), notes);
       const meta = row.workflow_meta || { disputed: row.disputed === true, returnNote: row.return_note };
-      return { ...result, version: row.version ?? 0, updatedAt: row.updated_at, assigneeId: row.assignee_id, assigneeName: names.get(row.assignee_id) || '',
+      const quality = Object.hasOwn(row, 'corrected_text') ? analysisState(row) : { state: row.analysis_status || 'required' };
+      return { ...result, quality, version: row.version ?? 0, updatedAt: row.updated_at, assigneeId: row.assignee_id, assigneeName: names.get(row.assignee_id) || '',
         submittedAt: row.submitted_at || null, submittedBy: row.submitted_by || null, submittedByName: names.get(row.submitted_by) || '',
         queueAt: row.queue_sort_at || row.updated_at || row.created_at,
         favorite: favorites.has(row.id), workflow: meta, returnNote: row.status === 'geri_gonderildi' ? (meta.returnNote ?? result.returnNote) : '',
@@ -173,7 +178,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const term = String(req.query.q || '').trim().replace(/[%,()\\]/g, ' ').replace(/\s+/g, ' ').slice(0, 120);
     const memberStatuses = MEMBER_BUCKETS[status];
     if (space === 'member' && !memberStatuses) throw new Error('INVALID_STATUS');
-    if (space === 'management' && status !== 'all' && status !== 'disputed' && !STATUSES.includes(status)) throw new Error('INVALID_STATUS');
+    if (space === 'management' && !['all','disputed','analysis_required'].includes(status) && !STATUSES.includes(status)) throw new Error('INVALID_STATUS');
     const submissionOrder = status === 'bekliyor' && !readOnly;
     let query = supabase.from(readOnly ? 'history' : 'review_history_queue')
       .select(readOnly ? PREVIEW_COLUMNS : QUEUE_COLUMNS, { count: 'exact' })
@@ -187,6 +192,8 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
       // is no longer an active editing task for the reporting member.
       if (status === 'todo') query = query.or('workflow_meta->>disputed.is.null,workflow_meta->>disputed.neq.true');
     }
+    else if (status === 'analysis_required') query = query.in('status', ['bekliyor','teyit_bekliyor','geri_gonderildi','dergah_sorulari','konferanslar'])
+      .or('workflow_meta->analysisReceipt.is.null,workflow_meta->analysisReceipt->>state.neq.ready');
     else if (status === 'disputed') query = query.eq('workflow_meta->>disputed', 'true').neq('status', 'copte');
     else if (status !== 'all') query = query.eq('status', status);
     else query = query.neq('status', 'copte');
@@ -255,13 +262,12 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     if (!recordActions(userFor(req), current, spaceFor(req)).includes('reanalyze')) throw new Error('FORBIDDEN');
     if (current.version !== req.body?.version) throw new Error('VERSION_CONFLICT');
     const payload = cleanPayload(req.body);
-    const text = payload.correctedText ?? current.corrected_text;
-    if (!text || text.length > 200000) throw new Error('CONTENT_TOO_LONG');
-    const result = await analyzeText(text);
-    if (!result.correctedText) return res.status(422).json({ error: 'Denetim kullanılabilir bir düzeltilmiş metin üretmedi. Mevcut cevabınız değiştirilmedi.' });
-    const item = await change(req, current.id, 'reanalyze', { ...payload, correctedText: result.correctedText,
-      analysisInput: text, score: result.score, totalErrors: result.totalErrors,
-      catCounts: Object.fromEntries(Object.entries(result.categories || {}).map(([key, value]) => [key, value.count || 0])), summary: result.summary || '' }, current.version);
+    const question = payload.questionText ?? current.question_text;
+    const answer = payload.correctedText ?? current.corrected_text;
+    const sourceAnswer = !answer?.trim() && req.body?.useOriginalAnswer === true ? current.original_text : answer;
+    const result = await analyzeReviewPair(analyzeText, question, sourceAnswer);
+    result.analysisReceipt.requestId = UUID.test(req.body?.analysisRequestId || '') ? req.body.analysisRequestId : randomUUID();
+    const item = await change(req, current.id, 'reanalyze', { ...payload, ...result }, current.version);
     res.json({ success: true, history: item });
   }));
 

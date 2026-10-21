@@ -74,8 +74,8 @@ const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
 const NEWSLETTER_FOOTER_CONSENT_VERSION = 'newsletter-consent-20260920-v1';
 const NEWSLETTER_QUESTION_CONSENT_VERSION = 'question-newsletter-consent-20260923-v1';
-const ADMIN_CLIENT_BUILD = '20261020-duplicate-review-v2';
-const PROMPT_VERSION    = '2026-06-30.4';
+const ADMIN_CLIENT_BUILD = '20261021-analysis-quality-v1';
+const PROMPT_VERSION    = '2026-10-21.1';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
 const MAX_ANALYSIS_TEXT_CHARS = 200000;
@@ -14584,8 +14584,8 @@ Skor 100'den başlar ve her hata kategorinin ağırlığına göre düşülür:
 Skor = max(0, 100 - toplam ceza). Sabit/keyfi puan VERME, formülü uygula.
 
 60 PUAN ALTI KURALI:
-- Eğer hesaplanan skor 60'ın altındaysa düzeltilmiş metin ÜRETME.
-- Bu durumda "correctedText" alanını boş bırak ("") ve "summary" alanına şunu yaz:
+- Skor ne olursa olsun tüm geçerli düzeltmeleri içeren tam metni taslak olarak üret.
+- Skor 60'ın altındaysa "summary" alanına şunu yaz:
   "${LOW_SCORE_MSG}"
 - Tüm hataları yine de kategoriler altında listele (bulgular gösterilecek).
 
@@ -14604,7 +14604,7 @@ Skor = max(0, 100 - toplam ceza). Sabit/keyfi puan VERME, formülü uygula.
 Tam yanıt şeması:
 {
   "score": 78,
-  "correctedText": "Düzeltilmiş tam metin (skor 60 altındaysa boş)...",
+  "correctedText": "Geçerli düzeltmeleri içeren tam taslak metin...",
   "categories": {
     "sozluk":    { "count": 3, "issues": [{"original": "...", "fixed": "...", "rule": "..."}] },
     "imla":      { "count": 2, "issues": [{"original": "...", "fixed": "...", "rule": "..."}] },
@@ -14767,6 +14767,10 @@ async function saveHistory(req, result, filename, hash, sourceText = '', status 
     cat_counts: catCounts, summary: result.summary || '',
     corrected_text: result.correctedText || '',
     status
+  };
+  if (ADMIN_REVIEW_WORKSPACES_ENABLED) row.workflow_meta = {
+    analysisReceipt: { version: 1, scope: 'answer_only', state: 'required', checkedAt: new Date().toISOString(),
+      answer: { score: result.score, totalErrors: result.totalErrors, categories: result.categories || {}, meta: analysisMeta } }
   };
   if (HAS_ORIGINAL_TEXT) row.original_text = sourceText;
   if (HAS_TEXT_HASH && hash) row.text_hash = hash;

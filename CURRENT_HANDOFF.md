@@ -1,5 +1,51 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-21 Soru ve Cevap Denetimi — Yerel Doğrulama
+
+- Dal `codex/review-analysis-quality-gate`; çalışma ağacı
+  `.codex-admin-review-actions-fix`, taban `705bcb3`. Ana kirli checkout'a
+  dokunulmadı. Bu değişiklik henüz commit/push/deploy edilmedi ve migration
+  canlı DB'ye uygulanmadı.
+- Düşük puanda `correctedText` boşaltılmıyor; yalnız doğrulanmış bulguların
+  uygulandığı taslak ve yeniden denetim gereği korunuyor. Prompt sürümü
+  `2026-10-21.1`, istemci sürümü `20261021-analysis-quality-v1`.
+- `review-analysis.js` soru ile cevabı ayrı alanlar olarak aynı işlemde
+  denetler. En düşük alan puanı kalite kararını belirler; iki alanın puanı,
+  bulguları, kullanılan girdi ve çıktı hashleri revision geçmişinde saklanır.
+- `review_history_change` sunucunun ürettiği kayıtla `submit`, `approve`,
+  `duplicate_clear` işlemlerini doğrular. DB trigger eski/doğrudan durum
+  geçişlerini de korur; metin değişikliği denetimi stale yapar. İstemciden
+  yollanan sahte receipt/score normal payload temizliğini aşamaz.
+- Yönetim ve ekip alanında görünür `Soru ve Cevabı Denetle` düğmesi,
+  alan bazlı bulgular ve güncel denetim durumu vardır. Eski boş cevap için
+  kaynak kullanımı açık checkbox gerektirir. Yönetimde `Yeniden Denetim
+  Gerekli` filtresi doğrulanmamış kayıtları gösterir; statüleri değiştirmez.
+- 21 Ekim salt okunur canlı taramada 707 bekleyen kaydın 2'si 60 altındadır.
+  `fb42c9a7-9ea9-4710-b048-e8478d175fad` sürüm 2, puan 49;
+  submit revisionında cevap 0'dan 7514 karaktere çıkmıştır. Diğer kayıt
+  `47e8e023-8a2f-46c4-a82d-1a6acce20be4` sürüm 1, puan 45'tir;
+  aynı boş-dolu geçişi yoktur. Hiçbir gerçek içerik değiştirilmedi.
+- Yerel testlerde sentetik AI ve gerçek in-memory PostgreSQL kullanılır.
+  Son zorunlu `npm.cmd run check` 254/254 başarılıdır; yeni kalite
+  regresyonları 7/7 başarılıdır. Migration yalnız yerel PostgreSQL'e uygulanmıştır.
+  `node scripts/verify-review-quality.js` 390/1440 px gerçek tarayıcı akışını
+  doğruladı: boş kaynak kurtarma, düşük skorda bloklama, ikinci denetim,
+  yazınca kapanan gönderim ve gönderimin DB'ye yansıması. JS hatası/yatay
+  taşma yok; ekran görüntüleri ignored `.tmp-review-quality/` klasöründe.
+  Tamamlanan denetimin HTTP yanıtı tarayıcıya verilmeden kesildiğinde de
+  receipt `requestId` üzerinden sonuç doğru doğrulanır; başka bir yazma
+  işleminin sürüm artışı denetim başarısı sayılmaz.
+- Yerel, sentetik inceleme ekranı `http://127.0.0.1:53317/admin` adresindedir.
+  Gerçek veriye veya AI sağlayıcısına bağlanmaz. Yerel test sunucusu
+  `test-support/review-fixture.js`, `REVIEW_QUALITY_DEMO=1` ile çalışır.
+- Canlıya geçişte uygulama ve migration birlikte ele alınmalı: önce yeni
+  uygulama izole ortamda hazırlanmalı; migration transaction içinde
+  doğrulanmalı, sonra uygulama production'a terfi ettirilmeli. Eski tüm-onaylı
+  senkron kullanılmaz. Bu migration mevcut soruları otomatik yayımlamaz,
+  reddetmez veya silmez. Yeni doğrulama kaydı olmayan eski bekleyen içerikler
+  de onaydan önce soru-cevap kontrolü gerektirir.
+
+
 ## 2026-10-21 Mükerrer API ve Yönetici Karar Kuyruğu — Production Tamamlandı
 
 - Onay anında yalnız normalize edilmiş **tam soru + tam cevap** canlıdaki bir

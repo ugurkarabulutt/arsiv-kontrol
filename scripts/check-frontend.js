@@ -483,7 +483,10 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20261020-duplicate-review-v1') && html.includes('/review-workspace.css?v=20261020-duplicate-review-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20261021-analysis-quality-v1') && html.includes('/review-workspace.css?v=20261021-analysis-quality-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+for(const marker of ['rwQualityStatus','rwUseSource','data-rw-publish','Soru ve Cevabı Denetle']) {
+  assert(workspaceScript.includes(marker), `Denetim durumu veya guvenli gonderim marker eksik: ${marker}`);
+}
 assert(workspaceScript.includes('REQUEST_OUTCOME_UNKNOWN') && workspaceScript.includes('performAction') && workspaceScript.includes('outcomeVerified'), 'Yonetim islemleri belirsiz ag sonucunu sunucudan dogrulamali.');
 assert(!html.includes('İnternet bağlantınızı kontrol edip tekrar deneyin'), 'Genel API hatasi kullanici internetini gercege aykiri sekilde suclamamali.');
 for (const marker of ['/change-summary', 'Geri gönderme ve düzeltme özeti', 'Yapılan düzeltmeler', 'Ekip üyesi notu', 'Ekip üyesi açıklaması']) {

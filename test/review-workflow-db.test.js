@@ -155,7 +155,7 @@ test('approval routes normalized full question and answer matches to human dupli
   assert.equal(copy.approved_at,null);
   assert.equal(copy.workflow_meta.duplicateCandidateId,target.id);
   assert.equal(copy.workflow_meta.duplicateCandidateSlug,'allahin-yolu');
-  assert.deepEqual(recordActions({id:ids.admin,role:'admin'},copy,'management'),['confirm_duplicate','duplicate_clear']);
+  assert.deepEqual(recordActions({id:ids.admin,role:'admin'},copy,'management'),['reanalyze','confirm_duplicate','duplicate_clear']);
   const candidates=(await db.query('select * from review_duplicate_candidates($1)',[copy.id])).rows;
   assert.equal(candidates.length,1);
   assert.equal(candidates[0].id,target.id);

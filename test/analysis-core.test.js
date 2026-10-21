@@ -29,7 +29,7 @@ test('skoru AI alanından değil her issue instanceından hesaplar', () => {
   assert.equal(result.correctedText, 'düzeltilmiş');
 });
 
-test('60 altındaki sonuçta yalnızca istenen uyarıyı ve boş metni döndürür', () => {
+test('60 altındaki sonuç düzeltme taslağını korur ve yeniden denetim ister', () => {
   const result = finalizeResult({
     correctedText: 'gösterilmemeli',
     summary: 'AI özeti',
@@ -39,7 +39,8 @@ test('60 altındaki sonuçta yalnızca istenen uyarıyı ve boş metni döndür�
   });
 
   assert.equal(result.score, 55);
-  assert.equal(result.correctedText, '');
+  assert.equal(result.correctedText, 'gösterilmemeli');
+  assert.equal(result.requiresReanalysis, true);
   assert.equal(result.summary, LOW_SCORE_MSG);
   assert.equal(result.categories.sozluk.issues.length, 9);
 });
@@ -48,6 +49,14 @@ test('SHA-256 parmak izi satır sonlarını ve Unicode biçimini normalize eder'
   assert.equal(textHash(' Kur\u0027a\u0302n\r\nâyet '), textHash("Kur'ân\nâyet"));
   assert.match(textHash('aynı metin'), /^[a-f0-9]{64}$/);
   assert.notEqual(textHash('x'.repeat(100) + 'A'), textHash('x'.repeat(100) + 'B'));
+});
+
+test('düşük skorda geçerli düzeltmeler tam kaynak metne uygulanarak korunur', () => {
+  const source = Array(9).fill('ayet').join(' ');
+  const result = finalizeResult({ categories: { sozluk: { issues: Array.from({length:9}, () => ({original:'ayet',fixed:'âyet'})) } } }, source);
+  assert.equal(result.score,55);
+  assert.equal(result.correctedText,Array(9).fill('âyet').join(' '));
+  assert.equal(result.requiresReanalysis,true);
 });
 
 test('eski parmak izi geçmiş kayıtlarıyla geriye uyumludur', () => {

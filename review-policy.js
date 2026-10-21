@@ -27,10 +27,10 @@ function recordActions(user, row, workspace) {
   const worker = (row.assignee_id || row.user_id) === user.id;
   if (manager) {
     if (status === 'copte') return ['restore'];
-    if (status === 'mukerrer_inceleme') return ['confirm_duplicate', 'duplicate_clear'];
+    if (status === 'mukerrer_inceleme') return ['reanalyze', 'confirm_duplicate', 'duplicate_clear'];
     const actions = ['trash'];
     if (status === 'taslak') return actions;
-    if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && !disputed) actions.push('save');
+    if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && !disputed) actions.push('save', 'reanalyze');
     if (['bekliyor', 'teyit_bekliyor', 'geri_gonderildi', 'dergah_sorulari', 'konferanslar'].includes(status) && !disputed) actions.push('approve');
     if (['bekliyor', 'teyit_bekliyor', 'dergah_sorulari', 'konferanslar', 'onaylandi'].includes(status)) actions.push('return');
     if (disputed) return ['trash','resolve_dispute'];

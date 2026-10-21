@@ -241,7 +241,7 @@ test('approval-time live duplicate detection uses a dedicated queue and explicit
     assert.equal(approval.status,200);
     assert.equal(approval.data.history.status,'mukerrer_inceleme');
     assert.ok(!fixture.publishedRecords.includes(pending.id));
-    assert.deepEqual(approval.data.history.allowedActions,['confirm_duplicate','duplicate_clear']);
+    assert.deepEqual(approval.data.history.allowedActions,['reanalyze','confirm_duplicate','duplicate_clear']);
     const queue=await request('/api/review/records?status=mukerrer_inceleme&q=Canlı%20Mükerrer','admin','management');
     assert.equal(queue.status,200);assert.equal(queue.data.count,1);assert.equal(queue.data.items[0].id,pending.id);
     const matches=await request(`/api/review/${pending.id}/duplicates`,'admin','management');
@@ -299,7 +299,7 @@ test('failed publication restores duplicate review context and can be retried af
     const restored=await call(`/api/review/${pending.id}`);
     assert.equal(restored.status,200);assert.equal(restored.data.status,'mukerrer_inceleme');
     assert.equal(restored.data.workflow.duplicateCandidateId,candidateId);
-    assert.deepEqual(restored.data.allowedActions,['confirm_duplicate','duplicate_clear']);
+    assert.deepEqual(restored.data.allowedActions,['reanalyze','confirm_duplicate','duplicate_clear']);
     assert.ok(restored.data.version>queued.data.history.version);
 
     failPublication=false;

@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 const LOW_SCORE_THRESHOLD = 60;
 const CAT_WEIGHTS = { sozluk: 5, imla: 4, noktalama: 3, etiket: 2, yapi: 4 };
-const LOW_SCORE_MSG = 'Bu metin arşiv standartlarının altında kalmaktadır. Lütfen metni gözden geçirip tekrar gönderin.';
+const LOW_SCORE_MSG = 'Düzeltmeler taslak olarak hazırlandı. Metni gözden geçirip yeniden denetleyin; bu sonuç henüz onaya hazır değil.';
 const WORD_EDGE = /[\p{L}\p{N}_]/u;
 const PROTECTED_PATTERNS = [
   /\bderecat\b/iu,
@@ -1794,11 +1794,11 @@ function finalizeResult(result = {}, sourceText = '') {
     result.correctedText = sourceText;
   }
   if (result.score < LOW_SCORE_THRESHOLD) {
-    result.correctedText = '';
     result.summary = LOW_SCORE_MSG;
   } else {
     result.summary = buildResultSummary(cats, total);
   }
+  result.requiresReanalysis = result.score < LOW_SCORE_THRESHOLD;
   return result;
 }
 
