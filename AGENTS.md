@@ -943,8 +943,8 @@ tespit edilir).
   `trashReason=duplicate`, `trashReasonLabel=Mükerrer`, canlı hedef ID/slug ve
   yönetici denetim iziyle saklanır; doğrudan silinmez. Yeni SQL migration
   `20261020143000_duplicate_review_queue.sql`; runtime commit `6a3f148`.
-  Production deployment `dpl_EfHHAEu717kc6p8aEm8mRLmrqpiJ` / Vercel URL
-  `https://arsiv-kontrol-439ts0a5y-ugurkarabulutts-projects.vercel.app`
+  Son production deployment `dpl_hDiKx21m7ZhWegAjoDE5SFe6oJ3Y` / Vercel URL
+  `https://arsiv-kontrol-afte3jr45-ugurkarabulutts-projects.vercel.app`
   `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
 - İlk canlı migration denemesi uzun soru/cevapların doğrudan B-tree indeksinde
   PostgreSQL 8 KB indeks satırı sınırını aşması nedeniyle transaction içinde

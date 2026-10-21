@@ -9,9 +9,9 @@
   gerekçeyle `Mükerrer Olarak Çöpe Taşı` veya `Mükerrer Değil, Onayla` kararı
   verir. Mükerrer kararı hard-delete yapmaz; çöp nedeni `Mükerrer`, canlı hedef
   ID/slug, revision ve admin action log korunur.
-- Runtime commit `6a3f148` production deployment
-  `dpl_EfHHAEu717kc6p8aEm8mRLmrqpiJ` /
-  `https://arsiv-kontrol-439ts0a5y-ugurkarabulutts-projects.vercel.app` ile
+- Runtime commit `6a3f148`; son production deployment
+  `dpl_hDiKx21m7ZhWegAjoDE5SFe6oJ3Y` /
+  `https://arsiv-kontrol-afte3jr45-ugurkarabulutts-projects.vercel.app` ile
   `https://arsiv.ibrahimlive.ai` alanına alınmıştır. Canlı `/health`, `/admin`,
   admin noindex/no-store, `20261020-duplicate-review-v2`, kuyruk markerı ve
   oturumsuz mükerrer API `401` doğrulandı.
