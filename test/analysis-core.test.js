@@ -1605,6 +1605,42 @@ test('kiyamet kelimesi kiyâmet olarak standartlasir', () => {
   assert.equal(result.totalErrors, 1);
 });
 
+test('Muhterem Hocam hitabi virgul ve baglama uygun devam harfiyle standartlasir', () => {
+  const cases = [
+    ['Muhterem Hocam Evladım manevî olarak zorlanıyor.', 'Muhterem Hocam, evladım manevî olarak zorlanıyor.'],
+    ['Muhterem Hocam, Narsist bir eşle nasıl yaşanabilir?', 'Muhterem Hocam, narsist bir eşle nasıl yaşanabilir?'],
+    ['Muhterem Hocam.Tasavvuf yolunda nasıl ilerlenir?', 'Muhterem Hocam, tasavvuf yolunda nasıl ilerlenir?'],
+    ['Muhterem HocamTasavvufta eğitim nasıldır?', 'Muhterem Hocam, tasavvufta eğitim nasıldır?'],
+    ["Muhterem Hocam Allah'ın rızası nasıl kazanılır?", "Muhterem Hocam, Allah'ın rızası nasıl kazanılır?"],
+    ["Muhterem Hocam Kur'ân âyetlerini açıklar mısınız?", "Muhterem Hocam, Kur'ân âyetlerini açıklar mısınız?"],
+    ['Muhterem Hocam Yâsîn Suresinin faziletini açıklar mısınız?', 'Muhterem Hocam, Yâsîn Suresinin faziletini açıklar mısınız?'],
+    ['Muhterem Hocam Ahmet Bey bu konuda ne yapmalıdır?', 'Muhterem Hocam, Ahmet Bey bu konuda ne yapmalıdır?'],
+    ['Muhterem Hocam Medine sohbetini anlatir misiniz?', 'Muhterem Hocam, Medine sohbetini anlatir misiniz?'],
+    ['Muhterem Hocam Bakara 2. ayeti aciklar misiniz?', 'Muhterem Hocam, Bakara 2. ayeti aciklar misiniz?'],
+    ['Muhterem Hocam \u00c2li \u0130mr\u00e2n 70. ayeti aciklar misiniz?', 'Muhterem Hocam, \u00c2li \u0130mr\u00e2n 70. ayeti aciklar misiniz?'],
+    ['Muhterem Hocam Kal\u00fb Bel\u00e2\u2019da ne oldu?', 'Muhterem Hocam, Kal\u00fb Bel\u00e2\u2019da ne oldu?'],
+    ['Muhterem Hocam “Zikir nedir?” sorusunu açıklar mısınız?', 'Muhterem Hocam, “Zikir nedir?” sorusunu açıklar mısınız?']
+  ];
+
+  for (const [source, expected] of cases) {
+    const result = finalizeResult({ categories: {} }, source);
+    assert.equal(result.correctedText, expected);
+    assert.equal(result.categories.noktalama.count, 1);
+    assert.equal(result.totalErrors, 1);
+  }
+
+  for (const source of [
+    'Muhterem Hocam, evladım manevî olarak zorlanıyor.',
+    'Muhterem Hocam, Allah\'ın rızası nasıl kazanılır?',
+    'Muhterem Hocamın birinci suali şöyledir.',
+    'Muhterem Hocamız, bu konuyu açıklıyor.'
+  ]) {
+    const result = finalizeResult({ categories: {} }, source);
+    assert.equal(result.correctedText, source);
+    assert.equal(result.totalErrors, 0);
+  }
+});
+
 test('29 Eylul acik feedback kokleri yanlis pozitif olarak korunur', () => {
   const source = [
     'Fasıklar değillerdir; onlar fasıklardır.',

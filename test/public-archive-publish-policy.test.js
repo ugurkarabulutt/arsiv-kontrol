@@ -43,3 +43,15 @@ test('a new public record is published without counting as a refresh', () => {
     refreshedExistingContent: false
   });
 });
+
+test('correction refresh keeps an existing hidden status', () => {
+  const policy = approvedPublicUpdatePolicy(
+    { status: 'content_review_hidden', answer_text: 'Old answer.' },
+    { refreshExistingContent: true }
+  );
+  assert.deepEqual(policy, {
+    useExistingContent: false,
+    status: 'content_review_hidden',
+    refreshedExistingContent: true
+  });
+});

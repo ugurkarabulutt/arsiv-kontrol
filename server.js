@@ -74,8 +74,8 @@ const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
 const NEWSLETTER_FOOTER_CONSENT_VERSION = 'newsletter-consent-20260920-v1';
 const NEWSLETTER_QUESTION_CONSENT_VERSION = 'question-newsletter-consent-20260923-v1';
-const ADMIN_CLIENT_BUILD = '20261021-admin-reanalysis-v2';
-const PROMPT_VERSION    = '2026-10-21.1';
+const ADMIN_CLIENT_BUILD = '20261022-muhterem-hitap-v1';
+const PROMPT_VERSION    = '2026-10-22.1';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
 const MAX_ANALYSIS_TEXT_CHARS = 200000;
@@ -608,6 +608,10 @@ KURAL 3 — PEYGAMBER VE NEBİ İSİMLERİ
 ════════════════════════════════════════
 KURAL 4 — NOKTALAMA
 ════════════════════════════════════════
+- Soru başındaki hitap her zaman "Muhterem Hocam, ..." biçiminde olmalıdır. "Muhterem Hocam"
+  sonrasına virgül ve tek boşluk koy. Devam sözcüğü yeni bir cümle değildir; özel ad, Allah/Kur'ân
+  adı veya doğrudan alıntı değilse küçük harfle başlat. Örnek: "Muhterem Hocam, evladım...";
+  "Muhterem Hocam, Allah'ın..." ve "Muhterem Hocam, Yâsîn Suresi..." biçimlerinde özel adı koru.
 - Özel isimlere ek geldiğinde kesme işareti zorunlu:
   Allah'a, Kur'ân'dan, Efendimiz'in, Sıratı Mustakîm'e
 - Tırnak işaretlerini keyfi değiştirme; kaynakta tek/çift tırnak dengesi doğruysa koru.
@@ -1199,7 +1203,7 @@ const ARCHIVE_PUBLISH_TASK_DB_LIST_COLUMNS = [
 ].join(',');
 const ARCHIVE_PUBLISH_TASK_DB_FULL_COLUMNS = `${ARCHIVE_PUBLISH_TASK_DB_LIST_COLUMNS},description,note`;
 const CORRECTION_DEFAULT_FIELDS = ['corrected_text'];
-const CORRECTION_ALLOWED_FIELDS = ['corrected_text', 'summary'];
+const CORRECTION_ALLOWED_FIELDS = ['question_text', 'corrected_text', 'summary'];
 const CORRECTION_DEFAULT_STATUSES = ['taslak', 'bekliyor', 'onaylandi'];
 const CORRECTION_ALLOWED_STATUSES = ['taslak', 'bekliyor', 'onaylandi', 'reddedildi'];
 const CORRECTION_ALLOWED_SCOPES = ['reported', 'all'];
@@ -4563,7 +4567,7 @@ function correctionChangeId(historyId, field) {
 
 function normalizeCorrectionChangeIds(values) {
   return Array.isArray(values)
-    ? [...new Set(values.map(String).filter(id => /^[0-9a-fA-F-]{36}:(corrected_text|summary)$/.test(id))).values()]
+    ? [...new Set(values.map(String).filter(id => /^[0-9a-fA-F-]{36}:(question_text|corrected_text|summary)$/.test(id))).values()]
     : [];
 }
 
@@ -4690,11 +4694,11 @@ async function fetchCorrectionHistoryRows(pkg = {}) {
   if (useReportedOnly && !reportedIds.length) return [];
   const rows = useReportedOnly
     ? await fetchAllPages(() => supabase.from('history')
-      .select('id,user_id,username,name,filename,score,total_errors,status,summary,corrected_text,created_at')
+      .select('id,user_id,username,name,filename,score,total_errors,status,question_text,summary,corrected_text,created_at')
       .in('id', reportedIds)
       .order('created_at', { ascending: false }))
     : await fetchAllPages(() => supabase.from('history')
-      .select('id,user_id,username,name,filename,score,total_errors,status,summary,corrected_text,created_at')
+      .select('id,user_id,username,name,filename,score,total_errors,status,question_text,summary,corrected_text,created_at')
       .order('created_at', { ascending: false }));
   return (rows || []).filter(row => isCorrectionCandidateRow(row, pkg, { includeHiddenReported: useReportedOnly }));
 }
@@ -11149,6 +11153,9 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
       if (update.corrected_text !== undefined && sample?.userId && ['bekliyor', 'onaylandi'].includes(correctionHistoryStatus(sample))) {
         await markSubmittedCorrectedHash(sample.userId, update.corrected_text || '', historyId, correctionHistoryStatus(sample));
       }
+      if (update.question_text !== undefined && correctionHistoryStatus(sample) === 'onaylandi') {
+        await publishApprovedHistoryRecord(historyId);
+      }
       appliedRecords++;
       appliedChanges += logs.length;
     }
@@ -11255,8 +11262,11 @@ app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (
       updatesByHistory.get(log.history_id)[log.field_name] = log.old_value || '';
     });
     for (const [historyId, update] of updatesByHistory.entries()) {
-      const { error: updateError } = await supabase.from('history').update(update).eq('id', historyId);
+      const { data: updatedRows, error: updateError } = await supabase.from('history').update(update).eq('id', historyId).select('status');
       if (updateError) throw new Error(updateError.message);
+      if (update.question_text !== undefined && updatedRows?.[0]?.status === 'onaylandi') {
+        await publishApprovedHistoryRecord(historyId);
+      }
     }
     const { error: logUpdateError } = await supabase.from('content_correction_log')
       .update({ status: 'reverted' })
@@ -14491,6 +14501,10 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "Kaynak:", hadis ve bibliyografya satırlarında muhafazakâr davran. Kaynak/kitap adı olabilecek "Fezailül", "Alamet-il" gibi ifadeleri emin olmadan şapka ve apostrofla yeniden yazma.
 - "ve, veya, ama, fakat, çünkü" gibi bağlaçları imlâ gerekçesiyle silme.
 - Konuşma dilindeki "var ya" ifadesini silme. Sırf biçimsel görünüm için "şeriat kitabı,", "tarikat yoldur varana;", "BAKARA – 139: De ki:" gibi kaynakta olmayan virgül/noktalı virgül/iki nokta ekleme.
+- Soru başındaki hitabı "Muhterem Hocam, ..." biçiminde yaz. Hitaptan sonra virgül ve tek boşluk zorunludur.
+  Devam sözcüğü özel ad, Allah/Kur'ân adı veya doğrudan alıntı değilse küçük harfle başlar. "Muhterem Hocam.",
+  "Muhterem Hocam:" ve "Muhterem Hocam Tasavvuf..." biçimlerini sırasıyla "Muhterem Hocam," ve
+  "Muhterem Hocam, tasavvuf..." olarak düzelt; "Muhterem Hocam, Allah'ın..." gibi özel adları küçültme.
 - "Yâsîn-60, 61’de:" gibi ardından âyet açıklaması gelen referanslarda iki nokta korunabilir; bunu otomatik silme.
 - Kaynakta "Kur'ân'da" geçmiyorsa cümleye "Kur'ân'da" ekleme. Metinde yalnız "Tevrat, İncil’de" deniyorsa Kur'ân'ı açıklama olarak ekleme.
 - Alıntı sonrası konuşma fiillerinde tırnak dengesini bozma: doğru biçim örnek olarak "\"Müslümanın dîni ayrı.\" diyor." şeklindedir; sona fazladan tırnak ekleme.
@@ -16279,6 +16293,14 @@ async function publishApprovedHistoryRecord(recordOrId) {
   if (!record || record.status !== 'onaylandi') {
     throw new Error('Yayınlanacak onaylı kayıt bulunamadı.');
   }
+  if (typeof recordOrId === 'string') {
+    const existing = await loadExistingPublicArchiveRowsByHistoryId([record.id]);
+    if (!existing.has(record.id)) return { available: true, skipped: 'not_public' };
+    const refreshed = await publishApprovedHistoryRecords([record], { refreshExistingContent: true });
+    if (refreshed.available === false) throw new Error(refreshed.error || 'Public record could not be refreshed.');
+    return refreshed;
+  }
+
   const result = await publishApprovedHistoryRecords([record], { republishExisting: true });
   if (result.available === false) throw new Error(result.error || 'Kayıt canlı yayına aktarılamadı.');
   return result;

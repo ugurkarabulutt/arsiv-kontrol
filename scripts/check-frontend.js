@@ -819,6 +819,15 @@ if (
   throw new Error('Gecmis duzeltme akisi bildirilen dokuman ve secilebilir gecmis hedefler uzerinden calismali.');
 }
 if (
+  !server.includes("const CORRECTION_ALLOWED_FIELDS = ['question_text', 'corrected_text', 'summary']") ||
+  !server.includes('update.question_text !== undefined') ||
+  !html.includes('id="correctionFieldQuestion"') ||
+  !html.includes("fields.push('question_text')") ||
+  !html.includes("field==='question_text'?'Soru metni'")
+) {
+  throw new Error('Gecmis Duzeltme soru metni kapsami ve onayli public senkronu eksik.');
+}
+if (
   !html.includes('Onay Bekleyen Düzeltmeler') ||
   !html.includes('Uygulanan Düzeltmeler') ||
   !html.includes('correctionMetricsHtml') ||

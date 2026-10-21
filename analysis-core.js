@@ -81,6 +81,14 @@ const SURA_NAMES = [
   'KÂFİRÛN', 'NASR', 'TEBBET', 'MESED', 'İHLÂS', 'FELAK', 'NÂS'
 ];
 const SURA_NAME_KEYS = new Set(SURA_NAMES.map(suraCaseKey));
+const SURA_FOLD_KEYS = new Set(SURA_NAMES.map(name => asciiFold(name).replace(/[^\p{L}\p{N}]/gu, '')));
+const MUHTEREM_HOCAM_PROPER_KEYS = new Set([
+  'muhterem', 'mehdi', 'deccal', 'hizir', 'ramazan', 'regaip', 'beraat', 'berat', 'mirac',
+  'asure', 'medine', 'mekke', 'tevrat', 'diyanet', 'barbaros', 'hatay', 'danimarka', 'nikola',
+  'somuncu', 'beyazidi', 'harut', 'adem', 'habil', 'hasan', 'muhiddin', 'mevlana', 'cenabi', 'hazreti', 'almanlar', 'zancilardan', 'islam'
+  ,'tanri', 'mihr', 'sibgatullah'
+  , 'ahzap', 'regaib', 'amentu', 'ashabi', 'kelimei', 'sirat', 'esmaul', 'sunneti'
+]);
 const SURA_VARIANT_STANDARDS = [
   {
     title: 'Âli İmrân',
@@ -447,6 +455,10 @@ function isAllowedCaseNormalization(original, fixed) {
   const from = canonicalText(original);
   const to = canonicalText(fixed);
   if (!from || !to || foldText(from) !== foldText(to)) return false;
+  const vocativeFrom = from.match(/^Muhterem\s+Hocam,\s+["“'‘(]*(?<word>[\p{L}][\p{L}'’\-]*)/u);
+  const vocativeTo = to.match(/^Muhterem\s+Hocam,\s+["“'‘(]*(?<word>[\p{L}][\p{L}'’\-]*)/u);
+  if (vocativeFrom?.groups?.word && vocativeTo?.groups?.word
+      && lowerTurkishInitial(vocativeFrom.groups.word) === vocativeTo.groups.word) return true;
   if (/^Her\s+Resûl$/u.test(from) && to === 'Her resûl') return true;
   if (/^gayy\s+yolu$/iu.test(from) && /^(?:Gayy yolu|GAYY YOLU)$/u.test(to)) return true;
   if (from === 'âyetTE' && to === 'ÂYETTE') return true;
@@ -1326,6 +1338,70 @@ function addDeterministicIssue(cats, seen, original, fixed, rule, categoryKey = 
   cats[categoryKey].issues.push({ original, fixed, rule });
 }
 
+function lowerTurkishInitial(word) {
+  const value = String(word || '');
+  if (!value) return value;
+  return value[0].toLocaleLowerCase('tr-TR') + value.slice(1);
+}
+
+function preserveMuhteremHocamContinuation(word, tail = '', quoteLead = '') {
+  const value = String(word || '');
+  if (!value) return true;
+  if (quoteLead) return true;
+  if (/[’']/u.test(value) || isAllCapsLike(value)) return true;
+  const nextWord = String(tail || '').match(/^\s+(?<word>[\p{L}][\p{L}'\u2019\-]*)/u)?.groups?.word || '';
+  const suraCandidates = [value, nextWord ? `${value} ${nextWord}` : ''];
+  if (suraCandidates.some(candidate => candidate && (
+    SURA_NAME_KEYS.has(suraCaseKey(candidate))
+    || SURA_FOLD_KEYS.has(asciiFold(candidate).replace(/[^\p{L}\p{N}]/gu, ''))
+  ))) return true;
+  const properKey = foldText(value)
+    .replace(/\u0131/g, 'i')
+    .replace(/\u00e7/g, 'c')
+    .replace(/\u011f/g, 'g')
+    .replace(/\u00f6/g, 'o')
+    .replace(/\u015f/g, 's')
+    .replace(/\u00fc/g, 'u')
+    .replace(/[^a-z0-9]/g, '');
+  const nextKey = foldText(nextWord)
+    .replace(/\u0131/g, 'i')
+    .replace(/\u00e7/g, 'c')
+    .replace(/\u011f/g, 'g')
+    .replace(/\u00f6/g, 'o')
+    .replace(/\u015f/g, 's')
+    .replace(/\u00fc/g, 'u')
+    .replace(/[^a-z0-9]/g, '');
+  if (/^(?:allah|kuran|peygamber|efendimiz|rabb|resulullah|osmanli|muharrem)/.test(properKey)) return true;
+  if (MUHTEREM_HOCAM_PROPER_KEYS.has(properKey)) return true;
+  if (['kalubela', 'ayetelkursi', 'risaleinur', 'semsitebrizi', 'siratimustakim'].some(key => (properKey + nextKey).startsWith(key))) return true;
+  if (new Set(['kalubela', 'ayetelkursi', 'risaleinur', 'semsitebrizi', 'siratimustakim']).has(properKey + nextKey)) return true;
+  if (/^(?:Allah|Allahû|Kur['’]ân|Kur['’]an|Hz|Dr|Peygamber|Resûl|Resul|Osmanlı)$/iu.test(value)) return true;
+  if (/^(?:Muhterem|Efendimiz|Mehdi|Deccal|Hızır|Ramazan|Regaip|Beraat|Berat|Miraç)$/iu.test(value)) return true;
+  if (/^Sırat-ı$/iu.test(value)) return true;
+  if (/^\s+(?:Bey|Hanım|Hoca|Efendi|Suresi(?:nin|ni|ne|nde|nden)?|Sûresi(?:nin|ni|ne|nde|nden)?)(?![\p{L}\p{N}_])/u.test(tail)) return true;
+  if (/^\s+(?:Suresi(?:nin|ni|ne|nde|nden)?|Sûresi(?:nin|ni|ne|nde|nden)?)(?![\p{L}\p{N}_])/iu.test(tail)
+      && SURA_NAME_KEYS.has(suraCaseKey(value))) return true;
+  return false;
+}
+
+function muhteremHocamCorrection(sourceText) {
+  const text = String(sourceText || '');
+  const match = text.match(/^(?<honorific>muhterem)\s+(?<title>hocam)(?<separator>\s*[,.;:!?]\s*|\s+|)(?<lead>["“'‘(]*)(?<word>[\p{L}][\p{L}'’\-]*)/iu);
+  if (!match?.groups) return null;
+
+  const { separator = '', lead = '', word = '' } = match.groups;
+  // “Hocamın/Hocamız” hitap değildir; boş ayırıcıyla yalnız büyük harfle
+  // başlayan yapışık devam kelimesi gerçek bir bozulma olarak ele alınır.
+  if (!separator && word && word[0] === word[0].toLocaleLowerCase('tr-TR')) return null;
+
+  const tail = text.slice(match[0].length);
+  const fixedWord = preserveMuhteremHocamContinuation(word, tail, lead)
+    ? word
+    : lowerTurkishInitial(word);
+  const fixed = `Muhterem Hocam, ${lead}${fixedWord}`;
+  return match[0] === fixed ? null : { original: match[0], fixed };
+}
+
 function applyDeterministicStandards(cats, sourceText) {
   const text = String(sourceText || '');
   if (!text) return cats;
@@ -1337,6 +1413,18 @@ function applyDeterministicStandards(cats, sourceText) {
       seen.set(key, (seen.get(key) || 0) + 1);
     });
   });
+
+  const muhteremHocam = muhteremHocamCorrection(text);
+  if (muhteremHocam) {
+    addDeterministicIssue(
+      cats,
+      seen,
+      muhteremHocam.original,
+      muhteremHocam.fixed,
+      'Hitap noktalama ve büyük harf standardı',
+      'noktalama'
+    );
+  }
 
   const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|biraraya|lâzımgelen|ardarda|içersinde|veçhimizi|sekinet|hâcet[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(tokenRe)) {
@@ -1563,12 +1651,14 @@ function applyDeterministicStandards(cats, sourceText) {
   const standardSentenceSpaceRe = /([\p{L}\p{N}_][\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db])/gu;
   for (const match of text.matchAll(standardSentenceSpaceRe)) {
     if (/^\d+\.[A-ZÇĞİÖŞÜÂÎÛ]/u.test(match[0])) continue;
+    if (muhteremHocam && match.index < muhteremHocam.original.length) continue;
     addDeterministicIssue(cats, seen, match[0], `${match[1]} ${match[2]}`, 'C\u00fcmle aras\u0131 bo\u015fluk');
   }
 
   const fullSentenceSpaceRe = /(?<![\p{L}\p{N}_])([\p{L}\p{N}_]+[\.\?!])([A-Z\u00c7\u011e\u0130\u00d6\u015e\u00dc\u00c2\u00ce\u00db][\p{L}\p{N}_]*)(?![\p{L}\p{N}_])/gu;
   for (const match of text.matchAll(fullSentenceSpaceRe)) {
     if (/^\d+\.[A-ZÇĞİÖŞÜÂÎÛ]/u.test(match[0])) continue;
+    if (muhteremHocam && match.index < muhteremHocam.original.length) continue;
     addDeterministicIssue(cats, seen, match[0], `${match[1]} ${match[2]}`, 'C\u00fcmle aras\u0131 bo\u015fluk');
   }
 

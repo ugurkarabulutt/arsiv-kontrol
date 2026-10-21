@@ -2517,6 +2517,10 @@ canvas{width:100%!important;}
             <div class="correction-options">
               <div class="correction-options-title">Nerede aransın?</div>
               <label class="correction-option">
+                <input type="checkbox" id="correctionFieldQuestion">
+                <span>Soru metni<small>Onay kuyruğundaki ve canlıya bağlı soru başlıklarında ara.</small></span>
+              </label>
+              <label class="correction-option">
                 <input type="checkbox" id="correctionFieldCorrected" checked>
                 <span>Düzeltilmiş metin<small>Onaya gönderilen veya arşivlenen son metinlerde ara.</small></span>
               </label>
@@ -2777,7 +2781,7 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const ADMIN_CLIENT_BUILD='20261021-admin-reanalysis-v2';
+const ADMIN_CLIENT_BUILD='20261022-muhterem-hitap-v1';
 const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
 const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
@@ -5632,6 +5636,7 @@ function prepareCorrectionFromFeedback(id){
     triage.counts?`Ge\u00e7i\u015f: hedef ${Number(triage.counts.current||0)}, do\u011fru ${Number(triage.counts.desired||0)}`:''
   ].filter(Boolean).join('\n');
   if(el('correctionFieldCorrected'))el('correctionFieldCorrected').checked=true;
+  if(el('correctionFieldQuestion'))el('correctionFieldQuestion').checked=false;
   if(el('correctionFieldSummary'))el('correctionFieldSummary').checked=false;
   if(el('correctionScopeReported')){
     el('correctionScopeReported').checked=true;
@@ -5664,6 +5669,7 @@ function updateCorrectionSelectedInfo(){
 
 function correctionFieldsFromForm(){
   const fields=[];
+  if(el('correctionFieldQuestion')?.checked)fields.push('question_text');
   if(el('correctionFieldCorrected')?.checked)fields.push('corrected_text');
   if(el('correctionFieldSummary')?.checked)fields.push('summary');
   return fields.length?fields:['corrected_text'];
@@ -5710,6 +5716,7 @@ async function createCorrectionPackage(){
   });
   if(data.error){setStatus(data.error,'err');return;}
   ['correctionTitle','correctionFrom','correctionTo','correctionNote'].forEach(id=>{if(el(id))el(id).value='';});
+  if(el('correctionFieldQuestion'))el('correctionFieldQuestion').checked=false;
   if(el('correctionFieldSummary'))el('correctionFieldSummary').checked=false;
   if(el('correctionNeedsReview'))el('correctionNeedsReview').checked=true;
   if(el('correctionScopeReported'))el('correctionScopeReported').dataset.userPicked='';
@@ -5772,7 +5779,7 @@ function correctionStateNote(pkg,status,scan){
 }
 
 function correctionFieldLabel(field){
-  return field==='summary'?'Özet':'Düzeltilmiş metin';
+  return field==='question_text'?'Soru metni':field==='summary'?'Özet':'Düzeltilmiş metin';
 }
 
 function correctionScopeLabel(scope){

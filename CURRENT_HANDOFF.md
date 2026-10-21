@@ -6309,3 +6309,12 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Canlı smoke: `/health=ok`; root, admin rotaları, auth, manifest, service worker ve favicon `200`; admin `noindex/no-store`; oturumsuz auth `loggedIn:false`.
 - Son DB kanıtı: açık feedback 0, çözülen 7, bildirilen kullanıcı 3, çözüm günlüğü 1, geri alınabilir alan günlüğü 390, hedeflenen yanlış history/public/search eşleşmeleri 0.
 - Arama senkronu: değişen 36 published slug yeniden indekslendi; `content_hash` uyumsuzluğu 0, eksik embedding 0, yanlış ifade eşleşmesi 0.
+
+## 2026-10-22 - Muhterem Hocam punctuation and casing
+
+- Worktree: `.codex-admin-review-actions-fix`; branch `codex/review-analysis-quality-gate`.
+- Future analyses now enforce `Muhterem Hocam, ...` and lowercase only ordinary continuations.
+  Proper names, sura names, direct quotations and protected religious terms remain uppercase.
+- Historical correction now supports `question_text` with reversible logs and refreshes an existing
+  public row without changing its slug or published/hidden visibility.
+- Read-only live simulation: 529 total matches, 344 active workflow matches, 280 approved matches,

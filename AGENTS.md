@@ -4711,3 +4711,13 @@ tespit edilir).
 
 - **15 Ekim production yayını:** Feedback koruma kodu ve veri düzeltmelerinin ardından production deployment `dpl_G543XtvgQJY1EenNtLwkGp2yxLfh` / `https://arsiv-kontrol-mrgb24nbx-ugurkarabulutts-projects.vercel.app` `READY` oldu ve `https://arsiv.ibrahimlive.ai` aliasına atandı. Canlı `/health`, root, `/admin`, `/admin/`, `/admin/smoke-test`, `/api/auth/me`, manifest, `sw.js` ve favicon kontrolleri başarılı; admin rotaları `noindex/no-store`, oturumsuz kimlik cevabı `loggedIn:false`.
 - **15 Ekim arama indeksi senkronu:** Düzeltilen ve yayındaki 36 public soru mevcut kısmi indexer ile yeniden işlendi. Son DB doğrulamasında bu slugların arama belgelerinde `content_hash` uyumsuzluğu 0, eksik embedding 0; hedeflenen yanlış ifade history/public/search katmanlarında 0 bulundu.
+
+### 2026-10-22 - Muhterem Hocam hitap standardi
+
+- Soru basindaki hitap deterministik olarak `Muhterem Hocam, ...` bicimine getirildi.
+  Devam eden ortak ad kucuk harfle baslar; sure, kisi, yer, Allah/Kur'an ve ozel terim adlari korunur.
+- Ayni karar hem varsayilan kurallara hem canli ayarlardan bagimsiz ust oncelikli analiz promptuna eklendi.
+- Gecmis Duzeltme Merkezi `question_text` alanini tarayabilir, uygular ve geri alir; onayli kaydin
+  public metni yenilenirken slug ve mevcut published/hidden durumu korunur.
+- Salt okunur canli simulasyonda 529 toplam aday, 344 aktif akis adayi, 280 onayli aday ve bunlara
+  bagli 279 published public kayit bulundu. Bu asamada canli veri degistirilmedi.
