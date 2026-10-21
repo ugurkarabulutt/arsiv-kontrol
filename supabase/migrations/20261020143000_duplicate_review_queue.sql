@@ -27,8 +27,8 @@ $$;
 
 create index if not exists public_qa_duplicate_review_idx
   on public.public_qa (
-    public.review_duplicate_key(question),
-    public.review_duplicate_key(answer_text),
+    md5(public.review_duplicate_key(question)),
+    md5(public.review_duplicate_key(answer_text)),
     published_at,
     slug
   )
@@ -143,11 +143,13 @@ begin
     if p_action='approve' then
       if h.status not in ('bekliyor','teyit_bekliyor','geri_gonderildi','dergah_sorulari','konferanslar') then raise exception 'INVALID_STATUS'; end if;
       if coalesce(h.workflow_meta->>'disputed','false')='true' then raise exception 'OWNERSHIP_REVIEW_REQUIRED'; end if;
-      duplicate_match_key := jsonb_build_array(public.review_duplicate_key(h.question_text),public.review_duplicate_key(h.corrected_text))::text;
+      duplicate_match_key := jsonb_build_array(md5(public.review_duplicate_key(h.question_text)),md5(public.review_duplicate_key(h.corrected_text)))::text;
       duplicate_id := null; target_slug := null;
       select q.source_history_id,q.slug into duplicate_id,target_slug
       from public.public_qa q
       where q.status='published' and q.source_history_id is not null and q.source_history_id<>h.id
+        and md5(public.review_duplicate_key(q.question))=md5(public.review_duplicate_key(h.question_text))
+        and md5(public.review_duplicate_key(q.answer_text))=md5(public.review_duplicate_key(h.corrected_text))
         and public.review_duplicate_key(q.question)=public.review_duplicate_key(h.question_text)
         and public.review_duplicate_key(q.answer_text)=public.review_duplicate_key(h.corrected_text)
       order by q.published_at,q.slug
@@ -180,6 +182,8 @@ begin
       if not found then raise exception 'NOT_EXACT_DUPLICATE'; end if;
       select q.slug into target_slug from public.public_qa q
       where q.source_history_id=target.id and q.status='published'
+        and md5(public.review_duplicate_key(q.question))=md5(public.review_duplicate_key(h.question_text))
+        and md5(public.review_duplicate_key(q.answer_text))=md5(public.review_duplicate_key(h.corrected_text))
         and public.review_duplicate_key(q.question)=public.review_duplicate_key(h.question_text)
         and public.review_duplicate_key(q.answer_text)=public.review_duplicate_key(h.corrected_text)
       order by q.published_at,q.slug limit 1 for update;
@@ -210,6 +214,8 @@ begin
         if not found then raise exception 'NOT_EXACT_DUPLICATE'; end if;
         select q.slug into target_slug from public.public_qa q
         where q.source_history_id=target.id and q.status='published'
+          and md5(public.review_duplicate_key(q.question))=md5(public.review_duplicate_key(h.question_text))
+          and md5(public.review_duplicate_key(q.answer_text))=md5(public.review_duplicate_key(h.corrected_text))
           and public.review_duplicate_key(q.question)=public.review_duplicate_key(h.question_text)
           and public.review_duplicate_key(q.answer_text)=public.review_duplicate_key(h.corrected_text)
         order by q.published_at,q.slug limit 1 for update;
@@ -305,6 +311,8 @@ language sql stable security invoker set search_path='' as $$
     q.published_at,q.updated_at,'normalized_full_question_and_answer'::text
   from public.history source
   join public.public_qa q on q.status='published' and q.source_history_id is not null and q.source_history_id<>source.id
+    and md5(public.review_duplicate_key(q.question))=md5(public.review_duplicate_key(source.question_text))
+    and md5(public.review_duplicate_key(q.answer_text))=md5(public.review_duplicate_key(source.corrected_text))
     and public.review_duplicate_key(q.question)=public.review_duplicate_key(source.question_text)
     and public.review_duplicate_key(q.answer_text)=public.review_duplicate_key(source.corrected_text)
   left join public.history other on other.id=q.source_history_id

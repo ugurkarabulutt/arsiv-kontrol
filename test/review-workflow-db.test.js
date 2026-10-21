@@ -168,6 +168,17 @@ test('approval routes normalized full question and answer matches to human dupli
   const log=(await db.query('select action_label,target_status_after from admin_action_log where target_id=$1',[copy.id])).rows[0];
   assert.deepEqual(log,{action_label:'Mükerrer incelemeye aldı',target_status_after:'mukerrer_inceleme'});
 });
+test('duplicate index accepts very long content while exact comparison still works', async () => {
+  const question=`Uzun soru ${'A'.repeat(15000)}?`;
+  const answer=`Uzun cevap ${'B'.repeat(100000)}.`;
+  const target=await seed('other','onaylandi',question,answer);
+  await publish(target,'uzun-canli-kayit');
+  let copy=await seed('user','bekliyor',question,answer);
+  copy=await change(copy,'admin','management','approve');
+  assert.equal(copy.status,'mukerrer_inceleme');
+  assert.equal(copy.workflow_meta.duplicateCandidateId,target.id);
+  assert.equal((await db.query('select * from review_duplicate_candidates($1)',[copy.id])).rows[0].id,target.id);
+});
 test('duplicate review requires an explicit reason and stores Mükerrer as the trash reason', async () => {
   const target=await seed('other','onaylandi','Aynı yayın sorusu?','Aynı yayın cevabı.');
   await publish(target,'asil-yayin');
