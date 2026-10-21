@@ -931,6 +931,40 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-21
+
+- **Onay anında tam soru+cevap mükerrer inceleme akışı canlıya alındı:** Yönetici
+  onayında yalnız normalize edilmiş sorunun **ve** cevabın tamamı mevcut
+  `published` public kayıtla birlikte eşleşirse kayıt yayımlanmaz ve
+  `mukerrer_inceleme` kuyruğuna alınır. Yalnız soru veya yalnız cevap eşleşmesi
+  mükerrer sayılmaz. Yönetici karşılaştırma ekranında canlı soru/cevap ve aday
+  soru/cevabı yan yana görür; gerekçe yazarak `Mükerrer Olarak Çöpe Taşı` veya
+  `Mükerrer Değil, Onayla` kararını verir. Doğrulanan mükerrer çöpte
+  `trashReason=duplicate`, `trashReasonLabel=Mükerrer`, canlı hedef ID/slug ve
+  yönetici denetim iziyle saklanır; doğrudan silinmez. Yeni SQL migration
+  `20261020143000_duplicate_review_queue.sql`; runtime commit `6a3f148`.
+  Production deployment `dpl_EfHHAEu717kc6p8aEm8mRLmrqpiJ` / Vercel URL
+  `https://arsiv-kontrol-439ts0a5y-ugurkarabulutts-projects.vercel.app`
+  `READY` durumunda `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
+- İlk canlı migration denemesi uzun soru/cevapların doğrudan B-tree indeksinde
+  PostgreSQL 8 KB indeks satırı sınırını aşması nedeniyle transaction içinde
+  başarısız oldu ve migration geçmişine yazılmadı. İndeks sabit boyutlu MD5
+  ön elemesine çevrildi; hash yalnız aday bulmak için kullanılır, nihai karar
+  tam normalize soru ve tam normalize cevap eşitliğini ayrıca doğrular. 15 bin
+  karakterlik soru ve 100 bin karakterlik cevap regresyon testi eklendi.
+  `npm.cmd run check` 246/246 başarılı; düzeltme commit'i `d273ee5` push edildi.
+  Migration ikinci dry-run sonrasında canlıya başarıyla uygulandı. `anon` ve
+  `authenticated` RPC çalıştıramaz, yalnız `service_role` yetkilidir.
+- Migration sonrası güncel taramada 700 `bekliyor` kaydın yalnız 2'si canlı
+  arşivle tam soru+cevap eşleşmesiydi. Önce gerçek canlı `ROLLBACK`, sonra aynı
+  sürüm/eşleşme kilitleriyle `COMMIT` uygulandı. Kayıtlar
+  `3fa60bca-2765-4024-b279-74849059e346` ve
+  `4e448766-8499-4b3c-83dd-c30848136753` şimdi `mukerrer_inceleme`, sürüm 2;
+  public kayıtları yoktur. İki revision ve iki admin action log oluştu, iki
+  canlı hedef 200/canonical doğru kaldı. Eşzamanlı kuyruk hareketinden sonra
+  `bekliyor` sayısı 699, geriye kalan tam soru+cevap mükerrer adayı 0'dır.
+  Önceki taramadaki diğer 6 kayıt artık `bekliyor` olmadığı için değiştirilmedi.
+
 ### 2026-10-20
 
 - **Eski admin sekmelerine zorunlu istemci sürüm koruması eklendi:** Canlı

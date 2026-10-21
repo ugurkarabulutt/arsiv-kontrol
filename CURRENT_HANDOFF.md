@@ -1,5 +1,35 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-21 Mükerrer API ve Yönetici Karar Kuyruğu — Production Tamamlandı
+
+- Onay anında yalnız normalize edilmiş **tam soru + tam cevap** canlıdaki bir
+  `published` kayıtla eşleşirse otomatik yayın durur ve kayıt
+  `mukerrer_inceleme` kuyruğuna alınır. Yalnız soru veya yalnız cevap eşleşmesi
+  yeterli değildir. Yönetici aday ve canlı içeriği karşılaştırıp zorunlu
+  gerekçeyle `Mükerrer Olarak Çöpe Taşı` veya `Mükerrer Değil, Onayla` kararı
+  verir. Mükerrer kararı hard-delete yapmaz; çöp nedeni `Mükerrer`, canlı hedef
+  ID/slug, revision ve admin action log korunur.
+- Runtime commit `6a3f148` production deployment
+  `dpl_EfHHAEu717kc6p8aEm8mRLmrqpiJ` /
+  `https://arsiv-kontrol-439ts0a5y-ugurkarabulutts-projects.vercel.app` ile
+  `https://arsiv.ibrahimlive.ai` alanına alınmıştır. Canlı `/health`, `/admin`,
+  admin noindex/no-store, `20261020-duplicate-review-v2`, kuyruk markerı ve
+  oturumsuz mükerrer API `401` doğrulandı.
+- `20261020143000_duplicate_review_queue.sql` canlı Supabase projesine
+  uygulandı. İlk deneme uzun metni doğrudan indekslediği için PostgreSQL 8 KB
+  indeks satırı sınırında transaction içinde geri alındı; migration kaydı
+  oluşmadı. Kalıcı çözüm hash ön elemesi + tam normalize metin eşitliğidir.
+  Düzeltme/regresyon commit'i `d273ee5` push edildi; 15 bin karakter soru ve
+  100 bin karakter cevap testi dahil `npm.cmd run check` 246/246 geçti.
+- Güncel canlı taramada 700 `bekliyor` kayıttan yalnız 2 tam eşleşme bulundu.
+  Önce `ROLLBACK`, ardından aynı sürüm ve hedef kilitleriyle `COMMIT` edildi:
+  `3fa60bca-2765-4024-b279-74849059e346` ve
+  `4e448766-8499-4b3c-83dd-c30848136753`. İkisi de sürüm 2 ve
+  `mukerrer_inceleme`; yayımlanmadı. İki revision ve iki admin action log var;
+  canlı hedefler 200/canonical doğru. Son doğrulamada 699 bekleyen kayıt ve 0
+  kalan tam mükerrer aday vardır. Önceki taramadaki diğer 6 kayıt artık
+  `bekliyor` olmadığı için değiştirilmedi.
+
 ## 2026-10-20 Eski Admin Sekmesi Sürüm Koruması — Production Tamamlandı
 
 - Son geri bildirim ekranındaki eski mavi hata metni canlı HTML'de artık
