@@ -228,6 +228,7 @@ assert(server.includes("app.get('/api/admin-client-version'") && server.includes
 assert(html.includes('ensureAdminClientCurrent({force:true,reload:true})') && html.includes("'X-Admin-Client-Build':ADMIN_CLIENT_BUILD"), 'Her yonetim yazma istegi guncel istemci surumunu dogrulamali.');
 assert(html.includes('preserveFeedbackDraftForClientReload') && html.includes('restoreFeedbackDraftAfterClientReload'), 'Geri bildirim taslagi istemci surumu yenilenirken korunmali.');
 assert(html.includes('ensureAdminActionNote') && html.includes('Notu Kaydet ve Devam Et'), 'Admin arayuzu kritik islemlerden once aciklama istemeli.');
+assert(html.includes("if(method==='POST'&&/^\\/api\\/review\\/[0-9a-f-]{36}\\/reanalyze$/i.test(path))return false;"), 'Soru-cevap teknik denetimi yonetici islem aciklamasi istememeli.');
 assert(html.includes('function adminActionRunsAsMemberWorkflow') && html.includes("ReviewWorkspace.workspace()==='member'"), 'Admin rolu olan ekip uyesinin normal calisma akisi zorunlu yonetim notundan ayrilmali.');
 assert(server.includes("workspace: req.get('X-Review-Workspace')") && server.includes('reviewWorkspacesEnabled: ADMIN_REVIEW_WORKSPACES_ENABLED'), 'Backend zorunlu not karari ekip uyesi ve yonetim calisma alanini ayirmali.');
 assert(html.includes('İşlem açıklaması:</strong>'), 'Zorunlu aciklama Sistem Kayitlari ekraninda gorunmeli.');

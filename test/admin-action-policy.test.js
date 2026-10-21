@@ -52,6 +52,16 @@ test('management decisions still require notes while approval stays exempt', () 
   assert.equal(requiresAdminActionNote('POST', `/api/history/${id}/content`, {}, managementContext), true);
 });
 
+test('technical question and answer review never asks managers for an action note', () => {
+  const managementContext = { workspace: 'management', reviewWorkspacesEnabled: true };
+  assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/reanalyze`, {}, managementContext), false);
+  assert.equal(
+    requiresAdminActionNote('POST', `/api/review/${id}/reanalyze`, { questionText: 'Soru', correctedText: 'Cevap' }, managementContext),
+    false
+  );
+  assert.equal(requiresAdminActionNote('POST', `/api/review/${id}/action`, { action: 'return' }, managementContext), true);
+});
+
 test('privileged mutations require a note while passive actions do not', () => {
   const required = [
     ['PUT', '/api/users/user-1'],

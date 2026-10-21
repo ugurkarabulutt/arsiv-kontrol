@@ -32,6 +32,11 @@ function isApprovalAction(method, path, body = {}) {
     && String(body?.action || '').trim() === 'approve';
 }
 
+function isTechnicalReviewAction(method, path) {
+  if (method !== 'POST') return false;
+  return new RegExp(`^/api/review/${UUID_PART}/reanalyze$`, 'i').test(path);
+}
+
 function isMemberWorkflowAction(method, path, body = {}, context = {}) {
   if (method !== 'POST') return false;
 
@@ -53,6 +58,7 @@ function requiresAdminActionNote(methodValue, pathValue, body = {}, context = {}
   const path = normalizedApiPath(pathValue);
   if (!MUTATING_METHODS.has(method)
     || isApprovalAction(method, path, body)
+    || isTechnicalReviewAction(method, path)
     || isMemberWorkflowAction(method, path, body, context)) return false;
 
   if (/^\/api\/users(?:\/|$)/.test(path)) return true;
@@ -63,7 +69,7 @@ function requiresAdminActionNote(methodValue, pathValue, body = {}, context = {}
   if (/^\/api\/newsletter\/admin(?:\/|$)/.test(path)) return true;
   if (/^\/api\/correction-packages(?:\/|$)/.test(path)) return true;
   if (/^\/api\/history-tags(?:\/|$)/.test(path)) return true;
-  if (new RegExp(`^/api/review/${UUID_PART}/(?:action|reanalyze)$`, 'i').test(path)) return true;
+  if (new RegExp(`^/api/review/${UUID_PART}/action$`, 'i').test(path)) return true;
   if (new RegExp(`^/api/history/${UUID_PART}/(?:content|reject|review|dergah|conference|pending|return|archive|tags)$`, 'i').test(path)) return true;
   if (/^\/api\/alerts\/(?:[^/]+\/respond|resolve-bulk)$/.test(path)) return true;
   if (method === 'POST' && path === '/api/ai/reports/generate') return true;
@@ -79,6 +85,7 @@ module.exports = {
   cleanRequiredActionNote,
   decodeAdminActionNoteHeader,
   isApprovalAction,
+  isTechnicalReviewAction,
   isMemberWorkflowAction,
   normalizedApiPath,
   requiresAdminActionNote,
