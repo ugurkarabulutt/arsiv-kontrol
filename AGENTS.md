@@ -5,12 +5,17 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 
 ## 2026-10-21
 
-- **Soru ve cevap denetim kapısı yerelde hazırlandı:** Düşük puan düzeltme
+- **Soru ve cevap denetim kapısı production'a alındı:** Düşük puan düzeltme
   taslağını artık silmez. Onay ve gönderim için soru ile cevabın birlikte
   denetlenmiş son hâli, iki alan puanı ve hashleri DB'de doğrulanır. Eski
   kayıtlar ve değişen metinler yeni kontrol gerektirir. UI denetim durumunu,
-  bulguları ve yeniden denetim filtresini gösterir. Bu değişiklik production'a
-  alınmadı; migration ve geçiş sırası `CURRENT_HANDOFF.md` içindedir.
+  bulguları ve yeniden denetim filtresini gösterir. Runtime commit `6245863`,
+  migration `20261021084720_review_analysis_quality_gate.sql`, production
+  deployment `dpl_AKenFe1VAkC8FAr29CBZyuo8NCjb` /
+  `https://arsiv-kontrol-6cyhsp557-ugurkarabulutts-projects.vercel.app`
+  `https://arsiv.ibrahimlive.ai` alanında etkindir. 254 yerel test, 390/1440 px
+  tarayıcı akışı, canlı gerçek AI ile iki alanın denetimi, değişiklik sonrası
+  gönderim engeli ve yönetim filtresi doğrulandı. Geçici test kayıtları temizlendi.
 
 ## 2026-10-19
 
@@ -937,7 +942,7 @@ tarihi ve iki metnin parmak izini; `analysisInput` son denetimin birebir soru
 ve cevap girdisini tutar. İlk cevap analizi `answer_only` kapsamındadır ve
 tek başına onaya yeterli değildir. Eski kayıtlar doğrulanmış sayılmaz.
 Bu politika `20261021084720_review_analysis_quality_gate.sql` migrationı ve
-eşleşen uygulama sürümü birlikte yayımlandığında production'da etkinleşir.
+`20261021-analysis-quality-v1` uygulama sürümüyle production'da etkindir.
 
 ## Tekrar-Gönderim Kontrolü
 

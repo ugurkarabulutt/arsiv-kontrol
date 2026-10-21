@@ -1,11 +1,13 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-21 Soru ve Cevap Denetimi — Yerel Doğrulama
+## 2026-10-21 Soru ve Cevap Denetimi — Production Tamamlandı
 
 - Dal `codex/review-analysis-quality-gate`; çalışma ağacı
   `.codex-admin-review-actions-fix`, taban `705bcb3`. Ana kirli checkout'a
-  dokunulmadı. Bu değişiklik henüz commit/push/deploy edilmedi ve migration
-  canlı DB'ye uygulanmadı.
+  dokunulmadı. Runtime commit `6245863` GitHub'a push edildi. Production
+  deployment `dpl_AKenFe1VAkC8FAr29CBZyuo8NCjb` /
+  `https://arsiv-kontrol-6cyhsp557-ugurkarabulutts-projects.vercel.app`
+  `READY` olarak `https://arsiv.ibrahimlive.ai` alanına terfi ettirildi.
 - Düşük puanda `correctedText` boşaltılmıyor; yalnız doğrulanmış bulguların
   uygulandığı taslak ve yeniden denetim gereği korunuyor. Prompt sürümü
   `2026-10-21.1`, istemci sürümü `20261021-analysis-quality-v1`.
@@ -27,7 +29,10 @@
   aynı boş-dolu geçişi yoktur. Hiçbir gerçek içerik değiştirilmedi.
 - Yerel testlerde sentetik AI ve gerçek in-memory PostgreSQL kullanılır.
   Son zorunlu `npm.cmd run check` 254/254 başarılıdır; yeni kalite
-  regresyonları 7/7 başarılıdır. Migration yalnız yerel PostgreSQL'e uygulanmıştır.
+  regresyonları 7/7 başarılıdır. Migration önce canlıda `ROLLBACK` ile
+  sınandı; denetlenmemiş gönderim/onay engeli, geçerli denetim sonrası
+  gönderim/onay ve üç revision/işlem logu doğrulandı. Rollback sonrası schema
+  değişikliği ve test kaydı kalmadı. Ardından aynı migration kalıcı uygulandı.
   `node scripts/verify-review-quality.js` 390/1440 px gerçek tarayıcı akışını
   doğruladı: boş kaynak kurtarma, düşük skorda bloklama, ikinci denetim,
   yazınca kapanan gönderim ve gönderimin DB'ye yansıması. JS hatası/yatay
@@ -38,12 +43,29 @@
 - Yerel, sentetik inceleme ekranı `http://127.0.0.1:53317/admin` adresindedir.
   Gerçek veriye veya AI sağlayıcısına bağlanmaz. Yerel test sunucusu
   `test-support/review-fixture.js`, `REVIEW_QUALITY_DEMO=1` ile çalışır.
-- Canlıya geçişte uygulama ve migration birlikte ele alınmalı: önce yeni
-  uygulama izole ortamda hazırlanmalı; migration transaction içinde
-  doğrulanmalı, sonra uygulama production'a terfi ettirilmeli. Eski tüm-onaylı
-  senkron kullanılmaz. Bu migration mevcut soruları otomatik yayımlamaz,
-  reddetmez veya silmez. Yeni doğrulama kaydı olmayan eski bekleyen içerikler
-  de onaydan önce soru-cevap kontrolü gerektirir.
+- Canlı geçiş kanıtları ignored `.tmp-review-quality/` içindedir. Supabase
+  eklentisi kalıcı apply çağrısında `Invalid or expired requestState` döndü;
+  DB'de migration/fonksiyon/triggerın oluşmadığı doğrulandı. Sonra yalnız bu
+  migration ve `schema_migrations` kaydı aynı transaction içinde CLI ile
+  commit edildi (`20261021084720`). Eski, farklı tarihli migration geçmişine
+  toplu repair uygulanmadı. Önceki RPC tanımı geri dönüş için yerel snapshotta.
+- `/health`, `/admin`, JS/CSS birebir hashleri, admin noindex/no-store,
+  root/arşiv/arama/hesap/soru-sor/sitemap/robots canlı smoke kontrolleri geçti.
+  Oturumsuz inceleme API'si 401; istemci build sürümü yenidir. Dört ilgili DB
+  fonksiyonu security-invoker ve yalnız service_role tarafından çalıştırılır.
+- Canlıda geçici test hesabıyla giriş ve ilk gerçek AI analizi 200/100 puan;
+  yalnız cevap denetiminden sonraki submit 422/ANALYSIS_REQUIRED; soru-cevap
+  denetimi 200/ready ve iki alan 100 puan; cevap değişikliği içeren submit
+  yine 422 oldu. Taslak ve sürüm korundu. Test hesabı, geçmişi ve logları
+  temizlendi; gerçek kullanıcı içeriği değiştirilmedi veya yayımlanmadı.
+- Geçici admin oturumunda `analysis_required` filtresi 200/993 kayıt döndürdü.
+  Aynı oturumla canlı `/api/pdf` 200/application-pdf ve geçerli `%PDF-`
+  imzası/2780 bayt çıktı verdi; test hesabı tekrar tamamen temizlendi.
+  Bildirilen `fb42c9a7` kaydı sürüm 2 ve quality=required; yöneticinin
+  reanalyze yetkisi vardır. Bu filtre, önceki denetimi yalnız cevapla sınırlı
+  tüm eski aktif kayıtları da kapsar; 993 kayıt yeni hata tespiti sayısı değildir.
+  Yeni doğrulama kaydı olmayan eski bekleyenler onaydan önce soru-cevap
+  denetimi gerektirir. Otomatik toplu yayın/reddetme/silme yapılmadı.
 
 
 ## 2026-10-21 Mükerrer API ve Yönetici Karar Kuyruğu — Production Tamamlandı
