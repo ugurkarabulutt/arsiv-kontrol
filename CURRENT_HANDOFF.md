@@ -6310,11 +6310,26 @@ Son güncelleme: 2026-06-22 — Claude Code (Codex çalışması devralındı)
 - Son DB kanıtı: açık feedback 0, çözülen 7, bildirilen kullanıcı 3, çözüm günlüğü 1, geri alınabilir alan günlüğü 390, hedeflenen yanlış history/public/search eşleşmeleri 0.
 - Arama senkronu: değişen 36 published slug yeniden indekslendi; `content_hash` uyumsuzluğu 0, eksik embedding 0, yanlış ifade eşleşmesi 0.
 
-## 2026-10-22 - Muhterem Hocam punctuation and casing
+## 2026-10-22 - Muhterem Hocam hitap standardi
 
 - Worktree: `.codex-admin-review-actions-fix`; branch `codex/review-analysis-quality-gate`.
-- Future analyses now enforce `Muhterem Hocam, ...` and lowercase only ordinary continuations.
-  Proper names, sura names, direct quotations and protected religious terms remain uppercase.
-- Historical correction now supports `question_text` with reversible logs and refreshes an existing
-  public row without changing its slug or published/hidden visibility.
-- Read-only live simulation: 529 total matches, 344 active workflow matches, 280 approved matches,
+- Gelecek denetimler soru basindaki hitabi deterministik olarak `Muhterem Hocam, ...`
+  bicimine getirir. Devam eden ortak ad kucuk harfle baslar; sure, kisi, yer,
+  Allah/Kur'an, dogrudan alinti ve korunan ozel terim adlari buyuk harfini korur.
+- Gecmis Duzeltme Merkezi `question_text` alanini destekler. Onayli kaydin public metni
+  yenilenirken slug ve mevcut `published` / `content_review_hidden` gorunurlugu korunur.
+- Runtime commit `6f02bc0` GitHub'a push edildi. Production deployment
+  `dpl_E4cNsFjHTzKtK7PR34WsYJEpxkWS` / `https://arsiv-kontrol-d90hvahvo-ugurkarabulutts-projects.vercel.app`
+  `READY`; canli alias `https://arsiv.ibrahimlive.ai`. `/health=ok`, `/admin=200`,
+  admin `noindex/no-store` ve build marker `20261022-muhterem-hitap-v1` dogrulandi.
+- Canli veri `muhterem-hocam-hitap-20261022` paketiyle kontrollu duzeltildi:
+  465 aktif history kaydi (`onaylandi=382`, `bekliyor=51`, `geri_gonderildi=20`,
+  `teyit_bekliyor=9`, `taslak=3`) ve 382 bagli public kayit yeni standarda esitlendi.
+  Public gorunurluk `381 published + 1 content_review_hidden` olarak degismedi; sluglar
+  ve URL'ler korunarak 465 geri alinabilir `content_correction_log` kaydi olusturuldu.
+- Arama senkronunda 1.248 published arama belgesi yenilendi. Son kontrolde 1.248/1.248
+  `content_hash` ve baslik metadata eslesmesi dogru; eski soru/baslik kalintisi 0.
+  Uc ornek canli soru URL'si `200` ve yeni `Muhterem Hocam, ...` metniyle dogrulandi.
+- Dogrulama: `npm.cmd run check` 257/257 basarili; `git diff --check` whitespace
+  hatasi vermedi. Computer Use yardimcisi `helper_unknown_error` nedeniyle baslatilamadi;
+  canli sonuc HTTP, veritabani ve otomatik testlerle dogrulandi.

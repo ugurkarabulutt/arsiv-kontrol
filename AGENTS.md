@@ -4719,5 +4719,14 @@ tespit edilir).
 - Ayni karar hem varsayilan kurallara hem canli ayarlardan bagimsiz ust oncelikli analiz promptuna eklendi.
 - Gecmis Duzeltme Merkezi `question_text` alanini tarayabilir, uygular ve geri alir; onayli kaydin
   public metni yenilenirken slug ve mevcut published/hidden durumu korunur.
-- Salt okunur canli simulasyonda 529 toplam aday, 344 aktif akis adayi, 280 onayli aday ve bunlara
-  bagli 279 published public kayit bulundu. Bu asamada canli veri degistirilmedi.
+- Runtime commit `6f02bc0` production'a alindi. Deployment
+  `dpl_E4cNsFjHTzKtK7PR34WsYJEpxkWS` `READY`; canli alias `https://arsiv.ibrahimlive.ai`.
+- Canli gecmis duzeltmesi `muhterem-hocam-hitap-20261022` paketiyle uygulandi. Toplam 465 aktif
+  history kaydi (`onaylandi=382`, `bekliyor=51`, `geri_gonderildi=20`, `teyit_bekliyor=9`,
+  `taslak=3`) ve 382 bagli public kayit esitlendi. Public gorunurluk 381 published ve
+  1 `content_review_hidden` olarak korundu; slug veya URL degismedi. Ayni paket altinda
+  465 geri alinabilir `content_correction_log` kaydi bulunur.
+- Degisen 381 published kayda bagli 1.248 arama belgesi yeni soru ve baslikla esitlendi;
+  1.248/1.248 hash ve metadata dogru, eski metin kalintisi 0. Uc ornek canli soru URL'si
+  `200` ve yeni hitap metniyle dogrulandi.
+- Dogrulama: `npm.cmd run check` 257/257 basarili; `git diff --check` whitespace hatasi vermedi.
