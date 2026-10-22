@@ -32,6 +32,10 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   ve onay, düşük skor ve kayıp HTTP yanıtı senaryoları geçti.
   Testler `scripts/verify-review-submit-flow.js`, `verify-review-quality.js`,
   `verify-admin-reanalysis-ui.js`. Canlı durumu CURRENT_HANDOFF.md içindedir.
+  Runtime `fc13b60`, deployment `dpl_7L6WejLEgD1QV8dDakdXRjNgxU7Y`
+  ana alana alındı. Canlı geçici hesapla 47.250 karakter/13 parça gerçek AI
+  gönderimi, temiz yeni analiz, admin reanalysis ve gerekçeli Kaydet geçti.
+  Test kullanıcı/kayıt/logları temizlendi; gerçek içerik değiştirilmedi.
 
 ## 2026-10-21
 

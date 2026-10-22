@@ -1,6 +1,28 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-22 Gönderim Akışı — Yerel Testler Tamamlandı
+## 2026-10-22 Gönderim Akışı — Production Tamamlandı
+
+- Son runtime `fc13b60` commit edilip push edildi. Deployment
+  `dpl_7L6WejLEgD1QV8dDakdXRjNgxU7Y` /
+  `https://arsiv-kontrol-2oc2z26t4-ugurkarabulutts-projects.vercel.app`
+  READY olduktan ve staged gerçek AI testi geçtikten sonra ana alana terfi
+  edildi. `https://arsiv.ibrahimlive.ai` build'i `20261022-review-submit-v5`.
+- Canlı alan adında geçici admin hesabı ekip alanında gerçek giriş/ilk AI
+  denetimi yaptı. 47.250 karakter cevap 13 kısa parçada denetlendi; tüm API
+  yanıtları 200. DB'de status=bekliyor, version=2, quality=ready ve cevap
+  uzunluğu 47.250 doğrulandı. Yeni Denetime Başla boş metin alanı ve null
+  currentResult açtı. Yönetim alanında reanalyze ve Kaydet düğmeleriyle
+  işlem yapıldı; Kaydet gerekçe penceresi çalıştı, reanalyze not istemedi.
+- Testlerde pageerror yok. Geçici kullanıcı/history/revision/alert/log
+  temizliği tamamlandı; leftover_users/history/logs = 0. Gerçek kullanıcı
+  içerikleri bu turda değiştirilmedi, test kaydı public yayına alınmadı.
+- Canlı /health, /admin noindex/no-store, admin JS/CSS birebir dosya eşleşmesi,
+  sürüm API'si, root/arşiv/robots/sitemap geçti; oturumsuz /api/review=401.
+  Yerel 264/264 test, 390/1440px uzun metin + düşük skor + kesinti +
+  yavaş liste yenilemesiyle Kaydet senaryoları başarılı.
+- Canlı kanıt `.tmp-review-submit-flow/live-result.json`, ekran görüntüleri
+  aynı dizindedir. Computer Use başlatılamadığı için gerçek Chromium
+  düğme etkileşimleri Playwright üzerinden doğrulandı.
 
 - Çalışma `.codex-admin-review-actions-fix`, dal `codex/review-analysis-quality-gate`.
   Ana checkout'taki bağımsız değişikliklere dokunulmadı.
@@ -27,7 +49,7 @@
   Bu ikinci staged sürüm de ana alana alınmadı; test verileri tamamen temizlendi.
 - Son düzeltmede liste yenilemesi arka planda, tüm busy düğmeleri kapalıdır.
   2500ms geciken listeyle Kaydet prompt testi geçti. İstemci build
-  `20261022-review-submit-v5`; son staged/canlı doğrulama bekleniyor.
+  `20261022-review-submit-v5`; staged ve canlı doğrulama yukarıda tamamlandı.
 
 ## 2026-10-21 Yönetici Denetim Butonu — Production Tamamlandı
 
