@@ -46,7 +46,7 @@ function reviewPairResult(input, q, a) {
   };
 }
 
-const REVIEW_PART_SIZE = 8000;
+const REVIEW_PART_SIZE = 4000;
 function reviewAnalysisParts(question, answer) {
   const input = { question: analysisText(question), answer: analysisText(answer) };
   if (!input.question.trim() || !input.answer.trim()) throw new Error('REQUIRED_FIELDS');
@@ -115,7 +115,7 @@ function completedAnalysisParts(secret, binding, plan, tokens) {
       correctedText: selected.map(part => part.prefix + analysisText(part.result.correctedText).trim() + part.suffix).join(''),
       score: Math.min(...selected.map(part => part.result.score)),
       totalErrors: selected.reduce((sum, part) => sum + (part.result.totalErrors || 0), 0), categories,
-      analysisMeta: { partCount: selected.length }
+      analysisMeta: { partCount: selected.length, parts: selected.map(part => part.result.analysisMeta || {}) }
     };
   }
   return reviewPairResult(plan.input, combine('question'), combine('answer'));

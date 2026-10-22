@@ -11,15 +11,20 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   denetim sırasında metin değişikliği engellenir. Başarılı gönderim eski
   sonucu temizler ve `Yeni Denetime Başla` sunar.
 - 46.396 karakterli bekleyen kayıtta canlı logları `reanalyze` OpenAI timeout
-  hatasını gösterdi. Uzun metin artık en fazla 8.000 karakterlik, iki eşzamanlı
+  hatasını gösterdi. Uzun metin artık en fazla 4.000 karakterlik, iki eşzamanlı
   kısa HTTP isteğiyle denetlenir. Sunucunun imzaladığı parçalar kayıt, sürüm,
   kullanıcı, çalışma alanı ve içeriğe bağlıdır; eksik/sahte/eski parçalar
   gönderim hakkı vermez. Son birleştirme tek denetim revizyonu oluşturur.
   Kesintide tamamlanan parçalar sekmede korunur ve tekrar kullanılabilir.
+  İlk staged gerçek AI testi 8K parçada da timeout gösterdi; bu sürüm ana
+  alana alınmadı. Son sürüm yalnız bulguları üretir; tam metin mevcut
+  finalizeResult ile kaynaktan oluşturulur. İstek başına 45 saniye ve bir
+  tekrar sınırı vardır; deadline artık yanıt gövdesini de kapsar. Kısa
+  parçaların ayrı saatlik 400 istek kotası, normal analiz kotasını tüketmez.
 - `reanalyze-part` teknik işlemdir; admin notu istemez. Yönetim kararlarının
   gerekçeleri, sahiplik/yetki/sürüm koruması değişmedi. Çakışmada görünür
   metin korunur; başka sürüm sessizce benimsenip üzerine yazılmaz.
-- Yerel kanıt: 261/261 test; Chromium 390/1440px 52K metin gönderimi,
+- Yerel kanıt: 263/263 test; Chromium 390/1440px 52K metin gönderimi,
   temiz yeni denetim, geçici hata/tekrar deneme, admin uzun cevap düzenleme
   ve onay, düşük skor ve kayıp HTTP yanıtı senaryoları geçti.
   Testler `scripts/verify-review-submit-flow.js`, `verify-review-quality.js`,

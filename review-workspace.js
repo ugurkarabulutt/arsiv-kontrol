@@ -68,7 +68,7 @@ const ReviewWorkspace = (() => {
     if(analysisRun?.fingerprint!==fingerprint)analysisRun={fingerprint,requestId:crypto.randomUUID(),tokens:[],total:0};
     const run=analysisRun;
     payload.analysisRequestId=run.requestId;
-    const long=payload.questionText.length>8000 || payload.correctedText.length>8000 || (payload.useOriginalAnswer&&item.originalText?.length>8000);
+    const long=payload.questionText.length>4000 || payload.correctedText.length>4000 || (payload.useOriginalAnswer&&item.originalText?.length>4000);
     if(long){
       async function part(index){
         if(run.tokens[index])return;

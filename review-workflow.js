@@ -83,7 +83,7 @@ function reviewChangeSummary(current, returnedRevision, submittedRevision, actor
   };
 }
 
-function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, analysisSigningKey = randomUUID(), loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
+function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, analysisPartRateLimiter = analysisRateLimiter, analysisSigningKey = randomUUID(), loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
   const router = express.Router();
   const userFor = req => ({ id: req.session.userId, role: req.session.role });
   const spaceFor = req => workspaceFor(userFor(req), req.get('X-Review-Workspace') || req.query.workspace);
@@ -275,7 +275,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
       req.body?.analysisRequestId, analysisHash(plan.input.question), analysisHash(plan.input.answer)]);
     return { current, payload, plan, binding };
   }
-  router.post('/:id([0-9a-fA-F-]{36})/reanalyze-part', analysisRateLimiter, handler(async (req, res) => {
+  router.post('/:id([0-9a-fA-F-]{36})/reanalyze-part', analysisPartRateLimiter, handler(async (req, res) => {
     const { plan, binding } = await analysisContext(req);
     const index = req.body?.partIndex;
     if (!Number.isInteger(index) || !plan.parts[index]) throw new Error('INVALID_CONTENT');

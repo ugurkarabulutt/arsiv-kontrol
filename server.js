@@ -74,7 +74,7 @@ const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
 const NEWSLETTER_FOOTER_CONSENT_VERSION = 'newsletter-consent-20260920-v1';
 const NEWSLETTER_QUESTION_CONSENT_VERSION = 'question-newsletter-consent-20260923-v1';
-const ADMIN_CLIENT_BUILD = '20261022-review-submit-v3';
+const ADMIN_CLIENT_BUILD = '20261022-review-submit-v4';
 const PROMPT_VERSION    = '2026-10-22.1';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -165,12 +165,13 @@ function openaiUserMessage(status) {
   return 'AI servisi şu anda beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin; devam ederse ekibe bildirin.';
 }
 
-async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
+async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği', options = {}) {
   let lastStatus = 503;
   let lastMessage = '';
-  for (let attempt = 0; attempt <= OPENAI_RETRY_DELAYS_MS.length; attempt++) {
+  const retryDelays = options.retryDelays || OPENAI_RETRY_DELAYS_MS;
+  for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+    const timeout = setTimeout(() => controller.abort(), options.timeoutMs || OPENAI_TIMEOUT_MS);
     try {
       const response = await fetch(OPENAI_CHAT_URL, {
         method: 'POST',
@@ -178,19 +179,19 @@ async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
         body: JSON.stringify(payload),
         signal: controller.signal
       });
-      clearTimeout(timeout);
-
       if (response.ok) {
         const data = await safeJson(response);
+        controller.signal.throwIfAborted();
         if (!data?.choices?.length) throw httpError('AI servisi eksik yanıt döndürdü. Lütfen tekrar deneyin.', 502);
         return data;
       }
 
       const upstream = await safeJson(response);
+      controller.signal.throwIfAborted();
       lastStatus = response.status;
       lastMessage = upstream.error?.message || response.statusText || '';
       const retryable = OPENAI_RETRYABLE_STATUS.has(response.status);
-      if (!retryable || attempt === OPENAI_RETRY_DELAYS_MS.length) {
+      if (!retryable || attempt === retryDelays.length) {
         console.warn(`[OpenAI] ${contextLabel} başarısız: status=${response.status} message=${lastMessage}`);
         throw httpError(openaiUserMessage(response.status), retryable ? 503 : response.status);
       }
@@ -198,13 +199,13 @@ async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği') {
       clearTimeout(timeout);
       if (err.statusCode) throw err;
       lastMessage = err.name === 'AbortError' ? 'timeout' : (err.message || 'network');
-      if (attempt === OPENAI_RETRY_DELAYS_MS.length) {
+      if (attempt === retryDelays.length) {
         const status = err.name === 'AbortError' ? 504 : lastStatus;
         console.warn(`[OpenAI] ${contextLabel} bağlantı hatası: ${lastMessage}`);
         throw httpError(AI_TEMPORARY_UNAVAILABLE_MSG, status, err);
       }
-    }
-    await sleep(OPENAI_RETRY_DELAYS_MS[attempt]);
+    } finally { clearTimeout(timeout); }
+    await sleep(retryDelays[attempt]);
   }
   throw httpError(AI_TEMPORARY_UNAVAILABLE_MSG, 503);
 }
@@ -5559,6 +5560,7 @@ const publicNewsletterRateLimiter = makeRateLimiter({ scope: 'public-newsletter'
 const publicAnalyticsRateLimiter = makeRateLimiter({ scope: 'public-analytics', windowMs: 60 * 1000, max: 120 });
 const publicReadRateLimiter = makeRateLimiter({ scope: 'public-read', windowMs: 60 * 1000, max: 180 });
 const analysisRateLimiter = makeRateLimiter({ scope: 'analysis', windowMs: 60 * 60 * 1000, max: 80 });
+const reviewPartRateLimiter = makeRateLimiter({ scope: 'review-analysis-parts', windowMs: 60 * 60 * 1000, max: 400 });
 
 function normalizePublicArchiveRouteBase(value = '/public-preview') {
   const raw = String(value ?? '/public-preview').trim();
@@ -11296,7 +11298,7 @@ app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (
 if (ADMIN_REVIEW_WORKSPACES_ENABLED) {
   const { createReviewWorkflow } = require('./review-workflow');
   const review = createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes,
-    attachApprovalReturnMeta, loadApprovalFavoriteSet, clearPublicArchiveCaches, publishApprovedHistoryRecord, analyzeText: openaiText, analysisRateLimiter, analysisSigningKey: SESSION_SECRET, readOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
+    attachApprovalReturnMeta, loadApprovalFavoriteSet, clearPublicArchiveCaches, publishApprovedHistoryRecord, analyzeText: text => openaiText(text, { findingsOnly: true }), analysisRateLimiter, analysisPartRateLimiter: reviewPartRateLimiter, analysisSigningKey: SESSION_SECRET, readOnly: ADMIN_PREVIEW_CONTENT_READ_ONLY });
   app.use('/api/review', auth, review.router);
   app.use('/api/history', auth, review.legacy);
 }
@@ -14631,20 +14633,25 @@ Tam yanıt şeması:
 }`;
 }
 
-async function openaiText(text) {
+async function openaiText(text, { findingsOnly = false } = {}) {
   const rules = await loadRules();
+  const prompt = await buildSystemPrompt(rules);
+  const outputInstruction = findingsOnly
+    ? '\n\nBU İSTEĞE ÖZEL ÇIKTI KURALI: Yukarıdaki denetim kurallarının tamamını uygula. Ancak correctedText alanında tam metni yeniden üretme; bu alanı boş dize olarak döndür. Geçerli her düzeltmeyi categories içindeki issues dizilerinde original, fixed ve rule alanlarıyla eksiksiz belirt. Sunucu yalnız doğruladığı bu bulguları özgün metne uygulayarak tam düzeltilmiş metni kendisi oluşturacak. Bulgu yoksa boş issues dizileri döndür; kaynak metni veya özetini correctedText içine kopyalama.'
+    : '';
   const d = await fetchOpenAIChatCompletion({
     model: 'gpt-4o',
     max_tokens: 16000,
     temperature: 0,
     response_format: { type: 'json_object' },   // geçerli JSON garantisi (satır başları escape edilir)
     messages: [
-      { role: 'system', content: await buildSystemPrompt(rules) },
+      { role: 'system', content: prompt + outputInstruction },
       { role: 'user', content: `Metni denetle:\n\n${text}` }
     ]
-  }, 'metin denetimi');
+  }, 'metin denetimi', findingsOnly ? { timeoutMs: 45000, retryDelays: [1200] } : {});
+  if (d.choices[0].finish_reason === 'length') throw httpError('Denetim yanıtı eksik kaldı; metin kaydedilmedi. Yeniden deneyin.', 502);
   const result = finalizeResult(parseResult(d.choices[0].message.content), text);
-  result.analysisMeta = { promptVersion: PROMPT_VERSION, rulesHash: textHash(rules).slice(0, 12) };
+  result.analysisMeta = { promptVersion: PROMPT_VERSION, rulesHash: textHash(rules).slice(0, 12), outputMode: findingsOnly ? 'findings_only' : 'full' };
   return result;
 }
 

@@ -5,18 +5,22 @@
 - Çalışma `.codex-admin-review-actions-fix`, dal `codex/review-analysis-quality-gate`.
   Ana checkout'taki bağımsız değişikliklere dokunulmadı.
 - `Onaya Gönder` geri getirildi; gerekli denetim otomatik, görünür ilerleme,
-  başarılı gönderim sonrası temiz yeni denetim akışı var. 8K imzalı parçalar
+  başarılı gönderim sonrası temiz yeni denetim akışı var. 4K imzalı parçalar
   uzun metin timeout riskini sınırlar; düşük skor/yetki/sürüm kapıları korunur.
 - Canlı kök neden kanıtı: `9570e65c-b831-46d9-8994-5ebc724b6a02`,
   46.396 karakter; 17:44/17:53 reanalyze provider timeout logları.
   Gerçek kullanıcı kaydı değiştirilmedi.
-- `npm.cmd run check`: 261/261. Üç Chromium betiği başarılı, 390/1440px,
+- `npm.cmd run check`: 263/263. Üç Chromium betiği başarılı, 390/1440px,
   52K metin, başarısız parça sonrası devam, admin düzenleme/onay, düşük skor,
   kayıp yanıt doğrulaması. `.tmp-review-submit-flow/` ekran görüntüleri.
 - Computer Use aracı sandbox helper hatasıyla başlamadı. Gerçek Chromium
   düğme testleri Playwright üzerinden yapıldı; Computer Use başarılı denmedi.
-- İstemci build `20261022-review-submit-v3`. Henüz bu kayıtta deploy yok;
-  sonraki adım staged production, smoke, promote ve geçici hesapla canlı E2E.
+- İlk runtime commit `4968458` push edildi, staged deployment
+  `dpl_CAF9E92E3rhtpHDp3zaNz32kT9a5` oluşturuldu. 8K gerçek AI testi
+  timeout verdi; ana alan adına terfi edilmedi. İkinci düzeltme: 4K parça,
+  findings-only model çıktısı (tam cevap yine kaynak üstüne bulgu uygulanarak
+  oluşur), 45sn/bir tekrar sınırı ve yanıt gövdesini kapsayan deadline.
+  İstemci build `20261022-review-submit-v4`. Sonraki adım tekrar staged test.
 
 ## 2026-10-21 Yönetici Denetim Butonu — Production Tamamlandı
 
