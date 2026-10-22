@@ -29,6 +29,37 @@ async function draft(answer = 'Kaynak cevap.') {
 }
 const checked = async (h, management = false) => request(h.id, { version: h.version, questionText: h.question_text, correctedText: h.corrected_text }, management, '/reanalyze');
 
+test('long record uses bounded signed parts, commits only when complete and preserves version safety', async () => {
+  const h = await draft('Uzun kaynak cevap.\n\n'.repeat(2500));
+  const body={version:0,questionText:h.question_text,correctedText:h.corrected_text,analysisRequestId:crypto.randomUUID()};
+  const legacy=await request(h.id,body,false,'/reanalyze');
+  assert.equal(legacy.status,422);
+  assert.equal(legacy.body.code,'ANALYSIS_PARTS_REQUIRED');
+  const tokens=[];
+  const first=await request(h.id,{...body,partIndex:0},false,'/reanalyze-part');
+  assert.equal(first.status,200);
+  tokens.push(first.body.token);
+  for(let index=1;index<first.body.total;index++){
+    const part=await request(h.id,{...body,partIndex:index},false,'/reanalyze-part');
+    assert.equal(part.status,200);
+    tokens.push(part.body.token);
+  }
+  const unchanged=(await fixture.db.query('select version,status from history where id=$1',[h.id])).rows[0];
+  assert.equal(unchanged.version,0);
+  assert.equal(unchanged.status,'taslak');
+  const wrongActor=await request(h.id,{...body,analysisTokens:tokens},true,'/reanalyze');
+  assert.equal(wrongActor.status,403);
+  const wrongText=await request(h.id,{...body,correctedText:body.correctedText+'Ek',analysisTokens:tokens},false,'/reanalyze');
+  assert.equal(wrongText.status,422);
+  const complete=await request(h.id,{...body,analysisTokens:tokens},false,'/reanalyze');
+  assert.equal(complete.status,200);
+  assert.equal(complete.body.history.correctedText,h.corrected_text);
+  assert.equal(complete.body.history.quality.state,'ready');
+  const replay=await request(h.id,{...body,analysisTokens:tokens},false,'/reanalyze');
+  assert.equal(replay.status,409);
+  assert.ok(analyzed.every(text=>text.length<=8000));
+});
+
 test('low-score correction draft is preserved, cannot submit, passes only after the second paired check', async () => {
   const h = await draft();
   lowScore = true;

@@ -2781,7 +2781,7 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const ADMIN_CLIENT_BUILD='20261022-muhterem-hitap-v1';
+const ADMIN_CLIENT_BUILD='20261022-review-submit-v3';
 const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
 const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
@@ -3697,7 +3697,7 @@ function renderApprovalActionButton(d, placement='main'){
 }
 function renderApprovalSubmitPanel(d){
   if(!d?.id||!d.correctedText)return '';
-  if(me?.reviewWorkspacesEnabled&&!approvalSubmitted(d))return `<div class="approval-submit-panel"><div><strong>Düzeltme taslağı hazır</strong><p>Soruyu ve etiketleri tamamlayın; soru ve cevabı birlikte denetleyerek onaya gönderin.</p></div><button type="button" class="btn-submit-approval" onclick="ReviewWorkspace.open('${d.id}')">Soru ve Cevabı Tamamla</button></div>`;
+  if(me?.reviewWorkspacesEnabled&&!approvalSubmitted(d))return `<div class="approval-submit-panel"><div><strong>Düzeltme taslağı hazır</strong><p>Soruyu ve etiketleri ekleyerek onaya gönderebilirsiniz.</p></div><button type="button" class="btn-submit-approval" onclick="ReviewWorkspace.open('${d.id}')">Onaya Gönder</button></div>`;
   const sent=approvalSubmitted(d);
   const returned=String(d.status||'')===APPROVAL_RETURNED_STATUS;
   const title=sent?'Onay sürecinde':returned?'Düzeltme bekliyor':'Sonuç hazırlandı';
@@ -3807,6 +3807,22 @@ function renderSubmittedWorkspace(d,container){
       <button class="btn-sec" onclick="showSubmittedHistory()">Geçmişte Gör</button>
     </div>
   </div>`;
+}
+async function completeReviewSubmission(record){
+  historyRows=historyRows.map(row=>row.id===record.id?{...row,...record}:row);
+  if(currentResult?.id!==record.id)return;
+  currentResult={...currentResult,...record};
+  correctedText=record.correctedText||'';
+  currentHistoryId=record.id;
+  try{
+    const linked=await markArchiveWorkSubmittedAfterApproval(record.id);
+    if(linked?.item)currentResult.archiveWorkLinkedTitle=linked.item.title||'Çalışma kaydı';
+    if(linked?.error)currentResult.archiveWorkLinkError=linked.error;
+  }catch(error){currentResult.archiveWorkLinkError=error.message||'Bağlı çalışma kaydı güncellenemedi.';}
+  renderSubmittedWorkspace(currentResult,el('resultsArea'));
+  resetInputAfterApprovalSubmit();
+  clearArchiveWorkAuditContext(true);
+  clearWorkDraft();
 }
 function startNewAnalysisAfterSubmit(){
   clearAnalyze();
@@ -11998,7 +12014,7 @@ function adminActionNeedsNote(methodValue,urlValue,body={}){
   if(!['POST','PUT','PATCH','DELETE'].includes(method))return false;
   if(method==='POST'&&/^\/api\/history\/[0-9a-f-]{36}\/approve$/i.test(path))return false;
   if(method==='POST'&&/^\/api\/review\/[0-9a-f-]{36}\/action$/i.test(path)&&String(body?.action||'')==='approve')return false;
-  if(method==='POST'&&/^\/api\/review\/[0-9a-f-]{36}\/reanalyze$/i.test(path))return false;
+  if(method==='POST'&&/^\/api\/review\/[0-9a-f-]{36}\/reanalyze(?:-part)?$/i.test(path))return false;
   if(adminActionRunsAsMemberWorkflow(method,path))return false;
   if(/^\/api\/users(?:\/|$)/.test(path)||/^\/api\/rules(?:\/|$)/.test(path))return true;
   if(method==='POST'&&path==='/api/standards')return true;

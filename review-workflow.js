@@ -1,9 +1,11 @@
 const express = require('express');
 const { randomUUID } = require('node:crypto');
-const { analysisState, analyzeReviewPair } = require('./review-analysis');
+const { analysisState, analyzeReviewPair, analysisHash, REVIEW_PART_SIZE, reviewAnalysisParts, analysisPartToken, completedAnalysisParts } = require('./review-analysis');
 const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 
 const ERRORS = {
+  ANALYSIS_PARTS_REQUIRED: [422, 'Uzun metin denetimi için sayfayı güncelleyip yeniden deneyin.'],
+  ANALYSIS_PARTS_INVALID: [422, 'Denetim oturumu yenilenmeli. Metniniz korundu; yeniden denetleyin.'],
   ANALYSIS_REQUIRED: [422, 'Soru ve cevabın son hâli denetlenmedi. Soru ve Cevabı Denetle düğmesini kullanın.'],
   ANALYSIS_OUTPUT_EMPTY: [422, 'Denetim kullanılabilir metin üretmedi. Yazdığınız içerik korundu; yeniden deneyin.'],
   VERSION_CONFLICT: [409, 'Kayıt başka bir işlemle değişti. Metninizi koruyun; güncel kaydı açıp karşılaştırın.'],
@@ -81,14 +83,17 @@ function reviewChangeSummary(current, returnedRevision, submittedRevision, actor
   };
 }
 
-function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
+function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, attachApprovalReturnMeta, clearPublicArchiveCaches, analyzeText, analysisRateLimiter, analysisSigningKey = randomUUID(), loadApprovalFavoriteSet = async () => new Set(), publishApprovedHistoryRecord = async () => null, readOnly = false }) {
   const router = express.Router();
   const userFor = req => ({ id: req.session.userId, role: req.session.role });
   const spaceFor = req => workspaceFor(userFor(req), req.get('X-Review-Workspace') || req.query.workspace);
   async function fail(req, res, error) {
     const code = Object.keys(ERRORS).find(key => String(error.message || error).includes(key));
     const missingMigration = /version|review_history_change|workflow_meta|history_revisions|review_history_queue/.test(error.message || '') && ['42703', 'PGRST202', 'PGRST205', '42P01'].includes(error.code);
-    const [status, message] = ERRORS[code] || (missingMigration
+    const providerUnavailable = [502,503,504,429].includes(error.statusCode);
+    const [status, message] = ERRORS[code] || (providerUnavailable
+      ? [error.statusCode, 'Denetim servisi bu bölümü tamamlayamadı. Metniniz ve tamamlanan bölümler korunuyor; yeniden deneyin.']
+      : missingMigration
       ? [503, 'İnceleme altyapısı henüz hazır değil. Lütfen yöneticinize bildirin.']
       : [500, 'İşlem tamamlanamadı. Değişikliklerinizi koruyup tekrar deneyin.']);
     if (status === 500) console.error('Review workflow:', error.message);
@@ -102,7 +107,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
         } catch { /* A match must never expose a different member's private record. */ }
       }
     }
-    return res.status(status).json({ error: message, code: code || (missingMigration ? 'MIGRATION_REQUIRED' : 'REVIEW_FAILED'), duplicate });
+    return res.status(status).json({ error: message, code: code || (providerUnavailable ? 'ANALYSIS_TEMPORARY_FAILURE' : missingMigration ? 'MIGRATION_REQUIRED' : 'REVIEW_FAILED'), duplicate });
   }
   const handler = fn => async (req, res) => { try { await fn(req, res); } catch (error) { await fail(req, res, error); } };
 
@@ -256,6 +261,27 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const item = await change(req, req.params.id, String(req.body?.action || ''), cleanPayload(req.body), req.body?.version);
     res.json({ success: true, history: item });
   }));
+  async function analysisContext(req) {
+    if(readOnly)throw new Error('READ_ONLY');
+    const current = await read(req, req.params.id);
+    if (!recordActions(userFor(req), current, spaceFor(req)).includes('reanalyze')) throw new Error('FORBIDDEN');
+    if (current.version !== req.body?.version) throw new Error('VERSION_CONFLICT');
+    const payload = cleanPayload(req.body);
+    const question = payload.questionText ?? current.question_text;
+    const answer = payload.correctedText ?? current.corrected_text;
+    const sourceAnswer = !answer?.trim() && req.body?.useOriginalAnswer === true ? current.original_text : answer;
+    const plan = reviewAnalysisParts(question, sourceAnswer);
+    const binding = JSON.stringify([current.id, current.version, req.session.userId, spaceFor(req),
+      req.body?.analysisRequestId, analysisHash(plan.input.question), analysisHash(plan.input.answer)]);
+    return { current, payload, plan, binding };
+  }
+  router.post('/:id([0-9a-fA-F-]{36})/reanalyze-part', analysisRateLimiter, handler(async (req, res) => {
+    const { plan, binding } = await analysisContext(req);
+    const index = req.body?.partIndex;
+    if (!Number.isInteger(index) || !plan.parts[index]) throw new Error('INVALID_CONTENT');
+    const result = await analyzeText(plan.parts[index].text);
+    res.json({ total: plan.parts.length, index, token: analysisPartToken(analysisSigningKey, binding, index, result) });
+  }));
   router.post('/:id([0-9a-fA-F-]{36})/reanalyze', analysisRateLimiter, handler(async (req, res) => {
     if(readOnly)return res.status(403).json({error:'Bu önizlemede kayıt değişiklikleri kapalı.'});
     const current = await read(req, req.params.id);
@@ -265,7 +291,14 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const question = payload.questionText ?? current.question_text;
     const answer = payload.correctedText ?? current.corrected_text;
     const sourceAnswer = !answer?.trim() && req.body?.useOriginalAnswer === true ? current.original_text : answer;
-    const result = await analyzeReviewPair(analyzeText, question, sourceAnswer);
+    let result;
+    if (req.body?.analysisTokens) {
+      const { plan, binding } = await analysisContext(req);
+      result = completedAnalysisParts(analysisSigningKey, binding, plan, req.body.analysisTokens);
+    } else {
+      if (question?.length > REVIEW_PART_SIZE || sourceAnswer?.length > REVIEW_PART_SIZE) throw new Error('ANALYSIS_PARTS_REQUIRED');
+      result = await analyzeReviewPair(analyzeText, question, sourceAnswer);
+    }
     result.analysisReceipt.requestId = UUID.test(req.body?.analysisRequestId || '') ? req.body.analysisRequestId : randomUUID();
     const item = await change(req, current.id, 'reanalyze', { ...payload, ...result }, current.version);
     res.json({ success: true, history: item });

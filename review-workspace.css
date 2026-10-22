@@ -46,6 +46,12 @@
 .rw-decision{padding:16px 0;margin-top:16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.rw-decision h4{margin:0;font-size:16px}.rw-decision p{font-size:13px;color:var(--ink2)}
 .rw-error{color:#ba2834!important}.rw-empty{padding:28px 0;color:var(--muted)}
 #rwDetailMessage,#rwListMessage{font-size:14px;margin-top:12px;white-space:pre-wrap}#rwDetailMessage:empty,#rwListMessage:empty{display:none}
+.rw-processing{display:flex;align-items:center;gap:10px;font-weight:600}
+.rw-processing::before,[data-rw-active]::before{content:"";display:inline-block;flex:none;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rw-spin .8s linear infinite}
+[data-rw-active]{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.rw-submit-success{padding:24px 4px}.rw-submit-success h3{font-size:22px}.rw-submit-success p{overflow-wrap:anywhere}
+@keyframes rw-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.rw-processing::before,[data-rw-active]::before{animation:none}}
 .rw-revision{padding:12px 0;border-bottom:1px solid var(--line)}
 .rw-modal-open{overflow:hidden}.rw-modal .modal{display:flex;flex-direction:column;max-height:calc(100dvh - 32px);overflow:hidden}
 .rw-modal .modal-head{flex:none}.rw-modal .modal-body{display:flex;flex-direction:column;min-height:0;overflow:hidden}

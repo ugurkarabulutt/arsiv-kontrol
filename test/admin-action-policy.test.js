@@ -81,6 +81,7 @@ test('privileged mutations require a note while passive actions do not', () => {
   required.forEach(([method, path]) => assert.equal(requiresAdminActionNote(method, path, {}), true, `${method} ${path}`));
 
   const exempt = [
+    ['POST', '/api/review/'+id+'/reanalyze-part'],
     ['GET', '/api/users'],
     ['POST', `/api/history/${id}/favorite`],
     ['POST', '/api/alerts/read-all'],

@@ -3,6 +3,28 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-22 Gönderim Akışı ve Uzun Metin
+
+- Sonuç ekranındaki tanıdık `Onaya Gönder` düğmesi geri geldi. Gönder/onayla
+  gerekli soru-cevap denetimini otomatik başlatır; düşük skor ve DB kalite
+  kapısı korunur. İlerleme düğmede ve sabit alt alanda görünür; çift işlem ve
+  denetim sırasında metin değişikliği engellenir. Başarılı gönderim eski
+  sonucu temizler ve `Yeni Denetime Başla` sunar.
+- 46.396 karakterli bekleyen kayıtta canlı logları `reanalyze` OpenAI timeout
+  hatasını gösterdi. Uzun metin artık en fazla 8.000 karakterlik, iki eşzamanlı
+  kısa HTTP isteğiyle denetlenir. Sunucunun imzaladığı parçalar kayıt, sürüm,
+  kullanıcı, çalışma alanı ve içeriğe bağlıdır; eksik/sahte/eski parçalar
+  gönderim hakkı vermez. Son birleştirme tek denetim revizyonu oluşturur.
+  Kesintide tamamlanan parçalar sekmede korunur ve tekrar kullanılabilir.
+- `reanalyze-part` teknik işlemdir; admin notu istemez. Yönetim kararlarının
+  gerekçeleri, sahiplik/yetki/sürüm koruması değişmedi. Çakışmada görünür
+  metin korunur; başka sürüm sessizce benimsenip üzerine yazılmaz.
+- Yerel kanıt: 261/261 test; Chromium 390/1440px 52K metin gönderimi,
+  temiz yeni denetim, geçici hata/tekrar deneme, admin uzun cevap düzenleme
+  ve onay, düşük skor ve kayıp HTTP yanıtı senaryoları geçti.
+  Testler `scripts/verify-review-submit-flow.js`, `verify-review-quality.js`,
+  `verify-admin-reanalysis-ui.js`. Canlı durumu CURRENT_HANDOFF.md içindedir.
+
 ## 2026-10-21
 
 - **Yönetici soru-cevap denetimi sadeleştirildi:** Yönetim alanındaki

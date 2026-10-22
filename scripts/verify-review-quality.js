@@ -28,12 +28,15 @@ async function run() {
       await page.waitForFunction(()=>typeof ReviewWorkspace!=='undefined' && typeof me!=='undefined' && me?.loggedIn);
       await page.evaluate(id=>ReviewWorkspace.open(id),h.id);
       await page.locator('#rwQuestion').waitFor();
-      assert.equal(await page.locator('[data-rw-publish]').isDisabled(),name==='mobile');
+      assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
       if(name==='mobile') {
         await page.locator('#rwUseSource').check();
         await page.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).click();
         await page.waitForFunction(()=>document.querySelector('#rwQualityStatus')?.textContent.includes('Düzeltme taslağı'));
-        assert.equal(await page.locator('[data-rw-publish]').isDisabled(),true);
+        await page.getByRole('button',{name:'Onaya Gönder',exact:true}).click();
+        await page.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('İşaretlenen eksikleri'));
+        assert.equal((await fixture.db.query('select status from history where id=$1',[h.id])).rows[0].status,'taslak');
+        assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
         assert.match(await page.locator('#rwQuestion').inputValue(),/^Muhterem/);
         assert.ok((await page.locator('#rwAnswer').inputValue()).length>0);
         await page.screenshot({path:path.join(output,'mobile-low-score.png'),fullPage:true});
@@ -44,11 +47,12 @@ async function run() {
         },{times:1});
         await page.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).click();
         await page.waitForFunction(()=>document.querySelector('#rwQualityStatus')?.textContent.includes('son hâli denetlendi'));
-        await page.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('sonuç sunucudan doğrulandı'));
+        await page.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('sunucudan doğrulandı'));
         assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
         const answer = await page.locator('#rwAnswer').inputValue();
         await page.locator('#rwAnswer').fill(answer+' Yeni cümle.');
-        assert.equal(await page.locator('[data-rw-publish]').isDisabled(),true);
+        assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
+        assert.match(await page.locator('#rwQualityStatus').innerText(),/Metin değişti/);
         await page.locator('#rwAnswer').fill(answer);
         assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
       }
@@ -57,7 +61,7 @@ async function run() {
       await page.screenshot({path:path.join(output,name+'-ready.png'),fullPage:true});
       if(name==='desktop') {
         await page.getByRole('button',{name:'Onaya Gönder',exact:true}).click();
-        await page.waitForFunction(()=>document.querySelector('.rw-record-meta')?.textContent.includes('Onaya gönderildi'));
+        await page.locator('.rw-submit-success').waitFor();
         const row=(await fixture.db.query('select status,workflow_meta from history where id=$1',[h.id])).rows[0];
         assert.equal(row.status,'bekliyor');
         assert.equal(row.workflow_meta.analysisReceipt.scope,'question_and_answer');

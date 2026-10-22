@@ -17,6 +17,7 @@ const ReviewWorkspace = (() => {
   const states = { member: { status: 'todo', q: '', page: 1 }, management: { status: 'bekliyor', q: '', page: 1 } };
   let space = 'member', item = null, baseline = '', busy = false, requestNumber = 0, detailRequest = 0, searchTimer, returnFocus;
   let duplicateCandidates = [];
+  let analysisRun = null;
   const bulkActionOrder = ['approve', 'reject', 'return', 'review', 'dergah', 'conference', 'pending', 'archive', 'trash', 'restore'];
   const bulkActionNeedsNote = new Set(['reject', 'return', 'review', 'dergah', 'conference', 'trash', 'restore']);
   let bulkRows = [], selectedRows = new Map(), bulkActionChoice = '', bulkStickyRaf = 0;
@@ -44,7 +45,7 @@ const ReviewWorkspace = (() => {
     const status=node('rwQualityStatus');
     if(status)status.textContent=changed?'Metin değişti; yeniden denetim gerekli':item.quality?.label||'Soru ve cevap birlikte denetlenmeli';
     node('rwQuality')?.classList.toggle('rw-quality-ready',ready);
-    document.querySelectorAll('[data-rw-publish]').forEach(button=>button.disabled=busy||!ready);
+    document.querySelectorAll('[data-rw-publish]').forEach(button=>button.disabled=busy||!!me.reviewReadOnly);
   }
   function qualityHtml() {
     const receipt=item.workflow?.analysisReceipt;
@@ -56,6 +57,49 @@ const ReviewWorkspace = (() => {
     const target = node('rwDetailMessage') || node('rwListMessage') || node('reviewToast');
     if (target) { target.textContent = text; target.classList.toggle('rw-error', error); }
   }
+  function progress(text) {
+    message(text);
+    node('rwDetailMessage')?.classList.add('rw-processing');
+    const button=document.querySelector('[data-rw-active]');
+    if(button)button.textContent=text;
+  }
+  async function checkRecord(payload) {
+    const fingerprint=JSON.stringify([item.id,item.version,space,payload.questionText,payload.correctedText,payload.useOriginalAnswer]);
+    if(analysisRun?.fingerprint!==fingerprint)analysisRun={fingerprint,requestId:crypto.randomUUID(),tokens:[],total:0};
+    const run=analysisRun;
+    payload.analysisRequestId=run.requestId;
+    const long=payload.questionText.length>8000 || payload.correctedText.length>8000 || (payload.useOriginalAnswer&&item.originalText?.length>8000);
+    if(long){
+      async function part(index){
+        if(run.tokens[index])return;
+        const result=await request('/'+item.id+'/reanalyze-part','POST',{...payload,partIndex:index});
+        if(result.error)throw Object.assign(new Error(result.error),{result});
+        run.tokens[index]=result.token;run.total=result.total;
+        progress('Denetleniyor: '+run.tokens.filter(Boolean).length+'/'+run.total+' bölüm tamamlandı…');
+      }
+      try {
+        progress('Uzun metin denetleniyor…');
+        await part(0);
+        let next=1;
+        let failure;
+        const worker=async()=>{while(next<run.total&&!failure){const index=next++;try{await part(index);}catch(error){failure=error;}}};
+        await Promise.all([worker(),worker()]);
+        if(failure)throw failure;
+        payload.analysisTokens=run.tokens;
+      } catch(error){return error.result||{error:error.message};}
+    }else progress('Soru ve cevap denetleniyor…');
+    const result=await performAction(item,'reanalyze',payload,'/reanalyze');
+    if(result.history&&!result.error)analysisRun=null;
+    if(result.code==='ANALYSIS_PARTS_INVALID')analysisRun=null;
+    return result;
+  }
+  async function submitted(record){
+    await completeReviewSubmission(record);
+    baseline='';
+    node('detailBody').innerHTML='<section class="rw-submit-success" role="status"><h3>Onaya gönderildi</h3><p>Kaydınız onay kuyruğuna alındı. Yeni bir metin denetlemeye başlayabilirsiniz.</p><p>'+safe(record.questionText)+'</p></section>';
+    node('detailModal').querySelector('.modal-foot').innerHTML='<div class="rw-actions"><button type="button" class="btn-primary" onclick="ReviewWorkspace.nextAnalysis()">Yeni Denetime Başla</button><button type="button" class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div>';
+  }
+  async function nextAnalysis(){if(busy)return;await close(true);startNewAnalysisAfterSubmit();}
   function updateBulkStickiness() {
     const bar = node('rwBulkBar');
     if (!bar) return;
@@ -154,7 +198,7 @@ const ReviewWorkspace = (() => {
   async function prepareLogout(){
     if(busy)return false;
     if(dirty()&&!await openSystemConfirm({title:'Kaydedilmemiş değişiklikler',message:'Değişiklikleri kaydetmeden oturum kapatılsın mı?',confirmText:'Kaydetmeden çık',cancelText:'Düzenlemeye dön'}))return false;
-    await close(true);node('detailBody').replaceChildren();
+    await close(true);analysisRun=null;node('detailBody').replaceChildren();
     ['histContent','onayContent'].forEach(id=>{if(node(id)?.querySelector('.rw-list'))node(id).replaceChildren();});
     for(const key of ['member','management'])Object.assign(states[key],{status:key==='management'?'bekliyor':'todo',q:'',page:1});
     clearTimeout(searchTimer);requestNumber++;return true;
@@ -267,6 +311,7 @@ const ReviewWorkspace = (() => {
     renderDetail();
   }
   function renderDetail() {
+    node('detailModal').querySelector('.modal-foot').replaceChildren();
     const editable=can('save'), meta=item.workflow||{};
     const noteEditable=editable&&!management();
     const returned=item.status==='geri_gonderildi';
@@ -481,22 +526,39 @@ const ReviewWorkspace = (() => {
     const payload={action,version:item.version,...(['save','submit','approve','reanalyze'].includes(action)?values():{}),note:node('rwReason')?.value||''};
     if(action==='reanalyze'){
       payload.useOriginalAnswer=node('rwUseSource')?.checked===true;
-      payload.analysisRequestId=crypto.randomUUID();
     }
     if(node('rwAssignee'))payload.assigneeId=node('rwAssignee').value;
     if(node('rwDuplicate')?.value)payload.duplicateId=node('rwDuplicate').value;
+    const publishing=action==='submit'||action==='approve';
+    if(publishing&&(!payload.questionText.trim()||!payload.correctedText.trim()||!payload.tags.length)){
+      message('Soru, cevap ve en az bir etiket gerekli.',true);return;
+    }
+    const needsCheck=publishing&&(item.quality?.state!=='ready'||payload.questionText!==item.questionText||payload.correctedText!==item.correctedText);
     busy=true; node('detailModal').setAttribute('aria-busy','true');
+    const active=Array.from(document.querySelectorAll('[data-rw-write]')).find(button=>button.getAttribute('onclick')===`ReviewWorkspace.act('${action}')`);
+    if(active){active.dataset.rwActive='true';active.dataset.rwLabel=active.textContent;}
+    const lockFields=()=>document.querySelectorAll('#detailBody textarea,#detailBody input,#detailBody select').forEach(field=>{field.dataset.rwWasDisabled=String(field.disabled);field.disabled=true;});
+    lockFields();
     document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=true);
     message(action==='reanalyze'?'Denetleniyor…':'İşlem sürüyor…');
     try {
       const actionItem={id:item.id,status:item.status,version:item.version,workflow:item.workflow};
-      const result=await performAction(actionItem,action,payload,action==='reanalyze'?'/reanalyze':'/action');
-      if(result.error){
-        const current=await request('/'+item.id);
-        if(!current.error&&current.version!==item.version){
-          item=current;
-          renderDetail();
+      let result;
+      if(action==='reanalyze'||needsCheck){
+        result=await checkRecord({...payload,useOriginalAnswer:payload.useOriginalAnswer||false});
+        if(!result.error&&needsCheck){
+          item=result.history;renderDetail();lockFields();
+          document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=true);
+          if(item.quality?.state!=='ready'){
+            message('Denetim tamamlandı. İşaretlenen eksikleri düzelttikten sonra tekrar gönderebilirsiniz.',true);return;
+          }
+          progress(action==='approve'?'Onaylanıyor…':'Onaya gönderiliyor…');
+          result=await performAction(item,action,{...payload,version:item.version,questionText:item.questionText,correctedText:item.correctedText});
         }
+      }else result=await performAction(actionItem,action,payload,'/action');
+      if(result.error){
+        // Do not silently adopt a concurrent revision and overwrite it on the next retry.
+        // Keep both the original version guard and the user's visible edits.
         const errorMessage = result.error === 'DUPLICATE_NOTE_REQUIRED'
           ? 'Bu kaydı mükerrer olarak kapatmak için ekip üyesi notuna veya işlem gerekçesine MÜKERRER yazmanız gerekiyor.'
           : result.error;
@@ -520,13 +582,21 @@ const ReviewWorkspace = (() => {
             : 'Taslak çöp kutusuna taşındı.');
         return;
       }
-      item=result.history; renderDetail();
+      item=result.history;
+      if(action==='submit'){await submitted(item);await load({silent:true});return;}
+      renderDetail();
       message(item.status==='mukerrer_inceleme'
         ?'Tam soru ve cevapla eşleşen canlı kayıt bulundu. Kayıt yayımlanmadı; Mükerrer İnceleme kuyruğuna alındı.'
+        :action==='reanalyze'?'Denetim tamamlandı. '+(item.quality?.state==='ready'?'Onaya gönderebilirsiniz.':'İşaretlenen eksikleri kontrol edin.')+(result.outcomeVerified?' İşlemin sonucu sunucudan doğrulandı.':'')
         :result.outcomeVerified?'İşlem tamamlandı; sonuç sunucudan doğrulandı.':'İşlem tamamlandı.');
       await load({silent:true});
+    } catch(error) {
+      message(error.message||'İşlem tamamlanamadı. Yazdıklarınız korunuyor; tekrar deneyebilirsiniz.',true);
     } finally {
       busy=false; node('detailModal').removeAttribute('aria-busy');
+      node('rwDetailMessage')?.classList.remove('rw-processing');
+      document.querySelectorAll('[data-rw-active]').forEach(button=>{button.textContent=button.dataset.rwLabel;delete button.dataset.rwActive;delete button.dataset.rwLabel;});
+      document.querySelectorAll('[data-rw-was-disabled]').forEach(field=>{field.disabled=field.dataset.rwWasDisabled==='true';delete field.dataset.rwWasDisabled;});
       document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=false);
       refreshQualityControls();
     }
@@ -650,7 +720,7 @@ const ReviewWorkspace = (() => {
     window.addEventListener('resize', updateBulkStickiness);
     refreshNav();
   });
-  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,showDuplicate,refreshQualityControls,
+  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,showDuplicate,refreshQualityControls,nextAnalysis,
     toggleSelect,selectPage,clearSelection,setBulkAction,bulkAction,
     workspace:()=>space, isDetailOpen:()=>!!item, dirty};
 })();

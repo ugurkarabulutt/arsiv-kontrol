@@ -34,7 +34,7 @@ function isApprovalAction(method, path, body = {}) {
 
 function isTechnicalReviewAction(method, path) {
   if (method !== 'POST') return false;
-  return new RegExp(`^/api/review/${UUID_PART}/reanalyze$`, 'i').test(path);
+  return new RegExp(`^/api/review/${UUID_PART}/reanalyze(?:-part)?$`, 'i').test(path);
 }
 
 function isMemberWorkflowAction(method, path, body = {}, context = {}) {

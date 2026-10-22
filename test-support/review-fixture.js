@@ -80,7 +80,7 @@ async function createFixture({ publishApprovedHistoryRecord, qualityGate = false
       return {data:name==='review_history_change'?result.rows[0].value:result.rows};
     }catch(error){return {error};}}
   };
-  const app=express();app.use(express.json());
+  const app=express();app.use(express.json({limit:'10mb'}));
   app.use((req,_res,next)=>{
     const role=req.get('X-Demo-Role')||String(req.headers.cookie||'').match(/reviewDemoRole=([^;]+)/)?.[1]||'admin';
     const user=users.find(u=>u.role===role)||users[1];req.demoUser=user;req.session={userId:user.id,role:user.role};next();
