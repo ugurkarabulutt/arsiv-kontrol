@@ -96,6 +96,18 @@ async function run() {
     await adminPage.waitForFunction(()=>typeof ReviewWorkspace!=='undefined'&&me?.loggedIn);
     await adminPage.evaluate(()=>ReviewWorkspace.switchSpace('management'));
     await adminPage.evaluate(id=>ReviewWorkspace.open(id),row.id);
+    await adminPage.route('**/api/review/records?**',async route=>{
+      await new Promise(resolve=>setTimeout(resolve,2500));
+      try{await route.continue();}catch{}
+    });
+    await adminPage.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).click();
+    await adminPage.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('Denetim tamamlandı'));
+    await adminPage.getByRole('button',{name:'Kaydet',exact:true}).click();
+    await adminPage.locator('#systemConfirmModal.open').waitFor({timeout:3000});
+    await adminPage.locator('#systemConfirmInput').fill('Geciken liste yenilemesi sırasında kaydet testi.');
+    await adminPage.getByRole('button',{name:'Notu Kaydet ve Devam Et',exact:true}).click();
+    await adminPage.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('İşlem tamamlandı'));
+    evidence.push({saveDuringSlowListRefresh:true});
     await adminPage.locator('#rwAnswer').fill(row.corrected_text+'\nYönetici düzeltmesi.');
     await adminPage.getByRole('button',{name:'Onayla',exact:true}).click();
     await adminPage.locator('#rwDetailMessage.rw-processing').waitFor();

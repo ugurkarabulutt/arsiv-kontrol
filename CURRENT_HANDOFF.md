@@ -10,7 +10,7 @@
 - Canlı kök neden kanıtı: `9570e65c-b831-46d9-8994-5ebc724b6a02`,
   46.396 karakter; 17:44/17:53 reanalyze provider timeout logları.
   Gerçek kullanıcı kaydı değiştirilmedi.
-- `npm.cmd run check`: 263/263. Üç Chromium betiği başarılı, 390/1440px,
+- `npm.cmd run check`: 264/264. Üç Chromium betiği başarılı, 390/1440px,
   52K metin, başarısız parça sonrası devam, admin düzenleme/onay, düşük skor,
   kayıp yanıt doğrulaması. `.tmp-review-submit-flow/` ekran görüntüleri.
 - Computer Use aracı sandbox helper hatasıyla başlamadı. Gerçek Chromium
@@ -20,7 +20,14 @@
   timeout verdi; ana alan adına terfi edilmedi. İkinci düzeltme: 4K parça,
   findings-only model çıktısı (tam cevap yine kaynak üstüne bulgu uygulanarak
   oluşur), 45sn/bir tekrar sınırı ve yanıt gövdesini kapsayan deadline.
-  İstemci build `20261022-review-submit-v4`. Sonraki adım tekrar staged test.
+  Runtime `07737aa`, staged `dpl_7W8pQrNubWFB4RDHgiLfVXkuQt1H` gerçek
+  AI ile 47K metni 13 parçada gönderdi; temiz yeni analiz ve admin reanalysis
+  doğrulandı. Son Kaydet testi, tamamlanan denetim sonrası liste beklenirken
+  düğmenin aktif görünüp busy guard yüzünden boşa düşebildiğini ortaya çıkardı.
+  Bu ikinci staged sürüm de ana alana alınmadı; test verileri tamamen temizlendi.
+- Son düzeltmede liste yenilemesi arka planda, tüm busy düğmeleri kapalıdır.
+  2500ms geciken listeyle Kaydet prompt testi geçti. İstemci build
+  `20261022-review-submit-v5`; son staged/canlı doğrulama bekleniyor.
 
 ## 2026-10-21 Yönetici Denetim Butonu — Production Tamamlandı
 

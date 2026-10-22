@@ -100,6 +100,13 @@ const ReviewWorkspace = (() => {
     node('detailModal').querySelector('.modal-foot').innerHTML='<div class="rw-actions"><button type="button" class="btn-primary" onclick="ReviewWorkspace.nextAnalysis()">Yeni Denetime Başla</button><button type="button" class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div>';
   }
   async function nextAnalysis(){if(busy)return;await close(true);startNewAnalysisAfterSubmit();}
+  function refreshAfterAction(){
+    // A completed write must not remain locked while the background list is refreshed.
+    void load({silent:true}).catch(()=>{
+      const target=node('rwListMessage');
+      if(target)target.textContent='İşlem tamamlandı; liste güncellenemedi. Listeyi yeniden açabilirsiniz.';
+    });
+  }
   function updateBulkStickiness() {
     const bar = node('rwBulkBar');
     if (!bar) return;
@@ -360,7 +367,7 @@ const ReviewWorkspace = (() => {
     node('rwQuestion').focus({preventScroll:true});
     if(management())loadChangeSummary(item.id);
     if(management()&&item.status==='mukerrer_inceleme')loadDuplicateReview(item.id);
-    if(me.reviewReadOnly)document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=true);
+    if(me.reviewReadOnly||busy)document.querySelectorAll('[data-rw-write]').forEach(button=>button.disabled=true);
   }
   function changeSummaryValue(value) {
     if(Array.isArray(value))return value.join(', ')||'—';
@@ -574,7 +581,7 @@ const ReviewWorkspace = (() => {
         return;
       }
       if(action==='delete_draft'||action==='close_duplicate'||action==='confirm_duplicate'||action==='dispute'){
-        await close(true);await load({silent:true});
+        await close(true);refreshAfterAction();
         message(action==='close_duplicate'||action==='confirm_duplicate'
           ? 'Mükerrer kayıt aktif listenizden kaldırıldı.'
           : action==='dispute'
@@ -583,13 +590,13 @@ const ReviewWorkspace = (() => {
         return;
       }
       item=result.history;
-      if(action==='submit'){await submitted(item);await load({silent:true});return;}
+      if(action==='submit'){await submitted(item);refreshAfterAction();return;}
       renderDetail();
       message(item.status==='mukerrer_inceleme'
         ?'Tam soru ve cevapla eşleşen canlı kayıt bulundu. Kayıt yayımlanmadı; Mükerrer İnceleme kuyruğuna alındı.'
         :action==='reanalyze'?'Denetim tamamlandı. '+(item.quality?.state==='ready'?'Onaya gönderebilirsiniz.':'İşaretlenen eksikleri kontrol edin.')+(result.outcomeVerified?' İşlemin sonucu sunucudan doğrulandı.':'')
         :result.outcomeVerified?'İşlem tamamlandı; sonuç sunucudan doğrulandı.':'İşlem tamamlandı.');
-      await load({silent:true});
+      refreshAfterAction();
     } catch(error) {
       message(error.message||'İşlem tamamlanamadı. Yazdıklarınız korunuyor; tekrar deneyebilirsiniz.',true);
     } finally {

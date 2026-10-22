@@ -24,7 +24,10 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
 - `reanalyze-part` teknik işlemdir; admin notu istemez. Yönetim kararlarının
   gerekçeleri, sahiplik/yetki/sürüm koruması değişmedi. Çakışmada görünür
   metin korunur; başka sürüm sessizce benimsenip üzerine yazılmaz.
-- Yerel kanıt: 263/263 test; Chromium 390/1440px 52K metin gönderimi,
+- Denetim sonrası arka plan liste yüklemesi yazma işlemini kilitlemez.
+  Render sırasında busy ise tüm yazma düğmeleri kapalıdır; aktif görünen
+  Kaydet tıklamasının boşa düşmesi, gecikmeli liste yanıtıyla test edilmiştir.
+- Yerel kanıt: 264/264 test; Chromium 390/1440px 52K metin gönderimi,
   temiz yeni denetim, geçici hata/tekrar deneme, admin uzun cevap düzenleme
   ve onay, düşük skor ve kayıp HTTP yanıtı senaryoları geçti.
   Testler `scripts/verify-review-submit-flow.js`, `verify-review-quality.js`,
