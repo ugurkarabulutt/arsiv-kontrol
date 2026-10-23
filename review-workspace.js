@@ -13,6 +13,7 @@ const ReviewWorkspace = (() => {
     duplicate_clear: 'Mükerrer Değil, Onayla',
     reanalyze: 'Soru ve Cevabı Denetle', withdraw: 'Geri Çek', delete_draft: 'Taslağı Sil',
     revise_rejected: 'Düzenlemeye Al' };
+  const memberActions = new Set(['save','submit','reanalyze','withdraw','close_duplicate','dispute','delete_draft','revise_rejected']);
   const memberTabs = new Set(['analiz', 'gecmis', 'bildirim', 'standartlar', 'profil', 'ayarlar']);
   const states = { member: { status: 'todo', q: '', page: 1 }, management: { status: 'bekliyor', q: '', page: 1 } };
   let space = 'member', item = null, baseline = '', busy = false, requestNumber = 0, detailRequest = 0, searchTimer, returnFocus;
@@ -31,7 +32,7 @@ const ReviewWorkspace = (() => {
     ? row.submittedAt ? `Onaya gönderim: ${date(row.submittedAt)}` : `İlk kayıt: ${date(row.createdAt)}`
     : `Son işlem: ${date(row.queueAt || row.updatedAt || row.createdAt)}`;
   const statusText = row => row.displayStatus || labels[row.status] || row.status;
-  const can = action => (item?.allowedActions || []).includes(action);
+  const can = action => (space !== 'member' || memberActions.has(action)) && (item?.allowedActions || []).includes(action);
   const values = () => ({ questionText: node('rwQuestion')?.value ?? item?.questionText ?? '',
     correctedText: node('rwAnswer')?.value ?? item?.correctedText ?? '',
     tags: (node('rwTags')?.value ?? (item?.tags || []).join(', ')).split(',').map(tag => tag.trim()).filter(Boolean),
@@ -142,6 +143,7 @@ const ReviewWorkspace = (() => {
     return api(method, '/api/review' + path, payload);
   }
   function allowedTab(name) {
+    if (name === 'archiveOps' && hasQuestionManagerRole(me?.role)) return true;
     return management() ? !['analiz', 'gecmis'].includes(name) : memberTabs.has(name);
   }
   function refreshNav() {
@@ -157,6 +159,11 @@ const ReviewWorkspace = (() => {
     document.querySelectorAll('.side-section-label').forEach(label => { label.hidden = true; });
     document.querySelectorAll('.admin-only,.super-admin-only,.admin-route-only').forEach(element => {
       const permitted = management() && (!element.classList.contains('super-admin-only') || hasSuperAdminRole(me?.role));
+      element.style.display = permitted ? '' : 'none';
+    });
+    document.querySelectorAll('.question-manager-only').forEach(element => {
+      const permitted = hasQuestionManagerRole(me?.role);
+      element.hidden = !permitted;
       element.style.display = permitted ? '' : 'none';
     });
     document.querySelectorAll('.btn-mobile,.btn-top').forEach(button => {
@@ -332,7 +339,11 @@ const ReviewWorkspace = (() => {
     const duplicateDecisions=item.status==='mukerrer_inceleme'
       ?(item.allowedActions||[]).filter(action=>['confirm_duplicate','duplicate_clear'].includes(action))
       :[];
-    const others=(item.allowedActions||[]).filter(action=>!['save','reanalyze','delete_draft',primary,...duplicateDecisions].includes(action));
+    const others=(item.allowedActions||[]).filter(action=>!['save','reanalyze','delete_draft',primary,...duplicateDecisions].includes(action)&&can(action));
+    const secondaryActions=!management()
+      ?['save','reanalyze',...others].filter((action,index,list)=>can(action)&&list.indexOf(action)===index)
+      :others;
+    const secondaryButtons=secondaryActions.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.${['save','reanalyze'].includes(action)?'act':'decide'}('${action}')">${actions[action]||safe(action)}</button>`).join('');
     node('detailBody').innerHTML=`<div class="rw-detail"><div class="rw-record-meta"><strong>${safe(item.name)}</strong><span>${safe(statusText(item))}</span><span>No: ${safe(item.id.slice(0,8))} · Sürüm ${item.version}</span><span>${date(item.updatedAt||item.createdAt)}</span><span>${item.publication?.status==='published'?'Yayında':'Yayında değil'}</span>${item.userId===me.id?'<span>Kendi kaydınız</span>':''}${item.assigneeId?`<span>Düzeltme sorumlusu: ${safe(item.assigneeName||item.assigneeId.slice(0,8))}</span>`:''}</div>
       ${item.returnNote&&!management()?`<section class="rw-return"><strong>Yönetici geri gönderme gerekçesi</strong><p>${safe(item.returnNote)}</p></section>`:''}
       ${meta.disputed?`<p class="rw-warning">Sahiplik itirazı: ${safe(meta.disputeNote)}</p>`:''}
@@ -346,10 +357,10 @@ const ReviewWorkspace = (() => {
       <label class="rw-field rw-member-note"><span>${memberNoteLabel}</span><textarea id="rwNote" ${noteEditable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea><small>${memberNoteHelp}</small></label>
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
-      <div class="rw-actions">${can('save')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${can('reanalyze')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'reanalyze\')">Soru ve Cevabı Denetle</button>':''}${primary?`<button type="button" class="btn-primary" data-rw-write ${['submit','approve'].includes(primary)?'data-rw-publish':''} onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
+      <div class="rw-actions">${!management()&&primary==='submit'?'<p class="rw-member-submit-help">Onaya Gönder gerekli soru-cevap denetimini otomatik yapar.</p>':''}${management()&&can('save')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'save\')">Kaydet</button>':''}${management()&&can('reanalyze')?'<button type="button" class="btn-sec" data-rw-write onclick="ReviewWorkspace.act(\'reanalyze\')">Soru ve Cevabı Denetle</button>':''}${primary?`<button type="button" class="btn-primary" data-rw-write ${['submit','approve'].includes(primary)?'data-rw-publish':''} onclick="ReviewWorkspace.${primary==='revise_rejected'?'decide':'act'}('${primary}')">${actions[primary]}</button>`:''}
       ${duplicateDecisions.map(action=>`<button type="button" class="${action==='confirm_duplicate'?'btn-danger':'btn-primary'}" data-rw-write ${action==='duplicate_clear'?'data-rw-publish':''} onclick="ReviewWorkspace.decide('${action}')">${actions[action]}</button>`).join('')}
       ${can('delete_draft')?'<button type="button" class="btn-danger" data-rw-write onclick="ReviewWorkspace.decide(\'delete_draft\')">Taslağı Sil</button>':''}
-      ${others.length?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${others.map(action=>`<button type="button" data-rw-write onclick="ReviewWorkspace.decide('${action}')">${actions[action]||safe(action)}</button>`).join('')}</div></details>`:''}<button type="button" class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
+      ${secondaryButtons?`<details class="rw-more"><summary aria-label="Diğer işlemler" title="Diğer işlemler">Diğer işlemler</summary><div>${secondaryButtons}</div></details>`:''}<button type="button" class="btn-sec" onclick="ReviewWorkspace.close()">Kapat</button></div></div>`;
     baseline=JSON.stringify(values());
     const footer=node('detailModal').querySelector('.modal-foot');
     footer.replaceChildren(node('rwDetailMessage'),node('detailBody').querySelector('.rw-detail > .rw-actions'));

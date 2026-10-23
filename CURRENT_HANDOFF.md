@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-23 Ekip Üyesi Akışı ve Soru Yöneticisi — Yerelde Tamamlandı
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`. Ana kirli checkout'a dokunulmadı.
+- Admin veya süper admin `Ekip Üyesi` çalışma alanındayken istemci artık kapalı
+  ekip aksiyonu listesi uygular. Yönetim kararları görünmez ve istemciden
+  çalıştırılamaz; backend çalışma alanı/yetki ayrımı da değişmeden korunur.
+- `Onaya Gönder` tek görünür ana gönderim yoludur ve gerekli soru-cevap
+  denetimini otomatik yapar. `Kaydet` ve `Soru ve Cevabı Denetle` kaldırılmadan
+  `Diğer işlemler` içine taşındı. Başarılı gönderim sonrası yalnız
+  `Yeni Denetime Başla` ve `Kapat` akışı korunur. Yönetim ekranı değişmedi.
+- `question_manager` rolü yalnız public soru taleplerini görür; cevap ve durum
+  güncelleyebilir. Diğer yönetim, kullanıcı, ayar, içerik/yayın senkronu,
+  bülten ve arşiv operasyonları kapalıdır. Yazma işlemi zorunlu gerekçe ve
+  sistem kaydı üretir; rol değişikliğini yalnız süper admin yapabilir.
+- Admin istemci/cache sürümü `20261023-question-manager-v1` olarak hazırlandı.
+  `npm.cmd run check` 265/265 başarılı. `scripts/verify-review-submit-flow.js`
+  gerçek Chromium ile 390/1440 px, 52K cevap, doğrudan gönderim, hata sonrası
+  tekrar, temiz yeni denetim, admin-üye görünürlüğü, ikincil seçenekler,
+  soru yöneticisinin mobil soru/cevap akışı, yetkisiz API'lerde 403, geciken
+  liste sırasında Kaydet ve yönetim onayını doğruladı; `pageErrors=[]`. Mobil
+  ekran görüntüleri `.tmp-review-submit-flow/` altında.
+- Henüz commit, push veya deploy yok. Production hâlâ
+  `20261022-review-submit-v5` sürümündedir.
+
 ## 2026-10-22 Gönderim Akışı — Production Tamamlandı
 
 - Son runtime `fc13b60` commit edilip push edildi. Deployment

@@ -2,9 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   ROLES,
+  canManagePublicQuestions,
   effectiveRole,
   isAdminRole,
   isAssignableRole,
+  isQuestionManagerRole,
   isReservedSuperAdminUsername,
   isSuperAdminRole
 } = require('../authorization');
@@ -24,10 +26,21 @@ test('süper admin tüm admin yetkilerini kapsar', () => {
   assert.equal(isAdminRole(ROLES.ADMIN), true);
   assert.equal(isAdminRole(ROLES.SUPER_ADMIN), true);
   assert.equal(isAdminRole(ROLES.USER), false);
+  assert.equal(isAdminRole(ROLES.QUESTION_MANAGER), false);
 });
 
-test('yeni kullanıcılara yalnızca user veya admin atanabilir', () => {
+test('soru yöneticisi yalnız public soru taleplerini yönetir', () => {
+  assert.equal(effectiveRole('eda', ROLES.QUESTION_MANAGER), ROLES.QUESTION_MANAGER);
+  assert.equal(isQuestionManagerRole(ROLES.QUESTION_MANAGER), true);
+  assert.equal(canManagePublicQuestions(ROLES.QUESTION_MANAGER), true);
+  assert.equal(canManagePublicQuestions(ROLES.ADMIN), true);
+  assert.equal(canManagePublicQuestions(ROLES.SUPER_ADMIN), true);
+  assert.equal(canManagePublicQuestions(ROLES.USER), false);
+});
+
+test('atanabilir roller super admin dışındaki uygulama rolleridir', () => {
   assert.equal(isAssignableRole(ROLES.USER), true);
+  assert.equal(isAssignableRole(ROLES.QUESTION_MANAGER), true);
   assert.equal(isAssignableRole(ROLES.ADMIN), true);
   assert.equal(isAssignableRole(ROLES.SUPER_ADMIN), false);
 });

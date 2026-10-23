@@ -5,7 +5,7 @@ const path = require('node:path');
 const { PGlite } = require('@electric-sql/pglite');
 const { createReviewWorkflow } = require('../review-workflow');
 const root = path.join(__dirname,'..');
-const users = ['user','admin','super_admin'].map((role,i)=>({id:`10000000-0000-4000-8000-00000000000${i+1}`,role,username:role,name:`${role==='user'?'Ekip':role==='admin'?'Yönetici':'Süper Yönetici'} Örnek`,reviewWorkspacesEnabled:true}));
+const users = ['user','admin','super_admin','question_manager'].map((role,i)=>({id:`10000000-0000-4000-8000-00000000000${i+1}`,role,username:role,name:`${role==='user'?'Ekip':role==='admin'?'Yönetici':role==='question_manager'?'Soru Yöneticisi':'Süper Yönetici'} Örnek`,reviewWorkspacesEnabled:true}));
 const mapHistory=h=>({id:h.id,userId:h.user_id,name:h.name,filename:h.filename,status:h.status,questionText:h.question_text,
   correctedText:h.corrected_text,originalText:h.original_text,tags:h.tags,submissionNote:h.submission_note,
   approvedBy:h.approved_by,approvedAt:h.approved_at,createdAt:h.created_at});
@@ -95,6 +95,20 @@ async function createFixture({ publishApprovedHistoryRecord, qualityGate = false
   app.get('/api/stats',(_req,res)=>res.json({totals:{allTime:65,last30:65,activeUsers:3,avgScore:90,unreadAlerts:0,pendingApproval:17,feedbackOpen:0},
     daily:[{label:'05.09',count:30},{label:'06.09',count:35}]}));
   app.get('/api/my-notifications',(_req,res)=>res.json([]));
+  const publicQuestion={id:'70000000-0000-4000-8000-000000000001',submitter_name:'Site Kullanıcısı',submitter_email:'site@example.test',question:'Hacet namazı nasıl kılınır?',status:'new',answer_text:'',admin_note:'',created_at:'2026-10-23T10:00:00Z'};
+  app.get('/api/public-archive/question-submissions',(req,res)=>{
+    if(!['admin','super_admin','question_manager'].includes(req.demoUser.role))return res.status(403).json({error:'Soru yönetimi yetkisi gerekli.'});
+    res.json({submissions:[publicQuestion],count:1});
+  });
+  app.post('/api/public-archive/question-submissions/:id/answer',(req,res)=>{
+    if(!['admin','super_admin','question_manager'].includes(req.demoUser.role))return res.status(403).json({error:'Soru yönetimi yetkisi gerekli.'});
+    const actionNote=String(req.body?.adminActionNote||req.body?.adminNote||'').trim();
+    if(actionNote.length<3)return res.status(400).json({error:'İşlem açıklaması zorunludur.'});
+    Object.assign(publicQuestion,{answer_text:String(req.body?.answerText||publicQuestion.answer_text),admin_note:String(req.body?.adminNote||''),status:req.body?.answerText?'answered':String(req.body?.status||publicQuestion.status),answered_at:new Date().toISOString()});
+    res.json({success:true,submission:publicQuestion});
+  });
+  app.get('/api/public-archive/sync-status',(req,res)=>res.status(req.demoUser.role==='super_admin'?200:403).json(req.demoUser.role==='super_admin'?{ready:true}:{error:'Süper admin yetkisi gerekli.'}));
+  app.get('/api/users',(req,res)=>res.status(['admin','super_admin'].includes(req.demoUser.role)?200:403).json(['admin','super_admin'].includes(req.demoUser.role)?users:{error:'Yönetici yetkisi gerekli.'}));
   app.get('/api/*',(_req,res)=>res.json({items:[],notifications:[],unread:0,total:0,count:0}));
   app.get('/health',(_req,res)=>res.json({ok:true,synthetic:true}));
   app.get('/admin',(_req,res)=>res.sendFile(path.join(root,'index.html')));

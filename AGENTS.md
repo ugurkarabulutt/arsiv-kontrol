@@ -3,6 +3,32 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-23 Ekip Üyesi Gönderim Akışı ve Soru Yöneticisi Rolü
+
+- Admin veya süper admin hesabı `Ekip Üyesi` çalışma alanındayken yalnız ekip
+  üyesi aksiyonlarını görür ve çalıştırabilir. Sunucudaki çalışma alanı/yetki
+  ayrımına ek olarak istemci de yönetim aksiyonlarını kapalı bir izin listesiyle
+  filtreler; `Onayla`, `Reddet`, `Düzeltmeye Gönder`, sınıflandırma, arşiv ve
+  çöp işlemleri ekip alanına taşınamaz.
+- Tanıdık `Onaya Gönder` adı ve ana düğme konumu korunur. Bu düğme gerekli
+  soru-cevap denetimini otomatik çalıştırır. İsteğe bağlı `Kaydet` ve
+  `Soru ve Cevabı Denetle` kaldırılmadı; ekip alanında `Diğer işlemler` içine
+  alındı. Yönetim alanındaki düğme düzeni değişmedi.
+- Yeni `question_manager` / `Soru Yöneticisi` rolü yalnız canlı siteden gelen
+  soru taleplerini listeleme, cevaplama ve `yeni`, `inceleniyor`, `cevaplandı`,
+  `kapatıldı` durumlarında yönetme yetkisine sahiptir. Kullanıcı yönetimi,
+  kurallar, denetim yönetimi, public yayın senkronu, içerik kontrolü, bülten ve
+  Arşiv Operasyon Merkezi'nin diğer bölümleri bu role kapalıdır. Rol atama ve
+  rolden çıkarma yalnız süper admin tarafından yapılabilir. Soru yöneticisinin
+  yazma işlemlerinde zorunlu işlem açıklaması ve admin action log korunur.
+- Yerel `npm.cmd run check` 265/265 geçti. Gerçek Chromium akışı 390 ve 1440 px
+  uzun metin gönderimini, admin hesabının ekip alanında yönetim düğmelerini
+  görmemesini, ikincil araçların erişilebilir kalmasını, soru yöneticisinin
+  mobilde soru listeleyip zorunlu işlem açıklamasıyla cevap vermesini ve diğer
+  yönetim API'lerinden 403 almasını doğruladı; `pageErrors=[]`. İstemci sürümü
+  `20261023-question-manager-v1`. Değişiklik henüz commit, push veya production
+  deploy edilmedi.
+
 ## 2026-10-22 Gönderim Akışı ve Uzun Metin
 
 - Sonuç ekranındaki tanıdık `Onaya Gönder` düğmesi geri geldi. Gönder/onayla

@@ -23,8 +23,8 @@ const {
   candidateTextHashes, finalizeResult, normalizeText, textHash
 } = require('./analysis-core');
 const {
-  ROLES, effectiveRole, isAdminRole, isAssignableRole,
-  isReservedSuperAdminUsername, isSuperAdminRole
+  ROLES, canManagePublicQuestions, effectiveRole, isAdminRole, isAssignableRole,
+  isQuestionManagerRole, isReservedSuperAdminUsername, isSuperAdminRole
 } = require('./authorization');
 const {
   PUBLIC_SEARCH_EMBEDDING_DIMENSIONS,
@@ -74,7 +74,7 @@ const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const NEWSLETTER_RESEND_SEGMENT_NAME = process.env.NEWSLETTER_RESEND_SEGMENT_NAME || 'Dini Sorular ve Cevaplar Arşivi Bülteni';
 const NEWSLETTER_FOOTER_CONSENT_VERSION = 'newsletter-consent-20260920-v1';
 const NEWSLETTER_QUESTION_CONSENT_VERSION = 'question-newsletter-consent-20260923-v1';
-const ADMIN_CLIENT_BUILD = '20261022-review-submit-v5';
+const ADMIN_CLIENT_BUILD = '20261023-question-manager-v1';
 const PROMPT_VERSION    = '2026-10-22.1';
 const AI_REPORT_MODEL   = 'gpt-4o-mini';
 const MIN_ANALYSIS_TEXT_CHARS = 10;
@@ -5410,6 +5410,8 @@ const admin = (req, res, next) => isAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Yönetici yetkisi gerekli.' });
 const superAdmin = (req, res, next) => isSuperAdminRole(req.session?.role)
   ? next() : res.status(403).json({ error: 'Süper admin yetkisi gerekli.' });
+const questionManager = (req, res, next) => canManagePublicQuestions(req.session?.role)
+  ? next() : res.status(403).json({ error: 'Soru yönetimi yetkisi gerekli.' });
 
 async function requirePrivilegedAdminActionNote(req, res, next) {
   if (!requiresAdminActionNote(req.method, req.path, req.body, {
@@ -5420,7 +5422,12 @@ async function requirePrivilegedAdminActionNote(req, res, next) {
   try {
     await startupReady;
     const currentUser = await syncSessionUserFromDb(req);
-    if (!currentUser || !isAdminRole(currentUser.role)) return next();
+    const questionManagementPath = /^\/api\/public-archive\/question-submissions(?:\/|$)/.test(req.path);
+    const canAuthorizeAction = currentUser && (
+      isAdminRole(currentUser.role)
+      || (questionManagementPath && isQuestionManagerRole(currentUser.role))
+    );
+    if (!canAuthorizeAction) return next();
     const note = cleanRequiredActionNote(req.body)
       || cleanRequiredActionNote({ adminActionNote: decodeAdminActionNoteHeader(req.get('x-admin-action-note')) });
     if (!validAdminActionNote(note)) {
@@ -9695,6 +9702,13 @@ app.put('/api/users/:id', auth, admin, async (req, res) => {
     if (!targetIsSuperAdmin && role !== undefined && !isAssignableRole(role)) {
       return res.status(400).json({ error: 'Geçersiz kullanıcı rolü.' });
     }
+    const changesQuestionManagerRole = !targetIsSuperAdmin
+      && role !== undefined
+      && role !== target.role
+      && (role === ROLES.QUESTION_MANAGER || target.role === ROLES.QUESTION_MANAGER);
+    if (changesQuestionManagerRole && !isSuperAdminRole(req.session.role)) {
+      return res.status(403).json({ error: 'Soru yöneticisi rolünü yalnızca süper admin değiştirebilir.' });
+    }
     const patch = {};
     if (name !== undefined)   patch.name   = name;
     if (role !== undefined)   patch.role   = role;
@@ -9910,7 +9924,7 @@ app.post('/api/standards', auth, admin, async (req, res) => {
 });
 
 // ── ARCHIVE OPERATIONS SOURCES ─────────────────────────────────────────────
-app.get('/api/public-archive/question-submissions', auth, admin, async (req, res) => {
+app.get('/api/public-archive/question-submissions', auth, questionManager, async (req, res) => {
   try {
     await startupReady;
     if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) return res.status(503).json({ error: 'public_question_submissions tablosu yok. schema.sql uygulanmalı.' });
@@ -10175,7 +10189,7 @@ async function sendPublicQuestionReceivedEmail(submission) {
   }
 }
 
-app.post('/api/public-archive/question-submissions/:id/answer', auth, admin, async (req, res) => {
+app.post('/api/public-archive/question-submissions/:id/answer', auth, questionManager, async (req, res) => {
   try {
     await startupReady;
     if (!HAS_PUBLIC_ARCHIVE_SUBMISSION_TABLES) return res.status(503).json({ error: 'public_question_submissions tablosu yok. schema.sql uygulanmalı.' });

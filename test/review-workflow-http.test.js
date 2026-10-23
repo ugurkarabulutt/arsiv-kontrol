@@ -8,13 +8,16 @@ let fixture,server,base;
 before(async()=>{fixture=await createFixture();server=fixture.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));base=`http://127.0.0.1:${server.address().port}`;});
 after(async()=>{await new Promise(resolve=>server.close(resolve));await fixture.db.close();});
 async function request(path,role='admin',workspace='member',body){const r=await fetch(base+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','X-Demo-Role':role,'X-Review-Workspace':workspace},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};}
-test('member listing is scoped for admin and super admin, management lists team',async()=>{
-  for(const role of ['user','admin','super_admin']){
+test('member listing is scoped for every role, management lists team only for admins',async()=>{
+  for(const role of ['user','admin','super_admin','question_manager']){
     const result=await request('/api/review/records',role);assert.equal(result.status,200);
     assert.ok(result.data.items.every(row=>row.userId===fixture.users.find(u=>u.role===role).id));
     assert.ok(result.data.items.every(row=>['Taslak','Geri gönderildi','Onaya gönderildi','Teyit bekliyor','Onaylandı','Reddedildi','Arşivlendi'].includes(row.displayStatus)));
+    const managementOnly=['approve','return','reject','review','dergah','conference','pending','archive','trash','restore','resolve_dispute','confirm_duplicate','duplicate_clear'];
+    assert.ok(result.data.items.every(row=>managementOnly.every(action=>!row.allowedActions.includes(action))));
   }
   assert.equal((await request('/api/review/records?status=teyit_bekliyor','user','member')).status,409);
+  assert.equal((await request('/api/review/records?status=all','question_manager','management')).status,409);
   const result=await request('/api/review/records?status=all','admin','management');assert.equal(result.data.count,65);assert.equal(result.data.items.length,25);
 });
 test('detail and legacy APIs refuse other owner in member workspace',async()=>{

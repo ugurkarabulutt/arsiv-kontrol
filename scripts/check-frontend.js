@@ -218,7 +218,7 @@ assert(server.includes('ADMIN_ACTION_LOG_UNAVAILABLE'), 'Sistem kaydi yazilamazs
 assert(server.includes("decodeAdminActionNoteHeader(req.get('x-admin-action-note'))"), 'Yonetici notu basligi UTF-8 guvenli bicimden cozulmeli.');
 assert(html.includes("opts.headers['X-Admin-Action-Note']=adminActionNoteHeaderValue(actionNote)"), 'Frontend yonetici notunu UTF-8 guvenli baslik degeriyle tasimali.');
 assert(html.includes("return 'b64:'+btoa(binary)"), 'Turkce yonetici notlari da HTTP basligina guvenle kodlanmali.');
-assert(html.includes("if(!hasAdminRole(me?.role)||!adminActionNeedsNote(method,url,body))return '';"), 'Normal ekip uyesi notlari yonetici HTTP basligina eklenmemeli.');
+assert(html.includes("if(!canAuthorizeActionRequest(url)||!adminActionNeedsNote(method,url,body))return '';"), 'Normal ekip uyesi notlari yonetici HTTP basligina eklenmemeli; soru yoneticisi yalniz soru islemlerinde kayitli not tasimali.');
 assert(html.includes('İstek tarayıcı tarafından gönderilemedi. Sayfayı yenileyip yeniden deneyin.'), 'Tarayici kaynakli istek hatasi uydurma internet mesaji vermemeli.');
 assert(html.includes('<button type="button" class="btn-primary" id="feedbackSubmitBtn"'), 'Geri bildirim gonder dugmesi form submit tetiklememeli.');
 const adminClientBuildHtml = html.match(/const ADMIN_CLIENT_BUILD='([^']+)'/)?.[1];
@@ -484,7 +484,13 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20261021-analysis-quality-v1') && html.includes('/review-workspace.css?v=20261021-analysis-quality-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20261023-question-manager-v1') && html.includes('/review-workspace.css?v=20261023-question-manager-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes("function hasQuestionManagerRole(role){return role==='question_manager';}") && html.includes('function openQuestionManagement()'), 'Soru yoneticisi rolu ve yalniz soru talepleri girisi bulunmali.');
+assert(html.includes('question-super-admin-only') && html.includes("if(hasSuperAdminRole(me?.role))loadArchivePublicSyncStatus();"), 'Soru yoneticisi public yayin senkronuna erisememeli.');
+assert(server.includes("const questionManager = (req, res, next) => canManagePublicQuestions(req.session?.role)") && server.includes("app.get('/api/public-archive/question-submissions', auth, questionManager") && server.includes("app.post('/api/public-archive/question-submissions/:id/answer', auth, questionManager"), 'Soru talepleri API yetkisi ayri soru yoneticisi politikasina baglanmali.');
+assert(workspaceScript.includes("const memberActions = new Set(['save','submit','reanalyze','withdraw','close_duplicate','dispute','delete_draft','revise_rejected'])"), 'Ekip alani istemci tarafinda da yalniz ekip islemlerini gostermeli.');
+assert(workspaceScript.includes("const secondaryActions=!management()") && workspaceScript.includes("['save','reanalyze',...others]"), 'Ekip alaninda Kaydet ve Soru-Cevap Denetle ikincil menude kalmali.');
+assert(workspaceScript.includes('Onaya Gönder gerekli soru-cevap denetimini otomatik yapar.'), 'Ekip uyesine tek ana gonderim akisi aciklanmali.');
 for(const marker of ['rwQualityStatus','rwUseSource','data-rw-publish','Soru ve Cevabı Denetle']) {
   assert(workspaceScript.includes(marker), `Denetim durumu veya guvenli gonderim marker eksik: ${marker}`);
 }
@@ -873,7 +879,7 @@ if (
   !html.includes('tabContent-archiveOps') ||
   !html.includes('admin-route-only') ||
   !html.includes('function canUseArchiveOps') ||
-  !html.includes("if(name==='archiveOps'&&!canUseArchiveOps())name='analiz'") ||
+  !html.includes("if(name==='archiveOps'&&!canOpenArchiveOpsView(archiveOpsState.view))") ||
   !html.includes('Kaynak Kayıt Sistemi') ||
   !html.includes('archiveSourceText') ||
   !html.includes('function loadArchiveOpsSources') ||

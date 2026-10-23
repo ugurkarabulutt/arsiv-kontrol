@@ -89,6 +89,68 @@ async function run() {
     assert.match(await page.locator('#resultsArea').innerText(),/Yeni Denetime Başla/);
     evidence.push({retryPreservesText:true,completedPartsReused:true,closeShowsSuccess:true});
     await context.close();
+    const adminMember=await browser.newContext({viewport:{width:390,height:900},extraHTTPHeaders:{'X-Demo-Role':'admin'}});
+    const adminMemberPage=await adminMember.newPage();
+    adminMemberPage.on('pageerror',error=>errors.push(error.message));
+    await adminMemberPage.goto(base+'/admin');
+    await adminMemberPage.waitForFunction(()=>typeof ReviewWorkspace!=='undefined'&&me?.loggedIn);
+    assert.equal(await adminMemberPage.evaluate(()=>ReviewWorkspace.workspace()),'member');
+    const adminUser=fixture.users.find(user=>user.role==='admin');
+    const adminMemberRow=(await fixture.db.query("insert into history(user_id,name,status,question_text,corrected_text,original_text,tags,score) values($1,'Admin Ekip Akışı','taslak',$2,$3,$3,'[\"Dua\"]',100) returning *",
+      [adminUser.id,'Muhterem Hocam, ekip alanı sade mi?','Ekip alanında yalnız ekip işlemleri görünmelidir.'])).rows[0];
+    await adminMemberPage.evaluate(id=>ReviewWorkspace.open(id),adminMemberRow.id);
+    await adminMemberPage.locator('#rwQuestion').waitFor();
+    assert.equal(await adminMemberPage.getByRole('button',{name:'Onaya Gönder',exact:true}).isVisible(),true);
+    for(const label of ['Onayla','Düzeltmeye Gönder','Reddet','Teyide Al','Dergah Sorularına Al','Konferanslara Al','Arşivle','Çöpe Taşı']){
+      assert.equal(await adminMemberPage.getByRole('button',{name:label,exact:true}).count(),0);
+    }
+    assert.equal(await adminMemberPage.getByRole('button',{name:'Kaydet',exact:true}).isVisible(),false);
+    assert.equal(await adminMemberPage.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).isVisible(),false);
+    assert.match(await adminMemberPage.locator('.rw-member-submit-help').innerText(),/otomatik yapar/);
+    await adminMemberPage.screenshot({path:path.join(output,'admin-member-primary-390.png'),fullPage:true});
+    await adminMemberPage.locator('details.rw-more > summary').click();
+    assert.equal(await adminMemberPage.getByRole('button',{name:'Kaydet',exact:true}).isVisible(),true);
+    assert.equal(await adminMemberPage.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).isVisible(),true);
+    assert.equal(await adminMemberPage.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    await adminMemberPage.screenshot({path:path.join(output,'admin-member-options-390.png'),fullPage:true});
+    evidence.push({adminInMemberWorkspace:true,managementActionsHidden:true,optionalToolsPreserved:true});
+    await adminMember.close();
+    const questionManager=await browser.newContext({viewport:{width:390,height:900},extraHTTPHeaders:{'X-Demo-Role':'question_manager'}});
+    const questionManagerPage=await questionManager.newPage();
+    questionManagerPage.on('pageerror',error=>errors.push(error.message));
+    await questionManagerPage.goto(base+'/admin');
+    await questionManagerPage.waitForFunction(()=>typeof ReviewWorkspace!=='undefined'&&me?.role==='question_manager');
+    await questionManagerPage.locator('#hamburger').click();
+    const questionManagerNav=questionManagerPage.locator('.mobile-menu button.question-manager-only').filter({hasText:'Soru Talepleri'});
+    assert.equal(await questionManagerNav.isVisible(),true);
+    await questionManagerNav.click();
+    await questionManagerPage.locator('[data-ops-view="publicQuestions"].archive-ops-section:not([hidden])').waitFor();
+    assert.equal(await questionManagerPage.locator('#archivePublicQuestionList .archive-release-card').count(),1);
+    assert.equal(await questionManagerPage.getByRole('button',{name:'Onaylıları Siteye Hazırla',exact:true}).isVisible(),false);
+    for(const label of ['Dashboard','İş Panosu','Kullanıcılar','Kurallar','İçerik Kontrolü','E-posta Bülteni']){
+      assert.equal(await questionManagerPage.getByRole('button',{name:label,exact:true}).evaluateAll(nodes=>nodes.filter(node=>!node.hidden&&getComputedStyle(node).display!=='none').length),0);
+    }
+    const capability=await questionManagerPage.evaluate(async()=>{
+      const [questions,sync,users]=await Promise.all([
+        fetch('/api/public-archive/question-submissions').then(r=>r.status),
+        fetch('/api/public-archive/sync-status').then(r=>r.status),
+        fetch('/api/users').then(r=>r.status)
+      ]);
+      return {questions,sync,users};
+    });
+    assert.deepEqual(capability,{questions:200,sync:403,users:403});
+    await questionManagerPage.locator('#archivePublicQuestionList .archive-release-card').click();
+    await questionManagerPage.locator('#archivePublicQuestionAnswer').fill('Hacet namazı dört rekât olarak kılınır.');
+    await questionManagerPage.getByRole('button',{name:'Cevabı Kaydet ve Kullanıcıya Göster',exact:true}).click();
+    await questionManagerPage.locator('#systemConfirmModal.open').waitFor();
+    await questionManagerPage.locator('#systemConfirmInput').fill('Kullanıcı sorusu kaynak metne göre cevaplandı.');
+    await questionManagerPage.getByRole('button',{name:'Notu Kaydet ve Devam Et',exact:true}).click();
+    await questionManagerPage.getByText('Cevap kaydedildi',{exact:true}).waitFor();
+    assert.match(await questionManagerPage.locator('#archivePublicQuestionDetail').innerText(),/Kullanıcıya gösterilen cevap/);
+    assert.equal(await questionManagerPage.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    await questionManagerPage.screenshot({path:path.join(output,'question-manager-390.png'),fullPage:true});
+    evidence.push({questionManagerUi:true,questionWrite:true,questionListStatus:capability.questions,forbiddenSyncStatus:capability.sync,forbiddenUsersStatus:capability.users});
+    await questionManager.close();
     const admin=await browser.newContext({extraHTTPHeaders:{'X-Demo-Role':'admin'}});
     const adminPage=await admin.newPage();
     adminPage.on('pageerror',error=>errors.push(error.message));
