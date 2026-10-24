@@ -1,6 +1,6 @@
 # AGENTS.md — Arşiv Kontrol AI
 
-## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Preview Onayı Bekliyor
+## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Production Tamamlandı
 
 - Kullanıcının sağladığı `Sıratı Mustakîm Nedir? Allah’a Ulaştıran Yol Nasıl
   Başlar?` PDF'i public konu rehberi veri sözleşmesine aktarıldı. Rehber
@@ -22,13 +22,14 @@
 - İnsan/yüz, yazı veya ilahî tasvir içermeyen özgün 3:2 kapak hazırlandı:
   karanlıktan başlayıp yedi aydınlık eşiğe yükselen tek yol, soyut beyaz-altın
   ufuk ışığına yönelir. 480/720/1280 WebP dosyaları yaklaşık 28/63/180 KiB'dir.
-- `npm.cmd run check` başarılı; 268/268 test geçti. Vercel preview
-  `dpl_FxgbaRjiUP6jJyd1KCCb14vnxuSj` /
-  `https://arsiv-kontrol-5q5wcvnlu-ugurkarabulutts-projects.vercel.app` READY,
-  target `preview`. Gerçek Chromium 390/1440 px kontrolde rehber ve dizin 200,
-  görseller 480/1280 doğal genişlikte, FAQ 7/7, ilgili rehber 6, ilk beş sıra
-  doğru, yatay taşma yok ve `pageErrors=[]`. Production deploy yapılmadı;
-  kullanıcı ön izleme onayı bekleniyor.
+- `npm.cmd run check` başarılı; 268/268 test geçti. Runtime commit `d8a88f1`
+  GitHub'a push edildi ve production'a alındı. Production deployment
+  `dpl_GgKUdrCQLSGjANEyJqSkAEkfaNsS` /
+  `https://arsiv-kontrol-a4j51zhv8-ugurkarabulutts-projects.vercel.app` READY,
+  canlı alias `https://arsiv.ibrahimlive.ai`. Gerçek Chromium 390/1440 px
+  kontrolde canlı rehber ve dizin 200, görseller 480/1280 doğal genişlikte,
+  FAQ 7/7, ilgili rehber 6, canonical doğru, sitemap kaydı mevcut, ilk beş sıra
+  doğru, yatay taşma yok ve `pageErrors=[]`.
 
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.

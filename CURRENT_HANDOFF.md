@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Preview Onayı Bekliyor
+## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal
   `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
@@ -19,15 +19,15 @@
 - Özgün kapak `topic-guide-sirati-mustakim-{480,720,1280}.webp`; asset sürümü
   `20261024-sirati-mustakim-v1`. Görsel üretiminde yüz, insan, yazı, sembolik
   ilahî figür, pusula ve harita kullanılmadı.
-- `npm.cmd run check`: 268/268 başarılı. Preview
-  `dpl_FxgbaRjiUP6jJyd1KCCb14vnxuSj` /
-  `https://arsiv-kontrol-5q5wcvnlu-ugurkarabulutts-projects.vercel.app` READY.
-  Chromium 390/1440 px: rehber/dizin 200, FAQ 7/7, ilgili rehber 6, ilk beş
-  doğru, görsel yüklendi, yatay taşma yok, `pageErrors=[]`. Kanıt
-  `tmp/sirati-mustakim-preview-qa/` altındadır.
-- Production deploy, commit ve push yapılmadı. Sonraki adım kullanıcı görsel
-  ve içerik onayı sonrası commit/push, production deploy, canlı URL/sitemap ve
-  canonical doğrulamasıdır.
+- `npm.cmd run check`: 268/268 başarılı. Runtime commit `d8a88f1` GitHub'a
+  push edildi. Production deployment `dpl_GgKUdrCQLSGjANEyJqSkAEkfaNsS` /
+  `https://arsiv-kontrol-a4j51zhv8-ugurkarabulutts-projects.vercel.app` READY;
+  canlı alias `https://arsiv.ibrahimlive.ai`.
+- Canlı Chromium 390/1440 px: rehber/dizin 200, doğru istiane başlığı ve tanımı
+  görünür, eski soru yok, FAQ 7/7, ilgili rehber 6, ilk beş doğru, canonical
+  doğru, sitemap kaydı mevcut, görsel yüklendi, yatay taşma yok ve
+  `pageErrors=[]`. Preview kanıtı `tmp/sirati-mustakim-preview-qa/`, canlı
+  doğrulama betiği `tmp/verify-sirati-live.js` altındadır.
 
 ## 2026-10-24 Konu Rehberi FAQ, Schema ve Öncelik — Production Tamamlandı
 
