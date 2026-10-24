@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-23 Ekip Üyesi Akışı ve Soru Yöneticisi — Yerelde Tamamlandı
+## 2026-10-24 Ekip Üyesi Akışı ve Soru Yöneticisi — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal
   `codex/review-analysis-quality-gate`. Ana kirli checkout'a dokunulmadı.
@@ -22,8 +22,19 @@
   soru yöneticisinin mobil soru/cevap akışı, yetkisiz API'lerde 403, geciken
   liste sırasında Kaydet ve yönetim onayını doğruladı; `pageErrors=[]`. Mobil
   ekran görüntüleri `.tmp-review-submit-flow/` altında.
-- Henüz commit, push veya deploy yok. Production hâlâ
-  `20261022-review-submit-v5` sürümündedir.
+- Runtime commit `a9a496ece5ae842437a2e5aa1532d12f448096cd` push edildi.
+  Staging deployment `dpl_GW2BSAX7zP7U4kfbTQJAc4ofcevV` üzerinde geçici
+  `question_manager` hesabı ve geçici soru ile gerçek Chromium testi geçti:
+  listeleme 200, cevap yazma ve zorunlu sistem kaydı başarılı; kullanıcılar ve
+  public yayın senkronu 403. Test kullanıcı/soru/log kalıntıları 0.
+- Production deployment `dpl_2yD3XrVWgWDwodTJ5uFxjXPMgEti` READY ve
+  `https://arsiv.ibrahimlive.ai` alanında etkindir. Canlı build
+  `20261023-question-manager-v1`; health, admin 200/noindex, root ve arşiv 200,
+  oturumsuz soru ve kullanıcı API'leri 401 doğrulandı.
+- Eda Şahinhan (`286deb5a-1daf-4fef-b409-74dedba121d2`) aktif kullanıcı olarak
+  `user` rolünden `question_manager` rolüne kontrollü transaction ile taşındı.
+  `user.role_assignment` sistem kaydı oluştu; rol değişikliği mevcut oturumda
+  bir sonraki `/api/auth/me` senkronunda veya yeni girişte uygulanır.
 
 ## 2026-10-22 Gönderim Akışı — Production Tamamlandı
 

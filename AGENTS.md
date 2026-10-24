@@ -26,8 +26,13 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   görmemesini, ikincil araçların erişilebilir kalmasını, soru yöneticisinin
   mobilde soru listeleyip zorunlu işlem açıklamasıyla cevap vermesini ve diğer
   yönetim API'lerinden 403 almasını doğruladı; `pageErrors=[]`. İstemci sürümü
-  `20261023-question-manager-v1`. Değişiklik henüz commit, push veya production
-  deploy edilmedi.
+  `20261023-question-manager-v1`. Runtime `a9a496e` commit'i push edildi.
+  Staging `dpl_GW2BSAX7zP7U4kfbTQJAc4ofcevV` gerçek geçici hesap/soru ile
+  doğrulandı; soru API'si 200, kullanıcı ve yayın senkronu API'leri 403,
+  cevap ve zorunlu işlem logu başarılıydı. Test verisi tamamen temizlendi.
+  Production `dpl_2yD3XrVWgWDwodTJ5uFxjXPMgEti` ile canlıya alındı. Eda
+  Şahinhan'ın rolü kontrollü transaction ve ayrı sistem kaydıyla
+  `question_manager` yapıldı. Canlı health/build/noindex/public smoke geçti.
 
 ## 2026-10-22 Gönderim Akışı ve Uzun Metin
 
