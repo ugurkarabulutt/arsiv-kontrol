@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-24 Konu Rehberi FAQ, Schema ve Öncelik — Canlı Onayı Verildi
+## 2026-10-24 Konu Rehberi FAQ, Schema ve Öncelik — Production Tamamlandı
 
 - `public-archive-topic-faqs.json` ile 14 rehber için toplam 74 arama niyetli
   soru tanımlandı. Sorular güncel arama sonuçlarında görülen ifade kalıplarına
@@ -19,7 +19,13 @@
   `https://arsiv-kontrol-5jvektznw-ugurkarabulutts-projects.vercel.app` `READY`,
   target `preview`. Gerçek Chromium 390/1440 px kontrolde iki dizinde de ilk
   dört rehber doğru sırada; 200 yanıt, yatay taşma olmaması ve `pageErrors=[]`
-  doğrulandı. Kullanıcı production onayı verdi.
+  doğrulandı.
+- Runtime commit `121f02b` push edildi. Production deployment
+  `dpl_EcsaU87Q6yfUAMF3KC8mbdQZ7mxV` /
+  `https://arsiv-kontrol-152u7p644-ugurkarabulutts-projects.vercel.app` `READY`,
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health=ok`; root, rehber dizini
+  ve Vesvese rehberi `200`. Canlı dizin ve ana sayfa ilk dört sırası doğru;
+  Vesvese görünür/schema FAQ 8/8, canonical ve sitemap kaydı doğru.
 
 ## 2026-10-24 Vesvese Konu Rehberi — Preview Onayı Bekliyor
 

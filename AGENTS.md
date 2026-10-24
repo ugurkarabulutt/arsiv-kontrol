@@ -3,7 +3,7 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
-## 2026-10-24 Konu Rehberi FAQ, Schema ve Editoryal Öncelik — Canlı Onayı Verildi
+## 2026-10-24 Konu Rehberi FAQ, Schema ve Editoryal Öncelik — Production Tamamlandı
 
 - Arama sonuçlarındaki gerçek soru kalıpları incelenerek 14 konu rehberinin
   tamamına ayrı FAQ verisi eklendi. Toplam 74 soru; dış kaynak cevabı taşımadan,
@@ -24,8 +24,13 @@ bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedili
   `dpl_APLYZrJZeBctF1ShSHfJwaT8GwQ6` / `https://arsiv-kontrol-5jvektznw-ugurkarabulutts-projects.vercel.app`
   `READY`, target `preview`. Gerçek Chromium 390/1440 px kontrolde iki dizinde de
   ilk dört rehber doğru sırada, sayfalar 200, yatay taşma ve `pageErrors` yok.
-  Vesvese 8/8, Hacet Namazı 5/5 görünür/schema soru eşleşmesi doğru. Kullanıcı
-  production onayı verdi; production dağıtımı bu sürümden yapılacak.
+  Vesvese 8/8, Hacet Namazı 5/5 görünür/schema soru eşleşmesi doğru.
+- Runtime commit `121f02b` GitHub'a push edildi. Production deployment
+  `dpl_EcsaU87Q6yfUAMF3KC8mbdQZ7mxV` /
+  `https://arsiv-kontrol-152u7p644-ugurkarabulutts-projects.vercel.app` `READY`;
+  alias `https://arsiv.ibrahimlive.ai`. Canlı `/health=ok`; ana sayfa, rehber
+  dizini ve Vesvese rehberi `200`. İki canlı dizinde ilk dört rehber doğru
+  sırada; Vesvese FAQ 8/8, canonical ve sitemap kaydı doğrulandı.
 
 ## 2026-10-24 Vesvese Konu Rehberi — Preview Onayı Bekliyor
 
