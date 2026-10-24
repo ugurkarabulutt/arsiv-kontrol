@@ -1,5 +1,35 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Preview Onayı Bekliyor
+
+- Kullanıcının sağladığı `Sıratı Mustakîm Nedir? Allah’a Ulaştıran Yol Nasıl
+  Başlar?` PDF'i public konu rehberi veri sözleşmesine aktarıldı. Rehber
+  `/konu-rehberi/sirati-mustakim-nedir` yolunda 88 içerik bloğu, 23 âyet
+  bağlantısı ve 7 sık sorulan soru içerir. PDF dipnot numaraları ve iç süreç
+  notları public metne taşınmadı.
+- Görünür 7 FAQ ile `FAQPage` şemasındaki 7 `Question`/`Answer` birebir
+  eşleşir. Rehber `BlogPosting`, `WebPage`, `BreadcrumbList`, ilgili rehber
+  `ItemList` ve ortak `Organization`/`WebSite` şemalarını kullanır. Allah’a
+  ulaşmayı dilemek, hidayet, tâbiiyet, hacet namazı, zikir ve teslimiyet
+  rehberleriyle karşılıklı iç bağlantılar kuruldu.
+- Mihr kaynaklarındaki kavram kullanımı doğrulandı; FAQ ve bölüm başlığı
+  `Fâtiha’da istenen istiane nedir?` olarak düzeltildi. Cevap istianeyi yalnız
+  Allah’tan istenen özel yardım, Allah’tan mürşidin sorulması ve kişiyi Sıratı
+  Mustakîm’e ulaştıracak mürşidin gösterilmesi olarak doğrudan açıklar.
+- Rehber dizininde kalıcı ilk dört öncelik korunur; Sıratı Mustakîm beşinci
+  sıradadır. Yeni olduğu için birinci sıraya alınmadı ve ana sayfa konu
+  vitrinine eklenmedi. Statik asset sürümü `20261024-sirati-mustakim-v1` oldu.
+- İnsan/yüz, yazı veya ilahî tasvir içermeyen özgün 3:2 kapak hazırlandı:
+  karanlıktan başlayıp yedi aydınlık eşiğe yükselen tek yol, soyut beyaz-altın
+  ufuk ışığına yönelir. 480/720/1280 WebP dosyaları yaklaşık 28/63/180 KiB'dir.
+- `npm.cmd run check` başarılı; 268/268 test geçti. Vercel preview
+  `dpl_FxgbaRjiUP6jJyd1KCCb14vnxuSj` /
+  `https://arsiv-kontrol-5q5wcvnlu-ugurkarabulutts-projects.vercel.app` READY,
+  target `preview`. Gerçek Chromium 390/1440 px kontrolde rehber ve dizin 200,
+  görseller 480/1280 doğal genişlikte, FAQ 7/7, ilgili rehber 6, ilk beş sıra
+  doğru, yatay taşma yok ve `pageErrors=[]`. Production deploy yapılmadı;
+  kullanıcı ön izleme onayı bekleniyor.
+
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 

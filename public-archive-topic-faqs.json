@@ -91,6 +91,15 @@
     { "question": "Mürşide tâbî olmak kişinin sorumluluğunu kaldırır mı?", "sourceHeading": "Tâbiiyet, kişinin sorumluluğunu kaldırmaz" },
     { "question": "Mürşidlik peygamberlik midir?", "sourceHeading": "Mürşidlik peygamberlik midir?" }
   ],
+  "sirati-mustakim-nedir": [
+    { "question": "Sıratı Mustakîm nedir?", "sourceHeading": "Sıratı Mustakîm’in istikameti Allah’adır", "blockCount": 2 },
+    { "question": "Sıratı Mustakîm nereye ulaştırır?", "answer": "Sıratı Mustakîm, insanın ruhunu dünya hayatını yaşarken Allah’a ulaştıran yoldur. Yolun istikameti ve hedefi Allah’tır; ruh bu yol üzerindeki seyr-i sülûkunu tamamlayarak Allah’ın Zat’ına ulaşır ve teslim olur." },
+    { "question": "Sıratı Mustakîm’e nasıl girilir?", "sourceHeading": "Allah’a ulaştıran yol kalpten bir dilekle başlar", "blockCount": 2 },
+    { "question": "Sıratı Mustakîm ile hidayet arasındaki fark nedir?", "sourceHeading": "Sıratı Mustakîm ile hidayet aynı şey midir?" },
+    { "question": "Fâtiha’da istenen istiane nedir?", "sourceHeading": "Fâtiha’da istenen istiane nedir?", "blockCount": 2 },
+    { "question": "Tarîki Mustakîm ile Sıratı Mustakîm arasındaki fark nedir?", "sourceHeading": "Seyr-i sülûk: Ruh hangi yoldan Allah’a ulaşır?", "blockCount": 2 },
+    { "question": "Ruhun Allah’a ulaşmasından sonra zikir ve ibadetler biter mi?", "sourceHeading": "Ruhun Allah’a ulaşmasından sonra zikir ve ibadetler biter mi?" }
+  ],
   "vesvese-nedir-nasil-kurtulunur": [
     { "question": "Vesvese nedir?", "sourceHeading": "Vesvese nedir?" },
     { "question": "Vesveseden nasıl kurtulunur?", "sourceHeading": "Vesvese geldiğinde yönünüzü nasıl koruyabilirsiniz?", "blockCount": 2 },

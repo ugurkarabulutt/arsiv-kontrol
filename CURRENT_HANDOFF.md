@@ -1,5 +1,34 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Preview Onayı Bekliyor
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
+- `public-archive-topic-articles.json` içine
+  `/konu-rehberi/sirati-mustakim-nedir` eklendi: 88 blok, 23 âyet bağlantısı,
+  7 görünür FAQ. `public-archive-topic-faqs.json` içindeki 7 soru görünür alan
+  ve `FAQPage` şemasında birebir eşleşir.
+- Mihr kaynaklarına göre bölüm başlığı ve FAQ sorusu `Fâtiha’da istenen istiane
+  nedir?` olarak düzeltildi. İlk cevap cümlesi istianeyi yalnız Allah’tan
+  istenen özel yardım, Allah’tan mürşidin sorulması ve kişiyi Sıratı Mustakîm’e
+  ulaştıracak mürşidin gösterilmesi olarak açıklar; eski yanlış soru kaldırıldı.
+- Rehber `/konu-rehberleri` dizininde sabit dört temel rehberden sonra beşinci
+  sıradadır; ana sayfa vitrini değişmedi. Allah’a ulaşmayı dilemek, hidayet,
+  tâbiiyet, hacet namazı, zikir ve teslimiyet rehberleriyle karşılıklı bağlantı
+  kuruldu.
+- Özgün kapak `topic-guide-sirati-mustakim-{480,720,1280}.webp`; asset sürümü
+  `20261024-sirati-mustakim-v1`. Görsel üretiminde yüz, insan, yazı, sembolik
+  ilahî figür, pusula ve harita kullanılmadı.
+- `npm.cmd run check`: 268/268 başarılı. Preview
+  `dpl_FxgbaRjiUP6jJyd1KCCb14vnxuSj` /
+  `https://arsiv-kontrol-5q5wcvnlu-ugurkarabulutts-projects.vercel.app` READY.
+  Chromium 390/1440 px: rehber/dizin 200, FAQ 7/7, ilgili rehber 6, ilk beş
+  doğru, görsel yüklendi, yatay taşma yok, `pageErrors=[]`. Kanıt
+  `tmp/sirati-mustakim-preview-qa/` altındadır.
+- Production deploy, commit ve push yapılmadı. Sonraki adım kullanıcı görsel
+  ve içerik onayı sonrası commit/push, production deploy, canlı URL/sitemap ve
+  canonical doğrulamasıdır.
+
 ## 2026-10-24 Konu Rehberi FAQ, Schema ve Öncelik — Production Tamamlandı
 
 - `public-archive-topic-faqs.json` ile 14 rehber için toplam 74 arama niyetli

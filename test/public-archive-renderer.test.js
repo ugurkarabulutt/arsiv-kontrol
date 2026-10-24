@@ -100,8 +100,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261024-topic-faq-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261024-topic-faq-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261024-sirati-mustakim-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261024-sirati-mustakim-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -149,7 +149,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261024-topic-faq-v1/);
+  assert.match(home, /app-icon-128\.webp\?v=20261024-sirati-mustakim-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -1106,7 +1106,7 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['vesvese-nedir-nasil-kurtulunur', 'mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
+  for (const slug of ['sirati-mustakim-nedir', 'vesvese-nedir-nasil-kurtulunur', 'mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
@@ -1116,7 +1116,8 @@ test('topic guide index exposes every guide as a crawlable route without loading
     'allaha-ulasmayi-dilemek',
     'hidayet',
     'murside-tabiiyet',
-    'hacet-namazi-ve-mursidi-allahtan-istemek'
+    'hacet-namazi-ve-mursidi-allahtan-istemek',
+    'sirati-mustakim-nedir'
   ];
   for (let index = 1; index < prioritySlugs.length; index += 1) {
     assert.ok(
@@ -1127,8 +1128,10 @@ test('topic guide index exposes every guide as a crawlable route without loading
   }
   assert.ok(
     directoryHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek') <
-      directoryHtml.indexOf('/public-preview/konu-rehberi/vesvese-nedir-nasil-kurtulunur'),
-    'Yeni eklenen Vesvese rehberi temel rehberlerin onune gecmemeli.'
+      directoryHtml.indexOf('/public-preview/konu-rehberi/sirati-mustakim-nedir') &&
+      directoryHtml.indexOf('/public-preview/konu-rehberi/sirati-mustakim-nedir') <
+        directoryHtml.indexOf('/public-preview/konu-rehberi/vesvese-nedir-nasil-kurtulunur'),
+    'Sıratı Mustakîm temel ilk dort rehberden sonra, diger rehberlerden once gelmeli.'
   );
   assert.doesNotMatch(preview.html, /<article class="pa-topic-article-body"/);
   assertOnlyPublicPreviewApi(preview.html);
@@ -1458,6 +1461,21 @@ test('topic guide article renders Mürşid guide with its unique visual and prim
   assertOnlyPublicPreviewApi(preview.html);
 });
 
+test('topic guide article renders Sıratı Mustakîm with unique visual, FAQ schema and foundational links', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/sirati-mustakim-nedir');
+  assert.equal(preview.status, 200);
+  for (const marker of ['Sıratı Mustakîm Nedir?', 'Allah’a ulaştıran yol nasıl başlar?', 'Sıratı Mustakîm’in istikameti Allah’adır', 'Fâtiha’da istenen istiane nedir?', 'İstiane, yalnız Allah’tan istenen özel yardımdır', 'HİCR 41', 'FÂTİHA 6', 'MUZZEMMİL 8', 'Seyr-i sülûk', 'Tarîki Mustakîm', 'Sık Sorulan Sorular', 'Sıratı Mustakîm’e nasıl girilir?', 'topic-guide-sirati-mustakim-480.webp', 'topic-guide-sirati-mustakim-720.webp', 'topic-guide-sirati-mustakim-1280.webp', '"@type":"FAQPage"', '"@type":"BlogPosting"']) {
+    assert.match(preview.html, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(preview.html, /<meta property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/topic-guide-sirati-mustakim-1280\.webp/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/sirati-mustakim-nedir#article"/);
+  for (const reciprocalSlug of ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'zikir-ve-daimi-zikir', 'teslimiyet']) {
+    assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${reciprocalSlug}`));
+  }
+  assert.doesNotMatch(preview.html, /mih?r\.com|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
 test('topic guide article renders Vesvese guide with its unique visual, clear prescription and focused question link', () => {
   const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/vesvese-nedir-nasil-kurtulunur');
   assert.equal(preview.status, 200);
@@ -1510,6 +1528,7 @@ test('every topic guide renders search-informed visible FAQs that exactly match 
 
 test('every topic guide links 4-6 semantically related guides and preserves Mürşid reciprocity', () => {
   const guideSlugs = [
+    'sirati-mustakim-nedir',
     'vesvese-nedir-nasil-kurtulunur',
     'mursid-nedir-kurana-gore-gorevi',
     'hacet-namazi-ve-mursidi-allahtan-istemek',
