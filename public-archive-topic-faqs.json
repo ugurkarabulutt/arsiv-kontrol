@@ -1,0 +1,104 @@
+{
+  "allaha-ulasmayi-dilemek": [
+    { "question": "Allah’a ulaşmayı dilemek nedir?", "sourceHeading": "İlk adım, kalpten bir dilek" },
+    { "question": "Allah’a ulaşmayı dilemek nasıl yapılır?", "sourceHeading": "Dua" },
+    { "question": "Sadece söylemek Allah’a ulaşmayı dilemek için yeterli midir?", "sourceHeading": "Dilin söylediğini kalbin de istemesi" },
+    { "question": "Allah’a ulaşmak ölümü istemek midir?", "sourceHeading": "Allah’a ulaşmak, ölümü istemek değildir", "blockCount": 2 },
+    { "question": "Allah’a ulaşmayı diledikten sonra ne olur?", "sourceHeading": "Dilekten sonra yol nasıl devam eder?" }
+  ],
+  "hidayet": [
+    { "question": "Hidayet nedir?", "sourceHeading": "Kur’ân’da hidayetin tarifi", "blockCount": 2 },
+    { "question": "Ruhun Allah’a ulaşması ölümden önce midir?", "sourceHeading": "Ruhun Allah’a ulaşması ölümden öncedir", "blockCount": 2 },
+    { "question": "Hidayet yolunun ilk adımı nedir?", "sourceHeading": "İlk adım: kalpten Allah’a yönelmek" },
+    { "question": "Sıratı Mustakîm nedir?", "sourceHeading": "Sıratı Mustakîm: Allah’a ulaştıran yol" },
+    { "question": "Hidayet ruhun teslimiyle tamamlanır mı?", "sourceHeading": "Hidayet, ruhun teslimiyle sınırlı değildir", "blockCount": 2 }
+  ],
+  "murside-tabiiyet": [
+    { "question": "Mürşide tâbiiyet nedir?", "sourceHeading": "Tâbiiyet, kalpteki dilekle anlam kazanır" },
+    { "question": "Mürşid kimdir?", "sourceHeading": "Mürşid kimdir?" },
+    { "question": "Mürşid neden Allah’tan istenir?", "sourceHeading": "Mürşid neden Allah’tan istenir?" },
+    { "question": "Mürşid hacet namazıyla nasıl istenir?", "sourceHeading": "Hacet namazı ve huşû" },
+    { "question": "Mürşide tâbiiyetten sonra ne olur?", "sourceHeading": "Tâbiiyetle gelen nimetler" }
+  ],
+  "zikir-ve-daimi-zikir": [
+    { "question": "Zikir nedir ve nasıl yapılır?", "sourceHeading": "Zikir nedir, ne zikredilir?" },
+    { "question": "Sessiz zikir yapılabilir mi?", "sourceHeading": "Zikir nasıl yapılır?" },
+    { "question": "Daimî zikir nedir?", "sourceHeading": "Daimî zikir ve ulûl elbab" },
+    { "question": "Zikir nefsin kalbini nasıl temizler?", "sourceHeading": "Zikirle gelen rahmet, fazl ve salâvât" },
+    { "question": "Zikir ile çok zikir arasındaki fark nedir?", "sourceHeading": "Zikir, çok zikir ve daimî zikir" }
+  ],
+  "nefs-tezkiyesi": [
+    { "question": "Nefs tezkiyesi nedir?", "sourceHeading": "Nefs tezkiyesi ne demektir?" },
+    { "question": "Nefs nasıl tezkiye edilir?", "sourceHeading": "Zikir, nefsin kalbini temizleyen ibadettir", "blockCount": 2 },
+    { "question": "Nefs tezkiyesinin yedi kademesi nelerdir?", "sourceHeading": "Nefs tezkiyesinin yedi kademesi", "blockCount": 3 },
+    { "question": "Tezkiye ile tasfiye arasındaki fark nedir?", "sourceHeading": "Tezkiye ile tasfiye aynı şey değildir" },
+    { "question": "Nefs tezkiyesi günlük hayata nasıl yansır?", "sourceHeading": "Kalbin temizlenmesi günlük hayata nasıl yansır?", "blockCount": 2 }
+  ],
+  "teslimiyet": [
+    { "question": "Allah’a teslimiyet nedir?", "sourceHeading": "Teslimiyetin başlangıcı ve tamamlanması" },
+    { "question": "İslâm’da dört teslim nedir?", "sourceHeading": "Yedi safha ve dört teslim", "blockCount": 2 },
+    { "question": "Ruhun Allah’a teslimi nasıl gerçekleşir?", "sourceHeading": "Üçüncü safha: Ruhun Allah’a teslimi" },
+    { "question": "Fizik vücudun Allah’a teslimi ne demektir?", "sourceHeading": "Dördüncü safha: Fizik vücudun Allah’a teslimi" },
+    { "question": "Nefsin ve iradenin Allah’a teslimi nedir?", "answer": "Nefsin teslimi, daimî zikirle nefsin kalbindeki afetlerin bütünüyle temizlenmesi ve nefsin Allah’ın emirlerine uygun taleplerde bulunmasıdır. İradenin teslimi ise yedi safhanın sonuncusudur; kişi iradesini Allah’a teslim eder ve Allah tarafından irşadla vazifelendirilir." }
+  ],
+  "ruh-nefs-fizik-vucut": [
+    { "question": "Ruh nedir?", "sourceHeading": "Ruh nedir?" },
+    { "question": "Nefs nedir?", "sourceHeading": "Nefs nedir?" },
+    { "question": "Fizik vücut nedir?", "sourceHeading": "Fizik vücut nedir?" },
+    { "question": "Ruh, nefs ve fizik vücut arasındaki fark nedir?", "answer": "Ruh, Allahû Tealâ’nın insana üfürdüğü ve Kendisine dönmesini istediği emanettir. Nefs, sevva edilen ve başlangıçta afetlerle dolu olan varlığımızdır; tezkiye ve tasfiye edilmesi gerekir. Fizik vücut ise dünya hayatındaki davranışları gerçekleştiren zahirî bedenimizdir." },
+    { "question": "Ruhun Allah’a ulaşması insanın ölmesi midir?", "sourceHeading": "Ruhun Allah’a ulaşması ölüm değildir" }
+  ],
+  "kurana-gore-mutluluk": [
+    { "question": "Kur’ân’a göre mutluluk nedir?", "sourceHeading": "Kur’ân’a göre mutluluk yolunun bütünü" },
+    { "question": "Geçici zevk ile kalıcı mutluluk arasındaki fark nedir?", "sourceHeading": "Geçici zevk ile kalıcı saadet arasındaki fark" },
+    { "question": "Mutluluğun üç cephesi nelerdir?", "answer": "Kur’ân’a göre mutluluk; insanın iç dünyasında, diğer insanlarla ilişkilerinde ve Allah ile olan ilişkilerinde sulh ve sükûna ulaşmasıdır. Bu üç alandaki huzurun devamlı hâle gelmesi, kalıcı mutluluğun temel özelliğidir." },
+    { "question": "Zikir kalbi nasıl mutlu eder?", "sourceHeading": "Zikir kalbi nasıl mutlu eder?", "blockCount": 2 },
+    { "question": "Başkalarını mutlu etmek insanı nasıl etkiler?", "sourceHeading": "Başkalarını mutlu etmek" }
+  ],
+  "tasavvuf-nedir": [
+    { "question": "Tasavvuf nedir?", "sourceHeading": "Tasavvufun esası: Allah’ın dînini yaşamak" },
+    { "question": "Tasavvufun Kur’ân’daki temeli nedir?", "sourceHeading": "Hanif dîni ve bütün peygamberlerin yolu" },
+    { "question": "Tasavvufa nasıl başlanır?", "sourceHeading": "İlk adım: Allah’a ulaşmayı dilemek" },
+    { "question": "Tasavvufta yedi safha ve dört teslim nedir?", "sourceHeading": "Yedi safha ve dört teslim", "blockCount": 2 },
+    { "question": "Tasavvufta zikrin yeri nedir?", "sourceHeading": "Zikir, çok zikir ve daimî zikir" }
+  ],
+  "tovbe-ve-gunahlardan-kurtulus": [
+    { "question": "Tövbe nasıl edilir?", "sourceHeading": "Samimi tövbenin esası: Pişmanlık" },
+    { "question": "Günahları çok olan kişi Allah’ın rahmetinden ümit kesmeli midir?", "sourceHeading": "Allah’ın rahmetinden ümit kesilmez", "blockCount": 2 },
+    { "question": "Tövbeden sonra aynı günah yeniden işlenirse ne yapılır?", "sourceHeading": "Yeniden hata edildiğinde ne yapılır?" },
+    { "question": "Kul hakkı olan bir günah için tövbe nasıl edilir?", "sourceHeading": "Kul hakkı ve helâlleşmek" },
+    { "question": "Tövbe-i Nasuh nedir?", "sourceHeading": "Tövbe-i Nasuh nedir?", "blockCount": 2 }
+  ],
+  "dua-ve-tevekkul": [
+    { "question": "Dua nedir ve nasıl yapılır?", "sourceHeading": "Duanın edebi: Yalvarmak, gizlemek ve ümit etmek", "blockCount": 2 },
+    { "question": "Dua ederken kalbin talebi neden önemlidir?", "sourceHeading": "Duanın temelinde kalbin talebi vardır" },
+    { "question": "Tevekkül nedir?", "sourceHeading": "Tevekkül nedir?", "blockCount": 2 },
+    { "question": "Tedbir almak tevekküle aykırı mıdır?", "sourceHeading": "Tedbir ile tevekkül birlikte yürür" },
+    { "question": "Dua ile tevekkül arasındaki bağ nedir?", "sourceHeading": "Allah’a ulaşmayı dilemek ve tevekkül" }
+  ],
+  "hacet-namazi-ve-mursidi-allahtan-istemek": [
+    { "question": "Hacet namazı nedir?", "answer": "Hacet namazı, insanın bir ihtiyacını Allahû Tealâ’ya arz etmek ve O’ndan yardım istemek için kıldığı namazdır. Mürşidini arayan insan bu namazla, kendisini Allah’a ulaştırmaya vesile olacak mürşidi Rabbinden ister." },
+    { "question": "Hacet namazı nasıl kılınır?", "sourceHeading": "Hacet namazı nasıl kılınır?", "blockCount": 2 },
+    { "question": "Mürşidi görmek için rüya görmek şart mıdır?", "sourceHeading": "İlk seferde rüya görülmezse" },
+    { "question": "Hacet namazı ile istihare namazı arasındaki fark nedir?", "sourceHeading": "Hacet namazı ile istihare arasındaki fark" },
+    { "question": "Mürşid uzaktaysa ne yapılır?", "sourceHeading": "Mürşid uzaktaysa yetkili vekil" }
+  ],
+  "mursid-nedir-kurana-gore-gorevi": [
+    { "question": "Mürşid nedir ve kimdir?", "answer": "Mürşid, Allah’ın irşadla vazifelendirdiği; âyetleri açıklayan, Allah’a ulaşmayı dilemeye davet eden, tâbiiyete vesile olan ve zikir, nefs tezkiyesi ile teslimler yolunda rehberlik eden kişidir. Hidayetin sahibi Allah’tır; mürşid bu yolda vesiledir." },
+    { "question": "Mürşid kelimesi Kur’ân’da geçiyor mu?", "sourceHeading": "Mürşid kelimesi Kur’ân’da geçiyor mu?" },
+    { "question": "Gerçek mürşidi kim tayin eder?", "sourceHeading": "Mürşidi kim tayin eder?" },
+    { "question": "İnsan mürşidini nasıl bulur?", "sourceHeading": "İnsan mürşidini nasıl bulur?" },
+    { "question": "Mürşide tâbî olmak kişinin sorumluluğunu kaldırır mı?", "sourceHeading": "Tâbiiyet, kişinin sorumluluğunu kaldırmaz" },
+    { "question": "Mürşidlik peygamberlik midir?", "sourceHeading": "Mürşidlik peygamberlik midir?" }
+  ],
+  "vesvese-nedir-nasil-kurtulunur": [
+    { "question": "Vesvese nedir?", "sourceHeading": "Vesvese nedir?" },
+    { "question": "Vesveseden nasıl kurtulunur?", "sourceHeading": "Vesvese geldiğinde yönünüzü nasıl koruyabilirsiniz?", "blockCount": 2 },
+    { "question": "Aklıma gelen kötü düşünceyi ben mi istiyorum?", "sourceHeading": "Aklıma gelen kötü düşünceyi ben mi istiyorum?" },
+    { "question": "Şeytan insanı zorla kötülüğe sürükleyebilir mi?", "sourceHeading": "Şeytan insanı zorla kötülüğe sürükleyebilir mi?" },
+    { "question": "Namazda vesvese gelirse ne yapılır?", "sourceHeading": "Namazda vesvese ve dikkatin dağılması" },
+    { "question": "Zikir vesveseye karşı nasıl yapılır?", "sourceHeading": "Vesvese karşısında zikir nasıl yapılır?" },
+    { "question": "Zikir yapılmasına rağmen vesvese neden yeniden gelir?", "sourceHeading": "Zikrediyorum ama vesvese yeniden geliyor; neden?" },
+    { "question": "Geçmiş günahlar yüzünden ümit kesmek doğru mudur?", "sourceHeading": "Geçmiş günahlar yüzünden ümit kesmek" }
+  ]
+}

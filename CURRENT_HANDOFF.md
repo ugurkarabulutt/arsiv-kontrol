@@ -1,5 +1,47 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-24 Konu Rehberi FAQ, Schema ve Öncelik — Canlı Onayı Verildi
+
+- `public-archive-topic-faqs.json` ile 14 rehber için toplam 74 arama niyetli
+  soru tanımlandı. Sorular güncel arama sonuçlarında görülen ifade kalıplarına
+  göre seçildi; cevaplar dışarıdan alınmadı, rehberlerin onaylı metinlerinden
+  bağlandı.
+- `public-archive-renderer.js` her rehberde görünür, açılır `Sık Sorulan Sorular`
+  alanı ve bununla birebir eşleşen `FAQPage > Question > Answer` JSON-LD grafiği
+  üretir. Vesvese rehberindeki eski düz liste kaldırıldı.
+- `public-archive.css` masaüstü ve mobil FAQ düzenini içerir; asset sürümü
+  `20261024-topic-faq-v1`. `npm.cmd run check` 267/267 başarılı.
+- Rehber dizini ve ana sayfa konu vitrini `Allah’a Ulaşmayı Dilemek → Hidayet →
+  Mürşide Tâbiiyet → Hacet Namazı` önceliğiyle başlar. Sıra yayın tarihinden
+  bağımsızdır; Vesvese rehberi yeni olduğu için öne alınmaz. Dizin `ItemList`
+  schema sırası görünen kartlarla aynıdır.
+- Vercel preview `dpl_APLYZrJZeBctF1ShSHfJwaT8GwQ6` /
+  `https://arsiv-kontrol-5jvektznw-ugurkarabulutts-projects.vercel.app` `READY`,
+  target `preview`. Gerçek Chromium 390/1440 px kontrolde iki dizinde de ilk
+  dört rehber doğru sırada; 200 yanıt, yatay taşma olmaması ve `pageErrors=[]`
+  doğrulandı. Kullanıcı production onayı verdi.
+
+## 2026-10-24 Vesvese Konu Rehberi — Preview Onayı Bekliyor
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
+- `public-archive-topic-articles.json` içine
+  `/konu-rehberi/vesvese-nedir-nasil-kurtulunur` eklendi. Rehber 19 bölüm,
+  21 âyet kutusu, 8 sık sorulan soru ve kesin çözüm paragrafını içerir.
+- `public-archive-renderer.js` rehberi `/konu-rehberleri` dizininde temel
+  rehberlerden sonra gösterir, ana sayfaya eklemez; odaklı ilgili soru bağlantısı
+  `/arama?q=vesvese` olur. Zikir ve nefs tezkiyesi rehberlerinde karşılıklı iç
+  bağlantılar eklendi.
+- Özgün kapak `public-archive-assets/assets/topic-guide-vesvese-{480,720,1280}.webp`
+  olarak hazırlandı. Yerel Chromium 390/1440 px: görsel 480/1280 doğal
+  genişlikte yüklendi, yatay taşma yok, beş ilgili rehber linki var,
+  `pageErrors=[]`. `npm.cmd run check` 266/266 başarılı. Kanıt
+  `tmp/vesvese-guide-qa/` altındadır. Rehber kapağı Open Graph ve Twitter
+  paylaşım görseline de bağlandı.
+- Production deploy yapılmadı. Kullanıcının görsel/içerik son onayından sonra
+  commit, push, Vercel production deploy ve canlı URL/sitemap doğrulaması
+  yapılmalıdır.
+
 ## 2026-10-24 Ekip Üyesi Akışı ve Soru Yöneticisi — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal

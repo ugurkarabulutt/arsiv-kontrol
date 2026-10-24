@@ -3,6 +3,54 @@
 Bu dosya projenin kalıcı hafızası ve değişiklik günlüğüdür. Codex her oturumda
 bunu okur. Önemli kararlar, mimari ve yapılan değişiklikler buraya kaydedilir.
 
+## 2026-10-24 Konu Rehberi FAQ, Schema ve Editoryal Öncelik — Canlı Onayı Verildi
+
+- Arama sonuçlarındaki gerçek soru kalıpları incelenerek 14 konu rehberinin
+  tamamına ayrı FAQ verisi eklendi. Toplam 74 soru; dış kaynak cevabı taşımadan,
+  ilgili rehberin onaylı metnindeki başlık ve cevap bölümlerine bağlandı.
+- Her rehberde görünür `Sık Sorulan Sorular` alanı bulunur. Ekrandaki soru ve
+  cevaplarla JSON-LD içindeki `FAQPage`, `Question` ve `Answer` kayıtları birebir
+  aynıdır; gizli veya sayfada karşılığı olmayan schema üretilmez. Vesvese
+  rehberindeki eski düz soru listesi bu ortak semantik yapıya taşındı.
+- `public-archive-topic-faqs.json` rehberlerden ayrı soru niyeti sözleşmesidir;
+  cevaplar mümkün olduğunda `sourceHeading` ile rehber metninden alınır. Açılır
+  soru-cevap tasarımı klavye erişimine ve mobil yerleşime uygundur. Statik asset
+  sürümü `20261024-topic-faq-v1` olarak yenilendi.
+- Rehber dizini ve ana sayfa konu vitrini yayın tarihine göre sıralanmaz. Kalıcı
+  editoryal öncelik `Allah’a Ulaşmayı Dilemek → Hidayet → Mürşide Tâbiiyet →
+  Hacet Namazı` biçimindedir; yeni bir rehber yalnız yeni olduğu için başa geçmez.
+  Görünen dizin sırası ile schema `ItemList.position` sırası aynıdır.
+- `npm.cmd run check` başarılı; 267/267 test geçti. Vercel preview
+  `dpl_APLYZrJZeBctF1ShSHfJwaT8GwQ6` / `https://arsiv-kontrol-5jvektznw-ugurkarabulutts-projects.vercel.app`
+  `READY`, target `preview`. Gerçek Chromium 390/1440 px kontrolde iki dizinde de
+  ilk dört rehber doğru sırada, sayfalar 200, yatay taşma ve `pageErrors` yok.
+  Vesvese 8/8, Hacet Namazı 5/5 görünür/schema soru eşleşmesi doğru. Kullanıcı
+  production onayı verdi; production dağıtımı bu sürümden yapılacak.
+
+## 2026-10-24 Vesvese Konu Rehberi — Preview Onayı Bekliyor
+
+- `Vesvese Nedir? Vesveseden Nasıl Kurtulunur?` PDF metni, public konu rehberi
+  veri sözleşmesine aktarıldı. Kaynak numaraları ve süreç notları public metne
+  taşınmadı; 19 bölüm, 21 âyet kutusu ve 8 sık sorulan soru korunarak okunabilir
+  bir rehber oluşturuldu. Metin Mihr/Kur’ân kavramlarıyla sınırlandırıldı ve
+  kullanıcı tarafından yasaklanan dış terminoloji public içerikten çıkarıldı.
+- Rehber, Kur’ân’ın vesveseye karşı reçetesini Allah’a sığınmak, Allah’a ulaşmayı
+  dilemek, mürşidi Allah’tan istemek, tâbiiyet, zikir ve nefsin kalbindeki
+  afetlerin temizlenmesi bütünüyle açıklar. `Vesvese ile ilgili sorular` başlığı
+  doğrudan `vesvese` aramasına bağlandı; zikir ve nefs tezkiyesi rehberleriyle
+  çift yönlü iç bağlantı kuruldu.
+- Yüz veya insan figürü göstermeyen özgün 3:2 kapak hazırlandı: karanlık ve
+  düğümlü telkin çizgileri, aydınlıkta Kur’ân ve tesbihe doğru çözülür. 480, 720
+  ve 1280 px WebP çıktıları sırasıyla yaklaşık 25, 55 ve 152 KiB'dir. Rehber
+  `/konu-rehberleri` dizininde temel rehberlerden sonra yer alır; ana sayfaya eklenmedi.
+  Rehberlerin özgün kapakları Open Graph ve Twitter görseli olarak da kullanılır.
+- Yerel Chromium doğrulaması 390 ve 1440 px görünümde görsel yüklenmesini,
+  başlık yerleşimini, yatay taşma olmamasını, beş ilgili rehber bağlantısını ve
+  `vesvese` arama bağlantısını doğruladı; `pageErrors=[]`. `npm.cmd run check`
+  266/266 başarılı. Rehber daha sonra bütün konu rehberlerine uygulanan ortak
+  FAQ/schema katmanına bağlandı. Production deploy yapılmadı; içerik ve görsel
+  kullanıcı son onayını bekliyor.
+
 ## 2026-10-23 Ekip Üyesi Gönderim Akışı ve Soru Yöneticisi Rolü
 
 - Admin veya süper admin hesabı `Ekip Üyesi` çalışma alanındayken yalnız ekip

@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
+const publicArchiveTopicFaqs = require('../public-archive-topic-faqs.json');
 const {
   ROUTE_PATHS,
   publicArchiveFixtures,
@@ -99,8 +100,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261018-footer-discovery-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261018-footer-discovery-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261024-topic-faq-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261024-topic-faq-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -148,7 +149,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261018-footer-discovery-v1/);
+  assert.match(home, /app-icon-128\.webp\?v=20261024-topic-faq-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -977,13 +978,18 @@ test('question cards are whole-card navigable without helpful voting', () => {
   const showcaseHtml = home.slice(showcaseStart);
   assert.ok(
     showcaseHtml.indexOf('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek') <
-      showcaseHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek'),
-    'Hacet Namazı rehberi ana sayfa konu vitrininde ikinci sırada olmalı.'
+      showcaseHtml.indexOf('/public-preview/konu-rehberi/hidayet'),
+    'Allah’a Ulaşmayı Dilemek rehberi ana sayfa konu vitrininde ilk sırada olmalı.'
   );
   assert.ok(
-    showcaseHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek') <
-      showcaseHtml.indexOf('/public-preview/konu-rehberi/hidayet'),
-    'Hacet Namazı rehberi Hidayet rehberinden önce gelmeli.'
+    showcaseHtml.indexOf('/public-preview/konu-rehberi/hidayet') <
+      showcaseHtml.indexOf('/public-preview/konu-rehberi/murside-tabiiyet'),
+    'Hidayet rehberi Mürşide Tâbiiyet rehberinden önce gelmeli.'
+  );
+  assert.ok(
+    showcaseHtml.indexOf('/public-preview/konu-rehberi/murside-tabiiyet') <
+      showcaseHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek'),
+    'Mürşide Tâbiiyet rehberi Hacet Namazı rehberinden önce gelmeli.'
   );
   assert.match(home, /data-topic-showcase-slider/);
   assert.match(home, /data-topic-showcase-rail/);
@@ -1100,11 +1106,30 @@ test('topic guide index exposes every guide as a crawlable route without loading
   assert.match(preview.html, /topic-routes-archive-1280\.webp/);
   assert.match(preview.html, /pa-guide-directory-list/);
   assert.match(preview.html, /Okumaya bir konudan başlayın\./);
-  for (const slug of ['mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
+  for (const slug of ['vesvese-nedir-nasil-kurtulunur', 'mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'teslimiyet', 'ruh-nefs-fizik-vucut', 'kurana-gore-mutluluk', 'tasavvuf-nedir', 'tovbe-ve-gunahlardan-kurtulus', 'dua-ve-tevekkul']) {
     assert.match(preview.html, new RegExp(`/public-preview/konu-rehberi/${slug}`));
   }
   assert.match(preview.html, /"@type":"CollectionPage"/);
   assert.match(preview.html, /"@type":"ItemList"/);
+  const directoryHtml = preview.html.slice(preview.html.indexOf('<ol class="pa-guide-directory-list">'));
+  const prioritySlugs = [
+    'allaha-ulasmayi-dilemek',
+    'hidayet',
+    'murside-tabiiyet',
+    'hacet-namazi-ve-mursidi-allahtan-istemek'
+  ];
+  for (let index = 1; index < prioritySlugs.length; index += 1) {
+    assert.ok(
+      directoryHtml.indexOf(`/public-preview/konu-rehberi/${prioritySlugs[index - 1]}`) <
+        directoryHtml.indexOf(`/public-preview/konu-rehberi/${prioritySlugs[index]}`),
+      `Konu rehberi onceligi korunmali: ${prioritySlugs[index - 1]} -> ${prioritySlugs[index]}`
+    );
+  }
+  assert.ok(
+    directoryHtml.indexOf('/public-preview/konu-rehberi/hacet-namazi-ve-mursidi-allahtan-istemek') <
+      directoryHtml.indexOf('/public-preview/konu-rehberi/vesvese-nedir-nasil-kurtulunur'),
+    'Yeni eklenen Vesvese rehberi temel rehberlerin onune gecmemeli.'
+  );
   assert.doesNotMatch(preview.html, /<article class="pa-topic-article-body"/);
   assertOnlyPublicPreviewApi(preview.html);
 });
@@ -1433,8 +1458,59 @@ test('topic guide article renders Mürşid guide with its unique visual and prim
   assertOnlyPublicPreviewApi(preview.html);
 });
 
+test('topic guide article renders Vesvese guide with its unique visual, clear prescription and focused question link', () => {
+  const preview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/vesvese-nedir-nasil-kurtulunur');
+  assert.equal(preview.status, 200);
+  assert.match(preview.html, /Vesvese Nedir\? Vesveseden Nasıl Kurtulunur\?/);
+  assert.match(preview.html, /Kur’ân’ın vesveseye karşı reçetesi açıktır/);
+  assert.match(preview.html, /Bu, Kur’ân’daki kesin çözümdür/);
+  assert.match(preview.html, /NÂS 1-6/);
+  assert.match(preview.html, /KAF 16/);
+  assert.match(preview.html, /A’RÂF 200/);
+  assert.match(preview.html, /MÜZZEMMİL 8/);
+  assert.match(preview.html, /BAKARA 152/);
+  assert.match(preview.html, /Sık Sorulan Sorular/);
+  assert.match(preview.html, /"@type":"FAQPage"/);
+  assert.match(preview.html, /Vesveseden nasıl kurtulunur?/);
+  assert.match(preview.html, /Vesvese ile ilgili sorular/);
+  assert.match(preview.html, /href="\/public-preview\/arama\?q=vesvese"/);
+  assert.match(preview.html, /topic-guide-vesvese-480\.webp/);
+  assert.match(preview.html, /topic-guide-vesvese-720\.webp/);
+  assert.match(preview.html, /topic-guide-vesvese-1280\.webp/);
+  assert.match(preview.html, /<meta property="og:image" content="https:\/\/arsiv\.ibrahimlive\.ai\/assets\/topic-guide-vesvese-1280\.webp/);
+  assert.match(preview.html, /<meta property="og:image:type" content="image\/webp">/);
+  assert.match(preview.html, /<meta property="og:image:width" content="1280">/);
+  assert.match(preview.html, /<meta property="og:image:height" content="853">/);
+  assert.match(preview.html, /"@type":"BlogPosting"/);
+  assert.match(preview.html, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/konu-rehberi\/vesvese-nedir-nasil-kurtulunur#article"/);
+  for (const disallowed of ['ruh' + ' sağlığı', 'zihinsel' + ' sıkıntı', 'uzman' + ' desteği', 'kaygı' + ' bozukluğu']) {
+    assert.ok(!preview.html.toLocaleLowerCase('tr-TR').includes(disallowed));
+  }
+  assert.doesNotMatch(preview.html, /mih?r\.com|KuranTefsirAyet|dokumanli-sohbet|pa-topic-source-list|pa-topic-footnote/i);
+  assertOnlyPublicPreviewApi(preview.html);
+});
+
+test('every topic guide renders search-informed visible FAQs that exactly match FAQPage schema', () => {
+  for (const [slug, expectedFaqs] of Object.entries(publicArchiveTopicFaqs)) {
+    const preview = renderPublicArchivePreviewRoute(`/public-preview/konu-rehberi/${slug}`);
+    assert.equal(preview.status, 200, `${slug} rehberi açılmalı.`);
+    const detailCount = (preview.html.match(/class="pa-topic-faq-item"/g) || []).length;
+    const schemaQuestionCount = (preview.html.match(/"@type":"Question"/g) || []).length;
+    const faqPageCount = (preview.html.match(/"@type":"FAQPage"/g) || []).length;
+    assert.equal(detailCount, expectedFaqs.length, `${slug} görünür FAQ sayısı veri kaydıyla eşleşmeli.`);
+    assert.equal(schemaQuestionCount, expectedFaqs.length, `${slug} FAQ schema soru sayısı görünür sorularla eşleşmeli.`);
+    assert.equal(faqPageCount, 1, `${slug} tam bir FAQPage şeması içermeli.`);
+    assert.match(preview.html, /id="sik-sorulan-sorular"/);
+    assert.match(preview.html, /<h2 id="pa-topic-faq-title">Sık Sorulan Sorular<\/h2>/);
+    for (const faq of expectedFaqs) {
+      assert.ok(preview.html.includes(faq.question), `${slug} görünür FAQ sorusunu içermeli: ${faq.question}`);
+    }
+  }
+});
+
 test('every topic guide links 4-6 semantically related guides and preserves Mürşid reciprocity', () => {
   const guideSlugs = [
+    'vesvese-nedir-nasil-kurtulunur',
     'mursid-nedir-kurana-gore-gorevi',
     'hacet-namazi-ve-mursidi-allahtan-istemek',
     'allaha-ulasmayi-dilemek',

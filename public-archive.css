@@ -4200,6 +4200,113 @@ a.pa-chip:hover,
   font-weight: 850;
 }
 
+.pa-topic-faq {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.34fr) minmax(0, 1fr);
+  gap: 34px;
+  margin-top: 28px;
+  padding: 34px 38px;
+  color: var(--pa-text);
+  background: color-mix(in srgb, var(--pa-surface) 94%, var(--pa-mint));
+  border: 1px solid color-mix(in srgb, var(--pa-green) 22%, var(--pa-border));
+  border-radius: var(--pa-radius-md);
+  scroll-margin-top: 118px;
+}
+
+.pa-topic-faq-heading .pa-kicker {
+  margin: 0 0 8px;
+}
+
+.pa-topic-faq-heading h2 {
+  margin: 0;
+  color: var(--pa-text);
+  font-family: var(--pa-font-serif);
+  font-size: 32px;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.pa-topic-faq-list {
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--pa-border) 76%, transparent);
+}
+
+.pa-topic-faq-item {
+  border-bottom: 1px solid color-mix(in srgb, var(--pa-border) 76%, transparent);
+}
+
+.pa-topic-faq-item summary {
+  position: relative;
+  padding: 18px 42px 18px 0;
+  color: var(--pa-text);
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 820;
+  line-height: 1.42;
+  list-style: none;
+}
+
+.pa-topic-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.pa-topic-faq-item summary::after {
+  content: "+";
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  color: var(--pa-green);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 24px;
+  text-align: center;
+  transform: translateY(-50%);
+}
+
+.pa-topic-faq-item[open] summary::after {
+  content: "−";
+}
+
+.pa-topic-faq-item summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--pa-primary) 68%, #FFFFFF);
+  outline-offset: 4px;
+}
+
+.pa-topic-faq-answer {
+  padding: 0 42px 19px 0;
+}
+
+.pa-topic-faq-answer p {
+  margin: 0;
+  color: var(--pa-text-2);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  line-height: 1.72;
+}
+
+@media (max-width: 760px) {
+  .pa-topic-faq {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 26px 22px;
+  }
+
+  .pa-topic-faq-heading h2 {
+    font-size: 28px;
+  }
+
+  .pa-topic-faq-item summary {
+    padding-right: 36px;
+    font-size: 16px;
+  }
+
+  .pa-topic-faq-answer {
+    padding-right: 0;
+  }
+}
+
 .pa-topic-article-table-wrap {
   max-width: 100%;
   margin: 10px 0 32px;

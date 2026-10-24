@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { publicArchiveFixtures } = require('./public-archive-fixtures');
 const publicArchiveTopicArticles = require('./public-archive-topic-articles.json');
+const publicArchiveTopicFaqs = require('./public-archive-topic-faqs.json');
 const { publicCategorySeoIndexable } = require('./public-archive-seo');
 
 const DEFAULT_PUBLIC_ARCHIVE_BASE = '/public-preview';
@@ -18,7 +19,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261018-footer-discovery-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261024-topic-faq-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -754,25 +755,27 @@ const HERO_CONCEPT_ITEMS = [
 ];
 
 const HOME_READING_PATHS = [
-  { title: 'Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', slug: 'mursid', articleSlug: 'mursid-nedir-kurana-gore-gorevi', text: 'Mürşidin kim olduğunu, vazifesini, tayinini ve irşadın hedefini Kur’ân âyetleriyle okuyun.' },
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
-  { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
+  { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
   { title: 'Nefs Tezkiyesi', slug: 'nefs-tezkiyesi', articleSlug: 'nefs-tezkiyesi', fallbackSlug: 'nefs', text: 'Nefsin arınması ve manevi dönüşüm.' },
-  { title: 'Ruh Nedir?', slug: 'ruh', articleSlug: 'ruh-nefs-fizik-vucut', text: 'Ruhun nefs ve fizik vücuttan farklarını okuyun.' },
   { title: 'Teslimiyet Nedir?', slug: 'teslimiyet', articleSlug: 'teslimiyet', text: 'Dört teslimi ve yedi safhayı birlikte okuyun.' },
-  { title: 'Kur’ân’a Göre Mutluluk Nedir?', slug: 'mutluluk', articleSlug: 'kurana-gore-mutluluk', text: 'İç dünyada, insanlarla ve Allah ile sulh ve sükûn.' },
+  { title: 'Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', slug: 'mursid', articleSlug: 'mursid-nedir-kurana-gore-gorevi', text: 'Mürşidin kim olduğunu, vazifesini, tayinini ve irşadın hedefini Kur’ân âyetleriyle okuyun.' },
+  { title: 'Ruh Nedir?', slug: 'ruh', articleSlug: 'ruh-nefs-fizik-vucut', text: 'Ruhun nefs ve fizik vücuttan farklarını okuyun.' },
   { title: 'Tasavvuf Nedir?', slug: 'tasavvuf', articleSlug: 'tasavvuf-nedir', text: 'Kur’ân’daki İslâm’ın yaşanan teslimiyet, âdap ve hizmet bütünü.' },
+  { title: 'Kur’ân’a Göre Mutluluk Nedir?', slug: 'mutluluk', articleSlug: 'kurana-gore-mutluluk', text: 'İç dünyada, insanlarla ve Allah ile sulh ve sükûn.' },
   { title: 'Takva', slug: 'takva', text: 'Korunma, sakınma ve Allah’a yakınlık arayışı.' },
   { title: 'Tövbe ve Günahlardan Kurtuluş', slug: 'tovbe', articleSlug: 'tovbe-ve-gunahlardan-kurtulus', text: 'Tövbe, arınma ve yeniden istikamet bulma soruları.' },
   { title: 'Dua ve Tevekkül', slug: 'dua', articleSlug: 'dua-ve-tevekkul', query: 'Dua tevekkül', text: 'Kalbin talebi, tedbir ve Allah’a güvenin birlikteliği.' },
+  { title: 'Vesvese Nedir? Vesveseden Nasıl Kurtulunur?', slug: 'nefs-tezkiyesi', articleSlug: 'vesvese-nedir-nasil-kurtulunur', query: 'Vesvese', text: 'Vesvesenin kaynağını ve Kur’ân’ın gösterdiği kesin çözümü adım adım okuyun.' },
   { title: 'Namaz ve İbadet Bilinci', slug: 'namaz', query: 'Namaz ibadet bilinci', text: 'İbadetin şuuruyla ilgili soru ve cevaplar.' },
   { title: 'Kur’ân’da Hidayet Ayetleri', slug: 'hidayet', query: 'Kur’ân hidayet ayetleri', text: 'Hidayet konusunun ayet atıflarıyla takip edilmesi.' }
 ];
 
 const TOPIC_GUIDE_VISUALS = Object.freeze({
+  'vesvese-nedir-nasil-kurtulunur': { mobile: 'topic-guide-vesvese-480.webp', tablet: 'topic-guide-vesvese-720.webp', desktop: 'topic-guide-vesvese-1280.webp', width: 1280, height: 853, position: '50% 50%' },
   'mursid-nedir-kurana-gore-gorevi': { mobile: 'topic-guide-mursid-480.webp', tablet: 'topic-guide-mursid-720.webp', desktop: 'topic-guide-mursid-1280.webp', width: 1280, height: 853, position: '50% 50%' },
   'hacet-namazi-ve-mursidi-allahtan-istemek': { mobile: 'topic-showcase-hacet-namazi-480.webp', desktop: 'topic-showcase-hacet-namazi-720.webp', width: 720, height: 720 },
   'allaha-ulasmayi-dilemek': { mobile: 'topic-showcase-dilemek-480.webp', desktop: 'topic-showcase-dilemek-720.webp', width: 720, height: 720 },
@@ -1491,6 +1494,54 @@ function topicArticleBodyText(article = {}) {
     .join('\n\n'));
 }
 
+function topicArticleFaqBlockText(block = {}) {
+  if (block.type === 'paragraph') return cleanTopicArticleText(block.text);
+  if (block.type === 'evidence') {
+    return cleanTopicArticleText([block.reference, block.text].filter(Boolean).join(': '));
+  }
+  if (block.type === 'list') {
+    return (block.items || []).map(cleanTopicArticleText).filter(Boolean).join(' ');
+  }
+  if (block.type === 'table') {
+    const headers = (block.headers || []).map(cleanTopicArticleText);
+    return (block.rows || []).map(row => (row || [])
+      .map((cell, index) => {
+        const value = cleanTopicArticleText(cell);
+        return value && headers[index] ? `${headers[index]}: ${value}` : value;
+      })
+      .filter(Boolean)
+      .join(', '))
+      .filter(Boolean)
+      .join('. ');
+  }
+  return '';
+}
+
+function topicArticleFaqSourceAnswer(article = {}, sourceHeading = '', blockCount = 1) {
+  const blocks = article.blocks || [];
+  const target = publicArchiveComparable(sourceHeading);
+  const headingIndex = blocks.findIndex(block => block.type === 'heading'
+    && publicArchiveComparable(block.text) === target);
+  if (headingIndex < 0) return '';
+  const answerBlocks = [];
+  for (let index = headingIndex + 1; index < blocks.length && blocks[index].type !== 'heading'; index += 1) {
+    const text = topicArticleFaqBlockText(blocks[index]);
+    if (text) answerBlocks.push(text);
+    if (answerBlocks.length >= Math.max(1, Number(blockCount) || 1)) break;
+  }
+  return readableStructuredText(answerBlocks.join(' '));
+}
+
+function topicArticleFaqEntries(article = {}) {
+  const configs = publicArchiveTopicFaqs[String(article.slug || '').trim()] || [];
+  return configs.map(config => {
+    const question = cleanTopicArticleText(config.question);
+    const answer = cleanTopicArticleText(config.answer)
+      || topicArticleFaqSourceAnswer(article, config.sourceHeading, config.blockCount);
+    return { question, answer };
+  }).filter(entry => entry.question && entry.answer);
+}
+
 function topicArticleStructuredData(article = {}, relatedQuestions = []) {
   const canonicalPath = publicTopicArticlePath(article);
   const canonicalUrl = publicArchiveCanonicalUrl(canonicalPath);
@@ -1500,6 +1551,7 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
   const pageId = `${canonicalUrl}#webpage`;
   const breadcrumbId = `${canonicalUrl}#breadcrumb`;
   const articleImage = topicGuideImageObject(article);
+  const faqEntries = topicArticleFaqEntries(article);
   const quranMentions = (article.quranReferences || []).map(reference => {
     return publicArchiveReferenceStructuredData(reference.label);
   });
@@ -1566,10 +1618,49 @@ function topicArticleStructuredData(article = {}, relatedQuestions = []) {
       itemListElement: relatedItemList
     });
   }
+  if (faqEntries.length) {
+    graph.push({
+      '@type': 'FAQPage',
+      '@id': `${canonicalUrl}#faq`,
+      url: `${canonicalUrl}#sik-sorulan-sorular`,
+      name: `${article.title} sık sorulan sorular`,
+      inLanguage: 'tr',
+      isPartOf: { '@id': pageId },
+      mainEntity: faqEntries.map(entry => ({
+        '@type': 'Question',
+        name: entry.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: entry.answer
+        }
+      }))
+    });
+  }
   return {
     '@context': 'https://schema.org',
     '@graph': graph
   };
+}
+
+function topicArticleFaqHtml(article = {}) {
+  const faqEntries = topicArticleFaqEntries(article);
+  if (!faqEntries.length) return '';
+  return `
+    <section class="pa-topic-faq" id="sik-sorulan-sorular" aria-labelledby="pa-topic-faq-title">
+      <div class="pa-topic-faq-heading">
+        <p class="pa-kicker">Merak edilenler</p>
+        <h2 id="pa-topic-faq-title">Sık Sorulan Sorular</h2>
+      </div>
+      <div class="pa-topic-faq-list">
+        ${faqEntries.map((entry, index) => `
+          <details class="pa-topic-faq-item"${index === 0 ? ' open' : ''}>
+            <summary>${escapeHtml(entry.question)}</summary>
+            <div class="pa-topic-faq-answer"><p>${escapeHtml(entry.answer)}</p></div>
+          </details>
+        `).join('')}
+      </div>
+    </section>
+  `;
 }
 
 function topicArticleRelatedQuestions(article = {}, limit = 8) {
@@ -1677,12 +1768,13 @@ function topicArticleTocHtml(blocks = []) {
 }
 
 const TOPIC_GUIDE_PRIORITY_LINKS = Object.freeze({
+  'vesvese-nedir-nasil-kurtulunur': ['zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'tovbe-ve-gunahlardan-kurtulus'],
   'mursid-nedir-kurana-gore-gorevi': ['murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'hidayet', 'allaha-ulasmayi-dilemek', 'tasavvuf-nedir'],
   'allaha-ulasmayi-dilemek': ['hidayet', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'tasavvuf-nedir'],
   hidayet: ['allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'ruh-nefs-fizik-vucut'],
   'murside-tabiiyet': ['mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'nefs-tezkiyesi'],
-  'zikir-ve-daimi-zikir': ['nefs-tezkiyesi', 'teslimiyet', 'tasavvuf-nedir', 'ruh-nefs-fizik-vucut'],
-  'nefs-tezkiyesi': ['zikir-ve-daimi-zikir', 'ruh-nefs-fizik-vucut', 'teslimiyet', 'kurana-gore-mutluluk'],
+  'zikir-ve-daimi-zikir': ['vesvese-nedir-nasil-kurtulunur', 'nefs-tezkiyesi', 'teslimiyet', 'tasavvuf-nedir', 'ruh-nefs-fizik-vucut'],
+  'nefs-tezkiyesi': ['vesvese-nedir-nasil-kurtulunur', 'zikir-ve-daimi-zikir', 'ruh-nefs-fizik-vucut', 'teslimiyet', 'kurana-gore-mutluluk'],
   teslimiyet: ['ruh-nefs-fizik-vucut', 'tasavvuf-nedir', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
   'ruh-nefs-fizik-vucut': ['nefs-tezkiyesi', 'teslimiyet', 'zikir-ve-daimi-zikir', 'hidayet'],
   'kurana-gore-mutluluk': ['nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
@@ -1749,7 +1841,10 @@ function renderTopicGuideArticle(slug) {
   const description = compactSeoText(article.description || article.summary || publicArchiveFixtures.brand.sentence, PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX);
   const categorySlug = article.categorySlug || 'allaha-ulasmayi-dilemek';
   const category = publicCategoryBySlug(categorySlug);
-  const questionTopicTitle = category?.name || String(article.title || '').replace(/\s+Nedir\?\s*$/i, '').trim() || article.title || 'Bu konu';
+  const questionTopicTitle = article.relatedQuestionsTitle || category?.name || String(article.title || '').replace(/\s+Nedir\?\s*$/i, '').trim() || article.title || 'Bu konu';
+  const relatedQuestionsHref = article.relatedQuestionsQuery
+    ? `${PREVIEW_BASE}/arama?q=${encodeURIComponent(article.relatedQuestionsQuery)}`
+    : `${PREVIEW_BASE}/kategori/${categorySlug}`;
   const articleSeoTitle = /[?？]\s*$/.test(String(article.title || ''))
     ? article.title
     : `${article.title} Nedir?`;
@@ -1766,7 +1861,12 @@ function renderTopicGuideArticle(slug) {
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt || article.publishedAt,
       section: 'Konu Rehberi',
-      tags: article.keywords || []
+      tags: article.keywords || [],
+      imageHref: visual ? `${PUBLIC_ARCHIVE_CANONICAL_ORIGIN}/assets/${visual.desktop}?v=${PUBLIC_ARCHIVE_ASSET_VERSION}` : '',
+      imageType: visual ? 'image/webp' : '',
+      imageWidth: visual?.width,
+      imageHeight: visual?.height,
+      imageAlt: visual ? article.title : ''
     },
     searchSeedEntries: relatedQuestions,
     searchSeedCategories: [publicCategoryBySlug(article.categorySlug)].filter(Boolean),
@@ -1797,10 +1897,11 @@ function renderTopicGuideArticle(slug) {
             ${annotatedBlocks.map(block => renderTopicArticleBlock(block, article)).join('')}
           </article>
         </div>
+        ${topicArticleFaqHtml(article)}
         ${topicArticleFooterLinksHtml(article)}
         ${relatedQuestions.length ? `
           <section class="pa-section pa-topic-article-related" id="ilgili-sorular">
-            ${sectionHeader(`${questionTopicTitle} ile ilgili sorular`, 'Tümünü Gör', `${PREVIEW_BASE}/kategori/${categorySlug}`)}
+            ${sectionHeader(`${questionTopicTitle} ile ilgili sorular`, 'Tümünü Gör', relatedQuestionsHref)}
             <div class="pa-list">${relatedQuestions.map(entry => questionCard(entry, true)).join('')}</div>
           </section>
         ` : ''}
@@ -2057,13 +2158,6 @@ function homeTopicShowcaseSection() {
       articleSlug: 'allaha-ulasmayi-dilemek'
     },
     {
-      kicker: 'Özel rehber',
-      title: 'Hacet namazı ve mürşidi Allah’tan istemek',
-      text: 'Dört rekâtlık hacet namazını, kalpten talebi ve mürşidi Allah’tan istemenin yolunu okuyun.',
-      image: 'topic-showcase-hacet-namazi-720.webp',
-      articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek'
-    },
-    {
       kicker: 'Yolun yönü',
       title: 'Hidayet yolculuğu',
       text: 'Hidayetin başlangıcından istikamete kadar birbirine bağlanan kavramları takip edin.',
@@ -2076,6 +2170,13 @@ function homeTopicShowcaseSection() {
       text: 'Mürşidin Allah’tan istenmesini, tâbiiyetin anlamını ve yolculuktaki yerini keşfedin.',
       image: 'topic-showcase-tabiiyet-720.webp',
       articleSlug: 'murside-tabiiyet'
+    },
+    {
+      kicker: 'Özel rehber',
+      title: 'Hacet namazı ve mürşidi Allah’tan istemek',
+      text: 'Dört rekâtlık hacet namazını, kalpten talebi ve mürşidi Allah’tan istemenin yolunu okuyun.',
+      image: 'topic-showcase-hacet-namazi-720.webp',
+      articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek'
     },
     {
       kicker: 'Kalbin sürekliliği',
@@ -3463,7 +3564,11 @@ function renderShell({ title, description, active, content, status = 200, questi
   const canonicalHref = canonicalPath ? publicArchiveCanonicalUrl(canonicalPath) : '';
   const robotsContent = PUBLIC_ARCHIVE_NOINDEX ? 'noindex,nofollow' : pageNoindex ? 'noindex,follow' : 'index,follow';
   const shouldExposeCanonical = robotsContent === 'index,follow' && canonicalHref;
-  const shareImageHref = publicArchiveShareImageUrl();
+  const shareImageHref = String(headMeta.imageHref || '').trim() || publicArchiveShareImageUrl();
+  const shareImageType = String(headMeta.imageType || '').trim() || 'image/png';
+  const shareImageWidth = Number(headMeta.imageWidth) || 1200;
+  const shareImageHeight = Number(headMeta.imageHeight) || 630;
+  const shareImageAlt = plainText(headMeta.imageAlt || publicAppName);
   const publishedTime = publicArchiveDateIso(headMeta.publishedTime);
   const modifiedTime = publicArchiveDateIso(headMeta.modifiedTime) || publishedTime;
   const openGraphUpdatedTime = modifiedTime || PUBLIC_SHARE_UPDATED_TIME;
@@ -3511,15 +3616,15 @@ function renderShell({ title, description, active, content, status = 200, questi
   ${isArticlePage ? articleTags.map(tag => `<meta property="article:tag" content="${escapeHtml(tag)}">`).join('\n  ') : ''}
   <meta property="og:image" content="${escapeHtml(shareImageHref)}">
   <meta property="og:image:secure_url" content="${escapeHtml(shareImageHref)}">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${escapeHtml(publicAppName)}">
+  <meta property="og:image:type" content="${escapeHtml(shareImageType)}">
+  <meta property="og:image:width" content="${escapeHtml(shareImageWidth)}">
+  <meta property="og:image:height" content="${escapeHtml(shareImageHeight)}">
+  <meta property="og:image:alt" content="${escapeHtml(shareImageAlt)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(safeTitle)}">
   <meta name="twitter:description" content="${escapeHtml(safeDescription)}">
   <meta name="twitter:image" content="${escapeHtml(shareImageHref)}">
-  <meta name="twitter:image:alt" content="${escapeHtml(publicAppName)}">
+  <meta name="twitter:image:alt" content="${escapeHtml(shareImageAlt)}">
   <meta name="theme-color" content="#0D1412">
   <script data-pa-theme-boot>${themeBootScript}</script>
   <script data-pa-install-boot>${installBannerBootScript}</script>
