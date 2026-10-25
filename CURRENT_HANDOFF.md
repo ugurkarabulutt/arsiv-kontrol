@@ -34,7 +34,7 @@
   karşılaştırmasıyla doğru kabul edilip gerekçesi kullanıcıya bildirildi.
   İki çözüm kaydı, iki kullanıcı bildirimi ve sistem işlem kayıtları oluştu.
 - Veri düzeltmesi sonrası temiz production dağıtım
-  `dpl_9fFeMphbWAgUnrGZRL8gNk5kddYv` canlı alias'a alındı. `/health=ok`,
+  `dpl_E2sX4dydiyscTuntbbxAHGKWCTsL` canlı alias'a alındı. `/health=ok`,
   `/admin=200`, `X-Robots-Tag=noindex, nofollow` ve oturumsuz `/api/auth/me
   loggedIn=false` doğrulandı. Etkilenen 7 public URL'nin tamamı canlıda `200`;
   doğru metin var, eski hatalı ifade yok ve canonical canlı URL'yi gösteriyor.

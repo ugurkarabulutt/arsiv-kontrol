@@ -1140,7 +1140,7 @@ tespit edilir).
   geri bildiriminin 19'u sistem düzeltmesiyle, 4'ü kaynak karşılaştırmasıyla
   doğru bulgu olarak gerekçelendirilip kapatıldı; kullanıcı bildirimleri ve
   sistem işlem kayıtları oluşturuldu. Veri düzeltmesi sonrası temiz production
-  dağıtım `dpl_9fFeMphbWAgUnrGZRL8gNk5kddYv` canlı alias'a alındı;
+  dağıtım `dpl_E2sX4dydiyscTuntbbxAHGKWCTsL` canlı alias'a alındı;
   health/admin noindex/oturumsuz oturum kontrolleri ve etkilenen 7 public URL'nin
   doğru metin/eski hatalı metin/canonical dış kontrolleri geçti.
 
