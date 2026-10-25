@@ -485,7 +485,7 @@ for (const marker of ['rwBulkBar', 'rwBulkAction', 'setBulkAction', 'updateBulkS
 }
 const workspaceCss = fs.readFileSync(path.join(root, 'review-workspace.css'), 'utf8');
 assert(workspaceCss.includes('.rw-bulk') && workspaceCss.includes('position:sticky') && workspaceCss.includes('.rw-bulk-fixed') && workspaceCss.includes('position:fixed') && workspaceCss.includes('.rw-bulk-select'), 'Yonetim toplu islem cubugu sticky/fixed dropdown yapisiyla kalmali.');
-assert(html.includes('/review-workspace.js?v=20261023-question-manager-v1') && html.includes('/review-workspace.css?v=20261023-question-manager-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
+assert(html.includes('/review-workspace.js?v=20261025-review-ux-v1') && html.includes('/review-workspace.css?v=20261025-review-ux-v1'), 'Review workspace JS/CSS cache kiran guncel versiyon etiketiyle cagrilmali.');
 assert(html.includes("function hasQuestionManagerRole(role){return role==='question_manager';}") && html.includes('function openQuestionManagement()'), 'Soru yoneticisi rolu ve yalniz soru talepleri girisi bulunmali.');
 assert(html.includes('question-super-admin-only') && html.includes("if(hasSuperAdminRole(me?.role))loadArchivePublicSyncStatus();"), 'Soru yoneticisi public yayin senkronuna erisememeli.');
 assert(server.includes("const questionManager = (req, res, next) => canManagePublicQuestions(req.session?.role)") && server.includes("app.get('/api/public-archive/question-submissions', auth, questionManager") && server.includes("app.post('/api/public-archive/question-submissions/:id/answer', auth, questionManager"), 'Soru talepleri API yetkisi ayri soru yoneticisi politikasina baglanmali.');
@@ -562,8 +562,14 @@ if (
 if (!html.includes('renderSubmittedWorkspace') || !html.includes('Onay kuyruğuna alındı') || !html.includes('resetInputAfterApprovalSubmit')) {
   throw new Error('Onaya gonderim basarili olunca calisma kapanmali ve net basari ekrani gorunmeli.');
 }
-if (!html.includes("renderApprovalActionButton(d,'panel')") || !html.includes('corrected-body-wrap') || !html.includes('corrected-copy-btn')) {
-  throw new Error('Duzeltilmis metin bolumunde tek alt onay butonu ve kenarda modern kopyala butonu olmali.');
+if (!html.includes('d.correctedText?renderApprovalSubmitPanel(d)') || html.includes('corrected-body-wrap') || html.includes('corrected-copy-btn')) {
+  throw new Error('Karsilastirma altinda yinelenen duzeltilmis metin olmamali; tek onay paneli kalmali.');
+}
+if (!html.includes('class="analysis-input"') || !html.includes("input.style.overflowY=input.scrollHeight>maxHeight?'auto':'hidden'") || !html.includes('input.setSelectionRange(selectionStart,selectionEnd)')) {
+  throw new Error('Uzun metin alani ekran yuksekliginde sinirlanmali ve imlec konumu korunmali.');
+}
+if (!workspaceScript.includes('rwCopyAnswer') || !workspaceScript.includes('ReviewWorkspace.copyAnswer()') || !workspaceScript.includes('navigator.clipboard?.writeText') || !workspaceCss.includes('.rw-copy-answer')) {
+  throw new Error('Son duzenleme ekraninda duzenlenebilir cevap yaninda kopyalama aksiyonu bulunmali.');
 }
 if (html.includes('corrected-btns') || html.includes('onclick="downloadPDF()"') || html.includes('${renderApprovalActionButton(d)}')) {
   throw new Error('Duzeltilmis metin basliginda ikinci onay, PDF indir veya eski aksiyon satiri gorunmemeli.');

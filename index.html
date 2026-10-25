@@ -248,8 +248,6 @@ input[type="search"]:focus,select:focus{border-color:var(--gold);box-shadow:var(
 .corrected-head h3{font-size:15px;font-weight:600;}
 .btn-copy{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);color:var(--ink2);border:1px solid var(--border);padding:6px 12px;cursor:pointer;transition:all .2s;border-radius:6px;position:relative;overflow:hidden;}
 .btn-copy:hover{border-color:var(--gold);color:var(--gold);}
-.corrected-copy-btn{position:absolute;top:12px;right:12px;z-index:2;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:var(--soft-shadow);}
-body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .btn-submit-approval{font-family:'JetBrains Mono',monospace;font-size:10px;background:linear-gradient(135deg,#1f7a45,#0f4f2b);color:white;border:none;padding:7px 13px;cursor:pointer;border-radius:999px;position:relative;overflow:hidden;box-shadow:0 8px 18px rgba(31,122,69,.18);}
 .btn-submit-approval:hover{filter:brightness(1.08);transform:translateY(-1px);}
 .btn-submit-approval.sent{background:var(--grn-bg);color:var(--green);border:1px solid rgba(31,122,69,.35);box-shadow:none;cursor:default;}
@@ -298,8 +296,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .detail-original{border:1px solid var(--border);background:var(--surface2);padding:10px 12px;}
 .detail-original summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--ink2);}
 .detail-original-text{margin-top:10px;max-height:220px;overflow:auto;font-size:13px;line-height:1.65;color:var(--ink2);white-space:pre-wrap;word-break:break-word;}
-.corrected-body-wrap{position:relative;border-bottom:1px solid var(--border);}
-.corrected-body{padding:22px 128px 24px 18px;font-size:calc(16px * var(--font-scale));line-height:1.78;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
+.analysis-input{min-height:180px;max-height:min(62vh,720px);overflow-y:auto;resize:vertical;overscroll-behavior:contain;}
 .compare-panel{border:1px solid var(--bord2);background:var(--white);margin-bottom:2px;}
 .compare-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
 .compare-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -319,7 +316,7 @@ body[data-theme="dark"] .corrected-copy-btn{background:rgba(31,31,31,.92);}
 .diff-note{font-size:11px;color:var(--ink3);}
 @media(max-width:760px){.compare-grid{grid-template-columns:1fr}.compare-text{max-height:280px}}
 @media(max-width:760px){.compare-head{align-items:flex-start}.scroll-lock-control{width:100%;justify-content:space-between}.detail-answer-input{min-height:260px;font-size:16px}.detail-editor{gap:12px}}
-@media(max-width:760px){.corrected-head{align-items:flex-start}.corrected-copy-btn{top:10px;right:10px;padding:7px 12px}.corrected-body{padding:54px 18px 24px}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-content,.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%;min-width:0}.approval-submit-fields{grid-template-columns:1fr}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
+@media(max-width:760px){.corrected-head{align-items:flex-start}.approval-submit-panel,.work-audit-context{align-items:stretch}.approval-submit-content,.approval-submit-panel>div:first-child,.work-audit-context>div:first-child{width:100%;min-width:0}.approval-submit-fields{grid-template-columns:1fr}.approval-submit-panel .btn-submit-approval,.work-audit-context-actions button{width:100%;padding:12px 14px;font-size:11px}.work-audit-context-actions{width:100%}}
 @media(max-width:760px){.report-filter{align-items:stretch}.report-filter-main,.report-date-wrap{width:100%}.report-date-wrap input{flex:1;min-width:150px}}
 .batch-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:14px;}
 .batch-item:last-child{border-bottom:none;}
@@ -1346,7 +1343,7 @@ canvas{width:100%!important;}
         <button class="itab" onclick="switchInner('batch')">Toplu Yükleme</button>
       </div>
       <div class="itab-panel active" id="ipanel-text">
-        <textarea id="inputText" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="handleTextInput()" style="overflow:hidden;resize:none;min-height:180px"></textarea>
+        <textarea id="inputText" class="analysis-input" placeholder="Soru-cevap metnini buraya yapıştırın..." oninput="handleTextInput()"></textarea>
         <div class="text-health" id="textHealth">
           <span id="textCount">0 karakter</span>
           <span id="textHint">Denetlenecek metni yapıştırın.</span>
@@ -2758,8 +2755,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=20261023-question-manager-v1">
-<script src="/review-workspace.js?v=20261023-question-manager-v1"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20261025-review-ux-v1">
+<script src="/review-workspace.js?v=20261025-review-ux-v1"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -2787,7 +2784,7 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const ADMIN_CLIENT_BUILD='20261023-question-manager-v1';
+const ADMIN_CLIENT_BUILD='20261025-review-ux-v1';
 const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
 const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
@@ -2950,8 +2947,19 @@ function handleTextInput(){
   if(!input)return;
   const cleaned=cleanInputText(input.value);
   const count=cleaned.length;
+  const pageX=window.scrollX;
+  const pageY=window.scrollY;
+  const inputScrollTop=input.scrollTop;
+  const selectionStart=input.selectionStart;
+  const selectionEnd=input.selectionEnd;
+  const maxHeight=Math.max(180,Math.min(Math.round(window.innerHeight*.62),720));
   input.style.height='auto';
-  input.style.height=count===0?'180px':`${input.scrollHeight}px`;
+  const nextHeight=count===0?180:Math.min(input.scrollHeight,maxHeight);
+  input.style.height=`${Math.max(180,nextHeight)}px`;
+  input.style.overflowY=input.scrollHeight>maxHeight?'auto':'hidden';
+  input.scrollTop=inputScrollTop;
+  if(Number.isInteger(selectionStart)&&Number.isInteger(selectionEnd))input.setSelectionRange(selectionStart,selectionEnd);
+  if(window.scrollX!==pageX||window.scrollY!==pageY)window.scrollTo(pageX,pageY);
   const box=el('textHealth');
   if(el('textCount'))el('textCount').textContent=`${count.toLocaleString('tr-TR')} karakter`;
   let hint='Denetime hazır.';
@@ -4199,16 +4207,7 @@ function renderResults(d,container){
     </div></div>`:''}
     <div class="cat-grid">${catPanels}</div>
     ${d.correctedText&&currentOriginalText?renderComparePanel(currentOriginalText,d.correctedText):''}
-    ${d.correctedText?`<div class="corrected-panel">
-      <div class="corrected-head">
-        <h3>${sc<60?'Düzeltme Taslağı — Yeniden Denetim Gerekli':'Düzeltilmiş Metin'}</h3>
-      </div>
-      <div class="corrected-body-wrap">
-        <button class="btn-copy corrected-copy-btn" id="copyBtn" onclick="copyFixed()">Kopyala</button>
-        <div class="corrected-body">${esc(d.correctedText)}</div>
-      </div>
-      ${renderApprovalSubmitPanel(d)}
-    </div>`:''}`;
+    ${d.correctedText?renderApprovalSubmitPanel(d):''}`;
   setTimeout(bindCompareScrollLock,0);
 }
 
@@ -4242,26 +4241,6 @@ function copyAnalysisReport(){
     setStatus('✓ Rapor panoya kopyalandı.','ok');
     setTimeout(()=>setStatus('',''),2200);
   }).catch(()=>setStatus('Rapor kopyalanamadı.','err'));
-}
-
-function copyFixed(){
-  if(!correctedText)return;
-  navigator.clipboard.writeText(correctedText).then(()=>{
-    const btn=el('copyBtn');
-    if(btn){
-      const orig=btn.textContent;
-      btn.textContent='✓ Kopyalandı!';
-      btn.style.color='var(--green)';
-      btn.style.borderColor='var(--green)';
-      btn.style.background='var(--grn-bg)';
-      setTimeout(()=>{
-        btn.textContent=orig;
-        btn.style.color='';
-        btn.style.borderColor='';
-        btn.style.background='';
-      },2000);
-    }
-  });
 }
 
 async function downloadPDF(){

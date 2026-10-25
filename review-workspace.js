@@ -353,7 +353,7 @@ const ReviewWorkspace = (() => {
       ${qualityHtml()}
       <label class="rw-field"><span>Soru</span><textarea id="rwQuestion" oninput="ReviewWorkspace.refreshQualityControls()" ${editable?'':'readonly'} rows="3">${safe(item.questionText||'')}</textarea></label>
       <label class="rw-field"><span>Etiketler</span><textarea id="rwTags" ${editable?'':'readonly'} rows="2">${safe((item.tags||[]).join(', '))}</textarea></label>
-      <label class="rw-field"><span>Cevap taslağı</span><textarea id="rwAnswer" oninput="ReviewWorkspace.refreshQualityControls()" ${editable?'':'readonly'} rows="12" dir="auto">${safe(item.correctedText||'')}</textarea></label>
+      <div class="rw-field rw-answer-field"><div class="rw-field-head"><span>Cevap taslağı</span><button type="button" class="btn-sec rw-copy-answer" id="rwCopyAnswer" onclick="ReviewWorkspace.copyAnswer()">Cevabı Kopyala</button></div><textarea id="rwAnswer" oninput="ReviewWorkspace.refreshQualityControls()" ${editable?'':'readonly'} rows="12" dir="auto">${safe(item.correctedText||'')}</textarea></div>
       <label class="rw-field rw-member-note"><span>${memberNoteLabel}</span><textarea id="rwNote" ${noteEditable?'':'readonly'} rows="2" maxlength="1200">${safe(item.submissionNote||'')}</textarea><small>${memberNoteHelp}</small></label>
       <details class="rw-source"><summary>Kaynak ve işlem geçmişi</summary><p>İlk denetleyen: ${safe(item.name)} · ${date(item.createdAt)}</p>${item.originalText?`<pre dir="auto">${safe(item.originalText)}</pre>`:'<p>Orijinal denetim metni bu kayıtta saklanmamış.</p>'}<button class="btn-sec" onclick="ReviewWorkspace.revisions()">Sürümleri Gör</button><div id="rwRevisions"></div></details>
       <div id="rwDetailMessage" role="status" aria-live="polite"></div><div id="rwDecision"></div>
@@ -702,6 +702,26 @@ const ReviewWorkspace = (() => {
     else node('rwRevisions').innerHTML=html||'<p>Bu kayıt için henüz sürüm değişikliği yok.</p>';
     if(result.nextVersion)node('rwRevisions').insertAdjacentHTML('beforeend',`<button class="btn-sec" id="rwRevisionMore" onclick="ReviewWorkspace.revisions(${Number(result.nextVersion)})">Önceki sürümler</button>`);
   }
+  async function copyAnswer(){
+    const answer=node('rwAnswer');
+    const button=node('rwCopyAnswer');
+    const text=String(answer?.value||'');
+    if(!answer||!text){message('Kopyalanacak cevap bulunamadı.',true);return;}
+    const originalLabel=button?.textContent||'Cevabı Kopyala';
+    try{
+      if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(text);
+      else{
+        const start=answer.selectionStart,end=answer.selectionEnd,scrollTop=answer.scrollTop;
+        answer.focus({preventScroll:true});answer.select();
+        if(!document.execCommand('copy'))throw new Error('copy failed');
+        answer.setSelectionRange(start,end);answer.scrollTop=scrollTop;
+      }
+      if(button){button.textContent='Kopyalandı';button.disabled=true;setTimeout(()=>{button.textContent=originalLabel;button.disabled=false;},1600);}
+      message('Cevap panoya kopyalandı.');
+    }catch{
+      message('Kopyalama yapılamadı. Metni seçerek kopyalayabilirsiniz.',true);
+    }
+  }
   function card(row){
     return `<article class="rw-row"><div class="rw-row-main"><button class="rw-question" onclick="ReviewWorkspace.open('${row.id}')">${safe(row.questionText||'Soru eklenmemiş')}</button><div class="rw-meta"><span>İlk denetleyen: ${safe(row.name)}</span><span>${safe(labels[row.status]||row.status)}</span></div></div><button class="btn-sec rw-open" onclick="ReviewWorkspace.open('${row.id}')">İncele</button></article>`;
   }
@@ -738,7 +758,7 @@ const ReviewWorkspace = (() => {
     window.addEventListener('resize', updateBulkStickiness);
     refreshNav();
   });
-  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,card,prepareLogout,showDuplicate,refreshQualityControls,nextAnalysis,
+  return {start,switchSpace,refreshNav,allowedTab,homeTab,load,filter,search,page,open,close,act,decide,revisions,copyAnswer,card,prepareLogout,showDuplicate,refreshQualityControls,nextAnalysis,
     toggleSelect,selectPage,clearSelection,setBulkAction,bulkAction,
     workspace:()=>space, isDetailOpen:()=>!!item, dirty};
 })();

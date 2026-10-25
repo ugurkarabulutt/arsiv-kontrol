@@ -4,6 +4,12 @@ const assert = require('node:assert/strict');
 const { chromium } = require('@playwright/test');
 const { createFixture } = require('../test-support/review-fixture');
 
+async function clickReanalyze(page) {
+  const button = page.getByRole('button', { name: 'Soru ve Cevabı Denetle', exact: true });
+  if (!await button.isVisible()) await page.locator('details.rw-more > summary').click();
+  await button.click();
+}
+
 async function run() {
   let low = true;
   const fixture = await createFixture({ qualityGate: true, analyzeText: async text => ({
@@ -31,7 +37,7 @@ async function run() {
       assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
       if(name==='mobile') {
         await page.locator('#rwUseSource').check();
-        await page.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).click();
+        await clickReanalyze(page);
         await page.waitForFunction(()=>document.querySelector('#rwQualityStatus')?.textContent.includes('Düzeltme taslağı'));
         await page.getByRole('button',{name:'Onaya Gönder',exact:true}).click();
         await page.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('İşaretlenen eksikleri'));
@@ -45,7 +51,7 @@ async function run() {
           await route.fetch();
           await route.abort('failed');
         },{times:1});
-        await page.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).click();
+        await clickReanalyze(page);
         await page.waitForFunction(()=>document.querySelector('#rwQualityStatus')?.textContent.includes('son hâli denetlendi'));
         await page.waitForFunction(()=>document.querySelector('#rwDetailMessage')?.textContent.includes('sunucudan doğrulandı'));
         assert.equal(await page.locator('[data-rw-publish]').isDisabled(),false);
