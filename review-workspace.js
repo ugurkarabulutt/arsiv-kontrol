@@ -324,6 +324,14 @@ const ReviewWorkspace = (() => {
     item=result;
     renderDetail();
   }
+  function trashReasonHtml(meta,row){
+    if(!meta?.trashNote||row?.status!=='copte')return '';
+    const selfDeletedDraft=meta.statusBeforeTrash==='taslak'&&meta.trashNote==='Kullanıcı kendi taslağını sildi.';
+    const title=selfDeletedDraft?'Kullanıcı tarafından silinen taslak':`Atılma sebebi: ${safe(meta.trashReasonLabel||'Diğer')}`;
+    const context=selfDeletedDraft?'<p class="rw-trash-context">Bu kayıt onaya gönderilmedi ve yönetici tarafından geri gönderilmedi. Kullanıcı kendi çalışma taslağını çöp kutusuna taşıdı.</p>':'';
+    const duplicateLink=meta.duplicateSlug?`<a href="/soru/${encodeURIComponent(meta.duplicateSlug)}" target="_blank" rel="noopener">Yayındaki asıl soruyu aç</a>`:'';
+    return `<section class="rw-trash-reason ${selfDeletedDraft?'rw-trash-self-deleted':''}"><strong>${title}</strong><p>${safe(meta.trashNote)}</p>${context}${duplicateLink}</section>`;
+  }
   function renderDetail() {
     node('detailModal').querySelector('.modal-foot').replaceChildren();
     const editable=can('save'), meta=item.workflow||{};
@@ -347,7 +355,7 @@ const ReviewWorkspace = (() => {
     node('detailBody').innerHTML=`<div class="rw-detail"><div class="rw-record-meta"><strong>${safe(item.name)}</strong><span>${safe(statusText(item))}</span><span>No: ${safe(item.id.slice(0,8))} · Sürüm ${item.version}</span><span>${date(item.updatedAt||item.createdAt)}</span><span>${item.publication?.status==='published'?'Yayında':'Yayında değil'}</span>${item.userId===me.id?'<span>Kendi kaydınız</span>':''}${item.assigneeId?`<span>Düzeltme sorumlusu: ${safe(item.assigneeName||item.assigneeId.slice(0,8))}</span>`:''}</div>
       ${item.returnNote&&!management()?`<section class="rw-return"><strong>Yönetici geri gönderme gerekçesi</strong><p>${safe(item.returnNote)}</p></section>`:''}
       ${meta.disputed?`<p class="rw-warning">Sahiplik itirazı: ${safe(meta.disputeNote)}</p>`:''}
-      ${meta.trashNote&&item.status==='copte'?`<section class="rw-trash-reason"><strong>Atılma sebebi: ${safe(meta.trashReasonLabel||'Diğer')}</strong><p>${safe(meta.trashNote)}</p>${meta.duplicateSlug?`<a href="/soru/${encodeURIComponent(meta.duplicateSlug)}" target="_blank" rel="noopener">Yayındaki asıl soruyu aç</a>`:''}</section>`:''}
+      ${trashReasonHtml(meta,item)}
       ${management()&&item.status==='mukerrer_inceleme'?'<section id="rwDuplicateReview" class="rw-duplicate-review" aria-live="polite"><p>Mükerrer karşılaştırması yükleniyor…</p></section>':''}
       ${management()?'<section id="rwChangeSummary" class="rw-change-summary" hidden aria-live="polite"></section>':''}
       ${qualityHtml()}
