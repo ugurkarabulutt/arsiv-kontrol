@@ -2142,3 +2142,74 @@ test('15 ekim Efendimiz korumasi acik Peygamber baglamini engellemez', () => {
   assert.equal(result.score, 97);
   assert.equal(result.correctedText, 'Peygamber Efendimiz (S.A.V) şöyle buyuruyor: Hadîs.');
 });
+
+test('24 ekim Bihter geri bildirimlerindeki yanlis sapka ve anlam donusumleri puanlanmaz', () => {
+  const source = [
+    'Bu guru cahilin dünya metaı hakkında ihsanla konuştu.',
+    'Allah’a aşık olan kişi nefsine hakim olur; zalimlerin ve asi olanların yoluna uymaz.',
+    'Ve mâ fî nefsike.',
+    'Tabiî ki kalplerinin 7 şartı tamamlanmış.'
+  ].join('\n');
+  const result = finalizeResult({
+    categories: {
+      sozluk: { issues: [
+        { original: 'guru', fixed: 'gurû', rule: 'Yanlış şapka' },
+        { original: 'cahilin', fixed: 'câhilin', rule: 'Yanlış şapka' },
+        { original: 'metaı', fixed: 'metâı', rule: 'Yanlış şapka' },
+        { original: 'ihsanla', fixed: 'ihsânla', rule: 'Yanlış şapka' },
+        { original: 'aşık', fixed: 'âşık', rule: 'Yanlış şapka' },
+        { original: 'hakim', fixed: 'hâkim', rule: 'Yanlış şapka' },
+        { original: 'zalimlerin', fixed: 'zâlimlerin', rule: 'Yanlış şapka' },
+        { original: 'asi', fixed: 'âsi', rule: 'Yanlış şapka' },
+        { original: 'nefsike', fixed: 'nefsine', rule: 'Transliterasyon bozulmamalı' },
+        { original: 'Tabiî', fixed: 'Tabiatıyla', rule: 'Anlam genişletme' }
+      ] },
+      yapi: { issues: [
+        { original: 'tamamlanmış.', fixed: 'tamamlanmışlardır.', rule: 'Anlam genişletme' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('24 ekim Bihter geri bildirimlerindeki kaynak noktalama ve kitap adi korunur', () => {
+  const source = [
+    'zikir, zikir, zikir ve hizmet.',
+    'Allah’ın, kalplerini nurlandırır.',
+    'Kaynak: Acluni Keşfü’l Hafa.'
+  ].join('\n');
+  const result = finalizeResult({
+    categories: {
+      noktalama: { issues: [
+        { original: 'zikir, zikir, zikir', fixed: 'zikir, zikir, zikir,', rule: 'Yanlış virgül' },
+        { original: 'Allah’ın, kalplerini', fixed: 'Allah’ın kalplerini', rule: 'Kaynak duraklaması' },
+        { original: 'Acluni Keşfü’l Hafa', fixed: 'Acluni Keşfü’l-Hafa', rule: 'Kaynak adı' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
+});
+
+test('24 ekim dogru duzeltmeler korunur ve ayni konum iki kez puanlanmaz', () => {
+  const source = "Kur'ân'ı Kerim'de Sıratı Mastakîm anlatılır; birde örnek verilir.";
+  const result = finalizeResult({
+    categories: {
+      sozluk: { issues: [
+        { original: "Kur'ân'ı Kerim'de", fixed: "Kur'ân-ı Kerim'de", rule: 'Tamlayan eki' },
+        { original: 'Sıratı Mastakîm', fixed: 'Sıratı Mustakîm', rule: 'Sözlük standardı' },
+        { original: 'birde', fixed: 'bir de', rule: 'İmlâ standardı' },
+        { original: 'birde', fixed: 'bir de', rule: 'Aynı konum tekrar edilmemeli' }
+      ] }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 3);
+  assert.equal(result.score, 85);
+  assert.equal(result.correctedText, "Kur'ân-ı Kerim'de Sıratı Mustakîm anlatılır; bir de örnek verilir.");
+});

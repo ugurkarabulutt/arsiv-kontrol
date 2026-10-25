@@ -10,6 +10,9 @@ const PROTECTED_PATTERNS = [
   /\bdinlenmeye\b/iu,
   /\bmuhterem\s+efendimiz\b/iu
 ];
+const UNCIRCUMFLEXED_ARCHIVE_ROOTS = Object.freeze([
+  'guru', 'cahil', 'meta', 'ihsan', 'asik', 'hakim', 'zalim', 'asi'
+]);
 const CANONICAL_WORD_STANDARDS = Object.freeze({
   din: 'din',
   dinde: 'dinde',
@@ -514,6 +517,35 @@ function isSimplePunctuationAddition(original, fixed) {
   return lowered === 'şeriat kitabı' && to === `${from},`;
 }
 
+function isArchiveStandardCircumflexInsertion(original, fixed) {
+  const fromWords = canonicalText(original).match(/[\p{L}\p{N}_]+/gu) || [];
+  const toWords = canonicalText(fixed).match(/[\p{L}\p{N}_]+/gu) || [];
+  if (!fromWords.length || fromWords.length !== toWords.length) return false;
+  if (fromWords.some((word, index) => asciiFold(word) !== asciiFold(toWords[index]))) return false;
+
+  return fromWords.some((word, index) => {
+    const fixedWord = toWords[index];
+    if (hasCircumflex(word) || !hasCircumflex(fixedWord)) return false;
+    const folded = asciiFold(word).replace(/[^a-z0-9]/g, '');
+    return UNCIRCUMFLEXED_ARCHIVE_ROOTS.some(root => folded.startsWith(root));
+  });
+}
+
+function isNefsikeMeaningRewrite(original, fixed) {
+  return asciiFold(original) === 'nefsike' && asciiFold(fixed) === 'nefsine';
+}
+
+function isSingleTabiiToTabiatiylaRewrite(original, fixed) {
+  return asciiFold(original).replace(/\s+/g, '') === 'tabii'
+    && asciiFold(fixed).replace(/\s+/g, '') === 'tabiatiyla';
+}
+
+function isCompletionInflectionExpansion(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  return from === 'tamamlanmış.' && to === 'tamamlanmışlardır.';
+}
+
 function isDilekCircumflexInsertion(original, fixed) {
   const from = canonicalText(original).toLocaleLowerCase('tr-TR');
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
@@ -589,6 +621,7 @@ function isLiveFeedbackPunctuationFalsePositive(original, fixed) {
   if (from.endsWith('.') && to === `${from.slice(0, -1)}:`) return true;
   if (/^Diyelim ki;$/iu.test(from) && /^Diyelim ki,$/iu.test(to)) return true;
   if (/^mürşid\.\s+mürşidle$/iu.test(from) && /^mürşid\s+ile$/iu.test(to)) return true;
+  if (/^allah['’]ın,\s+kalplerini$/iu.test(from) && /^allah['’]ın\s+kalplerini$/iu.test(to)) return true;
   if (!/allah razı olsun/iu.test(from) && /allah razı olsun/iu.test(to)) return true;
   return false;
 }
@@ -715,7 +748,18 @@ function isBibliographySourceTitleRewrite(original, fixed) {
   if (/^fezailul\b/u.test(from) && /^fezailu'?l\b/u.test(to)) return true;
   if (/^alamet-il\b/u.test(from) && /^alamet-i'?l\b/u.test(to)) return true;
   if (/^kesfu'-hafa$/u.test(from) && /^kesfu'l-hafa$/u.test(to)) return true;
+  if (/^acluni\s+kesfu'l\s+hafa$/u.test(from) && /^acluni\s+kesfu'l-hafa$/u.test(to)) return true;
   return false;
+}
+
+function sourceProtectsRepeatedPhraseCommaBeforeVe(sourceText, original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (!from || to !== `${from},`) return false;
+  const words = foldText(from).split(/[^\p{L}\p{N}_]+/u).filter(Boolean);
+  if (words.length < 3 || new Set(words).size !== 1) return false;
+  const source = canonicalText(sourceText);
+  return new RegExp(`${escapeRegExp(from)}\\s+ve\\b`, 'iu').test(source);
 }
 
 function sourceWindow(sourceText, original) {
@@ -905,6 +949,7 @@ function isSourceContextProtectedIssue(sourceText, original, fixed) {
     || sourceProtectsTevbeSuraReference(sourceText, original, fixed)
     || sourceProtectsArabicDinLine(sourceText, original, fixed)
     || sourceProtectsBibliographyLine(sourceText, original, fixed)
+    || sourceProtectsRepeatedPhraseCommaBeforeVe(sourceText, original, fixed)
     || sourceProtectsQuotedAsNotation(sourceText, original, fixed)
     || sourceProtectsBookTitleDin(sourceText, original, fixed)
     || sourceProtectsMaideNefislerinin(sourceText, original, fixed);
@@ -1156,6 +1201,10 @@ function isProtectedChange(original, fixed) {
   if (isVarYaDeletion(original, fixed)) return true;
   if (/^\d+\.[\p{L}][^\s]*$/u.test(from) && /^\d+\.\s+[\p{L}][^\s]*$/u.test(to)) return false;
   if (isSimplePunctuationAddition(original, fixed)) return true;
+  if (isArchiveStandardCircumflexInsertion(original, fixed)) return true;
+  if (isNefsikeMeaningRewrite(original, fixed)) return true;
+  if (isSingleTabiiToTabiatiylaRewrite(original, fixed)) return true;
+  if (isCompletionInflectionExpansion(original, fixed)) return true;
   if (isDilekCircumflexInsertion(original, fixed)) return true;
   if (isIstiyakSplitRewrite(original, fixed)) return true;
   if (isSeriatiCommaDeletion(original, fixed)) return true;

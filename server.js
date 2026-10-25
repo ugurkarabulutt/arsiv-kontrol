@@ -4672,7 +4672,7 @@ function correctionHistoryStatus(row = {}) {
 
 function isCorrectionCandidateRow(row = {}, pkg = {}, options = {}) {
   const status = correctionHistoryStatus(row);
-  if (HIDDEN_HISTORY_STATUSES.includes(status) || isChunkHistoryRow(row)) {
+  if (HIDDEN_HISTORY_STATUSES.includes(status) || isChunkHistoryRow(row) || (status === 'copte' && options.includeHiddenReported)) {
     return Boolean(options.includeHiddenReported);
   }
   return (pkg.statuses || CORRECTION_DEFAULT_STATUSES).includes(status);
@@ -11169,7 +11169,8 @@ app.post('/api/correction-packages/:id/apply', auth, admin, superAdmin, async (r
       if (update.corrected_text !== undefined && sample?.userId && ['bekliyor', 'onaylandi'].includes(correctionHistoryStatus(sample))) {
         await markSubmittedCorrectedHash(sample.userId, update.corrected_text || '', historyId, correctionHistoryStatus(sample));
       }
-      if (update.question_text !== undefined && correctionHistoryStatus(sample) === 'onaylandi') {
+      if ((update.question_text !== undefined || update.corrected_text !== undefined)
+          && correctionHistoryStatus(sample) === 'onaylandi') {
         await publishApprovedHistoryRecord(historyId);
       }
       appliedRecords++;
@@ -11280,7 +11281,8 @@ app.post('/api/correction-packages/:id/revert', auth, admin, superAdmin, async (
     for (const [historyId, update] of updatesByHistory.entries()) {
       const { data: updatedRows, error: updateError } = await supabase.from('history').update(update).eq('id', historyId).select('status');
       if (updateError) throw new Error(updateError.message);
-      if (update.question_text !== undefined && updatedRows?.[0]?.status === 'onaylandi') {
+      if ((update.question_text !== undefined || update.corrected_text !== undefined)
+          && updatedRows?.[0]?.status === 'onaylandi') {
         await publishApprovedHistoryRecord(historyId);
       }
     }
@@ -14463,6 +14465,13 @@ GÜNCEL ÜST ÖNCELİKLİ SÖZLÜK KARARLARI:
 - "sure de" bağlaç olan de ise "surede" yapma.
 - "Tabiatıyla" kelimesini "Tabiî ki" diye değiştirme.
 - "Tabi ki" / "Tabii ki" ifadesini "Tabiatıyla" diye değiştirme.
+- Tek başına "Tabiî" kelimesini "Tabiatıyla" diye genişletme; kaynakta hangi ifade varsa onu koru.
+- Arşiv standardında guru, cahil, meta, ihsan, aşık, hakim, zalim ve asi kelime aileleri şapkasızdır. Ekli biçimlerine de şapka ekleme: gurû, câhil, metâ, ihsân, âşık, hâkim, zâlim veya âsi üretme.
+- Âyetin Arapça okunuşu/transliterasyonu içindeki kelimeleri Türkçeleştirme veya anlamına göre değiştirme; özellikle "nefsike" kelimesini "nefsine" yapma.
+- "zikir, zikir, zikir ve ..." gibi aynı kelimenin tekrarından sonra "ve" bağlacı geliyorsa son kelimeden sonra virgül ekleme.
+- Kaynaktaki "Allah’ın, kalplerini" duraklamasını otomatik olarak virgülsüzleştirme.
+- Kaynak/bibliyografya satırındaki "Acluni Keşfü’l Hafa" yazımına otomatik tire ekleme.
+- "tamamlanmış." ifadesini "tamamlanmışlardır." gibi kişi ve zaman eki ekleyerek genişletme; bu anlam/yapı değişikliğidir.
 - "Allah (cc.)" ifadesini "Allah (A.S)" yapma; (A.S) peygamber isimleri içindir.
 - "ahlaki" sıfatını "ahlakı" diye değiştirme.
 - "ardarda" ve "aciz" kullanımları geri bildirim kararına göre bu bağlamlarda korunur.

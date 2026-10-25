@@ -835,11 +835,20 @@ if (
 if (
   !server.includes("const CORRECTION_ALLOWED_FIELDS = ['question_text', 'corrected_text', 'summary']") ||
   !server.includes('update.question_text !== undefined') ||
+  !server.includes('update.corrected_text !== undefined') ||
+  !server.includes("status === 'copte' && options.includeHiddenReported") ||
   !html.includes('id="correctionFieldQuestion"') ||
   !html.includes("fields.push('question_text')") ||
   !html.includes("field==='question_text'?'Soru metni'")
 ) {
   throw new Error('Gecmis Duzeltme soru metni kapsami ve onayli public senkronu eksik.');
+}
+if (
+  !server.includes('guru, cahil, meta, ihsan, aşık, hakim, zalim ve asi') ||
+  !server.includes('"nefsike" kelimesini "nefsine" yapma') ||
+  !server.includes('"tamamlanmış." ifadesini "tamamlanmışlardır."')
+) {
+  throw new Error('24 Ekim Bihter geri bildirimlerinden turetilen AI kalite kurallari korunmali.');
 }
 if (
   !html.includes('Onay Bekleyen Düzeltmeler') ||
