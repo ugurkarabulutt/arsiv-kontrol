@@ -1,5 +1,43 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-25 Denetim Kullanılabilirliği ve Bihter Geri Bildirimleri — Production
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
+- Uzun metin denetiminde yazı alanı kontrollü yükseklik ve kendi kaydırmasıyla
+  çalışır; imleç/sayfa konumu korunur. Karşılaştırmalı ekran kaldı, ikinci
+  salt-okunur düzeltilmiş metin kopyası kaldırıldı; düzenlenebilir cevap
+  alanında güvenli `Metni Kopyala` işlemi var. Commit `d3ee96f`.
+- Kullanıcının kendi sildiği düşük skorlu taslaklar artık yönetimden geri
+  gönderilmiş gibi görünmez; `Kullanıcı tarafından silinen taslak` bağlamı ve
+  açıklaması gösterilir. Bihter Oksak'ın iki kaydı canlı DB'de bu durumla
+  doğrulandı. Commit `59780ca`.
+- AI kalite katmanı; guru/cahil/meta/ihsan/aşık/hakim/zalim/asi kelime
+  ailelerine yanlış şapka eklenmesini, âyet transliterasyonundaki `nefsike`
+  ifadesinin değiştirilmesini, `Tabiî` ifadesinin `Tabiatıyla` diye
+  genişletilmesini, tekrar sonuna yanlış virgül eklenmesini, kaynak virgülü ve
+  kitap adını bozmayı, `tamamlanmış.` ifadesine kişi eki eklemeyi engeller.
+  Doğru `Kur'ân-ı`, `Mustakîm` ve `bir de` düzeltmeleri korunur. Commit
+  `6fec68c`; `npm.cmd run check` 271/271 başarılı.
+- Production aday dağıtım `dpl_C8PXPocXnxyRVoekDqNBNmfm991D` üzerinde iki
+  gerçek OpenAI probu yapıldı: bildirilen 14 yanlış dönüşümün tümü korundu;
+  doğru `Kur'ân-ı`, `Mustakîm`, `bir de` düzeltmeleri üretildi. Geçici normal
+  kullanıcı, iki taslak ve test logları tamamen temizlendi.
+- Geçmiş etki taramasında yalnız kaynak/bulgu eşleşmesi kanıtlanan 10 kayıt
+  düzeltildi; bunlara bağlı 7 public cevap hedef ifadelerde yenilendi. Paket
+  `bihter-feedback-quality-20261025-v1`; 10 tam eski/yeni metin
+  `content_correction_log` içinde geri alınabilir olarak saklandı. 7 kaydın
+  22 semantik arama belgesi yeniden üretildi; gönderim parmak izleri yenilendi.
+- Bihter Oksak'ın 23 geri bildirimi kapatıldı: 19 yanlış AI dönüşümü sistem ve
+  geçmiş kayıt düzeltmesiyle çözüldü; 4 bulgu (`Kur'ân-ı`, `Mustakîm`, kaynakta
+  iki ayrı `birde` ve sonradan gelen iki ayrı `Kur'ân-ı Kerim`) kaynak
+  karşılaştırmasıyla doğru kabul edilip gerekçesi kullanıcıya bildirildi.
+  İki çözüm kaydı, iki kullanıcı bildirimi ve sistem işlem kayıtları oluştu.
+- Canlı alias şu anda `dpl_C8PXPocXnxyRVoekDqNBNmfm991D` dağıtımındadır;
+  `/health=ok`, `/admin=200`, `X-Robots-Tag=noindex, nofollow` ve oturumsuz
+  `/api/auth/me loggedIn=false` doğrulandı. Veri düzeltmesi sonrası temiz
+  yeniden dağıtım ve 7 public URL dış doğrulaması bu turun son adımıdır.
+
 ## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal

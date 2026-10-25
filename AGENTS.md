@@ -1119,6 +1119,30 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-25
+
+- **Denetim kullanılabilirliği ve Bihter geri bildirimleri kalıcı olarak
+  düzeltildi:** Uzun metin alanı kontrollü kaydırma ve imleç/sayfa konumu
+  korumasına alındı; karşılaştırmalı görünüm korunurken yinelenen salt-okunur
+  düzeltilmiş metin kaldırıldı ve düzenlenebilir cevap alanına güvenli kopyalama
+  eklendi (`d3ee96f`). Kullanıcının kendi sildiği düşük skorlu taslaklar,
+  yönetimden geri gönderilmiş kayıtlardan açıkça ayrıldı (`59780ca`). AI kalite
+  katmanı yanlış şapka, âyet transliterasyonu, kaynak noktalaması/kitap adı,
+  `Tabiî` genişletmesi, tekrar virgülü ve anlam eki dönüşümlerine karşı kaynak
+  korumalarıyla güçlendirildi; doğru `Kur'ân-ı`, `Mustakîm` ve `bir de`
+  düzeltmeleri korunur (`6fec68c`). `npm.cmd run check` 271/271 başarılı.
+  Production adayında iki gerçek OpenAI uçtan uca testi geçti; geçici normal
+  kullanıcı ve test verileri tamamen temizlendi. Kanıtlı geçmiş etki için
+  `bihter-feedback-quality-20261025-v1` paketiyle 10 history kaydı ve bunlara
+  bağlı 7 public cevap hedef ifadelerde düzeltildi; 10 eski/yeni tam metin
+  `content_correction_log` içinde geri alınabilir, 22 semantik arama belgesi
+  yeniden indekslendi ve 8 gönderim parmak izi yenilendi. Bihter Oksak'ın 23
+  geri bildiriminin 19'u sistem düzeltmesiyle, 4'ü kaynak karşılaştırmasıyla
+  doğru bulgu olarak gerekçelendirilip kapatıldı; kullanıcı bildirimleri ve
+  sistem işlem kayıtları oluşturuldu. Production dağıtım
+  `dpl_C8PXPocXnxyRVoekDqNBNmfm991D` canlı alias'a alındı; health/admin
+  noindex/oturumsuz oturum kontrolleri geçti.
+
 ### 2026-10-21
 
 - **Onay anında tam soru+cevap mükerrer inceleme akışı canlıya alındı:** Yönetici
