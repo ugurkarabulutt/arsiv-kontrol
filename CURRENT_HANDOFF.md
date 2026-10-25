@@ -33,10 +33,13 @@
   iki ayrı `birde` ve sonradan gelen iki ayrı `Kur'ân-ı Kerim`) kaynak
   karşılaştırmasıyla doğru kabul edilip gerekçesi kullanıcıya bildirildi.
   İki çözüm kaydı, iki kullanıcı bildirimi ve sistem işlem kayıtları oluştu.
-- Canlı alias şu anda `dpl_C8PXPocXnxyRVoekDqNBNmfm991D` dağıtımındadır;
-  `/health=ok`, `/admin=200`, `X-Robots-Tag=noindex, nofollow` ve oturumsuz
-  `/api/auth/me loggedIn=false` doğrulandı. Veri düzeltmesi sonrası temiz
-  yeniden dağıtım ve 7 public URL dış doğrulaması bu turun son adımıdır.
+- Veri düzeltmesi sonrası temiz production dağıtım
+  `dpl_9fFeMphbWAgUnrGZRL8gNk5kddYv` canlı alias'a alındı. `/health=ok`,
+  `/admin=200`, `X-Robots-Tag=noindex, nofollow` ve oturumsuz `/api/auth/me
+  loggedIn=false` doğrulandı. Etkilenen 7 public URL'nin tamamı canlıda `200`;
+  doğru metin var, eski hatalı ifade yok ve canonical canlı URL'yi gösteriyor.
+  Bihter Oksak için açık geri bildirim sayısı `0`; iki çözüm grubundaki toplam
+  23 kayıt kapalı ve iki kullanıcı çözüm bildirimi mevcut.
 
 ## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Production Tamamlandı
 
