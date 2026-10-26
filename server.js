@@ -14754,7 +14754,17 @@ async function isDuplicate(req, text) {
     const { data, error } = await supabase.rpc('review_find_existing_analysis', {
       p_actor: req.session.userId, p_text: text, p_hashes: candidateTextHashes(text)
     });
-    if (error) throw new Error('Mevcut kayıt kontrolü tamamlanamadı. Metniniz korunuyor; tekrar deneyin.');
+    if (error) {
+      console.error('[analysis-duplicate-check] lookup failed', {
+        code: error.code || '',
+        message: error.message || '',
+        details: error.details || '',
+        hint: error.hint || '',
+        actorId: req.session.userId,
+        textLength: String(text || '').length
+      });
+      throw new Error('Mevcut kayıt kontrolü tamamlanamadı. Metniniz korunuyor; tekrar deneyin.');
+    }
     return data ? { id: data.id, displayStatus: memberDisplayStatus(data.status) } : null;
   }
   if (!HAS_TEXT_HASH) return null;

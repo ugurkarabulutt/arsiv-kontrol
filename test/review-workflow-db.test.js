@@ -57,6 +57,12 @@ before(async () => {
   const duplicateReviewMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261020143000_duplicate_review_queue.sql'),'utf8');
   await db.exec(duplicateReviewMigration);
   await db.exec(duplicateReviewMigration);
+  const indexedDuplicateLookupMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261026211929_indexed_analysis_duplicate_lookup.sql'),'utf8');
+  await db.exec(indexedDuplicateLookupMigration);
+  await db.exec(indexedDuplicateLookupMigration);
+  const indexedDuplicatePredicateMigration = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261026212247_indexed_analysis_duplicate_lookup_predicate.sql'),'utf8');
+  await db.exec(indexedDuplicatePredicateMigration);
+  await db.exec(indexedDuplicatePredicateMigration);
 });
 beforeEach(async () => {
   await db.exec('reset role; truncate public.history_revisions,public.public_question_redirects,public.public_qa,public.alerts,public.admin_action_log,public.history,public.users cascade;');
@@ -511,6 +517,35 @@ test('repeated creation returns existing source, corrected text and respects sco
   const recreated=(await insert()).rows[0];assert.notEqual(recreated.id,h.id);
   const attempts=await Promise.allSettled([insert(),insert()]);assert.ok(attempts.every(r=>r.status==='rejected'));
   assert.equal((await db.query("select count(*)::int as n from history where status='taslak'")).rows[0].n,1);
+});
+
+test('indexed duplicate lookup stays exact and uses bounded work with 10,000 records', async () => {
+  const longText=`Uzun denetim metni\n\n${'Aynı satırdaki içerik korunur. '.repeat(1550)}`;
+  await db.query(`insert into history(user_id,status,filename,original_text,corrected_text,created_at)
+    select $1,'geri_gonderildi','Ölçek kaydı '||g,'Kaynak metin '||g,'Düzeltilmiş metin '||g,now()+(g||' milliseconds')::interval
+    from generate_series(1,9999) g`,[ids.user]);
+  const target=(await db.query(`insert into history(user_id,status,filename,original_text,corrected_text,created_at)
+    values($1,'bekliyor','Uzun ölçek kaydı',$2,'Son düzeltilmiş cevap',now()) returning id`,[ids.user,longText])).rows[0];
+
+  const started=performance.now();
+  const original=(await db.query('select review_find_existing_analysis($1,$2) as h',[ids.user,longText])).rows[0].h;
+  const corrected=(await db.query('select review_find_existing_analysis($1,$2) as h',[ids.user,'Son   düzeltilmiş\ncevap'])).rows[0].h;
+  const elapsed=performance.now()-started;
+  assert.equal(original.id,target.id);
+  assert.equal(corrected.id,target.id);
+  assert.equal((await db.query('select review_find_existing_analysis($1,$2) as h',[ids.other,longText])).rows[0].h,null);
+  assert.ok(elapsed<3000,`indexed lookups took ${elapsed.toFixed(1)}ms`);
+
+  const plan=(await db.query(`explain select id from history
+    where status not in ('copte','chunk_draft','submitted_part')
+      and coalesce(filename,'') !~ ' - Parça [0-9]+/[0-9]+$'
+      and review_text_key(original_text)<>''
+      and review_text_key_hash(original_text)=review_text_key_hash($1)
+      and review_text_key(original_text)=review_text_key($1)`,[longText])).rows.map(row=>row['QUERY PLAN']).join('\n');
+  assert.match(plan,/history_original_text_key_hash_idx/);
+  const definition=(await db.query("select pg_get_functiondef('review_find_existing_analysis(uuid,text,text[])'::regprocedure) as sql")).rows[0].sql;
+  assert.match(definition,/review_text_key\(h\.original_text\)\s*<>\s*''/);
+  assert.match(definition,/review_text_key\(h\.corrected_text\)\s*<>\s*''/);
 });
 
 test('new lookup and draft protection RPCs are private', async () => {
