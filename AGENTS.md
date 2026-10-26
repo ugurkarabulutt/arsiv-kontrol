@@ -1,5 +1,27 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-27 Uzun Metin Mükerrer Kontrolü Ölçek Düzeltmesi
+
+- Uzun metin denetimlerinin `Mevcut kayıt kontrolü tamamlanamadı` ile durmasının kök
+  nedeni OpenAI veya tarayıcı değil, `review_find_existing_analysis` RPC'sinin her
+  istekte kullanıcının bütün `original_text` ve `corrected_text` alanlarını yeniden
+  normalize ederek taramasıydı. Canlı PostgreSQL loglarında işlem timeout yöneticisi
+  tarafından sonlandırılıyordu.
+- `20261026211929_indexed_analysis_duplicate_lookup.sql` normalize metinler için iki
+  kısmi ifade indeksi ve çakışma güvenli hash-aday araması ekledi. Hash yalnız aday
+  bulur; mükerrer kararı normalize edilmiş tam metin eşitliğiyle verilmeye devam eder.
+  `20261026212247_indexed_analysis_duplicate_lookup_predicate.sql` kısmi indeks
+  koşullarını sorguda açıkça tekrar ederek production planlayıcısının indeksleri
+  kullanmasını garanti eder. Mevcut kayıt, metin, sahiplik ve durumlar değişmedi.
+- 10.000 sentetik kayıt ve yaklaşık 46 bin karakterlik metinle kaynak/düzeltilmiş
+  metin eşleşmesi, kullanıcı izolasyonu, migration idempotency, gizli RPC yetkileri ve
+  eşzamanlı taslak koruması test edildi. `npm.cmd run check` 272/272 başarılı.
+- Canlıda 46 bin karakterlik eşleşmeyen kontrol 1.256 ms'den 15-22 ms aralığına indi;
+  doğrudan sorgu planı `history_original_text_key_hash_idx` kullanımını ve 0,155 ms
+  yürütme süresini gösterdi. 72.282 karakterlik gerçek kayıt doğru kimlikle eşleşti.
+- Sunucu artık RPC arızasında metni loglamadan hata kodu, kullanıcı kimliği ve metin
+  uzunluğunu yapılandırılmış olarak kaydeder. Runtime commit `e1337ad`.
+
 ## 2026-10-24 Sıratı Mustakîm Konu Rehberi — Production Tamamlandı
 
 - Kullanıcının sağladığı `Sıratı Mustakîm Nedir? Allah’a Ulaştıran Yol Nasıl

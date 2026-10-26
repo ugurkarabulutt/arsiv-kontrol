@@ -1,5 +1,24 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-27 Uzun Metin Denetimi Ölçek Düzeltmesi — Canlı DB Tamamlandı
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
+- Hacer Terzi ve diğer kullanıcıların uzun metinlerde aldığı `Mevcut kayıt kontrolü
+  tamamlanamadı` hatası PostgreSQL timeout'uydu. Eski RPC aynı kullanıcıdaki bütün uzun
+  kaynak ve cevap metinlerini her denemede yeniden normalize ediyordu; AI çağrısına
+  ulaşılmadan istek kesiliyordu.
+- Canlı Supabase'e `indexed_analysis_duplicate_lookup` ve
+  `indexed_analysis_duplicate_lookup_predicate` migration'ları uygulandı. İki kısmi
+  ifade indeksi üzerinden aday bulunuyor; kesin karar hâlâ normalize tam metin
+  karşılaştırmasıyla veriliyor. Veri veya yayın durumu değiştirilmedi.
+- Yerel 10.000 kayıt yük testi, 46 bin karakterlik kaynak ve düzeltilmiş cevap
+  eşleşmesi, kullanıcı izolasyonu, indeks planı, eşzamanlı taslak koruması ve migration
+  tekrar uygulanabilirliği başarılı. `npm.cmd run check` 272/272 geçti.
+- Canlı performans: ilk eski plan 1.256 ms; düzeltme sonrası RPC 15-22 ms. Doğrudan
+  plan yeni indeksi kullandı ve 0,155 ms yürütüldü. Canlı 72.282 karakterlik mevcut
+  kayıt doğru kimlikle bulundu. Runtime commit `e1337ad`.
+
 ## 2026-10-25 Denetim Kullanılabilirliği ve Bihter Geri Bildirimleri — Production
 
 - Çalışma `.codex-admin-review-actions-fix`, dal
