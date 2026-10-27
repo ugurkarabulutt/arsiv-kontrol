@@ -1934,6 +1934,72 @@ test('ayni bulgu kategoriler arasinda kaynak adedinden fazla puan kirmaz', () =>
   assert.equal(result.categories.imla.count + result.categories.sozluk.count, 1);
 });
 
+test('27 Ekim acik feedback donusumleri kaynak ve anlam butunlugunu korur', () => {
+  const exactCases = [
+    ['Nefsinin hevasına göre hareket etmez.', 'hevasına', 'hevâsına'],
+    ["Allah'ın ezelî ve ebedî tek dîni İslâm'dır.", 'dîni', 'dinî'],
+    ['Kulluk, abdlık müessesesidir.', 'abdlık', 'abd olmak'],
+    ['Yolun tayin edilmesi Allah’a aittir.', 'tayin', 'tâyin'],
+    ['Bu sureden sonra açıklama yapılır.', 'sureden', 'Surenin'],
+    ['Allah’a ulaşmayı dilemek.', 'Allah’a ulaşmayı dilemek.', 'Allah’a ulaşmayı dilemek'],
+    ['Ruhun teslimi gerçekleşir.', 'teslimi', 'teslim'],
+    ['Yüzünü vechini Allah’a döndürür.', 'vechini', 'vechimizi'],
+    ['Allah ile bile olarak yaşamak ister.', 'Allah ile bile olarak', 'Allah ile olarak'],
+    ["Mehdi (A.S)'ın vazifesi açıklanır.", "Mehdi (A.S)'ın", "Mehdi (A.S)'in"],
+    ["Kaynak: Keşf’ul Hafâ, cilt 1.", 'Keşf’ul Hafâ', 'Keşfü’l Hafa'],
+    ['Kaybettiğimiz derecelerle açıklanır.', 'derecelerle', 'derecatla'],
+    ['Mürşide tâbiiyet gerçekleşir.', 'tâbiiyet', 'tâbîyet'],
+    ['Allah Sübhan’dır (münezzehtir).', 'Sübhan’dır', 'münezzehtir'],
+    ["MİSAK, AHD VE YEMİN’NİN AÇIKLAMASI", 'YEMİN’NİN', "YEMİN'NİN"]
+  ];
+
+  for (const [source, original, fixed] of exactCases) {
+    const result = finalizeResult({ categories: { imla: { issues: [{ original, fixed, rule: 'AI önerisi' }] } } }, source);
+    assert.equal(result.totalErrors, 0, `${original} -> ${fixed}`);
+    assert.equal(result.score, 100, `${original} -> ${fixed}`);
+    assert.equal(result.correctedText, source, `${original} -> ${fixed}`);
+  }
+
+  const referenceCases = [
+    ['19/MERYEM-72 hudâ kelimesi geçer.', 'hudâ', 'hidayet'],
+    ["2/BAKARA-37 Rahîm’dir (rahmet sahibidir).", 'Rahîm’dir (', 'Rahîm’dir. ('],
+    ['3/ÂLİ İMRÂN-18 hakîm(hakîmun).', 'hakîm(hakîmun).', 'hakîm (hakîmun).'],
+    ['9/TEVBE-104 tevbetu ifadesi yer alır.', 'tevbetu', 'tövbetu'],
+    ['2/BAKARA-20 Allah her şeyi bilendir.', 'her şeyi', 'herşeyi'],
+    ['ÂYET-İ KERİME: O, her şeyden haberdardır.', 'her şeyden', 'herşeyden'],
+    ['SLAYT 7: Safhalar ardarda anlatılır.', 'ardarda', 'art arda'],
+    ['ÂYET: Bu birşey değildir.', 'birşey', 'bir şey'],
+    ['HADÎS-İ ŞERİF: Kalpte iman vardır.', 'iman', 'îmân'],
+    ['1. Her Resûl görev yapar.', 'Her Resûl', 'Her resûl'],
+    ['ÂYET: Bu acaip bir açıklamadır.', 'acaip', 'acayip'],
+    ['HADÎS KAYNAĞI: Kur’an ahlâkı anlatılır.', 'Kur’an', 'Kur’ân'],
+    ['1/FÂTİHA-3 er rahmânir rahîm.', 'rahmânir rahîm', 'rahmânirrahîm'],
+    ['1/FÂTİHA-2 El hamdu lillâhi rabbil âlemîn.', 'El hamdu', 'Elhamdu'],
+    ["3/ÂLİ İMRÂN-7 ulü’l elbâbtan bahsedilir.", 'ulü’l elbâbtan', "ulûl'elbabtan"],
+    ['Efendimiz bir hadîs-i şerif buyuruyor.', 'hadîs-i şerif', 'Hadîs-i Şerif'],
+    ['4/NİSÂ-171 dîninizden dönmeyin.', 'dîninizden', 'dininizden'],
+    ['5/MÂİDE-3 dîninizi tamamladım.', 'dîninizi', 'dininizi'],
+    ['109/KÂFİRÛN-6 dîninden ayrıdır.', 'dîninden', 'dininden']
+  ];
+
+  for (const [source, original, fixed] of referenceCases) {
+    const result = finalizeResult({ categories: { imla: { issues: [{ original, fixed, rule: 'AI önerisi' }] } } }, source);
+    assert.equal(result.totalErrors, 0, `${original} -> ${fixed}`);
+    assert.equal(result.score, 100, `${original} -> ${fixed}`);
+    assert.equal(result.correctedText, source, `${original} -> ${fixed}`);
+  }
+
+  const alreadyProtectedCases = [
+    ['Müddessir Suresi açıklanıyor.', 'Müddessir', 'MÜDDESSİR'],
+    ['Yûnus-7 ve 8’de buyuruluyor:', 'Yûnus-7 ve 8’de buyuruluyor:', 'Yûnus-7 ve 8’de buyuruluyor.']
+  ];
+  for (const [source, original, fixed] of alreadyProtectedCases) {
+    const result = finalizeResult({ categories: { noktalama: { issues: [{ original, fixed, rule: 'AI önerisi' }] } } }, source);
+    assert.equal(result.totalErrors, 0, `${original} -> ${fixed}`);
+    assert.equal(result.correctedText, source, `${original} -> ${fixed}`);
+  }
+});
+
 
 test('bir araya lazim gelen ve art arda ayri yazilir', () => {
   const source = 'İnsanlar biraraya gelir; lâzımgelen yapılır ve ardarda ilerlenir.';

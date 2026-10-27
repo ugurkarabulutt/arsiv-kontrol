@@ -16396,3 +16396,7 @@ if (require.main === module) {
 }
 
 module.exports = app;
+module.exports.maintenance = {
+  publishApprovedHistoryRecord,
+  ready: () => startupReady
+};

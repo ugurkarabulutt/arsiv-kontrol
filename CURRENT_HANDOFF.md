@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Kod Hazır
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
+- Canlıdaki 41 açık geri bildirim 35 bağlı kayıtla ve asıl kaynak metinleriyle tek tek
+  eşleştirildi. Deneme paketinde 33 kayıtta 39 hedef yanlış dönüşüm bulundu; 3 kayıt
+  zaten doğru/eşdeğer durumda. Çok geçen `hidayet`, `Kur'ân`, `abd olmak`, `iman`
+  gibi sözcüklerde yalnız kaynaktaki ilgili konuma en yakın yanlış dönüşüm geri alınır.
+- `analysis-core.js` bu vakaları gelecek denetimlerde skor ve düzeltilmiş metin dışında
+  bırakacak kaynak/anlam korumalarını içerir. `scripts/resolve-open-feedback-20261027.js`
+  optimistic-lock, geri alınabilir içerik logu, public/semantik indeks yenileme,
+  kullanıcı bildirimi ve admin işlem iziyle tekrar çalıştırılabilir düzeltme paketidir.
+- `node --test test/feedback-reconciliation.test.js` 3/3 ve tam
+  `npm.cmd run check` 279/279 başarılı. Sonraki adım: runtime commit/push/deploy,
+  ardından `--apply`, canlı DB/public/arama/bildirim doğrulaması ve bu kaydı nihai
+  production kanıtıyla güncellemek.
+
 ## 2026-10-27 Veritabanı Güvenilirlik ve Arama Performansı — Canlı DB Tamamlandı
 
 - Canlı Supabase loglarında tekrarlanan üç teknik kusur giderildi: eksik
@@ -15,9 +32,9 @@
   464 ms'ye indi ve 48 sonuç döndürdü; 5 saniyelik uygulama sınırının altında kaldı.
 - Migration `20261027171035_repair_search_read_and_analysis_metadata.sql`; schema ve
   regresyon testi aynı sözleşmeyi taşır. `npm.cmd run check` 275/275 başarılı.
-- Canlı DB migration uygulandı. Runtime commit/push/deploy bu kaydın hemen ardından
-  yapılacak; deployment sonrası yeni serverless örneklerinin analiz metadata kolonlarını
-  algıladığı ve canlı logların temiz kaldığı doğrulanmalıdır.
+- Canlı DB migration uygulandı. Runtime commit `308be2b` push edildi. Production
+  deployment `dpl_FpjtNVefUQJzseXRULsBwJDx5Eo4` READY ve canlı alias'a alındı.
+  `/health`, root `/`, `/admin` ve arama smoke kontrolleri başarılıdır.
 
 ## 2026-10-27 Admin Soru Talepleri Erişimi — Production Tamamlandı
 

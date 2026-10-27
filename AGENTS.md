@@ -1,5 +1,24 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Kod Hazır
+
+- Canlıdaki 41 açık geri bildirim, 35 bağlı `history` kaydı ve asıl kaynak metinleriyle
+  tek tek karşılaştırıldı. 33 kayıtta 39 yanlış AI dönüşümü doğrulandı; 3 bildirimde
+  kayıt zaten doğru veya eşdeğer biçimdeydi. Aynı kelimenin metindeki doğru kullanımları
+  topluca değiştirilmez; yalnız kaynak konumuna en yakın, gerçekten dönüşmüş örnekler
+  kaynak biçimine döndürülür.
+- `analysis-core.js` kaynak referansları, âyet/hadis/transliterasyon biçimleri ve anlam
+  değiştiren bildirilmiş dönüşümler için kalıcı korumalar içerir. Yeni regresyon testi
+  27 Ekim vakalarını kaynak metin, puan ve düzeltilmiş metin düzeyinde doğrular.
+- `scripts/resolve-open-feedback-20261027.js` varsayılan olarak salt-okunur deneme yapar;
+  `--apply` ile optimistic-lock kullanır, tam eski/yeni metni
+  `content_correction_log` içine geri alınabilir kaydeder, onaylı public kayıtları ve
+  semantik indeksi yeniler, kullanıcı başına tek çözüm bildirimi gönderir ve yönetim
+  işlem izini yazar. Paket yarıda kesilirse tekrar çalıştırılabilir; bildirim ve işlem
+  logları yinelenmez.
+- Yerel doğrulama `npm.cmd run check` ile 279/279 başarılıdır. Kod deploy edilmeden ve
+  canlı veri paketi uygulanmadan geri bildirimler kapatılmış sayılmaz.
+
 ## 2026-10-27 Veritabanı Güvenilirlik ve Arama Performansı — Canlı DB Tamamlandı
 
 - Canlı Supabase loglarında görülen `history.prompt_version/rules_hash` kolon eksikliği,
@@ -15,6 +34,10 @@
   authenticated security-definer uyarısı kalktı. `schema.sql` ve
   `test/database-reliability-migration.test.js` aynı sözleşmeyi korur;
   `npm.cmd run check` 275/275 başarılı. Canlı DB migration uygulanmıştır.
+- Runtime commit `308be2b` push edildi. Production deployment
+  `dpl_FpjtNVefUQJzseXRULsBwJDx5Eo4` READY ve
+  `https://arsiv.ibrahimlive.ai` alias'ında etkindir. Canlı `/health`, ana sayfa,
+  `/admin` ve arama smoke kontrolleri başarılıdır.
 
 ## 2026-10-27 Admin Soru Talepleri Erişimi — Production Tamamlandı
 

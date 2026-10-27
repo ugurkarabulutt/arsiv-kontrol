@@ -771,6 +771,86 @@ function sourceWindow(sourceText, original) {
   return source.slice(Math.max(0, index - 220), Math.min(source.length, index + needle.length + 220));
 }
 
+function isReportedReferenceFormChange(original, fixed) {
+  const from = canonicalText(original).toLocaleLowerCase('tr-TR');
+  const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
+  const foldedFrom = foldText(original).replace(/\s+/g, ' ').trim();
+  const foldedTo = foldText(fixed).replace(/\s+/g, ' ').trim();
+
+  if (/^dîn(?:inizden|inizi|inden)$/iu.test(from) && /^din(?:inizden|inizi|inden)$/iu.test(to)) return true;
+  if (from === 'hudâ' && to === 'hidayet') return true;
+  if (/^rahîm['’]dir\s*\($/iu.test(from) && /^rahîm['’]dir\.\s*\($/iu.test(to)) return true;
+  if (/^hakîm\([^)]*\)\.$/iu.test(from) && /^hakîm\s+\([^)]*\)\.$/iu.test(to)) return true;
+  if (from === 'tevbetu' && to === 'tövbetu') return true;
+  if (/^her\s+şey(?:i|den)$/iu.test(from) && /^herşey(?:i|den)$/iu.test(to)) return true;
+  if (from === 'ardarda' && to === 'art arda') return true;
+  if (from === 'birşey' && to === 'bir şey') return true;
+  if (from === 'iman' && to === 'îmân') return true;
+  if (from === 'her resûl' && to === 'her resûl' && canonicalText(original) !== canonicalText(fixed)) return true;
+  if (from === 'acaip' && to === 'acayip') return true;
+  if (/^kur['’]an$/iu.test(from) && /^kur['’]ân$/iu.test(to)) return true;
+  if (/^ulü['’]l\s+elbâbtan$/iu.test(canonicalText(original))
+      && /^ulûl['’]elbabtan$/iu.test(canonicalText(fixed))) return true;
+  if (from === 'rahmânir rahîm' && to === 'rahmânirrahîm') return true;
+  if (from === 'el hamdu' && to === 'elhamdu') return true;
+  if (/^hadîs-i şerif$/iu.test(from) && /^hadîs-i şerif$/iu.test(to)
+      && canonicalText(original) !== canonicalText(fixed)) return true;
+  return false;
+}
+
+function sourceLooksLikeVerbatimReference(sourceText, original) {
+  const source = canonicalText(sourceText);
+  const needle = canonicalText(original);
+  const index = source.toLocaleLowerCase('tr-TR').indexOf(needle.toLocaleLowerCase('tr-TR'));
+  if (index < 0) return false;
+
+  // Yalnız bulgunun hemen önündeki kaynak etiketi bağlam sayılır. Uzun tek satırlı
+  // metinlerde ilerideki başka bir âyet/hadis başlığı bu bulguyu yanlışlıkla korumamalıdır.
+  const prefix = source.slice(Math.max(0, index - 96), index);
+  const foldedPrefix = asciiFold(prefix).replace(/[’]/g, "'");
+  return /(?:\d+\s*[\/.]\s*)?[A-ZÇĞİÖŞÜÂÎÛ'’]{2,}(?:\s+[A-ZÇĞİÖŞÜÂÎÛ'’]{2,})*\s*[-–]\s*\d+[^.!?]{0,48}$/u.test(prefix)
+    || /(?:^|\s)\d+\.\s*$/u.test(prefix)
+    || /\b(?:ayet(?:-i\s+kerime)?|hadis-i\s+serif|kayna[kgğ][\p{L}\p{N}_]*|meal|sure(?:si)?|slayt)[^.!?]{0,64}$/u.test(foldedPrefix)
+    || /\b(?:tebia|yevmid|dinekum|dinikum|siratin|siratekel|mustekim|mustekimin|agveyteni|akudenne|tuflihun)[^.!?]{0,48}$/u.test(foldedPrefix);
+}
+
+function sourceProtectsReportedReferenceForm(sourceText, original, fixed) {
+  if (!isReportedReferenceFormChange(original, fixed)) return false;
+
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+  if (/^hadîs-i şerif$/iu.test(from) && /^Hadîs-i Şerif$/u.test(to)) {
+    const raw = String(sourceText || '');
+    const line = raw.split(/\r?\n/u).find(item => item.toLocaleLowerCase('tr-TR').includes(from.toLocaleLowerCase('tr-TR'))) || '';
+    return canonicalText(line) !== from;
+  }
+
+  return sourceLooksLikeVerbatimReference(sourceText, original);
+}
+
+function isReportedMeaningChangingRewrite(original, fixed) {
+  const from = canonicalText(original);
+  const to = canonicalText(fixed);
+
+  if (/^hevasına$/iu.test(from) && /^hevâsına$/iu.test(to)) return true;
+  if (/^dîni$/iu.test(from) && /^dinî$/iu.test(to)) return true;
+  if (/^abdlık$/iu.test(from) && /^abd\s+olmak$/iu.test(to)) return true;
+  if (/^tayin$/iu.test(from) && /^tâyin$/iu.test(to)) return true;
+  if (/^sureden$/iu.test(from) && /^surenin$/iu.test(to)) return true;
+  if (/^teslimi$/iu.test(from) && /^teslim$/iu.test(to)) return true;
+  if (/^vechini$/iu.test(from) && /^vechimizi$/iu.test(to)) return true;
+  if (/^allah\s+ile\s+bile\s+olarak$/iu.test(from) && /^allah\s+ile\s+olarak$/iu.test(to)) return true;
+  if (/^mehdi\s*\(a\.s\)['’]ın$/iu.test(from) && /^mehdi\s*\(a\.s\)['’]in$/iu.test(to)) return true;
+  if (/^keşf['’]ul\s+hafâ$/iu.test(from) && /^keşfü['’]l\s+hafa$/iu.test(to)) return true;
+  if (/^derecelerle$/iu.test(from) && /^derecatla$/iu.test(to)) return true;
+  if (/^tâbiiyet$/iu.test(from) && /^tâbîyet$/iu.test(to)) return true;
+  if (/^sübhan['’]dır$/iu.test(from) && /^münezzehtir$/iu.test(to)) return true;
+  if (from.endsWith(':') && to === `${from.slice(0, -1)}.`
+      && /(?:\d+\s*\/\s*)?[\p{L}'’ÂÎÛâîû]+\s*[-–]\s*\d+/iu.test(from)) return true;
+  if (/[\.:;!?]$/u.test(from) && to === from.slice(0, -1)) return true;
+  return false;
+}
+
 function sourceProtectsBareYunusPerson(sourceText, original, fixed) {
   if (!isBareYunusPersonRewrite(original, fixed)) return false;
   const window = asciiFold(sourceWindow(sourceText, original));
@@ -952,7 +1032,8 @@ function isSourceContextProtectedIssue(sourceText, original, fixed) {
     || sourceProtectsRepeatedPhraseCommaBeforeVe(sourceText, original, fixed)
     || sourceProtectsQuotedAsNotation(sourceText, original, fixed)
     || sourceProtectsBookTitleDin(sourceText, original, fixed)
-    || sourceProtectsMaideNefislerinin(sourceText, original, fixed);
+    || sourceProtectsMaideNefislerinin(sourceText, original, fixed)
+    || sourceProtectsReportedReferenceForm(sourceText, original, fixed);
 }
 
 function isHristiyanVowelInsertion(original, fixed) {
@@ -999,6 +1080,8 @@ function isDecisionProtectedTransform(original, fixed) {
   const to = canonicalText(fixed).toLocaleLowerCase('tr-TR');
   const foldedFrom = foldText(original);
   const foldedTo = foldText(fixed);
+
+  if (isReportedMeaningChangingRewrite(original, fixed)) return true;
 
   if (foldedFrom.includes(' ama') && /,\s+ama\b/iu.test(to)) return true;
   if (/^"+/.test(canonicalText(fixed)) || /"+$/.test(canonicalText(fixed))) return true;
