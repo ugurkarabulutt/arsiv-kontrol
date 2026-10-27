@@ -1,5 +1,24 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-27 Veritabanı Güvenilirlik ve Arama Performansı — Canlı DB Tamamlandı
+
+- Canlı Supabase loglarında tekrarlanan üç teknik kusur giderildi: eksik
+  `history.prompt_version` / `history.rules_hash` kolonları eklendi, okunma sayacı
+  RPC'sindeki belirsiz `slug` çakışması kaldırıldı ve hibrit arama zaman aşımı
+  indeksli aday daraltmayla çözüldü.
+- `increment_public_question_read` artık `SECURITY INVOKER`, boş `search_path`, adlandırılmış
+  primary-key constraint ve yalnız `service_role` çalıştırma yetkisiyle atomik çalışır.
+  İki ardışık canlı rollback probu `read_count=2` verdi; Supabase güvenlik danışmanındaki
+  anonim/authenticated `SECURITY DEFINER` uyarısı kalktı.
+- `public_qa_search_documents_search_vector_idx` GIN indeksi ve prefix-token aday
+  kuyruğu eklendi. 14.945 belge üzerindeki temsilî hibrit sorgu 11.789 ms'den
+  464 ms'ye indi ve 48 sonuç döndürdü; 5 saniyelik uygulama sınırının altında kaldı.
+- Migration `20261027171035_repair_search_read_and_analysis_metadata.sql`; schema ve
+  regresyon testi aynı sözleşmeyi taşır. `npm.cmd run check` 275/275 başarılı.
+- Canlı DB migration uygulandı. Runtime commit/push/deploy bu kaydın hemen ardından
+  yapılacak; deployment sonrası yeni serverless örneklerinin analiz metadata kolonlarını
+  algıladığı ve canlı logların temiz kaldığı doğrulanmalıdır.
+
 ## 2026-10-27 Admin Soru Talepleri Erişimi — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal

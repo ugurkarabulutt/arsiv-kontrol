@@ -1,5 +1,21 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-27 Veritabanı Güvenilirlik ve Arama Performansı — Canlı DB Tamamlandı
+
+- Canlı Supabase loglarında görülen `history.prompt_version/rules_hash` kolon eksikliği,
+  okunma sayacı RPC'sindeki `slug` belirsizliği ve hibrit arama statement timeout'u
+  birlikte giderildi. `20261027171035_repair_search_read_and_analysis_metadata.sql`
+  migration'ı analiz provenance kolonlarını idempotent ekler.
+- `increment_public_question_read` artık `SECURITY INVOKER`, boş `search_path`,
+  adlandırılmış primary-key constraint ve yalnız `service_role` execute yetkisiyle çalışır.
+  Hibrit arama normalize metin üzerinde GIN prefix-token indeksi kullanır; lexical
+  adayları vektör hesabından önce en fazla 384 kayda indirir.
+- Canlı 14.945 belgede temsilî sorgu 11.789 ms'den 464 ms'ye indi; atomik okuma sayacı
+  rollback probu iki çağrıda `2` döndürdü. Supabase güvenlik danışmanındaki anonim ve
+  authenticated security-definer uyarısı kalktı. `schema.sql` ve
+  `test/database-reliability-migration.test.js` aynı sözleşmeyi korur;
+  `npm.cmd run check` 275/275 başarılı. Canlı DB migration uygulanmıştır.
+
 ## 2026-10-27 Admin Soru Talepleri Erişimi — Production Tamamlandı
 
 - Backend `admin`, `super_admin` ve `question_manager` rollerine public soru listeleme ve

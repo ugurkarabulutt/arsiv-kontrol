@@ -597,24 +597,25 @@ create index if not exists public_visit_events_question_idx on public.public_vis
 create or replace function public.increment_public_question_read(p_slug text)
 returns table(slug text, read_count integer, updated_at timestamptz)
 language plpgsql
-security definer
-set search_path = public
+security invoker
+set search_path = ''
 as $$
 begin
   insert into public.public_question_stats as stats (slug, read_count, updated_at)
   values (p_slug, 1, now())
-  on conflict (slug)
+  on conflict on constraint public_question_stats_pkey
   do update set
     read_count = stats.read_count + 1,
     updated_at = now();
 
   return query
-    select s.slug, s.read_count, s.updated_at
-    from public.public_question_stats s
-    where s.slug = p_slug;
+    select stats.slug, stats.read_count, stats.updated_at
+    from public.public_question_stats as stats
+    where stats.slug = p_slug;
 end;
 $$;
-revoke all on function public.increment_public_question_read(text) from public;
+revoke all on function public.increment_public_question_read(text) from public, anon, authenticated;
+grant execute on function public.increment_public_question_read(text) to service_role;
 
 -- public_categories / public_topics / public_qa
 -- Public arşivin okuma modeli. Admin iç bilgileri, denetim puanları, kullanıcı kimliği
@@ -769,6 +770,9 @@ set search_text = trim(regexp_replace(
 where search_text = '';
 create index if not exists public_qa_search_documents_text_trgm_idx
   on public.public_qa_search_documents using gin (search_text extensions.gin_trgm_ops);
+create index if not exists public_qa_search_documents_search_vector_idx
+  on public.public_qa_search_documents
+  using gin (to_tsvector('simple'::regconfig, search_text));
 
 create or replace function public.match_public_qa_hybrid_search(
   p_query_embedding extensions.vector(1024),
@@ -793,6 +797,7 @@ as $$
     select distinct trim(term) as term
     from unnest(coalesce(p_query_terms, '{}'::text[])) as term
     where char_length(trim(term)) >= 3
+      and trim(term) ~ '^[a-z0-9]+$'
     limit 24
   ), semantic_candidates as materialized (
     select document.qa_slug, document.document_key, document.document_kind,
@@ -801,23 +806,39 @@ as $$
       (select count(*)::integer from terms
        where document.search_text like ('%' || terms.term || '%')) as lexical_matches
     from public.public_qa_search_documents as document
-    where exists (select 1 from public.public_qa as qa
-      where qa.slug = document.qa_slug and qa.status = 'published')
+    join public.public_qa as qa
+      on qa.slug = document.qa_slug
+     and qa.status = 'published'
     order by document.embedding operator(extensions.<=>) p_query_embedding
     limit least(greatest(p_match_count, 1) * 4, 240)
+  ), lexical_occurrences as materialized (
+    select hit.qa_slug, hit.document_key, terms.term
+    from terms
+    cross join lateral (
+      select document.qa_slug, document.document_key
+      from public.public_qa_search_documents as document
+      join public.public_qa as qa
+        on qa.slug = document.qa_slug
+       and qa.status = 'published'
+      where to_tsvector('simple'::regconfig, document.search_text)
+        @@ to_tsquery('simple'::regconfig, terms.term || ':*')
+    ) as hit
+  ), lexical_hits as materialized (
+    select lexical_occurrences.qa_slug, lexical_occurrences.document_key,
+      count(*)::integer as lexical_matches
+    from lexical_occurrences
+    group by lexical_occurrences.qa_slug, lexical_occurrences.document_key
+    order by count(*) desc
+    limit least(greatest(p_match_count, 1) * 8, 384)
   ), lexical_candidates as materialized (
     select document.qa_slug, document.document_key, document.document_kind,
       document.content as matched_text,
       1 - (document.embedding operator(extensions.<=>) p_query_embedding) as similarity,
-      (select count(*)::integer from terms
-       where document.search_text like ('%' || terms.term || '%')) as lexical_matches
-    from public.public_qa_search_documents as document
-    where exists (select 1 from public.public_qa as qa
-      where qa.slug = document.qa_slug and qa.status = 'published')
-      and exists (select 1 from terms
-        where document.search_text like ('%' || terms.term || '%'))
-    order by lexical_matches desc, similarity desc
-    limit least(greatest(p_match_count, 1) * 10, 600)
+      lexical_hits.lexical_matches
+    from lexical_hits
+    join public.public_qa_search_documents as document
+      on document.qa_slug = lexical_hits.qa_slug
+     and document.document_key = lexical_hits.document_key
   ), combined as (
     select * from semantic_candidates union all select * from lexical_candidates
   ), documents as (
