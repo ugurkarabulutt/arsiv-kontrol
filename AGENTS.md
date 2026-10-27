@@ -1,6 +1,6 @@
 # AGENTS.md — Arşiv Kontrol AI
 
-## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Kod Hazır
+## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Production Tamamlandı
 
 - Canlıdaki 41 açık geri bildirim, 35 bağlı `history` kaydı ve asıl kaynak metinleriyle
   tek tek karşılaştırıldı. 33 kayıtta 39 yanlış AI dönüşümü doğrulandı; 3 bildirimde
@@ -16,8 +16,15 @@
   semantik indeksi yeniler, kullanıcı başına tek çözüm bildirimi gönderir ve yönetim
   işlem izini yazar. Paket yarıda kesilirse tekrar çalıştırılabilir; bildirim ve işlem
   logları yinelenmez.
-- Yerel doğrulama `npm.cmd run check` ile 279/279 başarılıdır. Kod deploy edilmeden ve
-  canlı veri paketi uygulanmadan geri bildirimler kapatılmış sayılmaz.
+- Yerel doğrulama `npm.cmd run check` ile 279/279 başarılıdır. Runtime commit
+  `c455deb` push edildi; production deployment
+  `dpl_GccfpYFkW63XAgPaJp5hNZy6SqcH` READY ve canlı alias'a alındı. Sağlık, root,
+  admin/noindex ve oturumsuz auth smoke kontrolleri geçti.
+- Canlı paket uygulandı: 33 kayıtta 39 hedef dönüşüm düzeltildi, 16 mevcut public
+  kayıt ve 50 semantik arama belgesi yenilendi. 41/41 geri bildirim çözüldü,
+  9 kullanıcıya kişi başına tek çözüm bildirimi gönderildi; çözüm ve admin işlem
+  günlükleri birer kayıt oluşturdu. Bağımsız doğrulamada açık feedback `0`, 33
+  geri alınabilir içerik logu ve 16/16 canlı URL `200`/doğru canonical bulundu.
 
 ## 2026-10-27 Veritabanı Güvenilirlik ve Arama Performansı — Canlı DB Tamamlandı
 

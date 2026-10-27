@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Kod Hazır
+## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal
   `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
@@ -13,9 +13,16 @@
   optimistic-lock, geri alınabilir içerik logu, public/semantik indeks yenileme,
   kullanıcı bildirimi ve admin işlem iziyle tekrar çalıştırılabilir düzeltme paketidir.
 - `node --test test/feedback-reconciliation.test.js` 3/3 ve tam
-  `npm.cmd run check` 279/279 başarılı. Sonraki adım: runtime commit/push/deploy,
-  ardından `--apply`, canlı DB/public/arama/bildirim doğrulaması ve bu kaydı nihai
-  production kanıtıyla güncellemek.
+  `npm.cmd run check` 279/279 başarılı. Runtime commit `c455deb` push edildi;
+  production deployment `dpl_GccfpYFkW63XAgPaJp5hNZy6SqcH` READY ve
+  `https://arsiv.ibrahimlive.ai` alias'ında etkindir. `/health=ok`, root/admin
+  `200`, admin noindex ve oturumsuz auth doğrulandı.
+- Canlı paket uygulandı: 33 history kaydında 39 hedef dönüşüm kaynak biçimine
+  döndürüldü; 33 tam eski/yeni metin `content_correction_log` içinde geri
+  alınabilir durumda. 16 mevcut public kayıt ve 50 semantik arama belgesi
+  yenilendi. 41/41 feedback çözüldü, açık feedback `0`; 9 kullanıcıya tekil
+  çözüm bildirimi gönderildi, bir çözüm günlüğü ve bir admin işlem kaydı oluştu.
+  Etkilenen 16/16 canlı URL `200` ve doğru canonical ile doğrulandı.
 
 ## 2026-10-27 Veritabanı Güvenilirlik ve Arama Performansı — Canlı DB Tamamlandı
 
