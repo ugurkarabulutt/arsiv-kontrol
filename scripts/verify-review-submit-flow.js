@@ -113,7 +113,24 @@ async function run() {
     assert.equal(await adminMemberPage.getByRole('button',{name:'Soru ve Cevabı Denetle',exact:true}).isVisible(),true);
     assert.equal(await adminMemberPage.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     await adminMemberPage.screenshot({path:path.join(output,'admin-member-options-390.png'),fullPage:true});
-    evidence.push({adminInMemberWorkspace:true,managementActionsHidden:true,optionalToolsPreserved:true});
+    await adminMemberPage.evaluate(()=>ReviewWorkspace.close(true));
+    await adminMemberPage.locator('#hamburger').click();
+    const adminQuestionNav=adminMemberPage.locator('.mobile-menu button.question-manager-only').filter({hasText:'Soru Talepleri'});
+    assert.equal(await adminQuestionNav.isVisible(),true);
+    await adminQuestionNav.click();
+    await adminMemberPage.locator('[data-ops-view="publicQuestions"].archive-ops-section:not([hidden])').waitFor();
+    assert.equal(await adminMemberPage.locator('#archivePublicQuestionList .archive-release-card').count(),1);
+    assert.equal(await adminMemberPage.getByRole('button',{name:'Onaylıları Siteye Hazırla',exact:true}).isVisible(),false);
+    const adminQuestionCapability=await adminMemberPage.evaluate(async()=>{
+      const [questions,sync]=await Promise.all([
+        fetch('/api/public-archive/question-submissions').then(r=>r.status),
+        fetch('/api/public-archive/sync-status').then(r=>r.status)
+      ]);
+      return {questions,sync};
+    });
+    assert.deepEqual(adminQuestionCapability,{questions:200,sync:403});
+    await adminMemberPage.screenshot({path:path.join(output,'admin-question-access-390.png'),fullPage:true});
+    evidence.push({adminInMemberWorkspace:true,managementActionsHidden:true,optionalToolsPreserved:true,questionManagementVisible:true,questionListStatus:adminQuestionCapability.questions,forbiddenSyncStatus:adminQuestionCapability.sync});
     await adminMember.close();
     const questionManager=await browser.newContext({viewport:{width:390,height:900},extraHTTPHeaders:{'X-Demo-Role':'question_manager'}});
     const questionManagerPage=await questionManager.newPage();

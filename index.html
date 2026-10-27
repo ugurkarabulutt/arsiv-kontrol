@@ -2755,8 +2755,8 @@ canvas{width:100%!important;}
   </div>
 </div>
 
-<link rel="stylesheet" href="/review-workspace.css?v=20261025-trash-context-v1">
-<script src="/review-workspace.js?v=20261025-trash-context-v1"></script>
+<link rel="stylesheet" href="/review-workspace.css?v=20261027-admin-question-access-v1">
+<script src="/review-workspace.js?v=20261027-admin-question-access-v1"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(err=>console.warn('Service worker kaydedilemedi:',err)));
@@ -2784,7 +2784,7 @@ const HISTORY_TAG_IMPORT_UPLOAD_CHUNK_BYTES=384*1024;
 const LONG_TEXT_CHUNK_CHARS=8000;
 const LONG_TEXT_CONCURRENCY=2;
 const DRAFT_KEY='arsiv-work-draft-v1';
-const ADMIN_CLIENT_BUILD='20261025-trash-context-v1';
+const ADMIN_CLIENT_BUILD='20261027-admin-question-access-v1';
 const ADMIN_FEEDBACK_DRAFT_KEY='arsiv-feedback-client-reload-v1';
 const ADMIN_CLIENT_VERSION_TTL_MS=15000;
 const APPROVAL_RETURNED_STATUS='geri_gonderildi';
@@ -3086,7 +3086,7 @@ function enterApp(user){
   document.querySelectorAll('.admin-only,.super-admin-only,.question-manager-only').forEach(e=>e.style.display='none');
   if(hasAdminRole(user.role))document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
   if(hasSuperAdminRole(user.role))document.querySelectorAll('.super-admin-only').forEach(e=>e.style.display='');
-  if(hasQuestionManagerRole(user.role))document.querySelectorAll('.question-manager-only').forEach(e=>e.style.display='');
+  if(canShowStandaloneQuestionManagement(user))document.querySelectorAll('.question-manager-only').forEach(e=>e.style.display='');
   ensureStandaloneAdminRoute(user);
   refreshRouteScopedVisibility(user);
   el('pAvatar').textContent=user.name.charAt(0).toUpperCase();
@@ -3104,6 +3104,7 @@ function hasAdminRole(role){return role==='admin'||role==='super_admin';}
 function hasSuperAdminRole(role){return role==='super_admin';}
 function hasQuestionManagerRole(role){return role==='question_manager';}
 function canManagePublicQuestions(user=me){return Boolean(user&&(hasAdminRole(user.role)||hasQuestionManagerRole(user.role)));}
+function canShowStandaloneQuestionManagement(user=me){return Boolean(user&&canManagePublicQuestions(user)&&!hasSuperAdminRole(user.role));}
 function isAdminRoute(){const path=window.location.pathname;return path==='/admin'||path.startsWith('/admin/');}
 function isStandaloneApp(){
   return Boolean(
@@ -3121,10 +3122,10 @@ function ensureStandaloneAdminRoute(user=me){
 function refreshRouteScopedVisibility(user=me){
   const allowArchiveOps=canUseArchiveOps(user);
   document.querySelectorAll('.admin-route-only').forEach(e=>{
-    const allowQuestionManagerPanel=e.id==='tabContent-archiveOps'&&hasQuestionManagerRole(user?.role)&&archiveOpsState.view==='publicQuestions';
+    const allowQuestionManagerPanel=e.id==='tabContent-archiveOps'&&canManagePublicQuestions(user)&&archiveOpsState.view==='publicQuestions';
     e.style.display=allowArchiveOps||allowQuestionManagerPanel?'':'none';
   });
-  document.querySelectorAll('.question-manager-only').forEach(e=>e.style.display=hasQuestionManagerRole(user?.role)?'':'none');
+  document.querySelectorAll('.question-manager-only').forEach(e=>e.style.display=canShowStandaloneQuestionManagement(user)?'':'none');
   document.querySelectorAll('.question-super-admin-only').forEach(e=>e.style.display=hasSuperAdminRole(user?.role)?'':'none');
   return allowArchiveOps;
 }
@@ -3184,10 +3185,10 @@ function toggleLiveSiteMenu(forceOpen){
 }
 function renderArchiveOpsView(view=archiveOpsState.view){
   archiveOpsState.view=normalizeArchiveOpsView(view);
-  if(!canOpenArchiveOpsView(archiveOpsState.view))archiveOpsState.view=hasQuestionManagerRole(me?.role)?'publicQuestions':'overview';
+  if(!canOpenArchiveOpsView(archiveOpsState.view))archiveOpsState.view=canManagePublicQuestions(me)?'publicQuestions':'overview';
   const title=el('archiveOpsPageTitle');
   const sub=el('archiveOpsPageSub');
-  const questionManagerView=hasQuestionManagerRole(me?.role)&&archiveOpsState.view==='publicQuestions';
+  const questionManagerView=canShowStandaloneQuestionManagement(me)&&archiveOpsState.view==='publicQuestions';
   if(title)title.textContent=questionManagerView?'Soru Yönetimi':LIVE_SITE_OPS_VIEWS.has(archiveOpsState.view)?'Canlı Site':'Arşiv Operasyon Merkezi';
   if(sub)sub.textContent=questionManagerView?'Canlı siteden gönderilen soruları inceleyin, cevaplayın ve durumlarını yönetin.':LIVE_SITE_OPS_VIEWS.has(archiveOpsState.view)?'Canlı public siteye ait kullanıcı akışları ve talepler burada izlenir.':'Drive, e-tablo ve dokümanlarda yürüyen arşiv işlerini online sisteme taşıma pilotu';
   document.querySelectorAll('.archive-ops-section').forEach(section=>{
@@ -3257,7 +3258,7 @@ function mQuestionManagement(){
 function showTab(name){
   if(me?.reviewWorkspacesEnabled&&!ReviewWorkspace.allowedTab(name))name=ReviewWorkspace.homeTab();
   refreshRouteScopedVisibility();
-  if(name==='archiveOps'&&!canOpenArchiveOpsView(archiveOpsState.view))name=hasQuestionManagerRole(me?.role)?'archiveOps':'analiz';
+  if(name==='archiveOps'&&!canOpenArchiveOpsView(archiveOpsState.view))name=canManagePublicQuestions(me)?'archiveOps':'analiz';
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.btn-top,.btn-mobile,.side-link').forEach(e=>e.classList.remove('active-tab'));
   el(`tabContent-${name}`).classList.add('active');

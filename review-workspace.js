@@ -143,7 +143,7 @@ const ReviewWorkspace = (() => {
     return api(method, '/api/review' + path, payload);
   }
   function allowedTab(name) {
-    if (name === 'archiveOps' && hasQuestionManagerRole(me?.role)) return true;
+    if (name === 'archiveOps' && canManagePublicQuestions(me)) return true;
     return management() ? !['analiz', 'gecmis'].includes(name) : memberTabs.has(name);
   }
   function refreshNav() {
@@ -162,7 +162,7 @@ const ReviewWorkspace = (() => {
       element.style.display = permitted ? '' : 'none';
     });
     document.querySelectorAll('.question-manager-only').forEach(element => {
-      const permitted = hasQuestionManagerRole(me?.role);
+      const permitted = canShowStandaloneQuestionManagement(me);
       element.hidden = !permitted;
       element.style.display = permitted ? '' : 'none';
     });
