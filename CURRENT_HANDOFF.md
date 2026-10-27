@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-27 Admin Soru Talepleri Erişimi — Production Tamamlandı
+
+- Çalışma `.codex-admin-review-actions-fix`, dal
+  `codex/review-analysis-quality-gate`; ana kirli checkout'a dokunulmadı.
+- Kök neden backend yetkisi değil, ön yüz görünürlük ve çalışma alanı kapısıydı:
+  `admin` soru API'lerini kullanabiliyor fakat Soru Talepleri menüsü yalnız
+  `question_manager` rolüne gösteriliyordu.
+- Normal adminler artık ekip çalışma alanındayken de Soru Talepleri'ni görür ve yalnız
+  Soru Yönetimi ekranını açar. Süper adminin yayın/senkron yetkisi normal adminlere
+  açılmadı; mevcut süper admin menüsü çoğaltılmadı.
+- `npm.cmd run check` 272/272 ve yerel 390 px Playwright uçtan uca akışı başarılı:
+  admin menüsü görünür, soru listesi `200`, senkron `403`, `pageErrors=[]`.
+- Runtime commit `89d1dfe`; production deployment
+  `dpl_ADqpR456Lc8CDFQyvfHEKq2sZvA4` READY ve canlı alias güncel. Canlı geçici admin
+  testi `Soru Yönetimi`, liste `200`, gizli senkron butonu ve taşmasız mobil görünümü
+  doğruladı. Geçici hesap silindi. Eda Şahinhan canlı DB'de aktif `admin` durumda.
+
 ## 2026-10-27 Uzun Metin Denetimi Ölçek Düzeltmesi — Canlı DB Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal

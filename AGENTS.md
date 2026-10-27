@@ -1,5 +1,24 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-27 Admin Soru Talepleri Erişimi — Production Tamamlandı
+
+- Backend `admin`, `super_admin` ve `question_manager` rollerine public soru listeleme ve
+  cevaplama yetkisini zaten veriyordu; ön yüz menüsü ve çalışma alanı geçişi yalnız
+  `question_manager` rolünü kabul ettiği için Eda Şahinhan `admin` yapıldığında Soru
+  Talepleri girişini göremiyordu.
+- Normal `admin` ve `question_manager` artık ekip çalışma alanından bağımsız olarak ayrı
+  `Soru Talepleri` girişini görür ve yalnız `publicQuestions` ekranını açabilir. Süper
+  adminin mevcut `Canlı Site` girişi çoğaltılmaz; yayın/senkron işlemleri yalnız süper
+  adminde kalır.
+- İstemci sürümü `20261027-admin-question-access-v1` oldu. `npm.cmd run check` 272/272
+  geçti. 390 px Playwright akışında admin ekip alanında menüyü gördü, liste API'si `200`,
+  süper admin senkron API'si `403` döndü ve sayfa hatası oluşmadı.
+- Runtime commit `89d1dfe` GitHub'a push edildi. Production deployment
+  `dpl_ADqpR456Lc8CDFQyvfHEKq2sZvA4` READY ve `https://arsiv.ibrahimlive.ai` alias'ına
+  alındı. Canlı geçici admin doğrulamasında `Soru Yönetimi` açıldı, liste `200` döndü,
+  senkron butonu gizli ve yatay taşma yoktu. Geçici hesap doğrulama sonrası tamamen
+  silindi. Eda Şahinhan'ın hesabı canlı DB'de aktif `admin` olarak teyit edildi.
+
 ## 2026-10-27 Uzun Metin Mükerrer Kontrolü Ölçek Düzeltmesi
 
 - Uzun metin denetimlerinin `Mevcut kayıt kontrolü tamamlanamadı` ile durmasının kök
