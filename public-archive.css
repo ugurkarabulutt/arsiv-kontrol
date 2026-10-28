@@ -3361,6 +3361,43 @@ a.pa-chip:hover,
   content: "/";
 }
 
+.pa-context-return {
+  margin: 24px 0 0;
+}
+
+.pa-context-return a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  color: var(--pa-primary);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.pa-context-return a:hover,
+.pa-context-return a:focus-visible {
+  color: var(--pa-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.pa-context-return-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.pa-context-return strong {
+  color: var(--pa-text);
+}
+
+.pa-detail-main .pa-context-return + .pa-breadcrumb {
+  margin-top: 10px;
+}
+
 .pa-search-page,
 .pa-archive-hero,
 .pa-collection-hero,
@@ -7154,6 +7191,7 @@ a.pa-chip:hover,
   .pa-scroll-top,
   .pa-footer,
   .pa-tool-row,
+  .pa-context-return,
   .pa-answer-aside {
     display: none !important;
   }

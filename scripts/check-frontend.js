@@ -1789,8 +1789,11 @@ for (const marker of ['PUBLIC_ARCHIVE_SEARCH_SUGGEST_SELECT', 'loadPublicArchive
 for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="true" tabindex="-1"', 'button.tabIndex = visible ? 0 : -1']) {
   assert(publicRendererSource.includes(marker), `Public yukari cik erisilebilirlik marker eksik: ${marker}`);
 }
-for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v22', 'X-Public-Navigation', 'pushState({ paFast: true }', "window['his' + 'tory']"]) {
+for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v22', 'X-Public-Navigation', 'pushState({ paFast: true, paFrom: fromHref }', "window['his' + 'tory']"]) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
+}
+for (const marker of ['data-search-results-back', 'returnToSearchResults', 'rememberCurrentRoutePosition', 'restoreScrollY', "scrollRestoration = 'manual'", 'id="arama-sonuclari"']) {
+  assert(publicRendererSource.includes(marker), `Public arama sonucuna donus marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');
 for (const marker of ['PUBLIC_ARCHIVE_DATA_UNAVAILABLE', 'publicArchiveDataUnavailableError', 'isPublicArchiveRootRequest']) {

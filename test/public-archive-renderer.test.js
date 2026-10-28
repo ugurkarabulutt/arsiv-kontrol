@@ -658,6 +658,17 @@ test('public preview search and missing states are deterministic', () => {
   const result = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'zikir' });
   assert.equal(result.status, 200);
   assert.match(result.html, /Zikir kalbi nasıl değiştirir/);
+  assert.match(result.html, /href="\/public-preview\/soru\/[^"?]+\?arama=zikir"/);
+  assert.match(result.html, /id="arama-sonuclari"/);
+
+  const questionFromSearch = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru', { arama: 'dua & zikir' });
+  assert.match(questionFromSearch.html, /data-search-results-back/);
+  assert.match(questionFromSearch.html, /href="\/public-preview\/arama\?q=dua%20%26%20zikir#arama-sonuclari"/);
+  assert.match(questionFromSearch.html, /“dua &amp; zikir”<\/strong> arama sonuçlarına dön/);
+  assert.match(questionFromSearch.html, /var shareUrl = canonical && canonical\.href \? canonical\.href : window\.location\.href/);
+
+  const directQuestion = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru');
+  assert.doesNotMatch(directQuestion.html, /<nav class="pa-context-return"/);
 
   const empty = renderPublicArchivePreviewRoute('/public-preview/arama', { q: 'bulunmayan-kelime' });
   assert.equal(empty.status, 200);

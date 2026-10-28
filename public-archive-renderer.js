@@ -1924,11 +1924,13 @@ function questionCard(entry, options = {}) {
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
   const countNode = readCountNode(entry);
-  const href = `${PREVIEW_BASE}/soru/${escapeHtml(entry.slug)}`;
+  const searchQuery = cleanSearchReturnQuery(cardOptions.searchQuery);
+  const href = `${PREVIEW_BASE}/soru/${encodeURIComponent(String(entry.slug || ''))}${searchQuery ? `?arama=${encodeURIComponent(searchQuery)}` : ''}`;
+  const escapedHref = escapeHtml(href);
   return `
-    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${href}">
+    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${escapedHref}">
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
-      <a class="pa-question-title" href="${href}">${escapeHtml(entry.title)}</a>
+      <a class="pa-question-title" href="${escapedHref}">${escapeHtml(entry.title)}</a>
       ${searchResult && entry.searchMatchExcerpt ? `
         <div class="pa-search-match">
           <span>${entry.searchMatchKind === 'question' ? 'Soruyla eşleşen bölüm' : 'Cevapta geçen bölüm'}</span>
@@ -1941,6 +1943,14 @@ function questionCard(entry, options = {}) {
       </div>
     </article>
   `;
+}
+
+function cleanSearchReturnQuery(value = '') {
+  return String(value || '')
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 200);
 }
 
 function publicArchiveQuestionResultIdentity(entry = {}) {
@@ -2814,7 +2824,7 @@ function renderQuestionCollection(kind = 'featured', query = {}) {
 }
 
 function renderSearch(query = '') {
-  const cleanQuery = String(query || '').trim();
+  const cleanQuery = cleanSearchReturnQuery(query);
   const results = searchResults(cleanQuery);
   const directCategories = searchDirectCategoryMatches();
   const semanticApplied = publicArchiveFixtures.search?.semanticApplied === true;
@@ -2841,13 +2851,13 @@ function renderSearch(query = '') {
           ${searchBox(cleanQuery)}
           ${directCategories}
         </section>
-        <section class="pa-section" data-pa-search-results${semanticUrl ? ` data-pa-semantic-url="${escapeHtml(semanticUrl)}"` : ''}>
+        <section class="pa-section" id="arama-sonuclari" data-pa-search-results${semanticUrl ? ` data-pa-semantic-url="${escapeHtml(semanticUrl)}"` : ''}>
           ${sectionHeader(cleanQuery ? 'En Uygun Cevaplar' : 'Arşivdeki Sorular')}
           ${semanticApplied ? '<p class="pa-search-method">Sonuçlar, yazdığınız ifadeyle anlamca bağlantılı cevaplar da dikkate alınarak sıralandı.</p>' : ''}
           ${semanticPending ? '<p class="pa-search-method">En güçlü metin eşleşmeleri gösteriliyor; anlam bağlantıları arka planda kontrol ediliyor.</p>' : ''}
           <p class="pa-result-count">${results.length ? `${results.length} en ilgili kayıt gösteriliyor.` : 'Eşleşen kayıt bulunamadı.'}</p>
           ${results.length
-            ? `<div class="pa-list">${results.map(entry => questionCard(entry, { compact: true, searchResult: true })).join('')}</div>`
+            ? `<div class="pa-list">${results.map(entry => questionCard(entry, { compact: true, searchResult: true, searchQuery: cleanQuery })).join('')}</div>`
             : renderNoResults(cleanQuery)}
         </section>
       </main>
@@ -3029,9 +3039,13 @@ function renderNoResults(query) {
   `;
 }
 
-function renderQuestion(slug) {
+function renderQuestion(slug, query = {}) {
   const entry = bySlug(publicArchiveFixtures.qa, slug);
   if (!entry) return renderNotFound();
+  const returnSearchQuery = cleanSearchReturnQuery(query.arama);
+  const returnSearchHref = returnSearchQuery
+    ? `${PREVIEW_BASE}/arama?q=${encodeURIComponent(returnSearchQuery)}#arama-sonuclari`
+    : '';
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
   const related = relatedEntries(entry);
@@ -3068,6 +3082,14 @@ function renderQuestion(slug) {
     searchSeedCategories: categoriesFor(entry),
     content: `
       <main class="pa-main pa-detail-main">
+        ${returnSearchHref ? `
+          <nav class="pa-context-return" aria-label="Arama sonuçlarına dönüş">
+            <a href="${escapeHtml(returnSearchHref)}" data-search-results-back>
+              ${iconSvg('arrow-left', 'pa-context-return-icon')}
+              <span><strong>“${escapeHtml(returnSearchQuery)}”</strong> arama sonuçlarına dön</span>
+            </a>
+          </nav>
+        ` : ''}
         ${breadcrumb([
           { label: 'Arşiv', href: `${PREVIEW_BASE}/arsiv` },
           category ? { label: category.name, href: `${PREVIEW_BASE}/kategori/${category.slug}` } : { label: 'Soru' }
@@ -3786,7 +3808,9 @@ function renderShell({ title, description, active, content, status = 200, questi
           button.addEventListener('click', async function(){
             var doneIcon = ${JSON.stringify(iconSvg('check'))};
             var question = document.querySelector('.pa-answer-primary .pa-reading-block p');
-            var shareData = { title: document.title, text: question ? question.textContent.trim() : document.title, url: window.location.href };
+            var canonical = document.querySelector('link[rel="' + 'canonical"]');
+            var shareUrl = canonical && canonical.href ? canonical.href : window.location.href;
+            var shareData = { title: document.title, text: question ? question.textContent.trim() : document.title, url: shareUrl };
             if (navigator.share) {
               try {
                 await navigator.share(shareData);
@@ -3795,7 +3819,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               } catch (error) {
                 if (!error || error.name !== 'AbortError') {
                   try {
-                    await copyPublicText(window.location.href);
+                    await copyPublicText(shareUrl);
                     setDetailActionState(button, 'Bağlantı kopyalandı', doneIcon, 'Paylaşım bağlantısı panoya kopyalandı.');
                     setTimeout(function(){ resetDetailActionState(button, 'Paylaş', defaultIcon, 'Bu soru ve cevabın bağlantısını paylaş'); }, 1800);
                   } catch (copyError) {}
@@ -3803,7 +3827,7 @@ function renderShell({ title, description, active, content, status = 200, questi
               }
             } else {
               try {
-                await copyPublicText(window.location.href);
+                await copyPublicText(shareUrl);
                 setDetailActionState(button, 'Bağlantı kopyalandı', doneIcon, 'Paylaşım bağlantısı panoya kopyalandı.');
                 setTimeout(function(){ resetDetailActionState(button, 'Paylaş', defaultIcon, 'Bu soru ve cevabın bağlantısını paylaş'); }, 1800);
               } catch (error) {}
@@ -5739,7 +5763,26 @@ function renderShell({ title, description, active, content, status = 200, questi
           current.replaceWith(document.importNode(next, true));
           return true;
         }
-        function scrollToRouteTarget(url) {
+        function rememberCurrentRoutePosition() {
+          try {
+            var currentState = pageStack().state || {};
+            pageStack().replaceState(Object.assign({}, currentState, {
+              paFast: true,
+              paScrollY: Math.max(0, Number(window.scrollY || window.pageYOffset || 0))
+            }), '', window.location.href);
+          } catch (error) {}
+        }
+        function scrollToRouteTarget(url, options) {
+          var restoreScrollY = Number(options && options.restoreScrollY);
+          if (Number.isFinite(restoreScrollY) && restoreScrollY >= 0) {
+            window.requestAnimationFrame(function(){
+              window.requestAnimationFrame(function(){
+                try { window.scrollTo({ top: restoreScrollY, left: 0, behavior: 'auto' }); }
+                catch (error) { window.scrollTo(0, restoreScrollY); }
+              });
+            });
+            return;
+          }
           var hash = decodeURIComponent(String(url.hash || '').replace(/^#/, ''));
           if (hash) {
             var target = document.getElementById(hash);
@@ -5750,7 +5793,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
           try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (error) { window.scrollTo(0, 0); }
         }
-        function replacePublicArchiveShell(url, html, mode) {
+        function replacePublicArchiveShell(url, html, mode, options) {
           if (!html || !/<html[\\s>]/i.test(html)) {
             window.location.href = url.href;
             return;
@@ -5760,7 +5803,11 @@ function renderShell({ title, description, active, content, status = 200, questi
             window.location.href = url.href;
             return;
           }
-          if (mode === 'push') pageStack().pushState({ paFast: true }, '', url.href);
+          if (mode === 'push') {
+            var fromHref = window.location.href;
+            rememberCurrentRoutePosition();
+            pageStack().pushState({ paFast: true, paFrom: fromHref }, '', url.href);
+          }
           else if (mode === 'replace') pageStack().replaceState({ paFast: true }, '', url.href);
           freezeRouteBackground();
           cleanupPublicArchivePage();
@@ -5771,7 +5818,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             return;
           }
           root.removeAttribute('data-pa-navigating');
-          scrollToRouteTarget(url);
+          scrollToRouteTarget(url, options);
           initializePublicArchivePage();
         }
         function prefetchUrl(url) {
@@ -5915,6 +5962,22 @@ function renderShell({ title, description, active, content, status = 200, questi
         function eventAnchor(event) {
           return event && event.target && event.target.closest ? event.target.closest('a[href]') : null;
         }
+        function returnToSearchResults(anchor, event) {
+          if (!anchor || !anchor.hasAttribute('data-search-results-back')) return false;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button > 0) return false;
+          try {
+            var state = pageStack().state || {};
+            var previousUrl = state.paFrom ? new URL(state.paFrom, window.location.href) : null;
+            var fallbackUrl = new URL(anchor.href, window.location.href);
+            if (!previousUrl || relativePath(previousUrl) !== '/arama') return false;
+            if (previousUrl.pathname !== fallbackUrl.pathname || previousUrl.search !== fallbackUrl.search) return false;
+            event.preventDefault();
+            pageStack().back();
+            return true;
+          } catch (error) {
+            return false;
+          }
+        }
         function eventCard(event) {
           if (!event || !event.target || !event.target.closest) return null;
           if (event.target.closest('a, button, input, select, textarea')) return null;
@@ -5922,6 +5985,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         }
         if (!window.__publicArchiveFastNavBound) {
           window.__publicArchiveFastNavBound = true;
+          try { pageStack().scrollRestoration = 'manual'; } catch (error) {}
           document.addEventListener('pointerover', function(event){
             var anchor = eventAnchor(event);
             if (anchor) prefetch(anchor);
@@ -5948,15 +6012,18 @@ function renderShell({ title, description, active, content, status = 200, questi
           document.addEventListener('click', function(event){
             var anchor = eventAnchor(event);
             if (anchor && loadMoreArchive(anchor, event)) return;
+            if (anchor && returnToSearchResults(anchor, event)) return;
             if (anchor) navigate(anchor, event);
           });
-          try { pageStack().replaceState({ paFast: true }, '', window.location.href); } catch (error) {}
-          window.addEventListener('popstate', function(){
+          try { pageStack().replaceState(Object.assign({}, pageStack().state || {}, { paFast: true }), '', window.location.href); } catch (error) {}
+          window.addEventListener('popstate', function(event){
             var url = new URL(window.location.href);
             if (!isSafeRoute(url)) return;
             root.setAttribute('data-pa-navigating', 'true');
             fetchPage(url).then(function(html){
-              replacePublicArchiveShell(url, html, 'none');
+              replacePublicArchiveShell(url, html, 'none', {
+                restoreScrollY: event && event.state ? event.state.paScrollY : undefined
+              });
             }).catch(function(){
               window.location.reload();
             });
@@ -6060,7 +6127,7 @@ function renderPublicArchivePreviewRoute(routePath, query = {}, archiveData = pu
     const topicArticleMatch = pathname.match(publicArchiveRoutePattern('konu-rehberi'));
     if (topicArticleMatch) return renderTopicGuideArticle(topicArticleMatch[1]);
     const questionMatch = pathname.match(publicArchiveRoutePattern('soru'));
-    if (questionMatch) return renderQuestion(questionMatch[1]);
+    if (questionMatch) return renderQuestion(questionMatch[1], query);
     const topicMatch = pathname.match(publicArchiveRoutePattern('konu'));
     if (topicMatch) return renderTopic(topicMatch[1], query);
     const categoryMatch = pathname.match(publicArchiveRoutePattern('kategori'));
@@ -6162,7 +6229,9 @@ function createPublicArchivePreviewRouter(options = {}) {
   router.get('/cerez-politikasi', (req, res, next) => sendRoute(req, res, next, 'cerez-politikasi'));
   router.get('/kullanim-kosullari', (req, res, next) => sendRoute(req, res, next, 'kullanim-kosullari'));
   router.get('/konu-rehberi/:slug', (req, res, next) => sendRoute(req, res, next, `konu-rehberi/${req.params.slug}`));
-  router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `soru/${req.params.slug}`));
+  router.get('/soru/:slug', (req, res, next) => sendRoute(req, res, next, `soru/${req.params.slug}`, {
+    arama: req.query.arama || ''
+  }));
   router.get('/konu/:slug', (req, res, next) => sendRoute(req, res, next, `konu/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
   router.get('/kategori/:slug', (req, res, next) => sendRoute(req, res, next, `kategori/${req.params.slug}`, { sayfa: req.query.sayfa || '' }));
   router.use((req, res, next) => sendRoute(req, res, next, 'bulunamadi'));
