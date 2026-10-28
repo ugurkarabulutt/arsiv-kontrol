@@ -6146,6 +6146,7 @@ function renderShell({ title, description, active, content, status = 200, questi
         bindQuestionForm();
       }
       initializePublicArchivePage();
+      restoreSearchReturnTarget(new URL(window.location.href));
     })();
   </script>
 </body>
