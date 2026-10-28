@@ -660,10 +660,11 @@ test('public preview search and missing states are deterministic', () => {
   assert.match(result.html, /Zikir kalbi nasıl değiştirir/);
   assert.match(result.html, /href="\/public-preview\/soru\/[^"?]+\?arama=zikir"/);
   assert.match(result.html, /id="arama-sonuclari"/);
+  assert.match(result.html, /id="sonuc-[^"]+" data-search-result-slug=/);
 
   const questionFromSearch = renderPublicArchivePreviewRoute('/public-preview/soru/ornek-soru', { arama: 'dua & zikir' });
   assert.match(questionFromSearch.html, /data-search-results-back/);
-  assert.match(questionFromSearch.html, /href="\/public-preview\/arama\?q=dua%20%26%20zikir#arama-sonuclari"/);
+  assert.match(questionFromSearch.html, /href="\/public-preview\/arama\?q=dua%20%26%20zikir#sonuc-ornek-soru"/);
   assert.match(questionFromSearch.html, /“dua &amp; zikir”<\/strong> arama sonuçlarına dön/);
   assert.match(questionFromSearch.html, /var shareUrl = canonical && canonical\.href \? canonical\.href : window\.location\.href/);
 

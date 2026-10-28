@@ -1927,8 +1927,9 @@ function questionCard(entry, options = {}) {
   const searchQuery = cleanSearchReturnQuery(cardOptions.searchQuery);
   const href = `${PREVIEW_BASE}/soru/${encodeURIComponent(String(entry.slug || ''))}${searchQuery ? `?arama=${encodeURIComponent(searchQuery)}` : ''}`;
   const escapedHref = escapeHtml(href);
+  const searchResultId = searchResult ? `sonuc-${String(entry.slug || '')}` : '';
   return `
-    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${escapedHref}">
+    <article class="pa-question-card${compact ? ' is-compact' : ''}${strongCta ? ' has-strong-cta' : ''}" data-card-href="${escapedHref}"${searchResultId ? ` id="${escapeHtml(searchResultId)}" data-search-result-slug="${escapeHtml(entry.slug)}"` : ''}>
       <span class="pa-card-icon">${iconSvg(questionIconName(entry, category, topics))}</span>
       <a class="pa-question-title" href="${escapedHref}">${escapeHtml(entry.title)}</a>
       ${searchResult && entry.searchMatchExcerpt ? `
@@ -3044,7 +3045,7 @@ function renderQuestion(slug, query = {}) {
   if (!entry) return renderNotFound();
   const returnSearchQuery = cleanSearchReturnQuery(query.arama);
   const returnSearchHref = returnSearchQuery
-    ? `${PREVIEW_BASE}/arama?q=${encodeURIComponent(returnSearchQuery)}#arama-sonuclari`
+    ? `${PREVIEW_BASE}/arama?q=${encodeURIComponent(returnSearchQuery)}#sonuc-${encodeURIComponent(String(entry.slug || ''))}`
     : '';
   const category = categoryFor(entry);
   const topics = topicsFor(entry);
@@ -5772,6 +5773,47 @@ function renderShell({ title, description, active, content, status = 200, questi
             }), '', window.location.href);
           } catch (error) {}
         }
+        var searchReturnStorageKey = 'dsca-search-return-target:v1';
+        function rememberSearchReturnTarget(url) {
+          try {
+            var slug = document.body ? document.body.getAttribute('data-question-slug') : '';
+            if (!slug || !url || relativePath(url) !== '/arama') return;
+            window.sessionStorage.setItem(searchReturnStorageKey, JSON.stringify({
+              route: url.pathname + url.search,
+              slug: slug,
+              expiresAt: Date.now() + 10000
+            }));
+          } catch (error) {}
+        }
+        function restoreSearchReturnTarget(url) {
+          try {
+            if (!url || relativePath(url) !== '/arama') return false;
+            var raw = window.sessionStorage.getItem(searchReturnStorageKey);
+            if (!raw) return false;
+            var payload = JSON.parse(raw);
+            if (!payload || Number(payload.expiresAt || 0) < Date.now()) {
+              window.sessionStorage.removeItem(searchReturnStorageKey);
+              return false;
+            }
+            if (payload.route !== url.pathname + url.search || !payload.slug) return false;
+            var target = document.getElementById('sonuc-' + payload.slug);
+            if (!target) return false;
+            window.requestAnimationFrame(function(){
+              try { target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+              catch (error) { target.scrollIntoView(); }
+            });
+            window.setTimeout(function(){
+              try {
+                if (window.sessionStorage.getItem(searchReturnStorageKey) === raw) {
+                  window.sessionStorage.removeItem(searchReturnStorageKey);
+                }
+              } catch (error) {}
+            }, 4000);
+            return true;
+          } catch (error) {
+            return false;
+          }
+        }
         function scrollToRouteTarget(url, options) {
           var restoreScrollY = Number(options && options.restoreScrollY);
           if (Number.isFinite(restoreScrollY) && restoreScrollY >= 0) {
@@ -5820,6 +5862,7 @@ function renderShell({ title, description, active, content, status = 200, questi
           root.removeAttribute('data-pa-navigating');
           scrollToRouteTarget(url, options);
           initializePublicArchivePage();
+          restoreSearchReturnTarget(url);
         }
         function prefetchUrl(url) {
           if (!isSafeRoute(url)) return;
@@ -5972,6 +6015,7 @@ function renderShell({ title, description, active, content, status = 200, questi
             if (!previousUrl || relativePath(previousUrl) !== '/arama') return false;
             if (previousUrl.pathname !== fallbackUrl.pathname || previousUrl.search !== fallbackUrl.search) return false;
             event.preventDefault();
+            rememberSearchReturnTarget(fallbackUrl);
             pageStack().back();
             return true;
           } catch (error) {
@@ -6054,6 +6098,8 @@ function renderShell({ title, description, active, content, status = 200, questi
           currentSection.replaceWith(document.importNode(nextSection, true));
           bindCardLinks();
           bindScrollReveals(document.querySelector('[data-pa-search-results]'));
+          var currentUrl = new URL(window.location.href);
+          if (!restoreSearchReturnTarget(currentUrl) && currentUrl.hash) scrollToRouteTarget(currentUrl);
         }).catch(function(error){
           if (error && error.name === 'AbortError') return;
           var method = document.querySelector('[data-pa-search-results] .pa-search-method');

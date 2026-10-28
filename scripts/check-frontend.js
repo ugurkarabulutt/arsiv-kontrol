@@ -1792,7 +1792,7 @@ for (const marker of ['data-scroll-top aria-label="Yukarı çık" aria-hidden="t
 for (const marker of ['bindFastPublicNavigation', 'replacePublicArchiveShell', 'DOMParser', 'replaceWith', 'cleanupPublicArchivePage', '__publicArchiveFastNavBound', 'dsca-page-cache:v22', 'X-Public-Navigation', 'pushState({ paFast: true, paFrom: fromHref }', "window['his' + 'tory']"]) {
   assert(publicRendererSource.includes(marker), `Public hizli sayfa gecisi marker eksik: ${marker}`);
 }
-for (const marker of ['data-search-results-back', 'returnToSearchResults', 'rememberCurrentRoutePosition', 'restoreScrollY', "scrollRestoration = 'manual'", 'id="arama-sonuclari"']) {
+for (const marker of ['data-search-results-back', 'data-search-result-slug', 'returnToSearchResults', 'rememberCurrentRoutePosition', 'rememberSearchReturnTarget', 'restoreSearchReturnTarget', 'restoreScrollY', "scrollRestoration = 'manual'", 'id="arama-sonuclari"']) {
   assert(publicRendererSource.includes(marker), `Public arama sonucuna donus marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('document.write(') && !publicRendererSource.includes('document.open('), 'Public hizli gecis tam sayfa document.write kullanmamali.');
