@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-29 7 Safha 4 Teslim Rehberi — Noindex Ön İzleme Hazır
+## 2026-10-29 7 Safha 4 Teslim Rehberi — Production Tamamlandı
 
 - Kullanıcının verdiği dokuz sayfalık `Yedi_Safha_Dort_Teslim_Blog.pdf`, mevcut
   konu rehberi sözleşmesine aktarıldı. Public yazıda 62 içerik bloğu, yedi safha
@@ -17,8 +17,13 @@
 - Runtime commit `7de8d74` branch'e push edildi. Noindex ön izleme deployment
   `dpl_2AC3LUdETu5S24fj2zX4jRWJLfjT` READY:
   `https://arsiv-kontrol-49yydwdm6-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/yedi-safha-dort-teslim`.
-  Canlı ana sayfa `200`; yeni rehber canlıda `404` ve yeni asset sürümü production'da
-  yok. Production'a geçiş için kullanıcı onayı beklenir.
+- Kullanıcı onayıyla production deployment `dpl_E21sLRfrvpLKgBVqn6tVBUBcr2bM`
+  READY oldu ve `https://arsiv.ibrahimlive.ai` alias'ına alındı. Canlı rehber
+  `https://arsiv.ibrahimlive.ai/konu-rehberi/yedi-safha-dort-teslim` adresinde `200`,
+  doğru canonical ve `index,follow` ile yayımdadır. `BlogPosting` ve `FAQPage`
+  şemaları, sitemap, `llms.txt`, konu rehberleri dizini ve 480/720/1280 WebP görselleri
+  canlıda doğrulandı. 1440 px ve 390 px canlı Chromium kontrollerinde yatay taşma,
+  konsol hatası veya eksik görsel yok; 6 FAQ görünür ve temel konu sırası doğrudur.
 
 ## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Production Tamamlandı
 

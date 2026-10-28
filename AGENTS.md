@@ -1207,7 +1207,7 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-29
-- **7 Safha 4 Teslim temel konu rehberi noindex ön izlemeye alındı:** Kullanıcının
+- **7 Safha 4 Teslim temel konu rehberi production'a alındı:** Kullanıcının
   verdiği dokuz sayfalık PDF mevcut public konu rehberi veri sözleşmesine aktarıldı.
   Yeni `yedi-safha-dort-teslim` rehberi 62 içerik bloğu, yedi safha/dört teslim
   tablosu, 32 âyet bağlantısı, 6 görünür FAQ ve aynı soruları taşıyan `FAQPage`
@@ -1220,8 +1220,11 @@ tespit edilir).
   push edildi. Vercel noindex ön izleme deployment
   `dpl_2AC3LUdETu5S24fj2zX4jRWJLfjT` READY:
   `https://arsiv-kontrol-49yydwdm6-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/yedi-safha-dort-teslim`.
-  Canlı site değiştirilmedi; yeni route production'da `404` ve yayın için açık
-  kullanıcı onayı beklenir.
+  Kullanıcı onayı ardından production deployment `dpl_E21sLRfrvpLKgBVqn6tVBUBcr2bM`
+  READY oldu ve `https://arsiv.ibrahimlive.ai` alias'ına alındı. Canlı rehber `200`,
+  canonical doğru ve `index,follow`; `BlogPosting`/`FAQPage`, sitemap, `llms.txt`,
+  konu rehberleri dizini ve üç WebP türevi doğrulandı. Canlı 1440 px/390 px Chromium
+  kontrollerinde yatay taşma, konsol hatası veya eksik görsel yok; 6 FAQ görünür.
 
 ### 2026-10-25
 
