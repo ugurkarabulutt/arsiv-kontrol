@@ -5575,6 +5575,78 @@ function renderShell({ title, description, active, content, status = 200, questi
           }
         });
       }
+      function publicRoutePath(url) {
+        var path = String(url && url.pathname || '/').replace(/\\/+$/, '') || '/';
+        var base = '${PREVIEW_BASE}' || '';
+        return base ? (String(path.slice(base.length) || '/').replace(/\\/+$/, '') || '/') : path;
+      }
+      var searchReturnStorageKey = 'dsca-search-return-target:v1';
+      function rememberSearchReturnTarget(url) {
+        try {
+          var slug = '';
+          if (url && url.hash && url.hash.indexOf('#sonuc-') === 0) {
+            try { slug = decodeURIComponent(url.hash.slice('#sonuc-'.length)); }
+            catch (error) { slug = url.hash.slice('#sonuc-'.length); }
+          }
+          if (!slug && document.body) slug = document.body.getAttribute('data-question-slug') || '';
+          if (!slug || !url || publicRoutePath(url) !== '/arama') return;
+          window.sessionStorage.setItem(searchReturnStorageKey, JSON.stringify({
+            route: url.pathname + url.search,
+            slug: slug,
+            expiresAt: Date.now() + 10000
+          }));
+        } catch (error) {}
+      }
+      function restoreSearchReturnTarget(url) {
+        try {
+          if (!url || publicRoutePath(url) !== '/arama') return false;
+          var raw = window.sessionStorage.getItem(searchReturnStorageKey);
+          if (!raw) return false;
+          var payload = JSON.parse(raw);
+          if (!payload || Number(payload.expiresAt || 0) < Date.now()) {
+            window.sessionStorage.removeItem(searchReturnStorageKey);
+            return false;
+          }
+          if (payload.route !== url.pathname + url.search || !payload.slug) return false;
+          var target = document.getElementById('sonuc-' + payload.slug);
+          if (!target) return false;
+          window.requestAnimationFrame(function(){
+            try { target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+            catch (error) { target.scrollIntoView(); }
+          });
+          window.setTimeout(function(){
+            try {
+              if (window.sessionStorage.getItem(searchReturnStorageKey) === raw) {
+                window.sessionStorage.removeItem(searchReturnStorageKey);
+              }
+            } catch (error) {}
+          }, 4000);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+      function scrollToRouteTarget(url, options) {
+        var restoreScrollY = Number(options && options.restoreScrollY);
+        if (Number.isFinite(restoreScrollY) && restoreScrollY >= 0) {
+          window.requestAnimationFrame(function(){
+            window.requestAnimationFrame(function(){
+              try { window.scrollTo({ top: restoreScrollY, left: 0, behavior: 'auto' }); }
+              catch (error) { window.scrollTo(0, restoreScrollY); }
+            });
+          });
+          return;
+        }
+        var hash = decodeURIComponent(String(url.hash || '').replace(/^#/, ''));
+        if (hash) {
+          var target = document.getElementById(hash);
+          if (target) {
+            window.requestAnimationFrame(function(){ target.scrollIntoView({ block: 'start' }); });
+            return;
+          }
+        }
+        try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (error) { window.scrollTo(0, 0); }
+      }
       function bindFastPublicNavigation() {
         var root = document.documentElement;
         var ttl = 2 * 60 * 1000;
@@ -5772,73 +5844,6 @@ function renderShell({ title, description, active, content, status = 200, questi
               paScrollY: Math.max(0, Number(window.scrollY || window.pageYOffset || 0))
             }), '', window.location.href);
           } catch (error) {}
-        }
-        var searchReturnStorageKey = 'dsca-search-return-target:v1';
-        function rememberSearchReturnTarget(url) {
-          try {
-            var slug = '';
-            if (url && url.hash && url.hash.indexOf('#sonuc-') === 0) {
-              try { slug = decodeURIComponent(url.hash.slice('#sonuc-'.length)); }
-              catch (error) { slug = url.hash.slice('#sonuc-'.length); }
-            }
-            if (!slug && document.body) slug = document.body.getAttribute('data-question-slug') || '';
-            if (!slug || !url || relativePath(url) !== '/arama') return;
-            window.sessionStorage.setItem(searchReturnStorageKey, JSON.stringify({
-              route: url.pathname + url.search,
-              slug: slug,
-              expiresAt: Date.now() + 10000
-            }));
-          } catch (error) {}
-        }
-        function restoreSearchReturnTarget(url) {
-          try {
-            if (!url || relativePath(url) !== '/arama') return false;
-            var raw = window.sessionStorage.getItem(searchReturnStorageKey);
-            if (!raw) return false;
-            var payload = JSON.parse(raw);
-            if (!payload || Number(payload.expiresAt || 0) < Date.now()) {
-              window.sessionStorage.removeItem(searchReturnStorageKey);
-              return false;
-            }
-            if (payload.route !== url.pathname + url.search || !payload.slug) return false;
-            var target = document.getElementById('sonuc-' + payload.slug);
-            if (!target) return false;
-            window.requestAnimationFrame(function(){
-              try { target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
-              catch (error) { target.scrollIntoView(); }
-            });
-            window.setTimeout(function(){
-              try {
-                if (window.sessionStorage.getItem(searchReturnStorageKey) === raw) {
-                  window.sessionStorage.removeItem(searchReturnStorageKey);
-                }
-              } catch (error) {}
-            }, 4000);
-            return true;
-          } catch (error) {
-            return false;
-          }
-        }
-        function scrollToRouteTarget(url, options) {
-          var restoreScrollY = Number(options && options.restoreScrollY);
-          if (Number.isFinite(restoreScrollY) && restoreScrollY >= 0) {
-            window.requestAnimationFrame(function(){
-              window.requestAnimationFrame(function(){
-                try { window.scrollTo({ top: restoreScrollY, left: 0, behavior: 'auto' }); }
-                catch (error) { window.scrollTo(0, restoreScrollY); }
-              });
-            });
-            return;
-          }
-          var hash = decodeURIComponent(String(url.hash || '').replace(/^#/, ''));
-          if (hash) {
-            var target = document.getElementById(hash);
-            if (target) {
-              window.requestAnimationFrame(function(){ target.scrollIntoView({ block: 'start' }); });
-              return;
-            }
-          }
-          try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (error) { window.scrollTo(0, 0); }
         }
         function replacePublicArchiveShell(url, html, mode, options) {
           if (!html || !/<html[\\s>]/i.test(html)) {
