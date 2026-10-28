@@ -6017,10 +6017,10 @@ function renderShell({ title, description, active, content, status = 200, questi
             var state = pageStack().state || {};
             var previousUrl = state.paFrom ? new URL(state.paFrom, window.location.href) : null;
             var fallbackUrl = new URL(anchor.href, window.location.href);
+            rememberSearchReturnTarget(fallbackUrl);
             if (!previousUrl || relativePath(previousUrl) !== '/arama') return false;
             if (previousUrl.pathname !== fallbackUrl.pathname || previousUrl.search !== fallbackUrl.search) return false;
             event.preventDefault();
-            rememberSearchReturnTarget(fallbackUrl);
             pageStack().back();
             return true;
           } catch (error) {
