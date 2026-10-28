@@ -1,5 +1,20 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-29 Tezekkür / Tefekkür Kavram Bütünlüğü — Production Tamamlandı
+
+- Kaynakta doğru olan `Böylece tezekkür edersiniz diye` ifadesinin AI tarafından
+  `Böylece tefekkür edersiniz diye` biçimine dönüştürüldüğü doğrulandı. Tüm
+  geçmiş kayıt taramasında yalnız 1 onaylı history ve bağlı 1 public kayıt
+  etkilendi; diğer doğru `tefekkür` kullanımları değiştirilmedi.
+- `analysis-core.js` iki kavramı iki yönde de birbirine dönüştüren AI bulgularını
+  reddeder. `scripts/resolve-tezekkur-tefekkur-20261029.js` varsayılan kuru
+  çalışma, optimistic lock, geri alınabilir tam metin kaydı, public/arama
+  yenileme, kullanıcı bildirimi ve admin işlem izi içerir.
+- `npm.cmd run check` 282/282 başarılı. Runtime commit `c24f406`; preview
+  `dpl_26xLb4uymjaES48FRU7RhYe6Ri8r`, production
+  `dpl_9vfPBRjGoVZehXhfT7VYnCsHvQPx` READY ve canlı alias'tadır. Hedef soru
+  `200`, canonical doğru, doğru `tezekkür` görünür ve yanlış dönüşüm yoktur.
+
 ## 2026-10-29 Arama Sonuçlarına Bağlamlı Dönüş — Production Tamamlandı
 
 - Public arama sonuçlarından açılan soru URL'si sorguyu `arama` parametresiyle taşır;
@@ -1224,6 +1239,14 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-29
+- **Tezekkür / tefekkür kavram bütünlüğü düzeltildi:** Benan Veyseloğlu'nun
+  bildirdiği canlı soruda kaynakta doğru olan `tezekkür` ifadesinin AI tarafından
+  `tefekkür`e çevrildiği doğrulandı. Kesin cümle dönüşümünün geçmiş taramasında
+  yalnız 1 onaylı history ve bağlı 1 public kayıt bulundu. İki kavramı birbirine
+  dönüştüren bulgular kalıcı olarak reddedildi; geri alınabilir bakım paketi
+  canlıda uygulandı, public kayıt ve arama belgesi yenilendi, çözüm/admin izleri
+  ile kullanıcı bildirimi oluşturuldu. `npm.cmd run check` 282/282 başarılı;
+  runtime `c24f406`, production `dpl_9vfPBRjGoVZehXhfT7VYnCsHvQPx` READY.
 - **7 Safha 4 Teslim temel konu rehberi production'a alındı:** Kullanıcının
   verdiği dokuz sayfalık PDF mevcut public konu rehberi veri sözleşmesine aktarıldı.
   Yeni `yedi-safha-dort-teslim` rehberi 62 içerik bloğu, yedi safha/dört teslim

@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 Tezekkür / Tefekkür Kavram Bütünlüğü — Production Tamamlandı
+
+- Benan Veyseloğlu'nun bildirdiği canlı soru kaynak metin, düzeltilmiş metin,
+  onay kaydı ve public kayıtla karşılaştırıldı. Kaynakta doğru olan
+  `Böylece tezekkür edersiniz diye` ifadesinin AI tarafından
+  `Böylece tefekkür edersiniz diye` biçimine dönüştürüldüğü doğrulandı.
+- Tüm geçmiş `history` ve `public_qa` kayıtlarında aynı kesin cümle dönüşümü
+  tarandı. Yalnız 1 onaylı history ve ona bağlı 1 yayımlanmış public kayıt
+  etkilendi; iki kavramı farklı yerlerde doğru kullanan metinlere dokunulmadı.
+- `analysis-core.js` artık `tezekkür` ve `tefekkür` köklerini iki yönde de
+  birbirine dönüştüren AI bulgularını reddediyor. Regresyon testleri hem tek
+  kelimeyi ve cümleyi hem de aynı metindeki meşru `tefekkür` kullanımının
+  korunmasını doğruluyor.
+- `scripts/resolve-tezekkur-tefekkur-20261029.js` önce kuru çalıştırıldı;
+  yalnız kesin eşleşen 1 konumu optimistic lock ile düzeltti. Eski/yeni tam
+  metin `content_correction_log` içinde geri alınabilir kaydedildi; public kayıt
+  ve arama belgesi yeniden üretildi. Bir çözüm günlüğü, bir admin işlem izi ve
+  Benan Veyseloğlu'na bir çözüm bildirimi oluşturuldu.
+- `npm.cmd run check` 282/282 ve `git diff --check` başarılı. Runtime commit
+  `c24f406` push edildi. Preview deployment
+  `dpl_26xLb4uymjaES48FRU7RhYe6Ri8r`, production deployment
+  `dpl_9vfPBRjGoVZehXhfT7VYnCsHvQPx` READY oldu ve
+  `https://arsiv.ibrahimlive.ai` alias'ına alındı. Canlı `/health=ok`; hedef
+  soru `200`, canonical doğru, doğru ifade görünür ve yanlış ifade yoktur.
+
 ## 2026-10-29 Arama Sonuçlarına Bağlamlı Dönüş — Production Tamamlandı
 
 - Public aramada bir soru açıldığında soru sayfasına `arama` bağlamı taşınır ve üstte
