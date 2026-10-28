@@ -1,5 +1,26 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 Arama Sonuçlarına Bağlamlı Dönüş — Production Tamamlandı
+
+- Public aramada bir soru açıldığında soru sayfasına `arama` bağlamı taşınır ve üstte
+  görünür `“sorgu” arama sonuçlarına dön` bağlantısı gösterilir. Doğrudan açılan soru
+  sayfalarında bağlamsız dönüş bağlantısı gösterilmez; canonical ve paylaşım URL'leri
+  arama parametresi taşımadan temiz kalır.
+- Dönüş hedefi yalnız sorguyu değil açılan soru kartının slug'ını da saklar. SPA geçmişi,
+  tam sayfa navigasyonu, ilk sunucu render'ı ve sonradan gelen anlamsal yeniden sıralama
+  aynı ortak geri yükleme akışını kullanır; sonuç sırası değişse bile kullanıcı açtığı
+  karta geri getirilir.
+- `npm.cmd run check` 280/280 ve `git diff --check` başarılı. Son noindex önizleme
+  `dpl_AAXgGRFPbXHvZaAM9k4zTyfmew6C` READY oldu; gerçek `dua` verisiyle 1440x900 ve
+  390x844 Playwright testlerinde tam sayfa soru açılışı, dönüş metni, sorgu korunması,
+  seçili kart görünürlüğü ve yatay taşma kontrolleri geçti.
+- Runtime commit zinciri `1dcb57c`, `70c4aed`, `b4088c8`, `429a4a1`, `77dba57` ve
+  `e322be9` branch'e push edildi. Nihai production deployment
+  `dpl_H2Jvtzc7fN1pQc3cKqSA5T34fPJP` READY ve `https://arsiv.ibrahimlive.ai`
+  alias'ında etkindir. Canlı `/health=ok`; aynı masaüstü/mobil tam sayfa dönüş testi,
+  temiz canonical, doğrudan soru erişimi, tarayıcı hatası ve yatay taşma kontrolleri
+  başarılıdır.
+
 ## 2026-10-29 7 Safha 4 Teslim Rehberi — Production Tamamlandı
 
 - Kullanıcının verdiği dokuz sayfalık `Yedi_Safha_Dort_Teslim_Blog.pdf`, mevcut

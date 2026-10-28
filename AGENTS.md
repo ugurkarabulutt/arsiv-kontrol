@@ -1,5 +1,22 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-29 Arama Sonuçlarına Bağlamlı Dönüş — Production Tamamlandı
+
+- Public arama sonuçlarından açılan soru URL'si sorguyu `arama` parametresiyle taşır;
+  soru sayfasındaki görünür dönüş bağlantısı kullanıcıyı aynı sorguya ve açtığı soru
+  kartına geri getirir. Doğrudan soru girişlerinde bu bağlantı yoktur; canonical ve
+  paylaşım URL'leri temiz soru URL'sini kullanır.
+- Dönüş hedefi `sessionStorage` içinde kısa süreli slug ve rota olarak tutulur. Yardımcı
+  işlevler sayfa ortak kapsamındadır; SPA geçmişi, tam sayfa navigasyonu, ilk render ve
+  anlamsal sonuçların sonradan yeniden sıralanması aynı geri yükleme davranışını kullanır.
+- `npm.cmd run check` 280/280 geçti. Gerçek `dua` verisiyle noindex önizleme ve canlı
+  production üzerinde 1440x900/390x844 Playwright testleri; sorgu, görünür dönüş metni,
+  seçili kart, temiz canonical, doğrudan erişim, yatay taşma ve tarayıcı hatası
+  kontrolleri başarılıdır.
+- Runtime commitler `1dcb57c` ile `e322be9` arasındaki ilgili zincirdir. Nihai production
+  deployment `dpl_H2Jvtzc7fN1pQc3cKqSA5T34fPJP` READY ve
+  `https://arsiv.ibrahimlive.ai` alias'ında etkindir.
+
 ## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Production Tamamlandı
 
 - Canlıdaki 41 açık geri bildirim, 35 bağlı `history` kaydı ve asıl kaynak metinleriyle
