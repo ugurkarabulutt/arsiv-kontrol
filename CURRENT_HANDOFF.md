@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 7 Safha 4 Teslim Rehberi — Noindex Ön İzleme Hazır
+
+- Kullanıcının verdiği dokuz sayfalık `Yedi_Safha_Dort_Teslim_Blog.pdf`, mevcut
+  konu rehberi sözleşmesine aktarıldı. Public yazıda 62 içerik bloğu, yedi safha
+  tablosu, 32 âyet bağlantısı ve görünür/şemalı 6 FAQ bulunur; PDF dipnot numaraları
+  veya iç süreç kaynak notları public metne taşınmadı.
+- Rehber slug'ı `yedi-safha-dort-teslim`; dizinde Allah’a ulaşmayı dilemek,
+  hidayet ve mürşide tâbiiyetten sonra temel konu olarak sıralanır. Mevcut rehberlerin
+  ilgili bağlantıları yeni ana rehbere bağlandı.
+- Yüz, yazı ve dinî figür içermeyen; yedi iç içe teras ile dört aydınlık geçidi
+  kullanan özgün görselin 480/720/1280 WebP türevleri eklendi. Görsel bütçeleri
+  sırasıyla 60/120/300 KiB sınırlarının altındadır.
+- `npm.cmd run check` 280/280 ve `git diff --check` başarılı. Masaüstü 1440 px ve
+  mobil 390 px Chromium kontrollerinde yatay taşma yok; 6 FAQ görünür.
+- Runtime commit `7de8d74` branch'e push edildi. Noindex ön izleme deployment
+  `dpl_2AC3LUdETu5S24fj2zX4jRWJLfjT` READY:
+  `https://arsiv-kontrol-49yydwdm6-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/yedi-safha-dort-teslim`.
+  Canlı ana sayfa `200`; yeni rehber canlıda `404` ve yeni asset sürümü production'da
+  yok. Production'a geçiş için kullanıcı onayı beklenir.
+
 ## 2026-10-27 Kaynak Metin Bütünlüğü Geri Bildirimleri — Production Tamamlandı
 
 - Çalışma `.codex-admin-review-actions-fix`, dal

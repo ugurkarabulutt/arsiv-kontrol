@@ -1206,6 +1206,23 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-29
+- **7 Safha 4 Teslim temel konu rehberi noindex ön izlemeye alındı:** Kullanıcının
+  verdiği dokuz sayfalık PDF mevcut public konu rehberi veri sözleşmesine aktarıldı.
+  Yeni `yedi-safha-dort-teslim` rehberi 62 içerik bloğu, yedi safha/dört teslim
+  tablosu, 32 âyet bağlantısı, 6 görünür FAQ ve aynı soruları taşıyan `FAQPage`
+  şemasıyla birlikte `BlogPosting` şemasına sahiptir. Dizin sıralamasında Allah’a
+  ulaşmayı dilemek, hidayet ve mürşide tâbiiyetten sonra yer alır; mevcut rehberlerin
+  anlamlı iç bağlantıları bu ana rehbere bağlandı. Yüz ve yazı içermeyen özgün
+  yedi teras/dört geçit görselinin 480, 720 ve 1280 WebP türevleri eklendi.
+  `npm.cmd run check` 280/280, `git diff --check`, 1440 px masaüstü ve 390 px mobil
+  Chromium doğrulamaları başarılı; yatay taşma yok. Runtime commit `7de8d74`
+  push edildi. Vercel noindex ön izleme deployment
+  `dpl_2AC3LUdETu5S24fj2zX4jRWJLfjT` READY:
+  `https://arsiv-kontrol-49yydwdm6-ugurkarabulutts-projects.vercel.app/public-preview/konu-rehberi/yedi-safha-dort-teslim`.
+  Canlı site değiştirilmedi; yeni route production'da `404` ve yayın için açık
+  kullanıcı onayı beklenir.
+
 ### 2026-10-25
 
 - **Denetim kullanılabilirliği ve Bihter geri bildirimleri kalıcı olarak
