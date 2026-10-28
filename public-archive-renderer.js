@@ -5776,7 +5776,12 @@ function renderShell({ title, description, active, content, status = 200, questi
         var searchReturnStorageKey = 'dsca-search-return-target:v1';
         function rememberSearchReturnTarget(url) {
           try {
-            var slug = document.body ? document.body.getAttribute('data-question-slug') : '';
+            var slug = '';
+            if (url && url.hash && url.hash.indexOf('#sonuc-') === 0) {
+              try { slug = decodeURIComponent(url.hash.slice('#sonuc-'.length)); }
+              catch (error) { slug = url.hash.slice('#sonuc-'.length); }
+            }
+            if (!slug && document.body) slug = document.body.getAttribute('data-question-slug') || '';
             if (!slug || !url || relativePath(url) !== '/arama') return;
             window.sessionStorage.setItem(searchReturnStorageKey, JSON.stringify({
               route: url.pathname + url.search,
