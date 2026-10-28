@@ -138,6 +138,28 @@ test('korumali ifadeleri degistiren issue gecersiz sayilir', () => {
   assert.equal(isProtectedChange('Zumer', 'Zümer'), true);
   assert.equal(isProtectedChange('Tabiî ki', 'tâbî ki'), true);
   assert.equal(isProtectedChange('Resul', 'resûl'), false);
+  assert.equal(isProtectedChange('tezekkür', 'tefekkür'), true);
+  assert.equal(isProtectedChange('Böylece tezekkür edersiniz diye', 'Böylece tefekkür edersiniz diye'), true);
+  assert.equal(isProtectedChange('tefekkür', 'tezekkür'), true);
+});
+
+test('tezekkur ile tefekkur kavramlarini birbirine donusturmez', () => {
+  const source = 'Böylece tezekkür edersiniz diye, size vasiyet etti. İnsan tefekkür eder.';
+  const result = finalizeResult({
+    correctedText: 'Böylece tefekkür edersiniz diye, size vasiyet etti. İnsan tezekkür eder.',
+    categories: {
+      sozluk: {
+        issues: [
+          { original: 'tezekkür', fixed: 'tefekkür', rule: 'yanlış kavram değişimi' },
+          { original: 'tefekkür', fixed: 'tezekkür', rule: 'yanlış kavram değişimi' }
+        ]
+      }
+    }
+  }, source);
+
+  assert.equal(result.totalErrors, 0);
+  assert.equal(result.score, 100);
+  assert.equal(result.correctedText, source);
 });
 
 test('duzeltilmis tam metin korunur ama reddedilen bulgular skor disi kalir', () => {

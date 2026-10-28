@@ -598,6 +598,12 @@ function isLiveFeedbackLexicalFalsePositive(original, fixed) {
   if (/^VÜCUD$/u.test(canonicalText(original)) && /^VÜCUT$/u.test(canonicalText(fixed))) return true;
   if (/^TÖVBE\s+1$/u.test(canonicalText(original)) && /^Tevbe\s+1$/u.test(canonicalText(fixed))) return true;
   if (/^mürşid\.\s+mürşidle$/iu.test(from) && /^mürşid\s+ile$/iu.test(to)) return true;
+  const fromHasTezekkur = /\btezekk[\p{L}\p{N}_]*/iu.test(from);
+  const fromHasTefekkur = /\btefekk[\p{L}\p{N}_]*/iu.test(from);
+  const toHasTezekkur = /\btezekk[\p{L}\p{N}_]*/iu.test(to);
+  const toHasTefekkur = /\btefekk[\p{L}\p{N}_]*/iu.test(to);
+  if ((fromHasTezekkur && !fromHasTefekkur && toHasTefekkur && !toHasTezekkur)
+      || (fromHasTefekkur && !fromHasTezekkur && toHasTezekkur && !toHasTefekkur)) return true;
   return false;
 }
 
