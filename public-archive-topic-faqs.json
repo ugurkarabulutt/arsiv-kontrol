@@ -109,5 +109,13 @@
     { "question": "Zikir vesveseye karşı nasıl yapılır?", "sourceHeading": "Vesvese karşısında zikir nasıl yapılır?" },
     { "question": "Zikir yapılmasına rağmen vesvese neden yeniden gelir?", "sourceHeading": "Zikrediyorum ama vesvese yeniden geliyor; neden?" },
     { "question": "Geçmiş günahlar yüzünden ümit kesmek doğru mudur?", "sourceHeading": "Geçmiş günahlar yüzünden ümit kesmek" }
+  ],
+  "yedi-safha-dort-teslim": [
+    { "question": "7 safha 4 teslim nedir?", "sourceHeading": "Yedi safha hangileridir?", "blockCount": 2 },
+    { "question": "Yedi safha ve dört teslim, yedi ayrı ibadet midir?", "answer": "Hayır. Safhalar, Allah’a yönelişten iradenin teslimine kadar gerçekleşen manevî merhalelerdir. Namaz, oruç, zekât ve diğer ibadetler bu hayatın içinde yer alır; zikir ise nefsin kalbinin temizlenmesinde temel bir görev üstlenir. Safhaları anlatmak, ibadetlerin yerini yeni isimlerle değiştirmek değildir." },
+    { "question": "Dört teslim de Allah’a ulaşmak anlamına mı gelir?", "answer": "Dördü de Allah’a teslimdir; fakat gerçekleşme biçimleri aynı değildir. Ruh Allah’a ulaşır. Fizik vücut Allah’ın emirlerine ve yasaklarına itaat eder. Nefsin tesliminde bütün afetler temizlenir. İradenin tesliminde ise kulun iradesi İlâhî İrade’ye bağlanır." },
+    { "question": "Bütün safhalar tamamlanmadan Allah’ın müjdesi başlamaz mı?", "answer": "Müjde yalnızca son safhaya bırakılmış değildir. Allah’a ulaşmayı kalpten dilemek kurtuluşun başlangıcıdır. İlk dileğin kıymeti ile tamamlanması emredilen teslimleri birbirine karıştırmamak gerekir: Başlangıç değerlidir; yolun daha ileri hedefleri de vardır." },
+    { "question": "Allah’a ulaşmayı diledikten sonra hiç çaba göstermeden beklenir mi?", "answer": "Hayır. Allah’ın yardımı ibadetleri gereksiz hâle getirmez. Kul mürşidini ister, tâbî olur, zikrini yapar ve ibadetlerine devam eder. Ruhun tesliminden sonra da zikir korunur ve artırılır; fizik vücudun, nefsin ve iradenin teslimlerine doğru ilerlenir." },
+    { "question": "Nefs temizlendikten sonra neden iki safha daha vardır?", "answer": "Nefsin kalbindeki afetlerin bitmesi, bütün teslimlerin tamamlanması değildir. Beşinci safhada nefs teslim olur. Altıncı safhada ihlâs ve irşad olmak, yedinci safhada iradenin teslimi vardır. Nefsin tasfiyesi, kalbin müzeyyen olması ve iradenin Allah’a teslim edilmesi aynı merhale değildir." }
   ]
 }

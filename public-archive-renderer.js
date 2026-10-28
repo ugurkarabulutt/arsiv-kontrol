@@ -19,7 +19,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261024-sirati-mustakim-v1';
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261028-yedi-safha-v1';
 const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
@@ -758,6 +758,7 @@ const HOME_READING_PATHS = [
   { title: 'Allah’a Ulaşmayı Dilemek', slug: 'allaha-ulasmayi-dilemek', articleSlug: 'allaha-ulasmayi-dilemek', text: 'Yolun başlangıcı, talep ve kalbin yönelişi.' },
   { title: 'Hidayet Nedir?', slug: 'hidayet', articleSlug: 'hidayet', text: 'Hidayetin anlamı, başlangıcı ve hayattaki karşılığı.' },
   { title: 'Mürşide Tâbiiyet', slug: 'tabiiyet', articleSlug: 'murside-tabiiyet', fallbackSlug: 'mursid', text: 'Tâbiiyet, mürşid ve irşad bağıyla ilgili cevaplar.' },
+  { title: '7 Safha 4 Teslim Nedir?', slug: 'teslimiyet', articleSlug: 'yedi-safha-dort-teslim', text: 'Allah’a yönelişten ruhun, fizik vücudun, nefsin ve iradenin teslimine bütün yol.' },
   { title: 'Hacet Namazı ve Mürşidi Allah’tan İstemek', slug: 'mursid', articleSlug: 'hacet-namazi-ve-mursidi-allahtan-istemek', query: 'Hacet namazı mürşid', text: 'Hacet namazının kılınışı ve mürşidi Allah’tan istemek.' },
   { title: 'Sıratı Mustakîm Nedir?', slug: 'hidayet', articleSlug: 'sirati-mustakim-nedir', query: 'Sıratı Mustakîm', text: 'Allah’a ulaştıran yolun hedefini, başlangıcını ve safhalarını okuyun.' },
   { title: 'Zikir Nedir?', slug: 'zikir', articleSlug: 'zikir-ve-daimi-zikir', text: 'Zikrin sürekliliği ve kalbin diri tutulması.' },
@@ -776,6 +777,7 @@ const HOME_READING_PATHS = [
 ];
 
 const TOPIC_GUIDE_VISUALS = Object.freeze({
+  'yedi-safha-dort-teslim': { mobile: 'topic-guide-yedi-safha-480.webp', tablet: 'topic-guide-yedi-safha-720.webp', desktop: 'topic-guide-yedi-safha-1280.webp', width: 1280, height: 853, position: '50% 50%' },
   'sirati-mustakim-nedir': { mobile: 'topic-guide-sirati-mustakim-480.webp', tablet: 'topic-guide-sirati-mustakim-720.webp', desktop: 'topic-guide-sirati-mustakim-1280.webp', width: 1280, height: 853, position: '50% 50%' },
   'vesvese-nedir-nasil-kurtulunur': { mobile: 'topic-guide-vesvese-480.webp', tablet: 'topic-guide-vesvese-720.webp', desktop: 'topic-guide-vesvese-1280.webp', width: 1280, height: 853, position: '50% 50%' },
   'mursid-nedir-kurana-gore-gorevi': { mobile: 'topic-guide-mursid-480.webp', tablet: 'topic-guide-mursid-720.webp', desktop: 'topic-guide-mursid-1280.webp', width: 1280, height: 853, position: '50% 50%' },
@@ -1770,21 +1772,22 @@ function topicArticleTocHtml(blocks = []) {
 }
 
 const TOPIC_GUIDE_PRIORITY_LINKS = Object.freeze({
-  'sirati-mustakim-nedir': ['allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'zikir-ve-daimi-zikir', 'teslimiyet'],
-  'vesvese-nedir-nasil-kurtulunur': ['zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'tovbe-ve-gunahlardan-kurtulus'],
-  'mursid-nedir-kurana-gore-gorevi': ['murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'hidayet', 'allaha-ulasmayi-dilemek', 'tasavvuf-nedir'],
-  'allaha-ulasmayi-dilemek': ['sirati-mustakim-nedir', 'hidayet', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'tasavvuf-nedir'],
-  hidayet: ['sirati-mustakim-nedir', 'allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'ruh-nefs-fizik-vucut'],
-  'murside-tabiiyet': ['sirati-mustakim-nedir', 'mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'nefs-tezkiyesi'],
-  'zikir-ve-daimi-zikir': ['sirati-mustakim-nedir', 'vesvese-nedir-nasil-kurtulunur', 'nefs-tezkiyesi', 'teslimiyet', 'tasavvuf-nedir', 'ruh-nefs-fizik-vucut'],
-  'nefs-tezkiyesi': ['vesvese-nedir-nasil-kurtulunur', 'zikir-ve-daimi-zikir', 'ruh-nefs-fizik-vucut', 'teslimiyet', 'kurana-gore-mutluluk'],
-  teslimiyet: ['sirati-mustakim-nedir', 'ruh-nefs-fizik-vucut', 'tasavvuf-nedir', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
-  'ruh-nefs-fizik-vucut': ['nefs-tezkiyesi', 'teslimiyet', 'zikir-ve-daimi-zikir', 'hidayet'],
-  'kurana-gore-mutluluk': ['nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
-  'tasavvuf-nedir': ['teslimiyet', 'allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
-  'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
-  'dua-ve-tevekkul': ['allaha-ulasmayi-dilemek', 'teslimiyet', 'zikir-ve-daimi-zikir', 'kurana-gore-mutluluk'],
-  'hacet-namazi-ve-mursidi-allahtan-istemek': ['sirati-mustakim-nedir', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'hidayet']
+  'yedi-safha-dort-teslim': ['allaha-ulasmayi-dilemek', 'murside-tabiiyet', 'hidayet', 'sirati-mustakim-nedir', 'zikir-ve-daimi-zikir', 'teslimiyet'],
+  'sirati-mustakim-nedir': ['yedi-safha-dort-teslim', 'allaha-ulasmayi-dilemek', 'hidayet', 'murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'zikir-ve-daimi-zikir', 'teslimiyet'],
+  'vesvese-nedir-nasil-kurtulunur': ['zikir-ve-daimi-zikir', 'nefs-tezkiyesi', 'allaha-ulasmayi-dilemek', 'yedi-safha-dort-teslim', 'dua-ve-tevekkul', 'tovbe-ve-gunahlardan-kurtulus'],
+  'mursid-nedir-kurana-gore-gorevi': ['murside-tabiiyet', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'yedi-safha-dort-teslim', 'hidayet', 'allaha-ulasmayi-dilemek', 'tasavvuf-nedir'],
+  'allaha-ulasmayi-dilemek': ['yedi-safha-dort-teslim', 'sirati-mustakim-nedir', 'hidayet', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'tasavvuf-nedir'],
+  hidayet: ['yedi-safha-dort-teslim', 'sirati-mustakim-nedir', 'allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'teslimiyet', 'ruh-nefs-fizik-vucut'],
+  'murside-tabiiyet': ['yedi-safha-dort-teslim', 'sirati-mustakim-nedir', 'mursid-nedir-kurana-gore-gorevi', 'hacet-namazi-ve-mursidi-allahtan-istemek', 'allaha-ulasmayi-dilemek', 'hidayet', 'nefs-tezkiyesi'],
+  'zikir-ve-daimi-zikir': ['yedi-safha-dort-teslim', 'sirati-mustakim-nedir', 'vesvese-nedir-nasil-kurtulunur', 'nefs-tezkiyesi', 'teslimiyet', 'tasavvuf-nedir', 'ruh-nefs-fizik-vucut'],
+  'nefs-tezkiyesi': ['yedi-safha-dort-teslim', 'vesvese-nedir-nasil-kurtulunur', 'zikir-ve-daimi-zikir', 'ruh-nefs-fizik-vucut', 'teslimiyet', 'kurana-gore-mutluluk'],
+  teslimiyet: ['yedi-safha-dort-teslim', 'sirati-mustakim-nedir', 'ruh-nefs-fizik-vucut', 'tasavvuf-nedir', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
+  'ruh-nefs-fizik-vucut': ['yedi-safha-dort-teslim', 'nefs-tezkiyesi', 'teslimiyet', 'zikir-ve-daimi-zikir', 'hidayet'],
+  'kurana-gore-mutluluk': ['yedi-safha-dort-teslim', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir', 'teslimiyet', 'tasavvuf-nedir'],
+  'tasavvuf-nedir': ['yedi-safha-dort-teslim', 'teslimiyet', 'allaha-ulasmayi-dilemek', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'zikir-ve-daimi-zikir'],
+  'tovbe-ve-gunahlardan-kurtulus': ['allaha-ulasmayi-dilemek', 'yedi-safha-dort-teslim', 'murside-tabiiyet', 'nefs-tezkiyesi', 'zikir-ve-daimi-zikir'],
+  'dua-ve-tevekkul': ['allaha-ulasmayi-dilemek', 'yedi-safha-dort-teslim', 'teslimiyet', 'zikir-ve-daimi-zikir', 'kurana-gore-mutluluk'],
+  'hacet-namazi-ve-mursidi-allahtan-istemek': ['sirati-mustakim-nedir', 'mursid-nedir-kurana-gore-gorevi', 'murside-tabiiyet', 'yedi-safha-dort-teslim', 'allaha-ulasmayi-dilemek', 'dua-ve-tevekkul', 'hidayet']
 });
 
 function relatedTopicGuideArticles(article = {}) {
