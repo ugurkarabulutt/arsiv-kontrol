@@ -10,6 +10,7 @@ const {
 } = require('../scripts/resolve-tezekkur-tefekkur-20261029');
 const { buildPlan: buildVirdPlan } = require('../scripts/resolve-vird-context-20261029');
 const { buildPlan: buildAntimatterPlan } = require('../scripts/resolve-antimatter-range-20261029');
+const { buildPlan: buildQuestionOrderPlan } = require('../scripts/resolve-question-order-prefix-20261029');
 
 test('feedback uzlastirmasi ayni kelimenin dogru kullanimlarina dokunmaz', () => {
   const original = 'Âyet içinde hudâ geçer. Açıklamada hidayet yolu ve hidayet kavramı anlatılır.';
@@ -69,4 +70,14 @@ test('antimadde paketi yalniz kesin 6 milyon cumlesini duzeltir', () => {
 
   assert.equal(plan.replacements, 1);
   assert.equal(plan.newText, "0'dan artı sonsuza kadar olan kesim yok. Başka bir ölçüm 6 milyona kadar sürdü.");
+});
+
+test('soru sira etiketi paketi yalniz baslangictaki editoryal ifadeyi temizler', () => {
+  const history = {
+    id: 'history-4',
+    question_text: 'Muhterem Hocam, birinci sualim: Yaşadığımız imtihanlar zikir eksikliğinden midir?'
+  };
+  const plan = buildQuestionOrderPlan(history);
+
+  assert.equal(plan.newText, 'Muhterem Hocam, yaşadığımız imtihanlar zikir eksikliğinden midir?');
 });

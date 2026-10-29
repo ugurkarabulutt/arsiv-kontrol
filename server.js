@@ -20,7 +20,7 @@ const {
 } = require('./public-archive-seo');
 const {
   LOW_SCORE_MSG, LOW_SCORE_THRESHOLD,
-  candidateTextHashes, finalizeResult, normalizeText, textHash
+  candidateTextHashes, finalizeResult, normalizeText, stripQuestionOrderLead, textHash
 } = require('./analysis-core');
 const {
   ROLES, canManagePublicQuestions, effectiveRole, isAdminRole, isAssignableRole,
@@ -1484,13 +1484,14 @@ function normalizeHistoryTags(value) {
 }
 
 function normalizeHistoryQuestion(value) {
-  return String(value || '')
+  const normalized = String(value || '')
     .replace(/\r\n?/g, '\n')
     .split('\n')
     .map(line => line.replace(/[ \t]+/g, ' ').trim())
     .filter(Boolean)
     .join('\n')
     .slice(0, 8000);
+  return stripQuestionOrderLead(normalized);
 }
 
 function normalizeHistoryCorrectedText(value) {

@@ -8,6 +8,7 @@ const {
   finalizeResult,
   isProtectedChange,
   legacyTextHash,
+  stripQuestionOrderLead,
   sourceContainsIssue,
   textHash
 } = require('../analysis-core');
@@ -1692,6 +1693,31 @@ test('Muhterem Hocam hitabi virgul ve baglama uygun devam harfiyle standartlasir
     const result = finalizeResult({ categories: {} }, source);
     assert.equal(result.correctedText, source);
     assert.equal(result.totalErrors, 0);
+  }
+});
+
+test('soru basindaki sira etiketi temizlenir ve devam harfi baglama gore duzeltilir', () => {
+  assert.equal(
+    stripQuestionOrderLead('Muhterem Hocam, birinci sualim: Yaşadığımız imtihanlar zikir eksikliğinden midir?'),
+    'Muhterem Hocam, yaşadığımız imtihanlar zikir eksikliğinden midir?'
+  );
+  assert.equal(
+    stripQuestionOrderLead('Muhterem Hocam İkinci sualim: Teravih namazını en az kaç rekât kılmalıyız?'),
+    'Muhterem Hocam, teravih namazını en az kaç rekât kılmalıyız?'
+  );
+  assert.equal(
+    stripQuestionOrderLead('Muhterem Hocam, 2. sorum: Allah yolunda nasıl ilerlemeliyiz?'),
+    'Muhterem Hocam, Allah yolunda nasıl ilerlemeliyiz?'
+  );
+});
+
+test('anlamli veya birlesik sual ifadeleri otomatik temizlenmez', () => {
+  for (const source of [
+    'Muhterem Hocamın birinci suali şöyledir.',
+    'Muhterem Hocam, bir sualim olacaktı: Tevekkül nedir?',
+    'Muhterem Hocam, 1. Sual de dünya anlatılıyor. 2. Sualim: Devrin imamı kimdir?'
+  ]) {
+    assert.equal(stripQuestionOrderLead(source), source);
   }
 });
 

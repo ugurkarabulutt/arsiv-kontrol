@@ -38,12 +38,14 @@ function stripPublicQuestionAddress(value = '') {
       .replace(/^(?:(?:soru-\d+|\d+-soru)-)?muhterem-hocam(?:izin|iz|in)?(?:-+|(?=[a-z]))/i, '')
       .replace(/^(?:soru-\d+|\d+-soru)-+/i, '')
       .replace(/^\d+-(?:sual-de|suali|sual)-+/i, '')
+      .replace(/^(?:birinci|ikinci|ucuncu|dorduncu|besinci|altinci|yedinci|sekizinci|dokuzuncu|onuncu)-(?:sualim|sorum)-+/i, '')
       .replace(/^-+|-+$/g, '');
     return cleaned || source;
   }
   const cleaned = source
     .replace(/^\s*(?:[“"'‘’]\s*)?(?:(?:Soru\s+\d+|\d+\s*[.)-]?\s*Soru)\s*[:.)-]?\s*)?/iu, '')
     .replace(/^\s*Muhterem\s+Hocam(?:ızın|ız|ın)?\s*[,;:–—-]?\s*/iu, '')
+    .replace(/^\s*(?:birinci|ikinci|üçüncü|dördüncü|beşinci|altıncı|yedinci|sekizinci|dokuzuncu|onuncu)\s+(?:sualim|sorum)\s*[:;,.–—-]?\s*/iu, '')
     .replace(/^\s*(?:Soru\s+\d+|\d+\s*[.)-]?\s*Soru|\d+\s*[.)-]?\s*Sual(?:i|ı|de)?)\s*[:.,)-]?\s*/iu, '')
     .trim();
   return cleaned || source;

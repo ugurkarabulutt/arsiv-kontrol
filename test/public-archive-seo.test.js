@@ -42,6 +42,17 @@ test('question URL removes possessive and malformed honorific openings', () => {
   assert.equal(publicQuestionSlug('muhterem-hocamtasavvufta-egitim-nasildir'), 'tasavvufta-egitim-nasildir');
 });
 
+test('question URL removes first and second question order labels', () => {
+  assert.equal(
+    publicQuestionSlug('Muhterem Hocam, birinci sualim: Yaşadığımız imtihanlar zikir eksikliğinden midir?'),
+    'yasadigimiz-imtihanlar-zikir-eksikliginden-midir'
+  );
+  assert.equal(
+    publicQuestionSlug('ikinci-sualim-teravih-namazini-en-az-kac-rekat-kilmaliyiz'),
+    'teravih-namazini-en-az-kac-rekat-kilmaliyiz'
+  );
+});
+
 test('future question URLs resolve collisions without changing the question', () => {
   const used = new Set(['cennete-kimler-girer']);
   assert.equal(uniquePublicQuestionSlug('Muhterem Hocam, cennete kimler girer?', used), 'cennete-kimler-girer-2');

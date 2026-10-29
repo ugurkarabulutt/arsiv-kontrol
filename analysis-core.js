@@ -1540,6 +1540,44 @@ function muhteremHocamCorrection(sourceText) {
   return match[0] === fixed ? null : { original: match[0], fixed };
 }
 
+const QUESTION_ORDER_LEADS = new Set([
+  'birinci', 'ikinci', 'ucuncu', 'dorduncu', 'besinci',
+  'altinci', 'yedinci', 'sekizinci', 'dokuzuncu', 'onuncu'
+]);
+
+function questionOrderKey(value = '') {
+  return String(value || '')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[.)-]+$/u, '')
+    .replace(/ı/g, 'i')
+    .replace(/ü/g, 'u')
+    .replace(/ö/g, 'o')
+    .replace(/ş/g, 's')
+    .replace(/ç/g, 'c')
+    .replace(/ğ/g, 'g');
+}
+
+function stripQuestionOrderLead(sourceText) {
+  const source = String(sourceText || '');
+  const match = source.match(/^\s*Muhterem\s+Hocam\s*,?\s*(?<order>[\p{L}\p{N}.()-]+)\s+(?<label>[\p{L}]+)\s*[:;,.–—-]\s*(?<rest>[\s\S]+)$/u);
+  if (!match?.groups) return source;
+
+  const orderKey = questionOrderKey(match.groups.order);
+  const labelKey = questionOrderKey(match.groups.label);
+  if (!(QUESTION_ORDER_LEADS.has(orderKey) || /^\d+$/u.test(orderKey))) return source;
+  if (labelKey !== 'sualim' && labelKey !== 'sorum') return source;
+
+  const rest = String(match.groups.rest || '').trimStart();
+  const continuation = rest.match(/^(?<lead>["“'‘(]*)(?<word>[\p{L}][\p{L}'’\-]*)(?<tail>[\s\S]*)$/u);
+  if (!continuation?.groups) return `Muhterem Hocam, ${rest}`;
+
+  const { lead = '', word = '', tail = '' } = continuation.groups;
+  const fixedWord = preserveMuhteremHocamContinuation(word, tail, lead)
+    ? word
+    : lowerTurkishInitial(word);
+  return `Muhterem Hocam, ${lead}${fixedWord}${tail}`;
+}
+
 function applyDeterministicStandards(cats, sourceText) {
   const text = String(sourceText || '');
   if (!text) return cats;
@@ -2066,6 +2104,7 @@ module.exports = {
   finalizeResult,
   legacyTextHash,
   normalizeText,
+  stripQuestionOrderLead,
   sourceContainsIssue,
   textHash
 };
