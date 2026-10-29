@@ -1,5 +1,19 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-29 Fizik Beden Teslimi Vird Kavramı — Production Tamamlandı
+
+- Ham dökümde iki kez geçen `fizik beden tesliminde verdiğimizi` bağlamının
+  yalnız ilkini AI `virdimizi` yapmış, ikinci geçiş canlıya yanlış çıkmıştı. Tüm
+  history/public taramasında yalnız 1 onaylı ve 1 public kayıt etkilendi.
+- Denetim çekirdeği artık bu bağlamdaki tüm geçişleri deterministik olarak
+  `virdimizi` yapar; ilgisiz `verdiğimizi` kullanımlarını korur. Geri alınabilir
+  bakım paketi canlıda uygulandı; public/arama kaydı, çözüm/admin izleri ve Eda
+  Şahinhan bildirimi oluşturuldu.
+- `npm.cmd run check` 284/284 başarılı. Runtime `417a4eb`; preview
+  `dpl_481GVsdcRRhFVULAAfbnVFbSwroe`, production
+  `dpl_7ie9waQoi2iZenxhyJ3dAp3soR33` READY. Canlı URL `200`, canonical doğru,
+  `virdimizi` görünür ve yanlış bağlam yoktur.
+
 ## 2026-10-29 Tezekkür / Tefekkür Kavram Bütünlüğü — Production Tamamlandı
 
 - Kaynakta doğru olan `Böylece tezekkür edersiniz diye` ifadesinin AI tarafından
@@ -1239,6 +1253,13 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-29
+- **Fizik beden teslimi vird kavramı düzeltildi:** Ham dökümde iki kez geçen
+  `fizik beden tesliminde verdiğimizi` bağlamının yalnız ilkini AI düzeltmişti.
+  Geçmiş/public taramasında yalnız 1 onaylı history ve bağlı 1 public kayıt
+  bulundu. Bağlamlı deterministik kural ve regresyon testleri eklendi; geri
+  alınabilir bakım paketi canlıda uygulandı, public/arama kaydı yenilendi ve Eda
+  Şahinhan'a çözüm bildirimi gönderildi. `npm.cmd run check` 284/284 başarılı;
+  runtime `417a4eb`, production `dpl_7ie9waQoi2iZenxhyJ3dAp3soR33` READY.
 - **Tezekkür / tefekkür kavram bütünlüğü düzeltildi:** Benan Veyseloğlu'nun
   bildirdiği canlı soruda kaynakta doğru olan `tezekkür` ifadesinin AI tarafından
   `tefekkür`e çevrildiği doğrulandı. Kesin cümle dönüşümünün geçmiş taramasında

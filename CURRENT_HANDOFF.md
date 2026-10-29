@@ -1,5 +1,26 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 Fizik Beden Teslimi Vird Kavramı — Production Tamamlandı
+
+- Eda Şahinhan'ın bildirdiği canlı soruda `fizik beden tesliminde verdiğimizi`
+  ifadesi kaynak, onaylı metin ve public kayıtla karşılaştırıldı. Ham dökümde aynı
+  bağlamsal kelime hatası iki kez bulunuyordu; AI ilkini `virdimizi` yapmış, ikinci
+  geçişi atlamıştı.
+- Tüm history durumları ve public kayıtlar tarandı. Yalnız 1 onaylı history ve
+  ona bağlı 1 yayımlanmış public kayıt etkilendi. `analysis-core.js` artık bu
+  fizik beden teslimi bağlamındaki her `verdiğimizi` geçişini deterministik olarak
+  `virdimizi` yapar; ilgisiz `söz verdiğimizi` gibi kullanımları korur.
+- `scripts/resolve-vird-context-20261029.js` kuru çalıştırmada 1 kayıt/1 değişiklik
+  buldu. Canlı uygulamada optimistic lock kullanıldı; eski-yeni tam metin
+  `content_correction_log` içinde geri alınabilir kaydedildi, public kayıt ve arama
+  belgesi yenilendi. Bir çözüm günlüğü, bir admin işlem izi ve Eda Şahinhan'a bir
+  çözüm bildirimi oluşturuldu.
+- `npm.cmd run check` 284/284 ve `git diff --check` başarılı. Runtime commit
+  `417a4eb` push edildi. Preview `dpl_481GVsdcRRhFVULAAfbnVFbSwroe`, production
+  `dpl_7ie9waQoi2iZenxhyJ3dAp3soR33` READY ve canlı alias'a alındı. Hedef URL
+  `200`, canonical doğru; `Dolayısıyla fizik beden tesliminde virdimizi...`
+  görünür ve yanlış `verdiğimizi` bağlamı yoktur.
+
 ## 2026-10-29 Tezekkür / Tefekkür Kavram Bütünlüğü — Production Tamamlandı
 
 - Benan Veyseloğlu'nun bildirdiği canlı soru kaynak metin, düzeltilmiş metin,
