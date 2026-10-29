@@ -1,5 +1,22 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-29 Antimadde Artı Sonsuz Kaynak Bütünlüğü — Production Tamamlandı
+
+- Benan Veyseloğlu'nun public soru notuyla bildirdiği `0'dan 6 milyona kadar
+  olan kesim yok.` cümlesinin doğru biçiminin `0'dan artı sonsuza kadar olan
+  kesim yok.` olduğu doğrulandı. Tüm history durumları ve public kayıtlar
+  tarandı: 3 onaylı, 2 reddedilmiş history ile bunlara bağlı 2 published ve
+  1 `content_review_hidden` public kayıt etkilendi.
+- Denetim çekirdeği artık yalnız bu kesin cümleyi deterministik düzeltir;
+  ilgisiz `6 milyona kadar` kullanımlarını korur. Bakım aracı optimistic lock,
+  eski/yeni tam metin geri alma kaydı, public görünürlük koruması ve idempotent
+  çözüm kayıtları içerir.
+- Canlıda 5 history düzeltildi ve 5 `content_correction_log` kaydı yazıldı.
+  İki yayımdaki URL doğru cümleyle `200`; gizli kopya `404` kalmıştır. Benan
+  Veyseloğlu'nun public bildirimi cevaplandı, Eda Şahinhan'a çözüm bildirimi
+  oluşturuldu. `npm.cmd run check` 286/286 başarılı. Runtime `a9b7ef8`;
+  production `dpl_DuJruAeExaAXLL7hzEQCQYfQdRqK` READY ve canlı alias'tadır.
+
 ## 2026-10-29 Fizik Beden Teslimi Vird Kavramı — Production Tamamlandı
 
 - Ham dökümde iki kez geçen `fizik beden tesliminde verdiğimizi` bağlamının
@@ -1253,6 +1270,15 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-29
+- **Antimadde artı sonsuz kaynak bütünlüğü düzeltildi:** Yanlış `0'dan 6
+  milyona kadar olan kesim yok.` cümlesi yalnız kesin bağlamında `0'dan artı
+  sonsuza kadar olan kesim yok.` biçimine alınır. Geçmiş taramasındaki 5
+  history kaydı geri alınabilir logla düzeltildi; 2 published public kayıt
+  yenilendi, 1 gizli public kayıt gizli kaldı. Benan Veyseloğlu'nun public
+  bildirimi cevaplandı ve Eda Şahinhan'a çözüm bildirimi oluşturuldu.
+  `npm.cmd run check` 286/286 başarılı; runtime `a9b7ef8`, production
+  `dpl_DuJruAeExaAXLL7hzEQCQYfQdRqK` READY. İki canlı URL `200` ve doğru
+  cümleyi gösteriyor; gizli URL `404`.
 - **Fizik beden teslimi vird kavramı düzeltildi:** Ham dökümde iki kez geçen
   `fizik beden tesliminde verdiğimizi` bağlamının yalnız ilkini AI düzeltmişti.
   Geçmiş/public taramasında yalnız 1 onaylı history ve bağlı 1 public kayıt

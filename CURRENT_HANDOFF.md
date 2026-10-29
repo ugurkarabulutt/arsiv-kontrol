@@ -1,5 +1,30 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 Antimadde Artı Sonsuz Kaynak Bütünlüğü — Production Tamamlandı
+
+- Eda Şahinhan'ın ilettiği Benan Veyseloğlu public soru notu canlı cevap,
+  bağlı history ve tüm geçmiş/public eşleşmeleriyle karşılaştırıldı. Yanlış
+  `0'dan 6 milyona kadar olan kesim yok.` cümlesinin doğru biçimi
+  `0'dan artı sonsuza kadar olan kesim yok.` olarak doğrulandı.
+- Etki taramasında 5 history bulundu: 3 `onaylandi`, 2 `reddedildi`. Onaylı
+  kayıtlara bağlı 2 `published` ve 1 `content_review_hidden` public kayıt vardı.
+  `analysis-core.js` artık yalnız kesin cümleyi deterministik düzeltir; ilgisiz
+  `6 milyona kadar` kullanımları değiştirmez.
+- `scripts/resolve-antimatter-range-20261029.js` önce dry-run çalıştırıldı.
+  Canlı uygulamada optimistic lock ile 5 history düzeltildi; her eski/yeni tam
+  metin ayrı `content_correction_log` kaydına yazıldı. Üç public kayıt güncel
+  onay metniyle yenilendi ve görünürlükleri değişmedi. Bir çözüm günlüğü, bir
+  admin işlem izi, Benan Hanım'ın public bildirimi için cevap ve Eda Hanım için
+  bir çözüm bildirimi oluşturuldu.
+- `npm.cmd run check` 286/286 ve `git diff --check` başarılı. Runtime commit
+  `a9b7ef8` push edildi. Production deployment
+  `dpl_DuJruAeExaAXLL7hzEQCQYfQdRqK` /
+  `https://arsiv-kontrol-55m24usvx-ugurkarabulutts-projects.vercel.app` READY
+  oldu ve `https://arsiv.ibrahimlive.ai` alias'ına alındı. Canlı `/health=ok`;
+  `-3` ve `-5` yayımdaki URL'ler `200`, doğru cümle görünür ve yanlış cümle
+  yoktur. Gizli kopyanın URL'si `404` kalmıştır. Son dry-run `impacted: 0`,
+  `alreadyApplied: true` döndürdü.
+
 ## 2026-10-29 Fizik Beden Teslimi Vird Kavramı — Production Tamamlandı
 
 - Eda Şahinhan'ın bildirdiği canlı soruda `fizik beden tesliminde verdiğimizi`
