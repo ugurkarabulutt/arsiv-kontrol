@@ -1270,6 +1270,21 @@ tespit edilir).
 ## Değişiklik Günlüğü
 
 ### 2026-10-29
+- **İbadetler Neden Yapılır konu rehberi hazırlandı:** 13 sayfalık kaynak PDF,
+  public konu rehberi veri modeline 111 içerik bloğu, 30 âyet atfı ve PDF ile
+  birebir uyumlu 8 görünür FAQ olarak aktarıldı. FAQPage ve BlogPosting şemaları,
+  temel rehber sıralaması ve altı ilgili rehber bağlantısı eklendi. Yeni rehber
+  `7 Safha 4 Teslim`den sonra ve `Hacet Namazı`ndan önce konumlandırıldı; yeni
+  içerik birinci sıraya taşınmadı. İbadetlerin aynı hedefte birleşmesini anlatan
+  özgün görsel 480/720/1280 WebP varyantlarıyla eklendi ve asset cache anahtarı
+  `20261029-ibadetler-v1` oldu. Değişen dosyalar:
+  `public-archive-topic-articles.json`, `public-archive-topic-faqs.json`,
+  `public-archive-renderer.js`, `scripts/check-frontend.js`,
+  `test/public-archive-renderer.test.js`, üç görsel asset, `AGENTS.md` ve
+  `CURRENT_HANDOFF.md`. `npm.cmd run check` başarılı; 287/287 test geçti.
+  1440x1000 ve 390x844 yerel/hosted noindex Playwright kontrollerinde doğru
+  responsive görsel, 8 FAQ, 6 iç bağlantı ve yatay taşmasız görünüm doğrulandı.
+  Preview `dpl_DFBf5N5NXZvDhHYHUmpdzZFui1CJ` READY; production'a alınmadı.
 - **Antimadde artı sonsuz kaynak bütünlüğü düzeltildi:** Yanlış `0'dan 6
   milyona kadar olan kesim yok.` cümlesi yalnız kesin bağlamında `0'dan artı
   sonsuza kadar olan kesim yok.` biçimine alınır. Geçmiş taramasındaki 5

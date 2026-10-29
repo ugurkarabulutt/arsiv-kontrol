@@ -110,6 +110,40 @@
     { "question": "Zikir yapılmasına rağmen vesvese neden yeniden gelir?", "sourceHeading": "Zikrediyorum ama vesvese yeniden geliyor; neden?" },
     { "question": "Geçmiş günahlar yüzünden ümit kesmek doğru mudur?", "sourceHeading": "Geçmiş günahlar yüzünden ümit kesmek" }
   ],
+  "ibadetler-neden-yapilir": [
+    {
+      "question": "Namaz kılmak ve oruç tutmak, Allah’a ulaşmayı dilemek yerine geçer mi?",
+      "answer": "Hayır. Namaz kılmak, oruç tutmak ve diğer ibadetleri yerine getirmek gereklidir; fakat Allah’a ulaşmayı dilemek, ruhun hayattayken Allah’a ulaşmasını kalpten istemektir. Kişinin ibadet ediyor olması, bu dileği ayrıca ele almasını gereksiz kılmaz. Yapılacak olan ibadetleri bırakmak değil, Allah’a ulaşma talebiyle birlikte sürdürmektir."
+    },
+    {
+      "question": "Zikir en büyük ibadetse yalnız zikir yapmak yeterli olur mu?",
+      "answer": "Zikrin en büyük ibadet oluşu diğer emirleri ortadan kaldırmaz. Namazın, orucun, zekâtın ve diğer ibadetlerin yeri korunur. Zikir nefsin kalbinin temizlenmesindeki temel ibadettir; namazın veya diğer farzların terk edilmesine izin veren bir istisna değildir. Allah’ın emirlerini birbirinin karşısına koymak yerine birlikte yaşamak gerekir."
+    },
+    {
+      "question": "Yalnız namaz kılarak veya Kur’ân okuyarak günlük zikir vazifemi yapmış olur muyum?",
+      "answer": "Namazda Allah’ın anılması ve Kur’ân’ın okunması vardır. Fakat bunlar, Allah’ın ismini tekrar ederek yapılan zikrin yerine geçirilmez. Namaz namaz olarak, Kur’ân okumak da kendi yerinde yerine getirilir. Kişi bunların yanında zikrine de devam eder. Aynı hedefe yönelmeleri, bütün ibadetlerin aynı uygulama olması demek değildir."
+    },
+    {
+      "question": "Yedi vakit namazın tamamı farz mıdır?",
+      "answer": "Hayır. Beş vakit namaz farzdır. Kuşluk ve teheccüd sünnet olarak ilâve edilir. Bu sebeple yedi vakit namazdan bahsederken, beş farz vakitle ilâve sünnetleri birbirinden ayırmak gerekir. Farzın korunması ve sünnetin yaşanması kendi yerlerinde değerlendirilir."
+    },
+    {
+      "question": "İbadet yapıyorum ama hâlâ öfkeleniyorum. Bu neyi gösterir?",
+      "answer": "İbadet yapmakla nefsin bütün afetlerinin bir anda sona ermesi aynı şey değildir. Nefs tezkiyesi bir süreçtir; nefsin tesliminde afetlerin tamamı temizlenir. Kişi öfkesini ibadetleriyle haklı çıkarmak yerine nefsinde temizlenmesi gerekeni görmelidir. Namazına, zikrine ve Allah’ın emirlerine devam ederken yanlış davranışını da düzeltmeye çalışmalıdır."
+    },
+    {
+      "question": "Hacca gidemeyen kişi Allah’a ulaşma yoluna giremez mi?",
+      "answer": "Hac, gücü yetenlere farz kılınmıştır. Hacca gidebilme imkânı ile ruhun Allah’a ulaşmasını dilemek aynı şey değildir. İnsan, maddî imkânı hacca elvermediği için Allah’a yönelmeyi ertelememelidir. Allah’a ulaşmayı dilemekle başlayan yol, mal varlığına veya bir hac yolculuğunu önceden tamamlamaya bağlanmaz."
+    },
+    {
+      "question": "Ruh Allah’a ulaştıktan sonra namaz ve zikir bırakılır mı?",
+      "answer": "Hayır. Ruhun Allah’a ulaşması ilk teslimdir. Fizik vücudun, nefsin ve iradenin teslimleri henüz ileridedir. İbadetler devam eder; zikir artar. Allah’a yakınlık kulluğun sonu değil, daha ileri seviyede yaşanmasıdır. Hiçbir teslim Allah’ın emirlerini değersiz hâle getirmez."
+    },
+    {
+      "question": "İbadetlerimi güzelleştirmek için nereden başlamalıyım?",
+      "answer": "Önce hedefini açıkça ortaya koy: Ruhunun hayattayken Allah’a ulaşmasını kalpten dile. Allah’tan O’na ulaştıracak mürşidini iste. Namazını, zikrini ve diğer vazifelerini birbirinden koparmadan sürdür. Allah’ı zikretmek, O’na şükretmek ve güzel ibadet etmek için yardımını iste. Yalnız yaptığın işin sayısına değil, Allah’a yönelişine ve insanlara davranışlarına da bak."
+    }
+  ],
   "yedi-safha-dort-teslim": [
     { "question": "7 safha 4 teslim nedir?", "sourceHeading": "Yedi safha hangileridir?", "blockCount": 2 },
     { "question": "Yedi safha ve dört teslim, yedi ayrı ibadet midir?", "answer": "Hayır. Safhalar, Allah’a yönelişten iradenin teslimine kadar gerçekleşen manevî merhalelerdir. Namaz, oruç, zekât ve diğer ibadetler bu hayatın içinde yer alır; zikir ise nefsin kalbinin temizlenmesinde temel bir görev üstlenir. Safhaları anlatmak, ibadetlerin yerini yeni isimlerle değiştirmek değildir." },

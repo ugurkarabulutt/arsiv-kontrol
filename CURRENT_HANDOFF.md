@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 İbadetler Neden Yapılır Rehberi — Hosted Ön İzleme Hazır
+
+- Kullanıcının verdiği 13 sayfalık `Ibadetler_Detayli_Blog.pdf`, mevcut konu
+  rehberi sözleşmesine aktarıldı. Yazı 111 içerik bloğunda namaz, oruç,
+  zekât-birr, hac-kurban, Kur’ân, zikir, dua ve yedi safha-dört teslim
+  bağlantısını korur; 30 âyet atfı ve görünür/şemalı 8 FAQ içerir.
+- Rehber `İbadetler Neden Yapılır?` başlığıyla temel rehber sıralamasında
+  `7 Safha 4 Teslim`den sonra, `Hacet Namazı`ndan önce yer alır. Eski genel
+  `Namaz ve İbadet Bilinci` arama kartı aynı konuya açılan yeni rehberle
+  değiştirildi. Altı ilgili rehber ve karşılıklı iç bağlantılar eklendi.
+- İbadetlerin aynı hedefte birleşmesini anlatan metinsiz, insansız özgün görsel
+  üretildi; 480/720/1280 WebP varyantları sırasıyla yaklaşık 36/79/220 KiB'dir.
+  Asset cache anahtarı `20261029-ibadetler-v1` olarak yenilendi.
+- `npm.cmd run check` başarılı, 287/287 test geçti. Yerel ve hosted noindex ön
+  izleme Playwright ile 1440x1000 ve 390x844 boyutlarında doğrulandı: doğru
+  responsive görsel, 8 FAQ, 6 ilgili rehber ve sıfır yatay taşma. Vercel preview
+  `dpl_DFBf5N5NXZvDhHYHUmpdzZFui1CJ` READY:
+  `https://arsiv-kontrol-jldaeex9l-ugurkarabulutts-projects.vercel.app`.
+  Preview `/health=ok`, rehber `200` ve `noindex,nofollow`; production değişmedi.
+
 ## 2026-10-29 Antimadde Artı Sonsuz Kaynak Bütünlüğü — Production Tamamlandı
 
 - Eda Şahinhan'ın ilettiği Benan Veyseloğlu public soru notu canlı cevap,

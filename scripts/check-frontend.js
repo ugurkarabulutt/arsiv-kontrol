@@ -1492,7 +1492,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261028-yedi-safha-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261029-ibadetler-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1544,7 +1544,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261028-yedi-safha-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261029-ibadetler-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
@@ -1588,7 +1588,7 @@ for (const marker of ['pa-topic-atlas', 'pa-topic-route', 'pa-discovery-map', 'p
   assert(!homePreview.includes(marker), `Public ana sayfada tekrar eden konu/kavram bolumu kalmamali: ${marker}`);
 }
 const topicGuideIndexPreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberleri').html;
-for (const marker of ['<title>Konu Rehberleri | Dini Sorular ve Cevaplar Arşivi</title>', 'pa-guide-index-hero', 'pa-guide-index-art', 'topic-routes-archive-720.webp', 'topic-routes-archive-1280.webp', 'pa-guide-directory-list', 'pa-guide-directory-art', 'Okumaya bir konudan başlayın.', '7 Safha 4 Teslim Nedir?', 'topic-guide-yedi-safha-480.webp', 'topic-guide-yedi-safha-720.webp', 'topic-guide-yedi-safha-1280.webp', 'Sıratı Mustakîm Nedir?', 'topic-guide-sirati-mustakim-480.webp', 'topic-guide-sirati-mustakim-720.webp', 'topic-guide-sirati-mustakim-1280.webp', 'Vesvese Nedir? Vesveseden Nasıl Kurtulunur?', 'topic-guide-vesvese-480.webp', 'topic-guide-vesvese-720.webp', 'topic-guide-vesvese-1280.webp', 'Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', 'topic-guide-mursid-480.webp', 'topic-guide-mursid-720.webp', 'topic-guide-mursid-1280.webp', 'Allah’a Ulaşmayı Dilemek', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'Zikir Nedir?', 'Nefs Tezkiyesi', 'Teslimiyet Nedir?', 'Ruh Nedir?', 'Kur’ân’a Göre Mutluluk Nedir?', 'Tasavvuf Nedir?', '"@type":"CollectionPage"', '"@type":"ItemList"']) {
+for (const marker of ['<title>Konu Rehberleri | Dini Sorular ve Cevaplar Arşivi</title>', 'pa-guide-index-hero', 'pa-guide-index-art', 'topic-routes-archive-720.webp', 'topic-routes-archive-1280.webp', 'pa-guide-directory-list', 'pa-guide-directory-art', 'Okumaya bir konudan başlayın.', 'İbadetler Neden Yapılır?', 'topic-guide-ibadetler-480.webp', 'topic-guide-ibadetler-720.webp', 'topic-guide-ibadetler-1280.webp', '7 Safha 4 Teslim Nedir?', 'topic-guide-yedi-safha-480.webp', 'topic-guide-yedi-safha-720.webp', 'topic-guide-yedi-safha-1280.webp', 'Sıratı Mustakîm Nedir?', 'topic-guide-sirati-mustakim-480.webp', 'topic-guide-sirati-mustakim-720.webp', 'topic-guide-sirati-mustakim-1280.webp', 'Vesvese Nedir? Vesveseden Nasıl Kurtulunur?', 'topic-guide-vesvese-480.webp', 'topic-guide-vesvese-720.webp', 'topic-guide-vesvese-1280.webp', 'Mürşid Nedir? Kur’ân’a Göre Mürşidin Görevi Nedir?', 'topic-guide-mursid-480.webp', 'topic-guide-mursid-720.webp', 'topic-guide-mursid-1280.webp', 'Allah’a Ulaşmayı Dilemek', 'Hidayet Nedir?', 'Mürşide Tâbiiyet', 'Zikir Nedir?', 'Nefs Tezkiyesi', 'Teslimiyet Nedir?', 'Ruh Nedir?', 'Kur’ân’a Göre Mutluluk Nedir?', 'Tasavvuf Nedir?', '"@type":"CollectionPage"', '"@type":"ItemList"']) {
   assert(topicGuideIndexPreview.includes(marker), `Public konu rehberleri dizini marker eksik: ${marker}`);
 }
 const topicArticlePreview = renderPublicArchivePreviewRoute('/public-preview/konu-rehberi/allaha-ulasmayi-dilemek').html;
@@ -1734,6 +1734,11 @@ for (const [fileName, maxKiB] of [['topic-guide-yedi-safha-480.webp', 60], ['top
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
   assert(fs.existsSync(assetPath), `Public yedi safha rehberi gorseli eksik: ${fileName}`);
   assert(fs.statSync(assetPath).size < maxKiB * 1024, `Public yedi safha rehberi gorseli hiz butcesini asmamali: ${fileName}`);
+}
+for (const [fileName, maxKiB] of [['topic-guide-ibadetler-480.webp', 60], ['topic-guide-ibadetler-720.webp', 120], ['topic-guide-ibadetler-1280.webp', 300]]) {
+  const assetPath = path.join(publicAssetRoot, 'assets', fileName);
+  assert(fs.existsSync(assetPath), `İbadetler rehberi gorseli eksik: ${fileName}`);
+  assert(fs.statSync(assetPath).size <= maxKiB * 1024, `İbadetler rehberi gorseli ${maxKiB} KiB sinirini asmamali: ${fileName}`);
 }
 for (const fileName of ['topic-showcase-hacet-namazi-720.webp', 'topic-showcase-dilemek-720.webp', 'topic-showcase-hidayet-720.webp', 'topic-showcase-tabiiyet-720.webp', 'topic-showcase-zikir-720.webp', 'topic-showcase-nefs-720.webp', 'topic-showcase-teslimiyet-720.webp', 'topic-showcase-ruh-nefs-720.webp', 'topic-showcase-mutluluk-720.webp', 'topic-showcase-tasavvuf-720.webp', 'topic-showcase-tovbe-720.webp', 'topic-showcase-dua-tevekkul-720.webp']) {
   const assetPath = path.join(publicAssetRoot, 'assets', fileName);
@@ -2111,7 +2116,7 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
 for (const marker of ['--pa-answer-cta-text: #FFFFFF;', '--pa-answer-cta-text: #0F4930;', '--pa-answer-cta-shine: rgb(255 253 247 / 0.28);', 'color: var(--pa-answer-cta-text);', 'var(--pa-answer-cta-shine)']) {
   assert(publicCss.includes(marker), `Public cevap CTA kontrast standardi eksik: ${marker}`);
 }
-assert(publicRendererSource.includes("20261028-yedi-safha-v1"), 'Public arsiv CSS cache anahtari yedi safha rehberi icin yenilenmeli.');
+assert(publicRendererSource.includes("20261029-ibadetler-v1"), 'Public arsiv CSS cache anahtari ibadetler rehberi icin yenilenmeli.');
 for (const marker of ['.pa-cta-visual', '.pa-cta-content', '.pa-cta-kicker', '.pa-cta-button-icon', 'object-position: 66% center', 'min-height: 420px']) {
   assert(publicCss.includes(marker), `Public soru CTA gorsel CSS marker eksik: ${marker}`);
 }
