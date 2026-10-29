@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-29 Soru Sıra Etiketi Düzeltmesi — Production Tamamlandı
+
+- Worktree: `.codex-admin-review-actions-fix`; branch:
+  `codex/review-analysis-quality-gate`.
+- Runtime commit `9c659c6` push edildi. Production deployment
+  `dpl_GGiQMxUiJns7RgH3ViH9cxCHVYWC` READY ve
+  `https://arsiv.ibrahimlive.ai` aliasına bağlı; `/health=ok`, root/admin `200`,
+  admin `noindex/no-store`.
+- Yeni sorularda baştaki `birinci/ikinci sualim:` ve numaralı `sorum:` sıra
+  ifadeleri kayda alınmadan temizleniyor. Anlamlı veya birleşik soru anlatımları
+  korunuyor.
+- Canlı paket `question-order-prefix-source-integrity-20261029`: 16 history,
+  12 public kayıt, 12 kalıcı URL yönlendirmesi, 16 geri alınabilir alan logu,
+  1 çözüm logu, 1 yönetici işlem logu ve Eda Şahinhan'a 1 bildirim.
+- Bildirilen yeni URL:
+  `https://arsiv.ibrahimlive.ai/soru/yasadigimiz-imtihanlar-zikir-eksikliginden-midir-aciklar-misiniz`.
+  Eski URL `301`, yeni URL `200`; H1, title, canonical ve sitemap temiz. Paket
+  yeniden kuru çalıştırıldığında `alreadyApplied=true`, `impacted=0`.
+- Doğrulama: `npm.cmd run check` 291/291 başarılı.
+
 ## 2026-10-29 İbadetler Neden Yapılır Rehberi — Production Tamamlandı
 
 - Kullanıcının verdiği 13 sayfalık `Ibadetler_Detayli_Blog.pdf`, mevcut konu

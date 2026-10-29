@@ -1269,6 +1269,24 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-29 — Soru sıra etiketi temizliği
+- Onaya gönderilen soru metni `Muhterem Hocam, birinci/ikinci sualim:` veya
+  numaralı `sorum:` biçimiyle başlıyorsa editoryal sıra etiketi artık kayda
+  alınmadan kaldırılır; hitap ve devam kelimesinin bağlama uygun büyük/küçük
+  harfi korunur. Anlamlı `Muhterem Hocamın birinci suali` anlatımı ile birden
+  fazla soruyu birleştiren kayıtlar otomatik değiştirilmez. Public slug üretimi
+  aynı sıra etiketlerini URL'ye taşımaz.
+- Canlı geçmiş taramasında 16 kayıt kontrollü ve geri alınabilir biçimde
+  düzeltildi (`onaylandi=9`, `reddedildi=4`, `copte=3`); 9 yayımdaki ve 3 gizli
+  public kayıt eşitlendi. 12 eski URL kalıcı 301 yönlendirmeyle korundu. Paket
+  `question-order-prefix-source-integrity-20261029`; `content_correction_log=16`,
+  yönetici işlem/çözüm logları ve Eda Şahinhan bildirimi doğrulandı.
+- Runtime commit `9c659c6`; production deployment
+  `dpl_GGiQMxUiJns7RgH3ViH9cxCHVYWC`, canlı alias
+  `https://arsiv.ibrahimlive.ai`. `npm.cmd run check` 291/291 başarılı.
+  Bildirilen eski URL 301, yeni URL 200; görünür başlık, canonical ve sitemap
+  yeni temiz adresle doğrulandı.
+
 ### 2026-10-29
 - **İbadetler Neden Yapılır konu rehberi hazırlandı:** 13 sayfalık kaynak PDF,
   public konu rehberi veri modeline 111 içerik bloğu, 30 âyet atfı ve PDF ile
