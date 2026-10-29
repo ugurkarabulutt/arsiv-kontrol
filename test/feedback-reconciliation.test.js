@@ -8,6 +8,7 @@ const {
   WRONG_FORM: TEZEKKUR_WRONG_FORM,
   buildPlan: buildTezekkurPlan
 } = require('../scripts/resolve-tezekkur-tefekkur-20261029');
+const { buildPlan: buildVirdPlan } = require('../scripts/resolve-vird-context-20261029');
 
 test('feedback uzlastirmasi ayni kelimenin dogru kullanimlarina dokunmaz', () => {
   const original = 'Âyet içinde hudâ geçer. Açıklamada hidayet yolu ve hidayet kavramı anlatılır.';
@@ -45,4 +46,15 @@ test('tezekkur paketi yalniz kesin yanlis cümleyi geri alir', () => {
 
   assert.equal(plan.replacements, 1);
   assert.equal(plan.newText, `${TEZEKKUR_SOURCE_FORM}, vasiyet etti. İnsan ayrıca tefekkür eder.`);
+});
+
+test('vird paketi yalniz fizik beden teslimi baglamini duzeltir', () => {
+  const history = {
+    id: 'history-2',
+    corrected_text: 'Fizik beden tesliminde verdiğimizi artırmalıyız. Söz verdiğimizi unutmamalıyız.'
+  };
+  const plan = buildVirdPlan(history);
+
+  assert.equal(plan.replacements, 1);
+  assert.equal(plan.newText, 'Fizik beden tesliminde virdimizi artırmalıyız. Söz verdiğimizi unutmamalıyız.');
 });

@@ -162,6 +162,21 @@ test('tezekkur ile tefekkur kavramlarini birbirine donusturmez', () => {
   assert.equal(result.correctedText, source);
 });
 
+test('fizik beden tesliminde verdiğimizi ifadesini her geciste virdimizi yapar', () => {
+  const source = [
+    'Fizik beden tesliminde verdiğimizi 47.000 zikri vird örtüsü altında yapmalıyız.',
+    'Dolayısıyla fizik beden tesliminde verdiğimizi bu şekilde yapmalıyız, artırmalıyız.',
+    'Daha önce söz verdiğimizi unutmamalıyız.'
+  ].join('\n');
+  const result = finalizeResult({ categories: {} }, source);
+
+  assert.equal(result.categories.sozluk.count, 2);
+  assert.equal(result.totalErrors, 2);
+  assert.match(result.correctedText, /^Fizik beden tesliminde virdimizi 47\.000/um);
+  assert.match(result.correctedText, /^Dolayısıyla fizik beden tesliminde virdimizi/um);
+  assert.match(result.correctedText, /söz verdiğimizi unutmamalıyız\.$/u);
+});
+
 test('duzeltilmis tam metin korunur ama reddedilen bulgular skor disi kalir', () => {
   const source = 'Ayet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2';
   const result = finalizeResult({

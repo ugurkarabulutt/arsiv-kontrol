@@ -1564,6 +1564,18 @@ function applyDeterministicStandards(cats, sourceText) {
     );
   }
 
+  const physicalBodyVirdRe = /(?<![\p{L}\p{N}_])fizik\s+beden\s+tesliminde\s+verdiğimizi(?![\p{L}\p{N}_])/giu;
+  for (const match of text.matchAll(physicalBodyVirdRe)) {
+    addDeterministicIssue(
+      cats,
+      seen,
+      match[0],
+      match[0].replace(/verdiğimizi/iu, 'virdimizi'),
+      'Fizik beden teslimi vird kavramı',
+      'sozluk'
+    );
+  }
+
   const tokenRe = /(?<![\p{L}\p{N}_])(?:tevbe[\p{L}\p{N}_]*|dîn[\p{L}\p{N}_]*|inşallah|her\s+şey[\p{L}\p{N}_]*|biraraya|lâzımgelen|ardarda|içersinde|veçhimizi|sekinet|hâcet[\p{L}\p{N}_]*|vüc(?:ud|ûd|ût)[\p{L}\p{N}_]*|[Hh][Aa][Dd][İiIıÎî][Ss]\s*[-‐‑‒–—]\s*[İiIı]\s+[ŞşSs][Ee][Rr]{1,2}[İiIıÎî][Ff]|nefisler[\p{L}\p{N}_]*|fedakarlık[\p{L}\p{N}_]*|kur['’]an(?:(?:['’])?[\p{L}\p{N}_]+)?)(?![\p{L}\p{N}_])/giu;
   for (const match of text.matchAll(tokenRe)) {
     const original = match[0];
