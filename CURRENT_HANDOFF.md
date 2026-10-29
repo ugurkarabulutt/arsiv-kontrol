@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-29 İbadetler Neden Yapılır Rehberi — Hosted Ön İzleme Hazır
+## 2026-10-29 İbadetler Neden Yapılır Rehberi — Production Tamamlandı
 
 - Kullanıcının verdiği 13 sayfalık `Ibadetler_Detayli_Blog.pdf`, mevcut konu
   rehberi sözleşmesine aktarıldı. Yazı 111 içerik bloğunda namaz, oruç,
@@ -15,10 +15,13 @@
   Asset cache anahtarı `20261029-ibadetler-v1` olarak yenilendi.
 - `npm.cmd run check` başarılı, 287/287 test geçti. Yerel ve hosted noindex ön
   izleme Playwright ile 1440x1000 ve 390x844 boyutlarında doğrulandı: doğru
-  responsive görsel, 8 FAQ, 6 ilgili rehber ve sıfır yatay taşma. Vercel preview
-  `dpl_DFBf5N5NXZvDhHYHUmpdzZFui1CJ` READY:
-  `https://arsiv-kontrol-jldaeex9l-ugurkarabulutts-projects.vercel.app`.
-  Preview `/health=ok`, rehber `200` ve `noindex,nofollow`; production değişmedi.
+  responsive görsel, 8 FAQ, 6 ilgili rehber ve sıfır yatay taşma. Preview
+  `dpl_DFBf5N5NXZvDhHYHUmpdzZFui1CJ`, production
+  `dpl_8pNXRAEQZWgKaAL5cjoKszyezFbQ` READY oldu; production deployment canlı
+  alias'a promote edildi. Canlı `/health=ok`; rehber URL'si `200`, canonical ve
+  `index,follow` doğru, BlogPosting/FAQPage şemaları ve sitemap kaydı mevcut.
+  Masaüstü ve mobil canlı kontrollerde doğru responsive görsel, 8 FAQ, 6 ilgili
+  rehber ve sıfır yatay taşma yeniden doğrulandı.
 
 ## 2026-10-29 Antimadde Artı Sonsuz Kaynak Bütünlüğü — Production Tamamlandı
 

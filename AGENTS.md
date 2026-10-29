@@ -1284,7 +1284,12 @@ tespit edilir).
   `CURRENT_HANDOFF.md`. `npm.cmd run check` başarılı; 287/287 test geçti.
   1440x1000 ve 390x844 yerel/hosted noindex Playwright kontrollerinde doğru
   responsive görsel, 8 FAQ, 6 iç bağlantı ve yatay taşmasız görünüm doğrulandı.
-  Preview `dpl_DFBf5N5NXZvDhHYHUmpdzZFui1CJ` READY; production'a alınmadı.
+  Preview `dpl_DFBf5N5NXZvDhHYHUmpdzZFui1CJ`, production
+  `dpl_8pNXRAEQZWgKaAL5cjoKszyezFbQ` READY oldu ve production deployment canlı
+  alias'a promote edildi. Canlı `/health=ok`; rehber URL'si `200`, canonical ve
+  `index,follow` doğru, BlogPosting/FAQPage şemaları ve sitemap kaydı mevcut.
+  Masaüstü ve mobil canlı kontrollerde doğru responsive görsel, 8 FAQ, 6 ilgili
+  rehber ve sıfır yatay taşma yeniden doğrulandı. Runtime commit `5074e88`.
 - **Antimadde artı sonsuz kaynak bütünlüğü düzeltildi:** Yanlış `0'dan 6
   milyona kadar olan kesim yok.` cümlesi yalnız kesin bağlamında `0'dan artı
   sonsuza kadar olan kesim yok.` biçimine alınır. Geçmiş taramasındaki 5
