@@ -9,6 +9,7 @@ const {
   buildPlan: buildTezekkurPlan
 } = require('../scripts/resolve-tezekkur-tefekkur-20261029');
 const { buildPlan: buildVirdPlan } = require('../scripts/resolve-vird-context-20261029');
+const { buildPlan: buildAntimatterPlan } = require('../scripts/resolve-antimatter-range-20261029');
 
 test('feedback uzlastirmasi ayni kelimenin dogru kullanimlarina dokunmaz', () => {
   const original = 'Âyet içinde hudâ geçer. Açıklamada hidayet yolu ve hidayet kavramı anlatılır.';
@@ -57,4 +58,15 @@ test('vird paketi yalniz fizik beden teslimi baglamini duzeltir', () => {
 
   assert.equal(plan.replacements, 1);
   assert.equal(plan.newText, 'Fizik beden tesliminde virdimizi artırmalıyız. Söz verdiğimizi unutmamalıyız.');
+});
+
+test('antimadde paketi yalniz kesin 6 milyon cumlesini duzeltir', () => {
+  const history = {
+    id: 'history-3',
+    corrected_text: "0'dan 6 milyona kadar olan kesim yok. Başka bir ölçüm 6 milyona kadar sürdü."
+  };
+  const plan = buildAntimatterPlan(history);
+
+  assert.equal(plan.replacements, 1);
+  assert.equal(plan.newText, "0'dan artı sonsuza kadar olan kesim yok. Başka bir ölçüm 6 milyona kadar sürdü.");
 });

@@ -177,6 +177,23 @@ test('fizik beden tesliminde verdiğimizi ifadesini her geciste virdimizi yapar'
   assert.match(result.correctedText, /söz verdiğimizi unutmamalıyız\.$/u);
 });
 
+test('antimadde baglamindaki 6 milyon yanlisini arti sonsuz olarak duzeltir', () => {
+  const source = [
+    "0'dan 6 milyona kadar olan kesim yok.",
+    "O’dan 6 milyona kadar olan kesim yok.",
+    'Başka bir araştırmada 6 milyona kadar ölçüm yapıldı.'
+  ].join('\n');
+  const result = finalizeResult({ categories: {} }, source);
+
+  assert.equal(result.categories.sozluk.count, 2);
+  assert.equal(result.totalErrors, 2);
+  assert.equal(result.correctedText, [
+    "0'dan artı sonsuza kadar olan kesim yok.",
+    "0'dan artı sonsuza kadar olan kesim yok.",
+    'Başka bir araştırmada 6 milyona kadar ölçüm yapıldı.'
+  ].join('\n'));
+});
+
 test('duzeltilmis tam metin korunur ama reddedilen bulgular skor disi kalir', () => {
   const source = 'Ayet yazildi.\n\nManevî metin korunur.\nTablo: 1 | 2';
   const result = finalizeResult({
