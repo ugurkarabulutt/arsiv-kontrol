@@ -1,5 +1,25 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-31 Yönetim Soru Araması Normalizasyonu — Production Tamamlandı
+
+- Bihter Oğuzalp'in soru cümlesiyle bulamadığı fakat cevaptan üç kelimeyle bulduğu kayıt
+  canlı veride doğrulandı. Kök neden, yönetim aramasının çok kelimeli ifadeyi tek parça ve
+  birebir `ILIKE` kalıbıyla aramasıydı; şapkalı harf, noktalama, boşluk veya kelime sırası
+  değiştiğinde aynı soru sonuç dışı kalabiliyordu.
+- Yönetim araması Türkçe karakterleri ve şapkalı harfleri normalize eden, noktalama ve kelime
+  sırasına dayanıklı terim aramasına geçirildi. Yeni ve eski yönetim ekranları aynı arama
+  davranışını kullanır; çalışma alanı, sahiplik ve durum yetkileri korunur.
+- Supabase'e saklanan `review_search_text` alanı ve GIN trigram indeksi eklendi. Migration
+  canlı veritabanında uygulandı; `review_history_queue` güvenlik çağıranı ve erişim kısıtları
+  korunarak yeniden oluşturuldu. Supabase advisor sonucu `No issues found`.
+- Bildirilen gerçek kayıt `5537fe4d-1fd3-4dcc-a4f6-6dbc32724953`, şapkasız
+  `Allahu Teala salah makamına ulaşan her kişiye irşad` aramasında bulundu ve ilk sonuç
+  sayfasında yer aldı. `npm.cmd run check` başarılı; 298/298 test geçti.
+- Runtime commit `ba39b06` push edildi. Production deployment
+  `dpl_D8wN7WNeqFCK7NxxxGuwS51jhWJc` READY ve `https://arsiv.ibrahimlive.ai` aliasına
+  bağlıdır. Canlı `/health=ok`, root/admin `200`, admin `noindex/no-store` ve oturumsuz
+  arama API'si `401` doğrulandı.
+
 ## 2026-10-31 OpenAI Bakiye Tükenmesi Uyarısı — Production Tamamlandı
 
 - 30 Ekim'deki denetim kesintisinin OpenAI yanıtındaki `429` ve

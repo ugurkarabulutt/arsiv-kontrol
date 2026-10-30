@@ -1,5 +1,24 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-31 Yönetim Soru Araması Normalizasyonu — Production Tamamlandı
+
+- Yönetim kuyruğunda soru/cevap araması artık çok kelimeli sorguyu tek parça birebir
+  `ILIKE` olarak aramaz. Türkçe karakter ve şapkalı harf normalizasyonu, noktalama/boşluk
+  toleransı ve kelime sırasından bağımsız terim eşleşmesi kullanılır. Yeni çalışma alanı
+  API'si ile eski onay panosu aynı yardımcıyı kullanır; mevcut durum, çalışma alanı ve
+  sahiplik sınırları değişmez.
+- `history.review_search_text` saklanan generated column olarak soru, cevap, özet, not ve
+  kayıt kimlik alanlarını birleştirir; `pg_trgm` GIN indeksi 10.000+ kayıtta taramanın tam
+  tablo aramasına dönüşmesini engeller. `review_history_queue` aynı alanı güvenli biçimde
+  dışarı verir; view `security_invoker=true`, public/anon/authenticated erişimleri kapalı ve
+  yalnız `service_role` yetkilidir.
+- Migration `20261030230541_admin_review_search_index.sql` canlı Supabase'e uygulandı.
+  Gerçek Bihter Oğuzalp kaydı şapkasız soru kelimeleriyle bulundu ve ilk sonuç sayfasında
+  kaldı. Supabase advisor temiz; `npm.cmd run check` 298/298 başarılıdır.
+- Runtime commit `ba39b06`; production deployment
+  `dpl_D8wN7WNeqFCK7NxxxGuwS51jhWJc` READY ve canlı alias'a bağlıdır. `/health=ok`,
+  root/admin `200`, admin `noindex/no-store`, oturumsuz arama API'si `401` doğrulandı.
+
 ## 2026-10-31 OpenAI Bakiye Tükenmesi Uyarısı — Production Tamamlandı
 
 - OpenAI'nin `429` yanıtı içindeki `insufficient_quota`, `no credits remaining` ve eşdeğer
