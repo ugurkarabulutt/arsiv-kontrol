@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { PGlite } = require('@electric-sql/pglite');
 const { createReviewWorkflow } = require('../review-workflow');
+const { normalizeSearchText } = require('../public-search-core');
 const root = path.join(__dirname,'..');
 const users = ['user','admin','super_admin','question_manager'].map((role,i)=>({id:`10000000-0000-4000-8000-00000000000${i+1}`,role,username:role,name:`${role==='user'?'Ekip':role==='admin'?'Yönetici':role==='question_manager'?'Soru Yöneticisi':'Süper Yönetici'} Örnek`,reviewWorkspacesEnabled:true}));
 const mapHistory=h=>({id:h.id,userId:h.user_id,name:h.name,filename:h.filename,status:h.status,questionText:h.question_text,
@@ -51,11 +52,13 @@ async function createFixture({ publishApprovedHistoryRecord, qualityGate = false
     ['50000000-0000-4000-8000-00000000000'+suffix,users[0].id,question,answer,meta]);
   // Supabase read adapter for fixtures. Writes always execute the actual migration RPC.
   if(qualityGate)await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261021084720_review_analysis_quality_gate.sql'),'utf8'));
-  const value=(row,key)=>key.split(/->>?/).reduce((value,part)=>value?.[part],row);
+  const value=(row,key)=>key==='review_search_text'
+    ? normalizeSearchText([row.question_text,row.corrected_text,row.summary,row.submission_note,row.name,row.username,row.filename].filter(Boolean).join(' '))
+    : key.split(/->>?/).reduce((value,part)=>value?.[part],row);
   const supabase={from(table){
     if(!['users','history','public_qa','history_revisions','review_history_queue'].includes(table))throw Error('Unexpected fixture table');
     const filters=[],orders=[];let start=0,end=Infinity,single=false,columns=['*'],updateValues=null;
-    const b={select(fields='*'){columns=fields.split(',');return b;},update(values){updateValues=values;return b;},eq(k,v){filters.push(r=>String(value(r,k))===String(v));return b;},neq(k,v){filters.push(r=>r[k]!==v);return b;},
+    const b={select(fields='*'){columns=fields.split(',');return b;},update(values){updateValues=values;return b;},eq(k,v){filters.push(r=>String(value(r,k))===String(v));return b;},neq(k,v){filters.push(r=>r[k]!==v);return b;},ilike(k,v){const term=String(v||'').replaceAll('%','').toLocaleLowerCase('tr-TR');filters.push(r=>String(value(r,k)||'').toLocaleLowerCase('tr-TR').includes(term));return b;},
       in(k,vs){filters.push(r=>vs.includes(r[k]));return b;},lt(k,v){filters.push(r=>r[k]<v);return b;},not(k,op,v){if(op!=='in')throw Error('Fixture operator');filters.push(r=>!v.slice(1,-1).split(',').includes(r[k]));return b;},
       or(expression){const rules=expression.split(',').map(part=>{const [field,op,...v]=part.split('.');const term=v.join('.');return r=>{const current=value(r,field);return op==='eq'?String(current)===term:op==='neq'?String(current)!==term:op==='is'&&term==='null'?current==null:op==='ilike'?String(current||'').toLocaleLowerCase('tr-TR').includes(term.replaceAll('%','').toLocaleLowerCase('tr-TR')):false;};});filters.push(r=>rules.some(fn=>fn(r)));return b;},
       order(k,{ascending=true}={}){orders.push([k,ascending]);return b;},range(a,z){start=a;end=z+1;return b;},limit(n){end=n;return b;},maybeSingle(){single=true;return b;},

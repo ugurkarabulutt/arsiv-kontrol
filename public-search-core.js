@@ -80,6 +80,14 @@ function keywordSearchTerms(value = '', limit = PUBLIC_SEARCH_KEYWORD_TERM_LIMIT
   return terms.slice(0, Math.max(1, Number(limit) || PUBLIC_SEARCH_KEYWORD_TERM_LIMIT));
 }
 
+function reviewSearchTerms(value = '', limit = 8) {
+  const normalized = normalizeSearchText(value).slice(0, 120);
+  if (!normalized) return [];
+  const terms = keywordSearchTerms(normalized, limit);
+  if (terms.length) return terms;
+  return [...new Set(normalized.split(' ').filter(Boolean))].slice(0, Math.max(1, Number(limit) || 8));
+}
+
 function searchTextTermPositions(searchText = '', terms = []) {
   return terms
     .map(term => ({ term, index: searchText.indexOf(term) }))
@@ -326,6 +334,7 @@ module.exports = {
   normalizeSearchText,
   publicQaSearchLabels,
   publicQaTopicSlugs,
+  reviewSearchTerms,
   relatedCategorySlugsFromSearchRows,
   rowsBySlug,
   rankKeywordSearchDocuments,

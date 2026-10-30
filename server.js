@@ -32,6 +32,7 @@ const {
   buildSearchMatchExcerpt,
   keywordSearchTerms,
   rankKeywordSearchDocuments,
+  reviewSearchTerms,
   relatedCategorySlugsFromSearchRows,
   semanticSearchBoost
 } = require('./public-search-core');
@@ -1062,19 +1063,8 @@ function approvalSearchTerm(value = '') {
 }
 
 function applyApprovalSearch(builder, search = '') {
-  const term = approvalSearchTerm(search);
-  if (!term) return builder;
-  const pattern = `%${term}%`;
-  const fields = [
-    `filename.ilike.${pattern}`,
-    `question_text.ilike.${pattern}`,
-    `corrected_text.ilike.${pattern}`,
-    `summary.ilike.${pattern}`,
-    `name.ilike.${pattern}`,
-    `username.ilike.${pattern}`
-  ];
-  if (HAS_HISTORY_SUBMISSION_NOTE) fields.push(`submission_note.ilike.${pattern}`);
-  return builder.or(fields.join(','));
+  for (const term of reviewSearchTerms(search)) builder = builder.ilike('review_search_text', `%${term}%`);
+  return builder;
 }
 
 async function loadApprovalGroup(filterQuery, search = '') {

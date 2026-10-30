@@ -2,6 +2,7 @@
 -- Supabase Dashboard → SQL Editor'de bir kez çalıştırın.
 
 create extension if not exists "pgcrypto";
+create extension if not exists pg_trgm with schema extensions;
 
 -- ── users ──────────────────────────────────────────────────────────────────
 create table if not exists public.users (
@@ -55,6 +56,31 @@ alter table public.history add column if not exists submission_note text;
 alter table public.history add column if not exists prompt_version text;
 alter table public.history add column if not exists rules_hash text;
 alter table public.history add column if not exists tags jsonb not null default '[]'::jsonb;
+create or replace function public.normalize_review_search_text(p_value text)
+returns text
+language sql
+immutable
+parallel safe
+set search_path = ''
+as $$
+  select trim(regexp_replace(
+    lower(translate(coalesce(p_value, ''), 'ÇĞİIÖŞÜÂÎÛçğıiöşüâîû', 'CGIIOSUAIUcgiiosuaiu')),
+    '[^a-z0-9]+', ' ', 'g'
+  ));
+$$;
+revoke all on function public.normalize_review_search_text(text) from public, anon, authenticated;
+grant execute on function public.normalize_review_search_text(text) to service_role;
+alter table public.history
+  add column if not exists review_search_text text
+  generated always as (
+    public.normalize_review_search_text(
+      coalesce(question_text, '') || ' ' || coalesce(corrected_text, '') || ' ' ||
+      coalesce(summary, '') || ' ' || coalesce(submission_note, '') || ' ' ||
+      coalesce(name, '') || ' ' || coalesce(username, '') || ' ' || coalesce(filename, '')
+    )
+  ) stored;
+create index if not exists history_review_search_text_trgm_idx
+  on public.history using gin (review_search_text extensions.gin_trgm_ops);
 create index if not exists history_public_approved_idx on public.history (approved_at desc) where status = 'onaylandi';
 create index if not exists history_tags_idx on public.history using gin (tags);
 

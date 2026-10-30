@@ -2,6 +2,7 @@ const express = require('express');
 const { randomUUID } = require('node:crypto');
 const { analysisState, analyzeReviewPair, analysisHash, REVIEW_PART_SIZE, reviewAnalysisParts, analysisPartToken, completedAnalysisParts } = require('./review-analysis');
 const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
+const { reviewSearchTerms } = require('./public-search-core');
 
 const ERRORS = {
   OPENAI_API_CREDITS_EXHAUSTED: [503, 'OpenAI API kontrolü gerekli: API bakiyesi veya kullanım limiti tükenmiş görünüyor. Metniniz ve tamamlanan bölümler korunuyor; bakiye yüklendikten sonra yeniden deneyin.'],
@@ -181,7 +182,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     const status = String(req.query.status || (space === 'management' ? 'bekliyor' : 'todo'));
     const page = Math.max(1, Math.min(10000, parseInt(req.query.page, 10) || 1));
     const pageSize = 25;
-    const term = String(req.query.q || '').trim().replace(/[%,()\\]/g, ' ').replace(/\s+/g, ' ').slice(0, 120);
+    const searchTerms = reviewSearchTerms(req.query.q);
     const memberStatuses = MEMBER_BUCKETS[status];
     if (space === 'member' && !memberStatuses) throw new Error('INVALID_STATUS');
     if (space === 'management' && !['all','disputed','analysis_required'].includes(status) && !STATUSES.includes(status)) throw new Error('INVALID_STATUS');
@@ -203,7 +204,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
     else if (status === 'disputed') query = query.eq('workflow_meta->>disputed', 'true').neq('status', 'copte');
     else if (status !== 'all') query = query.eq('status', status);
     else query = query.neq('status', 'copte');
-    if (term) query = query.or(['question_text', 'corrected_text', 'name', 'filename', 'submission_note'].map(field => `${field}.ilike.%${term}%`).join(','));
+    for (const term of searchTerms) query = query.ilike('review_search_text', `%${term}%`);
     // Sort the whole filtered queue in PostgreSQL, before selecting a page.
     if (submissionOrder) query = query.order('approval_sort_at', { ascending: false, nullsFirst: false });
     else query = query.order(readOnly ? 'updated_at' : 'queue_sort_at', { ascending: false, nullsFirst: false });

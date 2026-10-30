@@ -11,6 +11,7 @@ const {
   normalizeSearchText,
   rankKeywordSearchDocuments,
   relatedCategorySlugsFromSearchRows,
+  reviewSearchTerms,
   semanticSearchBoost
 } = require('../public-search-core');
 
@@ -56,6 +57,17 @@ test('search normalization keeps Turkish intent terms comparable', () => {
   assert.equal(
     normalizeSearchText('Uyku hâlinde vücuttan ayrılan nefstir.'),
     'uyku halinde vucuttan ayrilan nefstir'
+  );
+});
+
+test('private review search tolerates Turkish marks, punctuation and reordered words', () => {
+  assert.deepEqual(
+    reviewSearchTerms('Allahu Teala salah makamına ulaşan'),
+    ['allahu', 'teala', 'salah', 'makamina', 'ulas']
+  );
+  assert.deepEqual(
+    reviewSearchTerms('ulaşan, salâh makamına; Allahû Tealâ'),
+    ['ulas', 'salah', 'makamina', 'allahu', 'teala']
   );
 });
 

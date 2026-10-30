@@ -208,6 +208,29 @@ test('every non-pending list uses latest workflow activity and search remains se
   }
 });
 
+test('review search finds question text without Turkish marks and regardless of word order',async()=>{
+  const owner=fixture.users[0];
+  const row=(await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,tags)
+    values($1,'Bihter Arama Testi','onaylandi','Muhterem Hocam, Allahû Tealâ salâh makamına ulaşan kişiye vazife verir mi?','Cevap metni.','["Salâh"]') returning *`,[owner.id])).rows[0];
+  try {
+    const natural=await request('/api/review/records?status=onaylandi&q=Allahu%20Teala%20salah%20makamina','admin','management');
+    assert.equal(natural.status,200);
+    assert.equal(natural.data.count,1);
+    assert.equal(natural.data.items[0].id,row.id);
+
+    const reordered=await request('/api/review/records?status=onaylandi&q=makamina%20salah%20Allahu','admin','management');
+    assert.equal(reordered.status,200);
+    assert.equal(reordered.data.count,1);
+    assert.equal(reordered.data.items[0].id,row.id);
+
+    const wrongStatus=await request('/api/review/records?status=bekliyor&q=Allahu%20Teala%20salah%20makamina','admin','management');
+    assert.equal(wrongStatus.status,200);
+    assert.equal(wrongStatus.data.items.some(item=>item.id===row.id),false);
+  } finally {
+    await fixture.db.query('delete from history where id=$1',[row.id]);
+  }
+});
+
 test('duplicate response links only a readable record and leaves submitted edits untouched',async()=>{
   const seed=async(owner,status,question)=> (await fixture.db.query(`insert into history(user_id,name,status,question_text,corrected_text,original_text,tags)
     values($1,'Kopya Testi',$2,$3,'Birebir test cevabı.','Kaynak '||gen_random_uuid()::text,'["Takva"]') returning *`,[owner.id,status,question])).rows[0];
