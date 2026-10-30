@@ -1,5 +1,21 @@
 # AGENTS.md — Arşiv Kontrol AI
 
+## 2026-10-31 OpenAI Bakiye Tükenmesi Uyarısı — Production Tamamlandı
+
+- OpenAI'nin `429` yanıtı içindeki `insufficient_quota`, `no credits remaining` ve eşdeğer
+  faturalandırma işaretleri artık sıradan anlık rate-limit durumundan ayrı algılanır. Bakiye
+  tükendiğinde yeniden deneme yapılmadan `OPENAI_API_CREDITS_EXHAUSTED` kodu ve
+  `OpenAI API kontrolü gerekli` açıklaması döner; yönetim arayüzü bu metni genel geçici
+  servis mesajına çevirmeden gösterir.
+- Denetim metni, tamamlanan bölümler ve kayıt sürümü korunur; DB/schema değişikliği yoktur.
+  Sıradan `rate_limit_exceeded` yanıtları mevcut sınırlı yeniden deneme davranışını korur.
+- Kullanıcının bakiye yüklemesinden sonra production anahtarıyla veri değiştirmeyen canlı
+  OpenAI isteği `200 OK` verdi. `npm.cmd run check` başarılı, 295/295 test geçti.
+- Runtime commit `03dcc5c` push edildi; production deployment
+  `dpl_HXeLnMmnApDZesEcp26ftrAfT8LD` READY ve `https://arsiv.ibrahimlive.ai` aliasına bağlıdır.
+  Canlı `/health=ok`, root/admin `200`, uyarı işareti canlı pakette mevcut ve admin
+  `noindex/no-store` başlıkları doğrudur.
+
 ## 2026-10-29 Antimadde Artı Sonsuz Kaynak Bütünlüğü — Production Tamamlandı
 
 - Benan Veyseloğlu'nun public soru notuyla bildirdiği `0'dan 6 milyona kadar

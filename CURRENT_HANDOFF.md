@@ -1,5 +1,22 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-31 OpenAI Bakiye Tükenmesi Uyarısı — Production Tamamlandı
+
+- 30 Ekim'deki denetim kesintisinin OpenAI yanıtındaki `429` ve
+  `no credits remaining` mesajından kaynaklandığı doğrulandı. Bakiye tükenmesi artık sıradan
+  yoğunluk/rate-limit durumundan ayrı sınıflandırılıyor; gereksiz yeniden deneme yapılmıyor.
+- Bakiye veya kullanım limiti tükendiğinde ekip ekranda açıkça `OpenAI API kontrolü gerekli`
+  uyarısını görüyor. Metin ve tamamlanan denetim bölümleri korunuyor; kullanıcı kaydı yarım
+  güncellenmiyor. Sıradan geçici `429` durumları mevcut sınırlı yeniden deneme akışında kalıyor.
+- Kullanıcının bakiye yüklemesinden sonra production anahtarıyla yapılan küçük, veri
+  değiştirmeyen canlı OpenAI kontrolü `200 OK` ve `gpt-4o-2024-08-06` yanıtı verdi.
+- `npm.cmd run check` başarılı; 295/295 test geçti. Kredi tükenmesi, sıradan rate-limit,
+  yeniden deneme ve kayıt değişmezliği regresyon testleriyle kapsandı. DB/schema değişmedi.
+- Runtime commit `03dcc5c` push edildi. Production deployment
+  `dpl_HXeLnMmnApDZesEcp26ftrAfT8LD` READY oldu ve `https://arsiv.ibrahimlive.ai`
+  aliasına bağlandı. Canlı `/health=ok`; root/admin `200`; uyarı işareti canlı HTML'de
+  mevcut, admin `noindex/no-store` başlıkları doğru.
+
 ## 2026-10-30 Google Tarama Verimliliği — Production Tamamlandı
 
 - Canlı teknik audit: sitemap 5.372 benzersiz URL; dengeli 92 URL örnekleminin tamamı `200`,
