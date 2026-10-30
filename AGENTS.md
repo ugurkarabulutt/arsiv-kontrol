@@ -1281,7 +1281,10 @@ tespit edilir).
   güvenceye alan regresyon testi eklendi.
 - `npm.cmd run check` 292/292 başarılı. Hosted noindex preview
   `dpl_789ShiuxWGbn5P1wQ5Tqs4zU1mkG` üzerinde masaüstü ve 390 px mobilde CSS 200, 536 kart,
-  sıfır gizli ikon ve sıfır yatay taşma doğrulandı.
+  sıfır gizli ikon ve sıfır yatay taşma doğrulandı. Runtime commit `6b9f522` push edildi;
+  production deployment `dpl_HUu66YoL8aS8x8pipW3pQmWjQ7RL` READY ve canlı alias'a bağlıdır.
+  Canlı `/kategoriler` 3.179.875 byte'tan 258.459 byte'a indi; CSS bir yıl immutable cache,
+  92 URL Googlebot örneklemi 92/92 `200`, `noindex=0`, mükerrer title `0` sonucunu verdi.
 
 ### 2026-10-29 — Soru sıra etiketi temizliği
 - Onaya gönderilen soru metni `Muhterem Hocam, birinci/ikinci sualim:` veya

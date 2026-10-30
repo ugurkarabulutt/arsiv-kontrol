@@ -1,6 +1,6 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
-## 2026-10-30 Google Tarama Verimliliği — Preview Doğrulandı
+## 2026-10-30 Google Tarama Verimliliği — Production Tamamlandı
 
 - Canlı teknik audit: sitemap 5.372 benzersiz URL; dengeli 92 URL örnekleminin tamamı `200`,
   `noindex=0`, mükerrer title `0`, canonical sapması `0`. Doğrudan Googlebot engeli bulunmadı.
@@ -14,9 +14,15 @@
 - Hosted noindex preview: `dpl_789ShiuxWGbn5P1wQ5Tqs4zU1mkG`. Playwright 1440x1000 ve
   390x844 kontrollerinde CSS `200`, 536 kart, gizli ikon `0`, yatay taşma `0`; ekran görünümü
   sağlam. Preview kategori HTML'si 267.423 byte.
-- Henüz production deploy/push yapılmadı. Search Console'ın güncel Sayfa İndeksleme gerekçeleri
-  oturumlu tarayıcı yüzeyi olmadığı için bu turda okunamadı; teknik iyileştirme sonrası rapor
-  ayrıca doğrulanmalıdır.
+- Runtime commit `6b9f522` push edildi. Production deployment
+  `dpl_HUu66YoL8aS8x8pipW3pQmWjQ7RL` READY ve `https://arsiv.ibrahimlive.ai` aliasına bağlı.
+  Canlı `/health=ok`; root ve `/kategoriler` `200`; kategori canonical/`index,follow` doğru.
+  Canlı kategori HTML'si 258.459 byte'a indi (%91,9 küçülme); CSS `200` ve bir yıl immutable
+  cache. Son Googlebot örnekleminde sitemap 5.372 URL, 92/92 `200`, `noindex=0`, mükerrer
+  title `0`; medyan HTML 168.613 byte. Masaüstü/mobil canlı Playwright kontrolü tekrar geçti.
+- Search Console'ın güncel Sayfa İndeksleme gerekçeleri oturumlu tarayıcı yüzeyi olmadığı için
+  bu turda okunamadı. Teknik engel ve tarama yükü giderildi; Google'ın gerçek yeniden tarama ve
+  indeksleme ilerlemesi Search Console üzerinden ayrıca izlenmelidir.
 
 ## 2026-10-29 Soru Sıra Etiketi Düzeltmesi — Production Tamamlandı
 
