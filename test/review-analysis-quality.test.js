@@ -2,11 +2,12 @@ const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { createFixture } = require('../test-support/review-fixture');
 const { analysisHash, analysisState, analyzeReviewPair } = require('../review-analysis');
-let fixture, server, base, lowScore = false, failAnswer = false;
+let fixture, server, base, lowScore = false, failAnswer = false, creditExhausted = false;
 const analyzed = [];
 before(async () => {
   fixture = await createFixture({ qualityGate: true, analyzeText: async text => {
     analyzed.push(text);
+    if (creditExhausted) throw Object.assign(new Error('OpenAI API kontrolü gerekli: API bakiyesi veya kullanım limiti tükenmiş görünüyor.'), { statusCode: 503, code: 'OPENAI_API_CREDITS_EXHAUSTED' });
     if (failAnswer && !text.endsWith('?')) throw new Error('Synthetic provider failure');
     return { correctedText: text.replace('Muhtrem', 'Muhterem'), score: lowScore ? 49 : 100, totalErrors: lowScore ? 13 : 0,
       categories: { imla: { count: lowScore ? 1 : 0, issues: lowScore ? [{ original: 'Muhtrem', fixed: 'Muhterem', rule: 'Hitap' }] : [] } } };
@@ -142,6 +143,21 @@ test('legacy empty answer requires explicit source use and provider failure leav
   const after = (await fixture.db.query('select version,corrected_text from history where id=$1',[h.id])).rows[0];
   assert.equal(after.version,version);
   assert.equal(after.corrected_text,h.original_text);
+});
+
+test('credit exhaustion is reported explicitly and leaves the review record unchanged', async () => {
+  const h = await draft();
+  creditExhausted = true;
+  const failed = await checked(h);
+  creditExhausted = false;
+  assert.equal(failed.status, 503);
+  assert.equal(failed.body.code, 'OPENAI_API_CREDITS_EXHAUSTED');
+  assert.match(failed.body.error, /OpenAI API kontrolü gerekli/);
+  assert.match(failed.body.error, /bakiye/i);
+  const after = (await fixture.db.query('select version,status,corrected_text from history where id=$1',[h.id])).rows[0];
+  assert.equal(after.version, 0);
+  assert.equal(after.status, 'taslak');
+  assert.equal(after.corrected_text, h.corrected_text);
 });
 
 test('admin can check an existing pending record; concurrent edits still reject the old result', async () => {

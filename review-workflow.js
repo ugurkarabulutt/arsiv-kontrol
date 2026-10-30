@@ -4,6 +4,7 @@ const { analysisState, analyzeReviewPair, analysisHash, REVIEW_PART_SIZE, review
 const { STATUSES, MEMBER_BUCKETS, UUID, workspaceFor, canReadRecord, recordActions, cleanPayload, memberDisplayStatus, duplicateIdFromError } = require('./review-policy');
 
 const ERRORS = {
+  OPENAI_API_CREDITS_EXHAUSTED: [503, 'OpenAI API kontrolü gerekli: API bakiyesi veya kullanım limiti tükenmiş görünüyor. Metniniz ve tamamlanan bölümler korunuyor; bakiye yüklendikten sonra yeniden deneyin.'],
   ANALYSIS_PARTS_REQUIRED: [422, 'Uzun metin denetimi için sayfayı güncelleyip yeniden deneyin.'],
   ANALYSIS_PARTS_INVALID: [422, 'Denetim oturumu yenilenmeli. Metniniz korundu; yeniden denetleyin.'],
   ANALYSIS_REQUIRED: [422, 'Soru ve cevabın son hâli denetlenmedi. Soru ve Cevabı Denetle düğmesini kullanın.'],
@@ -88,7 +89,7 @@ function createReviewWorkflow({ supabase, mapHistory, loadApprovalReturnNotes, a
   const userFor = req => ({ id: req.session.userId, role: req.session.role });
   const spaceFor = req => workspaceFor(userFor(req), req.get('X-Review-Workspace') || req.query.workspace);
   async function fail(req, res, error) {
-    const code = Object.keys(ERRORS).find(key => String(error.message || error).includes(key));
+    const code = Object.keys(ERRORS).find(key => error.code === key || String(error.message || error).includes(key));
     const missingMigration = /version|review_history_change|workflow_meta|history_revisions|review_history_queue/.test(error.message || '') && ['42703', 'PGRST202', 'PGRST205', '42P01'].includes(error.code);
     const providerUnavailable = [502,503,504,429].includes(error.statusCode);
     const [status, message] = ERRORS[code] || (providerUnavailable

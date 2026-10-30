@@ -3316,7 +3316,7 @@ function batchSelect(e){
 function friendlyAnalyzeError(message){
   const text=String(message||'').trim();
   if(!text)return 'Denetim tamamlanamadı. Metniniz ekranda korunuyor; lütfen tekrar deneyin.';
-  if(/AI servisi|AI bağlantısı|AI isteği|Metin çok|Lütfen|Dosya|API anahtarı|Bu metni/i.test(text))return text;
+  if(/OpenAI API kontrolü gerekli|API bakiyesi|AI servisi|AI bağlantısı|AI isteği|Metin çok|Lütfen|Dosya|API anahtarı|Bu metni/i.test(text))return text;
   if(/server had an error|help\.openai\.com|openai|temporar|overload|rate limit|timeout|network|fetch failed|ECONN|ENOTFOUND|429|500|502|503|504/i.test(text)){
     return 'AI servisi geçici olarak yanıt veremedi. Metniniz kaybolmadı; birkaç dakika sonra tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
   }

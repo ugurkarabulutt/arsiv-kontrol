@@ -157,6 +157,9 @@ if (!html.includes('property="og:image"') || !html.includes('name="twitter:card"
 if (!html.includes('function friendlyAnalyzeError') || !html.includes('AI servisi geçici olarak yanıt veremedi')) {
   throw new Error('Denetim hata mesajları kullanıcı dostu Türkçe metne bağlanmalı.');
 }
+if (!server.includes('OPENAI_API_CREDITS_EXHAUSTED') || !server.includes('isOpenAICreditsExhausted') || !html.includes('OpenAI API kontrolü gerekli')) {
+  throw new Error('OpenAI bakiye tükenmesi genel geçici servis hatasından ayrı ve görünür olmalı.');
+}
 if (!html.includes('Denetim tamamlanamadı. Metniniz korunuyor.')) {
   throw new Error('Denetim hatasında metnin korunduğu kullanıcıya belirtilmeli.');
 }

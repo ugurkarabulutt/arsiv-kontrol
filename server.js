@@ -102,6 +102,7 @@ const PUBLIC_ARCHIVE_SEMANTIC_AUTO_INDEX_LIMIT = Math.max(1, Math.min(25, Number
 const PUBLIC_ARCHIVE_CANONICAL_ORIGIN = 'https://arsiv.ibrahimlive.ai';
 const PUBLIC_ARCHIVE_EDITORIAL_UPDATED_AT = '2026-10-01T00:00:00.000Z';
 const AI_TEMPORARY_UNAVAILABLE_MSG = 'AI servisi geçici olarak yanıt veremedi. Lütfen birkaç dakika sonra tekrar deneyin. Metniniz ekranda korunuyor; tekrar Denetle & Düzelt düğmesine basabilirsiniz.';
+const OPENAI_API_CREDITS_EXHAUSTED_MSG = 'OpenAI API kontrolü gerekli: API bakiyesi veya kullanım limiti tükenmiş görünüyor. Metniniz ekranda korunuyor; bakiye yüklendikten sonra yeniden deneyin.';
 const AI_CONFIG_ERROR_MSG = 'AI bağlantısı şu anda yapılandırma nedeniyle çalışmıyor. Lütfen ekibe bildirin.';
 const AI_REQUEST_REJECTED_MSG = 'AI isteği işlenemedi. Lütfen metni kısaltarak tekrar deneyin veya ekipten destek isteyin.';
 const SECURITY_CSP = [
@@ -165,6 +166,16 @@ function openaiUserMessage(status) {
   return 'AI servisi şu anda beklenmeyen bir yanıt verdi. Lütfen tekrar deneyin; devam ederse ekibe bildirin.';
 }
 
+function isOpenAICreditsExhausted(status, upstream = {}) {
+  if (status !== 429) return false;
+  const error = upstream?.error || {};
+  const evidence = [error.code, error.type, error.message]
+    .filter(Boolean)
+    .join(' ')
+    .toLocaleLowerCase('en-US');
+  return /insufficient[_ -]?quota|billing[_ -]?(?:hard[_ -]?limit|quota)|no credits? remaining|run out of credits?|no balance left|quota exceeded/.test(evidence);
+}
+
 async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği', options = {}) {
   let lastStatus = 503;
   let lastMessage = '';
@@ -191,8 +202,14 @@ async function fetchOpenAIChatCompletion(payload, contextLabel = 'AI isteği', o
       lastStatus = response.status;
       lastMessage = upstream.error?.message || response.statusText || '';
       const retryable = OPENAI_RETRYABLE_STATUS.has(response.status);
-      if (!retryable || attempt === retryDelays.length) {
+      const creditsExhausted = isOpenAICreditsExhausted(response.status, upstream);
+      if (creditsExhausted || !retryable || attempt === retryDelays.length) {
         console.warn(`[OpenAI] ${contextLabel} başarısız: status=${response.status} message=${lastMessage}`);
+        if (creditsExhausted) {
+          const error = httpError(OPENAI_API_CREDITS_EXHAUSTED_MSG, 503);
+          error.code = 'OPENAI_API_CREDITS_EXHAUSTED';
+          throw error;
+        }
         throw httpError(openaiUserMessage(response.status), retryable ? 503 : response.status);
       }
     } catch (err) {
