@@ -75,8 +75,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   const rootData = { ...publicArchiveFixtures, basePath: '', noindex: false };
   const home = renderPublicArchivePreviewRoute('/', {}, rootData).html;
 
-  assert.match(home, /<style data-pa-inline-css>/);
-  assert.doesNotMatch(home, /<link[^>]+rel="stylesheet"/);
+  assert.doesNotMatch(home, /<style data-pa-inline-css>/);
+  assert.match(home, /<link rel="stylesheet" href="\/public-archive\.css\?v=20261030-crawl-efficiency-v1">/);
   assert.match(home, /href="\/arsiv"/);
   assert.match(home, /href="\/hesabim"/);
   assert.match(home, /\/api\/session/);
@@ -100,8 +100,8 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /name="apple-mobile-web-app-title" content="Dini Sorular"/);
   assert.match(home, /name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(home, /name="apple-mobile-web-app-status-bar-style" content="default"/);
-  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261029-ibadetler-v1"/);
-  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261029-ibadetler-v1"/);
+  assert.match(home, /rel="apple-touch-icon" sizes="180x180" href="\/assets\/apple-touch-icon\.png\?v=20261030-crawl-efficiency-v1"/);
+  assert.match(home, /rel="manifest" href="\/assets\/site\.webmanifest\?v=20261030-crawl-efficiency-v1"/);
   assert.match(home, /class="pa-install-banner" data-install-banner hidden/);
   assert.match(home, /Telefona ekleyin/);
   assert.match(home, /data-install-action/);
@@ -149,7 +149,7 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(home, /anchor\.closest\('\.pa-page, \.pa-mobile-nav'\)/);
   assert.doesNotMatch(home, /candidates\.slice\(0, 22\)/);
   assert.doesNotMatch(home, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
-  assert.match(home, /app-icon-128\.webp\?v=20261029-ibadetler-v1/);
+  assert.match(home, /app-icon-128\.webp\?v=20261030-crawl-efficiency-v1/);
   assert.doesNotMatch(home, /class="pa-install-icon"[^>]+app-icon-maskable-512/);
   assert.match(home, /loading="eager" fetchpriority="high"/);
   assert.match(home, /loading="lazy" fetchpriority="low"/);
@@ -205,7 +205,9 @@ test('public renderer can render root launch paths behind root mode', () => {
   assert.match(categoriesIndex, /<meta name="robots" content="index,follow">/);
   assert.match(categoriesIndex, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/kategoriler">/);
   assert.match(categoriesIndex, /Dini Soru Kategorileri/);
+  assert.match(categoriesIndex, /Ana Kategoriler/);
   assert.match(categoriesIndex, /"@id":"https:\/\/arsiv\.ibrahimlive\.ai\/kategoriler#itemlist"/);
+  assert.doesNotMatch(categoriesIndex, /class="pa-category-mark"/);
 
   const archive = renderPublicArchivePreviewRoute('/arsiv', {}, rootData).html;
   assert.match(archive, /"@type":"CollectionPage"/);
@@ -528,7 +530,7 @@ test('weak category pages stay visible but are not indexed', () => {
   const weakData = {
     noindex: false,
     categories: [
-      { slug: 'cok-dar-baslik', name: 'Çok Dar Başlık', description: 'Az sorulu kategori.' }
+      { slug: 'cok-dar-baslik', name: 'Çok Dar Başlık', description: 'Az sorulu kategori.', questionCount: 1 }
     ],
     topics: [],
     qa: [{
@@ -548,11 +550,13 @@ test('weak category pages stay visible but are not indexed', () => {
   assert.match(weak, /Az sorulu kategori görünür mü\?/);
   assert.match(weak, /<meta name="robots" content="noindex,follow">/);
   assert.doesNotMatch(weak, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/kategori\/cok-dar-baslik">/);
+  const weakIndex = renderPublicArchivePreviewRoute('/public-preview/kategoriler', {}, weakData).html;
+  assert.doesNotMatch(weakIndex, /href="\/public-preview\/kategori\/cok-dar-baslik"/);
 
   const strategicData = {
     noindex: false,
     categories: [
-      { slug: 'hidayet', name: 'Hidayet', description: 'Stratejik kategori.' }
+      { slug: 'hidayet', name: 'Hidayet', description: 'Stratejik kategori.', questionCount: 1 }
     ],
     topics: [],
     qa: [{
@@ -571,6 +575,28 @@ test('weak category pages stay visible but are not indexed', () => {
   const strategic = renderPublicArchivePreviewRoute('/public-preview/kategori/hidayet', {}, strategicData).html;
   assert.match(strategic, /<meta name="robots" content="index,follow">/);
   assert.match(strategic, /<link rel="canonical" href="https:\/\/arsiv\.ibrahimlive\.ai\/kategori\/hidayet">/);
+  const strategicIndex = renderPublicArchivePreviewRoute('/public-preview/kategoriler', {}, strategicData).html;
+  assert.match(strategicIndex, /href="\/public-preview\/kategori\/hidayet"/);
+});
+
+test('category index stays bounded when taxonomy grows to thousands of labels', () => {
+  const categories = Array.from({ length: 4936 }, (_, index) => ({
+    slug: `kategori-${index + 1}`,
+    name: `Kategori ${index + 1}`,
+    description: `Kategori ${index + 1} açıklaması.`,
+    questionCount: index < 536 ? 5 : 1
+  }));
+  const rendered = renderPublicArchivePreviewRoute('/public-preview/kategoriler', {}, {
+    noindex: false,
+    categories,
+    topics: [],
+    qa: [],
+    stats: { questionCount: 4807, answerCount: 4807 }
+  }).html;
+
+  assert.equal((rendered.match(/class="pa-category-card"/g) || []).length, 536);
+  assert.doesNotMatch(rendered, /class="pa-category-mark"/);
+  assert.ok(Buffer.byteLength(rendered, 'utf8') < 500000, 'Kategori dizini HTML butcesi 500 KB altinda kalmali.');
 });
 
 test('public renderer accepts route-sized server data with global stats', () => {

@@ -1269,6 +1269,20 @@ tespit edilir).
 
 ## Değişiklik Günlüğü
 
+### 2026-10-30 — Google tarama verimliliği ve kategori dizini sınırı
+- Canlı sitemap ve Googlebot örnekleminde robots, canonical, HTTP durumları ve başlıklar
+  sağlıklıydı; ancak ortak CSS'nin her HTML'e gömülmesi ve `/kategoriler` sayfasının 4.936
+  kategori kartında görünmeyen 4.955 SVG üretmesi tarama yükünü gereksiz büyütüyordu.
+  Ortak CSS sürümlü `/public-archive.css?v=20261030-crawl-efficiency-v1` dosyasına taşındı;
+  CSS ile zaten gizlenen kategori/konu ikonları HTML'den kaldırıldı.
+- Merkezi kategori dizini sitemap ile aynı SEO eşiğini kullanarak yalnız güçlü/stratejik 536
+  kategoriye sınırlandı; ince kategorilerin kendi `noindex,follow` sayfaları, arşiv filtresi ve
+  soru bağlantıları korunur. Binlerce etiketli taksonomide dizinin 500 KB altında kalmasını
+  güvenceye alan regresyon testi eklendi.
+- `npm.cmd run check` 292/292 başarılı. Hosted noindex preview
+  `dpl_789ShiuxWGbn5P1wQ5Tqs4zU1mkG` üzerinde masaüstü ve 390 px mobilde CSS 200, 536 kart,
+  sıfır gizli ikon ve sıfır yatay taşma doğrulandı.
+
 ### 2026-10-29 — Soru sıra etiketi temizliği
 - Onaya gönderilen soru metni `Muhterem Hocam, birinci/ikinci sualim:` veya
   numaralı `sorum:` biçimiyle başlıyorsa editoryal sıra etiketi artık kayda

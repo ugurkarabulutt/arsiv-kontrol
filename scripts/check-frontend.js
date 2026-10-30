@@ -1446,8 +1446,8 @@ for (const item of publicRenderCases) {
   assert(rendered.html.includes('<meta name="robots" content="noindex,nofollow">'), `${item.route} noindex meta icermeli.`);
   assert(rendered.html.includes('Dini Sorular') && rendered.html.includes('ve Cevaplar Arşivi'), `${item.route} tipografik logo icermeli.`);
   assert(rendered.html.includes('Cevaplara delilleri ve kaynak bağlamıyla kolayca ulaşın.'), `${item.route} ana public cumleyi icermeli.`);
-  assert(rendered.html.includes('<style data-pa-inline-css>'), `${item.route} render engellemeyen satir ici public CSS icermeli.`);
-  assert(!/<link[^>]+rel="stylesheet"/.test(rendered.html), `${item.route} render engelleyici public CSS istegi uretmemeli.`);
+  assert(!rendered.html.includes('<style data-pa-inline-css>'), `${item.route} tekrar eden satir ici public CSS icermemeli.`);
+  assert(/<link[^>]+rel="stylesheet"[^>]+public-archive\.css\?v=20261030-crawl-efficiency-v1/.test(rendered.html), `${item.route} surumlu ve onbelleklenebilir public CSS dosyasini yuklemeli.`);
   assert(!rendered.html.includes('rel="canonical"'), `${item.route} preview noindex modunda canonical uretmemeli.`);
   assertOnlyPublicPreviewApi(item.route, rendered.html);
   assertNoPublicPreviewLeaks(item.route, rendered.html);
@@ -1457,7 +1457,8 @@ const rootLaunchPreview = renderPublicArchivePreviewRoute('/', {}, { ...publicAr
 assert(rootLaunchPreview.includes('href="/arsiv"'), 'Root public mode Arsiv linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('href="/hesabim"'), 'Root public mode Hesabim linkini root path ile uretmeli.');
 assert(rootLaunchPreview.includes('/api/session'), 'Root public mode session API adresini root path ile uretmeli.');
-assert(rootLaunchPreview.includes('<style data-pa-inline-css>'), 'Root public mode render engellemeyen satir ici CSS uretmeli.');
+assert(!rootLaunchPreview.includes('<style data-pa-inline-css>'), 'Root public mode tekrar eden satir ici CSS uretmemeli.');
+assert(rootLaunchPreview.includes('href="/public-archive.css?v=20261030-crawl-efficiency-v1"'), 'Root public mode surumlu ve onbelleklenebilir CSS uretmeli.');
 assert(rootLaunchPreview.includes('<meta name="robots" content="index,follow">'), 'Root public mode indexing acikken index,follow meta uretmeli.');
 assert(rootLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/">'), 'Root public mode ana sayfa canonical adresini uretmeli.');
 assert(rootLaunchPreview.includes('"@type":"WebSite"') && rootLaunchPreview.includes('"@type":"SearchAction"'), 'Root public mode WebSite/SearchAction yapisal veri uretmeli.');
@@ -1471,6 +1472,7 @@ const categoriesLaunchPreview = renderPublicArchivePreviewRoute('/kategoriler', 
 assert(categoriesLaunchPreview.includes('<meta name="robots" content="index,follow">'), '/kategoriler kategori hub olarak indexlenebilir olmali.');
 assert(categoriesLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/kategoriler">'), '/kategoriler canonical uretmeli.');
 assert(categoriesLaunchPreview.includes('"@id":"https://arsiv.ibrahimlive.ai/kategoriler#itemlist"'), '/kategoriler ItemList yapisal verisi uretmeli.');
+assert(!categoriesLaunchPreview.includes('class="pa-category-mark"'), '/kategoriler CSS ile gizlenen tekrarli kategori ikonlarini HTML icine gommemeli.');
 const featuredLaunchPreview = renderPublicArchivePreviewRoute('/one-cikan-sorular', {}, { ...publicArchiveFixtures, basePath: '', noindex: false }).html;
 assert(featuredLaunchPreview.includes('<meta name="robots" content="index,follow">'), '/one-cikan-sorular indexlenebilir olmali.');
 assert(featuredLaunchPreview.includes('<link rel="canonical" href="https://arsiv.ibrahimlive.ai/one-cikan-sorular">'), '/one-cikan-sorular canonical uretmeli.');
@@ -1492,7 +1494,7 @@ for (const assetUrl of [
 ]) {
   assert(homePreview.includes(assetUrl), `Rendered public preview hero asset missing: ${assetUrl}`);
 }
-for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261029-ibadetler-v1', 'PUBLIC_ARCHIVE_MINIFIED_CSS', 'publicArchiveInlineCss', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
+for (const marker of ['PUBLIC_ARCHIVE_STATIC_CACHE', 'PUBLIC_ARCHIVE_ASSET_VERSION', '20261030-crawl-efficiency-v1', '<link rel="stylesheet" href="${escapeHtml(CSS_PATH)}">', "immutable: !noindex", "maxAge: noindex ? 0 : '1y'", "res.set('Cache-Control', noindex ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : PUBLIC_ARCHIVE_STATIC_CACHE)"]) {
   assert(publicRendererSource.includes(marker), `Public statik asset cache guard marker eksik: ${marker}`);
 }
 assert(!publicRendererSource.includes('fonts.googleapis.com') && !publicRendererSource.includes('fonts.gstatic.com'), 'Public sayfa ucuncu taraf render engelleyici font yuklememeli.');
@@ -1544,7 +1546,7 @@ for (const marker of ['<title>Dini Sorular ve Cevaplar Arşivi</title>', 'name="
 for (const marker of ['pa-install-banner', 'data-install-banner hidden', 'Telefona ekleyin', 'data-install-action', 'data-install-dismiss', 'data-install-ios-help hidden', "before' + 'install' + 'pro' + 'mpt", 'window.__paInstallOffer', 'dsca-install-banner-dismissed-at', 'dsca-install-banner-installed', 'data-pa-install-visible', 'data-pa-install-expanded', 'bindAddToHomeBanner']) {
   assert(homePreview.includes(marker) || publicRendererSource.includes(marker), `Public install banner marker eksik: ${marker}`);
 }
-assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261029-ibadetler-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
+assert(homePreview.includes('class="pa-install-icon" src="/public-preview/assets/app-icon-128.webp?v=20261030-crawl-efficiency-v1"'), 'Public install banner kullanim boyutuna uygun WebP ikon kullanmali.');
 assert(homePreview.includes('role="combobox" aria-autocomplete="list"'), 'Public arama alani aria-expanded icin combobox rolu tasimali.');
 assert(!/<article[^>]+role="link"/.test(homePreview), 'Public kartlar article uzerinde gecersiz link rolu tasimamali.');
 assert(!/<a class="pa-logo"[^>]+aria-label=/.test(homePreview), 'Public logo gorunen metinle celisen aria-label tasimamali.');
@@ -2116,7 +2118,7 @@ for (const marker of ['.pa-card-bottom', '.pa-card-cta', '.pa-card-cta::after', 
 for (const marker of ['--pa-answer-cta-text: #FFFFFF;', '--pa-answer-cta-text: #0F4930;', '--pa-answer-cta-shine: rgb(255 253 247 / 0.28);', 'color: var(--pa-answer-cta-text);', 'var(--pa-answer-cta-shine)']) {
   assert(publicCss.includes(marker), `Public cevap CTA kontrast standardi eksik: ${marker}`);
 }
-assert(publicRendererSource.includes("20261029-ibadetler-v1"), 'Public arsiv CSS cache anahtari ibadetler rehberi icin yenilenmeli.');
+assert(publicRendererSource.includes("20261030-crawl-efficiency-v1"), 'Public arsiv CSS cache anahtari tarama verimliligi surumu icin yenilenmeli.');
 for (const marker of ['.pa-cta-visual', '.pa-cta-content', '.pa-cta-kicker', '.pa-cta-button-icon', 'object-position: 66% center', 'min-height: 420px']) {
   assert(publicCss.includes(marker), `Public soru CTA gorsel CSS marker eksik: ${marker}`);
 }

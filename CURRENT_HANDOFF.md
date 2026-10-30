@@ -1,5 +1,23 @@
 # CURRENT_HANDOFF — Arşiv Kontrol AI
 
+## 2026-10-30 Google Tarama Verimliliği — Preview Doğrulandı
+
+- Canlı teknik audit: sitemap 5.372 benzersiz URL; dengeli 92 URL örnekleminin tamamı `200`,
+  `noindex=0`, mükerrer title `0`, canonical sapması `0`. Doğrudan Googlebot engeli bulunmadı.
+- Performans kök nedeni: `/kategoriler` canlı HTML'si 3.179.875 byte, 4.936 kart ve 4.955 SVG
+  üretiyordu; SVG'ler tek başına 1.684.788 byte, gömülü CSS 129.148 byte idi.
+- Düzeltme: ortak CSS sürümlü ve cache'lenebilir `/public-archive.css` dosyasına taşındı;
+  görünmeyen kart ikonları kaldırıldı; kategori hub'ı sitemap ile aynı SEO eşiğindeki 536 güçlü
+  kategoriye sınırlandı. İnce kategori sayfaları/filtreleri kaldırılmadı.
+- Koruma: 4.936 sentetik kategoride en fazla 536 hub kartı ve 500 KB HTML bütçesi regresyon
+  testiyle kilitlendi. `npm.cmd run check` 292/292 başarılı.
+- Hosted noindex preview: `dpl_789ShiuxWGbn5P1wQ5Tqs4zU1mkG`. Playwright 1440x1000 ve
+  390x844 kontrollerinde CSS `200`, 536 kart, gizli ikon `0`, yatay taşma `0`; ekran görünümü
+  sağlam. Preview kategori HTML'si 267.423 byte.
+- Henüz production deploy/push yapılmadı. Search Console'ın güncel Sayfa İndeksleme gerekçeleri
+  oturumlu tarayıcı yüzeyi olmadığı için bu turda okunamadı; teknik iyileştirme sonrası rapor
+  ayrıca doğrulanmalıdır.
+
 ## 2026-10-29 Soru Sıra Etiketi Düzeltmesi — Production Tamamlandı
 
 - Worktree: `.codex-admin-review-actions-fix`; branch:

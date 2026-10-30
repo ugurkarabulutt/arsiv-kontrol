@@ -19,8 +19,7 @@ const PUBLIC_ARCHIVE_STATIC_CACHE = 'public, max-age=31536000, immutable';
 const PUBLIC_SHARE_IMAGE_FILE = 'public-share-card-20260823-v3.png';
 const PUBLIC_SHARE_IMAGE_VERSION = 'telegram-cache-refresh-20260823';
 const PUBLIC_SHARE_UPDATED_TIME = '2026-08-23T14:42:53+03:00';
-const PUBLIC_ARCHIVE_ASSET_VERSION = '20261029-ibadetler-v1';
-const PUBLIC_ARCHIVE_CSS_SOURCE = fs.readFileSync(path.join(__dirname, 'public-archive.css'), 'utf8');
+const PUBLIC_ARCHIVE_ASSET_VERSION = '20261030-crawl-efficiency-v1';
 const PUBLIC_TOPIC_GUIDE_PATH = '/konu-rehberi';
 const PUBLIC_ARCHIVE_SEO_TITLE_MAX = 76;
 const PUBLIC_ARCHIVE_SEO_DESCRIPTION_MAX = 168;
@@ -34,23 +33,6 @@ const PUBLIC_ARCHIVE_CORE_TOPIC_NAMES = [
   'Teslimiyet',
   'Kur’ân ayetleri'
 ];
-
-function minifyPublicArchiveCss(source = '') {
-  return String(source || '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/\s*([{}:;,>])\s*/g, '$1')
-    .replace(/;}/g, '}')
-    .trim();
-}
-
-const PUBLIC_ARCHIVE_MINIFIED_CSS = minifyPublicArchiveCss(PUBLIC_ARCHIVE_CSS_SOURCE);
-
-function publicArchiveInlineCss() {
-  return PUBLIC_ARCHIVE_MINIFIED_CSS
-    .replaceAll('url("assets/', `url("${ASSET_PATH}/`)
-    .replace(/<\/style/gi, '<\\/style');
-}
 
 function normalizePublicArchiveBasePath(value = DEFAULT_PUBLIC_ARCHIVE_BASE) {
   const raw = String(value ?? DEFAULT_PUBLIC_ARCHIVE_BASE).trim();
@@ -2367,7 +2349,6 @@ function renderCollectionIntro(kind, pageState) {
 function topicCard(topic) {
   return `
     <a class="pa-topic-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(topic.slug)}">
-      <span class="pa-topic-mark">${iconSvg(topicIconName(topic))}</span>
       <strong>${escapeHtml(topic.name)}</strong>
       <span>${categoryQuestionCount(topic)} soru</span>
     </a>
@@ -2377,7 +2358,6 @@ function topicCard(topic) {
 function categoryCard(category) {
   return `
     <a class="pa-category-card" href="${PREVIEW_BASE}/kategori/${escapeHtml(category.slug)}">
-      <span class="pa-category-mark">${iconSvg(categoryIconName(category))}</span>
       <span class="pa-category-copy">
         <strong>${escapeHtml(category.name)}</strong>
         <span>${categoryQuestionCount(category)} soru</span>
@@ -2996,7 +2976,7 @@ function renderTopicGuideIndex() {
 }
 
 function renderCategoriesIndex() {
-  const categories = sortedCategories();
+  const categories = sortedCategories().filter(category => publicCategorySeoIndexable(category));
   const questionCount = archiveStatCount('questionCount', publicArchiveFixtures.qa.length);
   const categoriesDescription = categoriesIndexSeoDescription(categories.length, questionCount);
   return renderShell({
@@ -3021,7 +3001,7 @@ function renderCategoriesIndex() {
           </div>
         </section>
         <section class="pa-section">
-          ${sectionHeader('Tüm Kategoriler')}
+          ${sectionHeader('Ana Kategoriler')}
           <div class="pa-category-grid">${categories.map(categoryCard).join('')}</div>
         </section>
       </main>
@@ -3666,7 +3646,7 @@ function renderShell({ title, description, active, content, status = 200, questi
   <link rel="icon" type="image/png" sizes="48x48" href="${publicArchiveAssetHref('favicon-48.png')}">
   <link rel="apple-touch-icon" sizes="180x180" href="${publicArchiveAssetHref('apple-touch-icon.png')}">
   <link rel="manifest" href="${publicArchiveAssetHref('site.webmanifest')}">
-  <style data-pa-inline-css>${publicArchiveInlineCss()}</style>
+  <link rel="stylesheet" href="${escapeHtml(CSS_PATH)}">
   <script>
     (function(){
       try {
